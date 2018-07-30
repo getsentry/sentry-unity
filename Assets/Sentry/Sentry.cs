@@ -62,7 +62,6 @@ namespace Sentry
     {
         Dsn _dsn;
         HttpClient client;
-        StreamWriter f;
 
         public SentrySdk(string dsn)
         {
@@ -76,14 +75,11 @@ namespace Sentry
                      $"Sentry sentry_version=5,sentry_client=Unity0.1," +
                      $"sentry_timestamp={timestamp}," +
                      $"sentry_key={sentryKey},sentry_secret={sentrySecret}");
-            f = new StreamWriter("/tmp/log", true);
         }
 
 
         public void HandleLogCallback(string condition, string stackTrace, LogType type)
         {
-            f.WriteLine(condition + " " + stackTrace);
-            f.Flush();
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
                 // only send errors, can be set somewhere what we send and what we don't
                 return;
