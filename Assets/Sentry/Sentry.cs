@@ -1,8 +1,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
+using System.Threading;
+using System.Text;
 using UnityEngine;
 
 namespace Sentry
@@ -61,20 +61,12 @@ namespace Sentry
     public class SentrySdk
     {
         Dsn _dsn;
-        HttpClient client;
+        MonoBehaviour _parent;
 
-        public SentrySdk(string dsn)
+        public SentrySdk(MonoBehaviour parent, string dsn)
         {
             _dsn = new Dsn(dsn);
-            client = new HttpClient();
-            var sentryKey = _dsn.publicKey;
-            var sentrySecret = _dsn.secretKey;
-
-            var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
-            client.DefaultRequestHeaders.TryAddWithoutValidation("X-Sentry-Auth",
-                     $"Sentry sentry_version=5,sentry_client=Unity0.1," +
-                     $"sentry_timestamp={timestamp}," +
-                     $"sentry_key={sentryKey},sentry_secret={sentrySecret}");
+            _parent = parent;
         }
 
 
@@ -133,7 +125,7 @@ namespace Sentry
                 }
                 stack.Add(new StackTraceSpec(filename, functionName, lineNo));
             }
-            sendException(excType, excValue, stack);
+            _parent.StartCoroutine(sendException(excType, excValue, stack));
         }
 
         private long ConvertToTimestamp(DateTime value)
@@ -231,7 +223,7 @@ namespace Sentry
             }
         }
 
-        public async void sendMessage(string msg)
+        /*public async void sendMessage(string msg)
         {
             var guid = Guid.NewGuid().ToString("N");
             var content = new StringContent(JsonUtility.ToJson(new SentryMessage(
@@ -241,20 +233,26 @@ namespace Sentry
 
             var responseString = await response.Content.ReadAsStringAsync();
             Debug.Log(responseString);
-        }
+        }*/
 
-        public async void sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
+        IEnumerator<WWW> sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
         {
             var guid = Guid.NewGuid().ToString("N");
             var s = JsonUtility.ToJson(
                 new SentryExceptionMessage(guid, exceptionType, exceptionValue, stackTrace));
-            Debug.Log(s);
-            var content = new StringContent(s);
+            var sentryKey = _dsn.publicKey;
+            var sentrySecret = _dsn.secretKey;
 
-            var response = await client.PostAsync(_dsn.callUri, content);
+            var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
+            var headers = new Dictionary<string, string>();
+            headers["X-Sentry-Auth"] = ($"Sentry sentry_version=5,sentry_client=Unity0.1," +
+                     $"sentry_timestamp={timestamp}," +
+                     $"sentry_key={sentryKey},sentry_secret={sentrySecret}");
 
-            var responseString = await response.Content.ReadAsStringAsync();
-            Debug.Log(responseString);
-        }
+            using (WWW www = new WWW(_dsn.callUri.ToString(), Encoding.UTF8.GetBytes(s), headers)) {
+                yield return www;
+                Debug.Log(Encoding.UTF8.GetString(www.bytes));
+            }
+         }
     }
 }

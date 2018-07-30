@@ -11,7 +11,7 @@ public class SentryTest : MonoBehaviour {
     
 	// Use this for initialization
 	void Start () {
-        sentrySdk = new SentrySdk(DSNEntry);
+        sentrySdk = new SentrySdk(this, DSNEntry);
         Application.logMessageReceived += sentrySdk.HandleLogCallback;
     }
 
