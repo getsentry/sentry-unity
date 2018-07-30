@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using UnityEngine;
 
@@ -23,6 +24,8 @@ namespace Sentry
         /// </remarks>
         public Dsn(string dsn)
         {
+            if (dsn == "")
+                throw new ArgumentException("invalid argument - DSN cannot be empty");
             this.dsn = dsn;
             uri = new Uri(dsn);
             if (string.IsNullOrWhiteSpace(uri.UserInfo))
@@ -32,23 +35,17 @@ namespace Sentry
             var keys = uri.UserInfo.Split(':');
             publicKey = keys[0];
             if (string.IsNullOrWhiteSpace(publicKey))
-            {
                 throw new ArgumentException("Invalid DSN: No public key provided.");
-            }
             secretKey = null;
             if (keys.Length > 1)
-            {
                 secretKey = keys[1];
-            }
-
+            
             var path = uri.AbsolutePath.Substring(0, uri.AbsolutePath.LastIndexOf('/'));
             var projectId = uri.AbsoluteUri.Substring(uri.AbsoluteUri.LastIndexOf('/') + 1);
 
             if (string.IsNullOrWhiteSpace(projectId))
-            {
                 throw new ArgumentException("Invalid DSN: A Project Id is required.");
-            }
-
+            
             var builder = new UriBuilder
             {
                 Scheme = uri.Scheme,
@@ -58,21 +55,89 @@ namespace Sentry
             };
             callUri = builder.Uri;
 
-            /*ProjectId = parsed.Item1;
-            Path = parsed.Item2;
-            SecretKey = parsed.Item3;
-            PublicKey = parsed.Item4;
-            SentryUri = parsed.Item5;*/
         }
     }    
 
     public class SentrySdk
     {
         Dsn _dsn;
+        HttpClient client;
+        StreamWriter f;
 
         public SentrySdk(string dsn)
         {
             _dsn = new Dsn(dsn);
+            client = new HttpClient();
+            var sentryKey = _dsn.publicKey;
+            var sentrySecret = _dsn.secretKey;
+
+            var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
+            client.DefaultRequestHeaders.TryAddWithoutValidation("X-Sentry-Auth",
+                     $"Sentry sentry_version=5,sentry_client=Unity0.1," +
+                     $"sentry_timestamp={timestamp}," +
+                     $"sentry_key={sentryKey},sentry_secret={sentrySecret}");
+            f = new StreamWriter("/tmp/log", true);
+        }
+
+
+        public void HandleLogCallback(string condition, string stackTrace, LogType type)
+        {
+            f.WriteLine(condition + " " + stackTrace);
+            f.Flush();
+            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+                // only send errors, can be set somewhere what we send and what we don't
+                return;
+            var stack = new List<StackTraceSpec>();
+            var exc = condition.Split(new char[] { ':' }, 2);
+            var excType = exc[0];
+            var excValue = exc[1].Substring(1); // strip the space
+            var stackList = stackTrace.Split('\n');
+            // the format is as follows:
+            // Module.Class.Method[.Invoke] (arguments) (at filename:lineno)
+            // where :lineno is optional, will be ommitted in builds
+            for (var i = 0; i < stackList.Length; i++)
+            {
+                string functionName, filename;
+                int lineNo;
+
+                var item = stackList[i];
+                if (item == "")
+                    continue;
+                var firstSpace = item.IndexOf(' ');
+
+                if (firstSpace == -1)
+                {
+                    functionName = item;
+                    lineNo = -1;
+                    filename = "";
+                }
+                else
+                {
+                    functionName = item.Substring(0, firstSpace);
+                    // we can try to split functionName into module.function, but it's not 100% clear how
+                    var closingParen = item.IndexOf(')', firstSpace);
+                    if (closingParen == item.Length - 1)
+                    {
+                        // case of some continuations where there is no space between
+                        // the () and the method name
+                        closingParen = firstSpace - 1;
+                    }
+                    var colon = item.IndexOf(':', closingParen);
+                    if (colon == -1)
+                    {
+                        Debug.Log(item);
+                        filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
+                        lineNo = -1;
+                    }
+                    else
+                    {
+                        filename = item.Substring(closingParen + 6, colon - closingParen - 6);
+                        lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
+                    }
+                }
+                stack.Add(new StackTraceSpec(filename, functionName, lineNo));
+            }
+            sendException(excType, excValue, stack);
         }
 
         private long ConvertToTimestamp(DateTime value)
@@ -104,21 +169,91 @@ namespace Sentry
             }
         }
 
+        [Serializable]
+        public class StackTraceContainer
+        {
+            public List<StackTraceSpec> frames;
+
+            public StackTraceContainer(List<StackTraceSpec> frames)
+            {
+                this.frames = frames;
+            }
+        }
+
+        [Serializable]
+        public class StackTraceSpec
+        {
+            public string filename;
+            public string function;
+            public string module = "";
+            public int lineno;
+
+            public StackTraceSpec(string filename, string function, int lineNo)
+            {
+                this.filename = filename;
+                this.function = function;
+                lineno = lineNo;
+            }
+        }
+
+        [Serializable]
+        public class ExceptionSpec
+        {
+            public string type;
+            public string value;
+            public StackTraceContainer stacktrace;
+
+            public ExceptionSpec(string type, string value, List<StackTraceSpec> stacktrace)
+            {
+                this.type = type;
+                this.value = value;
+                this.stacktrace = new StackTraceContainer(stacktrace);
+            }
+        }
+
+        [Serializable]
+        public class ExceptionContainer
+        {
+            public List<ExceptionSpec> values;
+
+            public ExceptionContainer(List<ExceptionSpec> arg)
+            {
+                values = arg;
+            }
+        }
+
+        public class SentryExceptionMessage : SentryMessage
+        {
+            public ExceptionContainer exception;
+
+            public SentryExceptionMessage(string event_id,
+                                          string exceptionType,
+                                          string exceptionValue,
+                                          List<StackTraceSpec> stackTrace) : base(event_id, exceptionType)
+            {
+                this.exception = new ExceptionContainer(new List<ExceptionSpec> { new ExceptionSpec(exceptionType, exceptionValue, stackTrace) });
+            }
+        }
+
         public async void sendMessage(string msg)
         {
-            var client = new HttpClient();
-            var timestamp = ConvertToTimestamp(DateTime.Now);
-            var sentryKey = _dsn.publicKey;
-            var sentrySecret = _dsn.secretKey;
-            client.DefaultRequestHeaders.TryAddWithoutValidation("X-Sentry-Auth",
-                     $"Sentry sentry_version=5,sentry_client=Unity0.1," +
-                     $"sentry_timestamp={timestamp}," +
-                     $"sentry_key={sentryKey},sentry_secret={sentrySecret}");
-
-            var values = new Dictionary<string, string>();
             var guid = Guid.NewGuid().ToString("N");
             var content = new StringContent(JsonUtility.ToJson(new SentryMessage(
-                guid, "foobar2")));
+                guid, msg)));
+
+            var response = await client.PostAsync(_dsn.callUri, content);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Debug.Log(responseString);
+        }
+
+        public async void sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
+        {
+            var guid = Guid.NewGuid().ToString("N");
+            var s = JsonUtility.ToJson(
+                new SentryExceptionMessage(guid, exceptionType, exceptionValue, stackTrace));
+            Debug.Log(s);
+            var content = new StringContent(s);
 
             var response = await client.PostAsync(_dsn.callUri, content);
 

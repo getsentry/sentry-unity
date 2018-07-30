@@ -12,6 +12,7 @@ public class SentryTest : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         sentrySdk = new SentrySdk(DSNEntry);
+        Application.logMessageReceived += sentrySdk.HandleLogCallback;
     }
 
     private void OnApplicationQuit()
@@ -21,17 +22,17 @@ public class SentryTest : MonoBehaviour {
 
     new void SendMessage(String message)
     {
-        try
-        {
+        /*try
+        {*/
             // The following exception is captured and sent to Sentry
             throw new DivideByZeroException();
-        }
+        /*}
         catch (Exception e)
         {
-            sentrySdk.sendMessage("foo");   
+            sentrySdk.sendException(e);   
             //Debug.Log("one");
             //SentrySdk.CaptureException(e);
             //Debug.Log("two");
-        }
+        }*/
     }
 }
