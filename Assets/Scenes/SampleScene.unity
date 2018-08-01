@@ -213,7 +213,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d8f628cb8f8a44778e28f5dcba9cd48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DSNEntry: https://511234467d1f42589acf8487530ec571@sentry.io/1248866
 --- !u!4 &1247765171
 Transform:
   m_ObjectHideFlags: 0
