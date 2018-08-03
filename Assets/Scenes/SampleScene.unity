@@ -195,6 +195,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1247765171}
   - component: {fileID: 1247765170}
+  - component: {fileID: 1247765172}
   m_Layer: 0
   m_Name: SentryTest
   m_TagString: Untagged
@@ -226,6 +227,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1247765172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1247765169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38e15098e10b24c30b70bd307b82fe04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dsn: https://511234467d1f42589acf8487530ec571@sentry.io/1248866
 --- !u!1 &1297905527
 GameObject:
   m_ObjectHideFlags: 0

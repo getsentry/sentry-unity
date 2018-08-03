@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using Sentry;
+using UnityEngine.Networking;
 
 public class SentrySdk : MonoBehaviour
 {
+    const int MAX_ERRORS = 5;
+
     [Header("DSN of your sentry instance")]
     public string dsn;
+    [Header("Set true to get log messages")]
+    public bool isNoisy = true;
+    string lastErrorMessage = "";
     Dsn _dsn;
 
     public void Start()
@@ -25,11 +31,20 @@ public class SentrySdk : MonoBehaviour
         Application.logMessageReceived -= HandleLogCallback;
     }
 
-    public void HandleLogCallback(string condition, string stackTrace, LogType type)
+    public void OnGUI()
     {
-        if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
-            // only send errors, can be set somewhere what we send and what we don't
-            return;
+        if (lastErrorMessage != "")
+        {
+            GUILayout.TextArea(lastErrorMessage);
+            if (GUILayout.Button("Clear"))
+            {
+                lastErrorMessage = "";
+            }
+        }
+    }
+
+    public void scheduleException(string condition, string stackTrace)
+    {
         var stack = new List<StackTraceSpec>();
         var exc = condition.Split(new char[] { ':' }, 2);
         var excType = exc[0];
@@ -83,14 +98,25 @@ public class SentrySdk : MonoBehaviour
         StartCoroutine(sendException(excType, excValue, stack));
     }
 
+    public void HandleLogCallback(string condition, string stackTrace, LogType type)
+    {
+        lastErrorMessage = condition;
+        if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+            // only send errors, can be set somewhere what we send and what we don't
+            return;
+        scheduleException(condition, stackTrace);
+    }
+
     private long ConvertToTimestamp(DateTime value)
     {
         long epoch = (value.Ticks - 621355968000000000) / 10000000;
         return epoch;
     }
 
-    IEnumerator<WWW> sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
+    IEnumerator<UnityWebRequestAsyncOperation> sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
+        if (isNoisy)
+            Debug.Log("sending exception to sentry...");
         var guid = Guid.NewGuid().ToString("N");
         var s = JsonUtility.ToJson(
             new SentryExceptionMessage(guid, exceptionType, exceptionValue, stackTrace));
@@ -98,15 +124,22 @@ public class SentrySdk : MonoBehaviour
         var sentrySecret = _dsn.secretKey;
 
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
-        var headers = new Dictionary<string, string>();
-        headers["X-Sentry-Auth"] = ($"Sentry sentry_version=5,sentry_client=Unity0.1," +
+        var authString = ($"Sentry sentry_version=5,sentry_client=Unity0.1," +
                  $"sentry_timestamp={timestamp}," +
                  $"sentry_key={sentryKey},sentry_secret={sentrySecret}");
 
-        using (WWW www = new WWW(_dsn.callUri.ToString(), Encoding.UTF8.GetBytes(s), headers))
-        {
-            yield return www;
-            Debug.Log(Encoding.UTF8.GetString(www.bytes));
+        UnityWebRequest www = new UnityWebRequest(_dsn.callUri.ToString());
+        www.method = "POST";
+        www.SetRequestHeader("X-Sentry-Auth", authString);
+        www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(s));
+        www.downloadHandler = new DownloadHandlerBuffer();
+        yield return www.SendWebRequest();
+        while (!www.isDone)
+            yield return null;
+        if (www.isNetworkError || www.isHttpError || www.responseCode != 200)
+            Debug.LogWarning("error sending request to sentry: " + www.error);
+        else if (isNoisy) {
+            Debug.Log("Sentry sent back: " + www.downloadHandler.text);
         }
     }
 }
