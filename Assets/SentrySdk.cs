@@ -7,7 +7,9 @@ using UnityEngine.Networking;
 
 public class SentrySdk : MonoBehaviour
 {
-    const int MAX_ERRORS = 5;
+    object errors = new object();
+    float timeLastError = 0;
+    const float MIN_TIME = 0.5f;
 
     [Header("DSN of your sentry instance")]
     public string dsn;
@@ -23,12 +25,12 @@ public class SentrySdk : MonoBehaviour
 
     public void OnEnable()
     {
-        Application.logMessageReceived += HandleLogCallback;
+        Application.logMessageReceivedThreaded += HandleLogCallback;
     }
 
     public void OnDisable()
     {
-        Application.logMessageReceived -= HandleLogCallback;
+        Application.logMessageReceivedThreaded -= HandleLogCallback;
     }
 
     public void OnGUI()
@@ -104,7 +106,15 @@ public class SentrySdk : MonoBehaviour
         if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
             // only send errors, can be set somewhere what we send and what we don't
             return;
-        scheduleException(condition, stackTrace);
+        
+        lock (errors)
+        {
+            if (Time.time - timeLastError <= MIN_TIME) {
+                return; // silently drop the event on the floor
+            }
+            timeLastError = Time.time;
+            scheduleException(condition, stackTrace);
+        }
     }
 
     private long ConvertToTimestamp(DateTime value)
