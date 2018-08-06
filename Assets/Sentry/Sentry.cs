@@ -45,12 +45,14 @@ namespace Sentry
         public string platform = "csharp";
         public _Context contexts = new _Context();
         public _SentrySdk sdk = new _SentrySdk();
+        public List<Breadcrumb> breadcrumbs = null;
 
-        public SentryMessage(string event_id, string message)
+        public SentryMessage(string event_id, string message, List<Breadcrumb> breadcrumbs)
         {
             this.event_id = event_id;
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
+            this.breadcrumbs = breadcrumbs;
         }
     }
 
@@ -114,7 +116,8 @@ namespace Sentry
         public SentryExceptionMessage(string event_id,
                                       string exceptionType,
                                       string exceptionValue,
-                                      List<StackTraceSpec> stackTrace) : base(event_id, exceptionType)
+                                      List<Breadcrumb> breadcrumbs,
+                                      List<StackTraceSpec> stackTrace) : base(event_id, exceptionType, breadcrumbs)
         {
             this.exception = new ExceptionContainer(new List<ExceptionSpec> { new ExceptionSpec(exceptionType, exceptionValue, stackTrace) });
         }

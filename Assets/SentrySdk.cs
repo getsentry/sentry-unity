@@ -10,6 +10,10 @@ public class SentrySdk : MonoBehaviour
     object errors = new object();
     float timeLastError = 0;
     const float MIN_TIME = 0.5f;
+    public const int MAX_BREADCRUMBS = 100;
+    Breadcrumb[] breadcrumbs;
+    int lastBreadcrumbPos = 0;
+    int noBreadcrumbs = 0;
 
     [Header("DSN of your sentry instance")]
     public string dsn;
@@ -18,9 +22,31 @@ public class SentrySdk : MonoBehaviour
     string lastErrorMessage = "";
     Dsn _dsn;
 
+    static SentrySdk sentrySdkSingleton = null;
+
     public void Start()
     {
         _dsn = new Dsn(dsn);
+        if (sentrySdkSingleton != null) {
+            throw new Exception("Cannot have more than one instance of SentrySdk");
+        }
+        breadcrumbs = new Breadcrumb[MAX_BREADCRUMBS];
+        sentrySdkSingleton = this;
+    }
+
+    public static void addBreadcrumb(string message)
+    {
+        sentrySdkSingleton._addBreadcrumb(message);
+    }
+
+    void _addBreadcrumb(string message)
+    {
+        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
+        breadcrumbs[lastBreadcrumbPos] = new Breadcrumb(timestamp, message);
+        lastBreadcrumbPos += 1;
+        lastBreadcrumbPos %= MAX_BREADCRUMBS;
+        if (noBreadcrumbs < MAX_BREADCRUMBS)
+            noBreadcrumbs += 1;
     }
 
     public void OnEnable()
@@ -117,19 +143,16 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
-    private long ConvertToTimestamp(DateTime value)
-    {
-        long epoch = (value.Ticks - 621355968000000000) / 10000000;
-        return epoch;
-    }
-
     IEnumerator<UnityWebRequestAsyncOperation> sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
         if (isNoisy)
             Debug.Log("sending exception to sentry...");
         var guid = Guid.NewGuid().ToString("N");
+        var bcrumbs = Breadcrumb.CombineBreadcrumbs(breadcrumbs,
+                                                    lastBreadcrumbPos,
+                                                    noBreadcrumbs);
         var s = JsonUtility.ToJson(
-            new SentryExceptionMessage(guid, exceptionType, exceptionValue, stackTrace));
+            new SentryExceptionMessage(guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
 

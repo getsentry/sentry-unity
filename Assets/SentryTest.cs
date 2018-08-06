@@ -6,6 +6,14 @@ using System;
 
 public class SentryTest : MonoBehaviour
 {
+    public int counter = 0;
+
+    private void Update()
+    {
+        if (counter % 100 == 0) // every 100 frames
+            SentrySdk.addBreadcrumb("message!");
+    }
+
     new void SendMessage(String message)
     {
         if (message == "exception")
