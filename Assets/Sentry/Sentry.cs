@@ -1,14 +1,41 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Sentry
 {
+    [Serializable]
     public class _SentrySdk
     {
         public string name = "sentry-unity";
         public string version = "0.0.1";
     }
 
+    [Serializable]
+    public class _ContextPair
+    {
+        public string type;
+        public string name;
+
+        public _ContextPair(string type, string name)
+        {
+            this.type = type;
+            this.name = name;
+        }
+    }
+
+    [Serializable]
+    public class _Context
+    {
+        public _ContextPair os;
+
+        public _Context()
+        {
+            os = new _ContextPair("os", SystemInfo.operatingSystem);
+        }
+    }
+
+    [Serializable]
     public class SentryMessage
     {
         public string event_id;
@@ -16,7 +43,8 @@ namespace Sentry
         public string timestamp;
         public string logger = "error";
         public string platform = "csharp";
-        public _SentrySdk sdkSpec = new _SentrySdk();
+        public _Context contexts = new _Context();
+        public _SentrySdk sdk = new _SentrySdk();
 
         public SentryMessage(string event_id, string message)
         {
