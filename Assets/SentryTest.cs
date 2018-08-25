@@ -21,6 +21,8 @@ public class SentryTest : MonoBehaviour
             throw new DivideByZeroException();
         } else if (message == "assert") {
             Assert.AreEqual(message, "not equal");   
+        } else if (message == "message") {
+            SentrySdk.CaptureMessage("this is a message");
         }
     }
 }

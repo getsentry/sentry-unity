@@ -46,6 +46,18 @@ public class SentrySdk : MonoBehaviour
         sentrySdkSingleton._addBreadcrumb(message);
     }
 
+    public static void CaptureMessage(string message)
+    {
+        sentrySdkSingleton._captureMessage(message);
+    }
+
+    void _captureMessage(string message)
+    {
+        if (!initialized)
+            throw new Exception("sentry not initialized");    
+        StartCoroutine(sentrySendMessage(message));
+    }
+
     void _addBreadcrumb(string message)
     {
         if (!initialized)
@@ -161,6 +173,20 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
+    IEnumerator<UnityWebRequestAsyncOperation> sentrySendMessage(string message)
+    {
+        if (isNoisy)
+            Debug.Log("sending message to sentry...");
+        var guid = Guid.NewGuid().ToString("N");
+        var bcrumbs = Breadcrumb.CombineBreadcrumbs(breadcrumbs,
+                                                    lastBreadcrumbPos,
+                                                    noBreadcrumbs);
+        var s = JsonUtility.ToJson(
+            new SentryMessage(version, guid, message, bcrumbs));
+
+        return _continueSendingMessage(s);
+    }
+
     IEnumerator<UnityWebRequestAsyncOperation> sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
         if (isNoisy)
@@ -171,6 +197,11 @@ public class SentrySdk : MonoBehaviour
                                                     noBreadcrumbs);
         var s = JsonUtility.ToJson(
             new SentryExceptionMessage(version, guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
+        return _continueSendingMessage(s);
+    }
+
+    IEnumerator<UnityWebRequestAsyncOperation> _continueSendingMessage(string s)
+    {
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
 
