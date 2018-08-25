@@ -28,10 +28,18 @@ namespace Sentry
     public class _Context
     {
         public _ContextPair os;
+        public _ContextPair app_build;
+        public _ContextPair app_version;
 
-        public _Context()
+        public _Context(string app_version)
         {
             os = new _ContextPair("os", SystemInfo.operatingSystem);
+#if UNITY_EDITOR
+            app_build = new _ContextPair("app_build", "editor");
+#else
+            app_build = new _ContextPair("app_build", "build");
+#endif
+            this.app_version = new _ContextPair("app_version", app_version);
         }
     }
 
@@ -43,16 +51,17 @@ namespace Sentry
         public string timestamp;
         public string logger = "error";
         public string platform = "csharp";
-        public _Context contexts = new _Context();
+        public _Context contexts;
         public _SentrySdk sdk = new _SentrySdk();
         public List<Breadcrumb> breadcrumbs = null;
 
-        public SentryMessage(string event_id, string message, List<Breadcrumb> breadcrumbs)
+        public SentryMessage(string app_version, string event_id, string message, List<Breadcrumb> breadcrumbs)
         {
             this.event_id = event_id;
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
             this.breadcrumbs = breadcrumbs;
+            this.contexts = new _Context(app_version);
         }
     }
 
@@ -113,11 +122,12 @@ namespace Sentry
     {
         public ExceptionContainer exception;
 
-        public SentryExceptionMessage(string event_id,
+        public SentryExceptionMessage(string app_version,
+                                      string event_id,
                                       string exceptionType,
                                       string exceptionValue,
                                       List<Breadcrumb> breadcrumbs,
-                                      List<StackTraceSpec> stackTrace) : base(event_id, exceptionType, breadcrumbs)
+                                      List<StackTraceSpec> stackTrace) : base(app_version, event_id, exceptionType, breadcrumbs)
         {
             this.exception = new ExceptionContainer(new List<ExceptionSpec> { new ExceptionSpec(exceptionType, exceptionValue, stackTrace) });
         }

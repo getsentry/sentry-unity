@@ -19,19 +19,26 @@ public class SentrySdk : MonoBehaviour
     public string dsn;
     [Header("Set true to get log messages")]
     public bool isNoisy = true;
+    [Header("Game version")]
+    public string version = "";
+
     string lastErrorMessage = "";
     Dsn _dsn;
+    bool initialized = false;
 
     static SentrySdk sentrySdkSingleton = null;
 
     public void Start()
     {
         _dsn = new Dsn(dsn);
-        if (sentrySdkSingleton != null) {
+        if (sentrySdkSingleton != null)
+        {
             throw new Exception("Cannot have more than one instance of SentrySdk");
         }
         breadcrumbs = new Breadcrumb[MAX_BREADCRUMBS];
         sentrySdkSingleton = this;
+        initialized = true; // don't initialize if dsn is empty or something exploded
+                            // when parsing dsn
     }
 
     public static void addBreadcrumb(string message)
@@ -41,6 +48,8 @@ public class SentrySdk : MonoBehaviour
 
     void _addBreadcrumb(string message)
     {
+        if (!initialized)
+            throw new Exception("sentry not initialized");
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
         breadcrumbs[lastBreadcrumbPos] = new Breadcrumb(timestamp, message);
         lastBreadcrumbPos += 1;
@@ -99,26 +108,33 @@ public class SentrySdk : MonoBehaviour
             }
             else
             {
-                functionName = item.Substring(0, firstSpace);
-                // we can try to split functionName into module.function, but it's not 100% clear how
-                var closingParen = item.IndexOf(')', firstSpace);
-                if (closingParen == item.Length - 1)
+                try
                 {
-                    // case of some continuations where there is no space between
-                    // the () and the method name
-                    closingParen = firstSpace - 1;
-                }
-                var colon = item.IndexOf(':', closingParen);
-                if (colon == -1)
-                {
-                    Debug.Log(item);
-                    filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
+                    functionName = item.Substring(0, firstSpace);
+                    // we can try to split functionName into module.function, but it's not 100% clear how
+                    var closingParen = item.IndexOf(')', firstSpace);
+                    if (closingParen == item.Length - 1)
+                    {
+                        // case of some continuations where there is no space between
+                        // the () and the method name
+                        closingParen = firstSpace - 1;
+                    }
+                    var colon = item.LastIndexOf(':', item.Length - 1, item.Length - closingParen);
+                    if (colon == -1)
+                    {
+                        filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
+                        lineNo = -1;
+                    }
+                    else
+                    {
+                        filename = item.Substring(closingParen + 6, colon - closingParen - 6);
+                        lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
+                    }
+
+                } catch (Exception) {
+                    functionName = item;
                     lineNo = -1;
-                }
-                else
-                {
-                    filename = item.Substring(closingParen + 6, colon - closingParen - 6);
-                    lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
+                    filename = ""; // we have no clue
                 }
             }
             stack.Add(new StackTraceSpec(filename, functionName, lineNo));
@@ -128,6 +144,8 @@ public class SentrySdk : MonoBehaviour
 
     public void HandleLogCallback(string condition, string stackTrace, LogType type)
     {
+        if (!initialized)
+            return; // dsn not initialized or something exploded, don't try to send it
         lastErrorMessage = condition;
         if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
             // only send errors, can be set somewhere what we send and what we don't
@@ -152,7 +170,7 @@ public class SentrySdk : MonoBehaviour
                                                     lastBreadcrumbPos,
                                                     noBreadcrumbs);
         var s = JsonUtility.ToJson(
-            new SentryExceptionMessage(guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
+            new SentryExceptionMessage(version, guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
 
