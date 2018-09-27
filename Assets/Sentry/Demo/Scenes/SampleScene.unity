@@ -262,7 +262,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1247765170}
+      - m_Target: {fileID: 1247765173}
         m_MethodName: SendMessage
         m_Mode: 5
         m_Arguments:
@@ -316,8 +316,8 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1247765171}
-  - component: {fileID: 1247765170}
   - component: {fileID: 1247765172}
+  - component: {fileID: 1247765173}
   m_Layer: 0
   m_Name: SentryTest
   m_TagString: Untagged
@@ -325,18 +325,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1247765170
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1247765169}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d8f628cb8f8a44778e28f5dcba9cd48, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  counter: 0
 --- !u!4 &1247765171
 Transform:
   m_ObjectHideFlags: 0
@@ -358,12 +346,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 1247765169}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 38e15098e10b24c30b70bd307b82fe04, type: 3}
+  m_Script: {fileID: 11500000, guid: 61caf3021ce684bfcba96800130f9046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   dsn: https://511234467d1f42589acf8487530ec571@sentry.io/1248866
   isNoisy: 1
-  version: 1.13
+  version: 
+--- !u!114 &1247765173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1247765169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d5541f3647f1493e83e1d2408e7693e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  counter: 100
 --- !u!1 &1297905527
 GameObject:
   m_ObjectHideFlags: 0
@@ -652,7 +652,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1247765170}
+      - m_Target: {fileID: 1247765173}
         m_MethodName: SendMessage
         m_Mode: 5
         m_Arguments:
@@ -774,7 +774,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1247765170}
+      - m_Target: {fileID: 1247765173}
         m_MethodName: SendMessage
         m_Mode: 5
         m_Arguments:
