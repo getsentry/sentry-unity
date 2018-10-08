@@ -19,7 +19,7 @@ public class SentrySdk : MonoBehaviour
     public string dsn;
     [Header("Set true to get log messages")]
     public bool isNoisy = true;
-    [Header("Game version")]
+    [Header("Override game version")]
     public string version = "";
 
     string lastErrorMessage = "";
@@ -110,9 +110,9 @@ public class SentrySdk : MonoBehaviour
             var item = stackList[i];
             if (item == "")
                 continue;
-            var firstSpace = item.IndexOf(' ');
+            var closingParen = item.IndexOf(')');
 
-            if (firstSpace == -1)
+            if (closingParen == -1)
             {
                 functionName = item;
                 lineNo = -1;
@@ -122,27 +122,34 @@ public class SentrySdk : MonoBehaviour
             {
                 try
                 {
-                    functionName = item.Substring(0, firstSpace);
-                    // we can try to split functionName into module.function, but it's not 100% clear how
-                    var closingParen = item.IndexOf(')', firstSpace);
-                    if (closingParen == item.Length - 1)
+                    functionName = item.Substring(0, closingParen + 1);
+                    if (item.Substring(closingParen + 1, 5) != " (at ")
                     {
-                        // case of some continuations where there is no space between
-                        // the () and the method name
-                        closingParen = firstSpace - 1;
-                    }
-                    var colon = item.LastIndexOf(':', item.Length - 1, item.Length - closingParen);
-                    if (colon == -1)
-                    {
-                        filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
+                        // we did something wrong, failed the check
+                        Debug.Log("failed parsing " + item);
+                        functionName = item;
                         lineNo = -1;
+                        filename = "";
                     }
                     else
                     {
-                        filename = item.Substring(closingParen + 6, colon - closingParen - 6);
-                        lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
+                        var colon = item.LastIndexOf(':', item.Length - 1, item.Length - closingParen);
+                        if (closingParen == item.Length - 1)
+                        {
+                            filename = "";
+                            lineNo = -1;
+                        }
+                        else if (colon == -1)
+                        {
+                            filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
+                            lineNo = -1;
+                        }
+                        else
+                        {
+                            filename = item.Substring(closingParen + 6, colon - closingParen - 6);
+                            lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
+                        }
                     }
-
                 } catch (Exception) {
                     functionName = item;
                     lineNo = -1;
@@ -181,6 +188,10 @@ public class SentrySdk : MonoBehaviour
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(breadcrumbs,
                                                     lastBreadcrumbPos,
                                                     noBreadcrumbs);
+        var gameVersion = version;
+        if (gameVersion == "") {
+            gameVersion = Application.version;
+        }
         var s = JsonUtility.ToJson(
             new SentryMessage(version, guid, message, bcrumbs));
 
