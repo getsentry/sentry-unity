@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Text;
 using UnityEngine;
 using Sentry;
@@ -180,7 +181,7 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
-    IEnumerator<UnityWebRequestAsyncOperation> sentrySendMessage(string message)
+    IEnumerator sentrySendMessage(string message)
     {
         if (isNoisy)
             Debug.Log("sending message to sentry...");
@@ -198,7 +199,7 @@ public class SentrySdk : MonoBehaviour
         return _continueSendingMessage(s);
     }
 
-    IEnumerator<UnityWebRequestAsyncOperation> sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
+    IEnumerator sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
         if (isNoisy)
             Debug.Log("sending exception to sentry...");
@@ -211,25 +212,30 @@ public class SentrySdk : MonoBehaviour
         return _continueSendingMessage(s);
     }
 
-    IEnumerator<UnityWebRequestAsyncOperation> _continueSendingMessage(string s)
+    IEnumerator _continueSendingMessage(string s)
     {
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
 
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
-        var authString = ($"Sentry sentry_version=5,sentry_client=Unity0.1," +
-                 $"sentry_timestamp={timestamp}," +
-                 $"sentry_key={sentryKey},sentry_secret={sentrySecret}");
+        var authString = string.Format("Sentry sentry_version=5,sentry_client=Unity0.1," +
+                 "sentry_timestamp={0}," +
+                 "sentry_key={1}," +
+                 "sentry_secret={2}",
+                 timestamp,
+                 sentryKey,
+                 sentrySecret);
 
         UnityWebRequest www = new UnityWebRequest(_dsn.callUri.ToString());
         www.method = "POST";
         www.SetRequestHeader("X-Sentry-Auth", authString);
         www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(s));
         www.downloadHandler = new DownloadHandlerBuffer();
-        yield return www.SendWebRequest();
+        yield return www.Send();
+
         while (!www.isDone)
             yield return null;
-        if (www.isNetworkError || www.isHttpError || www.responseCode != 200)
+        if (www.isError || www.responseCode != 200)
             Debug.LogWarning("error sending request to sentry: " + www.error);
         else if (isNoisy) {
             Debug.Log("Sentry sent back: " + www.downloadHandler.text);
