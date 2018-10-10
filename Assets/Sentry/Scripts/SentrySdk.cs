@@ -235,7 +235,7 @@ public class SentrySdk : MonoBehaviour
 
         while (!www.isDone)
             yield return null;
-        if (www.isError || www.responseCode != 200)
+        if (www.isNetworkError || www.responseCode != 200)
             Debug.LogWarning("error sending request to sentry: " + www.error);
         else if (isNoisy) {
             Debug.Log("Sentry sent back: " + www.downloadHandler.text);
