@@ -30,12 +30,30 @@ namespace Sentry
     public class _Context
     {
         public _ContextPair os;
+        public _ContextPair os_family;
+        public _ContextPair device_model;
+        public _ContextPair device_name;
+        public _ContextPair device_type;
+        public _ContextPair gpu_name;
+        public _ContextPair gpu_id;
+        public _ContextPair gpu_type;
+        public _ContextPair gpu_vendor;
+        public _ContextPair gpu_vendor_id;
         public _ContextPair app_build;
         public _ContextPair app_version;
 
         public _Context(string app_version)
         {
             os = new _ContextPair("os", SystemInfo.operatingSystem);
+            os_family = new _ContextPair("os_family", SystemInfo.operatingSystemFamily.ToString());
+            device_model = new _ContextPair("device_model", SystemInfo.deviceModel);
+            device_name = new _ContextPair("device_name", SystemInfo.deviceName);
+            device_type = new _ContextPair("device_type", SystemInfo.deviceType.ToString());
+            gpu_name = new _ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
+            gpu_id = new _ContextPair("gpu_id", SystemInfo.graphicsDeviceID.ToString());
+            gpu_type = new _ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
+            gpu_vendor = new _ContextPair("gpu_id", SystemInfo.graphicsDeviceVendor);
+            gpu_vendor_id = new _ContextPair("gpu_name", SystemInfo.graphicsDeviceVendorID.ToString());
 #if UNITY_EDITOR
             app_build = new _ContextPair("app_build", "editor");
 #else
