@@ -1,19 +1,9 @@
-## Using sentry in unity
-
-### Installing
-
-Download [sentry client](https://some-link-here) from unity asset store.
-
-Alternatively, download [unitypackage](https://link-to-unitypackage) directly
-and install it in Unity by going to
-`Assets -> Import Package... -> Custom Package`.
+## Using Sentry in Unity
 
 ### Usage
 
 In order to make Sentry work, you need to add `SentrySdk` component to any
 `GameObject` that is in the first loaded scene of the game.
-
-XXX insert video link
 
 You can also add it programatically. There can only be one `SentrySdk`
 in your whole project. To add it programatically do:
@@ -23,8 +13,8 @@ var sentry = myGameObject.AddComponent(typeof(SentrySdk)) as SentrySdk;
 sentry.dsn = "mydsnstring";
 ```
 
-[DSN](https://link-to-sentry-DSN) is the only obligatory parameter on SentrySdk
-object.
+The SDK needs to know which project within Sentry your errors should go to. That's defined via the DSN.
+DSN is the only obligatory parameter on `SentrySdk` object.
 
 This is enough to capture automatic traceback events from the game. They will
 be sent to your DSN and you can find them at [sentry.io](sentry.io)
