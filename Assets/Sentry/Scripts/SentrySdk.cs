@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using Sentry;
 using UnityEngine.Networking;
+using UnityDebug = UnityEngine.Debug;
 
 public class SentrySdk : MonoBehaviour
 {
@@ -18,8 +19,8 @@ public class SentrySdk : MonoBehaviour
 
     [Header("DSN of your sentry instance")]
     public string dsn;
-    [Header("Set true to get log messages")]
-    public bool isNoisy = true;
+    [Header("Enable SDK debug messages")]
+    public bool debug = true;
     [Header("Override game version")]
     public string version = "";
 
@@ -136,7 +137,7 @@ public class SentrySdk : MonoBehaviour
                     if (item.Substring(closingParen + 1, 5) != " (at ")
                     {
                         // we did something wrong, failed the check
-                        Debug.Log("failed parsing " + item);
+                        UnityDebug.Log("failed parsing " + item);
                         functionName = item;
                         lineNo = -1;
                         filename = "";
@@ -199,9 +200,9 @@ public class SentrySdk : MonoBehaviour
 
     private IEnumerator DoSentrySendMessage(string message)
     {
-        if (isNoisy)
+        if (debug)
         {
-            Debug.Log("sending message to sentry...");
+            UnityDebug.Log("sending message to sentry...");
         }
         var guid = Guid.NewGuid().ToString("N");
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
@@ -220,9 +221,9 @@ public class SentrySdk : MonoBehaviour
 
     private IEnumerator DoSendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
-        if (isNoisy)
+        if (debug)
         {
-            Debug.Log("sending exception to sentry...");
+            UnityDebug.Log("sending exception to sentry...");
         }
         var guid = Guid.NewGuid().ToString("N");
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
@@ -266,11 +267,11 @@ public class SentrySdk : MonoBehaviour
 #endif
              || www.responseCode != 200)
         {
-            Debug.LogWarning("error sending request to sentry: " + www.error);
+            UnityDebug.LogWarning("error sending request to sentry: " + www.error);
         }
-        else if (isNoisy)
+        else if (debug)
         {
-            Debug.Log("Sentry sent back: " + www.downloadHandler.text);
+            UnityDebug.Log("Sentry sent back: " + www.downloadHandler.text);
         }
     }
 }
