@@ -5,6 +5,7 @@
 [Bb]uilds/
 *~
 Assets/AssetStoreTools*
+.DS_Store
 
 # Visual Studio/Rider cache directory
 .vs/
