@@ -8,9 +8,10 @@ public class SentryTest : MonoBehaviour
 
     private void Update()
     {
+        counter++;
         if (counter % 100 == 0) // every 100 frames
         {
-            SentrySdk.addBreadcrumb("message!");
+            SentrySdk.addBreadcrumb("Frame number: " + counter);
         }
     }
 
