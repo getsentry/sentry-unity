@@ -14,7 +14,7 @@ public class SentryTest : MonoBehaviour
             SentrySdk.addBreadcrumb("message!");
     }
 
-    new void SendMessage(String message)
+    private new void SendMessage(String message)
     {
         if (message == "exception")
         {

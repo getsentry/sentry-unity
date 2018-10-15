@@ -8,13 +8,13 @@ using UnityEngine.Networking;
 
 public class SentrySdk : MonoBehaviour
 {
-    object errors = new object();
-    float timeLastError = 0;
-    const float MIN_TIME = 0.5f;
+    private readonly object errors = new object();
+    private float timeLastError = 0;
+    private const float MIN_TIME = 0.5f;
     public const int MAX_BREADCRUMBS = 100;
-    Breadcrumb[] breadcrumbs;
-    int lastBreadcrumbPos = 0;
-    int noBreadcrumbs = 0;
+    private Breadcrumb[] breadcrumbs;
+    private int lastBreadcrumbPos = 0;
+    private int noBreadcrumbs = 0;
 
     [Header("DSN of your sentry instance")]
     public string dsn;
@@ -23,11 +23,11 @@ public class SentrySdk : MonoBehaviour
     [Header("Override game version")]
     public string version = "";
 
-    string lastErrorMessage = "";
-    Dsn _dsn;
-    bool initialized = false;
+    private string lastErrorMessage = "";
+    private Dsn _dsn;
+    private bool initialized = false;
 
-    static SentrySdk sentrySdkSingleton = null;
+    private static SentrySdk sentrySdkSingleton = null;
 
     public void Start()
     {
@@ -52,14 +52,14 @@ public class SentrySdk : MonoBehaviour
         sentrySdkSingleton._captureMessage(message);
     }
 
-    void _captureMessage(string message)
+    private void _captureMessage(string message)
     {
         if (!initialized)
             throw new Exception("sentry not initialized");    
         StartCoroutine(sentrySendMessage(message));
     }
 
-    void _addBreadcrumb(string message)
+    private void _addBreadcrumb(string message)
     {
         if (!initialized)
             throw new Exception("sentry not initialized");
@@ -181,7 +181,7 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
-    IEnumerator sentrySendMessage(string message)
+    private IEnumerator sentrySendMessage(string message)
     {
         if (isNoisy)
             Debug.Log("sending message to sentry...");
@@ -199,7 +199,7 @@ public class SentrySdk : MonoBehaviour
         return _continueSendingMessage(s);
     }
 
-    IEnumerator sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
+    private IEnumerator sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
         if (isNoisy)
             Debug.Log("sending exception to sentry...");
@@ -212,7 +212,7 @@ public class SentrySdk : MonoBehaviour
         return _continueSendingMessage(s);
     }
 
-    IEnumerator _continueSendingMessage(string s)
+    private IEnumerator _continueSendingMessage(string s)
     {
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
