@@ -246,7 +246,7 @@ public class SentrySdk : MonoBehaviour
                  sentryKey,
                  sentrySecret);
 
-        UnityWebRequest www = new UnityWebRequest(_dsn.callUri.ToString());
+        var www = new UnityWebRequest(_dsn.callUri.ToString());
         www.method = "POST";
         www.SetRequestHeader("X-Sentry-Auth", authString);
         www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(s));
