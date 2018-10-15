@@ -47,3 +47,7 @@ run headless. There are two important APIs that are worth considering.
 
   would send a message to Sentry.
 
+### Unity version
+
+The lowest required version is Unity 5.6.
+Previous versions might work but were not tested and will not be supported.
