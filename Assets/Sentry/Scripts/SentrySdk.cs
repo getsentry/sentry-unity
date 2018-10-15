@@ -18,11 +18,11 @@ public class SentrySdk : MonoBehaviour
     private int _noBreadcrumbs = 0;
 
     [Header("DSN of your sentry instance")]
-    public string dsn;
+    public string Dsn;
     [Header("Enable SDK debug messages")]
-    public bool debug = true;
+    public bool Debug = true;
     [Header("Override game version")]
-    public string version = "";
+    public string Version = "";
 
     private string _lastErrorMessage = "";
     private Dsn _dsn;
@@ -32,7 +32,13 @@ public class SentrySdk : MonoBehaviour
 
     public void Start()
     {
-        _dsn = new Dsn(dsn);
+        if (Dsn == string.Empty)
+        {
+            // Empty string = disabled SDK
+            return;
+        }
+
+        _dsn = new Dsn(Dsn);
         if (SentrySdkSingleton != null)
         {
             throw new Exception("Cannot have more than one instance of SentrySdk");
@@ -45,20 +51,26 @@ public class SentrySdk : MonoBehaviour
 
     public static void AddBreadcrumb(string message)
     {
+        if (SentrySdkSingleton == null)
+        {
+            return;
+        }
+
         SentrySdkSingleton.DoAddBreadcrumb(message);
     }
 
     public static void CaptureMessage(string message)
     {
+        if (SentrySdkSingleton == null)
+        {
+            return;
+        }
+
         SentrySdkSingleton.DoCaptureMessage(message);
     }
 
     private void DoCaptureMessage(string message)
     {
-        if (!_initialized)
-        {
-            throw new Exception("sentry not initialized");
-        }
         StartCoroutine(DoSentrySendMessage(message));
     }
 
@@ -200,7 +212,7 @@ public class SentrySdk : MonoBehaviour
 
     private IEnumerator DoSentrySendMessage(string message)
     {
-        if (debug)
+        if (Debug)
         {
             UnityDebug.Log("sending message to sentry...");
         }
@@ -208,20 +220,20 @@ public class SentrySdk : MonoBehaviour
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
-        var gameVersion = version;
+        var gameVersion = Version;
         if (gameVersion == "") 
         {
             gameVersion = Application.version;
         }
         var s = JsonUtility.ToJson(
-            new SentryMessage(version, guid, message, bcrumbs));
+            new SentryMessage(Version, guid, message, bcrumbs));
 
         return ContinueSendingMessage(s);
     }
 
     private IEnumerator DoSendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
-        if (debug)
+        if (Debug)
         {
             UnityDebug.Log("sending exception to sentry...");
         }
@@ -230,7 +242,7 @@ public class SentrySdk : MonoBehaviour
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
         var s = JsonUtility.ToJson(
-            new SentryExceptionMessage(version, guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
+            new SentryExceptionMessage(Version, guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
         return ContinueSendingMessage(s);
     }
 
@@ -269,7 +281,7 @@ public class SentrySdk : MonoBehaviour
         {
             UnityDebug.LogWarning("error sending request to sentry: " + www.error);
         }
-        else if (debug)
+        else if (Debug)
         {
             UnityDebug.Log("Sentry sent back: " + www.downloadHandler.text);
         }
