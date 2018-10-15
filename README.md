@@ -10,7 +10,7 @@ in your whole project. To add it programatically do:
 
 ```C#
 var sentry = myGameObject.AddComponent(typeof(SentrySdk)) as SentrySdk;
-sentry.dsn = "mydsnstring";
+sentry.dsn = "__YOUR_DSN__";
 ```
 
 The SDK needs to know which project within Sentry your errors should go to. That's defined via the DSN.
@@ -34,7 +34,7 @@ run headless. There are two important APIs that are worth considering.
 * collecting breadcrumbs
 
   ```C#
-  SentrySdk.addBreadcrump(string)
+  SentrySdk.AddBreadcrump(string)
   ```
 
   will collect a breadcrumb.

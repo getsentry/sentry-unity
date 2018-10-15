@@ -42,26 +42,26 @@ public class SentrySdk : MonoBehaviour
                             // when parsing dsn
     }
 
-    public static void addBreadcrumb(string message)
+    public static void AddBreadcrumb(string message)
     {
-        SentrySdkSingleton._addBreadcrumb(message);
+        SentrySdkSingleton.DoAddBreadcrumb(message);
     }
 
     public static void CaptureMessage(string message)
     {
-        SentrySdkSingleton._captureMessage(message);
+        SentrySdkSingleton.DoCaptureMessage(message);
     }
 
-    private void _captureMessage(string message)
+    private void DoCaptureMessage(string message)
     {
         if (!_initialized)
         {
             throw new Exception("sentry not initialized");
         }
-        StartCoroutine(sentrySendMessage(message));
+        StartCoroutine(DoSentrySendMessage(message));
     }
 
-    private void _addBreadcrumb(string message)
+    private void DoAddBreadcrumb(string message)
     {
         if (!_initialized)
         {
@@ -99,7 +99,7 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
-    public void scheduleException(string condition, string stackTrace)
+    public void ScheduleException(string condition, string stackTrace)
     {
         var stack = new List<StackTraceSpec>();
         var exc = condition.Split(new char[] { ':' }, 2);
@@ -170,7 +170,7 @@ public class SentrySdk : MonoBehaviour
             }
             stack.Add(new StackTraceSpec(filename, functionName, lineNo));
         }
-        StartCoroutine(sendException(excType, excValue, stack));
+        StartCoroutine(DoSendException(excType, excValue, stack));
     }
 
     public void HandleLogCallback(string condition, string stackTrace, LogType type)
@@ -193,11 +193,11 @@ public class SentrySdk : MonoBehaviour
                 return; // silently drop the event on the floor
             }
             _timeLastError = Time.time;
-            scheduleException(condition, stackTrace);
+            ScheduleException(condition, stackTrace);
         }
     }
 
-    private IEnumerator sentrySendMessage(string message)
+    private IEnumerator DoSentrySendMessage(string message)
     {
         if (isNoisy)
         {
@@ -215,10 +215,10 @@ public class SentrySdk : MonoBehaviour
         var s = JsonUtility.ToJson(
             new SentryMessage(version, guid, message, bcrumbs));
 
-        return _continueSendingMessage(s);
+        return ContinueSendingMessage(s);
     }
 
-    private IEnumerator sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
+    private IEnumerator DoSendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
         if (isNoisy)
         {
@@ -230,10 +230,10 @@ public class SentrySdk : MonoBehaviour
                                                     _noBreadcrumbs);
         var s = JsonUtility.ToJson(
             new SentryExceptionMessage(version, guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
-        return _continueSendingMessage(s);
+        return ContinueSendingMessage(s);
     }
 
-    private IEnumerator _continueSendingMessage(string s)
+    private IEnumerator ContinueSendingMessage(string s)
     {
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;

@@ -11,7 +11,7 @@ public class SentryTest : MonoBehaviour
         counter++;
         if (counter % 100 == 0) // every 100 frames
         {
-            SentrySdk.addBreadcrumb("Frame number: " + counter);
+            SentrySdk.AddBreadcrumb("Frame number: " + counter);
         }
     }
 
