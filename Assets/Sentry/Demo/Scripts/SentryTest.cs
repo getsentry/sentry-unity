@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.Assertions;
+﻿using UnityEngine.Assertions;
 using UnityEngine;
 using System;
 

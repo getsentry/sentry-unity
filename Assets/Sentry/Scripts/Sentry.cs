@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization;
 using UnityEngine;
 
 namespace Sentry
@@ -155,7 +153,7 @@ namespace Sentry
 
     public class Dsn
     {
-        Uri uri;
+        private Uri _uri;
 
         public Uri callUri;
         public string secretKey, publicKey;
@@ -173,12 +171,12 @@ namespace Sentry
             {
                 throw new ArgumentException("invalid argument - DSN cannot be empty");
             }
-            uri = new Uri(dsn);
-            if (string.IsNullOrEmpty(uri.UserInfo))
+            _uri = new Uri(dsn);
+            if (string.IsNullOrEmpty(_uri.UserInfo))
             {
                 throw new ArgumentException("Invalid DSN: No public key provided.");
             }
-            var keys = uri.UserInfo.Split(':');
+            var keys = _uri.UserInfo.Split(':');
             publicKey = keys[0];
             if (string.IsNullOrEmpty(publicKey))
             {
@@ -190,8 +188,8 @@ namespace Sentry
                 secretKey = keys[1];
             }
 
-            var path = uri.AbsolutePath.Substring(0, uri.AbsolutePath.LastIndexOf('/'));
-            var projectId = uri.AbsoluteUri.Substring(uri.AbsoluteUri.LastIndexOf('/') + 1);
+            var path = _uri.AbsolutePath.Substring(0, _uri.AbsolutePath.LastIndexOf('/'));
+            var projectId = _uri.AbsoluteUri.Substring(_uri.AbsoluteUri.LastIndexOf('/') + 1);
 
             if (string.IsNullOrEmpty(projectId))
             {
@@ -200,13 +198,12 @@ namespace Sentry
 
             var builder = new UriBuilder
             {
-                Scheme = uri.Scheme,
-                Host = uri.DnsSafeHost,
-                Port = uri.Port,
+                Scheme = _uri.Scheme,
+                Host = _uri.DnsSafeHost,
+                Port = _uri.Port,
                 Path = string.Format("{0}/api/{1}/store/", path, projectId)
             };
             callUri = builder.Uri;
-
         }
     }
 }

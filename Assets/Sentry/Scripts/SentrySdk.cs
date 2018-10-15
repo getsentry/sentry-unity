@@ -8,13 +8,13 @@ using UnityEngine.Networking;
 
 public class SentrySdk : MonoBehaviour
 {
-    private readonly object errors = new object();
-    private float timeLastError = 0;
+    private readonly object _errors = new object();
+    private float _timeLastError = 0;
     private const float MIN_TIME = 0.5f;
     public const int MAX_BREADCRUMBS = 100;
-    private Breadcrumb[] breadcrumbs;
-    private int lastBreadcrumbPos = 0;
-    private int noBreadcrumbs = 0;
+    private Breadcrumb[] _breadcrumbs;
+    private int _lastBreadcrumbPos = 0;
+    private int _noBreadcrumbs = 0;
 
     [Header("DSN of your sentry instance")]
     public string dsn;
@@ -23,38 +23,38 @@ public class SentrySdk : MonoBehaviour
     [Header("Override game version")]
     public string version = "";
 
-    private string lastErrorMessage = "";
+    private string _lastErrorMessage = "";
     private Dsn _dsn;
-    private bool initialized = false;
+    private bool _initialized = false;
 
-    private static SentrySdk sentrySdkSingleton = null;
+    private static SentrySdk SentrySdkSingleton = null;
 
     public void Start()
     {
         _dsn = new Dsn(dsn);
-        if (sentrySdkSingleton != null)
+        if (SentrySdkSingleton != null)
         {
             throw new Exception("Cannot have more than one instance of SentrySdk");
         }
-        breadcrumbs = new Breadcrumb[MAX_BREADCRUMBS];
-        sentrySdkSingleton = this;
-        initialized = true; // don't initialize if dsn is empty or something exploded
+        _breadcrumbs = new Breadcrumb[MAX_BREADCRUMBS];
+        SentrySdkSingleton = this;
+        _initialized = true; // don't initialize if dsn is empty or something exploded
                             // when parsing dsn
     }
 
     public static void addBreadcrumb(string message)
     {
-        sentrySdkSingleton._addBreadcrumb(message);
+        SentrySdkSingleton._addBreadcrumb(message);
     }
 
     public static void CaptureMessage(string message)
     {
-        sentrySdkSingleton._captureMessage(message);
+        SentrySdkSingleton._captureMessage(message);
     }
 
     private void _captureMessage(string message)
     {
-        if (!initialized)
+        if (!_initialized)
         {
             throw new Exception("sentry not initialized");
         }
@@ -63,17 +63,17 @@ public class SentrySdk : MonoBehaviour
 
     private void _addBreadcrumb(string message)
     {
-        if (!initialized)
+        if (!_initialized)
         {
             throw new Exception("sentry not initialized");
         }
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
-        breadcrumbs[lastBreadcrumbPos] = new Breadcrumb(timestamp, message);
-        lastBreadcrumbPos += 1;
-        lastBreadcrumbPos %= MAX_BREADCRUMBS;
-        if (noBreadcrumbs < MAX_BREADCRUMBS)
+        _breadcrumbs[_lastBreadcrumbPos] = new Breadcrumb(timestamp, message);
+        _lastBreadcrumbPos += 1;
+        _lastBreadcrumbPos %= MAX_BREADCRUMBS;
+        if (_noBreadcrumbs < MAX_BREADCRUMBS)
         {
-            noBreadcrumbs += 1;
+            _noBreadcrumbs += 1;
         }
     }
 
@@ -89,12 +89,12 @@ public class SentrySdk : MonoBehaviour
 
     public void OnGUI()
     {
-        if (lastErrorMessage != "")
+        if (_lastErrorMessage != "")
         {
-            GUILayout.TextArea(lastErrorMessage);
+            GUILayout.TextArea(_lastErrorMessage);
             if (GUILayout.Button("Clear"))
             {
-                lastErrorMessage = "";
+                _lastErrorMessage = "";
             }
         }
     }
@@ -111,7 +111,8 @@ public class SentrySdk : MonoBehaviour
         // where :lineno is optional, will be ommitted in builds
         for (var i = 0; i < stackList.Length; i++)
         {
-            string functionName, filename;
+            string functionName;
+            string filename;
             int lineNo;
 
             var item = stackList[i];
@@ -174,24 +175,24 @@ public class SentrySdk : MonoBehaviour
 
     public void HandleLogCallback(string condition, string stackTrace, LogType type)
     {
-        if (!initialized)
+        if (!_initialized)
         {
             return; // dsn not initialized or something exploded, don't try to send it
         }
-        lastErrorMessage = condition;
+        _lastErrorMessage = condition;
         if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
         {
             // only send errors, can be set somewhere what we send and what we don't
             return;
         }
 
-        lock (errors)
+        lock (_errors)
         {
-            if (Time.time - timeLastError <= MIN_TIME) 
+            if (Time.time - _timeLastError <= MIN_TIME) 
             {
                 return; // silently drop the event on the floor
             }
-            timeLastError = Time.time;
+            _timeLastError = Time.time;
             scheduleException(condition, stackTrace);
         }
     }
@@ -203,9 +204,9 @@ public class SentrySdk : MonoBehaviour
             Debug.Log("sending message to sentry...");
         }
         var guid = Guid.NewGuid().ToString("N");
-        var bcrumbs = Breadcrumb.CombineBreadcrumbs(breadcrumbs,
-                                                    lastBreadcrumbPos,
-                                                    noBreadcrumbs);
+        var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
+                                                    _lastBreadcrumbPos,
+                                                    _noBreadcrumbs);
         var gameVersion = version;
         if (gameVersion == "") 
         {
@@ -224,9 +225,9 @@ public class SentrySdk : MonoBehaviour
             Debug.Log("sending exception to sentry...");
         }
         var guid = Guid.NewGuid().ToString("N");
-        var bcrumbs = Breadcrumb.CombineBreadcrumbs(breadcrumbs,
-                                                    lastBreadcrumbPos,
-                                                    noBreadcrumbs);
+        var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
+                                                    _lastBreadcrumbPos,
+                                                    _noBreadcrumbs);
         var s = JsonUtility.ToJson(
             new SentryExceptionMessage(version, guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
         return _continueSendingMessage(s);
