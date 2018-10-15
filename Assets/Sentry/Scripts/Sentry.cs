@@ -5,19 +5,19 @@ using UnityEngine;
 namespace Sentry
 {
     [Serializable]
-    public class _SentrySdk
+    public class SdkVersion
     {
         public string name = "sentry-unity";
         public string version = "0.0.1";
     }
 
     [Serializable]
-    public class _ContextPair
+    public class ContextPair
     {
         public string type;
         public string name;
 
-        public _ContextPair(string type, string name)
+        public ContextPair(string type, string name)
         {
             this.type = type;
             this.name = name;
@@ -25,39 +25,39 @@ namespace Sentry
     }
 
     [Serializable]
-    public class _Context
+    public class Context
     {
-        public _ContextPair os;
-        public _ContextPair os_family;
-        public _ContextPair device_model;
-        public _ContextPair device_name;
-        public _ContextPair device_type;
-        public _ContextPair gpu_name;
-        public _ContextPair gpu_id;
-        public _ContextPair gpu_type;
-        public _ContextPair gpu_vendor;
-        public _ContextPair gpu_vendor_id;
-        public _ContextPair app_build;
-        public _ContextPair app_version;
+        public ContextPair os;
+        public ContextPair os_family;
+        public ContextPair device_model;
+        public ContextPair device_name;
+        public ContextPair device_type;
+        public ContextPair gpu_name;
+        public ContextPair gpu_id;
+        public ContextPair gpu_type;
+        public ContextPair gpu_vendor;
+        public ContextPair gpu_vendor_id;
+        public ContextPair app_build;
+        public ContextPair app_version;
 
-        public _Context(string app_version)
+        public Context(string app_version)
         {
-            os = new _ContextPair("os", SystemInfo.operatingSystem);
-            os_family = new _ContextPair("os_family", SystemInfo.operatingSystemFamily.ToString());
-            device_model = new _ContextPair("device_model", SystemInfo.deviceModel);
-            device_name = new _ContextPair("device_name", SystemInfo.deviceName);
-            device_type = new _ContextPair("device_type", SystemInfo.deviceType.ToString());
-            gpu_name = new _ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
-            gpu_id = new _ContextPair("gpu_id", SystemInfo.graphicsDeviceID.ToString());
-            gpu_type = new _ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
-            gpu_vendor = new _ContextPair("gpu_id", SystemInfo.graphicsDeviceVendor);
-            gpu_vendor_id = new _ContextPair("gpu_name", SystemInfo.graphicsDeviceVendorID.ToString());
+            os = new ContextPair("os", SystemInfo.operatingSystem);
+            os_family = new ContextPair("os_family", SystemInfo.operatingSystemFamily.ToString());
+            device_model = new ContextPair("device_model", SystemInfo.deviceModel);
+            device_name = new ContextPair("device_name", SystemInfo.deviceName);
+            device_type = new ContextPair("device_type", SystemInfo.deviceType.ToString());
+            gpu_name = new ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
+            gpu_id = new ContextPair("gpu_id", SystemInfo.graphicsDeviceID.ToString());
+            gpu_type = new ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
+            gpu_vendor = new ContextPair("gpu_id", SystemInfo.graphicsDeviceVendor);
+            gpu_vendor_id = new ContextPair("gpu_name", SystemInfo.graphicsDeviceVendorID.ToString());
 #if UNITY_EDITOR
-            app_build = new _ContextPair("app_build", "editor");
+            app_build = new ContextPair("app_build", "editor");
 #else
             app_build = new _ContextPair("app_build", "build");
 #endif
-            this.app_version = new _ContextPair("app_version", app_version);
+            this.app_version = new ContextPair("app_version", app_version);
         }
     }
 
@@ -69,8 +69,8 @@ namespace Sentry
         public string timestamp;
         public string logger = "error";
         public string platform = "csharp";
-        public _Context contexts;
-        public _SentrySdk sdk = new _SentrySdk();
+        public Context contexts;
+        public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
 
         public SentryMessage(string app_version, string event_id, string message, List<Breadcrumb> breadcrumbs)
@@ -79,7 +79,7 @@ namespace Sentry
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
             this.breadcrumbs = breadcrumbs;
-            this.contexts = new _Context(app_version);
+            this.contexts = new Context(app_version);
         }
     }
 
