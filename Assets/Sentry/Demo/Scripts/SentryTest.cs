@@ -11,7 +11,9 @@ public class SentryTest : MonoBehaviour
     private void Update()
     {
         if (counter % 100 == 0) // every 100 frames
+        {
             SentrySdk.addBreadcrumb("message!");
+        }
     }
 
     private new void SendMessage(String message)
@@ -19,9 +21,13 @@ public class SentryTest : MonoBehaviour
         if (message == "exception")
         {
             throw new DivideByZeroException();
-        } else if (message == "assert") {
+        }
+        else if (message == "assert")
+        {
             Assert.AreEqual(message, "not equal");   
-        } else if (message == "message") {
+        }
+        else if (message == "message")
+        {
             SentrySdk.CaptureMessage("this is a message");
         }
     }

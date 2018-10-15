@@ -170,7 +170,9 @@ namespace Sentry
         public Dsn(string dsn)
         {
             if (dsn == "")
+            {
                 throw new ArgumentException("invalid argument - DSN cannot be empty");
+            }
             uri = new Uri(dsn);
             if (string.IsNullOrEmpty(uri.UserInfo))
             {
@@ -179,16 +181,22 @@ namespace Sentry
             var keys = uri.UserInfo.Split(':');
             publicKey = keys[0];
             if (string.IsNullOrEmpty(publicKey))
+            {
                 throw new ArgumentException("Invalid DSN: No public key provided.");
+            }
             secretKey = null;
             if (keys.Length > 1)
+            {
                 secretKey = keys[1];
+            }
 
             var path = uri.AbsolutePath.Substring(0, uri.AbsolutePath.LastIndexOf('/'));
             var projectId = uri.AbsoluteUri.Substring(uri.AbsoluteUri.LastIndexOf('/') + 1);
 
             if (string.IsNullOrEmpty(projectId))
+            {
                 throw new ArgumentException("Invalid DSN: A Project Id is required.");
+            }
 
             var builder = new UriBuilder
             {

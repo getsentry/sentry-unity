@@ -55,20 +55,26 @@ public class SentrySdk : MonoBehaviour
     private void _captureMessage(string message)
     {
         if (!initialized)
-            throw new Exception("sentry not initialized");    
+        {
+            throw new Exception("sentry not initialized");
+        }
         StartCoroutine(sentrySendMessage(message));
     }
 
     private void _addBreadcrumb(string message)
     {
         if (!initialized)
+        {
             throw new Exception("sentry not initialized");
+        }
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
         breadcrumbs[lastBreadcrumbPos] = new Breadcrumb(timestamp, message);
         lastBreadcrumbPos += 1;
         lastBreadcrumbPos %= MAX_BREADCRUMBS;
         if (noBreadcrumbs < MAX_BREADCRUMBS)
+        {
             noBreadcrumbs += 1;
+        }
     }
 
     public void OnEnable()
@@ -110,7 +116,9 @@ public class SentrySdk : MonoBehaviour
 
             var item = stackList[i];
             if (item == "")
+            {
                 continue;
+            }
             var closingParen = item.IndexOf(')');
 
             if (closingParen == -1)
@@ -151,7 +159,9 @@ public class SentrySdk : MonoBehaviour
                             lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
                         }
                     }
-                } catch (Exception) {
+                }
+                catch (Exception)
+                {
                     functionName = item;
                     lineNo = -1;
                     filename = ""; // we have no clue
@@ -165,15 +175,20 @@ public class SentrySdk : MonoBehaviour
     public void HandleLogCallback(string condition, string stackTrace, LogType type)
     {
         if (!initialized)
+        {
             return; // dsn not initialized or something exploded, don't try to send it
+        }
         lastErrorMessage = condition;
         if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+        {
             // only send errors, can be set somewhere what we send and what we don't
             return;
-        
+        }
+
         lock (errors)
         {
-            if (Time.time - timeLastError <= MIN_TIME) {
+            if (Time.time - timeLastError <= MIN_TIME) 
+            {
                 return; // silently drop the event on the floor
             }
             timeLastError = Time.time;
@@ -184,13 +199,16 @@ public class SentrySdk : MonoBehaviour
     private IEnumerator sentrySendMessage(string message)
     {
         if (isNoisy)
+        {
             Debug.Log("sending message to sentry...");
+        }
         var guid = Guid.NewGuid().ToString("N");
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(breadcrumbs,
                                                     lastBreadcrumbPos,
                                                     noBreadcrumbs);
         var gameVersion = version;
-        if (gameVersion == "") {
+        if (gameVersion == "") 
+        {
             gameVersion = Application.version;
         }
         var s = JsonUtility.ToJson(
@@ -202,7 +220,9 @@ public class SentrySdk : MonoBehaviour
     private IEnumerator sendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
         if (isNoisy)
+        {
             Debug.Log("sending exception to sentry...");
+        }
         var guid = Guid.NewGuid().ToString("N");
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(breadcrumbs,
                                                     lastBreadcrumbPos,
@@ -234,7 +254,9 @@ public class SentrySdk : MonoBehaviour
         yield return www.Send();
 
         while (!www.isDone)
+        {
             yield return null;
+        }
         if (
 #if UNITY_5
             www.isError
@@ -242,8 +264,11 @@ public class SentrySdk : MonoBehaviour
             www.isNetworkError
 #endif
              || www.responseCode != 200)
+        {
             Debug.LogWarning("error sending request to sentry: " + www.error);
-        else if (isNoisy) {
+        }
+        else if (isNoisy)
+        {
             Debug.Log("Sentry sent back: " + www.downloadHandler.text);
         }
     }
