@@ -4,18 +4,18 @@ using System;
 
 public class SentryTest : MonoBehaviour
 {
-    public int counter = 0;
+    private int _counter = 0;
 
     private void Update()
     {
-        counter++;
-        if (counter % 100 == 0) // every 100 frames
+        _counter++;
+        if (_counter % 100 == 0) // every 100 frames
         {
-            SentrySdk.AddBreadcrumb("Frame number: " + counter);
+            SentrySdk.AddBreadcrumb("Frame number: " + _counter);
         }
     }
 
-    private new void SendMessage(String message)
+    private new void SendMessage(string message)
     {
         if (message == "exception")
         {
