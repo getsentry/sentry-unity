@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+#if UNITY_5
 using System.Collections;
+#endif
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using Sentry;
@@ -210,7 +212,11 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
-    private IEnumerator DoSentrySendMessage(string message)
+    private IEnumerator
+#if !UNITY_5
+        <UnityWebRequestAsyncOperation>
+#endif
+         DoSentrySendMessage(string message)
     {
         if (Debug)
         {
@@ -231,7 +237,11 @@ public class SentrySdk : MonoBehaviour
         return ContinueSendingMessage(s);
     }
 
-    private IEnumerator DoSendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
+    private IEnumerator
+#if !UNITY_5
+        <UnityWebRequestAsyncOperation>
+#endif
+         DoSendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
     {
         if (Debug)
         {
@@ -246,7 +256,11 @@ public class SentrySdk : MonoBehaviour
         return ContinueSendingMessage(s);
     }
 
-    private IEnumerator ContinueSendingMessage(string s)
+    private IEnumerator
+#if !UNITY_5
+        <UnityWebRequestAsyncOperation>
+#endif
+         ContinueSendingMessage(string s)
     {
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
@@ -265,7 +279,11 @@ public class SentrySdk : MonoBehaviour
         www.SetRequestHeader("X-Sentry-Auth", authString);
         www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(s));
         www.downloadHandler = new DownloadHandlerBuffer();
+#if UNITY_5
         yield return www.Send();
+#else
+        yield return www.SendWebRequest();
+#endif
 
         while (!www.isDone)
         {
@@ -275,7 +293,7 @@ public class SentrySdk : MonoBehaviour
 #if UNITY_5
             www.isError
 #else
-            www.isNetworkError
+            www.isNetworkError || www.isHttpError
 #endif
              || www.responseCode != 200)
         {
