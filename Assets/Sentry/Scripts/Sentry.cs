@@ -4,6 +4,88 @@ using UnityEngine;
 
 namespace Sentry
 {
+    /// <summary>
+    /// Graphics device unit
+    /// </summary>
+    /// <remarks>
+    /// The value types are not made nullable due to limitation of <see cref="JsonUtility"/>
+    /// </remarks>
+    /// <seealso href="https://feedback.unity3d.com/suggestions/add-support-for-nullable-types-to-jsonutility"/>
+    [Serializable]
+    public class Gpu
+    {
+        /// <summary>
+        /// The name of the graphics device
+        /// </summary>
+        /// <example>
+        /// iPod touch:	Apple A8 GPU
+        /// Samsung S7: Mali-T880
+        /// </example>
+        public string name;
+
+        /// <summary>
+        /// The PCI Id of the graphics device
+        /// </summary>
+        /// <remarks>
+        /// Combined with <see cref="vendor_id"/> uniquely identifies the GPU
+        /// </remarks>
+        public int id;
+
+        /// <summary>
+        /// The PCI vendor Id of the graphics device
+        /// </summary>
+        /// <remarks>
+        /// Combined with <see cref="Id"/> uniquely identifies the GPU
+        /// </remarks>
+        /// <seealso href="https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices"/>
+        /// <seealso href="http://pci-ids.ucw.cz/read/PC/"/>
+        public int vendor_id;
+
+        /// <summary>
+        /// The vendor name reported by the graphic device
+        /// </summary>
+        /// <example>
+        /// Apple, ARM, WebKit
+        /// </example>
+        public string vendor_name;
+
+        /// <summary>
+        /// Total GPU memory available in mega-bytes.
+        /// </summary>
+        public int memory_size;
+
+        /// <summary>
+        /// Device type
+        /// </summary>
+        /// <remarks>The low level API used</remarks>
+        /// <example>Metal, Direct3D11, OpenGLES3, PlayStation4, XboxOne</example>
+        public string api_type;
+
+        /// <summary>
+        /// Whether the GPU is multi-threaded rendering or not.
+        /// </summary>
+        /// <remarks>Type hre should be Nullable{bool} which isn't supported by JsonUtility></remarks>
+        public bool multi_threaded_rendering;
+
+        /// <summary>
+        /// The Version of the API of the graphics device
+        /// </summary>
+        /// <example>
+        /// iPod touch: Metal
+        /// Android: OpenGL ES 3.2 v1.r22p0-01rel0.f294e54ceb2cb2d81039204fa4b0402e
+        /// WebGL Windows: OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))
+        /// OpenGL 2.0, Direct3D 9.0c
+        /// </example>
+        public string version;
+
+        /// <summary>
+        /// The Non-Power-Of-Two support level
+        /// </summary>
+        /// <example>
+        /// Full
+        /// </example>
+        public string npot_support;
+    }
     [Serializable]
     public class SdkVersion
     {
@@ -32,13 +114,10 @@ namespace Sentry
         public ContextPair device_model;
         public ContextPair device_name;
         public ContextPair device_type;
-        public ContextPair gpu_name;
-        public ContextPair gpu_id;
-        public ContextPair gpu_type;
-        public ContextPair gpu_vendor;
-        public ContextPair gpu_vendor_id;
         public ContextPair app_build;
         public ContextPair app_version;
+
+        public Gpu gpu;
 
         public Context(string app_version)
         {
@@ -47,17 +126,25 @@ namespace Sentry
             device_model = new ContextPair("device_model", SystemInfo.deviceModel);
             device_name = new ContextPair("device_name", SystemInfo.deviceName);
             device_type = new ContextPair("device_type", SystemInfo.deviceType.ToString());
-            gpu_name = new ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
-            gpu_id = new ContextPair("gpu_id", SystemInfo.graphicsDeviceID.ToString());
-            gpu_type = new ContextPair("gpu_name", SystemInfo.graphicsDeviceName);
-            gpu_vendor = new ContextPair("gpu_id", SystemInfo.graphicsDeviceVendor);
-            gpu_vendor_id = new ContextPair("gpu_name", SystemInfo.graphicsDeviceVendorID.ToString());
 #if UNITY_EDITOR
             app_build = new ContextPair("app_build", "editor");
 #else
             app_build = new _ContextPair("app_build", "build");
 #endif
             this.app_version = new ContextPair("app_version", app_version);
+
+            gpu = new Gpu
+            {
+                id = SystemInfo.graphicsDeviceID,
+                name = SystemInfo.graphicsDeviceName,
+                vendor_id = SystemInfo.graphicsDeviceVendorID,
+                vendor_name = SystemInfo.graphicsDeviceVendor,
+                memory_size = SystemInfo.graphicsMemorySize,
+                multi_threaded_rendering = SystemInfo.graphicsMultiThreaded,
+                npot_support = SystemInfo.npotSupport.ToString(),
+                version = SystemInfo.graphicsDeviceVersion,
+                api_type = SystemInfo.graphicsDeviceType.ToString()
+            };
         }
     }
 
