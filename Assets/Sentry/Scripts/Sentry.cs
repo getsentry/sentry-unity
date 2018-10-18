@@ -114,7 +114,7 @@ namespace Sentry
         /// When the system doesn't expose a clear API for <see cref="Name"/> and <see cref="Version"/>
         /// this field can be used to provide a raw system info (e.g: uname)
         /// </remarks>
-        public string rawDescription;
+        public string raw_description;
 
         /// <summary>
         /// The internal build revision of the operating system.
@@ -125,13 +125,130 @@ namespace Sentry
         ///  If known, this can be an independent kernel version string. Typically
         /// this is something like the entire output of the 'uname' tool.
         /// </summary>
-        public string kernelVersion;
+        public string kernel_version;
 
         /// <summary>
         ///  An optional boolean that defines if the OS has been jailbroken or rooted.
         /// </summary>
         public bool? rooted;
 
+    }
+
+    /// <summary>
+    /// Describes the device that caused the event. This is most appropriate for mobile applications.
+    /// </summary>
+    /// <seealso href="https://docs.sentry.io/clientdev/interfaces/contexts/"/>
+    [Serializable]
+    public class Device
+    {
+        /// <summary>
+        /// The name of the device. This is typically a hostname.
+        /// </summary>
+        public string name;
+        /// <summary>
+        /// The family of the device.
+        /// </summary>
+        /// <remarks>
+        /// This is normally the common part of model names across generations.
+        /// </remarks>
+        /// <example>
+        /// iPhone, Samsung Galaxy
+        /// </example>
+        public string family;
+        /// <summary>
+        /// The model name.
+        /// </summary>
+        /// <example>
+        /// Samsung Galaxy S3
+        /// </example>
+        public string model;
+        /// <summary>
+        /// An internal hardware revision to identify the device exactly.
+        /// </summary>
+        public string model_id;
+        /// <summary>
+        /// The CPU architecture.
+        /// </summary>
+        public string arch;
+        /// <summary>
+        /// If the device has a battery an integer defining the battery level (in the range 0-100).
+        /// </summary>
+        public short? battery_level;
+        /// <summary>
+        /// This can be a string portrait or landscape to define the orientation of a device.
+        /// </summary>
+        public DeviceOrientation? orientation;
+        /// <summary>
+        /// A boolean defining whether this device is a simulator or an actual device.
+        /// </summary>
+        public bool? simulator;
+        /// <summary>
+        /// Total system memory available in bytes.
+        /// </summary>
+        public long? memory_size;
+        /// <summary>
+        /// Free system memory in bytes.
+        /// </summary>
+        public long? free_memory;
+        /// <summary>
+        /// Memory usable for the app in bytes.
+        /// </summary>
+        public long? usable_memory;
+        /// <summary>
+        /// Total device storage in bytes.
+        /// </summary>
+        public long? storage_size;
+        /// <summary>
+        /// Free device storage in bytes.
+        /// </summary>
+        public long? free_storage;
+        /// <summary>
+        /// Total size of an attached external storage in bytes (e.g.: android SDK card).
+        /// </summary>
+        public long? external_storage_size;
+        /// <summary>
+        /// Free size of an attached external storage in bytes (e.g.: android SDK card).
+        /// </summary>
+        public long? external_free_storage;
+        /// <summary>
+        /// A formatted UTC timestamp when the system was booted.
+        /// </summary>
+        /// <example>
+        /// 018-02-08T12:52:12Z
+        /// </example>
+        public DateTimeOffset? boot_time;
+        /// <summary>
+        /// The timezone of the device.
+        /// </summary>
+        /// <example>
+        /// Europe/Vienna
+        /// </example>
+        public string timezone;
+
+        /// <summary>
+        /// The type of the device
+        /// </summary>
+        /// <example>
+        /// Unknown, Handheld, Console, Desktop
+        /// </example>
+        /// <see cref="DeviceType"/>
+        public string device_type;
+    }
+
+    /// <summary>
+    /// Defines the orientation of a device.
+    /// </summary>
+    [Serializable]
+    public enum DeviceOrientation
+    {
+        /// <summary>
+        /// Portrait
+        /// </summary>
+        portrait,
+        /// <summary>
+        /// Landscape
+        /// </summary>
+        landscape
     }
 
     [Serializable]
@@ -157,15 +274,11 @@ namespace Sentry
     [Serializable]
     public class Context
     {
-        public ContextPair os_family;
-        public ContextPair device_model;
-        public ContextPair device_name;
-        public ContextPair device_type;
-        public ContextPair app_build;
         public ContextPair app_version;
 
         public Gpu gpu;
         public OperatingSystem os;
+        public Device device;
 
         public Context(string app_version)
         {
@@ -174,14 +287,39 @@ namespace Sentry
                 // TODO: Will move to raw_description once parsing is done in Sentry
                 name = SystemInfo.operatingSystem
             };
-            device_model = new ContextPair("device_model", SystemInfo.deviceModel);
-            device_name = new ContextPair("device_name", SystemInfo.deviceName);
-            device_type = new ContextPair("device_type", SystemInfo.deviceType.ToString());
+
+            device = new Device();
+            switch (Input.deviceOrientation)
+            {
+                case UnityEngine.DeviceOrientation.Portrait:
+                case UnityEngine.DeviceOrientation.PortraitUpsideDown:
+                    device.orientation = DeviceOrientation.portrait;
+                    break;
+                case UnityEngine.DeviceOrientation.LandscapeLeft:
+                case UnityEngine.DeviceOrientation.LandscapeRight:
+                    device.orientation = DeviceOrientation.landscape;
+                    break;
+                case UnityEngine.DeviceOrientation.FaceUp:
+                case UnityEngine.DeviceOrientation.FaceDown:
+                    // TODO: Add to protocol?
+                    break;
+            }
+            var model = SystemInfo.deviceModel;
+            if (model != SystemInfo.unsupportedIdentifier
+                // Returned by the editor
+                && model != "System Product Name (System manufacturer)")
+            {
+                device.model = model;
+            }
+
+            device.device_type = SystemInfo.deviceType.ToString();
+
 #if UNITY_EDITOR
-            app_build = new ContextPair("app_build", "editor");
+            device.simulator = true;
 #else
-            app_build = new _ContextPair("app_build", "build");
+            device.simulator = false;
 #endif
+
             this.app_version = new ContextPair("app_version", app_version);
 
             gpu = new Gpu

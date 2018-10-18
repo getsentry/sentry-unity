@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 #if UNITY_5
 using System.Collections;
 #endif
@@ -21,6 +21,8 @@ public class SentrySdk : MonoBehaviour
 
     [Header("DSN of your sentry instance")]
     public string Dsn;
+    [Header("Send PII like User and Computer names")]
+    public bool SendDefaultPii = true;
     [Header("Enable SDK debug messages")]
     public bool Debug = true;
     [Header("Override game version")]
@@ -203,7 +205,7 @@ public class SentrySdk : MonoBehaviour
 
         lock (_errors)
         {
-            if (Time.time - _timeLastError <= MIN_TIME) 
+            if (Time.time - _timeLastError <= MIN_TIME)
             {
                 return; // silently drop the event on the floor
             }
@@ -227,12 +229,17 @@ public class SentrySdk : MonoBehaviour
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
         var gameVersion = Version;
-        if (gameVersion == "") 
+        if (gameVersion == "")
         {
             gameVersion = Application.version;
         }
-        var s = JsonUtility.ToJson(
-            new SentryMessage(Version, guid, message, bcrumbs));
+
+        var evt = new SentryMessage(Version, guid, message, bcrumbs);
+        if (SendDefaultPii)
+        {
+            evt.contexts.device.name = SystemInfo.deviceName;
+        }
+        var s = JsonUtility.ToJson(evt);
 
         return ContinueSendingMessage(s);
     }
