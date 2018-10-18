@@ -174,7 +174,6 @@ namespace Sentry
                 // TODO: Will move to raw_description once parsing is done in Sentry
                 name = SystemInfo.operatingSystem
             };
-            os_family = new ContextPair("os_family", SystemInfo.operatingSystemFamily.ToString());
             device_model = new ContextPair("device_model", SystemInfo.deviceModel);
             device_name = new ContextPair("device_name", SystemInfo.deviceName);
             device_type = new ContextPair("device_type", SystemInfo.deviceType.ToString());
