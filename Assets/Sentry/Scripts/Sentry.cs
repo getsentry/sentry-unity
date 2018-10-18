@@ -86,6 +86,54 @@ namespace Sentry
         /// </example>
         public string npot_support;
     }
+
+    /// <summary>
+    /// Represents Sentry's context for OS
+    /// </summary>
+    /// <remarks>
+    /// Defines the operating system that caused the event. In web contexts, this is the operating system of the browser (normally pulled from the User-Agent string).
+    /// </remarks>
+    /// <seealso href="https://docs.sentry.io/clientdev/interfaces/contexts/#context-types"/>
+    [Serializable]
+    public class OperatingSystem
+    {
+        /// <summary>
+        /// The name of the operating system.
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// The version of the operating system.
+        /// </summary>
+        public string version;
+
+        /// <summary>
+        /// An optional raw description that Sentry can use in an attempt to normalize OS info.
+        /// </summary>
+        /// <remarks>
+        /// When the system doesn't expose a clear API for <see cref="Name"/> and <see cref="Version"/>
+        /// this field can be used to provide a raw system info (e.g: uname)
+        /// </remarks>
+        public string rawDescription;
+
+        /// <summary>
+        /// The internal build revision of the operating system.
+        /// </summary>
+        public string build;
+
+        /// <summary>
+        ///  If known, this can be an independent kernel version string. Typically
+        /// this is something like the entire output of the 'uname' tool.
+        /// </summary>
+        public string kernelVersion;
+
+        /// <summary>
+        ///  An optional boolean that defines if the OS has been jailbroken or rooted.
+        /// </summary>
+        public bool? rooted;
+
+    }
+
     [Serializable]
     public class SdkVersion
     {
@@ -109,7 +157,6 @@ namespace Sentry
     [Serializable]
     public class Context
     {
-        public ContextPair os;
         public ContextPair os_family;
         public ContextPair device_model;
         public ContextPair device_name;
@@ -118,10 +165,15 @@ namespace Sentry
         public ContextPair app_version;
 
         public Gpu gpu;
+        public OperatingSystem os;
 
         public Context(string app_version)
         {
-            os = new ContextPair("os", SystemInfo.operatingSystem);
+            os = new OperatingSystem
+            {
+                // TODO: Will move to raw_description once parsing is done in Sentry
+                name = SystemInfo.operatingSystem
+            };
             os_family = new ContextPair("os_family", SystemInfo.operatingSystemFamily.ToString());
             device_model = new ContextPair("device_model", SystemInfo.deviceModel);
             device_name = new ContextPair("device_name", SystemInfo.deviceName);
