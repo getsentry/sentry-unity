@@ -126,12 +126,6 @@ namespace Sentry
         /// this is something like the entire output of the 'uname' tool.
         /// </summary>
         public string kernel_version;
-
-        /// <summary>
-        ///  An optional boolean that defines if the OS has been jailbroken or rooted.
-        /// </summary>
-        public bool? rooted;
-
     }
 
     /// <summary>
@@ -181,7 +175,7 @@ namespace Sentry
         /// <summary>
         /// If the device has a battery an integer defining the battery level (in the range 0-100).
         /// </summary>
-        public short? battery_level;
+        public float battery_level;
         /// <summary>
         /// The battery status
         /// </summary>
@@ -194,39 +188,15 @@ namespace Sentry
         /// <summary>
         /// This can be a string portrait or landscape to define the orientation of a device.
         /// </summary>
-        public DeviceOrientation? orientation;
+        public string orientation;
         /// <summary>
         /// A boolean defining whether this device is a simulator or an actual device.
         /// </summary>
-        public bool? simulator;
+        public bool simulator;
         /// <summary>
         /// Total system memory available in bytes.
         /// </summary>
-        public long? memory_size;
-        /// <summary>
-        /// Free system memory in bytes.
-        /// </summary>
-        public long? free_memory;
-        /// <summary>
-        /// Memory usable for the app in bytes.
-        /// </summary>
-        public long? usable_memory;
-        /// <summary>
-        /// Total device storage in bytes.
-        /// </summary>
-        public long? storage_size;
-        /// <summary>
-        /// Free device storage in bytes.
-        /// </summary>
-        public long? free_storage;
-        /// <summary>
-        /// Total size of an attached external storage in bytes (e.g.: android SDK card).
-        /// </summary>
-        public long? external_storage_size;
-        /// <summary>
-        /// Free size of an attached external storage in bytes (e.g.: android SDK card).
-        /// </summary>
-        public long? external_free_storage;
+        public long memory_size;
         /// <summary>
         /// A formatted UTC timestamp when the system was booted.
         /// </summary>
@@ -250,22 +220,6 @@ namespace Sentry
         /// <see cref="DeviceType"/>
         // TODO: Add to protocol
         public string device_type;
-    }
-
-    /// <summary>
-    /// Defines the orientation of a device.
-    /// </summary>
-    [Serializable]
-    public enum DeviceOrientation
-    {
-        /// <summary>
-        /// Portrait
-        /// </summary>
-        portrait,
-        /// <summary>
-        /// Landscape
-        /// </summary>
-        landscape
     }
 
     /// <summary>
@@ -338,17 +292,18 @@ namespace Sentry
             {
                 case UnityEngine.DeviceOrientation.Portrait:
                 case UnityEngine.DeviceOrientation.PortraitUpsideDown:
-                    device.orientation = DeviceOrientation.portrait;
+                    device.orientation = "portrait";
                     break;
                 case UnityEngine.DeviceOrientation.LandscapeLeft:
                 case UnityEngine.DeviceOrientation.LandscapeRight:
-                    device.orientation = DeviceOrientation.landscape;
+                    device.orientation = "landscape";
                     break;
                 case UnityEngine.DeviceOrientation.FaceUp:
                 case UnityEngine.DeviceOrientation.FaceDown:
                     // TODO: Add to protocol?
                     break;
             }
+
             var model = SystemInfo.deviceModel;
             if (model != SystemInfo.unsupportedIdentifier
                 // Returned by the editor
@@ -357,17 +312,14 @@ namespace Sentry
                 device.model = model;
             }
 
-            if (SystemInfo.batteryLevel != -1.0)
-            {
-                device.battery_level = (short?)SystemInfo.batteryLevel;
-            }
+            device.battery_level = SystemInfo.batteryLevel * 100;
             device.battery_status = SystemInfo.batteryStatus.ToString();
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
             if (SystemInfo.systemMemorySize != 0)
             {
-                device.memory_size = SystemInfo.systemMemorySize * 1024 * 1024; // Sentry device mem is in Bytes
+                device.memory_size = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
             }
 
             device.device_type = SystemInfo.deviceType.ToString();
