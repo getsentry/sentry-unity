@@ -230,7 +230,7 @@ public class SentrySdk : MonoBehaviour
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
 
-        var evt = new SentryMessage(guid, message, bcrumbs);
+        var evt = new SentryEvent(guid, message, bcrumbs);
 
         if (Version != "") // version override
         {
@@ -261,7 +261,7 @@ public class SentrySdk : MonoBehaviour
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
         var s = JsonUtility.ToJson(
-            new SentryExceptionMessage(guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
+            new SentryExceptionEvent(guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
         return ContinueSendingMessage(s);
     }
 

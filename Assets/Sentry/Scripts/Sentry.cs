@@ -359,7 +359,7 @@ namespace Sentry
     }
 
     [Serializable]
-    public class SentryMessage
+    public class SentryEvent
     {
         public string event_id;
         public string message;
@@ -371,7 +371,7 @@ namespace Sentry
         public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
 
-        public SentryMessage(string event_id, string message, List<Breadcrumb> breadcrumbs)
+        public SentryEvent(string event_id, string message, List<Breadcrumb> breadcrumbs)
         {
             this.event_id = event_id;
             this.message = message;
@@ -435,11 +435,11 @@ namespace Sentry
         }
     }
 
-    public class SentryExceptionMessage : SentryMessage
+    public class SentryExceptionEvent : SentryEvent
     {
         public ExceptionContainer exception;
 
-        public SentryExceptionMessage(string event_id,
+        public SentryExceptionEvent(string event_id,
                                       string exceptionType,
                                       string exceptionValue,
                                       List<Breadcrumb> breadcrumbs,
