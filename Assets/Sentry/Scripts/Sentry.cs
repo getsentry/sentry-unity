@@ -406,6 +406,13 @@ namespace Sentry
         }
     }
 
+    // Unity doesn't serialize Dictionary
+    [Serializable]
+    public class Tags
+    {
+        public string deviceUniqueIdentifier;
+    }
+
     [Serializable]
     public class SentryEvent
     {
@@ -419,6 +426,8 @@ namespace Sentry
         public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
 
+        public Tags tags;
+
         public SentryEvent(string message, List<Breadcrumb> breadcrumbs)
         {
             this.event_id = Guid.NewGuid().ToString("N");
@@ -427,6 +436,7 @@ namespace Sentry
             this.breadcrumbs = breadcrumbs;
             this.contexts = new Context();
             this.release = Application.version;
+            this.tags = new Tags();
         }
     }
 

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 #endif
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Sentry;
@@ -230,16 +231,8 @@ public class SentrySdk : MonoBehaviour
                                                     _noBreadcrumbs);
 
         var evt = new SentryEvent(message, bcrumbs);
+        PrepareEvent(evt);
 
-        if (Version != "") // version override
-        {
-            evt.release = Version;
-        }
-
-        if (SendDefaultPii)
-        {
-            evt.contexts.device.name = SystemInfo.deviceName;
-        }
         var s = JsonUtility.ToJson(evt);
 
         return ContinueSendingMessage(s);
@@ -258,9 +251,28 @@ public class SentrySdk : MonoBehaviour
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
-        var s = JsonUtility.ToJson(
-            new SentryExceptionEvent(exceptionType, exceptionValue, bcrumbs, stackTrace));
+
+        var evt = new SentryExceptionEvent(exceptionType, exceptionValue, bcrumbs, stackTrace);
+        PrepareEvent(evt);
+
+        var s = JsonUtility.ToJson(evt);
+
         return ContinueSendingMessage(s);
+    }
+
+    private void PrepareEvent(SentryEvent evt)
+    {
+        if (Version != "") // version override
+        {
+            evt.release = Version;
+        }
+
+        if (SendDefaultPii)
+        {
+            evt.contexts.device.name = SystemInfo.deviceName;
+        }
+
+        evt.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
     }
 
     private IEnumerator
