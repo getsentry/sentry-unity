@@ -364,7 +364,7 @@ namespace Sentry
         public string event_id;
         public string message;
         public string timestamp;
-        public string logger = "error";
+        public string logger;
         public string platform = "csharp";
         public string release;
         public Context contexts;
