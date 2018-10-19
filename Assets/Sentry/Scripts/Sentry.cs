@@ -171,9 +171,26 @@ namespace Sentry
         /// </summary>
         public string arch;
         /// <summary>
+        /// The CPU description
+        /// </summary>
+        /// <example>
+        /// Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz
+        /// </example>
+        // TODO: Add to protocool
+        public string cpu_description;
+        /// <summary>
         /// If the device has a battery an integer defining the battery level (in the range 0-100).
         /// </summary>
         public short? battery_level;
+        /// <summary>
+        /// The battery status
+        /// </summary>
+        /// <example>
+        /// Unknown, Charging, Discharging, NotCharging, Full
+        /// </example>
+        /// <see cref="BatteryStatus"/>
+        // TODO: Add to protocol
+        public string battery_status;
         /// <summary>
         /// This can be a string portrait or landscape to define the orientation of a device.
         /// </summary>
@@ -224,7 +241,6 @@ namespace Sentry
         /// Europe/Vienna
         /// </example>
         public string timezone;
-
         /// <summary>
         /// The type of the device
         /// </summary>
@@ -232,6 +248,7 @@ namespace Sentry
         /// Unknown, Handheld, Console, Desktop
         /// </example>
         /// <see cref="DeviceType"/>
+        // TODO: Add to protocol
         public string device_type;
     }
 
@@ -259,28 +276,13 @@ namespace Sentry
     }
 
     [Serializable]
-    public class ContextPair
-    {
-        public string type;
-        public string name;
-
-        public ContextPair(string type, string name)
-        {
-            this.type = type;
-            this.name = name;
-        }
-    }
-
-    [Serializable]
     public class Context
     {
-        public ContextPair app_version;
-
         public Gpu gpu;
         public OperatingSystem os;
         public Device device;
 
-        public Context(string app_version)
+        public Context()
         {
             os = new OperatingSystem
             {
@@ -312,15 +314,34 @@ namespace Sentry
                 device.model = model;
             }
 
+            if (SystemInfo.batteryLevel != -1.0)
+            {
+                device.battery_level = (short?)SystemInfo.batteryLevel;
+            }
+            device.battery_status = SystemInfo.batteryStatus.ToString();
+
+            // This is the approximate amount of system memory in megabytes.
+            // This function is not supported on Windows Store Apps and will always return 0.
+            if (SystemInfo.systemMemorySize != 0)
+            {
+                device.memory_size = SystemInfo.systemMemorySize * 1024 * 1024; // Sentry device mem is in Bytes
+            }
+
             device.device_type = SystemInfo.deviceType.ToString();
+            device.cpu_description = SystemInfo.processorType;
+
+#if UNITY_ANDROID
+            using (var system = new AndroidJavaClass("java.lang.System"))
+            {
+                device.arch = system.CallStatic<string>("getProperty", "os.arch");
+            }
+#endif
 
 #if UNITY_EDITOR
             device.simulator = true;
 #else
             device.simulator = false;
 #endif
-
-            this.app_version = new ContextPair("app_version", app_version);
 
             gpu = new Gpu
             {
@@ -345,17 +366,19 @@ namespace Sentry
         public string timestamp;
         public string logger = "error";
         public string platform = "csharp";
+        public string release;
         public Context contexts;
         public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
 
-        public SentryMessage(string app_version, string event_id, string message, List<Breadcrumb> breadcrumbs)
+        public SentryMessage(string event_id, string message, List<Breadcrumb> breadcrumbs)
         {
             this.event_id = event_id;
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
             this.breadcrumbs = breadcrumbs;
-            this.contexts = new Context(app_version);
+            this.contexts = new Context();
+            this.release = Application.version;
         }
     }
 
@@ -416,12 +439,11 @@ namespace Sentry
     {
         public ExceptionContainer exception;
 
-        public SentryExceptionMessage(string app_version,
-                                      string event_id,
+        public SentryExceptionMessage(string event_id,
                                       string exceptionType,
                                       string exceptionValue,
                                       List<Breadcrumb> breadcrumbs,
-                                      List<StackTraceSpec> stackTrace) : base(app_version, event_id, exceptionType, breadcrumbs)
+                                      List<StackTraceSpec> stackTrace) : base(event_id, exceptionType, breadcrumbs)
         {
             this.exception = new ExceptionContainer(new List<ExceptionSpec> { new ExceptionSpec(exceptionType, exceptionValue, stackTrace) });
         }

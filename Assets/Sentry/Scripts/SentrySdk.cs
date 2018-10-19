@@ -97,6 +97,7 @@ public class SentrySdk : MonoBehaviour
     public void OnEnable()
     {
         Application.logMessageReceivedThreaded += HandleLogCallback;
+        //Application.lowMemory += () => SentrySdk.AddBreadcrumb("Device with low memory.");
     }
 
     public void OnDisable()
@@ -228,13 +229,14 @@ public class SentrySdk : MonoBehaviour
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
-        var gameVersion = Version;
-        if (gameVersion == "")
+
+        var evt = new SentryMessage(guid, message, bcrumbs);
+
+        if (Version != "") // version override
         {
-            gameVersion = Application.version;
+            evt.release = Version;
         }
 
-        var evt = new SentryMessage(Version, guid, message, bcrumbs);
         if (SendDefaultPii)
         {
             evt.contexts.device.name = SystemInfo.deviceName;
@@ -259,7 +261,7 @@ public class SentrySdk : MonoBehaviour
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
         var s = JsonUtility.ToJson(
-            new SentryExceptionMessage(Version, guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
+            new SentryExceptionMessage(guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
         return ContinueSendingMessage(s);
     }
 
