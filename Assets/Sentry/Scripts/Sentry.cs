@@ -371,9 +371,9 @@ namespace Sentry
         public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
 
-        public SentryEvent(string event_id, string message, List<Breadcrumb> breadcrumbs)
+        public SentryEvent(string message, List<Breadcrumb> breadcrumbs)
         {
-            this.event_id = event_id;
+            this.event_id = Guid.NewGuid().ToString("N");
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
             this.breadcrumbs = breadcrumbs;
@@ -439,11 +439,10 @@ namespace Sentry
     {
         public ExceptionContainer exception;
 
-        public SentryExceptionEvent(string event_id,
-                                      string exceptionType,
+        public SentryExceptionEvent(string exceptionType,
                                       string exceptionValue,
                                       List<Breadcrumb> breadcrumbs,
-                                      List<StackTraceSpec> stackTrace) : base(event_id, exceptionType, breadcrumbs)
+                                      List<StackTraceSpec> stackTrace) : base(exceptionType, breadcrumbs)
         {
             this.exception = new ExceptionContainer(new List<ExceptionSpec> { new ExceptionSpec(exceptionType, exceptionValue, stackTrace) });
         }

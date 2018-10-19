@@ -225,12 +225,11 @@ public class SentrySdk : MonoBehaviour
         {
             UnityDebug.Log("sending message to sentry...");
         }
-        var guid = Guid.NewGuid().ToString("N");
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
 
-        var evt = new SentryEvent(guid, message, bcrumbs);
+        var evt = new SentryEvent(message, bcrumbs);
 
         if (Version != "") // version override
         {
@@ -256,12 +255,11 @@ public class SentrySdk : MonoBehaviour
         {
             UnityDebug.Log("sending exception to sentry...");
         }
-        var guid = Guid.NewGuid().ToString("N");
         var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
                                                     _lastBreadcrumbPos,
                                                     _noBreadcrumbs);
         var s = JsonUtility.ToJson(
-            new SentryExceptionEvent(guid, exceptionType, exceptionValue, bcrumbs, stackTrace));
+            new SentryExceptionEvent(exceptionType, exceptionValue, bcrumbs, stackTrace));
         return ContinueSendingMessage(s);
     }
 
