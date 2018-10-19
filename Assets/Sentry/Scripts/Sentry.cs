@@ -268,6 +268,48 @@ namespace Sentry
         landscape
     }
 
+    /// <summary>
+    /// Describes the application.
+    /// </summary>
+    /// <remarks>
+    /// As opposed to the runtime, this is the actual application that
+    /// was running and carries meta data about the current session.
+    /// </remarks>
+    /// <seealso href="https://docs.sentry.io/clientdev/interfaces/contexts/"/>
+    [Serializable]
+    public class App
+    {
+        /// <summary>
+        /// Version-independent application identifier, often a dotted bundle ID.
+        /// </summary>
+        public string app_identifier;
+        /// <summary>
+        /// Formatted UTC timestamp when the application was started by the user.
+        /// </summary>
+        // DateTimeOffset? doesn't get serialized
+        public string app_start_time;
+        /// <summary>
+        /// Application specific device identifier.
+        /// </summary>
+        public string device_app_hash;
+        /// <summary>
+        /// String identifying the kind of build, e.g. testflight.
+        /// </summary>
+        public string build_type;
+        /// <summary>
+        /// Human readable application name, as it appears on the platform.
+        /// </summary>
+        public string app_name;
+        /// <summary>
+        /// Human readable application version, as it appears on the platform.
+        /// </summary>
+        public string app_version;
+        /// <summary>
+        /// Internal build identifier, as it appears on the platform.
+        /// </summary>
+        public string app_build;
+    }
+
     [Serializable]
     public class SdkVersion
     {
@@ -278,6 +320,7 @@ namespace Sentry
     [Serializable]
     public class Context
     {
+        public App app;
         public Gpu gpu;
         public OperatingSystem os;
         public Device device;
@@ -355,6 +398,11 @@ namespace Sentry
                 version = SystemInfo.graphicsDeviceVersion,
                 api_type = SystemInfo.graphicsDeviceType.ToString()
             };
+
+            app = new App();
+            app.app_start_time = DateTimeOffset.UtcNow
+                .AddSeconds(-Time.realtimeSinceStartup)
+                .ToString("yyyy-MM-ddTHH\\:mm\\:ssZ");
         }
     }
 
