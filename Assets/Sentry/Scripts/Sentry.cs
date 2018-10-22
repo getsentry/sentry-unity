@@ -366,6 +366,12 @@ namespace Sentry
     }
 
     [Serializable]
+    public class Extra
+    {
+        public string unityVersion;
+    }
+
+    [Serializable]
     public class SentryEvent
     {
         public string event_id;
@@ -379,6 +385,7 @@ namespace Sentry
         public List<Breadcrumb> breadcrumbs = null;
 
         public Tags tags;
+        public Extra extra;
 
         public SentryEvent(string message, List<Breadcrumb> breadcrumbs)
         {
@@ -389,6 +396,7 @@ namespace Sentry
             this.contexts = new Context();
             this.release = Application.version;
             this.tags = new Tags();
+            this.extra = new Extra();
         }
     }
 

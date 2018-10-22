@@ -298,6 +298,7 @@ public class SentrySdk : MonoBehaviour
         }
 
         evt.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
+        evt.extra.unityVersion = Application.unityVersion;
     }
 
     private IEnumerator
