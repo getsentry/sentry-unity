@@ -203,6 +203,8 @@ public class SentrySdk : MonoBehaviour
                 // i.e: <d315a7230dee4fa58154dc9e8884174d>
                 || (filename[0] == '<' && filename[filename.Length - 1] == '>'))
             {
+                // Addresses will mess with grouping. Unless possible to symbolicate, better not to report it.
+                filename = string.Empty;
                 inApp = true; // defaults to true
 
                 if (functionName.Contains("UnityEngine."))
