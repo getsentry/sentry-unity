@@ -355,6 +355,15 @@ namespace Sentry
             app.app_start_time = DateTimeOffset.UtcNow
                 .AddSeconds(-Time.realtimeSinceStartup)
                 .ToString("yyyy-MM-ddTHH\\:mm\\:ssZ");
+
+            if (Debug.isDebugBuild)
+            {
+                app.build_type = "debug";
+            }
+            else
+            {
+                app.build_type = "release";
+            }
         }
     }
 
