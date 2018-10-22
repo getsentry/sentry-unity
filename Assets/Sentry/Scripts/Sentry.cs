@@ -86,52 +86,257 @@ namespace Sentry
         /// </example>
         public string npot_support;
     }
+
+    /// <summary>
+    /// Represents Sentry's context for OS
+    /// </summary>
+    /// <remarks>
+    /// Defines the operating system that caused the event. In web contexts, this is the operating system of the browser (normally pulled from the User-Agent string).
+    /// </remarks>
+    /// <seealso href="https://docs.sentry.io/clientdev/interfaces/contexts/#context-types"/>
     [Serializable]
-    public class SdkVersion
+    public class OperatingSystem
     {
-        public string name = "sentry-unity";
-        public string version = "0.0.1";
+        /// <summary>
+        /// The name of the operating system.
+        /// </summary>
+        public string name;
+
+        /// <summary>
+        /// The version of the operating system.
+        /// </summary>
+        public string version;
+
+        /// <summary>
+        /// An optional raw description that Sentry can use in an attempt to normalize OS info.
+        /// </summary>
+        /// <remarks>
+        /// When the system doesn't expose a clear API for <see cref="Name"/> and <see cref="Version"/>
+        /// this field can be used to provide a raw system info (e.g: uname)
+        /// </remarks>
+        public string raw_description;
+
+        /// <summary>
+        /// The internal build revision of the operating system.
+        /// </summary>
+        public string build;
+
+        /// <summary>
+        ///  If known, this can be an independent kernel version string. Typically
+        /// this is something like the entire output of the 'uname' tool.
+        /// </summary>
+        public string kernel_version;
+    }
+
+    /// <summary>
+    /// Describes the device that caused the event. This is most appropriate for mobile applications.
+    /// </summary>
+    /// <seealso href="https://docs.sentry.io/clientdev/interfaces/contexts/"/>
+    [Serializable]
+    public class Device
+    {
+        /// <summary>
+        /// The name of the device. This is typically a hostname.
+        /// </summary>
+        public string name;
+        /// <summary>
+        /// The family of the device.
+        /// </summary>
+        /// <remarks>
+        /// This is normally the common part of model names across generations.
+        /// </remarks>
+        /// <example>
+        /// iPhone, Samsung Galaxy
+        /// </example>
+        public string family;
+        /// <summary>
+        /// The model name.
+        /// </summary>
+        /// <example>
+        /// Samsung Galaxy S3
+        /// </example>
+        public string model;
+        /// <summary>
+        /// An internal hardware revision to identify the device exactly.
+        /// </summary>
+        public string model_id;
+        /// <summary>
+        /// The CPU architecture.
+        /// </summary>
+        public string arch;
+        /// <summary>
+        /// The CPU description
+        /// </summary>
+        /// <example>
+        /// Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz
+        /// </example>
+        // TODO: Add to protocool
+        public string cpu_description;
+        /// <summary>
+        /// If the device has a battery an integer defining the battery level (in the range 0-100).
+        /// </summary>
+        public float battery_level;
+        /// <summary>
+        /// The battery status
+        /// </summary>
+        /// <example>
+        /// Unknown, Charging, Discharging, NotCharging, Full
+        /// </example>
+        /// <see cref="BatteryStatus"/>
+        // TODO: Add to protocol
+        public string battery_status;
+        /// <summary>
+        /// This can be a string portrait or landscape to define the orientation of a device.
+        /// </summary>
+        public string orientation;
+        /// <summary>
+        /// A boolean defining whether this device is a simulator or an actual device.
+        /// </summary>
+        public bool simulator;
+        /// <summary>
+        /// Total system memory available in bytes.
+        /// </summary>
+        public long memory_size;
+        /// <summary>
+        /// A formatted UTC timestamp when the system was booted.
+        /// </summary>
+        /// <example>
+        /// 018-02-08T12:52:12Z
+        /// </example>
+        public DateTimeOffset? boot_time;
+        /// <summary>
+        /// The timezone of the device.
+        /// </summary>
+        /// <example>
+        /// Europe/Vienna
+        /// </example>
+        public string timezone;
+        /// <summary>
+        /// The type of the device
+        /// </summary>
+        /// <example>
+        /// Unknown, Handheld, Console, Desktop
+        /// </example>
+        /// <see cref="DeviceType"/>
+        // TODO: Add to protocol
+        public string device_type;
+    }
+
+    /// <summary>
+    /// Describes the application.
+    /// </summary>
+    /// <remarks>
+    /// As opposed to the runtime, this is the actual application that
+    /// was running and carries meta data about the current session.
+    /// </remarks>
+    /// <seealso href="https://docs.sentry.io/clientdev/interfaces/contexts/"/>
+    [Serializable]
+    public class App
+    {
+        /// <summary>
+        /// Version-independent application identifier, often a dotted bundle ID.
+        /// </summary>
+        public string app_identifier;
+        /// <summary>
+        /// Formatted UTC timestamp when the application was started by the user.
+        /// </summary>
+        // DateTimeOffset? doesn't get serialized
+        public string app_start_time;
+        /// <summary>
+        /// Application specific device identifier.
+        /// </summary>
+        public string device_app_hash;
+        /// <summary>
+        /// String identifying the kind of build, e.g. testflight.
+        /// </summary>
+        public string build_type;
+        /// <summary>
+        /// Human readable application name, as it appears on the platform.
+        /// </summary>
+        public string app_name;
+        /// <summary>
+        /// Human readable application version, as it appears on the platform.
+        /// </summary>
+        public string app_version;
+        /// <summary>
+        /// Internal build identifier, as it appears on the platform.
+        /// </summary>
+        public string app_build;
     }
 
     [Serializable]
-    public class ContextPair
+    public class SdkVersion
     {
-        public string type;
-        public string name;
-
-        public ContextPair(string type, string name)
-        {
-            this.type = type;
-            this.name = name;
-        }
+        public string name = "sentry.unity.lite";
+        public string version = "0.0.1";
     }
 
     [Serializable]
     public class Context
     {
-        public ContextPair os;
-        public ContextPair os_family;
-        public ContextPair device_model;
-        public ContextPair device_name;
-        public ContextPair device_type;
-        public ContextPair app_build;
-        public ContextPair app_version;
-
+        public App app;
         public Gpu gpu;
+        public OperatingSystem os;
+        public Device device;
 
-        public Context(string app_version)
+        public Context()
         {
-            os = new ContextPair("os", SystemInfo.operatingSystem);
-            os_family = new ContextPair("os_family", SystemInfo.operatingSystemFamily.ToString());
-            device_model = new ContextPair("device_model", SystemInfo.deviceModel);
-            device_name = new ContextPair("device_name", SystemInfo.deviceName);
-            device_type = new ContextPair("device_type", SystemInfo.deviceType.ToString());
-#if UNITY_EDITOR
-            app_build = new ContextPair("app_build", "editor");
-#else
-            app_build = new _ContextPair("app_build", "build");
+            os = new OperatingSystem
+            {
+                // TODO: Will move to raw_description once parsing is done in Sentry
+                name = SystemInfo.operatingSystem
+            };
+
+            device = new Device();
+            switch (Input.deviceOrientation)
+            {
+                case UnityEngine.DeviceOrientation.Portrait:
+                case UnityEngine.DeviceOrientation.PortraitUpsideDown:
+                    device.orientation = "portrait";
+                    break;
+                case UnityEngine.DeviceOrientation.LandscapeLeft:
+                case UnityEngine.DeviceOrientation.LandscapeRight:
+                    device.orientation = "landscape";
+                    break;
+                case UnityEngine.DeviceOrientation.FaceUp:
+                case UnityEngine.DeviceOrientation.FaceDown:
+                    // TODO: Add to protocol?
+                    break;
+            }
+
+            var model = SystemInfo.deviceModel;
+            if (model != SystemInfo.unsupportedIdentifier
+                // Returned by the editor
+                && model != "System Product Name (System manufacturer)")
+            {
+                device.model = model;
+            }
+
+            device.battery_level = SystemInfo.batteryLevel * 100;
+            device.battery_status = SystemInfo.batteryStatus.ToString();
+
+            // This is the approximate amount of system memory in megabytes.
+            // This function is not supported on Windows Store Apps and will always return 0.
+            if (SystemInfo.systemMemorySize != 0)
+            {
+                device.memory_size = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
+            }
+
+            device.device_type = SystemInfo.deviceType.ToString();
+            device.cpu_description = SystemInfo.processorType;
+
+#if UNITY_ANDROID
+            using (var system = new AndroidJavaClass("java.lang.System"))
+            {
+                device.arch = system.CallStatic<string>("getProperty", "os.arch");
+            }
 #endif
-            this.app_version = new ContextPair("app_version", app_version);
+
+#if UNITY_EDITOR
+            device.simulator = true;
+#else
+            device.simulator = false;
+#endif
 
             gpu = new Gpu
             {
@@ -145,28 +350,62 @@ namespace Sentry
                 version = SystemInfo.graphicsDeviceVersion,
                 api_type = SystemInfo.graphicsDeviceType.ToString()
             };
+
+            app = new App();
+            app.app_start_time = DateTimeOffset.UtcNow
+                .AddSeconds(-Time.realtimeSinceStartup)
+                .ToString("yyyy-MM-ddTHH\\:mm\\:ssZ");
+
+            if (Debug.isDebugBuild)
+            {
+                app.build_type = "debug";
+            }
+            else
+            {
+                app.build_type = "release";
+            }
         }
     }
 
+    // Unity doesn't serialize Dictionary
     [Serializable]
-    public class SentryMessage
+    public class Tags
+    {
+        public string deviceUniqueIdentifier;
+    }
+
+    [Serializable]
+    public class Extra
+    {
+        public string unityVersion;
+    }
+
+    [Serializable]
+    public class SentryEvent
     {
         public string event_id;
         public string message;
         public string timestamp;
-        public string logger = "error";
+        public string logger;
         public string platform = "csharp";
+        public string release;
         public Context contexts;
         public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
 
-        public SentryMessage(string app_version, string event_id, string message, List<Breadcrumb> breadcrumbs)
+        public Tags tags;
+        public Extra extra;
+
+        public SentryEvent(string message, List<Breadcrumb> breadcrumbs)
         {
-            this.event_id = event_id;
+            this.event_id = Guid.NewGuid().ToString("N");
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
             this.breadcrumbs = breadcrumbs;
-            this.contexts = new Context(app_version);
+            this.contexts = new Context();
+            this.release = Application.version;
+            this.tags = new Tags();
+            this.extra = new Extra();
         }
     }
 
@@ -188,12 +427,14 @@ namespace Sentry
         public string function;
         public string module = "";
         public int lineno;
+        public bool in_app;
 
-        public StackTraceSpec(string filename, string function, int lineNo)
+        public StackTraceSpec(string filename, string function, int lineNo, bool inApp)
         {
             this.filename = filename;
             this.function = function;
             lineno = lineNo;
+            in_app = inApp;
         }
     }
 
@@ -223,16 +464,14 @@ namespace Sentry
         }
     }
 
-    public class SentryExceptionMessage : SentryMessage
+    public class SentryExceptionEvent : SentryEvent
     {
         public ExceptionContainer exception;
 
-        public SentryExceptionMessage(string app_version,
-                                      string event_id,
-                                      string exceptionType,
+        public SentryExceptionEvent(string exceptionType,
                                       string exceptionValue,
                                       List<Breadcrumb> breadcrumbs,
-                                      List<StackTraceSpec> stackTrace) : base(app_version, event_id, exceptionType, breadcrumbs)
+                                      List<StackTraceSpec> stackTrace) : base(exceptionType, breadcrumbs)
         {
             this.exception = new ExceptionContainer(new List<ExceptionSpec> { new ExceptionSpec(exceptionType, exceptionValue, stackTrace) });
         }
