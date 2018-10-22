@@ -367,7 +367,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61caf3021ce684bfcba96800130f9046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Dsn: https://37c2358e61f041158167da7819b77b50@sentry.io/1306165
+  Dsn: 
   SendDefaultPii: 1
   Debug: 1
   Version: 

@@ -39,6 +39,7 @@ public class SentrySdk : MonoBehaviour
         if (Dsn == string.Empty)
         {
             // Empty string = disabled SDK
+            UnityDebug.LogWarning("No DSN defined. The Sentry SDK will be disabled.");
             return;
         }
 
