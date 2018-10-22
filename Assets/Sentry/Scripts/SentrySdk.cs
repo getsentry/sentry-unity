@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 #endif
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Sentry;
@@ -124,18 +123,29 @@ public class SentrySdk : MonoBehaviour
         var exc = condition.Split(new char[] { ':' }, 2);
         var excType = exc[0];
         var excValue = exc[1].Substring(1); // strip the space
+
+        foreach (var stackTraceSpec in GetStackTraces(stackTrace))
+        {
+            stack.Add(stackTraceSpec);
+        }
+
+        StartCoroutine(DoSendException(excType, excValue, stack));
+    }
+
+    private static IEnumerable<StackTraceSpec> GetStackTraces(string stackTrace)
+    {
         var stackList = stackTrace.Split('\n');
         // the format is as follows:
         // Module.Class.Method[.Invoke] (arguments) (at filename:lineno)
-        // where :lineno is optional, will be ommitted in builds
-        for (var i = 0; i < stackList.Length; i++)
+        // where :lineno is optional, will be omitted in builds
+        for (var i = stackList.Length - 1; i >= 0; i--)
         {
             string functionName;
             string filename;
             int lineNo;
 
             var item = stackList[i];
-            if (item == "")
+            if (item == string.Empty)
             {
                 continue;
             }
@@ -143,53 +153,68 @@ public class SentrySdk : MonoBehaviour
 
             if (closingParen == -1)
             {
-                functionName = item;
-                lineNo = -1;
-                filename = "";
+                continue;
             }
-            else
+            try
             {
-                try
+                functionName = item.Substring(0, closingParen + 1);
+                if (item.Length < closingParen + 6)
                 {
-                    functionName = item.Substring(0, closingParen + 1);
-                    if (item.Substring(closingParen + 1, 5) != " (at ")
+                    // No location and no params provided. Use it as-is
+                    filename = string.Empty;
+                    lineNo = -1;
+                }
+                else if (item.Substring(closingParen + 1, 5) != " (at ")
+                {
+                    // we did something wrong, failed the check
+                    UnityDebug.Log("failed parsing " + item);
+                    functionName = item;
+                    lineNo = -1;
+                    filename = string.Empty;
+                }
+                else
+                {
+                    var colon = item.LastIndexOf(':', item.Length - 1, item.Length - closingParen);
+                    if (closingParen == item.Length - 1)
                     {
-                        // we did something wrong, failed the check
-                        UnityDebug.Log("failed parsing " + item);
-                        functionName = item;
+                        filename = string.Empty;
                         lineNo = -1;
-                        filename = "";
+                    }
+                    else if (colon == -1)
+                    {
+                        filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
+                        lineNo = -1;
                     }
                     else
                     {
-                        var colon = item.LastIndexOf(':', item.Length - 1, item.Length - closingParen);
-                        if (closingParen == item.Length - 1)
-                        {
-                            filename = "";
-                            lineNo = -1;
-                        }
-                        else if (colon == -1)
-                        {
-                            filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
-                            lineNo = -1;
-                        }
-                        else
-                        {
-                            filename = item.Substring(closingParen + 6, colon - closingParen - 6);
-                            lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
-                        }
+                        filename = item.Substring(closingParen + 6, colon - closingParen - 6);
+                        lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
                     }
                 }
-                catch (Exception)
+            }
+            catch
+            {
+                continue;
+            }
+
+            bool inApp;
+
+            if (filename == string.Empty || filename == "<00000000000000000000000000000000>")
+            {
+                inApp = true; // defaults to true
+
+                if (functionName.Contains("UnityEngine."))
                 {
-                    functionName = item;
-                    lineNo = -1;
-                    filename = ""; // we have no clue
+                    inApp = false;
                 }
             }
-            stack.Add(new StackTraceSpec(filename, functionName, lineNo));
+            else
+            {
+                inApp = filename.Contains("Assets/");
+            }
+
+            yield return new StackTraceSpec(filename, functionName, lineNo, inApp);
         }
-        StartCoroutine(DoSendException(excType, excValue, stack));
     }
 
     public void HandleLogCallback(string condition, string stackTrace, LogType type)
