@@ -199,7 +199,9 @@ public class SentrySdk : MonoBehaviour
 
             bool inApp;
 
-            if (filename == string.Empty || filename == "<00000000000000000000000000000000>")
+            if (filename == string.Empty
+                // i.e: <d315a7230dee4fa58154dc9e8884174d>
+                || (filename[0] == '<' && filename[filename.Length - 1] == '>'))
             {
                 inApp = true; // defaults to true
 
