@@ -170,7 +170,6 @@ namespace Sentry
         /// <example>
         /// Intel(R) Core(TM) i7-7920HQ CPU @ 3.10GHz
         /// </example>
-        // TODO: Add to protocool
         public string cpu_description;
         /// <summary>
         /// If the device has a battery an integer defining the battery level (in the range 0-100).
@@ -183,7 +182,6 @@ namespace Sentry
         /// Unknown, Charging, Discharging, NotCharging, Full
         /// </example>
         /// <see cref="BatteryStatus"/>
-        // TODO: Add to protocol
         public string battery_status;
         /// <summary>
         /// This can be a string portrait or landscape to define the orientation of a device.
@@ -218,7 +216,6 @@ namespace Sentry
         /// Unknown, Handheld, Console, Desktop
         /// </example>
         /// <see cref="DeviceType"/>
-        // TODO: Add to protocol
         public string device_type;
     }
 
