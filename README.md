@@ -51,3 +51,9 @@ run headless. There are two important APIs that are worth considering.
 
 The lowest required version is Unity 5.6.
 Previous versions might work but were not tested and will not be supported.
+
+## Resources
+* [![Gitter chat](https://img.shields.io/gitter/room/getsentry/unity.svg)](https://gitter.im/getsentry/unity)
+* [![Stack Overflow](https://img.shields.io/badge/stack%20overflow-sentry-green.svg)](http://stackoverflow.com/questions/tagged/sentry)
+* [![Forum](https://img.shields.io/badge/forum-sentry-green.svg)](https://forum.sentry.io/c/sdks)
+* Follow [@getsentry](https://twitter.com/getsentry) on Twitter for updates
