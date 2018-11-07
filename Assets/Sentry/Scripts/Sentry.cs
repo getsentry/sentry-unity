@@ -322,13 +322,6 @@ namespace Sentry
             device.device_type = SystemInfo.deviceType.ToString();
             device.cpu_description = SystemInfo.processorType;
 
-#if UNITY_ANDROID
-            using (var system = new AndroidJavaClass("java.lang.System"))
-            {
-                device.arch = system.CallStatic<string>("getProperty", "os.arch");
-            }
-#endif
-
 #if UNITY_EDITOR
             device.simulator = true;
 #else
@@ -375,6 +368,13 @@ namespace Sentry
     public class Extra
     {
         public string unityVersion;
+        public string screenOrientation;
+    }
+
+    [Serializable]
+    public class User
+    {
+        public string email = "test@test.com";
     }
 
     [Serializable]
@@ -389,7 +389,7 @@ namespace Sentry
         public Context contexts;
         public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
-
+        public User user = new User();
         public Tags tags;
         public Extra extra;
 
