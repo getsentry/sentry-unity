@@ -262,6 +262,7 @@ public class SentrySdk : MonoBehaviour
 
         var evt = new SentryEvent(message, bcrumbs);
         PrepareEvent(evt);
+        evt.level = "info";
 
         var s = JsonUtility.ToJson(evt);
 
