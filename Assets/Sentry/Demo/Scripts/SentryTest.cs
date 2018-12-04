@@ -1,17 +1,24 @@
 ﻿using UnityEngine.Assertions;
 using UnityEngine;
 using System;
+using Sentry;
 
 public class SentryTest : MonoBehaviour
 {
     private int _counter = 0;
+    private SentryBehavior _behavior;
+
+    private void Start()
+    {
+        _behavior = GetComponent<SentryBehavior>();
+    }
 
     private void Update()
     {
         _counter++;
         if (_counter % 100 == 0) // every 100 frames
         {
-            SentrySdk.AddBreadcrumb("Frame number: " + _counter);
+            _behavior.GetReporter().AddBreadcrumb("Frame number: " + _counter);
         }
     }
 
@@ -27,7 +34,7 @@ public class SentryTest : MonoBehaviour
         }
         else if (message == "message")
         {
-            SentrySdk.CaptureMessage("this is a message");
+            _behavior.GetReporter().CaptureMessage("this is a message");
         }
     }
 }
