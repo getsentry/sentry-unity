@@ -384,6 +384,7 @@ namespace Sentry
         public string message;
         public string timestamp;
         public string logger;
+        public string level;
         public string platform = "csharp";
         public string release;
         public Context contexts;
@@ -398,6 +399,7 @@ namespace Sentry
             this.event_id = Guid.NewGuid().ToString("N");
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
+            this.level = "error";
             this.breadcrumbs = breadcrumbs;
             this.contexts = new Context();
             this.release = Application.version;
