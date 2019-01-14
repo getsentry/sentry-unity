@@ -97,13 +97,13 @@ public class SentrySdk : MonoBehaviour
 
     public void OnEnable()
     {
-        Application.logMessageReceivedThreaded += HandleLogCallback;
+        Application.logMessageReceived += HandleLogCallback;
         //Application.lowMemory += () => SentrySdk.AddBreadcrumb("Device with low memory.");
     }
 
     public void OnDisable()
     {
-        Application.logMessageReceivedThreaded -= HandleLogCallback;
+        Application.logMessageReceived -= HandleLogCallback;
     }
 
     public void OnGUI()
@@ -234,16 +234,13 @@ public class SentrySdk : MonoBehaviour
             // only send errors, can be set somewhere what we send and what we don't
             return;
         }
-
-        lock (_errors)
+        
+        if (Time.time - _timeLastError <= MIN_TIME)
         {
-            if (Time.time - _timeLastError <= MIN_TIME)
-            {
-                return; // silently drop the event on the floor
-            }
-            _timeLastError = Time.time;
-            ScheduleException(condition, stackTrace);
+            return; // silently drop the event on the floor
         }
+        _timeLastError = Time.time;
+        ScheduleException(condition, stackTrace);
     }
 
     private IEnumerator
