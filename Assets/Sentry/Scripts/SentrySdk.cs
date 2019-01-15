@@ -266,9 +266,7 @@ public class SentrySdk : MonoBehaviour
         PrepareEvent(evt);
         evt.level = "info";
 
-        var s = JsonUtility.ToJson(evt);
-
-        return ContinueSendingMessage(s);
+        return ContinueSendingEvent(evt);
     }
 
     private IEnumerator
@@ -285,9 +283,7 @@ public class SentrySdk : MonoBehaviour
         var evt = new SentryExceptionEvent(exceptionType, exceptionValue, GetBreadcrumbs(), stackTrace);
         PrepareEvent(evt);
 
-        var s = JsonUtility.ToJson(evt);
-
-        return ContinueSendingMessage(s);
+        return ContinueSendingEvent(evt);
     }
 
     private void PrepareEvent(SentryEvent evt)
@@ -311,8 +307,11 @@ public class SentrySdk : MonoBehaviour
 #if !UNITY_5
         <UnityWebRequestAsyncOperation>
 #endif
-         ContinueSendingMessage(string s)
+        ContinueSendingEvent<T>(T @event)
+            where T : SentryEvent
     {
+        var s = JsonUtility.ToJson(@event);
+
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
 
