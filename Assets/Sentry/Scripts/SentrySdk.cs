@@ -74,9 +74,39 @@ public class SentrySdk : MonoBehaviour
         SentrySdkSingleton.DoCaptureMessage(message);
     }
 
+    public static void CaptureEvent(SentryEvent @event)
+    {
+        if (SentrySdkSingleton == null)
+        {
+            return;
+        }
+
+        SentrySdkSingleton.DoCaptureEvent(@event);
+    }
+
     private void DoCaptureMessage(string message)
     {
-        StartCoroutine(DoSentrySendMessage(message));
+        if (Debug)
+        {
+            UnityDebug.Log("sending message to sentry.");
+        }
+
+        var @event = new SentryEvent(message, GetBreadcrumbs())
+        {
+            level = "info"
+        };
+
+        DoCaptureEvent(@event);
+    }
+
+    private void DoCaptureEvent(SentryEvent @event)
+    {
+        if (Debug)
+        {
+            UnityDebug.Log("sending event to sentry.");
+        }
+
+        StartCoroutine(ContinueSendingEvent(@event));
     }
 
     private void DoAddBreadcrumb(string message)
@@ -93,6 +123,13 @@ public class SentrySdk : MonoBehaviour
         {
             _noBreadcrumbs += 1;
         }
+    }
+
+    private List<Breadcrumb> GetBreadcrumbs()
+    {
+        return Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
+            _lastBreadcrumbPos,
+            _noBreadcrumbs);
     }
 
     public void OnEnable()
@@ -120,6 +157,11 @@ public class SentrySdk : MonoBehaviour
 
     public void ScheduleException(string condition, string stackTrace)
     {
+        if (Debug)
+        {
+            UnityDebug.Log("sending exception to sentry.");
+        }
+
         var stack = new List<StackTraceSpec>();
         var exc = condition.Split(new char[] { ':' }, 2);
         var excType = exc[0];
@@ -130,7 +172,9 @@ public class SentrySdk : MonoBehaviour
             stack.Add(stackTraceSpec);
         }
 
-        StartCoroutine(DoSendException(excType, excValue, stack));
+        var @event = new SentryExceptionEvent(excType, excValue, GetBreadcrumbs(), stack);
+
+        StartCoroutine(ContinueSendingEvent(@event));
     }
 
     private static IEnumerable<StackTraceSpec> GetStackTraces(string stackTrace)
@@ -234,7 +278,7 @@ public class SentrySdk : MonoBehaviour
             // only send errors, can be set somewhere what we send and what we don't
             return;
         }
-        
+
         if (Time.time - _timeLastError <= MIN_TIME)
         {
             return; // silently drop the event on the floor
@@ -243,74 +287,34 @@ public class SentrySdk : MonoBehaviour
         ScheduleException(condition, stackTrace);
     }
 
-    private IEnumerator
-#if !UNITY_5
-        <UnityWebRequestAsyncOperation>
-#endif
-         DoSentrySendMessage(string message)
-    {
-        if (Debug)
-        {
-            UnityDebug.Log("sending message to sentry...");
-        }
-        var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
-                                                    _lastBreadcrumbPos,
-                                                    _noBreadcrumbs);
-
-        var evt = new SentryEvent(message, bcrumbs);
-        PrepareEvent(evt);
-        evt.level = "info";
-
-        var s = JsonUtility.ToJson(evt);
-
-        return ContinueSendingMessage(s);
-    }
-
-    private IEnumerator
-#if !UNITY_5
-        <UnityWebRequestAsyncOperation>
-#endif
-         DoSendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
-    {
-        if (Debug)
-        {
-            UnityDebug.Log("sending exception to sentry...");
-        }
-        var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
-                                                    _lastBreadcrumbPos,
-                                                    _noBreadcrumbs);
-
-        var evt = new SentryExceptionEvent(exceptionType, exceptionValue, bcrumbs, stackTrace);
-        PrepareEvent(evt);
-
-        var s = JsonUtility.ToJson(evt);
-
-        return ContinueSendingMessage(s);
-    }
-
-    private void PrepareEvent(SentryEvent evt)
+    private void PrepareEvent(SentryEvent @event)
     {
         if (Version != "") // version override
         {
-            evt.release = Version;
+            @event.release = Version;
         }
 
         if (SendDefaultPii)
         {
-            evt.contexts.device.name = SystemInfo.deviceName;
+            @event.contexts.device.name = SystemInfo.deviceName;
         }
 
-        evt.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
-        evt.extra.unityVersion = Application.unityVersion;
-        evt.extra.screenOrientation = Screen.orientation.ToString();
+        @event.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
+        @event.extra.unityVersion = Application.unityVersion;
+        @event.extra.screenOrientation = Screen.orientation.ToString();
     }
 
     private IEnumerator
 #if !UNITY_5
         <UnityWebRequestAsyncOperation>
 #endif
-         ContinueSendingMessage(string s)
+        ContinueSendingEvent<T>(T @event)
+            where T : SentryEvent
     {
+        PrepareEvent(@event);
+
+        var s = JsonUtility.ToJson(@event);
+
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
 

@@ -394,7 +394,7 @@ namespace Sentry
         public Tags tags;
         public Extra extra;
 
-        public SentryEvent(string message, List<Breadcrumb> breadcrumbs)
+        public SentryEvent(string message, List<Breadcrumb> breadcrumbs = null)
         {
             this.event_id = Guid.NewGuid().ToString("N");
             this.message = message;

@@ -1,6 +1,7 @@
-﻿using UnityEngine.Assertions;
+using UnityEngine.Assertions;
 using UnityEngine;
 using System;
+using Sentry;
 
 public class SentryTest : MonoBehaviour
 {
@@ -23,11 +24,20 @@ public class SentryTest : MonoBehaviour
         }
         else if (message == "assert")
         {
-            Assert.AreEqual(message, "not equal");   
+            Assert.AreEqual(message, "not equal");
         }
         else if (message == "message")
         {
             SentrySdk.CaptureMessage("this is a message");
+        }
+        else if (message == "event")
+        {
+            var @event = new SentryEvent("Event message")
+            {
+                level = "debug"
+            };
+
+            SentrySdk.CaptureEvent(@event);
         }
     }
 }
