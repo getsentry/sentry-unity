@@ -95,6 +95,13 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
+    private List<Breadcrumb> GetBreadcrumbs()
+    {
+        return Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
+            _lastBreadcrumbPos,
+            _noBreadcrumbs);
+    }
+
     public void OnEnable()
     {
         Application.logMessageReceived += HandleLogCallback;
@@ -234,7 +241,7 @@ public class SentrySdk : MonoBehaviour
             // only send errors, can be set somewhere what we send and what we don't
             return;
         }
-        
+
         if (Time.time - _timeLastError <= MIN_TIME)
         {
             return; // silently drop the event on the floor
@@ -253,11 +260,9 @@ public class SentrySdk : MonoBehaviour
         {
             UnityDebug.Log("sending message to sentry...");
         }
-        var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
-                                                    _lastBreadcrumbPos,
-                                                    _noBreadcrumbs);
 
-        var evt = new SentryEvent(message, bcrumbs);
+
+        var evt = new SentryEvent(message, GetBreadcrumbs());
         PrepareEvent(evt);
         evt.level = "info";
 
@@ -276,11 +281,8 @@ public class SentrySdk : MonoBehaviour
         {
             UnityDebug.Log("sending exception to sentry...");
         }
-        var bcrumbs = Breadcrumb.CombineBreadcrumbs(_breadcrumbs,
-                                                    _lastBreadcrumbPos,
-                                                    _noBreadcrumbs);
 
-        var evt = new SentryExceptionEvent(exceptionType, exceptionValue, bcrumbs, stackTrace);
+        var evt = new SentryExceptionEvent(exceptionType, exceptionValue, GetBreadcrumbs(), stackTrace);
         PrepareEvent(evt);
 
         var s = JsonUtility.ToJson(evt);
