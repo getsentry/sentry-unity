@@ -86,12 +86,27 @@ public class SentrySdk : MonoBehaviour
 
     private void DoCaptureMessage(string message)
     {
-        StartCoroutine(DoSentrySendMessage(message));
+        if (Debug)
+        {
+            UnityDebug.Log("sending message to sentry.");
+        }
+
+        var @event = new SentryEvent(message, GetBreadcrumbs())
+        {
+            level = "info"
+        };
+
+        DoCaptureEvent(@event);
     }
 
     private void DoCaptureEvent(SentryEvent @event)
     {
-        StartCoroutine(DoSentrySendEvent(@event));
+        if (Debug)
+        {
+            UnityDebug.Log("sending event to sentry.");
+        }
+
+        StartCoroutine(ContinueSendingEvent(@event));
     }
 
     private void DoAddBreadcrumb(string message)
@@ -142,6 +157,11 @@ public class SentrySdk : MonoBehaviour
 
     public void ScheduleException(string condition, string stackTrace)
     {
+        if (Debug)
+        {
+            UnityDebug.Log("sending exception to sentry.");
+        }
+
         var stack = new List<StackTraceSpec>();
         var exc = condition.Split(new char[] { ':' }, 2);
         var excType = exc[0];
@@ -152,7 +172,9 @@ public class SentrySdk : MonoBehaviour
             stack.Add(stackTraceSpec);
         }
 
-        StartCoroutine(DoSendException(excType, excValue, stack));
+        var @event = new SentryExceptionEvent(excType, excValue, GetBreadcrumbs(), stack);
+
+        StartCoroutine(ContinueSendingEvent(@event));
     }
 
     private static IEnumerable<StackTraceSpec> GetStackTraces(string stackTrace)
@@ -263,55 +285,6 @@ public class SentrySdk : MonoBehaviour
         }
         _timeLastError = Time.time;
         ScheduleException(condition, stackTrace);
-    }
-
-    private IEnumerator
-#if !UNITY_5
-        <UnityWebRequestAsyncOperation>
-#endif
-        DoSentrySendEvent(SentryEvent @event)
-    {
-        if (Debug)
-        {
-            UnityDebug.Log("sending event to sentry...");
-        }
-
-        return ContinueSendingEvent(@event);
-    }
-
-    private IEnumerator
-#if !UNITY_5
-        <UnityWebRequestAsyncOperation>
-#endif
-         DoSentrySendMessage(string message)
-    {
-        if (Debug)
-        {
-            UnityDebug.Log("sending message to sentry...");
-        }
-
-        var @event = new SentryEvent(message, GetBreadcrumbs())
-        {
-            level = "info"
-        };
-
-        return ContinueSendingEvent(@event);
-    }
-
-    private IEnumerator
-#if !UNITY_5
-        <UnityWebRequestAsyncOperation>
-#endif
-         DoSendException(string exceptionType, string exceptionValue, List<StackTraceSpec> stackTrace)
-    {
-        if (Debug)
-        {
-            UnityDebug.Log("sending exception to sentry...");
-        }
-
-        var @event = new SentryExceptionEvent(exceptionType, exceptionValue, GetBreadcrumbs(), stackTrace);
-
-        return ContinueSendingEvent(@event);
     }
 
     private void PrepareEvent(SentryEvent @event)
