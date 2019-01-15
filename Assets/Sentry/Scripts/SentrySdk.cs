@@ -14,7 +14,6 @@ public class SentrySdk : MonoBehaviour
     private readonly object _errors = new object();
     private float _timeLastError = 0;
     private const float MIN_TIME = 0.5f;
-    public const int MAX_BREADCRUMBS = 100;
     private Breadcrumb[] _breadcrumbs;
     private int _lastBreadcrumbPos = 0;
     private int _noBreadcrumbs = 0;
@@ -48,7 +47,7 @@ public class SentrySdk : MonoBehaviour
         {
             throw new Exception("Cannot have more than one instance of SentrySdk");
         }
-        _breadcrumbs = new Breadcrumb[MAX_BREADCRUMBS];
+        _breadcrumbs = new Breadcrumb[Breadcrumb.MaxBreadcrumbs];
         SentrySdkSingleton = this;
         _initialized = true; // don't initialize if dsn is empty or something exploded
                             // when parsing dsn
@@ -118,8 +117,8 @@ public class SentrySdk : MonoBehaviour
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
         _breadcrumbs[_lastBreadcrumbPos] = new Breadcrumb(timestamp, message);
         _lastBreadcrumbPos += 1;
-        _lastBreadcrumbPos %= MAX_BREADCRUMBS;
-        if (_noBreadcrumbs < MAX_BREADCRUMBS)
+        _lastBreadcrumbPos %= Breadcrumb.MaxBreadcrumbs;
+        if (_noBreadcrumbs < Breadcrumb.MaxBreadcrumbs)
         {
             _noBreadcrumbs += 1;
         }
