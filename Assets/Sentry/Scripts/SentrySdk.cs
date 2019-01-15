@@ -74,9 +74,24 @@ public class SentrySdk : MonoBehaviour
         SentrySdkSingleton.DoCaptureMessage(message);
     }
 
+    public static void CaptureEvent(SentryEvent @event)
+    {
+        if (SentrySdkSingleton == null)
+        {
+            return;
+        }
+
+        SentrySdkSingleton.DoCaptureEvent(@event);
+    }
+
     private void DoCaptureMessage(string message)
     {
         StartCoroutine(DoSentrySendMessage(message));
+    }
+
+    private void DoCaptureEvent(SentryEvent @event)
+    {
+        StartCoroutine(DoSentrySendEvent(@event));
     }
 
     private void DoAddBreadcrumb(string message)
@@ -254,6 +269,22 @@ public class SentrySdk : MonoBehaviour
 #if !UNITY_5
         <UnityWebRequestAsyncOperation>
 #endif
+        DoSentrySendEvent(SentryEvent @event)
+    {
+        if (Debug)
+        {
+            UnityDebug.Log("sending event to sentry...");
+        }
+
+        PrepareEvent(@event);
+
+        return ContinueSendingEvent(@event);
+    }
+
+    private IEnumerator
+#if !UNITY_5
+        <UnityWebRequestAsyncOperation>
+#endif
          DoSentrySendMessage(string message)
     {
         if (Debug)
@@ -261,12 +292,11 @@ public class SentrySdk : MonoBehaviour
             UnityDebug.Log("sending message to sentry...");
         }
 
+        var @event = new SentryEvent(message, GetBreadcrumbs());
+        PrepareEvent(@event);
+        @event.level = "info";
 
-        var evt = new SentryEvent(message, GetBreadcrumbs());
-        PrepareEvent(evt);
-        evt.level = "info";
-
-        return ContinueSendingEvent(evt);
+        return ContinueSendingEvent(@event);
     }
 
     private IEnumerator
@@ -280,27 +310,27 @@ public class SentrySdk : MonoBehaviour
             UnityDebug.Log("sending exception to sentry...");
         }
 
-        var evt = new SentryExceptionEvent(exceptionType, exceptionValue, GetBreadcrumbs(), stackTrace);
-        PrepareEvent(evt);
+        var @event = new SentryExceptionEvent(exceptionType, exceptionValue, GetBreadcrumbs(), stackTrace);
+        PrepareEvent(@event);
 
-        return ContinueSendingEvent(evt);
+        return ContinueSendingEvent(@event);
     }
 
-    private void PrepareEvent(SentryEvent evt)
+    private void PrepareEvent(SentryEvent @event)
     {
         if (Version != "") // version override
         {
-            evt.release = Version;
+            @event.release = Version;
         }
 
         if (SendDefaultPii)
         {
-            evt.contexts.device.name = SystemInfo.deviceName;
+            @event.contexts.device.name = SystemInfo.deviceName;
         }
 
-        evt.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
-        evt.extra.unityVersion = Application.unityVersion;
-        evt.extra.screenOrientation = Screen.orientation.ToString();
+        @event.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
+        @event.extra.unityVersion = Application.unityVersion;
+        @event.extra.screenOrientation = Screen.orientation.ToString();
     }
 
     private IEnumerator
