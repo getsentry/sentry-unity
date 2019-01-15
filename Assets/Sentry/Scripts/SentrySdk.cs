@@ -276,8 +276,6 @@ public class SentrySdk : MonoBehaviour
             UnityDebug.Log("sending event to sentry...");
         }
 
-        PrepareEvent(@event);
-
         return ContinueSendingEvent(@event);
     }
 
@@ -292,9 +290,10 @@ public class SentrySdk : MonoBehaviour
             UnityDebug.Log("sending message to sentry...");
         }
 
-        var @event = new SentryEvent(message, GetBreadcrumbs());
-        PrepareEvent(@event);
-        @event.level = "info";
+        var @event = new SentryEvent(message, GetBreadcrumbs())
+        {
+            level = "info"
+        };
 
         return ContinueSendingEvent(@event);
     }
@@ -311,7 +310,6 @@ public class SentrySdk : MonoBehaviour
         }
 
         var @event = new SentryExceptionEvent(exceptionType, exceptionValue, GetBreadcrumbs(), stackTrace);
-        PrepareEvent(@event);
 
         return ContinueSendingEvent(@event);
     }
@@ -340,6 +338,8 @@ public class SentrySdk : MonoBehaviour
         ContinueSendingEvent<T>(T @event)
             where T : SentryEvent
     {
+        PrepareEvent(@event);
+
         var s = JsonUtility.ToJson(@event);
 
         var sentryKey = _dsn.publicKey;
