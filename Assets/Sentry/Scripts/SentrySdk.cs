@@ -11,9 +11,8 @@ using UnityDebug = UnityEngine.Debug;
 
 public class SentrySdk : MonoBehaviour
 {
-    private readonly object _errors = new object();
     private float _timeLastError = 0;
-    private const float MIN_TIME = 0.5f;
+    private const float MinTime = 0.5f;
     private Breadcrumb[] _breadcrumbs;
     private int _lastBreadcrumbPos = 0;
     private int _noBreadcrumbs = 0;
@@ -31,7 +30,7 @@ public class SentrySdk : MonoBehaviour
     private Dsn _dsn;
     private bool _initialized = false;
 
-    private static SentrySdk SentrySdkSingleton = null;
+    private static SentrySdk _instance = null;
 
     public void Start()
     {
@@ -42,45 +41,57 @@ public class SentrySdk : MonoBehaviour
             return;
         }
 
-        _dsn = new Dsn(Dsn);
-        if (SentrySdkSingleton != null)
+        if (_instance == null)
         {
-            throw new Exception("Cannot have more than one instance of SentrySdk");
+            try
+            {
+                _dsn = new Dsn(Dsn);
+            }
+            catch (Exception e)
+            {
+                UnityDebug.LogError(string.Format("Error parsing DSN: {0}", e.Message));
+                return;
+            }
+
+            _breadcrumbs = new Breadcrumb[Breadcrumb.MaxBreadcrumbs];
+            DontDestroyOnLoad(this);
+            _instance = this;
+            _initialized = true;
         }
-        _breadcrumbs = new Breadcrumb[Breadcrumb.MaxBreadcrumbs];
-        SentrySdkSingleton = this;
-        _initialized = true; // don't initialize if dsn is empty or something exploded
-                            // when parsing dsn
+        else
+        {
+            Destroy(this);
+        }
     }
 
     public static void AddBreadcrumb(string message)
     {
-        if (SentrySdkSingleton == null)
+        if (_instance == null)
         {
             return;
         }
 
-        SentrySdkSingleton.DoAddBreadcrumb(message);
+        _instance.DoAddBreadcrumb(message);
     }
 
     public static void CaptureMessage(string message)
     {
-        if (SentrySdkSingleton == null)
+        if (_instance == null)
         {
             return;
         }
 
-        SentrySdkSingleton.DoCaptureMessage(message);
+        _instance.DoCaptureMessage(message);
     }
 
     public static void CaptureEvent(SentryEvent @event)
     {
-        if (SentrySdkSingleton == null)
+        if (_instance == null)
         {
             return;
         }
 
-        SentrySdkSingleton.DoCaptureEvent(@event);
+        _instance.DoCaptureEvent(@event);
     }
 
     private void DoCaptureMessage(string message)
@@ -112,8 +123,10 @@ public class SentrySdk : MonoBehaviour
     {
         if (!_initialized)
         {
-            throw new Exception("sentry not initialized");
+            UnityDebug.LogError("Cannot AddBreadcrumb if we are not initialized");
+            return;
         }
+
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
         _breadcrumbs[_lastBreadcrumbPos] = new Breadcrumb(timestamp, message);
         _lastBreadcrumbPos += 1;
@@ -133,13 +146,12 @@ public class SentrySdk : MonoBehaviour
 
     public void OnEnable()
     {
-        Application.logMessageReceived += HandleLogCallback;
-        //Application.lowMemory += () => SentrySdk.AddBreadcrumb("Device with low memory.");
+        Application.logMessageReceived += OnLogMessageReceived;
     }
 
     public void OnDisable()
     {
-        Application.logMessageReceived -= HandleLogCallback;
+        Application.logMessageReceived -= OnLogMessageReceived;
     }
 
     public void OnGUI()
@@ -265,7 +277,7 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
-    public void HandleLogCallback(string condition, string stackTrace, LogType type)
+    public void OnLogMessageReceived(string condition, string stackTrace, LogType type)
     {
         if (!_initialized)
         {
@@ -278,7 +290,7 @@ public class SentrySdk : MonoBehaviour
             return;
         }
 
-        if (Time.time - _timeLastError <= MIN_TIME)
+        if (Time.time - _timeLastError <= MinTime)
         {
             return; // silently drop the event on the floor
         }
