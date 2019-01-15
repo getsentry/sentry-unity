@@ -479,7 +479,7 @@ namespace Sentry
     [Serializable]
     public class Breadcrumb
     {
-        private const int MaxBreadcrumbs = 100;
+        public const int MaxBreadcrumbs = 100;
 
         public string timestamp;
         public string message;
