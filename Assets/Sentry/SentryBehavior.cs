@@ -26,7 +26,12 @@ namespace Sentry.Unity
             _sdk = SentrySdk.Init(o =>
             {
                 o.Dsn = new Dsn(dsn);
+
+#if UNITY_EDITOR
+                // NOTE: This is simply to see the internal logging of the SDK
+                // A production situation would NOT have this enabled.
                 o.Debug = true;
+#endif
 
                 // Uses the game `version` as Release
                 o.Release = Application.version;
