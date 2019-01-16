@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using UnityEngine;
+using DeviceOrientation = Sentry.Protocol.DeviceOrientation;
 
 namespace Sentry.Unity
 {
@@ -37,14 +38,81 @@ namespace Sentry.Unity
 
             @event.Contexts.App.StartTime = DateTimeOffset.UtcNow.AddSeconds(-Time.realtimeSinceStartup);
 
-            @event.SetTag("unity:processorCount", SystemInfo.processorCount.ToString());
-            @event.SetTag("unity:supportsVibration", SystemInfo.supportsVibration.ToString());
-            @event.SetTag("unity:installMode", Application.installMode.ToString());
+            @event.SetExtra("unity:processorCount", SystemInfo.processorCount.ToString());
+            @event.SetExtra("unity:supportsVibration", SystemInfo.supportsVibration.ToString());
+            @event.SetExtra("unity:installMode", Application.installMode.ToString());
+
+            // TODO: Will move to raw_description once parsing is done in Sentry
+            @event.Contexts.OperatingSystem.Name = SystemInfo.operatingSystem;
+
+            switch (Input.deviceOrientation)
+            {
+                case UnityEngine.DeviceOrientation.Portrait:
+                case UnityEngine.DeviceOrientation.PortraitUpsideDown:
+                    @event.Contexts.Device.Orientation = DeviceOrientation.Portrait;
+                    break;
+                case UnityEngine.DeviceOrientation.LandscapeLeft:
+                case UnityEngine.DeviceOrientation.LandscapeRight:
+                    @event.Contexts.Device.Orientation = DeviceOrientation.Landscape;
+                    break;
+                case UnityEngine.DeviceOrientation.FaceUp:
+                case UnityEngine.DeviceOrientation.FaceDown:
+                    // TODO: Add to protocol?
+                    break;
+            }
+
+            var model = SystemInfo.deviceModel;
+            if (model != SystemInfo.unsupportedIdentifier
+                // Returned by the editor
+                && model != "System Product Name (System manufacturer)")
+            {
+                @event.Contexts.Device.Model = model;
+            }
+
+            //device.DeviceType = SystemInfo.deviceType.ToString();
+            //device.cpu_description = SystemInfo.processorType;
+            //device.BatteryStatus = SystemInfo.batteryStatus.ToString();
+
+            // This is the approximate amount of system memory in megabytes.
+            // This function is not supported on Windows Store Apps and will always return 0.
+            if (SystemInfo.systemMemorySize != 0)
+            {
+                @event.Contexts.Device.MemorySize = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
+            }
+
+            var gpu = new Gpu
+            {
+                Id = SystemInfo.graphicsDeviceID,
+                Name = SystemInfo.graphicsDeviceName,
+                VendorId = SystemInfo.graphicsDeviceVendorID,
+                VendorName = SystemInfo.graphicsDeviceVendor,
+                MemorySize = SystemInfo.graphicsMemorySize,
+                MultiThreadedRendering = SystemInfo.graphicsMultiThreaded,
+                NpotSupport = SystemInfo.npotSupport.ToString(),
+                Version = SystemInfo.graphicsDeviceVersion,
+                ApiType = SystemInfo.graphicsDeviceType.ToString()
+            };
+
+            // TODO: Hack until Context has a property GPU
+            @event.Contexts.TryAdd("gpu", gpu);
+
+            @event.Contexts.App.StartTime = DateTimeOffset.UtcNow
+                // NOTE: Time API requires main thread
+                .AddSeconds(-Time.realtimeSinceStartup);
+
+            if (Debug.isDebugBuild)
+            {
+                @event.Contexts.App.BuildType = "debug";
+            }
+            else
+            {
+                @event.Contexts.App.BuildType = "release";
+            }
 
 #if UNITY_EDITOR
             @event.Contexts.Device.Simulator = true;
 #else
-            evt.Contexts.Device.Simulator = false;
+            @event.Contexts.Device.Simulator = false;
 #endif
 
             return @event;
@@ -137,7 +205,10 @@ namespace Sentry.Unity
                 {
                     FileName = filename,
                     Function = functionName,
-                    LineNumber = lineNo
+                    LineNumber = lineNo,
+                    InApp = functionName != null
+                        && !functionName.StartsWith("UnityEngine", StringComparison.Ordinal)
+                        && !functionName.StartsWith("System", StringComparison.Ordinal)
                 });
             }
 

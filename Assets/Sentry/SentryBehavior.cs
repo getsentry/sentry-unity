@@ -16,6 +16,7 @@ namespace Sentry.Unity
         {
             var dsn = // null; // **SET YOUR DSN HERE**
                 "https://5fd7a6cda8444965bade9ccfd3df9882@sentry.io/1188141";
+
             if (dsn == null)
             {
                 Debug.LogError("No DSN set!");
@@ -27,8 +28,13 @@ namespace Sentry.Unity
                 o.Dsn = new Dsn(dsn);
                 o.Debug = true;
 
+                // Uses the game `version` as Release
                 o.Release = Application.version;
+                // If PDBs are available, CaptureMessage also includes a stack trace
+                o.AttachStacktrace = true;
 
+                // Required configurations to integrate with Unity
+                o.AddInAppExclude("UnityEngine");
                 o.DiagnosticLogger = new UnityLogger();
                 // Some targets doesn't support GZipping the events sent out
                 o.RequestBodyCompressionLevel = System.IO.Compression.CompressionLevel.NoCompression;
@@ -36,6 +42,8 @@ namespace Sentry.Unity
                 o.AddExceptionProcessor(new UnityEventExceptionProcessor());
             });
 
+            // TODO: Consider ensuring this code path doesn't require UI thread
+            // Then use logMessageReceivedThreaded instead
             Application.logMessageReceived += OnLogMessageReceived;
         }
 
