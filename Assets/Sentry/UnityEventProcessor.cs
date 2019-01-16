@@ -57,7 +57,7 @@ namespace Sentry.Unity
         {
             if (exception is UnityLogException ule)
             {
-                sentryEvent.SentryExceptions = new[] { GetException(ule.Condition, ule.LogStackTrace) };
+                sentryEvent.SentryExceptions = new[] { GetException(ule.LogString, ule.LogStackTrace) };
             }
         }
 
@@ -140,6 +140,8 @@ namespace Sentry.Unity
                     LineNumber = lineNo
                 });
             }
+
+            frames.Reverse();
 
             // TODO: Hack until we make it settable
             var stacktrace = new SentryStackTrace();
