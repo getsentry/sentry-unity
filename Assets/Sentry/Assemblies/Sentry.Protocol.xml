@@ -479,6 +479,94 @@
             Landscape
             </summary>
         </member>
+        <member name="T:Sentry.Protocol.Gpu">
+            <summary>
+            Graphics device unit
+            </summary>
+            <seealso href="https://docs.sentry.io/development/sdk-dev/interfaces/gpu/"/>
+        </member>
+        <member name="F:Sentry.Protocol.Gpu.Type">
+            <summary>
+            Tells Sentry which type of context this is.
+            </summary>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.Name">
+            <summary>
+            The name of the graphics device
+            </summary>
+            <example>
+            iPod touch: Apple A8 GPU
+            Samsung S7: Mali-T880
+            </example>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.Id">
+            <summary>
+            The PCI Id of the graphics device
+            </summary>
+            <remarks>
+            Combined with <see cref="P:Sentry.Protocol.Gpu.VendorId"/> uniquely identifies the GPU
+            </remarks>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.VendorId">
+            <summary>
+            The PCI vendor Id of the graphics device
+            </summary>
+            <remarks>
+            Combined with <see cref="P:Sentry.Protocol.Gpu.Id"/> uniquely identifies the GPU
+            </remarks>
+            <seealso href="https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices"/>
+            <seealso href="http://pci-ids.ucw.cz/read/PC/"/>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.VendorName">
+            <summary>
+            The vendor name reported by the graphic device
+            </summary>
+            <example>
+            Apple, ARM, WebKit
+            </example>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.MemorySize">
+            <summary>
+            Total GPU memory available in mega-bytes.
+            </summary>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.ApiType">
+            <summary>
+            Device type
+            </summary>
+            <remarks>The low level API used</remarks>
+            <example>Metal, Direct3D11, OpenGLES3, PlayStation4, XboxOne</example>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.MultiThreadedRendering">
+            <summary>
+            Whether the GPU is multi-threaded rendering or not.
+            </summary>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.Version">
+            <summary>
+            The Version of the API of the graphics device
+            </summary>
+            <example>
+            iPod touch: Metal
+            Android: OpenGL ES 3.2 v1.r22p0-01rel0.f294e54ceb2cb2d81039204fa4b0402e
+            WebGL Windows: OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))
+            OpenGL 2.0, Direct3D 9.0c
+            </example>
+        </member>
+        <member name="P:Sentry.Protocol.Gpu.NpotSupport">
+            <summary>
+            The Non-Power-Of-Two support level
+            </summary>
+            <example>
+            Full
+            </example>
+        </member>
+        <member name="M:Sentry.Protocol.Gpu.Clone">
+            <summary>
+            Clones this instance
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Sentry.Protocol.OperatingSystem">
             <summary>
             Represents Sentry's context for OS
@@ -1015,6 +1103,44 @@
             </summary>
             <param name="name">The package name.</param>
             <param name="version">The package version.</param>
+        </member>
+        <member name="T:Sentry.Protocol.SentryId">
+            <summary>
+            The identifier of an event in Sentry
+            </summary>
+        </member>
+        <member name="F:Sentry.Protocol.SentryId.Empty">
+            <summary>
+            An empty sentry id
+            </summary>
+        </member>
+        <member name="M:Sentry.Protocol.SentryId.#ctor(System.Guid)">
+            <summary>
+            Creates a new instance of a Sentry Id
+            </summary>
+            <param name="guid"></param>
+        </member>
+        <member name="M:Sentry.Protocol.SentryId.ToString">
+            <summary>
+            Sentry Id in the format Sentry recognizes
+            </summary>
+            <remarks>
+            Default <see cref="M:Sentry.Protocol.SentryId.ToString"/> of <see cref="T:System.Guid"/> includes
+            dashes which sentry doesn't expect when searching events.
+            </remarks>
+            <returns>String representation of the event id.</returns>
+        </member>
+        <member name="M:Sentry.Protocol.SentryId.op_Implicit(Sentry.Protocol.SentryId)~System.Guid">
+            <summary>
+            The <see cref="T:System.Guid"/> from the <see cref="T:Sentry.Protocol.SentryId"/>
+            </summary>
+            <param name="sentryId"></param>
+        </member>
+        <member name="M:Sentry.Protocol.SentryId.op_Implicit(System.Guid)~Sentry.Protocol.SentryId">
+            <summary>
+            A <see cref="T:Sentry.Protocol.SentryId"/> from a <see cref="T:System.Guid"/>
+            </summary>
+            <param name="guid"></param>
         </member>
         <member name="T:Sentry.Protocol.SentryLevel">
             <summary>

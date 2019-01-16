@@ -667,44 +667,6 @@
             <param name="level">The message level.</param>
             <returns>The Id of the event</returns>
         </member>
-        <member name="T:Sentry.SentryId">
-            <summary>
-            The identifier of an event in Sentry
-            </summary>
-        </member>
-        <member name="F:Sentry.SentryId.Empty">
-            <summary>
-            An empty sentry id
-            </summary>
-        </member>
-        <member name="M:Sentry.SentryId.#ctor(System.Guid)">
-            <summary>
-            Creates a new instance of a Sentry Id
-            </summary>
-            <param name="guid"></param>
-        </member>
-        <member name="M:Sentry.SentryId.ToString">
-            <summary>
-            Sentry Id in the format Sentry recognizes
-            </summary>
-            <remarks>
-            Default <see cref="M:Sentry.SentryId.ToString"/> of <see cref="T:System.Guid"/> includes
-            dashes which sentry doesn't expect when searching events.
-            </remarks>
-            <returns>String representation of the event id.</returns>
-        </member>
-        <member name="M:Sentry.SentryId.op_Implicit(Sentry.SentryId)~System.Guid">
-            <summary>
-            The <see cref="T:System.Guid"/> from the <see cref="T:Sentry.SentryId"/>
-            </summary>
-            <param name="sentryId"></param>
-        </member>
-        <member name="M:Sentry.SentryId.op_Implicit(System.Guid)~Sentry.SentryId">
-            <summary>
-            A <see cref="T:Sentry.SentryId"/> from a <see cref="T:System.Guid"/>
-            </summary>
-            <param name="guid"></param>
-        </member>
         <member name="T:Sentry.SentryOptions">
             <summary>
             Sentry SDK options

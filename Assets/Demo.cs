@@ -1,20 +1,35 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using Sentry;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class Demo : MonoBehaviour
 {
-    private SentryBehavior _behavior;
-
     private void Start()
     {
-        _behavior = GetComponent<SentryBehavior>();
+        SentrySdk.AddBreadcrumb("Demo starting!");
+
+        Debug.LogWarning("Unity Debug.LogWarning calls are stored as breadcrumbs.");
     }
 
-    public void Crash()
+    public void AssertFalse() => Assert.AreEqual(true, false);
+
+    public void ThrowUnhandled() => throw null;
+
+    public void ThrowAndCatch()
     {
-        Debug.LogWarning("Crash");
-        SentrySdk.Init("https://37c2358e61f041158167da7819b77b50@sentry.io/1306165");
+        Debug.Log("Throwing exception!");
+
+        try
+        {
+            throw null;
+        }
+        catch (Exception e)
+        {
+            var evt = new SentryEvent(e);
+            SentrySdk.CaptureEvent(evt);
+        }
     }
+
+    public new void SendMessage() => SentrySdk.CaptureMessage("Capturing message");
 }
