@@ -70,8 +70,12 @@ namespace Sentry.Unity
             }
 
             //device.DeviceType = SystemInfo.deviceType.ToString();
-            //device.cpu_description = SystemInfo.processorType;
+            //device.CpuDescription = SystemInfo.processorType;
             //device.BatteryStatus = SystemInfo.batteryStatus.ToString();
+
+            @event.SetExtra("unity:batteryStatus", SystemInfo.batteryStatus.ToString());
+            @event.SetExtra("unity:deviceType", SystemInfo.deviceType.ToString());
+            @event.SetExtra("unity:processorType", SystemInfo.processorType);
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
@@ -214,11 +218,11 @@ namespace Sentry.Unity
 
             frames.Reverse();
 
-            // TODO: Hack until we make it settable
             var stacktrace = new SentryStackTrace();
-            var framesProp = typeof(SentryStackTrace).GetProperty("InternalFrames",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            framesProp.SetValue(stacktrace, frames);
+            foreach (var frame in frames)
+            {
+                stacktrace.Frames.Add(frame);
+            }
 
             return new SentryException
             {
