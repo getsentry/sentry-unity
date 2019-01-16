@@ -1,0 +1,1219 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Sentry</name>
+    </assembly>
+    <members>
+        <member name="T:Sentry.DsnAttribute">
+            <summary>
+            A way to configure the DSN via attribute defined at the entry-assembly
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="P:Sentry.DsnAttribute.Dsn">
+            <summary>
+            The string DSN or empty string to turn the SDK off.
+            </summary>
+        </member>
+        <member name="M:Sentry.DsnAttribute.#ctor(System.String)">
+            <summary>
+            Creates a new instance of <see cref="T:Sentry.DsnAttribute" />
+            </summary>
+            <param name="dsn"></param>
+            <inheritdoc />
+        </member>
+        <member name="T:Sentry.Extensibility.HubAdapter">
+            <summary>
+            An implementation of <see cref="T:Sentry.IHub" /> which forwards any call to <see cref="T:Sentry.SentrySdk" />
+            </summary>
+            <remarks>
+            Allows testing classes which otherwise would need to depend on static <see cref="T:Sentry.SentrySdk" />
+            by having them depend on <see cref="T:Sentry.IHub"/> instead, which can be mocked.
+            </remarks>
+            <inheritdoc cref="T:Sentry.IHub" />
+        </member>
+        <member name="F:Sentry.Extensibility.HubAdapter.Instance">
+            <summary>
+            The single instance which forwards all calls to <see cref="T:Sentry.SentrySdk"/>
+            </summary>
+        </member>
+        <member name="T:Sentry.Extensibility.ISentryEventExceptionProcessor">
+            <summary>
+            Process exceptions and augments the event with its data
+            </summary>
+        </member>
+        <member name="M:Sentry.Extensibility.ISentryEventExceptionProcessor.Process(System.Exception,Sentry.SentryEvent)">
+            <summary>
+            Process the exception and augments the event with its data.
+            </summary>
+            <param name="exception">The exception to process.</param>
+            <param name="sentryEvent">The event to add data to.</param>
+        </member>
+        <member name="T:Sentry.Extensibility.ISentryEventProcessor">
+            <summary>
+            Process a SentryEvent during the prepare phase.
+            </summary>
+        </member>
+        <member name="M:Sentry.Extensibility.ISentryEventProcessor.Process(Sentry.SentryEvent)">
+            <summary>
+            Process the <see cref="T:Sentry.SentryEvent"/>
+            </summary>
+            <param name="event">The event to process</param>
+            <return>The processed event or <c>null</c> if the event was dropped.</return>
+            <remarks>
+            The event returned can be the same instance received or a new one.
+            Returning null will stop the processing pipeline.
+            Meaning the event should no longer be processed nor send.
+            </remarks>
+        </member>
+        <member name="T:Sentry.Extensibility.ITransport">
+            <summary>
+            An abstraction to the transport of the event
+            </summary>
+        </member>
+        <member name="M:Sentry.Extensibility.ITransport.CaptureEventAsync(Sentry.SentryEvent,System.Threading.CancellationToken)">
+            <summary>
+            Sends the <see cref="T:Sentry.SentryEvent" /> to Sentry asynchronously
+            </summary>
+            <param name="event">The event to send to Sentry.</param>
+            <param name="cancellationToken">The cancellation token.</param>
+        </member>
+        <member name="T:Sentry.Extensibility.SentryEventExceptionProcessor`1">
+            <summary>
+            Process an exception type and augments the event with its data
+            </summary>
+            <typeparam name="TException">The type of the exception to process</typeparam>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Extensibility.SentryEventExceptionProcessor`1.Process(System.Exception,Sentry.SentryEvent)">
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Extensibility.SentryEventExceptionProcessor`1.ProcessException(`0,Sentry.SentryEvent)">
+            <summary>
+            Process the exception and event.
+            </summary>
+            <param name="exception">The exception to process.</param>
+            <param name="sentryEvent">The event to process.</param>
+        </member>
+        <member name="T:Sentry.Http.ISentryHttpClientFactory">
+            <summary>
+            Sentry <see cref="T:System.Net.Http.HttpClient"/> factory
+            </summary>
+        </member>
+        <member name="M:Sentry.Http.ISentryHttpClientFactory.Create(Sentry.Dsn,Sentry.SentryOptions)">
+            <summary>
+            Creates an HttpClient using the specified options.
+            </summary>
+            <param name="dsn">The DSN.</param>
+            <param name="options">The options.</param>
+            <returns><see cref="T:System.Net.Http.HttpClient"/></returns>
+        </member>
+        <member name="T:Sentry.HubExtensions">
+            <summary>
+            Extension methods for <see cref="T:Sentry.IHub"/>
+            </summary>
+        </member>
+        <member name="M:Sentry.HubExtensions.AddBreadcrumb(Sentry.IHub,System.String,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String},Sentry.Protocol.BreadcrumbLevel)">
+            <summary>
+            Adds a breadcrumb to the current scope
+            </summary>
+            <param name="hub">The Hub which holds the scope stack</param>
+            <param name="message">The message</param>
+            <param name="category">Category</param>
+            <param name="type">Breadcrumb type</param>
+            <param name="data">Additional data</param>
+            <param name="level">Breadcrumb level</param>
+        </member>
+        <member name="M:Sentry.HubExtensions.AddBreadcrumb(Sentry.IHub,Sentry.Infrastructure.ISystemClock,System.String,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String},Sentry.Protocol.BreadcrumbLevel)">
+            <summary>
+            Adds a breadcrumb using a custom <see cref="T:Sentry.Infrastructure.ISystemClock"/> which allows better testability
+            </summary>
+            <param name="hub">The Hub which holds the scope stack</param>
+            <param name="clock">The system clock</param>
+            <param name="message">The message</param>
+            <param name="category">Category</param>
+            <param name="type">Breadcrumb type</param>
+            <param name="data">Additional data</param>
+            <param name="level">Breadcrumb level</param>
+            <remarks>
+            This method is to be used by integrations to allow testing
+            </remarks>
+        </member>
+        <member name="M:Sentry.HubExtensions.PushAndLockScope(Sentry.IHub)">
+            <summary>
+            Pushes a new scope while locking it which stop new scope creation
+            </summary>
+            <param name="hub"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sentry.HubExtensions.LockScope(Sentry.IHub)">
+            <summary>
+            Lock the scope so subsequent <see cref="M:Sentry.ISentryScopeManager.PushScope"/> don't create new scopes.
+            </summary>
+            <remarks>
+            This is useful to stop following scope creation by other integrations
+            like Loggers which guarantee log messages are not lost
+            </remarks>
+            <param name="hub"></param>
+        </member>
+        <member name="M:Sentry.HubExtensions.UnlockScope(Sentry.IHub)">
+            <summary>
+            Unlocks the current scope to allow subsequent calls to <see cref="M:Sentry.ISentryScopeManager.PushScope"/> create new scopes.
+            </summary>
+            <param name="hub"></param>
+        </member>
+        <member name="T:Sentry.IHub">
+            <summary>
+            SDK API contract which combines a client and scope management
+            </summary>
+            <remarks>
+            The contract of which <see cref="T:Sentry.SentrySdk" /> exposes statically.
+            This interface exist to allow better testability of integrations which otherwise
+            would require dependency to the static <see cref="T:Sentry.SentrySdk" />
+            </remarks>
+            <inheritdoc cref="T:Sentry.ISentryClient" />
+            <inheritdoc cref="T:Sentry.ISentryScopeManager" />
+        </member>
+        <member name="P:Sentry.IHub.LastEventId">
+            <summary>
+            Last event id recorded in the current scope
+            </summary>
+        </member>
+        <member name="T:Sentry.Infrastructure.ConsoleDiagnosticLogger">
+            <summary>
+            Console logger used by the SDK to report its internal logging
+            </summary>
+            <remarks>
+            The default logger, usually replaced by a higher level logging adapter like Microsoft.Extensions.Logging
+            </remarks>
+        </member>
+        <member name="M:Sentry.Infrastructure.ConsoleDiagnosticLogger.IsEnabled(Sentry.Protocol.SentryLevel)">
+            <summary>
+            Whether the logger is enabled to the defined level.
+            </summary>
+            <param name="level"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sentry.Infrastructure.ConsoleDiagnosticLogger.Log(Sentry.Protocol.SentryLevel,System.String,System.Exception,System.Object[])">
+            <summary>
+            Log message with level, exception and parameters
+            </summary>
+            <param name="logLevel"></param>
+            <param name="message"></param>
+            <param name="exception"></param>
+            <param name="args"></param>
+        </member>
+        <member name="T:Sentry.Infrastructure.ISystemClock">
+            <summary>
+            An abstraction to the system clock
+            </summary>
+            <remarks>
+            Agree to disagree with closing this: https://github.com/aspnet/Common/issues/151
+            </remarks>
+        </member>
+        <member name="M:Sentry.Infrastructure.ISystemClock.GetUtcNow">
+            <summary>
+            Gets the current time in UTC.
+            </summary>
+        </member>
+        <member name="T:Sentry.Infrastructure.SystemClock">
+            <summary>
+            Implementation of <see cref="T:Sentry.Infrastructure.ISystemClock"/> to help testability
+            </summary>
+            <seealso cref="T:Sentry.Infrastructure.ISystemClock" />
+        </member>
+        <member name="F:Sentry.Infrastructure.SystemClock.Clock">
+            <summary>
+            System clock singleton
+            </summary>
+        </member>
+        <member name="M:Sentry.Infrastructure.SystemClock.GetUtcNow">
+            <summary>
+            Gets the current time in UTC.
+            </summary>
+            <remarks>
+            Used for testability, calls: DateTimeOffset.UtcNow
+            </remarks>
+            <returns></returns>
+        </member>
+        <member name="T:Sentry.Integrations.ISdkIntegration">
+            <summary>
+            An SDK Integration
+            </summary>
+        </member>
+        <member name="M:Sentry.Integrations.ISdkIntegration.Register(Sentry.IHub,Sentry.SentryOptions)">
+            <summary>
+            Registers this integration with the hub.
+            </summary>
+            <remarks>
+            This method is invoked when the Hub is created.
+            </remarks>
+            <param name="hub">The hub.</param>
+            <param name="options">The options.</param>
+        </member>
+        <member name="M:Sentry.Internal.BackgroundWorker.Dispose">
+            <summary>
+            Stops the background worker and waits for it to empty the queue until 'shutdownTimeout' is reached
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.DsnLocator.FindDsnStringOrDisable(System.Reflection.Assembly)">
+            <summary>
+            Attempts to find a DSN string statically (via env var, asm attribute). Returns Disabled token otherwise.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Sentry.Internal.DsnLocator.FindDsn(System.Reflection.Assembly)">
+            <summary>
+            Attempts to find a DSN string from the entry assembly's DsnAttribute
+            </summary>
+            <returns>DSN string or null if none found</returns>
+        </member>
+        <member name="P:Sentry.Internal.EnvironmentLocator.Current">
+            <summary>
+            Attempts to locate the environment the app is running in
+            </summary>
+            <returns>The Environment name or null, if it couldn't be located.</returns>
+        </member>
+        <member name="T:Sentry.Internal.Http.DefaultSentryHttpClientFactory">
+            <summary>
+            Default Sentry HttpClientFactory
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.Http.DefaultSentryHttpClientFactory.#ctor(System.Action{System.Net.Http.HttpClientHandler,Sentry.Dsn},System.Action{System.Net.Http.HttpClient,Sentry.Dsn})">
+            <summary>
+            Creates a new instance of <see cref="T:Sentry.Internal.Http.DefaultSentryHttpClientFactory"/>
+            </summary>
+            <param name="configureHandler">An optional configuration callback</param>
+            <param name="configureClient">An optional HttpClient configuration callback</param>
+        </member>
+        <member name="M:Sentry.Internal.Http.DefaultSentryHttpClientFactory.Create(Sentry.Dsn,Sentry.SentryOptions)">
+            <summary>
+            Creates an <see cref="T:System.Net.Http.HttpClient" /> configure to call Sentry for the specified <see cref="T:Sentry.Dsn" />
+            </summary>
+            <param name="dsn">The DSN.</param>
+            <param name="options">The HTTP options.</param>
+            <returns></returns>
+            <inheritdoc />
+        </member>
+        <member name="T:Sentry.Internal.Http.GzipBufferedRequestBodyHandler">
+            <summary>
+            Compresses the body of an HTTP request with GZIP while buffering the result
+            </summary>
+            <remarks>
+            This handler doesn't use 'Content-Encoding: chunked' as it sets the 'Content-Length' of the request.
+            </remarks>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.Http.GzipBufferedRequestBodyHandler.#ctor(System.Net.Http.HttpMessageHandler,System.IO.Compression.CompressionLevel)">
+            <summary>
+            Creates a new instance of <see cref="T:Sentry.Internal.Http.GzipBufferedRequestBodyHandler" />
+            </summary>
+            <param name="innerHandler">The actual handler which handles the request</param>
+            <param name="compressionLevel">The compression level to use.</param>
+            <exception cref="T:System.InvalidOperationException">Constructing this type with <see cref="T:System.IO.Compression.CompressionLevel" />
+            of value <see cref="F:System.IO.Compression.CompressionLevel.NoCompression" /> is an invalid operation.</exception>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.Http.GzipBufferedRequestBodyHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <summary>
+            Compresses the request body and sends a request with a buffered stream
+            </summary>
+            <param name="request">The HTTP request to compress</param>
+            <param name="cancellationToken">The cancellation token</param>
+            <returns></returns>
+            <inheritdoc />
+        </member>
+        <member name="T:Sentry.Internal.Http.GzipRequestBodyHandler">
+            <summary>
+            Compresses the body of an HTTP request with GZIP.
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.Http.GzipRequestBodyHandler.#ctor(System.Net.Http.HttpMessageHandler,System.IO.Compression.CompressionLevel)">
+            <summary>
+            Creates a new instance of <see cref="T:Sentry.Internal.Http.GzipRequestBodyHandler" />
+            </summary>
+            <param name="innerHandler">The actual handler which handles the request</param>
+            <param name="compressionLevel">The compression level to use.</param>
+            <exception cref="T:System.InvalidOperationException">Constructing this type with <see cref="T:System.IO.Compression.CompressionLevel" />
+            of value <see cref="F:System.IO.Compression.CompressionLevel.NoCompression" /> is an invalid operation.</exception>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.Http.GzipRequestBodyHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <summary>
+            Sends the request while compressing it's payload
+            </summary>
+            <param name="request">The HTTP request to compress</param>
+            <param name="cancellationToken">The cancellation token</param>
+            <returns></returns>
+            <inheritdoc />
+        </member>
+        <member name="T:Sentry.Internal.Http.RetryAfterHandler">
+            <summary>
+            Retry After Handler which short-circuit requests following an HTTP 429
+            </summary>
+            <seealso href="https://tools.ietf.org/html/rfc6585#section-4" />
+            <seealso href="https://docs.sentry.io/clientdev/overview/#writing-an-sdk"/>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.Http.RetryAfterHandler.#ctor(System.Net.Http.HttpMessageHandler)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Sentry.Internal.Http.RetryAfterHandler"/> class.
+            </summary>
+            <param name="innerHandler">The inner handler which is responsible for processing the HTTP response messages.</param>
+        </member>
+        <member name="M:Sentry.Internal.Http.RetryAfterHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <summary>
+            Sends an HTTP request to the inner handler while verifying the Response status code for HTTP 429
+            </summary>
+            <param name="request">The HTTP request message to send to the server.</param>
+            <param name="cancellationToken">A cancellation token to cancel operation.</param>
+            <returns>
+            The task object representing the asynchronous operation.
+            </returns>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Internal.Http.SentryHeaders.AddSentryAuth(System.Int32,System.String,System.String,System.String,Sentry.Infrastructure.ISystemClock)">
+            <summary>
+            Creates a function that when invoked returns a valid authentication header
+            </summary>
+            <param name="sentryVersion">The sentry version.</param>
+            <param name="clientVersion">The client version.</param>
+            <param name="publicKey">The public key.</param>
+            <param name="secretKey">The secret key.</param>
+            <param name="clock">The clock.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Sentry.Internal.IInternalSdkIntegration.Unregister(Sentry.IHub)">
+            <summary>
+            Unregisters this integration with the hub
+            </summary>
+            <remarks>
+            This method is invoked when the Hub is disposed.
+            </remarks>
+            <param name="hub">The hub.</param>
+        </member>
+        <member name="M:Sentry.Internal.ReleaseLocator.GetCurrent">
+            <summary>
+            Attempts to locate the application release
+            </summary>
+            <returns>The app release or null, if it couldn't be located.</returns>
+        </member>
+        <member name="M:Sentry.Internal.SentryStackTraceFactory.DemangleAsyncFunctionName(Sentry.Protocol.SentryStackFrame)">
+            <summary>
+            Clean up function and module names produced from `async` state machine calls.
+            </summary>
+            <para>
+            When the Microsoft cs.exe compiler compiles some modern C# features,
+            such as async/await calls, it can create synthetic function names that
+            do not match the function names in the original source code. Here we
+            reverse some of these transformations, so that the function and module
+            names that appears in the Sentry UI will match the function and module
+            names in the original source-code.
+            </para>
+        </member>
+        <member name="M:Sentry.Internal.SentryStackTraceFactory.DemangleAnonymousFunction(Sentry.Protocol.SentryStackFrame)">
+            <summary>
+            Clean up function names for anonymous lambda calls.
+            </summary>
+        </member>
+        <member name="T:Sentry.ISentryClient">
+            <summary>
+            Sentry Client interface
+            </summary>
+        </member>
+        <member name="P:Sentry.ISentryClient.IsEnabled">
+            <summary>
+            Whether the client is enabled or not
+            </summary>
+        </member>
+        <member name="M:Sentry.ISentryClient.CaptureEvent(Sentry.SentryEvent,Sentry.Scope)">
+            <summary>
+            Capture the event
+            </summary>
+            <param name="evt">The event to be captured</param>
+            <param name="scope">An optional scope to be applied to the event.</param>
+            <returns>The Id of the event</returns>
+        </member>
+        <member name="T:Sentry.ISentryScopeManager">
+            <summary>
+            Scope management
+            </summary>
+            <remarks>
+            An implementation shall create new scopes and allow consumers
+            modify the current scope
+            </remarks>
+        </member>
+        <member name="M:Sentry.ISentryScopeManager.ConfigureScope(System.Action{Sentry.Scope})">
+            <summary>
+            Configures the current scope.
+            </summary>
+            <param name="configureScope">The configure scope.</param>
+        </member>
+        <member name="M:Sentry.ISentryScopeManager.ConfigureScopeAsync(System.Func{Sentry.Scope,System.Threading.Tasks.Task})">
+            <summary>
+            Asynchronously configure the current scope.
+            </summary>
+            <param name="configureScope">The configure scope.</param>
+            <returns>A task that completes when the callback is done or a completed task if the SDK is disabled.</returns>
+        </member>
+        <member name="M:Sentry.ISentryScopeManager.BindClient(Sentry.ISentryClient)">
+            <summary>
+            Binds the client to the current scope.
+            </summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="M:Sentry.ISentryScopeManager.PushScope">
+            <summary>
+            Pushes a new scope into the stack which is removed upon Dispose
+            </summary>
+            <returns>A disposable which removes the scope
+            from the environment when invoked</returns>
+        </member>
+        <member name="M:Sentry.ISentryScopeManager.PushScope``1(``0)">
+            <summary>
+            Pushes a new scope into the stack which is removed upon Dispose
+            </summary>
+            <param name="state">A state to associate with the scope</param>
+            <typeparam name="TState"></typeparam>
+            <returns>A disposable which removes the scope
+            from the environment when invoked</returns>
+        </member>
+        <member name="M:Sentry.ISentryScopeManager.WithScope(System.Action{Sentry.Scope})">
+            <summary>
+            Runs the callback with a new scope which gets dropped at the end
+            </summary>
+            <remarks>
+            Pushes a new scope, runs the callback, pops the scope.
+            </remarks>
+            <see href="https://docs.sentry.io/learn/scopes/?platform=csharp#local-scopes"/>
+            <param name="scopeCallback">The callback to run with the one time scope.</param>
+        </member>
+        <member name="T:Sentry.Reflection.AssemblyExtensions">
+            <summary>
+            Extension methods to <see cref="T:System.Reflection.Assembly"/>
+            </summary>
+        </member>
+        <member name="M:Sentry.Reflection.AssemblyExtensions.GetNameAndVersion(System.Reflection.Assembly)">
+            <summary>
+            Get the assemblies Name and Version
+            </summary>
+            <remarks>
+            Attempts to read the version from <see cref="T:System.Reflection.AssemblyInformationalVersionAttribute"/>
+            If not available, falls back to <see cref="P:System.Reflection.AssemblyName.Version"/>
+            </remarks>
+            <param name="asm">The assembly to get the name and version from</param>
+            <returns>A tuple of name and version</returns>
+        </member>
+        <member name="T:Sentry.Scope">
+            <summary>
+            Scope data to be sent with the event
+            </summary>
+            <remarks>
+            Scope data is sent together with any event captured
+            during the lifetime of the scope.
+            </remarks>
+            <inheritdoc />
+        </member>
+        <member name="P:Sentry.Scope.HasEvaluated">
+            <summary>
+            Whether the <see cref="E:Sentry.Scope.OnEvaluating"/> event has already fired.
+            </summary>
+        </member>
+        <member name="P:Sentry.Scope.ExceptionProcessors">
+            <summary>
+            A list of exception processors
+            </summary>
+        </member>
+        <member name="P:Sentry.Scope.EventProcessors">
+            <summary>
+            A list of event processors
+            </summary>
+        </member>
+        <member name="E:Sentry.Scope.OnEvaluating">
+            <summary>
+            An event that fires when the scope evaluates
+            </summary>
+            <remarks>
+            This allows registering an event handler that is invoked in case
+            an event is about to be sent to Sentry. If an event is never sent,
+            this event is never fired and the resources spared.
+            It also allows registration at an early stage of the processing
+            but execution at a later time, when more data is available.
+            </remarks>
+            <see cref="M:Sentry.Scope.Evaluate"/>
+        </member>
+        <member name="M:Sentry.Scope.#ctor(Sentry.SentryOptions)">
+            <summary>
+            Creates a scope with the specified options
+            </summary>
+            <param name="options"></param>
+            <inheritdoc />
+        </member>
+        <member name="T:Sentry.ScopeExtensions">
+            
+        </member>
+        <member name="M:Sentry.ScopeExtensions.GetAllEventProcessors(Sentry.Scope)">
+            <summary>
+            Invokes all event processor providers available
+            </summary>
+            <param name="scope">The Scope which holds the processor providers.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Sentry.ScopeExtensions.GetAllExceptionProcessors(Sentry.Scope)">
+            <summary>
+            Invokes all exception processor providers available
+            </summary>
+            <param name="scope">The Scope which holds the processor providers.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Sentry.ScopeExtensions.AddExceptionProcessor(Sentry.Scope,Sentry.Extensibility.ISentryEventExceptionProcessor)">
+            <summary>
+            Add an exception processor
+            </summary>
+            <param name="scope">The Scope to hold the processor.</param>
+            <param name="processor">The exception processor.</param>
+        </member>
+        <member name="M:Sentry.ScopeExtensions.AddExceptionProcessors(Sentry.Scope,System.Collections.Generic.IEnumerable{Sentry.Extensibility.ISentryEventExceptionProcessor})">
+            <summary>
+            Add the exception processors
+            </summary>
+            <param name="scope">The Scope to hold the processor.</param>
+            <param name="processors">The exception processors.</param>
+        </member>
+        <member name="M:Sentry.ScopeExtensions.AddEventProcessor(Sentry.Scope,Sentry.Extensibility.ISentryEventProcessor)">
+            <summary>
+            Adds an event processor which is invoked when creating a <see cref="T:Sentry.SentryEvent"/>.
+            </summary>
+            <param name="scope">The Scope to hold the processor.</param>
+            <param name="processor">The event processor.</param>
+        </member>
+        <member name="M:Sentry.ScopeExtensions.AddEventProcessor(Sentry.Scope,System.Func{Sentry.SentryEvent,Sentry.SentryEvent})">
+            <summary>
+            Adds an event processor which is invoked when creating a <see cref="T:Sentry.SentryEvent"/>.
+            </summary>
+            <param name="scope">The Scope to hold the processor.</param>
+            <param name="processor">The event processor.</param>
+        </member>
+        <member name="M:Sentry.ScopeExtensions.AddEventProcessors(Sentry.Scope,System.Collections.Generic.IEnumerable{Sentry.Extensibility.ISentryEventProcessor})">
+            <summary>
+            Adds event processors which are invoked when creating a <see cref="T:Sentry.SentryEvent"/>.
+            </summary>
+            <param name="scope">The Scope to hold the processor.</param>
+            <param name="processors">The event processors.</param>
+        </member>
+        <member name="T:Sentry.SentryClient">
+            <summary>
+            Sentry client used to send events to Sentry
+            </summary>
+            <remarks>
+            This client captures events by queueing those to its
+            internal background worker which sends events to Sentry
+            </remarks>
+            <inheritdoc cref="T:Sentry.ISentryClient" />
+            <inheritdoc cref="T:System.IDisposable" />
+        </member>
+        <member name="P:Sentry.SentryClient.IsEnabled">
+            <inheritdoc />
+            <summary>
+            Whether the client is enabled
+            </summary>
+        </member>
+        <member name="M:Sentry.SentryClient.#ctor(Sentry.SentryOptions)">
+            <summary>
+            Creates a new instance of <see cref="T:Sentry.SentryClient"/>
+            </summary>
+            <param name="options">The configuration for this client.</param>
+        </member>
+        <member name="M:Sentry.SentryClient.CaptureEvent(Sentry.SentryEvent,Sentry.Scope)">
+            <summary>
+            Queues the event to be sent to Sentry
+            </summary>
+            <remarks>
+            An optional scope, if provided, will be applied to the event.
+            </remarks>
+            <param name="event">The event to send to Sentry.</param>
+            <param name="scope">The optional scope to augment the event with.</param>
+            <returns></returns>
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.SentryClient.Dispose">
+            <summary>
+            Disposes this client
+            </summary>
+            <inheritdoc />
+        </member>
+        <member name="T:Sentry.SentryClientExtensions">
+            <summary>
+            Extension methods for <see cref="T:Sentry.ISentryClient"/>
+            </summary>
+        </member>
+        <member name="M:Sentry.SentryClientExtensions.CaptureException(Sentry.ISentryClient,System.Exception)">
+            <summary>
+            Captures the exception.
+            </summary>
+            <param name="client">The Sentry client.</param>
+            <param name="ex">The exception.</param>
+            <returns>The Id of the event</returns>
+        </member>
+        <member name="M:Sentry.SentryClientExtensions.CaptureMessage(Sentry.ISentryClient,System.String,Sentry.Protocol.SentryLevel)">
+            <summary>
+            Captures a message.
+            </summary>
+            <param name="client">The Sentry client.</param>
+            <param name="message">The message to send.</param>
+            <param name="level">The message level.</param>
+            <returns>The Id of the event</returns>
+        </member>
+        <member name="T:Sentry.SentryId">
+            <summary>
+            The identifier of an event in Sentry
+            </summary>
+        </member>
+        <member name="F:Sentry.SentryId.Empty">
+            <summary>
+            An empty sentry id
+            </summary>
+        </member>
+        <member name="M:Sentry.SentryId.#ctor(System.Guid)">
+            <summary>
+            Creates a new instance of a Sentry Id
+            </summary>
+            <param name="guid"></param>
+        </member>
+        <member name="M:Sentry.SentryId.ToString">
+            <summary>
+            Sentry Id in the format Sentry recognizes
+            </summary>
+            <remarks>
+            Default <see cref="M:Sentry.SentryId.ToString"/> of <see cref="T:System.Guid"/> includes
+            dashes which sentry doesn't expect when searching events.
+            </remarks>
+            <returns>String representation of the event id.</returns>
+        </member>
+        <member name="M:Sentry.SentryId.op_Implicit(Sentry.SentryId)~System.Guid">
+            <summary>
+            The <see cref="T:System.Guid"/> from the <see cref="T:Sentry.SentryId"/>
+            </summary>
+            <param name="sentryId"></param>
+        </member>
+        <member name="M:Sentry.SentryId.op_Implicit(System.Guid)~Sentry.SentryId">
+            <summary>
+            A <see cref="T:Sentry.SentryId"/> from a <see cref="T:System.Guid"/>
+            </summary>
+            <param name="guid"></param>
+        </member>
+        <member name="T:Sentry.SentryOptions">
+            <summary>
+            Sentry SDK options
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.ExceptionProcessors">
+            <summary>
+            A list of exception processors
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.EventProcessors">
+            <summary>
+            A list of event processors
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.EventProcessorsProviders">
+            <summary>
+            A list of providers of <see cref="T:Sentry.Extensibility.ISentryEventProcessor"/>
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.ExceptionProcessorsProviders">
+            <summary>
+            A list of providers of <see cref="T:Sentry.Extensibility.ISentryEventExceptionProcessor"/>
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.Integrations">
+            <summary>
+            A list of integrations to be added when the SDK is initialized
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.InAppExclude">
+            <summary>
+            A list of namespaces (or prefixes) considered not part of application code
+            </summary>
+            <remarks>
+            Sentry by default filters the stacktrace to display only application code.
+            A user can optionally click to see all which will include framework and libraries.
+            A <see cref="M:System.String.StartsWith(System.String)"/> is executed
+            </remarks>
+            <example>
+            'System.', 'Microsoft.'
+            </example>
+        </member>
+        <member name="P:Sentry.SentryOptions.SendDefaultPii">
+            <summary>
+            Whether to include default Personal Identifiable information
+            </summary>
+            <remarks>
+            By default PII data like Username and Client IP address are not sent to Sentry.
+            When this flag is turned on, default PII data like Cookies, Claims in Web applications
+            and user data read from the request are sent.
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.AttachStacktrace">
+            <summary>
+            Whether to send the stack trace of a event captured without an exception
+            </summary>
+            <remarks>
+            Append stack trace of the call to the SDK to capture a message or event without Exception
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.MaxBreadcrumbs">
+            <summary>
+            Gets or sets the maximum breadcrumbs.
+            </summary>
+            <remarks>
+            When the number of events reach this configuration value,
+            older breadcrumbs start dropping to make room for new ones.
+            </remarks>
+            <value>
+            The maximum breadcrumbs per scope.
+            </value>
+        </member>
+        <member name="F:Sentry.SentryOptions._sampleRate">
+            <summary>
+            The rate to sample events
+            </summary>
+            <remarks>
+            Can be anything between 0.01 (1%) and 1.0 (99.9%) or null (default), to disable it.
+            </remarks>
+            <example>
+            0.1 = 10% of events are sent
+            </example>
+            <see href="https://docs.sentry.io/clientdev/features/#event-sampling"/>
+        </member>
+        <member name="P:Sentry.SentryOptions.Release">
+             <summary>
+             The release version of the application.
+             </summary>
+             <example>
+             721e41770371db95eee98ca2707686226b993eda
+             14.1.16.32451
+             </example>
+             <remarks>
+             This value will generally be something along the lines of the git SHA for the given project.
+             If not explicitly defined via configuration or environment variable (SENTRY_RELEASE).
+             It will attempt o read it from:
+             <see cref="T:System.Reflection.AssemblyInformationalVersionAttribute"/>
+            
+             Don't rely on discovery if your release is: '1.0.0' or '0.0.0'. Since those are
+             default values for new projects, they are not considered valid by the discovery process.
+             </remarks>
+             <seealso href="https://docs.sentry.io/learn/releases/"/>
+        </member>
+        <member name="P:Sentry.SentryOptions.Environment">
+            <summary>
+            The environment the application is running
+            </summary>
+            <remarks>
+            This value can also be set via environment variable: SENTRY_ENVIRONMENT
+            In some cases you don't need to set this manually since integrations, when possible, automatically fill this value.
+            For ASP.NET Core which can read from IHostingEnvironment
+            </remarks>
+            <example>
+            Production, Staging
+            </example>
+            <seealso href="https://docs.sentry.io/learn/environments/"/>
+        </member>
+        <member name="P:Sentry.SentryOptions.Dsn">
+            <summary>
+            The Data Source Name of a given project in Sentry.
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.BeforeSend">
+            <summary>
+            A callback to invoke before sending an event to Sentry
+            </summary>
+            <remarks>
+            The return of this event will be sent to Sentry. This allows the application
+            a chance to inspect and/or modify the event before it's sent. If the event
+            should not be sent at all, return null from the callback.
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.BeforeBreadcrumb">
+            <summary>
+            A callback invoked when a breadcrumb is about to be stored.
+            </summary>
+            <remarks>
+            Gives a chance to inspect and modify/reject a breadcrumb.
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.MaxQueueItems">
+            <summary>
+            The maximum number of events to keep while the worker attempts to send them
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.ShutdownTimeout">
+            <summary>
+            How long to wait for events to be sent before shutdown
+            </summary>
+            <remarks>
+            In case there are events queued when the SDK is closed, upper bound limit to wait
+            for the worker to send the events to Sentry.
+            </remarks>
+            <example>
+            The SDK is closed while the queue has 1 event queued.
+            The worker takes 50 milliseconds to send an event to Sentry.
+            Even though default settings say 2 seconds, closing the SDK would block for 50ms.
+            </example>
+        </member>
+        <member name="P:Sentry.SentryOptions.DecompressionMethods">
+            <summary>
+            Decompression methods accepted
+            </summary>
+            <remarks>
+            By default accepts all available compression methods supported by the platform
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.RequestBodyCompressionLevel">
+            <summary>
+            The level of which to compress the <see cref="T:Sentry.SentryEvent"/> before sending to Sentry
+            </summary>
+            <remarks>
+            To disable request body compression, use <see cref="F:System.IO.Compression.CompressionLevel.NoCompression"/>
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.RequestBodyCompressionBuffered">
+            <summary>
+            Whether the body compression is buffered and the request 'Content-Length' known in advance.
+            </summary>
+            <remarks>
+            Without reading through the Gzip stream to have its final size, it's no possible to use 'Content-Length'
+            header value. That means 'Content-Encoding: chunked' has to be used which is sometimes not supported.
+            Sentry on-premise without a reverse-proxy, for example, does not support 'chunked' requests.
+            </remarks>
+            <see href="https://github.com/getsentry/sentry-dotnet/issues/71"/>
+        </member>
+        <member name="P:Sentry.SentryOptions.HttpProxy">
+            <summary>
+            An optional web proxy
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.ConfigureHandler">
+            <summary>
+            A callback invoked when a <see cref="T:Sentry.SentryClient"/> is created.
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.ConfigureClient">
+            <summary>
+            A callback invoked when a <see cref="T:Sentry.SentryClient"/> is created.
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.Debug">
+            <summary>
+            Whether to log diagnostics messages
+            </summary>
+            <remarks>
+            The verbosity can be controlled through <see cref="P:Sentry.SentryOptions.DiagnosticsLevel"/>
+            and the implementation via <see cref="P:Sentry.SentryOptions.DiagnosticLogger"/>.
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.DiagnosticsLevel">
+            <summary>
+            The diagnostics level to be used
+            </summary>
+            <remarks>
+            The <see cref="P:Sentry.SentryOptions.Debug"/> flag has to be switched on for this setting to take effect.
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentryOptions.DiagnosticLogger">
+            <summary>
+            The implementation of the logger.
+            </summary>
+            <remarks>
+            The <see cref="P:Sentry.SentryOptions.Debug"/> flag has to be switched on for this logger to be used at all.
+            When debugging is turned off, this property is made null and any internal logging results in a no-op.
+            </remarks>
+        </member>
+        <member name="M:Sentry.SentryOptions.#ctor">
+            <summary>
+            Creates a new instance of <see cref="T:Sentry.SentryOptions"/>
+            </summary>
+        </member>
+        <member name="T:Sentry.SentryOptionsExtensions">
+            
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.DisableDuplicateEventDetection(Sentry.SentryOptions)">
+            <summary>
+            Disables the strategy to detect duplicate events
+            </summary>
+            <remarks>
+            In case a second event is being sent out from the same exception, that event will be discarded.
+            It is possible the second event had in fact more data. In which case it'd be ideal to avoid the first
+            event going out in the first place.
+            </remarks>
+            <param name="options">The SentryOptions to remove the processor from.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.DisableAppDomainUnhandledExceptionCapture(Sentry.SentryOptions)">
+            <summary>
+            Disables the capture of errors through <see cref="E:System.AppDomain.UnhandledException"/>
+            </summary>
+            <param name="options">The SentryOptions to remove the integration from.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddIntegration(Sentry.SentryOptions,Sentry.Integrations.ISdkIntegration)">
+            <summary>
+            Add an integration
+            </summary>
+            <param name="options">The SentryOptions to hold the processor.</param>
+            <param name="integration">The integration.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddInAppExclude(Sentry.SentryOptions,System.String)">
+            <summary>
+            Add prefix to exclude from 'InApp' stack trace list
+            </summary>
+            <param name="options"></param>
+            <param name="prefix"></param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddExceptionProcessor(Sentry.SentryOptions,Sentry.Extensibility.ISentryEventExceptionProcessor)">
+            <summary>
+            Add an exception processor
+            </summary>
+            <param name="options">The SentryOptions to hold the processor.</param>
+            <param name="processor">The exception processor.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddExceptionProcessors(Sentry.SentryOptions,System.Collections.Generic.IEnumerable{Sentry.Extensibility.ISentryEventExceptionProcessor})">
+            <summary>
+            Add the exception processors
+            </summary>
+            <param name="options">The SentryOptions to hold the processor.</param>
+            <param name="processors">The exception processors.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddEventProcessor(Sentry.SentryOptions,Sentry.Extensibility.ISentryEventProcessor)">
+            <summary>
+            Adds an event processor which is invoked when creating a <see cref="T:Sentry.SentryEvent"/>.
+            </summary>
+            <param name="options">The SentryOptions to hold the processor.</param>
+            <param name="processor">The event processor.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddEventProcessors(Sentry.SentryOptions,System.Collections.Generic.IEnumerable{Sentry.Extensibility.ISentryEventProcessor})">
+            <summary>
+            Adds event processors which are invoked when creating a <see cref="T:Sentry.SentryEvent"/>.
+            </summary>
+            <param name="options">The SentryOptions to hold the processor.</param>
+            <param name="processors">The event processors.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddEventProcessorProvider(Sentry.SentryOptions,System.Func{System.Collections.Generic.IEnumerable{Sentry.Extensibility.ISentryEventProcessor}})">
+            <summary>
+            Adds an event processor provider which is invoked when creating a <see cref="T:Sentry.SentryEvent"/>.
+            </summary>
+            <param name="options">The SentryOptions to hold the processor provider.</param>
+            <param name="processorProvider">The event processor provider.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.AddExceptionProcessorProvider(Sentry.SentryOptions,System.Func{System.Collections.Generic.IEnumerable{Sentry.Extensibility.ISentryEventExceptionProcessor}})">
+            <summary>
+            Add the exception processor provider
+            </summary>
+            <param name="options">The SentryOptions to hold the processor provider.</param>
+            <param name="processorProvider">The exception processor provider.</param>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.GetAllEventProcessors(Sentry.SentryOptions)">
+            <summary>
+            Invokes all event processor providers available
+            </summary>
+            <param name="options">The SentryOptions which holds the processor providers.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Sentry.SentryOptionsExtensions.GetAllExceptionProcessors(Sentry.SentryOptions)">
+            <summary>
+            Invokes all exception processor providers available
+            </summary>
+            <param name="options">The SentryOptions which holds the processor providers.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Sentry.SentrySdk">
+            <summary>
+            Sentry SDK entrypoint
+            </summary>
+            <remarks>
+            This is a façade to the SDK instance.
+            It allows safe static access to a client and scope management.
+            When the SDK is uninitialized, calls to this class result in no-op so no callbacks are invoked.
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentrySdk.LastEventId">
+            <summary>
+            Last event id recorded in the current scope
+            </summary>
+        </member>
+        <member name="M:Sentry.SentrySdk.Init">
+            <summary>
+            Initializes the SDK while attempting to locate the DSN
+            </summary>
+            <remarks>
+            If the DSN is not found, the SDK will not change state.
+            </remarks>
+        </member>
+        <member name="M:Sentry.SentrySdk.Init(System.String)">
+            <summary>
+            Initializes the SDK with the specified DSN
+            </summary>
+            <remarks>
+            An empty string is interpreted as a disabled SDK
+            </remarks>
+            <seealso href="https://docs.sentry.io/clientdev/overview/#usage-for-end-users"/>
+            <param name="dsn">The dsn</param>
+        </member>
+        <member name="M:Sentry.SentrySdk.Init(Sentry.Dsn)">
+            <summary>
+            Initializes the SDK with the specified DSN
+            </summary>
+            <param name="dsn">The dsn</param>
+        </member>
+        <member name="M:Sentry.SentrySdk.Init(System.Action{Sentry.SentryOptions})">
+            <summary>
+            Initializes the SDK with an optional configuration options callback.
+            </summary>
+            <param name="configureOptions">The configure options.</param>
+        </member>
+        <member name="M:Sentry.SentrySdk.Init(Sentry.SentryOptions)">
+            <summary>
+            Initializes the SDK with the specified options instance
+            </summary>
+            <param name="options">The options instance</param>
+            <remarks>
+            Used by integrations which have their own delegates
+            </remarks>
+            <returns>A disposable to close the SDK.</returns>
+        </member>
+        <member name="M:Sentry.SentrySdk.Close">
+            <summary>
+            Close the SDK
+            </summary>
+            <remarks>
+            Flushes the events and disables the SDK.
+            This method is mostly used for testing the library since
+            Init returns a IDisposable that can be used to shutdown the SDK.
+            </remarks>
+        </member>
+        <member name="P:Sentry.SentrySdk.IsEnabled">
+            <summary>
+            Whether the SDK is enabled or not
+            </summary>
+        </member>
+        <member name="M:Sentry.SentrySdk.PushScope``1(``0)">
+            <summary>
+            Creates a new scope that will terminate when disposed
+            </summary>
+            <remarks>
+            Pushes a new scope while inheriting the current scope's data.
+            </remarks>
+            <typeparam name="TState"></typeparam>
+            <param name="state">A state object to be added to the scope</param>
+            <returns>A disposable that when disposed, ends the created scope.</returns>
+        </member>
+        <member name="M:Sentry.SentrySdk.PushScope">
+            <summary>
+            Creates a new scope that will terminate when disposed
+            </summary>
+            <returns>A disposable that when disposed, ends the created scope.</returns>
+        </member>
+        <member name="M:Sentry.SentrySdk.BindClient(Sentry.ISentryClient)">
+            <summary>
+            Binds the client to the current scope.
+            </summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="M:Sentry.SentrySdk.AddBreadcrumb(System.String,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String},Sentry.Protocol.BreadcrumbLevel)">
+            <summary>
+            Adds a breadcrumb to the current Scope
+            </summary>
+            <param name="message">
+            If a message is provided it’s rendered as text and the whitespace is preserved.
+            Very long text might be abbreviated in the UI.</param>
+            <param name="type">
+            The type of breadcrumb.
+            The default type is default which indicates no specific handling.
+            Other types are currently http for HTTP requests and navigation for navigation events.
+            <seealso href="https://docs.sentry.io/clientdev/interfaces/breadcrumbs/#breadcrumb-types"/>
+            </param>
+            <param name="category">
+            Categories are dotted strings that indicate what the crumb is or where it comes from.
+            Typically it’s a module name or a descriptive string.
+            For instance ui.click could be used to indicate that a click happened in the UI or flask could be used to indicate that the event originated in the Flask framework.
+            </param>
+            <param name="data">
+            Data associated with this breadcrumb.
+            Contains a sub-object whose contents depend on the breadcrumb type.
+            Additional parameters that are unsupported by the type are rendered as a key/value table.
+            </param>
+            <param name="level">Breadcrumb level.</param>
+            <seealso href="https://docs.sentry.io/clientdev/interfaces/breadcrumbs/"/>
+        </member>
+        <member name="M:Sentry.SentrySdk.AddBreadcrumb(Sentry.Infrastructure.ISystemClock,System.String,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String},Sentry.Protocol.BreadcrumbLevel)">
+            <summary>
+            Adds a breadcrumb to the current scope
+            </summary>
+            <remarks>
+            This overload is intended to be used by integrations only.
+            The objective is to allow better testability by allowing control of the timestamp set to the breadcrumb.
+            </remarks>
+            <param name="clock">An optional <see cref="T:Sentry.Infrastructure.ISystemClock"/></param>
+            <param name="message">The message.</param>
+            <param name="type">The type.</param>
+            <param name="category">The category.</param>
+            <param name="data">The data.</param>
+            <param name="level">The level.</param>
+        </member>
+        <member name="M:Sentry.SentrySdk.WithScope(System.Action{Sentry.Scope})">
+            <summary>
+            Runs the callback with a new scope which gets dropped at the end
+            </summary>
+            <remarks>
+            Pushes a new scope, runs the callback, pops the scope.
+            </remarks>
+            <see href="https://docs.sentry.io/learn/scopes/?platform=csharp#local-scopes"/>
+            <param name="scopeCallback">The callback to run with the one time scope.</param>
+        </member>
+        <member name="M:Sentry.SentrySdk.ConfigureScope(System.Action{Sentry.Scope})">
+            <summary>
+            Configures the scope through the callback.
+            </summary>
+            <param name="configureScope">The configure scope callback.</param>
+        </member>
+        <member name="M:Sentry.SentrySdk.ConfigureScopeAsync(System.Func{Sentry.Scope,System.Threading.Tasks.Task})">
+            <summary>
+            Configures the scope asynchronously
+            </summary>
+            <param name="configureScope">The configure scope callback.</param>
+            <returns>The Id of the event</returns>
+        </member>
+        <member name="M:Sentry.SentrySdk.CaptureEvent(Sentry.SentryEvent)">
+            <summary>
+            Captures the event.
+            </summary>
+            <param name="evt">The event.</param>
+            <returns>The Id of the event</returns>
+        </member>
+        <member name="M:Sentry.SentrySdk.CaptureEvent(Sentry.SentryEvent,Sentry.Scope)">
+            <summary>
+            Captures the event using the specified scope.
+            </summary>
+            <param name="evt">The event.</param>
+            <param name="scope">The scope.</param>
+            <returns>The Id of the event</returns>
+        </member>
+        <member name="M:Sentry.SentrySdk.CaptureException(System.Exception)">
+            <summary>
+            Captures the exception.
+            </summary>
+            <param name="exception">The exception.</param>
+            <returns>The Id of the event</returns>
+        </member>
+        <member name="M:Sentry.SentrySdk.CaptureMessage(System.String,Sentry.Protocol.SentryLevel)">
+            <summary>
+            Captures the message.
+            </summary>
+            <param name="message">The message to send.</param>
+            <param name="level">The message level.</param>
+            <returns>The Id of the event</returns>
+        </member>
+    </members>
+</doc>
