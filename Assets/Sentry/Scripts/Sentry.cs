@@ -265,7 +265,7 @@ namespace Sentry
     public class SdkVersion
     {
         public string name = "sentry.unity.lite";
-        public string version = "0.0.4";
+        public string version = "0.0.3";
     }
 
     [Serializable]
@@ -384,7 +384,6 @@ namespace Sentry
         public string message;
         public string timestamp;
         public string logger;
-        public string level;
         public string platform = "csharp";
         public string release;
         public Context contexts;
@@ -394,12 +393,11 @@ namespace Sentry
         public Tags tags;
         public Extra extra;
 
-        public SentryEvent(string message, List<Breadcrumb> breadcrumbs = null)
+        public SentryEvent(string message, List<Breadcrumb> breadcrumbs)
         {
             this.event_id = Guid.NewGuid().ToString("N");
             this.message = message;
             this.timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
-            this.level = "error";
             this.breadcrumbs = breadcrumbs;
             this.contexts = new Context();
             this.release = Application.version;
@@ -473,36 +471,6 @@ namespace Sentry
                                       List<StackTraceSpec> stackTrace) : base(exceptionType, breadcrumbs)
         {
             this.exception = new ExceptionContainer(new List<ExceptionSpec> { new ExceptionSpec(exceptionType, exceptionValue, stackTrace) });
-        }
-    }
-
-    [Serializable]
-    public class Breadcrumb
-    {
-        public const int MaxBreadcrumbs = 100;
-
-        public string timestamp;
-        public string message;
-
-        public Breadcrumb(string timestamp, string message)
-        {
-            this.timestamp = timestamp;
-            this.message = message;
-        }
-
-        /* combine breadcrumbs from array[], start & count into List<Breadcrumb> */
-        public static List<Breadcrumb> CombineBreadcrumbs(
-            Breadcrumb[] breadcrumbs,
-            int index,
-            int number)
-        {
-            var res = new List<Breadcrumb>(number);
-            var start = (index + MaxBreadcrumbs - number) % MaxBreadcrumbs;
-            for (var i = 0; i < number; i++)
-            {
-                res.Add(breadcrumbs[(i + start) % MaxBreadcrumbs]);
-            }
-            return res;
         }
     }
 
