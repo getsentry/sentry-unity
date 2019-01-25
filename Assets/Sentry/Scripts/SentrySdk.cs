@@ -19,12 +19,18 @@ public class SentrySdk : MonoBehaviour
 
     [Header("DSN of your sentry instance")]
     public string Dsn;
+
     [Header("Send PII like User and Computer names")]
     public bool SendDefaultPii = true;
+
     [Header("Enable SDK debug messages")]
     public bool Debug = true;
+
     [Header("Override game version")]
     public string Version = "";
+
+    [Header("GUI")]
+    public bool DisplayResultsInGui = false;
 
     private string _lastErrorMessage = "";
     private Dsn _dsn;
@@ -156,6 +162,11 @@ public class SentrySdk : MonoBehaviour
 
     public void OnGUI()
     {
+        if (DisplayResultsInGui == false)
+        {
+            return;
+        }
+
         if (_lastErrorMessage != "")
         {
             GUILayout.TextArea(_lastErrorMessage);
@@ -205,12 +216,14 @@ public class SentrySdk : MonoBehaviour
             {
                 continue;
             }
+
             var closingParen = item.IndexOf(')');
 
             if (closingParen == -1)
             {
                 continue;
             }
+
             try
             {
                 functionName = item.Substring(0, closingParen + 1);
@@ -283,6 +296,7 @@ public class SentrySdk : MonoBehaviour
         {
             return; // dsn not initialized or something exploded, don't try to send it
         }
+
         _lastErrorMessage = condition;
         if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
         {
@@ -294,6 +308,7 @@ public class SentrySdk : MonoBehaviour
         {
             return; // silently drop the event on the floor
         }
+
         _timeLastError = Time.time;
         ScheduleException(condition, stackTrace);
     }
@@ -320,7 +335,7 @@ public class SentrySdk : MonoBehaviour
         <UnityWebRequestAsyncOperation>
 #endif
         ContinueSendingEvent<T>(T @event)
-            where T : SentryEvent
+        where T : SentryEvent
     {
         PrepareEvent(@event);
 
@@ -331,12 +346,12 @@ public class SentrySdk : MonoBehaviour
 
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss");
         var authString = string.Format("Sentry sentry_version=5,sentry_client=Unity0.1," +
-                 "sentry_timestamp={0}," +
-                 "sentry_key={1}," +
-                 "sentry_secret={2}",
-                 timestamp,
-                 sentryKey,
-                 sentrySecret);
+                                       "sentry_timestamp={0}," +
+                                       "sentry_key={1}," +
+                                       "sentry_secret={2}",
+            timestamp,
+            sentryKey,
+            sentrySecret);
 
         var www = new UnityWebRequest(_dsn.callUri.ToString());
         www.method = "POST";
@@ -353,13 +368,14 @@ public class SentrySdk : MonoBehaviour
         {
             yield return null;
         }
+
         if (
 #if UNITY_5
             www.isError
 #else
             www.isNetworkError || www.isHttpError
 #endif
-             || www.responseCode != 200)
+                               || www.responseCode != 200)
         {
             UnityDebug.LogWarning("error sending request to sentry: " + www.error);
         }
@@ -369,4 +385,3 @@ public class SentrySdk : MonoBehaviour
         }
     }
 }
-
