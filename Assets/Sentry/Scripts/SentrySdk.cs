@@ -40,6 +40,11 @@ public class SentrySdk : MonoBehaviour
 
     public void Start()
     {
+#if UNITY_EDITOR
+        UnityEngine.Debug.LogWarning("This script is running in editormode. It will not send any message to sentry.");
+        return;
+#endif
+
         if (Dsn == string.Empty)
         {
             // Empty string = disabled SDK
