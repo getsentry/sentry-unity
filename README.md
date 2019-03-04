@@ -34,7 +34,7 @@ run headless. There are two important APIs that are worth considering.
 * collecting breadcrumbs
 
   ```C#
-  SentrySdk.AddBreadcrump(string)
+  SentrySdk.AddBreadcrumb(string)
   ```
 
   will collect a breadcrumb.
