@@ -175,6 +175,11 @@ public class SentrySdk : MonoBehaviour
 
         var stack = new List<StackTraceSpec>();
         var exc = condition.Split(new char[] { ':' }, 2);
+        if (exc.Length < 2)
+        {
+            UnityDebug.LogWarning("Sentry exception condition not valid");
+            return;
+        }
         var excType = exc[0];
         var excValue = exc[1].Substring(1); // strip the space
 
