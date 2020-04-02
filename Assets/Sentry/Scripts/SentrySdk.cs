@@ -295,7 +295,7 @@ public class SentrySdk : MonoBehaviour
             return; // silently drop the event on the floor
         }
         _timeLastError = Time.time;
-        if(type == LogType.Exception)
+        if (type == LogType.Exception)
         {
             ScheduleException( condition, stackTrace );
         }
@@ -381,4 +381,3 @@ public class SentrySdk : MonoBehaviour
         }
     }
 }
-
