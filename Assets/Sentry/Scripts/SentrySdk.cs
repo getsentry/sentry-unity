@@ -306,7 +306,7 @@ public class SentrySdk : MonoBehaviour
 #else
             string message = type.ToString() + ": " + condition;
 #endif
-            ScheduleException( message, stackTrace );
+            ScheduleException(message, stackTrace);
         }
     }
 
