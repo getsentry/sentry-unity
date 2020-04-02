@@ -295,7 +295,19 @@ public class SentrySdk : MonoBehaviour
             return; // silently drop the event on the floor
         }
         _timeLastError = Time.time;
-        ScheduleException(condition, stackTrace);
+        if (type == LogType.Exception)
+        {
+            ScheduleException(condition, stackTrace);
+        }
+        else
+        {
+#if NET_4_6
+            string message = $"{type.ToString()}: {condition}";
+#else
+            string message = type.ToString() + ": " + condition;
+#endif
+            ScheduleException(message, stackTrace);
+        }
     }
 
     private void PrepareEvent(SentryEvent @event)
@@ -369,4 +381,3 @@ public class SentrySdk : MonoBehaviour
         }
     }
 }
-
