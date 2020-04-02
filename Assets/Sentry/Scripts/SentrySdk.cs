@@ -297,7 +297,7 @@ public class SentrySdk : MonoBehaviour
         _timeLastError = Time.time;
         if (type == LogType.Exception)
         {
-            ScheduleException( condition, stackTrace );
+            ScheduleException (condition, stackTrace);
         }
         else
         {
