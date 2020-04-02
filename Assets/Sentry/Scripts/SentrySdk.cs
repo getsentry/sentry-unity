@@ -156,7 +156,7 @@ public class SentrySdk : MonoBehaviour
 
     public void OnGUI()
     {
-        if (_lastErrorMessage != "")
+        if (_lastErrorMessage != "" && Debug)
         {
             GUILayout.TextArea(_lastErrorMessage);
             if (GUILayout.Button("Clear"))
