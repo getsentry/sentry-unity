@@ -16,9 +16,23 @@ public class Demo : MonoBehaviour
 
     public void ThrowUnhandled() => throw null;
 
-    public void ThrowAndCatch()
+    public void ThrowExceptionAndCatch()
     {
-        Debug.Log("Throwing exception!");
+        Debug.Log("Throwing an instance of CustomException!");
+
+        try
+        {
+            throw new CustomException("A custom exception.");
+        }
+        catch (Exception e)
+        {
+            SentrySdk.CaptureException(e);
+        }
+    }
+
+    public void ThrowNullAndCatch()
+    {
+        Debug.Log("Throwing 'null' and catching it!");
 
         try
         {
@@ -26,10 +40,16 @@ public class Demo : MonoBehaviour
         }
         catch (Exception e)
         {
-            var evt = new SentryEvent(e);
-            SentrySdk.CaptureEvent(evt);
+            SentrySdk.CaptureException(e);
         }
     }
 
-    public new void SendMessage() => SentrySdk.CaptureMessage("Capturing message");
+    public void SendMessage() => SentrySdk.CaptureMessage("Capturing message");
+
+    private class CustomException : Exception
+    {
+        public CustomException(string message) : base(message)
+        {
+        }
+    }
 }

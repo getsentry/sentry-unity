@@ -15,14 +15,14 @@ namespace Sentry.Unity
         static void OnRuntimeMethodLoad()
         {
             var dsn = // null; // **SET YOUR DSN HERE**
-                "https://5fd7a6cda8444965bade9ccfd3df9882@sentry.io/1188141";
+                "https://07c6e51144e642a7910ef095334d3063@o19635.ingest.sentry.io/70811";
 
             if (dsn == null)
             {
                 Debug.LogError("No DSN set!");
                 return;
             }
-          
+
             _sdk = SentrySdk.Init(o =>
             {
                 o.Dsn = new Dsn(dsn);
@@ -88,14 +88,14 @@ namespace Sentry.Unity
             SentrySdk.CaptureEvent(new SentryEvent(new UnityLogException(logString, stackTrace)));
         }
 
-        // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call. 
+        // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
         //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
         // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
         // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
         private void OnApplicationQuit() => _sdk?.Dispose();
 
         // TODO: Flush events. See note on OnApplicationQuit
-        //private void OnApplicationPause() => 
+        //private void OnApplicationPause() =>
         // TODO: Flush events, see note on OnApplicationQuit
         // private void OnApplicationFocus { if (!focusStatus) Flush events! }
     }
