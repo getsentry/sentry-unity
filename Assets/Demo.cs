@@ -44,7 +44,14 @@ public class Demo : MonoBehaviour
         }
     }
 
-    public void SendMessage() => SentrySdk.CaptureMessage("Capturing message");
+    public void SendMessage()
+    {
+        SentrySdk.CaptureMessage("Capturing message");
+#if UNITY_ANDROID
+        var jo = new AndroidJavaObject("io.sentry.sample.unity.AndroidPlugin");
+        jo.CallStatic("logActivityName");
+#endif
+    }
 
     private class CustomException : Exception
     {

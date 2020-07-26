@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6665d16f699b04d37a60d01444a805fd
+guid: 5c5f1bdfc687c477094da8262b497cab
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -17,14 +17,14 @@ PluginImporter:
       enabled: 0
       settings:
         Exclude Android: 0
-        Exclude Editor: 1
-        Exclude Linux64: 1
-        Exclude OSXUniversal: 1
-        Exclude WebGL: 1
-        Exclude Win: 1
-        Exclude Win64: 1
-        Exclude iOS: 1
-        Exclude tvOS: 1
+        Exclude Editor: 0
+        Exclude Linux64: 0
+        Exclude OSXUniversal: 0
+        Exclude WebGL: 0
+        Exclude Win: 0
+        Exclude Win64: 0
+        Exclude iOS: 0
+        Exclude tvOS: 0
   - first:
       Android: Android
     second:
@@ -34,12 +34,12 @@ PluginImporter:
   - first:
       Any: 
     second:
-      enabled: 0
+      enabled: 1
       settings: {}
   - first:
       Editor: Editor
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
@@ -47,31 +47,36 @@ PluginImporter:
   - first:
       Standalone: Linux64
     second:
-      enabled: 0
+      enabled: 1
       settings:
-        CPU: x86_64
+        CPU: AnyCPU
   - first:
       Standalone: OSXUniversal
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: x86_64
   - first:
       Standalone: Win
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: x86
   - first:
       Standalone: Win64
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: x86_64
   - first:
+      WebGL: WebGL
+    second:
+      enabled: 1
+      settings: {}
+  - first:
       iPhone: iOS
     second:
-      enabled: 0
+      enabled: 1
       settings:
         AddToEmbeddedBinaries: false
         CPU: AnyCPU
@@ -80,7 +85,7 @@ PluginImporter:
   - first:
       tvOS: tvOS
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
         CompileFlags: 
