@@ -84,7 +84,7 @@ public class SentrySdk : MonoBehaviour
         _instance.DoCaptureMessage(message);
     }
 
-    public static void CaptureEvent(SentryEvent @event)
+    public static void CaptureEvent<T>(T @event) where T : SentryEvent
     {
         if (_instance == null)
         {
