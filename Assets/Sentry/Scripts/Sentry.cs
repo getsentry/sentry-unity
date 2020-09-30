@@ -39,7 +39,7 @@ namespace Sentry
         /// </remarks>
         /// <seealso href="https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices"/>
         /// <seealso href="http://pci-ids.ucw.cz/read/PC/"/>
-        public int vendor_id;
+        public string vendor_id;
 
         /// <summary>
         /// The vendor name reported by the graphic device
