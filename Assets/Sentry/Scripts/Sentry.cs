@@ -332,7 +332,7 @@ namespace Sentry
             {
                 id = SystemInfo.graphicsDeviceID,
                 name = SystemInfo.graphicsDeviceName,
-                vendor_id = SystemInfo.graphicsDeviceVendorID,
+                vendor_id = SystemInfo.graphicsDeviceVendorID.ToString(),
                 vendor_name = SystemInfo.graphicsDeviceVendor,
                 memory_size = SystemInfo.graphicsMemorySize,
                 multi_threaded_rendering = SystemInfo.graphicsMultiThreaded,
