@@ -265,7 +265,7 @@ namespace Sentry
     public class SdkVersion
     {
         public string name = "sentry.unity.lite";
-        public string version = "0.0.4";
+        public string version = "0.0.5";
     }
 
     [Serializable]
