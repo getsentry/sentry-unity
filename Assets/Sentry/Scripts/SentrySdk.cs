@@ -17,12 +17,14 @@ public class SentrySdk : MonoBehaviour
     private int _lastBreadcrumbPos = 0;
     private int _noBreadcrumbs = 0;
 
-    [Header("DSN of your sentry instance")]
-    public string Dsn;
-    [Header("Send PII like User and Computer names")]
-    public bool SendDefaultPii = true;
+    [Header("DSN of your Sentry instance")]
+    [SerializeField] string Dsn;
+    [Header("Send PII like user and computer names")]
+    [SerializeField] bool SendDefaultPii = true;
     [Header("Enable SDK debug messages")]
-    public bool Debug = true;
+    [SerializeField] bool Debug = true;
+    [Header("Send to Sentry when running in editor")]
+    [SerializeField] bool SendFromEditor = false;
     [Header("Override game version")]
     public string Version = "";
     [Header("Environment (lowercase)")]
@@ -87,6 +89,12 @@ public class SentrySdk : MonoBehaviour
 
         _instance.User = user;
 
+    }
+
+    public static void AddBreadcrumbAndLog(string message)
+    {
+        UnityDebug.Log("<color=green>Sentry: </color> " + message);
+        AddBreadcrumb(message);
     }
 
     public static void AddBreadcrumb(string message)
@@ -195,7 +203,7 @@ public class SentrySdk : MonoBehaviour
     {
         if (Debug)
         {
-            UnityDebug.Log("sending exception to sentry.");
+            UnityDebug.Log($"sending exception to sentry: {condition}");
         }
 
         var stack = new List<StackTraceSpec>();
@@ -369,6 +377,14 @@ public class SentrySdk : MonoBehaviour
         ContinueSendingEvent<T>(T @event)
             where T : SentryEvent
     {
+
+#if UNITY_EDITOR
+        if (!SendFromEditor)
+        {
+            yield break; // Return early to never send the event if in editor, to avoid development spam
+        }
+#endif
+
         PrepareEvent(@event);
 
         var s = JsonUtility.ToJson(@event);
