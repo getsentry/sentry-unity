@@ -11,7 +11,8 @@ using UnityDebug = UnityEngine.Debug;
 
 public class SentrySdk : MonoBehaviour
 {
-    private float _timeLastError = 0;
+    // Initialized to -1f so Time.time - _timeLastError at start always > MinTime
+    private float _timeLastError = -1f;
     private const float MinTime = 0.5f;
     private Breadcrumb[] _breadcrumbs;
     private int _lastBreadcrumbPos = 0;
@@ -209,7 +210,7 @@ public class SentrySdk : MonoBehaviour
         var stack = new List<StackTraceSpec>();
         var exc = condition.Split(new char[] { ':' }, 2);
         var excType = exc[0];
-        var excValue = exc[1].Substring(1); // strip the space
+        var excValue = exc.Length > 1 ? exc[1].Substring(1) : ""; // strip the space
 
         foreach (var stackTraceSpec in GetStackTraces(stackTrace))
         {
