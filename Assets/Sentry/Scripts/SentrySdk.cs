@@ -26,6 +26,8 @@ public class SentrySdk : MonoBehaviour
     [SerializeField] bool Debug = true;
     [Header("Send to Sentry when running in editor")]
     [SerializeField] bool SendFromEditor = false;
+    [Header("Throttle sending of repeated identical errors")]
+    [SerializeField] bool ThrottleIdenticalErrors = false;
     [Header("Override game version")]
     public string Version = "";
     [Header("Environment (lowercase)")]
@@ -317,18 +319,20 @@ public class SentrySdk : MonoBehaviour
         {
             return; // dsn not initialized or something exploded, don't try to send it
         }
-        _lastErrorMessage = condition;
         if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
         {
             // only send errors, can be set somewhere what we send and what we don't
             return;
         }
+        // Use a longer wait time for identical errors to reduce number of events
+        float specificMinTime = (ThrottleIdenticalErrors && condition == _lastErrorMessage) ? MinTime * 100f : MinTime;
 
-        if (Time.time - _timeLastError <= MinTime)
+        if (Time.time - _timeLastError <= specificMinTime)
         {
             return; // silently drop the event on the floor
         }
         _timeLastError = Time.time;
+        _lastErrorMessage = condition;
         if (type == LogType.Exception)
         {
             ScheduleException(condition, stackTrace);
