@@ -27,6 +27,7 @@ public class SentrySdk : MonoBehaviour
     public string Version = "";
     [Header("Environment (lowercase)")]
     private string Environment = "development";
+    private string User;
 
     private string _lastErrorMessage = "";
     private Dsn _dsn;
@@ -68,12 +69,24 @@ public class SentrySdk : MonoBehaviour
 
     public static void SetEnvironment(string environment)
     {
+
         if (_instance == null)
         {
             return;
         }
 
         _instance.Environment = environment;
+    }
+
+    public static void SetUser(string user)
+    {
+        if (_instance == null)
+        {
+            return;
+        }
+
+        _instance.User = user;
+
     }
 
     public static void AddBreadcrumb(string message)
@@ -337,6 +350,11 @@ public class SentrySdk : MonoBehaviour
         if (SendDefaultPii)
         {
             @event.contexts.device.name = SystemInfo.deviceName;
+        }
+
+        if (SendDefaultPii && !String.IsNullOrEmpty(User))
+        {
+            @event.user.email = User;
         }
 
         @event.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;

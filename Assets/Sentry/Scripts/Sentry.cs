@@ -374,7 +374,7 @@ namespace Sentry
     [Serializable]
     public class User
     {
-        public string email = "test@test.com";
+        public string email = "not@logged.in";
     }
 
     [Serializable]
