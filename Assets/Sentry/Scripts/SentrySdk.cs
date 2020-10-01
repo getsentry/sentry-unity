@@ -25,6 +25,8 @@ public class SentrySdk : MonoBehaviour
     public bool Debug = true;
     [Header("Override game version")]
     public string Version = "";
+    [Header("Environment (lowercase)")]
+    private string Environment = "development";
 
     private string _lastErrorMessage = "";
     private Dsn _dsn;
@@ -62,6 +64,16 @@ public class SentrySdk : MonoBehaviour
         {
             Destroy(this);
         }
+    }
+
+    public static void SetEnvironment(string environment)
+    {
+        if (_instance == null)
+        {
+            return;
+        }
+
+        _instance.Environment = environment;
     }
 
     public static void AddBreadcrumb(string message)
@@ -315,6 +327,11 @@ public class SentrySdk : MonoBehaviour
         if (Version != "") // version override
         {
             @event.release = Version;
+        }
+
+        if (Environment != "")
+        {
+            @event.environment = Environment;
         }
 
         if (SendDefaultPii)

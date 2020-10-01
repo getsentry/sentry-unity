@@ -387,6 +387,7 @@ namespace Sentry
         public string level;
         public string platform = "csharp";
         public string release;
+        public string environment;
         public Context contexts;
         public SdkVersion sdk = new SdkVersion();
         public List<Breadcrumb> breadcrumbs = null;
