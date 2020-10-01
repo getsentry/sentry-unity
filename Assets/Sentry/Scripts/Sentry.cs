@@ -416,6 +416,8 @@ namespace Sentry
 
         public StackTraceContainer(List<StackTraceSpec> frames)
         {
+            if (frames.Count == 0)
+                frames.Add(new StackTraceSpec("unkown", "unkown", 0, true));
             this.frames = frames;
         }
     }
