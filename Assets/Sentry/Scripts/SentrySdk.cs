@@ -28,6 +28,8 @@ public class SentrySdk : MonoBehaviour
     [SerializeField] bool SendFromEditor = false;
     [Header("Throttle sending of repeated identical errors")]
     [SerializeField] bool ThrottleIdenticalErrors = false;
+    [Header("Resend unsent errors at start (using PlayerPrefs)")]
+    [SerializeField] bool ResendErrors = false;
     [Header("Override game version")]
     public string Version = "";
     [Header("Environment (lowercase)")]
@@ -65,6 +67,14 @@ public class SentrySdk : MonoBehaviour
             DontDestroyOnLoad(this);
             _instance = this;
             _initialized = true;
+            if (ResendErrors && gameObject.activeInHierarchy && PlayerPrefs.HasKey("UNSENT_SENTRY_ERROR"))
+            {
+                string s = PlayerPrefs.GetString("UNSENT_SENTRY_ERROR");
+                PlayerPrefs.DeleteKey("UNSENT_SENTRY_ERROR");
+                PlayerPrefs.Save();
+                UnityDebug.Log("Sending saved Sentry report: " + s.Substring(0, 40));
+                StartCoroutine(ContinueSendingEvent(s));
+            }
         }
         else
         {
@@ -151,8 +161,7 @@ public class SentrySdk : MonoBehaviour
         {
             UnityDebug.Log("sending event to sentry.");
         }
-
-        StartCoroutine(ContinueSendingEvent(@event));
+        StartCoroutine(ContinueSendingEvent(SerializeEvent(@event)));
     }
 
     private void DoAddBreadcrumb(string message)
@@ -220,8 +229,7 @@ public class SentrySdk : MonoBehaviour
         }
 
         var @event = new SentryExceptionEvent(excType, excValue, GetBreadcrumbs(), stack);
-
-        StartCoroutine(ContinueSendingEvent(@event));
+        StartCoroutine(ContinueSendingEvent(SerializeEvent(@event)));
     }
 
     private static IEnumerable<StackTraceSpec> GetStackTraces(string stackTrace)
@@ -348,7 +356,7 @@ public class SentrySdk : MonoBehaviour
         }
     }
 
-    private void PrepareEvent(SentryEvent @event)
+    private string SerializeEvent(SentryEvent @event)
     {
         if (Version != "") // version override
         {
@@ -373,14 +381,15 @@ public class SentrySdk : MonoBehaviour
         @event.tags.deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
         @event.extra.unityVersion = Application.unityVersion;
         @event.extra.screenOrientation = Screen.orientation.ToString();
+        string json = JsonUtility.ToJson(@event);
+        return json;
     }
 
     private IEnumerator
 #if !UNITY_5
         <UnityWebRequestAsyncOperation>
 #endif
-        ContinueSendingEvent<T>(T @event)
-            where T : SentryEvent
+        ContinueSendingEvent(string s)
     {
 
 #if UNITY_EDITOR
@@ -390,9 +399,6 @@ public class SentrySdk : MonoBehaviour
         }
 #endif
 
-        PrepareEvent(@event);
-
-        var s = JsonUtility.ToJson(@event);
 
         var sentryKey = _dsn.publicKey;
         var sentrySecret = _dsn.secretKey;
@@ -407,6 +413,12 @@ public class SentrySdk : MonoBehaviour
                  sentrySecret);
 
         var www = new UnityWebRequest(_dsn.callUri.ToString());
+        if (ResendErrors)
+        {
+            PlayerPrefs.SetString("UNSENT_SENTRY_ERROR", s);
+            PlayerPrefs.Save();
+        }
+
         www.method = "POST";
         www.SetRequestHeader("X-Sentry-Auth", authString);
         www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(s));
@@ -431,9 +443,14 @@ public class SentrySdk : MonoBehaviour
         {
             UnityDebug.LogWarning("error sending request to sentry: " + www.error);
         }
-        else if (Debug)
+        else
         {
-            UnityDebug.Log("Sentry sent back: " + www.downloadHandler.text);
+            PlayerPrefs.DeleteKey("UNSENT_SENTRY_ERROR");
+            PlayerPrefsUtils.DeleteKey("UNSENT_SENTRY_ERROR"); // Delete, we have succeded to send it
+            if (Debug)
+            {
+                UnityDebug.Log("Sentry sent back: " + www.downloadHandler.text);
+            }
         }
     }
 }
