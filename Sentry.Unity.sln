@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sentry.Unity", "src\SentryUnity\Sentry.Unity.csproj", "{0C4EEBB5-B0FC-43A9-BCE3-E398E5264F23}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sentry.Unity", "src\Sentry.Unity\Sentry.Unity.csproj", "{0C4EEBB5-B0FC-43A9-BCE3-E398E5264F23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

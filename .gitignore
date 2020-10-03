@@ -7,5 +7,5 @@ Logs/
 Library/
 Temp/
 
-# Build output of SentryUnity
-unity/Assets/Plugins/SentryUnity/
+# Build output of Sentry.Unity
+sentry.unity/Assets/Plugins/Sentry.Unity/

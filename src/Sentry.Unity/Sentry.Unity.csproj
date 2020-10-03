@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <OutDir>../../unity/Assets/Plugins/SentryUnity</OutDir>
+    <OutDir>../../sentry.unity/Assets/Plugins/Sentry.Unity</OutDir>
     <SentryDotnetVersion>3.0.0-alpha.0</SentryDotnetVersion>
     <NewtonsoftJsonVersion>11.0.2</NewtonsoftJsonVersion>
   </PropertyGroup>
