@@ -6,12 +6,14 @@
     <OutDir>../../sentry.unity/Assets/Plugins/Sentry.Unity</OutDir>
     <SentryDotnetVersion>3.0.0-alpha.0</SentryDotnetVersion>
     <NewtonsoftJsonVersion>11.0.2</NewtonsoftJsonVersion>
+	<UnityVersion>2019.4.11f1</UnityVersion>
   </PropertyGroup>
 
   <PropertyGroup>
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('C:\Program Files\Unity\Hub\Editor\2019.4.11f1\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\2019.4.11f1\Editor\Data\Managed</UnityPath>
+    <UnityPath Condition="$(UnityPath) == '' AND Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed</UnityPath>
+    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/</UnityPath>
+	<!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
     <UnityPath Condition="$(UnityPath) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor\Data\Managed</UnityPath>
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Hub/Editor/2019.4.11f1/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/2019.4.11f1/Unity.app/Contents/Managed/</UnityPath>
     <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/Contents/Managed</UnityPath>
   </PropertyGroup>
 
