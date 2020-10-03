@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <OutDir>../../unity/Plugins/SentryUnity</OutDir>
+    <OutDir>../../unity/Assets/Plugins/SentryUnity</OutDir>
     <SentryDotnetVersion>3.0.0-alpha.0</SentryDotnetVersion>
     <NewtonsoftJsonVersion>11.0.2</NewtonsoftJsonVersion>
   </PropertyGroup>
@@ -30,10 +30,12 @@
     <PackageReference Include="Sentry" Version="$(SentryDotnetVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" GeneratePathProperty="true" />
   </ItemGroup>
+  <Target Name="Delete output directory" AfterTargets="Clean">
+    <RemoveDir Directories="$(OutDir)" />
+  </Target>
   <Target Name="Copy Sentry SDK and dependencies to Unity Plugins" AfterTargets="Build">
     <Copy SourceFiles="$(PkgSentry)\lib\$(TargetFramework)\Sentry.dll" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="$(PkgSentry)\lib\$(TargetFramework)\Sentry.pdb" DestinationFolder="$(OutDir)" />
-    <Copy Condition="Exists('$(PkgNewtonsoft_Json)')"
-      SourceFiles="$(PkgNewtonsoft_Json)\lib\$(TargetFramework)\Newtonsoft.Json.dll" DestinationFolder="$(OutDir)" />
+    <Copy Condition="Exists('$(PkgNewtonsoft_Json)')" SourceFiles="$(PkgNewtonsoft_Json)\lib\$(TargetFramework)\Newtonsoft.Json.dll" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>

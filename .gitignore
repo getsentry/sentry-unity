@@ -8,4 +8,4 @@ Library/
 Temp/
 
 # Build output of SentryUnity
-unity/Plugins/SentryUnity/
+unity/Assets/Plugins/SentryUnity/
