@@ -1,0 +1,11 @@
+.vs/
+*.user
+.idea/
+obj/  
+bin/
+Logs/
+Library/
+Temp/
+
+# Build output of SentryUnity
+unity/Plugins/SentryUnity/
