@@ -13,9 +13,8 @@ namespace Sentry.Unity
         private static long _timeLastError;
         public static long MinTime { get; } = TimeSpan.FromMilliseconds(500).Ticks;
 
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void BeforeSceneLoad()
+        private static void Init()
         {
             bool sentryInEditor = true; // Make this configurable
             if (Application.isEditor && !sentryInEditor)
@@ -55,6 +54,7 @@ namespace Sentry.Unity
                 o.AddInAppExclude("UnityEngine");
                 o.DiagnosticLogger = new UnityLogger();
                 // Some targets doesn't support GZipping the events sent out
+                // TODO: Disable it selectively
                 o.RequestBodyCompressionLevel = System.IO.Compression.CompressionLevel.NoCompression;
                 o.AddEventProcessor(new UnityEventProcessor());
                 o.AddExceptionProcessor(new UnityEventExceptionProcessor());
@@ -72,6 +72,13 @@ namespace Sentry.Unity
             Debug.Log("Sentry initialized");
         }
 
+        // Happens with Domain Reloading
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void SubsystemRegistration()
+        {
+            SentrySdk.AddBreadcrumb("SubsystemRegistration");
+        }
 
         private static void OnLogMessageReceived(string logString, string stackTrace, LogType type)
         {
@@ -83,7 +90,7 @@ namespace Sentry.Unity
 
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
             {
-                // only send errors, can be set somewhere what we send and what we don't
+                // only send errors, can be set somewhere what we send, and what we don't
                 if (type == LogType.Warning)
                 {
                     SentrySdk.AddBreadcrumb(logString, level: BreadcrumbLevel.Warning);
