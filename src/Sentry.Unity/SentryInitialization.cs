@@ -13,9 +13,11 @@ namespace Sentry.Unity
         private static long _timeLastError;
         public static long MinTime { get; } = TimeSpan.FromMilliseconds(500).Ticks;
 
+        // TODO: Take SentryOptions from UnitySettings
+
         // Needs to be on if now platform specific init code is required
         // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        public static void Init()
+        public static void Init(string dsn)
         {
             bool sentryInEditor = true; // Make this configurable
             if (Application.isEditor && !sentryInEditor)
@@ -25,7 +27,8 @@ namespace Sentry.Unity
             }
             Debug.Log("Initializing Sentry.");
 
-            var dsn = // null; // **SET YOUR DSN HERE**
+            // TOD: DSN will only be taken via parameter
+            dsn ??= // null; // **SET YOUR DSN HERE**
                 "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
 
             if (dsn == null)
@@ -108,7 +111,7 @@ namespace Sentry.Unity
 
             _timeLastError = time;
 
-            SentrySdk.CaptureEvent(new SentryEvent(new UnityLogException(logString, stackTrace)));
+            _ = SentrySdk.CaptureEvent(new SentryEvent(new UnityLogException(logString, stackTrace)));
         }
 
 

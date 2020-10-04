@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>8</LangVersion>
     <SentryDotnetVersion>3.0.0-alpha.0</SentryDotnetVersion>
     <NewtonsoftJsonVersion>11.0.2</NewtonsoftJsonVersion>
     <UnityVersion>2019.4.11f1</UnityVersion>
@@ -18,10 +18,6 @@
   <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>$(UnityPath)\UnityEngine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="UnityEditor">
-      <HintPath>$(UnityPath)\UnityEditor.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

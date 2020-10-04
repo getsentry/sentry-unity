@@ -23,6 +23,8 @@ public class SampleScript : MonoBehaviour
 #if UNITY_ANDROID
         Debug.Log("Sentry SDK for Android.");
         SentryAndroid.Init();
+        Debug.Log("Initialized. Now going to throw test.");
+        SentryAndroid.TestThrow();
 #else
         throw null;
 #endif

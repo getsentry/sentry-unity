@@ -12,7 +12,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" GeneratePathProperty="true" />
   </ItemGroup>
   <Target Name="Delete output directory" AfterTargets="Clean">
-    <RemoveDir Directories="$(OutDir)" />
+    <!--need to skip the .meta files-->
+    <!--On clear, backup .meta files. On build, if they are not there, copy them over-->
+    <!--<RemoveDir Directories="$(OutDir)" />-->
   </Target>
   <Target Name="Copy Sentry SDK and dependencies to output dir" AfterTargets="Build">
     <Copy SourceFiles="$(PkgSentry)\lib\$(TargetFramework)\Sentry.dll" DestinationFolder="$(OutDir)" />

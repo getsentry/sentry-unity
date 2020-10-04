@@ -11,3 +11,4 @@ Build/
 
 # Build output of Sentry.Unity
 sentry.unity/Assets/Plugins/Sentry.Unity/
+sentry.unity/Assets/Editor/Sentry.Unity/Sentry.Unity.Android.Editor*
