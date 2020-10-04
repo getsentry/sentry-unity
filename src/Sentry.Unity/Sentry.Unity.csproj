@@ -2,32 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
     <OutDir>../../sentry.unity/Assets/Plugins/Sentry.Unity</OutDir>
     <SentryDotnetVersion>3.0.0-alpha.0</SentryDotnetVersion>
     <NewtonsoftJsonVersion>11.0.2</NewtonsoftJsonVersion>
-	<UnityVersion>2019.4.11f1</UnityVersion>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed</UnityPath>
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/</UnityPath>
-	<!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor\Data\Managed</UnityPath>
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/Contents/Managed</UnityPath>
-  </PropertyGroup>
-
-	<ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>$(UnityPath)\UnityEngine.dll</HintPath>
-	  <Private>false</Private>
-    </Reference>
-    <Reference Include="UnityEditor">
-      <HintPath>$(UnityPath)\UnityEditor.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-  
   <ItemGroup>
     <PackageReference Include="Sentry" Version="$(SentryDotnetVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" GeneratePathProperty="true" />
@@ -35,9 +14,10 @@
   <Target Name="Delete output directory" AfterTargets="Clean">
     <RemoveDir Directories="$(OutDir)" />
   </Target>
-  <Target Name="Copy Sentry SDK and dependencies to Unity Plugins" AfterTargets="Build">
+  <Target Name="Copy Sentry SDK and dependencies to output dir" AfterTargets="Build">
     <Copy SourceFiles="$(PkgSentry)\lib\$(TargetFramework)\Sentry.dll" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="$(PkgSentry)\lib\$(TargetFramework)\Sentry.pdb" DestinationFolder="$(OutDir)" />
     <Copy Condition="Exists('$(PkgNewtonsoft_Json)')" SourceFiles="$(PkgNewtonsoft_Json)\lib\$(TargetFramework)\Newtonsoft.Json.dll" DestinationFolder="$(OutDir)" />
   </Target>
+
 </Project>

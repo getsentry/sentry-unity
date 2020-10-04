@@ -5,6 +5,15 @@ VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sentry.Unity", "src\Sentry.Unity\Sentry.Unity.csproj", "{0C4EEBB5-B0FC-43A9-BCE3-E398E5264F23}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sentry.Unity.Android", "src\Sentry.Unity.Android\Sentry.Unity.Android.csproj", "{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B567D4AE-A452-4CC3-B645-B08C5938F8B4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +36,18 @@ Global
 		{0C4EEBB5-B0FC-43A9-BCE3-E398E5264F23}.Release|x64.Build.0 = Release|Any CPU
 		{0C4EEBB5-B0FC-43A9-BCE3-E398E5264F23}.Release|x86.ActiveCfg = Release|Any CPU
 		{0C4EEBB5-B0FC-43A9-BCE3-E398E5264F23}.Release|x86.Build.0 = Release|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Debug|x64.Build.0 = Debug|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Debug|x86.Build.0 = Debug|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Release|x64.ActiveCfg = Release|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Release|x64.Build.0 = Release|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Release|x86.ActiveCfg = Release|Any CPU
+		{ADB8E241-6879-47F9-8E08-FDBE9BBEB803}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

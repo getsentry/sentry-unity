@@ -1,6 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_ANDROID
+using Sentry.Unity.Android;
+#endif
 
 public class SampleScript : MonoBehaviour
 {
@@ -15,5 +18,13 @@ public class SampleScript : MonoBehaviour
         
     }
 
-    public void ThrowNull() => throw null;
+    public void ThrowNull()
+    {
+#if UNITY_ANDROID
+        Debug.Log("Sentry SDK for Android.");
+        SentryAndroid.Init();
+#else
+        throw null;
+#endif
+    }
 }

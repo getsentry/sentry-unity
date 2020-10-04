@@ -1,4 +1,4 @@
-﻿using Sentry;
+using Sentry;
 using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
@@ -8,13 +8,14 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity
 {
-    internal static class SentryInitialization
+    public static class SentryInitialization
     {
         private static long _timeLastError;
         public static long MinTime { get; } = TimeSpan.FromMilliseconds(500).Ticks;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Init()
+        // Needs to be on if now platform specific init code is required
+        // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void Init()
         {
             bool sentryInEditor = true; // Make this configurable
             if (Application.isEditor && !sentryInEditor)
@@ -33,12 +34,12 @@ namespace Sentry.Unity
                 return;
             }
 
-            SentrySdk.Init(o =>
+            _ = SentrySdk.Init(o =>
             {
                 o.Dsn = new Dsn(dsn);
 
                 // read from config
-                if (Application.isEditor)
+                //if (Application.isEditor)
                 {
                     // NOTE: This is simply to see the internal logging of the SDK
                     // A production situation would NOT have this enabled.

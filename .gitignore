@@ -6,6 +6,8 @@ bin/
 Logs/
 Library/
 Temp/
+Build/
+.gradle
 
 # Build output of Sentry.Unity
 sentry.unity/Assets/Plugins/Sentry.Unity/
