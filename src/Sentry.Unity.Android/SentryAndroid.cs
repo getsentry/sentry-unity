@@ -22,14 +22,20 @@ namespace Sentry.Unity.Android
 
         private static void InitAndroid()
         {
-            AndroidJavaClass sentryAndroid = new AndroidJavaClass("io.sentry.unity.SentryAndroid");
+            var sentryAndroid = new AndroidJavaClass("io.sentry.unity.SentryAndroid");
             if (sentryAndroid == null)
             {
                 Debug.LogWarning("Sentry Android SDK not found.");
                 return;
             }
-
-            _ = sentryAndroid.Call<AndroidJavaObject>("testThrow");
+            try
+            {
+                sentryAndroid.CallStatic("testThrow");
+            }
+            finally
+            {
+                sentryAndroid.Dispose();
+            }
         }
     }
 
