@@ -1,7 +1,6 @@
 ﻿<linker>
-    <assembly fullname="Sentry">
-        <type fullname="Sentry.Protocol.*" preserve="all"/>
-    </assembly>
+    <assembly fullname="Sentry" preserve="all"/>
+
     <assembly fullname="System">
         <type fullname="System.ComponentModel.TypeConverter" preserve="all"/>
         <type fullname="System.ComponentModel.ArrayConverter" preserve="all"/>
@@ -43,10 +42,21 @@
         <type fullname="System.Linq.Expressions.Interpreter.LightLambda" preserve="all"/>
         <type fullname="System.Linq.Expressions.LambdaExpression" preserve="all"/>
     </assembly>
+    <assembly fullname="System.Runtime">
+        <type fullname="System.Exception" preserve="all"/>
+        <type fullname="System.Exception" preserve="all"/>
+        <type fullname="System.Diagnostics.StackTrace" preserve="all"/>
+    </assembly>
+    <assembly fullname="mscorlib">
+        <type fullname="System.Exception" preserve="all"/>
+        <type fullname="System.Diagnostics.StackTrace" preserve="all"/>
+    </assembly>
     <assembly fullname="netstandard">
         <type fullname="System.Linq.Expressions" preserve="all"/>
         <type fullname="System.Linq.Expressions.*" preserve="all"/>
         <type fullname="System.Linq.Expressions.Interpreter.LightLambda" preserve="all"/>
         <type fullname="System.Linq.Expressions.LambdaExpression" preserve="all"/>
+        <type fullname="System.Exception" preserve="all"/>
+        <type fullname="System.Diagnostics.StackTrace" preserve="all"/>
     </assembly>
 </linker>
