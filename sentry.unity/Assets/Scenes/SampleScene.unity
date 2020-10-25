@@ -835,7 +835,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 649777089}
-        m_MethodName: ThrowExceptionAndCatch
+        m_MethodName: ExceptionToString
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
