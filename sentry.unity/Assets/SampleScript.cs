@@ -30,6 +30,10 @@ public class SampleScript : MonoBehaviour
             SentryAndroid.TestThrow();
         } catch {}
         crash();
+        #else
+        // TODO: from config
+        var dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+        Sentry.Unity.SentryInitialization.Init(dsn);
 #endif
 
         SentrySdk.AddBreadcrumb("Sample starting!");
