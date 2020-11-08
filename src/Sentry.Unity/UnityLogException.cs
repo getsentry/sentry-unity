@@ -1,4 +1,5 @@
 ﻿using System;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -18,6 +19,7 @@ namespace Sentry.Unity
         {
             LogString = logString;
             LogStackTrace = logStackTrace;
+            Data[Mechanism.MechanismKey] = "unity.log";
         }
     }
 }

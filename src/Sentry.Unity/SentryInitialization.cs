@@ -19,7 +19,7 @@ namespace Sentry.Unity
         // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init(string dsn)
         {
-            bool sentryInEditor = true; // Make this configurable
+            var sentryInEditor = true; // Make this configurable
             if (Application.isEditor && !sentryInEditor)
             {
                 Debug.Log("Sentry SDK disabled.");

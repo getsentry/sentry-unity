@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using UnityEngine;
@@ -131,6 +132,7 @@ namespace Sentry.Unity
             if (exception is UnityLogException ule)
             {
                 sentryEvent.SentryExceptions = new[] { GetException(ule.LogString, ule.LogStackTrace) };
+                sentryEvent.SetTag("source", "log");
             }
         }
 
@@ -208,7 +210,8 @@ namespace Sentry.Unity
 
                 frames.Add(new SentryStackFrame
                 {
-                    FileName = filename,
+                    FileName = Path.GetFileName(filename),
+                    AbsolutePath = filename,
                     Function = functionName,
                     LineNumber = lineNo,
                     InApp = functionName != null
