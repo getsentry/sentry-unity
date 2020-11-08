@@ -3,29 +3,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>../../sentry.unity/Assets/Plugins/Sentry.Unity</OutDir>
-    <SentryDotnetVersion>3.0.0-alpha.0</SentryDotnetVersion>
-    <NewtonsoftJsonVersion>11.0.2</NewtonsoftJsonVersion>
+    <!-- Thanks again Martin https://stackoverflow.com/questions/43837638/how-do-i-get-net-core-projects-to-copy-nuget-references-to-the-build-output/43841481#43841481 -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Sentry" Version="$(SentryDotnetVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" GeneratePathProperty="true" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <None Update="link.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Target Name="Delete output directory" AfterTargets="Clean">
-    <!--need to skip the .meta files-->
-    <!--On clear, backup .meta files. On build, if they are not there, copy them over-->
-    <!--<RemoveDir Directories="$(OutDir)" />-->
-  </Target>
-  <Target Name="Copy Sentry SDK and dependencies to output dir" AfterTargets="Build">
-    <Copy SourceFiles="$(PkgSentry)\lib\$(TargetFramework)\Sentry.dll" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="$(PkgSentry)\lib\$(TargetFramework)\Sentry.pdb" DestinationFolder="$(OutDir)" />
-    <Copy Condition="Exists('$(PkgNewtonsoft_Json)')" SourceFiles="$(PkgNewtonsoft_Json)\lib\$(TargetFramework)\Newtonsoft.Json.dll" DestinationFolder="$(OutDir)" />
-  </Target>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\sentry-dotnet\src\Sentry\Sentry.csproj" />
+  </ItemGroup>
 
 </Project>

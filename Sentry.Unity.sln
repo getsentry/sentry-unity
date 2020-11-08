@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sentry.Unity.Android.Editor", "src\Sentry.Unity.Android.Editor\Sentry.Unity.Android.Editor.csproj", "{7781BD5A-B020-4B42-9F89-F67AC58C1D13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry", "sentry-dotnet\src\Sentry\Sentry.csproj", "{A1406740-5D00-4272-9B22-FA919A10EC5C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,18 @@ Global
 		{7781BD5A-B020-4B42-9F89-F67AC58C1D13}.Release|x64.Build.0 = Release|Any CPU
 		{7781BD5A-B020-4B42-9F89-F67AC58C1D13}.Release|x86.ActiveCfg = Release|Any CPU
 		{7781BD5A-B020-4B42-9F89-F67AC58C1D13}.Release|x86.Build.0 = Release|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Debug|x64.Build.0 = Debug|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Debug|x86.Build.0 = Debug|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Release|x64.ActiveCfg = Release|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Release|x64.Build.0 = Release|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A1406740-5D00-4272-9B22-FA919A10EC5C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

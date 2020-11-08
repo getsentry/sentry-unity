@@ -89,7 +89,7 @@ namespace Sentry.Unity
             {
                 Id = SystemInfo.graphicsDeviceID,
                 Name = SystemInfo.graphicsDeviceName,
-                VendorId = SystemInfo.graphicsDeviceVendorID,
+                VendorId = SystemInfo.graphicsDeviceVendorID.ToString(),
                 VendorName = SystemInfo.graphicsDeviceVendor,
                 MemorySize = SystemInfo.graphicsMemorySize,
                 MultiThreadedRendering = SystemInfo.graphicsMultiThreaded,

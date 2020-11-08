@@ -1,0 +1,3 @@
+[submodule "sentry-dotnet"]
+	path = sentry-dotnet
+	url = git@github.com:getsentry/sentry-dotnet.git

@@ -39,7 +39,7 @@ namespace Sentry.Unity
 
             _ = SentrySdk.Init(o =>
             {
-                o.Dsn = new Dsn(dsn);
+                o.Dsn = dsn;
 
                 // read from config
                 //if (Application.isEditor)
@@ -115,7 +115,7 @@ namespace Sentry.Unity
         }
 
 
-        // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call. 
+        // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
         //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
         // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
         // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
