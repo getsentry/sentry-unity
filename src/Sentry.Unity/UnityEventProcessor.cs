@@ -86,21 +86,15 @@ namespace Sentry.Unity
                 @event.Contexts.Device.MemorySize = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
             }
 
-            var gpu = new Gpu
-            {
-                Id = SystemInfo.graphicsDeviceID,
-                Name = SystemInfo.graphicsDeviceName,
-                VendorId = SystemInfo.graphicsDeviceVendorID.ToString(),
-                VendorName = SystemInfo.graphicsDeviceVendor,
-                MemorySize = SystemInfo.graphicsMemorySize,
-                MultiThreadedRendering = SystemInfo.graphicsMultiThreaded,
-                NpotSupport = SystemInfo.npotSupport.ToString(),
-                Version = SystemInfo.graphicsDeviceVersion,
-                ApiType = SystemInfo.graphicsDeviceType.ToString()
-            };
-
-            // TODO: Hack until Context has a property GPU
-            @event.Contexts.TryAdd("gpu", gpu);
+            @event.Contexts.Gpu.Id = SystemInfo.graphicsDeviceID;
+            @event.Contexts.Gpu.Name = SystemInfo.graphicsDeviceName;
+            @event.Contexts.Gpu.VendorId = SystemInfo.graphicsDeviceVendorID.ToString();
+            @event.Contexts.Gpu.VendorName = SystemInfo.graphicsDeviceVendor;
+            @event.Contexts.Gpu.MemorySize = SystemInfo.graphicsMemorySize;
+            @event.Contexts.Gpu.MultiThreadedRendering = SystemInfo.graphicsMultiThreaded;
+            @event.Contexts.Gpu.NpotSupport = SystemInfo.npotSupport.ToString();
+            @event.Contexts.Gpu.Version = SystemInfo.graphicsDeviceVersion;
+            @event.Contexts.Gpu.ApiType = SystemInfo.graphicsDeviceType.ToString();
 
             @event.Contexts.App.StartTime = DateTimeOffset.UtcNow
                 // NOTE: Time API requires main thread
@@ -131,6 +125,9 @@ namespace Sentry.Unity
         {
             if (exception is UnityLogException ule)
             {
+                // TODO: At this point the original (Mono+.NET stack trace factories already ran)
+                // Ideally this strategy would fit into the SDK hooks, even though this parse gives not only
+                // a stacktrace but also the exception message and type so currently can't be hooked into StackTraceFactory
                 sentryEvent.SentryExceptions = new[] { GetException(ule.LogString, ule.LogStackTrace) };
                 sentryEvent.SetTag("source", "log");
             }

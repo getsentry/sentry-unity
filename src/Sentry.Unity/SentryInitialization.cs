@@ -3,6 +3,7 @@ using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Sentry.Internal;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -46,7 +47,7 @@ namespace Sentry.Unity
                 {
                     // NOTE: This is simply to see the internal logging of the SDK
                     // A production situation would NOT have this enabled.
-                    o.Debug = true;
+                    o.Debug = Debug.developerConsoleVisible;
                 }
 
                 // Uses the game `version` as Release
@@ -92,16 +93,6 @@ namespace Sentry.Unity
                 return;
             }
 
-            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
-            {
-                // only send errors, can be set somewhere what we send, and what we don't
-                if (type == LogType.Warning)
-                {
-                    SentrySdk.AddBreadcrumb(logString, level: BreadcrumbLevel.Warning);
-                }
-                return;
-            }
-
             var time = DateTime.UtcNow.Ticks;
 
             if (time - _timeLastError <= MinTime)
@@ -111,9 +102,18 @@ namespace Sentry.Unity
 
             _timeLastError = time;
 
-            _ = SentrySdk.CaptureEvent(new SentryEvent(new UnityLogException(logString, stackTrace)));
-        }
+            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+            {
+                // TODO: MinBreadcrumbLevel
+                SentrySdk.AddBreadcrumb(logString, level: ToBreadcrumbLevel(type));
+                return;
+            }
 
+            var evt = new SentryEvent(new UnityLogException(logString, stackTrace));
+            evt.SetTag("log.type", ToEventTagType(type));
+            _ = SentrySdk.CaptureEvent(evt);
+            SentrySdk.AddBreadcrumb(logString, level: ToBreadcrumbLevel(type));
+        }
 
         // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
         //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
@@ -124,7 +124,30 @@ namespace Sentry.Unity
         {
             Application.logMessageReceived -= OnLogMessageReceived;
             SentrySdk.Close();
-            Debug.Log("Sentry sdk disposed.");
+            Debug.Log("Sentry SDK disposed.");
         }
+
+        private static string ToEventTagType(LogType type) =>
+            type switch
+            {
+                LogType.Assert => "assert",
+                LogType.Error => "error",
+                LogType.Exception => "exception",
+                LogType.Log => "log",
+                LogType.Warning => "warning",
+                _ => "unknown"
+            };
+
+        private static BreadcrumbLevel ToBreadcrumbLevel(LogType type) =>
+            type switch
+            {
+                LogType.Assert => BreadcrumbLevel.Error,
+                LogType.Error => BreadcrumbLevel.Error,
+                LogType.Exception => BreadcrumbLevel.Error,
+                LogType.Log => BreadcrumbLevel.Info,
+                LogType.Warning => BreadcrumbLevel.Warning,
+                _ => BreadcrumbLevel.Info
+            };
     }
 }
+
