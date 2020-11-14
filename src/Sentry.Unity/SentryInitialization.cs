@@ -1,62 +1,62 @@
-using Sentry;
 using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Sentry.Internal;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity
 {
     // https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
-    [Serializable]
-    public sealed class UnitySentryOptions : ScriptableObject
-    {
-        public void OnEnable() => hideFlags = HideFlags.DontUnloadUnusedAsset;
-        [field: SerializeField] public bool Enabled { get; set; } = true;
-        [field: SerializeField] public string Dsn { get; set; }
-        [field: SerializeField] public bool Debug { get; set; } = true; // By default on only
-        [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
-        [field: SerializeField] public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher
-        [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
-    }
-
     public static class SentryInitialization
     {
-        public static SentryOptions Options;
-
         private static long _timeLastError;
         public static long MinTime { get; } = TimeSpan.FromMilliseconds(500).Ticks;
 
-        // TODO: Take SentryOptions from UnitySettings
-
-        // Needs to be on if now platform specific init code is required
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
             var options = Resources.Load("Sentry/SentryOptions") as UnitySentryOptions;
-            var sentryInEditor = true; // Make this configurable
 
-            if (Application.isEditor && !sentryInEditor)
+            if (options is null)
             {
-                Debug.Log("Sentry SDK disabled.");
+                Debug.LogWarning("Sentry Options asset not found. Did you configure it on Component/Sentry?");
                 return;
             }
 
-            var dsn = options?.Dsn;
+            if (!options.Enabled)
+            {
+                options.Logger?.Log(SentryLevel.Debug, "Disabled In Options.");
+            }
 
+            if (!options.CaptureInEditor && Application.isEditor)
+            {
+                options.Logger?.Log(SentryLevel.Info, "Disabled in the Editor.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(options.Dsn))
+            {
+                options.Logger?.Log(SentryLevel.Warning, "No Sentry DSN configured.");
+                return;
+            }
+
+            Init(options);
+        }
+
+        private static void Init(UnitySentryOptions options)
+        {
             _ = SentrySdk.Init(o =>
             {
-                o.Dsn = dsn;
+                o.Dsn = options.Dsn;
 
-                if (options.Debug
-                    && (!options.DebugOnlyInEditor || Application.isEditor))
+                if (options.Logger != null)
                 {
                     o.Debug = true;
-                    o.DiagnosticLogger = new UnityLogger(options.DiagnosticsLevel);
+                    o.DiagnosticLogger = options.Logger;
                     o.DiagnosticsLevel = options.DiagnosticsLevel;
                 }
+
+                o.SampleRate = options.SampleRate;
 
                 // Uses the game `version` as Release
                 o.Release = Application.version;
@@ -82,34 +82,37 @@ namespace Sentry.Unity
 
             // TODO: Consider ensuring this code path doesn't require UI thread
             // Then use logMessageReceivedThreaded instead
-            Application.logMessageReceived += OnLogMessageReceived;
+            void OnApplicationOnLogMessageReceived(string condition, string stackTrace, LogType type) => OnLogMessageReceived(condition, stackTrace, type, options);
 
-            Application.quitting += OnApplicationQuit;
+            Application.logMessageReceived += OnApplicationOnLogMessageReceived;
 
+            Application.quitting += () =>
+            {
+                // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
+                //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
+                // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
+                // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
+                Application.logMessageReceived -= OnApplicationOnLogMessageReceived;
+                SentrySdk.Close();
+            };
+
+            IDictionary<string, string>? data = null;
+            if (SceneManager.GetActiveScene().name is { } name)
+            {
+                data = new Dictionary<string, string> {{"scene", name}};
+            }
             SentrySdk.AddBreadcrumb("BeforeSceneLoad",
-                data: new Dictionary<string, string> { { "scene", SceneManager.GetActiveScene().name } });
+                data: data);
 
-            // We don't need it anymore and it won't be GC'ed because of its HideFlags
-            // ScriptableObject.DestroyImmediate(options, true);
-            Debug.Log("Sentry initialized");
+            options.Logger?.Log(SentryLevel.Debug, "Complete Sentry SDK initialization.");
         }
 
         // Happens with Domain Reloading
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void SubsystemRegistration()
-        {
-            SentrySdk.AddBreadcrumb("SubsystemRegistration");
-        }
+        private static void SubsystemRegistration() => SentrySdk.AddBreadcrumb("SubsystemRegistration");
 
-        private static void OnLogMessageReceived(string logString, string stackTrace, LogType type)
+        private static void OnLogMessageReceived(string condition, string stackTrace, LogType type, UnitySentryOptions options)
         {
-            if (!SentrySdk.IsEnabled)
-            {
-                Debug.LogError("Cannot handle log message if we are not initialized");
-                return;
-            }
-
             var time = DateTime.UtcNow.Ticks;
 
             if (time - _timeLastError <= MinTime)
@@ -122,26 +125,15 @@ namespace Sentry.Unity
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
             {
                 // TODO: MinBreadcrumbLevel
-                SentrySdk.AddBreadcrumb(logString, level: ToBreadcrumbLevel(type));
+                // options.MinBreadcrumbLevel
+                SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
                 return;
             }
 
-            var evt = new SentryEvent(new UnityLogException(logString, stackTrace));
+            var evt = new SentryEvent(new UnityLogException(condition, stackTrace));
             evt.SetTag("log.type", ToEventTagType(type));
             _ = SentrySdk.CaptureEvent(evt);
-            SentrySdk.AddBreadcrumb(logString, level: ToBreadcrumbLevel(type));
-        }
-
-        // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
-        //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
-        // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
-        // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
-
-        private static void OnApplicationQuit()
-        {
-            Application.logMessageReceived -= OnLogMessageReceived;
-            SentrySdk.Close();
-            Debug.Log("Sentry SDK disposed.");
+            SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
         }
 
         private static string ToEventTagType(LogType type) =>

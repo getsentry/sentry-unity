@@ -66,12 +66,25 @@ namespace Sentry.Unity.Editor
 
         private void OnGUI()
         {
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+
+            Options.Enabled = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Enable", "Controls enabling Sentry by initializing the SDK or not."),
+                Options.Enabled);
+
+            Options.DebugOnlyInEditor = EditorGUILayout.Toggle(
+                new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
+                Options.DebugOnlyInEditor);
+
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+
             GUILayout.Label("SDK Options", EditorStyles.boldLabel);
-            Options.Enabled = EditorGUILayout.Toggle("Enabled", Options.Enabled);
 
             Options.Dsn = EditorGUILayout.TextField("DSN", Options.Dsn);
 
-            Options.SampleRate = EditorGUILayout.Slider("Sample rate for errors", Options.SampleRate, 0, 1);
+            Options.SampleRate = EditorGUILayout.Slider(
+                new GUIContent("Sample rate for errors", "What random sample rate to apply. 1.0 captures all, 0.7 captures 70%."),
+                Options.SampleRate, 0.01f, 1);
 
             Options.Debug = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Debug Mode", "Whether the Sentry SDK should print its diagnostic logs to the console."),
@@ -82,6 +95,8 @@ namespace Sentry.Unity.Editor
                 Options.DebugOnlyInEditor);
 
             Options.DiagnosticsLevel = (SentryLevel)EditorGUILayout.EnumPopup("Verbosity level:", Options.DiagnosticsLevel);
+            EditorGUILayout.EndToggleGroup();
+
             EditorGUILayout.EndToggleGroup();
 
             // groupEnabled = EditorGUILayout.BeginToggleGroup("Sentry CLI Options", groupEnabled);

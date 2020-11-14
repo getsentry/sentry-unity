@@ -2,6 +2,7 @@
 using Sentry.Extensibility;
 using System;
 using UnityEngine;
+using static System.String;
 
 internal class UnityLogger : IDiagnosticLogger
 {
@@ -9,8 +10,10 @@ internal class UnityLogger : IDiagnosticLogger
     public bool IsEnabled(SentryLevel level) => level >= _minimalLevel;
     public UnityLogger(SentryLevel minimalLevel) => _minimalLevel = minimalLevel;
 
-    public void Log(SentryLevel logLevel, string message, Exception exception = null, params object[] args)
-        => Debug.Log($@"Sentry {logLevel,7}: {string.Format(message, args)} - {exception}");
+    public void Log(SentryLevel logLevel, string? message, Exception? exception = null, params object?[] args)
+        => Debug.Log($@"Sentry: {logLevel}
+{Format(message, args)}
+{exception}");
 
     public override string ToString() => nameof(UnityLogger);
 }
