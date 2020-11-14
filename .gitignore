@@ -8,9 +8,10 @@ Library/
 Temp/
 Build/
 .gradle
-sentry.unity/build:*
+sentry-unity/build:*
 .DS_Store
 
 # Build output of Sentry.Unity
-sentry.unity/Assets/Plugins/Sentry.Unity/
-sentry.unity/Assets/Editor/Sentry.Unity/Sentry.Unity.Android.Editor*
+sentry-unity/Assets/Plugins/Sentry.Unity/
+sentry-unity/Assets/Editor/Sentry.Unity/Sentry.Unity.Android.Editor*
+sentry-unity/Assets/Editor/Sentry.Unity/
