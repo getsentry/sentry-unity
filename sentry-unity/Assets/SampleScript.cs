@@ -22,7 +22,7 @@ public class SampleScript : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Sample Start");
+        Debug.Log("Starting sample script");
 
 // #if UNITY_ANDROID
 //         SentryAndroid.Init();
@@ -35,10 +35,6 @@ public class SampleScript : MonoBehaviour
         // var dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
         // Sentry.Unity.SentryInitialization.Init(dsn);
 // #endif
-
-        SentrySdk.AddBreadcrumb("Sample starting!");
-
-        Debug.LogWarning("Unity Debug.LogWarning calls are stored as breadcrumbs.");
     }
 
     void Update()

@@ -15,9 +15,7 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            var options = Resources.Load("Sentry/SentryOptions") as UnitySentryOptions;
-
-            if (options is null)
+            if (!(Resources.Load("Sentry/SentryOptions") is UnitySentryOptions options))
             {
                 Debug.LogWarning("Sentry Options asset not found. Did you configure it on Component/Sentry?");
                 return;
@@ -26,17 +24,18 @@ namespace Sentry.Unity
             if (!options.Enabled)
             {
                 options.Logger?.Log(SentryLevel.Debug, "Disabled In Options.");
+                return;
             }
 
             if (!options.CaptureInEditor && Application.isEditor)
             {
-                options.Logger?.Log(SentryLevel.Info, "Disabled in the Editor.");
+                options.Logger?.Log(SentryLevel.Info, "Disabled while in the Editor.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(options.Dsn))
             {
-                options.Logger?.Log(SentryLevel.Warning, "No Sentry DSN configured.");
+                options.Logger?.Log(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
                 return;
             }
 
