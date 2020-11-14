@@ -24,17 +24,17 @@ public class SampleScript : MonoBehaviour
     {
         Debug.Log("Sample Start");
 
-#if UNITY_ANDROID
-        SentryAndroid.Init();
-        try {
-            SentryAndroid.TestThrow();
-        } catch {}
-        crash();
-        #else
+// #if UNITY_ANDROID
+//         SentryAndroid.Init();
+//         try {
+//             SentryAndroid.TestThrow();
+//         } catch {}
+//         crash();
+//         #else
         // TODO: from config
-        var dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-        Sentry.Unity.SentryInitialization.Init(dsn);
-#endif
+        // var dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+        // Sentry.Unity.SentryInitialization.Init(dsn);
+// #endif
 
         SentrySdk.AddBreadcrumb("Sample starting!");
 

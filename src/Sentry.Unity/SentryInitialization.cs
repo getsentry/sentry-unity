@@ -9,55 +9,70 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity
 {
+    // https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
+    [Serializable]
+    public sealed class UnitySentryOptions : ScriptableObject
+    {
+        public void OnEnable() => hideFlags = HideFlags.DontUnloadUnusedAsset;
+        [field: SerializeField] public bool Enabled { get; set; } = true;
+        [field: SerializeField] public string Dsn { get; set; }
+        [field: SerializeField] public bool Debug { get; set; } = true; // By default on only
+        [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
+        [field: SerializeField] public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher
+        [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
+    }
+
     public static class SentryInitialization
     {
+        public static SentryOptions Options;
+
         private static long _timeLastError;
         public static long MinTime { get; } = TimeSpan.FromMilliseconds(500).Ticks;
 
         // TODO: Take SentryOptions from UnitySettings
 
         // Needs to be on if now platform specific init code is required
-        // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        public static void Init(string dsn)
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void Init()
         {
+            var options = Resources.Load("Sentry/SentryOptions") as UnitySentryOptions;
             var sentryInEditor = true; // Make this configurable
+
             if (Application.isEditor && !sentryInEditor)
             {
                 Debug.Log("Sentry SDK disabled.");
                 return;
             }
-            Debug.Log("Initializing Sentry.");
 
-            // TOD: DSN will only be taken via parameter
-            dsn ??= // null; // **SET YOUR DSN HERE**
-                "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-
-            if (dsn == null)
-            {
-                Debug.LogWarning("No Sentry DSN set!");
-                return;
-            }
+            var dsn = options?.Dsn;
 
             _ = SentrySdk.Init(o =>
             {
                 o.Dsn = dsn;
 
-                // read from config
-                //if (Application.isEditor)
+                if (options.Debug
+                    && (!options.DebugOnlyInEditor || Application.isEditor))
                 {
-                    // NOTE: This is simply to see the internal logging of the SDK
-                    // A production situation would NOT have this enabled.
-                    o.Debug = Debug.developerConsoleVisible;
+                    o.Debug = true;
+                    o.DiagnosticLogger = new UnityLogger(options.DiagnosticsLevel);
+                    o.DiagnosticsLevel = options.DiagnosticsLevel;
                 }
 
                 // Uses the game `version` as Release
                 o.Release = Application.version;
+
+                // TODO: take Environment from configuration. Default is `production` from within the SDK.
+                if (Application.isEditor)
+                {
+                    o.Environment = "editor";
+                }
+
                 // If PDBs are available, CaptureMessage also includes a stack trace
                 o.AttachStacktrace = true;
 
                 // Required configurations to integrate with Unity
                 o.AddInAppExclude("UnityEngine");
-                o.DiagnosticLogger = new UnityLogger();
+                o.AddInAppExclude("UnityEditor");
                 // Some targets doesn't support GZipping the events sent out
                 // TODO: Disable it selectively
                 o.RequestBodyCompressionLevel = System.IO.Compression.CompressionLevel.NoCompression;
@@ -74,6 +89,8 @@ namespace Sentry.Unity
             SentrySdk.AddBreadcrumb("BeforeSceneLoad",
                 data: new Dictionary<string, string> { { "scene", SceneManager.GetActiveScene().name } });
 
+            // We don't need it anymore and it won't be GC'ed because of its HideFlags
+            // ScriptableObject.DestroyImmediate(options, true);
             Debug.Log("Sentry initialized");
         }
 

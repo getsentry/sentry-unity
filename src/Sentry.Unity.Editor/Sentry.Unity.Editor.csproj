@@ -12,8 +12,11 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup> 
+  <ItemGroup>
     <ProjectReference Include="..\..\sentry-dotnet\src\Sentry\Sentry.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Sentry.Unity\Sentry.Unity.csproj">
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

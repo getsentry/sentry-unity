@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <LangVersion>8</LangVersion>
-    <SentryDotnetVersion>3.0.0-alpha.0</SentryDotnetVersion>
-    <NewtonsoftJsonVersion>11.0.2</NewtonsoftJsonVersion>
     <UnityVersion>2019.4.11f1</UnityVersion>
   </PropertyGroup>
 

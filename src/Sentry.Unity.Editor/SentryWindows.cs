@@ -6,10 +6,12 @@ namespace Sentry.Unity.Editor
 {
     public class SentryWindows : EditorWindow
     {
+        internal const string SentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
+
         [MenuItem("Component/Sentry")]
         public static void OpenSentryWindow() => GetWindow(typeof(SentryWindows));
 
-        public SentryOptionsScriptableObject Options { get; set; }
+        public UnitySentryOptions Options { get; set; }
 
         protected void OnEnable()
         {
@@ -18,12 +20,10 @@ namespace Sentry.Unity.Editor
             var icon = EditorGUIUtility.Load($"{outputDir}SentryLogo{(isDarkMode?"Light":"Dark")}.png") as Texture2D;
             titleContent = new GUIContent("Sentry", icon, "Sentry SDK Options");
 
-            const string sentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
-            Options = AssetDatabase.LoadAssetAtPath<SentryOptionsScriptableObject>(sentryOptionsAssetPath);
-            // Options = Resources.Load(sentryOptionsAssetPath) as SentryOptionsScriptableObject;
+            Options = AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryOptionsAssetPath);
             if (Options is null)
             {
-                Options = CreateInstance<SentryOptionsScriptableObject>();
+                Options = CreateInstance<UnitySentryOptions>();
                 if (!AssetDatabase.IsValidFolder("Assets/Resources"))
                 {
                     AssetDatabase.CreateFolder("Assets", "Resources");
@@ -32,8 +32,10 @@ namespace Sentry.Unity.Editor
                 {
                     AssetDatabase.CreateFolder("Assets/Resources", "Sentry");
                 }
-                AssetDatabase.CreateAsset(Options , sentryOptionsAssetPath);
+                AssetDatabase.CreateAsset(Options , SentryOptionsAssetPath);
             }
+
+            EditorUtility.SetDirty(Options);
         }
 
         private void Validate()
@@ -46,7 +48,7 @@ namespace Sentry.Unity.Editor
             if (Options.Dsn == null)
             {
                 Options.Dsn = null;
-                Debug.LogError("Missing Sentry DSN.");
+                // Debug.LogError("Missing Sentry DSN.");
             }
             else if (!Uri.IsWellFormedUriString(Options.Dsn, UriKind.Absolute))
             {
@@ -59,16 +61,29 @@ namespace Sentry.Unity.Editor
         {
             Validate();
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         private void OnGUI()
         {
-            Options.Enabled = EditorGUILayout.Toggle("Enabled", Options.Enabled);
             GUILayout.Label("SDK Options", EditorStyles.boldLabel);
+            Options.Enabled = EditorGUILayout.Toggle("Enabled", Options.Enabled);
+
             Options.Dsn = EditorGUILayout.TextField("DSN", Options.Dsn);
 
-            // sample = EditorGUILayout.Slider("Sample rate for errors", sample, 0, 1);
-            //
+            Options.SampleRate = EditorGUILayout.Slider("Sample rate for errors", Options.SampleRate, 0, 1);
+
+            Options.Debug = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Debug Mode", "Whether the Sentry SDK should print its diagnostic logs to the console."),
+                Options.Debug);
+
+            Options.DebugOnlyInEditor = EditorGUILayout.Toggle(
+                "Only In Editor",
+                Options.DebugOnlyInEditor);
+
+            Options.DiagnosticsLevel = (SentryLevel)EditorGUILayout.EnumPopup("Verbosity level:", Options.DiagnosticsLevel);
+            EditorGUILayout.EndToggleGroup();
+
             // groupEnabled = EditorGUILayout.BeginToggleGroup("Sentry CLI Options", groupEnabled);
             // uploadSymbols = EditorGUILayout.Toggle("Upload Proguard Mappings", uploadSymbols);
             // auth = EditorGUILayout.TextField("Auth token", auth);
@@ -76,25 +91,5 @@ namespace Sentry.Unity.Editor
             // project = EditorGUILayout.TextField("Project", project);
             // EditorGUILayout.EndToggleGroup();
         }
-    }
-
-    public class SentryOptionsScriptableObject : ScriptableObject
-    {
-        public bool Enabled { get; set; } = true;
-        public string Dsn { get; set; }
-        // private bool groupEnabled;
-        // [SerializeField]
-        // private bool debug = true;
-        // [SerializeField]
-        // private float sample = 1.0f;
-        //
-        // [SerializeField]
-        // private bool uploadSymbols = true;
-        // [SerializeField]
-        // private string auth;
-        // [SerializeField]
-        // private string organization;
-        // [SerializeField]
-        // private string project;
     }
 }

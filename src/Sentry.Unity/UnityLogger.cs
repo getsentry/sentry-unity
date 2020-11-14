@@ -5,10 +5,12 @@ using UnityEngine;
 
 internal class UnityLogger : IDiagnosticLogger
 {
-    public bool IsEnabled(SentryLevel level) => true;
+    private readonly SentryLevel _minimalLevel;
+    public bool IsEnabled(SentryLevel level) => level >= _minimalLevel;
+    public UnityLogger(SentryLevel minimalLevel) => _minimalLevel = minimalLevel;
 
     public void Log(SentryLevel logLevel, string message, Exception exception = null, params object[] args)
-        => Debug.Log($"{logLevel} - {string.Format(message, args)} - {exception}");
+        => Debug.Log($@"Sentry {logLevel,7}: {string.Format(message, args)} - {exception}");
 
     public override string ToString() => nameof(UnityLogger);
 }
