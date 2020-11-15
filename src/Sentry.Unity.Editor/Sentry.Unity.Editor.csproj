@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
+    <DebugType>embedded</DebugType>
     <OutDir>../../sentry-unity/Assets/Editor/Sentry.Unity</OutDir>
 <!--    <Nullable>enable</Nullable>-->
 <!--    <LangVersion>8</LangVersion>-->
@@ -24,12 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="SentryLogoLight.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SentryLogoDark.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="SentryLogoLight.png" />
+    <EmbeddedResource Include="SentryLogoDark.png" />
   </ItemGroup>
   
 </Project>

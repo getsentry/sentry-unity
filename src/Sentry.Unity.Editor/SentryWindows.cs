@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,10 +16,7 @@ namespace Sentry.Unity.Editor
 
         protected void OnEnable()
         {
-            var isDarkMode = EditorGUIUtility.isProSkin;
-            const string outputDir = "Assets/Editor/Sentry.Unity/"; // To stay in sync with csproj <OutDir>
-            var icon = EditorGUIUtility.Load($"{outputDir}SentryLogo{(isDarkMode?"Light":"Dark")}.png") as Texture2D;
-            titleContent = new GUIContent("Sentry", icon, "Sentry SDK Options");
+            SetTitle();
 
             Options = AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryOptionsAssetPath);
             if (Options is null)
@@ -36,6 +34,21 @@ namespace Sentry.Unity.Editor
             }
 
             EditorUtility.SetDirty(Options);
+        }
+
+        private void SetTitle()
+        {
+            var isDarkMode = EditorGUIUtility.isProSkin;
+            var texture = new Texture2D(16, 16);
+            using var memStream = new MemoryStream();
+            using var stream = GetType().Assembly
+                .GetManifestResourceStream($"Sentry.Unity.Editor.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
+            stream.CopyTo(memStream);
+            stream.Flush();
+            memStream.Position = 0;
+            texture.LoadImage(memStream.ToArray());
+
+            titleContent = new GUIContent("Sentry", texture, "Sentry SDK Options");
         }
 
         private void Validate()
