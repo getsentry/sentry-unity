@@ -4,9 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
     <DebugType>embedded</DebugType>
-    <OutDir>../../sentry-unity/Assets/Editor/Sentry.Unity</OutDir>
+    <OutDir>../../sentry-unity/Assets/Editor/Sentry</OutDir>
 <!--    <Nullable>enable</Nullable>-->
-<!--    <LangVersion>8</LangVersion>-->
   </PropertyGroup>
 
   <ItemGroup>

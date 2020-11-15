@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <OutDir>../../sentry-unity/Assets/Plugins/Sentry.Unity</OutDir>
-    <!-- Thanks again Martin https://stackoverflow.com/questions/43837638/how-do-i-get-net-core-projects-to-copy-nuget-references-to-the-build-output/43841481#43841481 -->
+    <OutDir>../../sentry-unity/Assets/Plugins/Sentry</OutDir>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Nullable>enable</Nullable>
   </PropertyGroup>

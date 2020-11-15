@@ -1,11 +1,10 @@
-using System;
 using System.IO;
 using System.Text;
 using System.Xml;
 using UnityEditor.Android;
 using UnityEngine;
 
-namespace Sentry.Unity.Android.Editor
+namespace Sentry.Unity.Editor.Android
 {
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
