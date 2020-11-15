@@ -7,7 +7,7 @@ namespace Sentry.Unity.Editor
 {
     public class SentryWindows : EditorWindow
     {
-        private const string SentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
+        internal const string SentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
 
         [MenuItem("Component/Sentry")]
         public static void OpenSentryWindow() => GetWindow(typeof(SentryWindows));

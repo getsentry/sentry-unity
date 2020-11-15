@@ -1,27 +1,41 @@
 using System.IO;
 using System.Text;
 using System.Xml;
+using UnityEditor;
 using UnityEditor.Android;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
+    // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L66-L187
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
-            Debug.Log("AndroidManifestConfiguration.OnPostGenerateGradleAndroidProject at path " + basePath);
+            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindows.SentryOptionsAssetPath) is UnitySentryOptions options))
+            {
+                Debug.LogError("Sentry will be disabled!\nSentryOptions asset not found. Did you configure it on Component/Sentry?");
+                return;
+            }
+
+            options.Logger?.Log(SentryLevel.Debug,
+                "AndroidManifestConfiguration.OnPostGenerateGradleAndroidProject at: {0}", args: basePath);
 
             var manifestPath = GetManifestPath(basePath);
-            if (File.Exists(manifestPath))
+            if (!File.Exists(manifestPath))
             {
-                //throw new InvalidOperationException($"Manifest not found at: {manifestPath}.");
+                options.Logger?.Log(SentryLevel.Fatal, "Manifest not found at: {0}", args: manifestPath);
+                return;
             }
             var androidManifest = new AndroidManifest(manifestPath);
 
-            // TODO: Just opt out from auto init
-            // Disable SDK to be enabled via C# with options
-            androidManifest.SetDsn("https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417");
+            androidManifest.SetDsn(options.Dsn);
+
+            // Since logcat is only an editor thing, disregarding options.DebugOnlyInEditor
+            androidManifest.SetDebug(options.Debug);
+            androidManifest.SetLevel(options.DiagnosticsLevel);
+
+            // TODO: All SentryOptions and create specific Android options
 
             _ = androidManifest.Save();
         }
@@ -100,12 +114,35 @@ namespace Sentry.Unity.Editor.Android
             _ = dsnElement.Attributes.Append(CreateAndroidAttribute("value", dsn));
 
             _ = _applicationElement.AppendChild(dsnElement);
+        }
 
+        internal void SetDebug(bool debug)
+        {
             var debugElement = _applicationElement.OwnerDocument.CreateElement("meta-data");
             _ = debugElement.Attributes.Append(CreateAndroidAttribute("name", "io.sentry.debug"));
-            _ = debugElement.Attributes.Append(CreateAndroidAttribute("value", "true"));
-
+            _ = debugElement.Attributes.Append(CreateAndroidAttribute("value", debug ? "true" : "false"));
             _ = _applicationElement.AppendChild(debugElement);
+        }
+
+        internal void SetLevel(SentryLevel level)
+        {
+            // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
+            var javaLevel = level switch
+            {
+                SentryLevel.Debug => "DEBUG",
+                SentryLevel.Error => "ERROR",
+                SentryLevel.Fatal => "FATAL",
+                SentryLevel.Info => "INFO",
+                SentryLevel.Warning => "WARNING",
+                _ => null
+            };
+            if (javaLevel is { } value)
+            {
+                var debugElement = _applicationElement.OwnerDocument.CreateElement("meta-data");
+                _ = debugElement.Attributes.Append(CreateAndroidAttribute("name", "io.sentry.debug.level"));
+                _ = debugElement.Attributes.Append(CreateAndroidAttribute("value", value));
+                _ = _applicationElement.AppendChild(debugElement);
+            }
         }
     }
 }
