@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
     <DebugType>embedded</DebugType>
-    <OutDir>../../sentry-unity/Assets/Editor/Sentry</OutDir>
+    <OutDir>$(UnityPackageAssetsDirectory)/Editor/Sentry</OutDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\sentry-dotnet\src\Sentry\Sentry.csproj">
+    <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj">
       <Private>false</Private>
     </ProjectReference>
     <ProjectReference Include="..\Sentry.Unity\Sentry.Unity.csproj">

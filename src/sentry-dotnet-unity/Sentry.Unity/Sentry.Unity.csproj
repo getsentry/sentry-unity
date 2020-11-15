@@ -2,19 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <OutDir>../../sentry-unity/Assets/Plugins/Sentry</OutDir>
+    <OutDir>$(UnityPackageAssetsDirectory)/Plugins/Sentry</OutDir>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Update="link.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\..\sentry-dotnet\src\Sentry\Sentry.csproj" />
+    <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj" />
   </ItemGroup>
 
 </Project>
