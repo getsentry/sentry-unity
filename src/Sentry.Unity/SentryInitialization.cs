@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
 {
@@ -58,23 +59,37 @@ namespace Sentry.Unity
                 o.SampleRate = options.SampleRate;
 
                 // Uses the game `version` as Release
-                o.Release = Application.version;
+                o.Release = options.Release is { } release
+                    ? release
+                    : Application.version;
 
-                // TODO: take Environment from configuration. Default is `production` from within the SDK.
-                if (Application.isEditor)
-                {
-                    o.Environment = "editor";
-                }
+                o.Environment = options.Environment is { } environment
+                    ? environment
+                    : Application.isEditor
+                        ? "editor"
+#if DEVELOPMENT_BUILD
+                        : "development";
+#else
+                        : "production";
+#endif
 
                 // If PDBs are available, CaptureMessage also includes a stack trace
-                o.AttachStacktrace = true;
+                o.AttachStacktrace = options.AttachStacktrace;
 
                 // Required configurations to integrate with Unity
                 o.AddInAppExclude("UnityEngine");
                 o.AddInAppExclude("UnityEditor");
-                // Some targets doesn't support GZipping the events sent out
-                // TODO: Disable it selectively
-                o.RequestBodyCompressionLevel = System.IO.Compression.CompressionLevel.NoCompression;
+
+                o.RequestBodyCompressionLevel = options.RequestBodyCompressionLevel switch
+                {
+                    SentryUnityCompression.Fastest => CompressionLevel.Fastest,
+                    SentryUnityCompression.Optimal => CompressionLevel.Optimal,
+                    // The target platform is known when building the player, so 'auto' should resolve there.
+                    // Since some platforms don't support GZipping fallback no no compression.
+                    SentryUnityCompression.Auto => CompressionLevel.NoCompression,
+                    SentryUnityCompression.NoCompression => CompressionLevel.NoCompression,
+                    _ => CompressionLevel.NoCompression
+                };
                 o.AddEventProcessor(new UnityEventProcessor());
                 o.AddExceptionProcessor(new UnityEventExceptionProcessor());
             });
@@ -100,8 +115,7 @@ namespace Sentry.Unity
             {
                 data = new Dictionary<string, string> {{"scene", name}};
             }
-            SentrySdk.AddBreadcrumb("BeforeSceneLoad",
-                data: data);
+            SentrySdk.AddBreadcrumb("BeforeSceneLoad", data: data);
 
             options.Logger?.Log(SentryLevel.Debug, "Complete Sentry SDK initialization.");
         }

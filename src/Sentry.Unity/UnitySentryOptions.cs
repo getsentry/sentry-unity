@@ -1,9 +1,17 @@
 using System;
 using Sentry.Extensibility;
 using UnityEngine;
+using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
 {
+    public enum SentryUnityCompression
+    {
+        Auto = 0,
+        Optimal = 1,
+        Fastest = 2,
+        NoCompression = 3
+    }
     [Serializable]
     public sealed class UnitySentryOptions : ScriptableObject
     {
@@ -13,9 +21,15 @@ namespace Sentry.Unity
         [field: SerializeField] public bool Debug { get; set; } = true; // By default on only
         [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
         [field: SerializeField] public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
+        // Ideally this would be per platform
+        // Auto allows us to try figure out things in the SDK depending on the platform. Any other value means an explicit user choice.
+        [field: SerializeField] public SentryUnityCompression RequestBodyCompressionLevel { get; set; } = SentryUnityCompression.Auto;
+        [field: SerializeField] public bool AttachStacktrace { get; set; }
         [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
 
         [field: NonSerialized] public IDiagnosticLogger? Logger { get; private set; }
+        [field: NonSerialized] public string? Release { get; set; }
+        [field: NonSerialized] public string? Environment { get; set; }
 
         public void OnEnable()
         {
@@ -24,23 +38,6 @@ namespace Sentry.Unity
                      && (!DebugOnlyInEditor || Application.isEditor)
                 ? new UnityLogger(DiagnosticsLevel)
                 : null;
-        }
-
-        private class GuardedLogger : IDiagnosticLogger
-        {
-            private readonly IDiagnosticLogger _logger;
-
-            public GuardedLogger(IDiagnosticLogger logger) => _logger = logger;
-
-            public bool IsEnabled(SentryLevel level) => _logger?.IsEnabled(level) == true;
-
-            public void Log(SentryLevel logLevel, string message, Exception? exception = null, params object?[] args)
-            {
-                if (IsEnabled(logLevel))
-                {
-                    _logger.Log(logLevel, message, exception, args);
-                }
-            }
         }
     }
 }

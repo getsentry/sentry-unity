@@ -11,9 +11,14 @@ internal class UnityLogger : IDiagnosticLogger
     public UnityLogger(SentryLevel minimalLevel) => _minimalLevel = minimalLevel;
 
     public void Log(SentryLevel logLevel, string? message, Exception? exception = null, params object?[] args)
-        => Debug.Log($@"Sentry: {logLevel}
+    {
+        if (IsEnabled(logLevel))
+        {
+            Debug.Log($@"Sentry: {logLevel}
 {Format(message, args)}
 {exception}");
+        }
+    }
 
     public override string ToString() => nameof(UnityLogger);
 }
