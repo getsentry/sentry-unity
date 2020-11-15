@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -12,27 +13,27 @@ namespace Sentry.Unity.Editor.Android
     {
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
-            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindows.SentryOptionsAssetPath) is UnitySentryOptions options))
+            if (!ShouldInit(basePath, out var result))
             {
-                Debug.LogError("Sentry will be disabled!\nSentryOptions asset not found. Did you configure it on Component/Sentry?");
                 return;
             }
+
+            var (androidManifest, options) = result.Value;
 
             options.Logger?.Log(SentryLevel.Debug,
-                "AndroidManifestConfiguration.OnPostGenerateGradleAndroidProject at: {0}", args: basePath);
+                "Configuring Sentry options on AndroidManifest: {0}", args: basePath);
 
-            var manifestPath = GetManifestPath(basePath);
-            if (!File.Exists(manifestPath))
+            options.Logger?.Log(SentryLevel.Debug, "Setting DSN: {0}", args: options.Dsn);
+
+            if (options.Dsn is not null)
             {
-                options.Logger?.Log(SentryLevel.Fatal, "Manifest not found at: {0}", args: manifestPath);
-                return;
+                androidManifest.SetDsn(options.Dsn);
             }
-            var androidManifest = new AndroidManifest(manifestPath);
-
-            androidManifest.SetDsn(options.Dsn);
 
             // Since logcat is only an editor thing, disregarding options.DebugOnlyInEditor
+            options.Logger?.Log(SentryLevel.Debug, "Setting Debug: {0}", args: options.Debug);
             androidManifest.SetDebug(options.Debug);
+            options.Logger?.Log(SentryLevel.Debug, "Setting DiagnosticsLevel: {0}", args: options.DiagnosticsLevel);
             androidManifest.SetLevel(options.DiagnosticsLevel);
 
             // TODO: All SentryOptions and create specific Android options
@@ -40,51 +41,88 @@ namespace Sentry.Unity.Editor.Android
             _ = androidManifest.Save();
         }
 
+        private static bool ShouldInit(
+            string basePath,
+            [NotNullWhen(true)]
+            out (AndroidManifest androidManifest, UnitySentryOptions options)? result)
+        {
+            result = null;
+            var manifestPath = GetManifestPath(basePath);
+            if (!File.Exists(manifestPath))
+            {
+                Debug.LogError($"Manifest not found at {manifestPath}");
+                return false;
+            }
+
+            var androidManifest = new AndroidManifest(manifestPath);
+
+            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindows.SentryOptionsAssetPath) is UnitySentryOptions
+                options))
+            {
+                Debug.LogError(
+                    "SentryOptions asset not found. Sentry will be disabled! Did you configure it on Component/Sentry?");
+                androidManifest.DisableSentryAndSave();
+                return false;
+            }
+
+            if (!options.Enabled)
+            {
+                options.Logger?.Log(SentryLevel.Debug, "Sentry Disabled In Options. Disabling sentry-android auto-init.");
+                androidManifest.DisableSentryAndSave();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(options.Dsn))
+            {
+                options.Logger?.Log(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
+                // Otherwise sentry-android attempts to init and logs out:
+                // Unable to get provider io.sentry.android.core.SentryInitProvider: java.lang.IllegalArgumentException: DSN is required. Use empty string to disable SDK.
+                androidManifest.DisableSentryAndSave();
+                return false;
+            }
+
+            result = (androidManifest, options);
+            return true;
+        }
+
         public int callbackOrder => 1;
 
-        private string _manifestFilePath;
-
-        private string GetManifestPath(string basePath)
-        {
-            if (string.IsNullOrEmpty(_manifestFilePath))
-            {
-                var pathBuilder = new StringBuilder(basePath);
-                _ = pathBuilder.Append(Path.DirectorySeparatorChar).Append("src");
-                _ = pathBuilder.Append(Path.DirectorySeparatorChar).Append("main");
-                _ = pathBuilder.Append(Path.DirectorySeparatorChar).Append("AndroidManifest.xml");
-                _manifestFilePath = pathBuilder.ToString();
-            }
-            return _manifestFilePath;
-        }
+        private static string GetManifestPath(string basePath) =>
+            new StringBuilder(basePath)
+                .Append(Path.DirectorySeparatorChar)
+                .Append("src")
+                .Append(Path.DirectorySeparatorChar)
+                .Append("main")
+                .Append(Path.DirectorySeparatorChar)
+                .Append("AndroidManifest.xml")
+                .ToString();
     }
 
 
     internal class AndroidXmlDocument : XmlDocument
     {
-        private readonly string _mPath;
-        protected readonly XmlNamespaceManager nsMgr;
-        public readonly string AndroidXmlNamespace = "http://schemas.android.com/apk/res/android";
-        public AndroidXmlDocument(string path)
+        private readonly string _path;
+        private readonly XmlNamespaceManager _nsManager;
+        protected const string AndroidXmlNamespace = "http://schemas.android.com/apk/res/android";
+
+        protected AndroidXmlDocument(string path)
         {
-            _mPath = path;
-            using (var reader = new XmlTextReader(_mPath))
+            _path = path;
+            using (var reader = new XmlTextReader(_path))
             {
                 _ = reader.Read();
                 Load(reader);
             }
-            nsMgr = new XmlNamespaceManager(NameTable);
-            nsMgr.AddNamespace("android", AndroidXmlNamespace);
+            _nsManager = new XmlNamespaceManager(NameTable);
+            _nsManager.AddNamespace("android", AndroidXmlNamespace);
         }
 
-        public string Save() => SaveAs(_mPath);
+        public string Save() => SaveAs(_path);
 
-        public string SaveAs(string path)
+        private string SaveAs(string path)
         {
-            using (var writer = new XmlTextWriter(path, new UTF8Encoding(false)))
-            {
-                writer.Formatting = Formatting.Indented;
-                Save(writer);
-            }
+            using var writer = new XmlTextWriter(path, new UTF8Encoding(false)) { Formatting = Formatting.Indented };
+            Save(writer);
             return path;
         }
     }
@@ -93,56 +131,44 @@ namespace Sentry.Unity.Editor.Android
     {
         private readonly XmlElement _applicationElement;
 
-        public AndroidManifest(string path) : base(path)
-            => _applicationElement = SelectSingleNode("/manifest/application") as XmlElement;
+        public AndroidManifest(string path) : base(path) =>
+            _applicationElement = (XmlElement)SelectSingleNode("/manifest/application");
 
-        private XmlAttribute CreateAndroidAttribute(string key, string value)
+        internal void DisableSentryAndSave()
         {
-            var attr = CreateAttribute("android", key, AndroidXmlNamespace);
-            attr.Value = value;
-            return attr;
+            SetMetaData("io.sentry.auto-init", "false");
+            _ = Save();
         }
 
-        private XmlNode GetActivityWithLaunchIntent() =>
-            SelectSingleNode("/manifest/application/activity[intent-filter/action/@android:name='android.intent.action.MAIN' and " +
-                             "intent-filter/category/@android:name='android.intent.category.LAUNCHER']", nsMgr);
+        internal void SetDsn(string dsn)  => SetMetaData("io.sentry.dsn", dsn);
 
-        internal void SetDsn(string dsn)
-        {
-            var dsnElement = _applicationElement.OwnerDocument.CreateElement("meta-data");
-            _ = dsnElement.Attributes.Append(CreateAndroidAttribute("name", "io.sentry.dsn"));
-            _ = dsnElement.Attributes.Append(CreateAndroidAttribute("value", dsn));
+        internal void SetDebug(bool debug) => SetMetaData("io.sentry.debug", debug ? "true" : "false");
 
-            _ = _applicationElement.AppendChild(dsnElement);
-        }
-
-        internal void SetDebug(bool debug)
-        {
-            var debugElement = _applicationElement.OwnerDocument.CreateElement("meta-data");
-            _ = debugElement.Attributes.Append(CreateAndroidAttribute("name", "io.sentry.debug"));
-            _ = debugElement.Attributes.Append(CreateAndroidAttribute("value", debug ? "true" : "false"));
-            _ = _applicationElement.AppendChild(debugElement);
-        }
-
-        internal void SetLevel(SentryLevel level)
-        {
-            // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
-            var javaLevel = level switch
+        // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
+        internal void SetLevel(SentryLevel level) =>
+            SetMetaData("io.sentry.debug.level", level switch
             {
                 SentryLevel.Debug => "DEBUG",
                 SentryLevel.Error => "ERROR",
                 SentryLevel.Fatal => "FATAL",
                 SentryLevel.Info => "INFO",
                 SentryLevel.Warning => "WARNING",
-                _ => null
-            };
-            if (javaLevel is { } value)
-            {
-                var debugElement = _applicationElement.OwnerDocument.CreateElement("meta-data");
-                _ = debugElement.Attributes.Append(CreateAndroidAttribute("name", "io.sentry.debug.level"));
-                _ = debugElement.Attributes.Append(CreateAndroidAttribute("value", value));
-                _ = _applicationElement.AppendChild(debugElement);
-            }
+                _ => "DEBUG"
+            });
+
+        private void SetMetaData(string key, string value)
+        {
+            var element = _applicationElement.AppendChild(_applicationElement.OwnerDocument
+                .CreateElement("meta-data"));
+            _ = element.Attributes.Append(CreateAndroidAttribute("name", key));
+            _ = element.Attributes.Append(CreateAndroidAttribute("value", value));
+        }
+
+        private XmlAttribute CreateAndroidAttribute(string key, string value)
+        {
+            var attr = CreateAttribute("android", key, AndroidXmlNamespace);
+            attr.Value = value;
+            return attr;
         }
     }
 }

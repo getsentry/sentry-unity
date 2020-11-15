@@ -12,7 +12,7 @@ namespace Sentry.Unity.Editor
         [MenuItem("Component/Sentry")]
         public static void OpenSentryWindow() => GetWindow(typeof(SentryWindows));
 
-        public UnitySentryOptions Options { get; set; }
+        public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
         protected void OnEnable()
         {
@@ -74,6 +74,7 @@ namespace Sentry.Unity.Editor
         {
             Validate();
             AssetDatabase.SaveAssets();
+            // TODO: This should be gone
             AssetDatabase.Refresh();
         }
 

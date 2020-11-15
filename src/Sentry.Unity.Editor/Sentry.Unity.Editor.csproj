@@ -5,7 +5,6 @@
     <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
     <DebugType>embedded</DebugType>
     <OutDir>../../sentry-unity/Assets/Editor/Sentry</OutDir>
-<!--    <Nullable>enable</Nullable>-->
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,5 +27,5 @@
     <EmbeddedResource Include="SentryLogoLight.png" />
     <EmbeddedResource Include="SentryLogoDark.png" />
   </ItemGroup>
-  
+
 </Project>
