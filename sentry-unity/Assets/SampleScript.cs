@@ -8,7 +8,7 @@ using UnityEngine.Assertions;
 using Sentry;
 
 #if UNITY_ANDROID
-using Sentry.Unity.Android;
+// using Sentry.Unity.Android;
 #endif
 
 public class SampleScript : MonoBehaviour
