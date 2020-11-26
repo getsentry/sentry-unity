@@ -56,7 +56,7 @@ namespace Sentry.Unity.Editor.Android
 
             var androidManifest = new AndroidManifest(manifestPath);
 
-            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindows.SentryOptionsAssetPath) is UnitySentryOptions
+            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindow.SentryOptionsAssetPath) is UnitySentryOptions
                 options))
             {
                 Debug.LogError(
