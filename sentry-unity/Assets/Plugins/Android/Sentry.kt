@@ -1,4 +1,4 @@
-package io.sentry.unity
+package io.sentry.unity.sample.unity
 
 import android.content.Context
 import android.util.Log
