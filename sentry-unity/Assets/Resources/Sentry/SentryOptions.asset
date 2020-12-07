@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -158719865, guid: 3f8fff642abc14dbdb0e8b7981306def, type: 3}
+  m_Script: {fileID: -158719865, guid: 90e21e4c8acb64ec1984c991c35727b0, type: 3}
   m_Name: SentryOptions
   m_EditorClassIdentifier: 
   <Enabled>k__BackingField: 1
@@ -19,5 +19,5 @@ MonoBehaviour:
   <DebugOnlyInEditor>k__BackingField: 1
   <DiagnosticsLevel>k__BackingField: 0
   <RequestBodyCompressionLevel>k__BackingField: 0
-  <AttachStacktrace>k__BackingField: 1
+  <AttachStacktrace>k__BackingField: 0
   <SampleRate>k__BackingField: 1

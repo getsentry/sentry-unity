@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
@@ -6,7 +7,7 @@ using UnityEditor;
 using UnityEditor.Android;
 using UnityEngine;
 
-namespace Sentry.Unity.Editor.Android
+namespace Sentry.Unity.Editor
 {
     // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L66-L187
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
@@ -19,6 +20,33 @@ namespace Sentry.Unity.Editor.Android
             }
 
             var (androidManifest, options) = result.Value;
+
+            options.Logger?.Log(SentryLevel.Debug,
+                "Configuring Sentry Android SDK on build.gradle at: {0}", args: basePath);
+
+            var gradleBuildPath = Path.Combine(basePath, "build.gradle");
+            var gradleConfigContent = File.ReadAllText(gradleBuildPath);
+            // TODO: Have a opt-out to installing the SDK here
+            if (!gradleConfigContent.Contains("'io.sentry:sentry-android:"))
+            {
+                // TODO: Fragile, regex something like: ^dependencies +\{(\n|$){
+                var deps = "dependencies {";
+                var lastIndex = gradleConfigContent.LastIndexOf(deps, StringComparison.Ordinal);
+                if (lastIndex > 0)
+                {
+                    gradleConfigContent = gradleConfigContent.Insert(lastIndex + deps.Length,
+                        // TODO: Configurable version
+                        $"{Environment.NewLine}    implementation 'io.sentry:sentry-android:4.0.0-alpha.1'{Environment.NewLine}");
+                    File.WriteAllText(gradleBuildPath, gradleConfigContent);
+                }
+                options.Logger?.Log(SentryLevel.Debug,
+                    "Sentry Android SDK already in the gradle build file.");
+            }
+            else
+            {
+                options.Logger?.Log(SentryLevel.Debug,
+                    "Sentry Android SDK already in the gradle build file.");
+            }
 
             options.Logger?.Log(SentryLevel.Debug,
                 "Configuring Sentry options on AndroidManifest: {0}", args: basePath);
@@ -56,8 +84,7 @@ namespace Sentry.Unity.Editor.Android
 
             var androidManifest = new AndroidManifest(manifestPath);
 
-            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindow.SentryOptionsAssetPath) is UnitySentryOptions
-                options))
+            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindow.SentryOptionsAssetPath) is { } options))
             {
                 Debug.LogError(
                     "SentryOptions asset not found. Sentry will be disabled! Did you configure it on Component/Sentry?");
@@ -102,7 +129,6 @@ namespace Sentry.Unity.Editor.Android
     internal class AndroidXmlDocument : XmlDocument
     {
         private readonly string _path;
-        private readonly XmlNamespaceManager _nsManager;
         protected const string AndroidXmlNamespace = "http://schemas.android.com/apk/res/android";
 
         protected AndroidXmlDocument(string path)
@@ -113,8 +139,8 @@ namespace Sentry.Unity.Editor.Android
                 _ = reader.Read();
                 Load(reader);
             }
-            _nsManager = new XmlNamespaceManager(NameTable);
-            _nsManager.AddNamespace("android", AndroidXmlNamespace);
+            var nsManager = new XmlNamespaceManager(NameTable);
+            nsManager.AddNamespace("android", AndroidXmlNamespace);
         }
 
         public string Save() => SaveAs(_path);
