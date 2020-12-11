@@ -4,7 +4,6 @@
 [Bb]uild/
 [Bb]uilds/
 build-*
-*~
 Assets/AssetStoreTools*
 .DS_Store
 
