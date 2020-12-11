@@ -1,5 +1,26 @@
 ## Using Sentry in Unity
 
+### Installation
+
+#### Through the package manager
+
+![Install git package screenshot](./Documentation~/install-git-package.png)
+
+Open the package manager, click the + icon, and add git url.
+
+In the field that opens, enter the url of the repo, i.e.:
+
+```
+https://github.com/getsentry/sentry-unity.git
+```
+
+If you wish to install a specific version you can do that as well by appending
+it to the url.
+
+```
+https://github.com/getsentry/sentry-unity.git#0.0.6"
+```
+
 ### Usage
 
 In order to make Sentry work, you need to add `SentrySdk` component to any
@@ -19,12 +40,12 @@ DSN is the only obligatory parameter on `SentrySdk` object.
 This is enough to capture automatic traceback events from the game. They will
 be sent to your DSN and you can find them at [sentry.io](sentry.io)
 
+`SentrySdk` is the main component that you have to use in your own project.
+
 ### Example
 
-There is an example scene in the Sentry asset. It has two components -
-`SentrySdk` and `SentryTest`. `SentryTest` is a component that handles
-button presses to crash or fail assert. `SentrySdk` is the main component
-that you have to use in your own project.
+The package includes a Demo scene. `SentryTest` is a component that handles
+button presses to crash or fail assert.
 
 ### API
 
