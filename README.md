@@ -8,6 +8,10 @@
 Sentry SDK for Unity
 ===========
 
+> This is a work in progress.
+
+For the stable Unity SDK, please go to [Sentry Unity Lite](https://github.com/getsentry/sentry-unity-lite).
+
 ## Sentry SDKs: Unity vs Unity Lite
 
 Sentry's current stable SDK is on a [different repository called `sentry-unity-lite`](https://github.com/getsentry/sentry-unity-lite).
