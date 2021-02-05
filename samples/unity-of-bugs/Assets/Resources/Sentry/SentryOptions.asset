@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 32
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -158719865, guid: 33c5c1e013e193f4296b0bb556af7f66, type: 3}
+  m_Name: SentryOptions
+  m_EditorClassIdentifier: 
+  <Enabled>k__BackingField: 1
+  <CaptureInEditor>k__BackingField: 1
+  <Dsn>k__BackingField: https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182
+  <Debug>k__BackingField: 1
+  <DebugOnlyInEditor>k__BackingField: 1
+  <DiagnosticsLevel>k__BackingField: 0
+  <RequestBodyCompressionLevel>k__BackingField: 0
+  <AttachStacktrace>k__BackingField: 0
+  <SampleRate>k__BackingField: 1
