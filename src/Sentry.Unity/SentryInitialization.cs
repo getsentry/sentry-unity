@@ -48,13 +48,14 @@ namespace Sentry.Unity
             _ = SentrySdk.Init(o =>
             {
                 o.Dsn = options.Dsn;
+                // TODO: don't work for Mono Path.GetFileName
+                o.StackTraceMode = StackTraceMode.Original;
 
                 if (options.Logger != null)
                 {
                     o.Debug = true;
                     o.DiagnosticLogger = options.Logger;
-                    // TODO: was originally, unavailable for default sentry-dotnet, some specific commit?
-                    // o.DiagnosticsLevel = options.DiagnosticsLevel;
+                    o.DiagnosticLevel = options.DiagnosticsLevel;
                 }
 
                 o.SampleRate = options.SampleRate;

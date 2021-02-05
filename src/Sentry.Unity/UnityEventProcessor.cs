@@ -212,7 +212,7 @@ namespace Sentry.Unity
 
                 frames.Add(new SentryStackFrame
                 {
-                    FileName = Path.GetFileName(filename),
+                    FileName = TryResolveFileNameForMono(filename),
                     AbsolutePath = filename,
                     Function = functionName,
                     LineNumber = lineNo,
@@ -236,6 +236,21 @@ namespace Sentry.Unity
                 Type = excType,
                 Value = excValue
             };
+        }
+
+        // TODO: discuss
+        private static string TryResolveFileNameForMono(string fileName)
+        {
+            try
+            {
+                // throws on Mono for <1231231231> paths
+                return Path.GetFileName(fileName);
+            }
+            catch
+            {
+                // mono path
+                return "Unknown";
+            }
         }
     }
 }
