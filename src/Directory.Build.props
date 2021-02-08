@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
-    <UnityVersion>2019.4.18f1</UnityVersion>
+    <UnityVersion>2019.4.19f1</UnityVersion>
     <WarningsAsErrors>true</WarningsAsErrors>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <PackageRuntimePath>../../package/Runtime</PackageRuntimePath>
@@ -14,9 +14,13 @@
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.0" PrivateAssets="All" />
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
-  
-  <!-- TODO: configure for MacOS, Linux. Currently for Windows only -->
   <PropertyGroup Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">
     <UnityPath>C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed</UnityPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/')">
+    <UnityPath>/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/</UnityPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="Exists('~/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/')">
+    <UnityPath>~/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/</UnityPath>
   </PropertyGroup>
 </Project>

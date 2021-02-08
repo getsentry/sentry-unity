@@ -61,8 +61,8 @@ namespace Sentry.Unity.Editor
             // Since logcat is only an editor thing, disregarding options.DebugOnlyInEditor
             options.Logger?.Log(SentryLevel.Debug, "Setting Debug: {0}", args: options.Debug);
             androidManifest.SetDebug(options.Debug);
-            options.Logger?.Log(SentryLevel.Debug, "Setting DiagnosticsLevel: {0}", args: options.DiagnosticsLevel);
-            androidManifest.SetLevel(options.DiagnosticsLevel);
+            options.Logger?.Log(SentryLevel.Debug, "Setting DiagnosticsLevel: {0}", args: options.DiagnosticLevel);
+            androidManifest.SetLevel(options.DiagnosticLevel);
 
             // TODO: All SentryOptions and create specific Android options
 

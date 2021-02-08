@@ -55,7 +55,7 @@ namespace Sentry.Unity
                 {
                     o.Debug = true;
                     o.DiagnosticLogger = options.Logger;
-                    o.DiagnosticLevel = options.DiagnosticsLevel;
+                    o.DiagnosticLevel = options.DiagnosticLevel;
                 }
 
                 o.SampleRate = options.SampleRate;
@@ -104,6 +104,8 @@ namespace Sentry.Unity
 
             Application.quitting += () =>
             {
+                options.Logger?.Log(SentryLevel.Info, "Unsubscribing from log callback due to app exiting.");
+
                 // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
                 //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
                 // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
@@ -130,10 +132,19 @@ namespace Sentry.Unity
         {
             var time = DateTime.UtcNow.Ticks;
 
-            if (time - _timeLastError <= MinTime)
-            {
-                return;
-            }
+            // TODO: Probably need a more elaborate way to do this.
+            // Based on a plain 500ms timeout it will drop valid logs
+            // if (time - _timeLastError <= MinTime)
+            // {
+            //     return;
+            // }
+
+            Debug.LogError("Testing OnLogMessageReceived called");
+            options.Logger?.Log(SentryLevel.Debug, "Capturing log level {0} message {1} with stacktrace:\n{2}",
+                null,
+                type,
+                condition,
+                stackTrace);
 
             _timeLastError = time;
 

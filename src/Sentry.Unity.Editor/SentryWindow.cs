@@ -122,10 +122,10 @@ namespace Sentry.Unity.Editor
                     "Only In Editor",
                     "Only print logs when in the editor. Development builds of the player will not include Sentry's SDK diagnostics."),
                 Options.DebugOnlyInEditor);
-            Options.DiagnosticsLevel = (SentryLevel)EditorGUILayout.EnumPopup(
+            Options.DiagnosticLevel = (SentryLevel)EditorGUILayout.EnumPopup(
                 new GUIContent("Verbosity level", "The minimum level allowed to be printed to the console. " +
                                                   "Log messages with a level below this level are dropped."),
-                Options.DiagnosticsLevel);
+                Options.DiagnosticLevel);
             EditorGUILayout.EndToggleGroup();
 
             EditorGUILayout.EndToggleGroup();

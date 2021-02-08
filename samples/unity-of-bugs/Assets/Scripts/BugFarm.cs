@@ -1,7 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -19,6 +17,10 @@ public class BugFarm : MonoBehaviour
     {
         Debug.Log("Sample Start 🦋");
         Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
+        Application.logMessageReceived += (condition, trace, type) =>
+        {
+            Debug.Log("does it stackoverflow? " + condition);
+        };
     }
 
     void Update()

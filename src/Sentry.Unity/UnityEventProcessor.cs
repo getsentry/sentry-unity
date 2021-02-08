@@ -19,8 +19,7 @@ namespace Sentry.Unity
             // Add some Unity specific context:
 
             var version = "0.0.1-alpha";
-            // TODO Sdk shouldn't be marked as nullable
-            @event.Sdk!.AddPackage("github:sentry.unity", version);
+            @event.Sdk.AddPackage("github:sentry.unity", version);
             @event.Sdk.Name = "sentry.unity";
             @event.Sdk.Version = version;
 
