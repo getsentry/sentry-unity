@@ -11,6 +11,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Update="link.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj" />
   </ItemGroup>
 </Project>

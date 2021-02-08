@@ -14,9 +14,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.0" PrivateAssets="All" />
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
-  
-  <!-- TODO: configure for MacOS, Linux. Currently for Windows only -->
-  <PropertyGroup Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">
-    <UnityPath>C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed</UnityPath>
+  <PropertyGroup>
+    <UnityPath Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed</UnityPath>
+    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/</UnityPath>
+    <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
+    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/Contents/Managed</UnityPath>
   </PropertyGroup>
 </Project>

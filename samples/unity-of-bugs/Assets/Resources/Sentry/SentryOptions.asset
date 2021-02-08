@@ -9,15 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -158719865, guid: 33c5c1e013e193f4296b0bb556af7f66, type: 3}
+  m_Script: {fileID: -158719865, guid: c20f1e3654d1e9c4bbc104b72bdb020d, type: 3}
   m_Name: SentryOptions
   m_EditorClassIdentifier: 
   <Enabled>k__BackingField: 1
   <CaptureInEditor>k__BackingField: 1
-  <Dsn>k__BackingField: https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182
+  <Dsn>k__BackingField: https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 1
-  <DiagnosticsLevel>k__BackingField: 0
+  <DiagnosticsLevel>k__BackingField: 3
   <RequestBodyCompressionLevel>k__BackingField: 0
   <AttachStacktrace>k__BackingField: 0
   <SampleRate>k__BackingField: 1
