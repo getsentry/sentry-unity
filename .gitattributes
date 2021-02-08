@@ -1,1 +1,6 @@
 * text=auto eol=lf
+
+*.dll binary
+*.jpg binary
+*.jpeg binary
+*.png binary
