@@ -11,6 +11,9 @@ Build/
 sentry-unity/build:*
 .DS_Store
 
+# samples/**/*.csproj
+# samples/**/*.sln
+
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/
 sentry-unity/Assets/Editor/Sentry/
