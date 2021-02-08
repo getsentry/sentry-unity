@@ -10,7 +10,7 @@ namespace Sentry.Unity.Editor
         internal const string SentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
 
         [MenuItem("Component/Sentry")]
-        public static void OpenSentryWindow() => GetWindow(typeof(SentryWindow)); // test
+        public static void OpenSentryWindow() => GetWindow(typeof(SentryWindow));
 
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
