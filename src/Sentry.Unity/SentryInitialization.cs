@@ -53,7 +53,7 @@ namespace Sentry.Unity
                 {
                     o.Debug = true;
                     o.DiagnosticLogger = options.Logger;
-                    o.DiagnosticsLevel = options.DiagnosticsLevel;
+                    o.DiagnosticLevel = options.DiagnosticsLevel;
                 }
 
                 o.SampleRate = options.SampleRate;
