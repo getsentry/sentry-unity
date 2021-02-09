@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
+    <DebugType>embedded</DebugType>
+    <OutDir>$(PackageEditorPath)</OutDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(UnityPath)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>$(UnityPath)\UnityEditor.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Sentry.Unity\Sentry.Unity.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SentryLogoLight.png" />
+    <EmbeddedResource Include="SentryLogoDark.png" />
+  </ItemGroup>
+</Project>
