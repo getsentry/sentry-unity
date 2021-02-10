@@ -52,8 +52,8 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "io.sentry.unity": {
-      "version": "file:../../../package",
+    "io.sentry.unity.dev": {
+      "version": "file:../../../package-dev",
       "depth": 0,
       "source": "local",
       "dependencies": {}

@@ -14,6 +14,12 @@ sentry-unity/build:*
 samples/**/*.csproj
 samples/**/*.sln
 
+# Ignore build and Unity artifacts
+package-dev/**/*.dll
+package-dev/**/*.meta
+package-dev/**/*.pdb
+package-dev/**/*.xml
+
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/
 sentry-unity/Assets/Editor/Sentry/
