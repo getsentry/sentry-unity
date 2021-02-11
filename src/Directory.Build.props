@@ -8,6 +8,7 @@
     <PackageFolderName>package-dev</PackageFolderName>
     <PackageRuntimePath>../../$(PackageFolderName)/Runtime</PackageRuntimePath>
     <PackageEditorPath>../../$(PackageFolderName)/Editor</PackageEditorPath>
+    <PackageRuntimeTestsPath>../../$(PackageFolderName)/Tests/Runtime</PackageRuntimeTestsPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />

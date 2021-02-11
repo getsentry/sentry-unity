@@ -14,6 +14,8 @@ ProjectSection(SolutionItems) = preProject
 	Directory.Build.props = Directory.Build.props
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.Tests", "Sentry.Unity.Tests\Sentry.Unity.Tests.csproj", "{A41B4067-48A2-44D3-89F0-02FF72D1A50F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +62,18 @@ Global
 		{583BBF7E-054D-414D-AAA8-47C400AB3914}.Release|x64.Build.0 = Release|Any CPU
 		{583BBF7E-054D-414D-AAA8-47C400AB3914}.Release|x86.ActiveCfg = Release|Any CPU
 		{583BBF7E-054D-414D-AAA8-47C400AB3914}.Release|x86.Build.0 = Release|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Debug|x64.Build.0 = Debug|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Debug|x86.Build.0 = Debug|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|x64.ActiveCfg = Release|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|x64.Build.0 = Release|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|x86.ActiveCfg = Release|Any CPU
+		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
