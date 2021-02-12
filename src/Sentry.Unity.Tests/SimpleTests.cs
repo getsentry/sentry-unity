@@ -20,7 +20,7 @@ namespace Sentry.Unity.Tests
             var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "test cube";
             yield return new WaitForSeconds(2);
-            Assert.IsTrue(GameObject.Find(cube.name));
+            Assert.NotNull(GameObject.Find(cube.name));
         }
     }
 }
