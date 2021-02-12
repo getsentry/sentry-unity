@@ -5,8 +5,10 @@
     <UnityVersion>2019.4.18f1</UnityVersion>
     <WarningsAsErrors>true</WarningsAsErrors>
     <GenerateDependencyFile>false</GenerateDependencyFile>
-    <PackageRuntimePath>../../package/Runtime</PackageRuntimePath>
-    <PackageEditorPath>../../package/Editor</PackageEditorPath>
+    <PackageFolderName>package-dev</PackageFolderName>
+    <PackageRuntimePath>../../$(PackageFolderName)/Runtime</PackageRuntimePath>
+    <PackageEditorPath>../../$(PackageFolderName)/Editor</PackageEditorPath>
+    <PackageRuntimeTestsPath>../../$(PackageFolderName)/Tests/Runtime</PackageRuntimeTestsPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />

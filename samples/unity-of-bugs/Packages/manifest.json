@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "io.sentry.unity": "file:../../../package",
+    "io.sentry.unity.dev": "file:../../../package-dev",
     "com.unity.ide.rider": "1.1.4",
     "com.unity.ide.vscode": "1.2.3",
     "com.unity.test-framework": "1.1.20",
