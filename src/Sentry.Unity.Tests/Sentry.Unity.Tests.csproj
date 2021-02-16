@@ -8,12 +8,12 @@
         <HintPath>$(UnityPath)\UnityEngine.dll</HintPath>
         <Private>false</Private>
       </Reference>
-      <Reference Include="UnityEditor.TestRunner, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>libs\UnityEditor.TestRunner.dll</HintPath>
+      <Reference Include="UnityEditor.TestRunner">
+        <HintPath>$(UnityTestPath)\UnityEditor.TestRunner.dll</HintPath>
         <Private>false</Private>
       </Reference>
-      <Reference Include="UnityEngine.TestRunner, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>libs\UnityEngine.TestRunner.dll</HintPath>
+      <Reference Include="UnityEngine.TestRunner">
+        <HintPath>$(UnityTestPath)\UnityEngine.TestRunner.dll</HintPath>
         <Private>false</Private>
       </Reference>
     </ItemGroup>
