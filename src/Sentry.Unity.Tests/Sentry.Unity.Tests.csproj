@@ -29,7 +29,4 @@
         <Private>false</Private>
       </ProjectReference>
     </ItemGroup>
-    <ItemGroup>
-      <None Remove="libs\**" />
-    </ItemGroup>
 </Project>
