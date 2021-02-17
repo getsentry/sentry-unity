@@ -25,6 +25,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <UnityTestPath Condition="Exists('C:\Projects\Unity\sentry-unity\samples\unity-of-bugs\Library\ScriptAssemblies\UnityEngine.TestRunner.dll')">C:\Projects\Unity\sentry-unity\samples\unity-of-bugs\Library\ScriptAssemblies</UnityTestPath>
+    <UnityTestPath Condition="Exists('$(SolutionDir)/../samples/unity-of-bugs/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')">$(SolutionDir)/../samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
     <!-- TODO: add relevant paths for Mac and Linux -->
   </PropertyGroup>
 </Project>
