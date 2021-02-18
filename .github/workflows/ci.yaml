@@ -24,7 +24,7 @@ jobs:
       - name: Build
         uses: webbertakken/unity-builder@v0.10
         with:
-          unityVersion: '2019.2.11f1'
+          unityVersion: '2019.4.0f1'
           projectPath: ./src/Sentry.Unity
           targetPlatform: ${{ matrix.platform }}
 
@@ -47,7 +47,7 @@ jobs:
         id: runTests
         uses: webbertakken/unity-test-runner@v1.3
         with:
-          unityVersion: '2019.2.11f1'
+          unityVersion: '2019.4.0f1'
           projectPath: ./src/Sentry.Unity.Tests
 
       - name: Upload artifacts
