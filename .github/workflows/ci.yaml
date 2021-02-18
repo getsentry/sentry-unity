@@ -13,20 +13,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Windows (win64)
-            os: windows-latest
+          - os: windows-latest
             platform: StandaloneWindows64
-          - name: Windows (webGL)
-            os: windows-latest
+          - os: windows-latest
             platform: WebGL
-          - name: Linux (linux64)
-            os: ubuntu-latest
+          - os: ubuntu-latest
             platform: StandaloneLinux64
-          - name: macOS (osx)
-            os: macos-latest
+          - os: macos-latest
             platform: StandaloneOSX
-          - name: macOS (ios)
-            os: macos-latest
+          - os: macos-latest
             platform: StandaloneOSX
 
     steps:
