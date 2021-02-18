@@ -9,21 +9,11 @@ env:
 jobs:
 
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        include:
-          - os: windows-latest
-            platform: StandaloneWindows64
-          - os: windows-latest
-            platform: WebGL
-          - os: ubuntu-latest
-            platform: StandaloneLinux64
-          - os: macos-latest
-            platform: StandaloneOSX
-          - os: macos-latest
-            platform: StandaloneOSX
+        platform: [StandaloneWindows64, StandaloneLinux64, StandaloneOSX, WebGL, iOS]
 
     steps:
       - name: Checkout
@@ -45,7 +35,7 @@ jobs:
           path: build
 
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
