@@ -13,7 +13,19 @@ jobs:
 
     strategy:
       matrix:
-        platform: [StandaloneWindows64, StandaloneLinux64, StandaloneOSX, WebGL, iOS]
+        platform:
+          - StandaloneWindows
+          - StandaloneWindows64
+          - StandaloneLinux64
+          - StandaloneOSX
+          - WebGL
+          - iOS
+          - Android
+          - PS4
+          - XboxOne
+          - tvOS
+          - Switch
+          - WSAPlayer
 
     steps:
       - name: Checkout
