@@ -36,7 +36,7 @@ jobs:
       - name: Build
         uses: webbertakken/unity-builder@v0.10
         with:
-          unityVersion: 2019.4.0f1
+          unityVersion: auto
           projectPath: samples/unity-of-bugs
           targetPlatform: ${{ matrix.platform }}
 
@@ -59,7 +59,7 @@ jobs:
         id: runTests
         uses: webbertakken/unity-test-runner@v1.3
         with:
-          unityVersion: 2019.4.0f1
+          unityVersion: auto
           projectPath: samples/unity-of-bugs
 
       - name: Upload artifacts
