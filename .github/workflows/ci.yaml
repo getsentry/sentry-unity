@@ -36,7 +36,7 @@ jobs:
       - name: Build
         uses: game-ci/unity-builder@v1.5
         with:
-          unityVersion: auto
+          unityVersion: 2019.4.18f1 # for some reason it doesn't extract it automatically
           projectPath: samples/unity-of-bugs
           targetPlatform: ${{ matrix.platform }}
 
@@ -59,7 +59,7 @@ jobs:
         id: runTests
         uses: game-ci/unity-test-runner@v1.7
         with:
-          unityVersion: auto
+          unityVersion: 2019.4.18f1 # for some reason it doesn't extract it automatically
           projectPath: samples/unity-of-bugs
 
       - name: Upload artifacts
