@@ -23,4 +23,7 @@
     <UnityPath Condition="$(UnityPath) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor\Data\Managed</UnityPath>
     <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/Contents/Managed</UnityPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <UnityTestPath Condition="Exists('$(SolutionDir)/../samples/unity-of-bugs/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')">$(SolutionDir)/../samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
+  </PropertyGroup>
 </Project>

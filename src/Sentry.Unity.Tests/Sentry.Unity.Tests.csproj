@@ -8,6 +8,14 @@
         <HintPath>$(UnityPath)\UnityEngine.dll</HintPath>
         <Private>false</Private>
       </Reference>
+      <Reference Include="UnityEditor.TestRunner">
+        <HintPath>$(UnityTestPath)\UnityEditor.TestRunner.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.TestRunner">
+        <HintPath>$(UnityTestPath)\UnityEngine.TestRunner.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
     </ItemGroup>
     <ItemGroup>
       <!-- Unity uses exactly this (3.5.0) version as of now -->
