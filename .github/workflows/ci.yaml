@@ -8,11 +8,26 @@ env:
 jobs:
 
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        platform: [StandaloneWindows64, StandaloneOSX, StandaloneLinux64, iOS, WebGL]
+        include:
+          - name: Windows (win64)
+            os: windows-latest
+            platform: StandaloneWindows64
+          - name: Windows (webGL)
+            os: windows-latest
+            platform: WebGL
+          - name: Linux (linux64)
+            os: ubuntu-latest
+            platform: StandaloneLinux64
+          - name: macOS (osx)
+            os: macos-latest
+            platform: StandaloneOSX
+          - name: macOS (ios)
+            os: macos-latest
+            platform: StandaloneOSX
 
     steps:
       - name: Checkout
