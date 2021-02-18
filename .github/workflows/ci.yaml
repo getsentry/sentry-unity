@@ -1,0 +1,56 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        platform: [StandaloneWindows64, StandaloneOSX, StandaloneLinux64, iOS, WebGL]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+        with:
+          submodules: recursive
+
+      - name: Build
+        uses: webbertakken/unity-builder@v0.10
+        with:
+          unityVersion: auto
+          projectPath: src/Sentry.Unity
+          targetPlatform: ${{ matrix.platform }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build-${{ matrix.platform }}
+          path: build
+
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+        with:
+          submodules: recursive
+
+      - name: Run tests
+        id: runTests
+        uses: webbertakken/unity-test-runner@v1.3
+        with:
+          unityVersion: auto
+          projectPath: src/Sentry.Unity.Tests
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test-${{ matrix.platform }}
+          path: ${{ steps.runTests.outputs.artifactsPath }}
