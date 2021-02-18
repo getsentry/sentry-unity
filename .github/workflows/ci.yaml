@@ -25,7 +25,7 @@ jobs:
         uses: webbertakken/unity-builder@v0.10
         with:
           unityVersion: '2019.2.11f1'
-          projectPath: src/Sentry.Unity
+          projectPath: ./src/Sentry.Unity
           targetPlatform: ${{ matrix.platform }}
 
       - name: Upload artifacts
@@ -48,7 +48,7 @@ jobs:
         uses: webbertakken/unity-test-runner@v1.3
         with:
           unityVersion: '2019.2.11f1'
-          projectPath: src/Sentry.Unity.Tests
+          projectPath: ./src/Sentry.Unity.Tests
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
