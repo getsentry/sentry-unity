@@ -21,11 +21,11 @@ jobs:
           - WebGL
           - iOS
           - Android
-          - PS4
-          - XboxOne
-          - tvOS
-          - Switch
-          - WSAPlayer
+          #- PS4
+          #- XboxOne
+          #- tvOS
+          #- Switch
+          #- WSAPlayer
 
     steps:
       - name: Checkout
@@ -60,7 +60,7 @@ jobs:
         uses: webbertakken/unity-test-runner@v1.3
         with:
           unityVersion: '2019.4.0f1'
-          projectPath: ../../src/Sentry.Unity.Tests
+          projectPath: src/Sentry.Unity.Tests
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
