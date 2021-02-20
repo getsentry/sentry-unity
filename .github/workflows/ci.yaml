@@ -35,7 +35,7 @@ jobs:
           submodules: recursive
 
       - name: Build
-        uses: game-ci/unity-builder@v1.5
+        uses: game-ci/unity-builder@v2.0-aplha-5
         with:
           unityVersion: 2019.4.0f1 # for some reason it doesn't extract it automatically
           projectPath: samples/unity-of-bugs
@@ -58,7 +58,7 @@ jobs:
 
       - name: Run tests
         id: runTests
-        uses: game-ci/unity-test-runner@v1.7
+        uses: game-ci/unity-test-runner@v2.0-alpha-2
         with:
           unityVersion: 2019.4.0f1 # for some reason it doesn't extract it automatically
           projectPath: samples/unity-of-bugs
