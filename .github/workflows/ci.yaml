@@ -2,8 +2,10 @@ name: CI
 
 on: [push, pull_request]
 
-# env:
-#   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+env:
+  UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
 
 jobs:
 
