@@ -111,7 +111,7 @@ namespace Sentry.Unity
 
             // TODO: Consider ensuring this code path doesn't require UI thread
             // Then use logMessageReceivedThreaded instead
-            void OnApplicationOnLogMessageReceived(string condition, string stackTrace, LogType type) => OnLogMessageReceived(condition, stackTrace, type);
+            void OnApplicationOnLogMessageReceived(string condition, string stackTrace, LogType type) => OnLogMessageReceived(condition, stackTrace, type, options);
 
             Application.logMessageReceived += OnApplicationOnLogMessageReceived;
 
@@ -139,8 +139,11 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void SubsystemRegistration() => SentrySdk.AddBreadcrumb("SubsystemRegistration");
 
-        private static void OnLogMessageReceived(string condition, string stackTrace, LogType type)
+        private static void OnLogMessageReceived(string condition, string stackTrace, LogType type, UnitySentryOptions options)
         {
+            // TODO: 'options' not used yet
+            _ = options;
+
             var time = DateTime.UtcNow.Ticks;
 
             if (time - _timeLastError <= MinTimeTicks)
