@@ -1,4 +1,3 @@
-using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,11 +6,27 @@ using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
 {
+    public interface IEventCapture
+    {
+        SentryId Capture(SentryEvent sentryEvent);
+    }
+
+    internal class EventCapture : IEventCapture
+    {
+        public SentryId Capture(SentryEvent sentryEvent)
+            => SentrySdk.CaptureEvent(sentryEvent);
+    }
+
     // https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
     public static class SentryInitialization
     {
         private static long _timeLastError;
-        public static long MinTime { get; } = TimeSpan.FromMilliseconds(500).Ticks;
+
+        // TODO: Temp solution until a proper event bandwidth throttling is implemented
+        public static long MinTimeTicks = TimeSpan.FromMilliseconds(500).Ticks;
+
+        // Temp event capture infra
+        public static IEventCapture EventCapture = new EventCapture();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -77,7 +92,7 @@ namespace Sentry.Unity
                 o.AttachStacktrace = options.AttachStacktrace;
 
                 // Required configurations to integrate with Unity
-                o.AddInAppExclude("UnityEngine");
+                o.AddInAppExclude("UnityEngine"); // TODO: what is it for?
                 o.AddInAppExclude("UnityEditor");
 
                 o.RequestBodyCompressionLevel = options.RequestBodyCompressionLevel switch
@@ -96,7 +111,7 @@ namespace Sentry.Unity
 
             // TODO: Consider ensuring this code path doesn't require UI thread
             // Then use logMessageReceivedThreaded instead
-            void OnApplicationOnLogMessageReceived(string condition, string stackTrace, LogType type) => OnLogMessageReceived(condition, stackTrace, type, options);
+            void OnApplicationOnLogMessageReceived(string condition, string stackTrace, LogType type) => OnLogMessageReceived(condition, stackTrace, type);
 
             Application.logMessageReceived += OnApplicationOnLogMessageReceived;
 
@@ -124,11 +139,11 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void SubsystemRegistration() => SentrySdk.AddBreadcrumb("SubsystemRegistration");
 
-        private static void OnLogMessageReceived(string condition, string stackTrace, LogType type, UnitySentryOptions options)
+        private static void OnLogMessageReceived(string condition, string stackTrace, LogType type)
         {
             var time = DateTime.UtcNow.Ticks;
 
-            if (time - _timeLastError <= MinTime)
+            if (time - _timeLastError <= MinTimeTicks)
             {
                 return;
             }
@@ -143,9 +158,9 @@ namespace Sentry.Unity
                 return;
             }
 
-            var evt = new SentryEvent(new UnityLogException(condition, stackTrace));
-            evt.SetTag("log.type", ToEventTagType(type));
-            _ = SentrySdk.CaptureEvent(evt);
+            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
+            sentryEvent.SetTag("log.type", ToEventTagType(type));
+            _ = EventCapture?.Capture(sentryEvent);
             SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
         }
 

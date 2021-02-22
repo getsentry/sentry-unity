@@ -114,6 +114,7 @@ namespace Sentry.Unity
                 @event.Contexts.App.BuildType = "release";
             }
 
+            // TODO: 'UNITY_EDITOR' preprocessor is not known from within 'Sentry.Unity'
 #if UNITY_EDITOR
             @event.Contexts.Device.Simulator = true;
 #else
@@ -143,7 +144,8 @@ namespace Sentry.Unity
             var frames = new List<SentryStackFrame>();
             var exc = condition.Split(new char[] { ':' }, 2);
             var excType = exc[0];
-            var excValue = exc[1].Substring(1); // strip the space
+            // TODO: condition may NOT contain ':' separator
+            var excValue = exc.Length == 1 ? exc[0] : exc[1].Substring(1); // strip the space
             var stackList = stackTrace.Split('\n');
 
             // The format is as follows:
