@@ -92,7 +92,7 @@ namespace Sentry.Unity
                 o.AttachStacktrace = options.AttachStacktrace;
 
                 // Required configurations to integrate with Unity
-                o.AddInAppExclude("UnityEngine"); // TODO: what is it for?
+                o.AddInAppExclude("UnityEngine");
                 o.AddInAppExclude("UnityEditor");
 
                 o.RequestBodyCompressionLevel = options.RequestBodyCompressionLevel switch
