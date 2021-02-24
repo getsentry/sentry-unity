@@ -16,6 +16,8 @@ EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.Tests", "Sentry.Unity.Tests\Sentry.Unity.Tests.csproj", "{A41B4067-48A2-44D3-89F0-02FF72D1A50F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.Editor.Tests", "Sentry.Unity.Editor.Tests\Sentry.Unity.Editor.Tests.csproj", "{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,18 @@ Global
 		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|x64.Build.0 = Release|Any CPU
 		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|x86.ActiveCfg = Release|Any CPU
 		{A41B4067-48A2-44D3-89F0-02FF72D1A50F}.Release|x86.Build.0 = Release|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Debug|x64.Build.0 = Debug|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Debug|x86.Build.0 = Debug|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Release|x64.ActiveCfg = Release|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Release|x64.Build.0 = Release|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Release|x86.ActiveCfg = Release|Any CPU
+		{0EDAE435-C5C4-4A33-BDD0-F75AD5DD5752}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
