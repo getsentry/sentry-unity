@@ -161,7 +161,7 @@ There are examples of `Unity` calls and outputs:
       Debug.LogException(e);
   }
   ```
-  * `Condition` - Exception: Custom bugs are here!
+  * `Condition` - Exception: Just an exception!
   * `StackTrace`
     ```
     BugFarm.ThrowExceptionAndCatch () (at Assets/Scripts/BugFarm.cs:41)
