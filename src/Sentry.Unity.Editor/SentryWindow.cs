@@ -5,14 +5,25 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-    public class SentryWindow : EditorWindow
+    public class SentryWindow : EditorWindow, IDisposable
     {
-        internal const string SentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
+        // TODO: need to set from editor tests
+        public static string SentryOptionsAssetName { get; set; } = "SentryOptions";
+
+        internal static string SentryOptionsAssetPath => $"Assets/Resources/Sentry/{SentryOptionsAssetName}.asset";
 
         [MenuItem("Component/Sentry")]
-        public static void OpenSentryWindow() => GetWindow(typeof(SentryWindow));
+        public static SentryWindow OpenSentryWindow() => (SentryWindow)GetWindow(typeof(SentryWindow));
 
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
+
+        public event Action<ValidationError> OnValidationError = _ => { };
+
+        public void Dispose()
+        {
+            Close();
+            AssetDatabase.DeleteAsset(SentryOptionsAssetPath);
+        }
 
         protected void OnEnable()
         {
@@ -30,7 +41,7 @@ namespace Sentry.Unity.Editor
                 {
                     AssetDatabase.CreateFolder("Assets/Resources", "Sentry");
                 }
-                AssetDatabase.CreateAsset(Options , SentryOptionsAssetPath);
+                AssetDatabase.CreateAsset(Options, SentryOptionsAssetPath);
             }
 
             EditorUtility.SetDirty(Options);
@@ -58,7 +69,7 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
-            if (Options.Dsn == null)
+            /*if (Options.Dsn == null)
             {
                 Options.Dsn = null;
                 // Debug.LogError("Missing Sentry DSN.");
@@ -67,7 +78,54 @@ namespace Sentry.Unity.Editor
             {
                 Options.Dsn = null;
                 Debug.LogError("Invalid DSN format. Expected a URL.");
+            }*/
+
+            ValidateDsn();
+            ValidateRelease();
+        }
+
+        /// <summary>
+        /// Required for editor tests, but may be redundant for actual editor logic
+        /// </summary>
+        // ReSharper disable once UnusedMember.Local
+        private void OnInspectorUpdate()
+            => Validate();
+
+        private void ValidateDsn()
+        {
+            if (Options.Dsn == null)
+            {
+                return;
             }
+
+            if (!Uri.IsWellFormedUriString(Options.Dsn, UriKind.Absolute))
+            {
+                var fullFieldName = $"{nameof(Options)}.{nameof(Options.Dsn)}";
+                var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
+                OnValidationError(validationError);
+                Debug.LogError(validationError.ToString());
+            }
+        }
+
+        private void ValidateRelease()
+        {
+            if (Options.Release == null)
+            {
+                return;
+            }
+
+            const int maxLength = 10;
+
+            var release = Options.Release;
+            if (release.Length <= maxLength)
+            {
+                return;
+            }
+
+            var fullFieldName = $"{nameof(Options)}.{nameof(Options.Release)}";
+            var validationError = new ValidationError(fullFieldName, $"Max length is {maxLength}, but found {release.Length}.");
+            OnValidationError(validationError);
+            Debug.LogError(validationError.ToString());
         }
 
         private void OnLostFocus()
@@ -137,5 +195,21 @@ namespace Sentry.Unity.Editor
             // project = EditorGUILayout.TextField("Project", project);
             // EditorGUILayout.EndToggleGroup();
         }
+    }
+
+    public readonly struct ValidationError
+    {
+        public readonly string PropertyName;
+
+        public readonly string Reason;
+
+        public ValidationError(string propertyName, string reason)
+        {
+            PropertyName = propertyName;
+            Reason = reason;
+        }
+
+        public override string ToString()
+            => $"[{PropertyName}] Reason: {Reason}";
     }
 }
