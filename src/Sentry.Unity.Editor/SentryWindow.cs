@@ -98,13 +98,15 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
-            if (!Uri.IsWellFormedUriString(Options.Dsn, UriKind.Absolute))
+            if (Uri.IsWellFormedUriString(Options.Dsn, UriKind.Absolute))
             {
-                var fullFieldName = $"{nameof(Options)}.{nameof(Options.Dsn)}";
-                var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
-                OnValidationError(validationError);
-                Debug.LogError(validationError.ToString());
+                return;
             }
+
+            var fullFieldName = $"{nameof(Options)}.{nameof(Options.Dsn)}";
+            var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
+            OnValidationError(validationError);
+            Debug.LogError(validationError.ToString());
         }
 
         private void ValidateRelease()
