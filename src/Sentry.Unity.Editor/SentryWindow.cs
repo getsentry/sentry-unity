@@ -5,27 +5,21 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-    public class SentryWindow : EditorWindow, IDisposable
+    public class SentryWindow : EditorWindow
     {
-        // TODO: need to set from editor tests
-        public static string SentryOptionsAssetName { get; set; } = "SentryOptions";
-
-        internal static string SentryOptionsAssetPath => $"Assets/Resources/Sentry/{SentryOptionsAssetName}.asset";
-
         [MenuItem("Component/Sentry")]
-        public static SentryWindow OpenSentryWindow() => (SentryWindow)GetWindow(typeof(SentryWindow));
+        public static SentryWindow OpenSentryWindow()
+            => (SentryWindow)GetWindow(typeof(SentryWindow));
+
+        protected virtual string SentryOptionsAssetName { get; } = "SentryOptions";
+
+        protected string SentryOptionsAssetPath => $"Assets/Resources/Sentry/{SentryOptionsAssetName}.asset";
 
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
-        public void Dispose()
-        {
-            Close();
-            AssetDatabase.DeleteAsset(SentryOptionsAssetPath);
-        }
-
-        protected void OnEnable()
+        private void OnEnable()
         {
             SetTitle();
 
@@ -69,27 +63,8 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
-            /*if (Options.Dsn == null)
-            {
-                Options.Dsn = null;
-                // Debug.LogError("Missing Sentry DSN.");
-            }
-            else if (!Uri.IsWellFormedUriString(Options.Dsn, UriKind.Absolute))
-            {
-                Options.Dsn = null;
-                Debug.LogError("Invalid DSN format. Expected a URL.");
-            }*/
-
             ValidateDsn();
-            ValidateRelease();
         }
-
-        /// <summary>
-        /// Required for editor tests, but may be redundant for actual editor logic
-        /// </summary>
-        // ReSharper disable once UnusedMember.Local
-        private void OnInspectorUpdate()
-            => Validate();
 
         private void ValidateDsn()
         {
@@ -109,28 +84,10 @@ namespace Sentry.Unity.Editor
             Debug.LogError(validationError.ToString());
         }
 
-        private void ValidateRelease()
-        {
-            if (Options.Release == null)
-            {
-                return;
-            }
-
-            const int maxLength = 10;
-
-            var release = Options.Release;
-            if (release.Length <= maxLength)
-            {
-                return;
-            }
-
-            var fullFieldName = $"{nameof(Options)}.{nameof(Options.Release)}";
-            var validationError = new ValidationError(fullFieldName, $"Max length is {maxLength}, but found {release.Length}.");
-            OnValidationError(validationError);
-            Debug.LogError(validationError.ToString());
-        }
-
-        private void OnLostFocus()
+        /// <summary>
+        /// Called if window focus is lost or 'Close' is called
+        /// </summary>
+        public void OnLostFocus()
         {
             Validate();
             AssetDatabase.SaveAssets();
@@ -138,6 +95,7 @@ namespace Sentry.Unity.Editor
             AssetDatabase.Refresh();
         }
 
+        // ReSharper disable once UnusedMember.Local
         private void OnGUI()
         {
             GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
