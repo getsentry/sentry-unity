@@ -1,11 +1,11 @@
 {
-    "name": "io.sentry.unity.dev.runtimeTests",
-    "references": [
-      "io.sentry.unity.dev.runtime"
-    ],
-    "optionalUnityReferences": [
-      "TestAssemblies"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": []
+  "name": "io.sentry.unity.dev.runtimeTests",
+  "references": [
+    "io.sentry.unity.dev.runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": []
 }
