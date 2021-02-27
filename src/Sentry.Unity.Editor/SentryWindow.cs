@@ -7,14 +7,19 @@ namespace Sentry.Unity.Editor
 {
     public class SentryWindow : EditorWindow
     {
-        internal const string SentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
-
         [MenuItem("Component/Sentry")]
-        public static void OpenSentryWindow() => GetWindow(typeof(SentryWindow));
+        public static SentryWindow OpenSentryWindow()
+            => (SentryWindow)GetWindow(typeof(SentryWindow));
+
+        protected virtual string SentryOptionsAssetName { get; } = "SentryOptions";
+
+        protected string SentryOptionsAssetPath => $"Assets/Resources/Sentry/{SentryOptionsAssetName}.asset";
 
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
-        protected void OnEnable()
+        public event Action<ValidationError> OnValidationError = _ => { };
+
+        private void OnEnable()
         {
             SetTitle();
 
@@ -30,7 +35,7 @@ namespace Sentry.Unity.Editor
                 {
                     AssetDatabase.CreateFolder("Assets/Resources", "Sentry");
                 }
-                AssetDatabase.CreateAsset(Options , SentryOptionsAssetPath);
+                AssetDatabase.CreateAsset(Options, SentryOptionsAssetPath);
             }
 
             EditorUtility.SetDirty(Options);
@@ -58,19 +63,31 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
-            if (Options.Dsn == null)
-            {
-                Options.Dsn = null;
-                // Debug.LogError("Missing Sentry DSN.");
-            }
-            else if (!Uri.IsWellFormedUriString(Options.Dsn, UriKind.Absolute))
-            {
-                Options.Dsn = null;
-                Debug.LogError("Invalid DSN format. Expected a URL.");
-            }
+            ValidateDsn();
         }
 
-        private void OnLostFocus()
+        private void ValidateDsn()
+        {
+            if (Options.Dsn == null)
+            {
+                return;
+            }
+
+            if (Uri.IsWellFormedUriString(Options.Dsn, UriKind.Absolute))
+            {
+                return;
+            }
+
+            var fullFieldName = $"{nameof(Options)}.{nameof(Options.Dsn)}";
+            var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
+            OnValidationError(validationError);
+            Debug.LogError(validationError.ToString());
+        }
+
+        /// <summary>
+        /// Called if window focus is lost or 'Close' is called
+        /// </summary>
+        public void OnLostFocus()
         {
             Validate();
             AssetDatabase.SaveAssets();
@@ -78,6 +95,7 @@ namespace Sentry.Unity.Editor
             AssetDatabase.Refresh();
         }
 
+        // ReSharper disable once UnusedMember.Local
         private void OnGUI()
         {
             GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
@@ -137,5 +155,21 @@ namespace Sentry.Unity.Editor
             // project = EditorGUILayout.TextField("Project", project);
             // EditorGUILayout.EndToggleGroup();
         }
+    }
+
+    public readonly struct ValidationError
+    {
+        public readonly string PropertyName;
+
+        public readonly string Reason;
+
+        public ValidationError(string propertyName, string reason)
+        {
+            PropertyName = propertyName;
+            Reason = reason;
+        }
+
+        public override string ToString()
+            => $"[{PropertyName}] Reason: {Reason}";
     }
 }

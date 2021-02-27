@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="../Directory.Build.props" />
+  <PropertyGroup>
+    <PackageRuntimeTestsPath>../../../$(PackageFolderName)/Tests/Runtime</PackageRuntimeTestsPath>
+    <PackageEditorTestsPath>../../../$(PackageFolderName)/Tests/Editor</PackageEditorTestsPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../sentry-dotnet/src/Sentry/Sentry.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../../Sentry.Unity/Sentry.Unity.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(UnityPath)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEditor.TestRunner">
+      <HintPath>$(UnityTestPath)/UnityEditor.TestRunner.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TestRunner">
+      <HintPath>$(UnityTestPath)/UnityEngine.TestRunner.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <PropertyGroup>
+    <UnityTestPath Condition="Exists('$(SolutionDir)/../samples/unity-of-bugs/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')">$(SolutionDir)/../samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
+  </PropertyGroup>
+</Project>
