@@ -30,26 +30,17 @@ jobs:
       - name: Add Unity on PATH
         run: |
           echo "C:\Program Files\Unity\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo where unity
+          gcm unity
+
+      - name: Activate license
+        run: unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }}
 
       - name: Build project
-        run: unity -quit -batchmode -logFile - -projectPath "${{ env.GITHUB_WORKSPACE }}/samples/unity-of-bugs" -buildWindows64Player "${{ env.GITHUB_WORKSPACE }}/buildOutput/build.exe" -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} -serial ${{ secrets.UNITY_SERIAL }}
+        run: unity -quit -batchmode -nographics -logFile - -projectPath "${{ env.GITHUB_WORKSPACE }}/samples/unity-of-bugs" -buildWindows64Player "${{ env.GITHUB_WORKSPACE }}/buildOutput/build.exe"
 
       - name: Return license
-        run: unity -quit -batchmode -logFile - -returnlicense
+        run: unity -quit -batchmode -nographics -logFile - -returnlicense
         if: ${{ always() }}
-
-      - name: Aggregate Unity logs
-        run: |
-          mkdir unityLogs
-          cp $env:LocalAppData/Unity/Editor/Editor.log unityLogs/Editor.log
-          cp $env:LocalAppData/Unity/Editor/upm.log unityLogs/UPM.log
-
-      - name: Upload Unity logs
-        uses: actions/upload-artifact@v1
-        with:
-          name: Unity logs
-          path: unityLogs
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
