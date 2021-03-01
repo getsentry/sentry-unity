@@ -102,7 +102,8 @@ public class BugFarm : MonoBehaviour
 
     public void CrashNative()
     {
-        crash();
+        // Doesn't work on CI
+        //crash();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
