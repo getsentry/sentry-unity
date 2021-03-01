@@ -17,7 +17,7 @@ jobs:
           submodules: recursive
 
       - name: Cache Unity installation
-        id: cacheUnity
+        id: cache-unity
         uses: actions/cache@v2
         with:
           path: C:\Program Files\Unity
@@ -25,5 +25,5 @@ jobs:
 
       - name: Install Unity
         run: choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
-        if: ${{ !steps.cacheUnity.cacheHit }}
+        if: ${{ !steps.cache-unity.cache-hit }}
 
