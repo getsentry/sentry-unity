@@ -16,14 +16,16 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Unity
-        run: choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
-
       - name: Cache Unity installation
+        id: cacheUnity
         uses: actions/cache@v2
         with:
           path: C:\Program Files\Unity
           key: ${{ env.UNITY_VERSION }}
+
+      - name: Install Unity
+        run: choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
+        if: ${{ !steps.cacheUnity.cacheHit }}
 
       - name: Add Unity on PATH
         run: echo "C:\Program Files\Unity\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
