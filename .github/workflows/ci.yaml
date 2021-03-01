@@ -20,7 +20,7 @@ jobs:
         id: cache-unity
         uses: actions/cache@v2
         with:
-          path: C:\Program Files\Unity
+          path: C:/Program Files/Unity
           key: ${{ env.UNITY_VERSION }}
 
       - name: Install Unity
