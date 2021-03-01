@@ -27,7 +27,6 @@ jobs:
 
       - name: Add Unity on PATH
         run: echo "C:\Program Files\Unity\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        shell: pwsh
 
       - name: Activate license
         run: Unity -quit -batchmode -logFile - -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} -serial ${{ secrets.UNITY_SERIAL }}
