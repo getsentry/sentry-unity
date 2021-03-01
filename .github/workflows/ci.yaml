@@ -25,4 +25,4 @@ jobs:
 
       - name: Install Unity
         run: choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
-        if: ${{ !steps.cache-unity.cache-hit }}
+        if: ${{ !steps.cache-unity.outputs.cache-hit }}
