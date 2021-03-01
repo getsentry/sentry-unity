@@ -24,8 +24,11 @@ jobs:
           key: ${{ env.UNITY_VERSION }}
 
       - name: Install Unity
-        run: choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
-        if: ${{ !steps.cache-unity.outputs.cache-hit }}
+        run: |
+          choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
+          choco install unity-win-il2cpp --version ${{ env.UNITY_VERSION }} --yes --no-progress
+          choco install unity-linux-il2cpp --version ${{ env.UNITY_VERSION }} --yes --no-progress
+        if: ${{ always() }}
 
       - name: Add Unity on PATH
         run: |
