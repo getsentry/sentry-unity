@@ -28,7 +28,7 @@ jobs:
           choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
           choco install unity-win-il2cpp --version ${{ env.UNITY_VERSION }} --yes --no-progress
           choco install unity-linux-il2cpp --version ${{ env.UNITY_VERSION }} --yes --no-progress
-        if: ${{ always() }}
+        if: ${{ !steps.cache-unity.outputs.cache-hit }}
 
       - name: Add Unity on PATH
         run: |
