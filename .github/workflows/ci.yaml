@@ -2,6 +2,9 @@ name: CI
 
 on: [push, pull_request]
 
+env:
+  UNITY_VERSION: 2020.2.6
+
 jobs:
 
   build:
@@ -14,20 +17,26 @@ jobs:
           submodules: recursive
 
       - name: Install Unity
-        run: choco install unity
+        run: choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
+
+      - name: Cache Unity installation
+        uses: actions/cache@v2
+        with:
+          path: "C:\Program Files\Unity"
+          key: ${{ env.UNITY_VERSION }}
 
       - name: Add Unity on PATH
         run: echo "C:\Program Files\Unity\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         shell: pwsh
 
       - name: Activate license
-        run: Unity -quit -batchmode -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} -serial ${{ secrets.UNITY_SERIAL }}
+        run: Unity -quit -batchmode -logFile - -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} -serial ${{ secrets.UNITY_SERIAL }}
 
       - name: Build project
-        run: Unity -quit -batchmode -projectPath "samples/unity-of-bugs" -buildWindows64Player "/buildOutput/build.exe"
+        run: Unity -quit -batchmode -logFile - -projectPath "samples/unity-of-bugs" -buildWindows64Player "buildOutput/build.exe"
 
       - name: Return license
-        run: Unity -quit -batchmode -returnlicense
+        run: Unity -quit -batchmode -logFile - -returnlicense
         if: ${{ always() }}
 
       - name: Upload artifacts
