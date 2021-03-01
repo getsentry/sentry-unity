@@ -16,7 +16,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Cache Unity installation
+      - name: Restore cached Unity installation
         id: cache-unity
         uses: actions/cache@v2
         with:
@@ -33,13 +33,13 @@ jobs:
           echo where unity
 
       - name: Activate license
-        run: unity -quit -batchmode -nographics -logFile - -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} -serial ${{ secrets.UNITY_SERIAL }}
+        run: unity -quit -batchmode -logFile - -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} -serial ${{ secrets.UNITY_SERIAL }}
 
       - name: Build project
-        run: unity -quit -batchmode -nographics -logFile - -projectPath "${{ env.GITHUB_WORKSPACE }}/samples/unity-of-bugs" -buildWindows64Player "${{ env.GITHUB_WORKSPACE }}/buildOutput/build.exe"
+        run: unity -quit -batchmode -logFile - -projectPath "${{ env.GITHUB_WORKSPACE }}/samples/unity-of-bugs" -buildWindows64Player "${{ env.GITHUB_WORKSPACE }}/buildOutput/build.exe"
 
       - name: Return license
-        run: unity -quit -batchmode -nographics -logFile - -returnlicense
+        run: unity -quit -batchmode -logFile - -returnlicense
         if: ${{ always() }}
 
       - name: Aggregate Unity logs
