@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 env:
   UNITY_VERSION: 2020.2.6
+  PROJECT_PATH: samples/unity-of-bugs
 
 jobs:
 
@@ -43,7 +44,7 @@ jobs:
 
       - name: Build project
         run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath "${{ env.GITHUB_WORKSPACE }}/samples/unity-of-bugs" -buildWindows64Player "${{ env.GITHUB_WORKSPACE }}/buildOutput/build.exe" | Out-Default
+          unity -quit -batchmode -nographics -logFile - -projectPath ${{ env.PROJECT_PATH }} -buildWindows64Player "${{ env.PROJECT_PATH }}/artifacts/build.exe" | Out-Default
 
       - name: Return license
         run: |
@@ -54,4 +55,4 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Build output
-          path: buildOutput
+          path: ${{ env.PROJECT_PATH }}/artifacts
