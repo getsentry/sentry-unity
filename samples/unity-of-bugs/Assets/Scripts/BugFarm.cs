@@ -113,8 +113,9 @@ public class BugFarm : MonoBehaviour
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void MethodB() => MethodA();
 
-    [DllImport("__Internal")]
-    private static extern void crash();
+    // Doesn't work on CI
+    //[DllImport("__Internal")]
+    //private static extern void crash();
 }
 
 public class CustomException : System.Exception
