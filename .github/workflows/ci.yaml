@@ -94,7 +94,7 @@ jobs:
       # This command doesn't work with the `-quit` option, unlike all the other ones
       - name: Run tests
         run: |
-          unity -batchmode -nographics -logFile - -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
+          unity -batchmode -logFile - -silent-crashes -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v1
