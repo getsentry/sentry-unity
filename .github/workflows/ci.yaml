@@ -51,7 +51,7 @@ jobs:
 
       - name: Run tests
         run: |
-          unity -quit -batchmode -nographics -logFile - -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} artifacts/test/results.xml | Out-Default
+          unity -quit -batchmode -nographics -logFile - -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v1
