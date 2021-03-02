@@ -44,14 +44,14 @@ jobs:
       # to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate license
         run: |
-          $isSuccessful = False
+          $isSuccessful = $False
           $attempts = 5
 
           while ($attempts -gt 0) {
             try {
               unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
 
-              $isSuccessful = True
+              $isSuccessful = $True
               break
             } catch {
               Start-Sleep -Seconds 10
