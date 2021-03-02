@@ -96,10 +96,9 @@ jobs:
         run: |
           try {
             unity -batchmode -nographics -logFile - -silent-crashes -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
-
-            exit 0
           } catch {
             Write-Output "::warn ::Unity test runner returned a non-zero exit code."
+            exit 0
           }
 
       - name: Upload test artifacts
