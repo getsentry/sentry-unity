@@ -71,10 +71,15 @@ jobs:
             exit 1
           }
 
-      # Open the project with Unity to generate required metadata
-      - name: Touch project
+      - name: Build project
         run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath ${{ env.PROJECT_PATH }}
+          unity -quit -batchmode -nographics -logFile - -projectPath ${{ env.PROJECT_PATH }} -buildWindows64Player artifacts/build/game.exe | Out-Default
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build output
+          path: ${{ env.PROJECT_PATH }}/artifacts/build
 
       # The working directory must be set because the project uses
       # relative paths for certain things.
@@ -85,16 +90,6 @@ jobs:
           dotnet nuget locals all --clear
           dotnet build "-p:UnityVersion=${{ env.UNITY_VERSION }}" "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed"
         working-directory: src/
-
-      - name: Build project
-        run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath ${{ env.PROJECT_PATH }} -buildWindows64Player artifacts/build/game.exe | Out-Default
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v1
-        with:
-          name: Build output
-          path: ${{ env.PROJECT_PATH }}/artifacts/build
 
       # This command doesn't work with the `-quit` option, unlike all the other ones
       - name: Run tests
