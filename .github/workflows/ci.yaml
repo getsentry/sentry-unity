@@ -58,11 +58,6 @@ jobs:
           name: Test results
           path: ${{ env.PROJECT_PATH }}/artifacts/test
 
-      - name: Return license
-        run: |
-          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
-        if: ${{ always() }}
-
       - name: Parse test results
         run: |
           $testRun = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/results.xml -XPath "/test-run" | Select-Object -Last 1
@@ -77,5 +72,10 @@ jobs:
 
           if ($testRun.Node.failed -gt 0) {
             Write-Output "::error ::Test run completed with $($testRun.Node.failed) failing test(s)."
+            exit 1
           }
 
+      - name: Return license
+        run: |
+          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
+        if: ${{ always() }}
