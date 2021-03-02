@@ -12,6 +12,8 @@ namespace Sentry.Unity.Editor
     // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L66-L187
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
+        private const string SentryOptionsAssetPath = "Assets/Resources/Sentry/SentryOptions.asset";
+
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
             if (!ShouldInit(basePath, out var result))
@@ -84,7 +86,7 @@ namespace Sentry.Unity.Editor
 
             var androidManifest = new AndroidManifest(manifestPath);
 
-            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryWindow.SentryOptionsAssetPath) is { } options))
+            if (!(AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryOptionsAssetPath) is { } options))
             {
                 Debug.LogError(
                     "SentryOptions asset not found. Sentry will be disabled! Did you configure it on Component/Sentry?");
