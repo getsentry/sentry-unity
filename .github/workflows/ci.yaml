@@ -22,13 +22,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:/Program Files/Unity
-          # To reset cache, change the the part after the dash
+          # Replace the trailing hash to reset cache,
+          # in case the instalation step has been changed.
           key: ${{ env.UNITY_VERSION }}-bf30a
 
       - name: Install Unity
-        # This package depends on the Unity package, so it
-        # will install both the editor and the target.
-        run: choco install unity-win-il2cpp --version ${{ env.UNITY_VERSION }} --yes --no-progress
+        run: |
+          choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
+          choco install unity-win-il2cpp --version ${{ env.UNITY_VERSION }} --yes --no-progress
         if: ${{ !steps.cache-unity.outputs.cache-hit }}
 
       - name: Add Unity on PATH
