@@ -32,8 +32,7 @@ jobs:
 
       - name: Add Unity on PATH
         run: |
-          echo "C:\Program Files\Unity\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          ls "C:\Program Files\Unity\Editor"
+          Write-Output "C:\Program Files\Unity\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Activate license
         run: |
@@ -63,4 +62,20 @@ jobs:
         run: |
           unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
         if: ${{ always() }}
+
+      - name: Parse test results
+        run: |
+          $testRun = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/results.xml -XPath "/test-run" | Select-Object -Last 1
+
+          Write-Output "Test run completed in $($testRun.Node.duration)."
+          Write-Output "-- Result: $($testRun.Node.result)"
+          Write-Output "-- Total: $($testRun.Node.total)"
+          Write-Output "-- Passed: $($testRun.Node.passed)"
+          Write-Output "-- Failed: $($testRun.Node.failed)"
+          Write-Output "-- Inconclusive: $($testRun.Node.inconclusive)"
+          Write-Output "-- Skipped: $($testRun.Node.skipped)"
+
+          if ($testRun.Node.failed -gt 0) {
+            Write-Output "::error ::Test run completed with $($testRun.Node.failed) failing test(s)."
+          }
 
