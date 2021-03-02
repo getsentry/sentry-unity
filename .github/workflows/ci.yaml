@@ -22,8 +22,6 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:/Program Files/Unity
-          # Replace the trailing hash to reset cache,
-          # in case the instalation step has been changed.
           key: ${{ env.UNITY_VERSION }}-bf30a
 
       - name: Install Unity
@@ -43,15 +41,26 @@ jobs:
 
       - name: Build project
         run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath ${{ env.PROJECT_PATH }} -buildWindows64Player artifacts/build.exe | Out-Default
+          unity -quit -batchmode -nographics -logFile - -projectPath ${{ env.PROJECT_PATH }} -buildWindows64Player artifacts/build/game.exe | Out-Default
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build output
+          path: ${{ env.PROJECT_PATH }}/artifacts/build
+
+      - name: Run tests
+        run: |
+          unity -quit -batchmode -nographics -logFile - -runTests -projectPath ${{ env.PROJECT_PATH }} artifacts/test/results.xml | Out-Default
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build output
+          path: ${{ env.PROJECT_PATH }}/artifacts/test
 
       - name: Return license
         run: |
           unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
         if: ${{ always() }}
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v1
-        with:
-          name: Build output
-          path: ${{ env.PROJECT_PATH }}/artifacts
