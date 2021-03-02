@@ -94,7 +94,11 @@ jobs:
       # This command doesn't work with the `-quit` option, unlike all the other ones
       - name: Run tests
         run: |
-          unity -batchmode -logFile - -silent-crashes -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
+          try {
+            unity -batchmode -nographics -logFile - -silent-crashes -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
+          } catch {
+            Write-Output "::warn ::Unity test runner returned a non-zero exit code."
+          }
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v1
