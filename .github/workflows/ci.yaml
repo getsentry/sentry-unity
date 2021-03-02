@@ -38,7 +38,13 @@ jobs:
       # available to other steps.
       - name: Add Unity on PATH
         run: |
-          Write-Output "C:\Program Files\Unity\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "C:/Program Files/Unity/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # .NET SDK is needed to build sentry-unity package
+      - name: Install .NET
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 5.0.x
 
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
@@ -74,6 +80,15 @@ jobs:
         with:
           name: Build output
           path: ${{ env.PROJECT_PATH }}/artifacts/build
+
+      # The working directory must be set because the project uses
+      # relative paths for certain things.
+      # Also, we need to provide the path to UnityEngine.dll because
+      # the test project references some Unity assemblies.
+      - name: Build tests
+        run: |
+          dotnet build /p:UnityVersion="${{ env.UNITY_VERSION }}" /p:UnityPath="C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll"
+        working-directory: src/
 
       # This command doesn't work with the `-quit` option, unlike all the other ones
       - name: Run tests
