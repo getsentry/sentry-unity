@@ -83,12 +83,12 @@ jobs:
 
       # The working directory must be set because the project uses
       # relative paths for certain things.
-      # Also, we need to provide the path to UnityEngine.dll because
-      # the test project references some Unity assemblies.
+      # Also, we need to provide the path to Unity because
+      # the test project references some of its assemblies.
       - name: Build package
         run: |
           dotnet nuget locals all --clear
-          dotnet build "-p:UnityVersion=${{ env.UNITY_VERSION }}" "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll"
+          dotnet build "-p:UnityVersion=${{ env.UNITY_VERSION }}" "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed"
         working-directory: src/
 
       # This command doesn't work with the `-quit` option, unlike all the other ones
