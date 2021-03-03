@@ -95,7 +95,6 @@ jobs:
       # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
       - name: Run tests
         run: |
-          cat ${{ env.PROJECT_PATH }}/Assets/Resources/Sentry/SentryOptions.asset
           unity -batchmode -nographics -logFile - -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
         continue-on-error: true
 
