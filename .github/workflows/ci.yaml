@@ -91,7 +91,8 @@ jobs:
           dotnet build "-p:UnityVersion=${{ env.UNITY_VERSION }}" "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed"
         working-directory: src/
 
-      # This command doesn't work with the `-quit` option, unlike all the other ones
+      # Don't fail the build here, we have a more detailed step later that provides more info.
+      # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
       - name: Run tests
         run: |
           try {
@@ -107,8 +108,8 @@ jobs:
           name: Test results
           path: ${{ env.PROJECT_PATH }}/artifacts/test
 
-      # Running tests does not print anything useful to the console, nor does it fail
-      # the build, so we need to parse the results to figure out how things went.
+      # Running tests does not print anything useful to the console
+      # so we need to parse the results to figure out how things went.
       - name: Parse test results
         run: |
           $testRun = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/results.xml -XPath "/test-run" | Select-Object -Last 1
