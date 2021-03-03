@@ -123,6 +123,13 @@ jobs:
           Write-Output "-- Skipped: $($testRun.Node.skipped)"
 
           if ($testRun.Node.failed -gt 0) {
+            $failedTests = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/results.xml -XPath "/test-run/test-suite"
+
+            foreach ($failedTest in $failedTests) {
+                Write-Output $failedTest.Node."#text"
+                Write-Output ""
+            }
+
             Write-Output "::error ::Test run completed with $($testRun.Node.failed) failing test(s)."
             exit 1
           }
