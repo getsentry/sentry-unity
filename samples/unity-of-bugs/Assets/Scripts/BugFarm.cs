@@ -102,8 +102,7 @@ public class BugFarm : MonoBehaviour
 
     public void CrashNative()
     {
-        // Doesn't work on CI
-        //crash();
+        crash();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -113,9 +112,8 @@ public class BugFarm : MonoBehaviour
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void MethodB() => MethodA();
 
-    // Doesn't work on CI
-    //[DllImport("__Internal")]
-    //private static extern void crash();
+    [DllImport("__Internal")]
+    private static extern void crash();
 }
 
 public class CustomException : System.Exception
