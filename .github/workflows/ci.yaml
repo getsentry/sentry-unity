@@ -35,8 +35,8 @@ jobs:
           Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile unity_install.exe
           Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -OutFile unity_target_install.exe
 
-          unity_install.exe /S | Out-Default
-          unity_target_install.exe /S | Out-Default
+          ./unity_install.exe /S | Out-Default
+          ./unity_target_install.exe /S | Out-Default
         if: ${{ !steps.cache-unity.outputs.cache-hit }}
 
       # Need to write to $GITHUB_PATH to make the environment variable
