@@ -117,6 +117,7 @@ jobs:
           Write-Output "-- Failed: $($testRun.Node.failed)"
           Write-Output "-- Inconclusive: $($testRun.Node.inconclusive)"
           Write-Output "-- Skipped: $($testRun.Node.skipped)"
+          Write-Output ""
 
           if ($testRun.Node.failed -gt 0) {
             $failedTests = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/results.xml -XPath "/test-run/test-suite"
