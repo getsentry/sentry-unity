@@ -102,7 +102,8 @@ public class BugFarm : MonoBehaviour
 
     public void CrashNative()
     {
-        crash();
+        // The method definition is missing
+        //crash();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -112,8 +113,9 @@ public class BugFarm : MonoBehaviour
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void MethodB() => MethodA();
 
-    [DllImport("__Internal")]
-    private static extern void crash();
+    // The method definition is missing
+    //[DllImport("__Internal")]
+    //private static extern void crash();
 }
 
 public class CustomException : System.Exception
