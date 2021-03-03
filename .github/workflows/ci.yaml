@@ -110,7 +110,7 @@ jobs:
         run: |
           $testRun = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/results.xml -XPath "/test-run" | Select-Object -Last 1
 
-          Write-Output "Test run completed in $($testRun.Node.duration)."
+          Write-Output "Test run completed in $($testRun.Node.duration) seconds."
           Write-Output "-- Result: $($testRun.Node.result)"
           Write-Output "-- Total: $($testRun.Node.total)"
           Write-Output "-- Passed: $($testRun.Node.passed)"
@@ -120,7 +120,7 @@ jobs:
           Write-Output ""
 
           if ($testRun.Node.failed -gt 0) {
-            $failedTests = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/results.xml -XPath "/test-run/test-suite"
+            $failedTests = $testRun.Node."test-suite"
 
             foreach ($failedTest in $failedTests) {
                 Write-Output $failedTest.Node."#text"
