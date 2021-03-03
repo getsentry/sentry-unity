@@ -32,7 +32,7 @@ jobs:
 
       - name: Install Unity
         run: |
-          Import-Module BitsTransfer
+          Import-Module BitsTransfer -SkipEditionCheck
 
           Start-BitsTransfer -Source ${{ env.UNITY_DOWNLOAD_URL }} -Destination temp/unity_install.exe
           Start-BitsTransfer -Source ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -Destination temp/unity_target_install.exe
