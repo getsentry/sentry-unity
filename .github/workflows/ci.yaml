@@ -49,6 +49,7 @@ jobs:
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate license
+        id: activate-license
         run: |
           $isSuccessful = $False
           $attempts = 5
@@ -135,4 +136,4 @@ jobs:
       - name: Return license
         run: |
           unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
-        if: ${{ always() }}
+        if: ${{ steps.activate-license.outcome == success }}
