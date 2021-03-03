@@ -3,7 +3,9 @@ name: CI
 on: [push, pull_request]
 
 env:
-  UNITY_VERSION: 2020.2.6
+  # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.16
+  UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/e05b6e02d63e/Windows64EditorInstaller/UnitySetup64.exe
+  UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/e05b6e02d63e/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.16f1.exe
   PROJECT_PATH: samples/unity-of-bugs
 
 jobs:
@@ -30,8 +32,13 @@ jobs:
 
       - name: Install Unity
         run: |
-          choco install unity --version ${{ env.UNITY_VERSION }} --yes --no-progress
-          choco install unity-win-il2cpp --version ${{ env.UNITY_VERSION }} --yes --no-progress
+          Import-Module BitsTransfer
+
+          Start-BitsTransfer -Source ${{ env.UNITY_DOWNLOAD_URL }} -Destination temp/unity_install.exe
+          Start-BitsTransfer -Source ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -Destination temp/unity_target_install.exe
+
+          temp/unity_install.exe /S | Out-Default
+          temp/unity_target_install.exe /S | Out-Default
         if: ${{ !steps.cache-unity.outputs.cache-hit }}
 
       # Need to write to $GITHUB_PATH to make the environment variable
@@ -51,25 +58,22 @@ jobs:
       - name: Activate license
         id: activate-license
         run: |
-          $isSuccessful = $False
           $attempts = 5
 
           while ($attempts -gt 0) {
-            try {
-              unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
+            unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
 
-              $isSuccessful = $True
+            if ($LASTEXITCODE -eq 0) {
               break
-            } catch {
-              Start-Sleep -Seconds 10
             }
 
+            Write-Host "License activation failed. Retrying..."
+            Start-Sleep -Seconds 15
             $attempts--
           }
 
-          if (-not $isSuccessful) {
+          if ($LASTEXITCODE -ne 0) {
             Write-Host "::error ::Failed to activate license after multiple attempts."
-            exit 1
           }
 
       - name: Build project
@@ -89,7 +93,7 @@ jobs:
       - name: Build package
         run: |
           dotnet nuget locals all --clear
-          dotnet build "-p:UnityVersion=${{ env.UNITY_VERSION }}" "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed"
+          dotnet build "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed"
         working-directory: src/
 
       # Don't fail the build here, we have a more detailed step later that provides more info.
@@ -97,7 +101,7 @@ jobs:
       - name: Run tests
         run: |
           unity -batchmode -nographics -logFile - -runTests -testPlatform StandaloneWindows64 -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/results.xml | Out-Default
-        continue-on-error: true
+          $LASTEXITCODE = 0
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v1
