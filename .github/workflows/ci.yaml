@@ -32,10 +32,8 @@ jobs:
 
       - name: Install Unity
         run: |
-          Import-Module BitsTransfer -SkipEditionCheck
-
-          Start-BitsTransfer -Source ${{ env.UNITY_DOWNLOAD_URL }} -Destination temp/unity_install.exe
-          Start-BitsTransfer -Source ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -Destination temp/unity_target_install.exe
+          Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile temp/unity_install.exe
+          Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -OutFile temp/unity_target_install.exe
 
           temp/unity_install.exe /S | Out-Default
           temp/unity_target_install.exe /S | Out-Default
