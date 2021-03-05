@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,13 +19,10 @@ namespace Sentry.Unity
     // https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
     public static class SentryInitialization
     {
-        private static long _timeLastError;
-
-        // TODO: Temp solution until a proper event bandwidth throttling is implemented
-        public static long MinTimeTicks = TimeSpan.FromMilliseconds(500).Ticks;
-
         // Temp event capture infra
         public static IEventCapture EventCapture = new EventCapture();
+
+        private static readonly IUnityLogMessageFilter _typeConditionFilter = new TypeConditionFilter();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -144,15 +140,12 @@ namespace Sentry.Unity
             // TODO: 'options' not used yet
             _ = options;
 
-            var time = DateTime.UtcNow.Ticks;
-
-            if (time - _timeLastError <= MinTimeTicks)
+            if (!_typeConditionFilter.Debounced(type, condition))
             {
                 return;
             }
 
-            _timeLastError = time;
-
+            // TODO: to check against 'MinBreadcrumbLevel'
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
             {
                 // TODO: MinBreadcrumbLevel
