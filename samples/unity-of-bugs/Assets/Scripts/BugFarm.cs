@@ -102,7 +102,9 @@ public class BugFarm : MonoBehaviour
 
     public void CrashNative()
     {
+#if UNITY_EDITOR
         crash();
+#endif
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -112,8 +114,10 @@ public class BugFarm : MonoBehaviour
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void MethodB() => MethodA();
 
+#if UNITY_EDITOR
     [DllImport("__Internal")]
     private static extern void crash();
+#endif
 }
 
 public class CustomException : System.Exception
