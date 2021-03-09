@@ -45,10 +45,6 @@ jobs:
         run: |
           Write-Output "C:/Program Files/Unity/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Return license (hack)
-        run: |
-          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
-
       # .NET SDK is needed to build sentry-unity package
       - name: Install .NET
         uses: actions/setup-dotnet@v1.7.2
