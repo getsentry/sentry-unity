@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Sentry.Unity.Tests.TestBehaviours;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -31,7 +32,7 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_ObjectTakenFromSceneWithExceptionLogicAndCalled_OneEventIsCreated()
+        public IEnumerator BugFarmScene_ThrowExceptionTwice_Outputs1Event()
         {
             yield return SetupSceneCoroutine("BugFarmScene");
 
@@ -41,14 +42,35 @@ namespace Sentry.Unity.Tests
              * We should NOT use 'GameObject.Find', it's quite expensive.
              * 'GameObject.FindWithTag' is better but it needs additional setup.
              */
-            var throwNullGameObject = GameObject.Find("ThrowNull");
+            var scriptsGameObject = GameObject.Find("Scripts");
 
             // act
-            throwNullGameObject.SendMessage(throwNullGameObject.name); // first exception
-            throwNullGameObject.SendMessage(throwNullGameObject.name); // second exception
+            const string throwNullName = "ThrowNull";
+            scriptsGameObject.SendMessage(throwNullName); // first exception
+            scriptsGameObject.SendMessage(throwNullName); // second exception
 
             // assert
             Assert.AreEqual(1, testEventCapture.Events.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator EmptyScene_LogErrorAndException_Outputs2Events()
+        {
+            yield return SetupSceneCoroutine("EmptyScene");
+
+            // arrange
+            var testEventCapture = CreateAndSetupSentryTestService();
+
+            // act
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+            testBehaviour.SendMessage(nameof(testBehaviour.DebugLogError));
+            testBehaviour.SendMessage(nameof(testBehaviour.TestException));
+            yield return new WaitForSeconds(1);
+            testBehaviour.SendMessage(nameof(testBehaviour.DebugLogError));
+            testBehaviour.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreEqual(2, testEventCapture.Events.Count);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)
@@ -69,15 +91,6 @@ namespace Sentry.Unity.Tests
             SentryInitialization.EventCapture = testEventCapture;
             return testEventCapture;
         }
-    }
-
-    /*
-     * Behaviour we have access to from Tests project.
-     */
-    internal sealed class TestMonoBehaviour : MonoBehaviour
-    {
-        public void TestException()
-            => throw new Exception("This is an exception");
     }
 
     /*

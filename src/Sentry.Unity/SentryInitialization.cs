@@ -110,7 +110,6 @@ namespace Sentry.Unity
             void OnApplicationOnLogMessageReceived(string condition, string stackTrace, LogType type) => OnLogMessageReceived(condition, stackTrace, type, options);
 
             Application.logMessageReceived += OnApplicationOnLogMessageReceived;
-
             Application.quitting += () =>
             {
                 // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
@@ -140,7 +139,7 @@ namespace Sentry.Unity
             // TODO: 'options' not used yet
             _ = options;
 
-            if (!_typeConditionFilter.Debounced(type, condition))
+            if (!_typeConditionFilter.DebouncedTime(type, condition))
             {
                 return;
             }
@@ -154,10 +153,14 @@ namespace Sentry.Unity
                 return;
             }
 
-            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
+            Debug.Log("<color=cyan>[Sentry] Sent</color>");
+
+            // TODO: don't send to Sentry until `DebounceTime` implementation is resolved.
+            // TODO: Tests will fail because of previous point! That's ok!
+            /*var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
             sentryEvent.SetTag("log.type", ToEventTagType(type));
             _ = EventCapture?.Capture(sentryEvent);
-            SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
+            SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));*/
         }
 
         private static string ToEventTagType(LogType type) =>
