@@ -48,7 +48,7 @@ namespace Sentry.Unity.Tests
             throwNullGameObject.SendMessage(throwNullGameObject.name); // second exception
 
             // assert
-            Assert.AreEqual(2, testEventCapture.Events.Count);
+            Assert.AreEqual(1, testEventCapture.Events.Count);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)
@@ -61,9 +61,6 @@ namespace Sentry.Unity.Tests
 
             // don't fail test if exception is thrown via 'SendMessage', we want to continue
             LogAssert.ignoreFailingMessages = true;
-
-            // TODO: Temp solution until a proper event bandwidth throttling is implemented
-            SentryInitialization.MinTimeTicks = 0;
         }
 
         private static TestEventCapture CreateAndSetupSentryTestService()

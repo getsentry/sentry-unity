@@ -1,11 +1,21 @@
 {
   "name": "io.sentry.unity.dev.runtimeTests",
   "references": [
-    "io.sentry.unity.dev.runtime"
-  ],
-  "optionalUnityReferences": [
-    "TestAssemblies"
+    "io.sentry.unity.dev.runtime",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
   ],
   "includePlatforms": [],
-  "excludePlatforms": []
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

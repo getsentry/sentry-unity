@@ -40,7 +40,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:Log(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Log`
 * `Debug.LogFormat("Log from {0}!", "Unity");`
@@ -49,7 +49,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogFormat(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Log`
 * `Debug.LogWarning("Warning from Unity!");`
@@ -58,7 +58,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogWarning(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Warning`
 * `Debug.LogWarningFormat("Warning from {0}!", "Unity");`
@@ -67,7 +67,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogWarningFormat(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Warning`
 * `Debug.LogError("Error from Unity!");`
@@ -76,7 +76,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogError(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Error`
 * `Debug.LogErrorFormat("Error from {0}!", "Unity");`
@@ -85,7 +85,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogErrorFormat(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Error`
 * `Debug.LogAssertion("Assertion from Unity!");`
@@ -94,7 +94,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogAssertion(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Assert`
 * `Debug.LogAssertionFormat("Assertion from {0}!", "Unity");`
@@ -103,7 +103,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogAssertionFormat(Object)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Assert`
 * `Debug.LogException(new Exception("Just an exception!"));`
@@ -112,7 +112,7 @@ There are examples of `Unity` calls and outputs:
   ```
   UnityEngine.Debug:LogException(Exception)
   BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:38)
-  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+  UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
   ```
   * `LogType` - `Exception`
 * `throw new Exception("Just an exception!");`
@@ -122,11 +122,11 @@ There are examples of `Unity` calls and outputs:
     BugFarm.ThrowExceptionAndCatch () (at Assets/Scripts/BugFarm.cs:42)
     UnityEngine.Events.InvokableCall.Invoke () (at <17ad9609ae064f2c9315931ff97adcf1>:0)
     UnityEngine.Events.UnityEvent.Invoke () (at <17ad9609ae064f2c9315931ff97adcf1>:0)
-    UnityEngine.UI.Button.Press () (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:68)
-    UnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:110)
-    UnityEngine.EventSystems.ExecuteEvents.Execute (UnityEngine.EventSystems.IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:50)
-    UnityEngine.EventSystems.ExecuteEvents.Execute[T] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.ExecuteEvents+EventFunction`1[T1] functor) (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:261)
-    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+    UnityEngine.UI.Button.Press () (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:68)
+    UnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:110)
+    UnityEngine.EventSystems.ExecuteEvents.Execute (UnityEngine.EventSystems.IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:50)
+    UnityEngine.EventSystems.ExecuteEvents.Execute[T] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.ExecuteEvents+EventFunction`1[T1] functor) (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:261)
+    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
     ```
   * `LogType` - `Exception`
 * `throw new CustomException("Custom bugs are here!");`
@@ -136,11 +136,11 @@ There are examples of `Unity` calls and outputs:
     BugFarm.ThrowExceptionAndCatch () (at Assets/Scripts/BugFarm.cs:43)
     UnityEngine.Events.InvokableCall.Invoke () (at <17ad9609ae064f2c9315931ff97adcf1>:0)
     UnityEngine.Events.UnityEvent.Invoke () (at <17ad9609ae064f2c9315931ff97adcf1>:0)
-    UnityEngine.UI.Button.Press () (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:68)
-    UnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:110)
-    UnityEngine.EventSystems.ExecuteEvents.Execute (UnityEngine.EventSystems.IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:50)
-    UnityEngine.EventSystems.ExecuteEvents.Execute[T] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.ExecuteEvents+EventFunction`1[T1] functor) (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:261)
-    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+    UnityEngine.UI.Button.Press () (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:68)
+    UnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:110)
+    UnityEngine.EventSystems.ExecuteEvents.Execute (UnityEngine.EventSystems.IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:50)
+    UnityEngine.EventSystems.ExecuteEvents.Execute[T] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.ExecuteEvents+EventFunction`1[T1] functor) (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:261)
+    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
     ```
   * `LogType` - `Exception`
   
@@ -167,7 +167,7 @@ There are examples of `Unity` calls and outputs:
     BugFarm.ThrowExceptionAndCatch () (at Assets/Scripts/BugFarm.cs:41)
     UnityEngine.Debug:LogException(Exception)
     BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:45)
-    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
     ```
   * `LogType` - `Exception`
 * try\catch `CustomException` with `Debug.LogException`
@@ -187,7 +187,7 @@ There are examples of `Unity` calls and outputs:
     BugFarm.ThrowExceptionAndCatch () (at Assets/Scripts/BugFarm.cs:41)
     UnityEngine.Debug:LogException(Exception)
     BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:45)
-    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
     ```
   * `LogType` - `Exception`
 * try\catch `Exception` with `Debug.Log`
@@ -207,7 +207,7 @@ There are examples of `Unity` calls and outputs:
     ```
     UnityEngine.Debug:Log(Object)
     BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:47)
-    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+    UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
     ```
   * `LogType` - `Log`
 * try\catch\finally `Exception`
@@ -232,7 +232,7 @@ There are examples of `Unity` calls and outputs:
       BugFarm.ThrowExceptionAndCatch () (at Assets/Scripts/BugFarm.cs:43)
       UnityEngine.Debug:LogException(Exception)
       BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:47)
-      UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+      UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
       ```
     * `LogType` - `Exception`
   * `finally`
@@ -241,6 +241,6 @@ There are examples of `Unity` calls and outputs:
       ```
       UnityEngine.Debug:Log(Object)
       BugFarm:ThrowExceptionAndCatch() (at Assets/Scripts/BugFarm.cs:51)
-      UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
+      UnityEngine.EventSystems.EventSystem:Update() (at C:/Program Files/Unity/Hub/Editor/2019.4.21f1/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)
       ```
     * `LogType` - `Log`
