@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
-    <UnityVersion>2019.4.18f1</UnityVersion>
+    <UnityVersion>2019.4.21f1</UnityVersion>
     <WarningsAsErrors>true</WarningsAsErrors>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <PackageFolderName>package-dev</PackageFolderName>
