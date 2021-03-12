@@ -138,4 +138,4 @@ jobs:
       - name: Return license
         run: |
           unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
-        if: ${{ steps.activate-license.outcome == 'success' }}
+        if: ${{ always() }}
