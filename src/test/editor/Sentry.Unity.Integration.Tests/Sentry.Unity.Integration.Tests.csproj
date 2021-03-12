@@ -2,5 +2,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>$(PackageRuntimeTestsPath)</OutDir>
+    <RootNamespace>Sentry.Unity.Tests</RootNamespace>
   </PropertyGroup>
 </Project>
