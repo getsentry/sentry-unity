@@ -63,14 +63,11 @@ namespace Sentry.Unity.Tests
 
             // act
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
-            testBehaviour.SendMessage(nameof(testBehaviour.DebugLogError));
-            testBehaviour.SendMessage(nameof(testBehaviour.TestException));
-            yield return new WaitForSeconds(1);
-            testBehaviour.SendMessage(nameof(testBehaviour.DebugLogError));
+            testBehaviour.SendMessage(nameof(testBehaviour.DebugLogError)); // Debug messages are in Breadcrumbs and not sent separately
             testBehaviour.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(2, testEventCapture.Events.Count);
+            Assert.AreEqual(1, testEventCapture.Events.Count);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)

@@ -11,7 +11,7 @@ namespace Sentry.Unity.Tests.TestBehaviours
         public void TestException()
             => throw new Exception("This is an exception");
 
-        public void DebugLogError(string? message = null)
-            => Debug.LogError(message ?? "error");
+        public void DebugLogError()
+            => Debug.LogError("error");
     }
 }

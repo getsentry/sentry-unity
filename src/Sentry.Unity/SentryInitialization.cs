@@ -22,7 +22,8 @@ namespace Sentry.Unity
         // Temp event capture infra
         public static IEventCapture EventCapture = new EventCapture();
 
-        private static readonly IUnityLogMessageFilter _typeConditionFilter = new TypeConditionFilter();
+        private static readonly ErrorTimeDebounce _errorTimeDebounce = new();
+        private static readonly LogTimeDebounce _logTimeDebounce = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -139,7 +140,13 @@ namespace Sentry.Unity
             // TODO: 'options' not used yet
             _ = options;
 
-            if (!_typeConditionFilter.DebouncedTime(type, condition))
+            var debounced = type switch
+            {
+                LogType.Error or LogType.Exception or LogType.Assert => _errorTimeDebounce.Debounced(),
+                LogType.Log => _logTimeDebounce.Debounced(),
+                _ => true
+            };
+            if (!debounced)
             {
                 return;
             }
@@ -153,14 +160,10 @@ namespace Sentry.Unity
                 return;
             }
 
-            Debug.Log("<color=cyan>[Sentry] Sent</color>");
-
-            // TODO: don't send to Sentry until `DebounceTime` implementation is resolved.
-            // TODO: Tests will fail because of previous point! That's ok!
-            /*var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
+            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
             sentryEvent.SetTag("log.type", ToEventTagType(type));
             _ = EventCapture?.Capture(sentryEvent);
-            SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));*/
+            SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
         }
 
         private static string ToEventTagType(LogType type) =>
