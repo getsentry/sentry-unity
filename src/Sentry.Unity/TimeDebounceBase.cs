@@ -35,6 +35,7 @@ namespace Sentry.Unity
     /// </summary>
     internal sealed class LogTimeDebounce : TimeDebounceBase
     {
+        // TODO: pass offset
         public LogTimeDebounce() => _debounceOffset = TimeSpan.FromSeconds(1);
     }
 
@@ -43,6 +44,7 @@ namespace Sentry.Unity
     /// </summary>
     internal sealed class ErrorTimeDebounce : TimeDebounceBase
     {
+        // TODO: pass offset
         public ErrorTimeDebounce() => _debounceOffset = TimeSpan.FromSeconds(1);
     }
 }
