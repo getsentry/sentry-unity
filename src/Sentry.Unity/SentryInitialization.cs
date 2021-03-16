@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,11 +20,10 @@ namespace Sentry.Unity
     // https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
     public static class SentryInitialization
     {
-        // Temp event capture infra
-        public static IEventCapture EventCapture = new EventCapture();
-
-        private static readonly ErrorTimeDebounce _errorTimeDebounce = new();
-        private static readonly LogTimeDebounce _logTimeDebounce = new();
+        // TODO: Stuff that should be passed with https://github.com/getsentry/sentry-unity/issues/66 implementation
+        internal static IEventCapture EventCapture = new EventCapture();
+        internal static ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
+        internal static LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -142,8 +142,8 @@ namespace Sentry.Unity
 
             var debounced = type switch
             {
-                LogType.Error or LogType.Exception or LogType.Assert => _errorTimeDebounce.Debounced(),
-                LogType.Log => _logTimeDebounce.Debounced(),
+                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
+                LogType.Log => LogTimeDebounce.Debounced(),
                 _ => true
             };
             if (!debounced)

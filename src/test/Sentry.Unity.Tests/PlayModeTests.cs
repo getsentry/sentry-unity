@@ -82,10 +82,20 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
+        /*
+         * TODO:
+         *
+         * The current Sentry initialization is static. It means that the initialization is done once for all the tests.
+         * That's why we need to alter some state on 'per test' level before running them in bulk.
+         *
+         * This problem will be mitigated as we implement this https://github.com/getsentry/sentry-unity/issues/66
+         */
         private static TestEventCapture CreateAndSetupSentryTestService()
         {
             var testEventCapture = new TestEventCapture();
             SentryInitialization.EventCapture = testEventCapture;
+            SentryInitialization.ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
+            SentryInitialization.LogTimeDebounce = new(TimeSpan.FromSeconds(1));
             return testEventCapture;
         }
     }
