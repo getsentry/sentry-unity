@@ -3,9 +3,9 @@ name: CI
 on: [push, pull_request]
 
 env:
-  # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.16
-  UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/e05b6e02d63e/Windows64EditorInstaller/UnitySetup64.exe
-  UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/e05b6e02d63e/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.16f1.exe
+  # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
+  UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
+  UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
   PROJECT_PATH: samples/unity-of-bugs
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:/Program Files/Unity
-          key: ${{ env.UNITY_VERSION }}-0001
+          key: ${{ env.UNITY_VERSION }}-0002
 
       - name: Install Unity
         run: |
