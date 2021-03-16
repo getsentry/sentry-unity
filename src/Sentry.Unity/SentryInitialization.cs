@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,10 +20,10 @@ namespace Sentry.Unity
     // https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
     public static class SentryInitialization
     {
-        // Temp event capture infra
-        public static IEventCapture EventCapture = new EventCapture();
-
-        private static readonly IUnityLogMessageFilter _typeConditionFilter = new TypeConditionFilter();
+        // TODO: Stuff that should be passed with https://github.com/getsentry/sentry-unity/issues/66 implementation
+        internal static IEventCapture EventCapture = new EventCapture();
+        internal static ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
+        internal static LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -110,7 +111,6 @@ namespace Sentry.Unity
             void OnApplicationOnLogMessageReceived(string condition, string stackTrace, LogType type) => OnLogMessageReceived(condition, stackTrace, type, options);
 
             Application.logMessageReceived += OnApplicationOnLogMessageReceived;
-
             Application.quitting += () =>
             {
                 // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
@@ -140,7 +140,13 @@ namespace Sentry.Unity
             // TODO: 'options' not used yet
             _ = options;
 
-            if (!_typeConditionFilter.Debounced(type, condition))
+            var debounced = type switch
+            {
+                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
+                LogType.Log => LogTimeDebounce.Debounced(),
+                _ => true
+            };
+            if (!debounced)
             {
                 return;
             }
