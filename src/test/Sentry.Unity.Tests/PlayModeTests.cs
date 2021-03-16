@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Sentry.Unity.Tests.TestBehaviours;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -31,7 +32,7 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_ObjectTakenFromSceneWithExceptionLogicAndCalled_OneEventIsCreated()
+        public IEnumerator BugFarmScene_ThrowExceptionTwice_Outputs1Event()
         {
             yield return SetupSceneCoroutine("BugFarmScene");
 
@@ -41,11 +42,29 @@ namespace Sentry.Unity.Tests
              * We should NOT use 'GameObject.Find', it's quite expensive.
              * 'GameObject.FindWithTag' is better but it needs additional setup.
              */
-            var throwNullGameObject = GameObject.Find("ThrowNull");
+            var scriptsGameObject = GameObject.Find("Scripts");
 
             // act
-            throwNullGameObject.SendMessage(throwNullGameObject.name); // first exception
-            throwNullGameObject.SendMessage(throwNullGameObject.name); // second exception
+            const string throwNullName = "ThrowNull";
+            scriptsGameObject.SendMessage(throwNullName); // first exception
+            scriptsGameObject.SendMessage(throwNullName); // second exception
+
+            // assert
+            Assert.AreEqual(1, testEventCapture.Events.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator EmptyScene_LogErrorAndException_Outputs2Events()
+        {
+            yield return SetupSceneCoroutine("EmptyScene");
+
+            // arrange
+            var testEventCapture = CreateAndSetupSentryTestService();
+
+            // act
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+            testBehaviour.SendMessage(nameof(testBehaviour.DebugLogError)); // Debug messages are in Breadcrumbs and not sent separately
+            testBehaviour.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
             Assert.AreEqual(1, testEventCapture.Events.Count);
@@ -63,21 +82,22 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
+        /*
+         * TODO:
+         *
+         * The current Sentry initialization is static. It means that the initialization is done once for all the tests.
+         * That's why we need to alter some state on 'per test' level before running them in bulk.
+         *
+         * This problem will be mitigated as we implement this https://github.com/getsentry/sentry-unity/issues/66
+         */
         private static TestEventCapture CreateAndSetupSentryTestService()
         {
             var testEventCapture = new TestEventCapture();
             SentryInitialization.EventCapture = testEventCapture;
+            SentryInitialization.ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
+            SentryInitialization.LogTimeDebounce = new(TimeSpan.FromSeconds(1));
             return testEventCapture;
         }
-    }
-
-    /*
-     * Behaviour we have access to from Tests project.
-     */
-    internal sealed class TestMonoBehaviour : MonoBehaviour
-    {
-        public void TestException()
-            => throw new Exception("This is an exception");
     }
 
     /*
