@@ -12,7 +12,7 @@
   ],
   "author": {
     "name": "Sentry Application Monitoring",
-    "email": "oss@sentry.io",
+    "email": "sdks@sentry.io",
     "url": "https://github.com/getsentry/sentry-unity"
   },
   "type": "library"
