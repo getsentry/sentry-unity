@@ -6,7 +6,6 @@ using Sentry.Unity.Tests.TestBehaviours;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using UnityEditor;
 
 namespace Sentry.Unity.Tests
 {
