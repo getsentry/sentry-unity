@@ -102,9 +102,8 @@ public class BugFarm : MonoBehaviour
 
     public void CrashNative()
     {
-#if UNITY_EDITOR
-        crash();
-#endif
+        // The method definition is missing
+        //crash();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -114,10 +113,9 @@ public class BugFarm : MonoBehaviour
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void MethodB() => MethodA();
 
-#if UNITY_EDITOR
-    [DllImport("__Internal")]
-    private static extern void crash();
-#endif
+    // The method definition is missing
+    //[DllImport("__Internal")]
+    //private static extern void crash();
 }
 
 public class CustomException : System.Exception
