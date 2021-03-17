@@ -24,6 +24,7 @@ namespace Sentry.Unity
         internal static IEventCapture EventCapture = new EventCapture();
         internal static ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal static LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
+        internal static WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
@@ -144,6 +145,7 @@ namespace Sentry.Unity
             {
                 LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
                 LogType.Log => LogTimeDebounce.Debounced(),
+                LogType.Warning => WarningTimeDebounce.Debounced(),
                 _ => true
             };
             if (!debounced)

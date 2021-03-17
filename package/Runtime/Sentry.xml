@@ -1390,6 +1390,11 @@
             Returns a dummy transaction.
             </summary>
         </member>
+        <member name="M:Sentry.Extensibility.DisabledHub.BindException(System.Exception,Sentry.ISpan)">
+            <summary>
+            No-Op.
+            </summary>
+        </member>
         <member name="M:Sentry.Extensibility.DisabledHub.GetSpan">
             <summary>
             Returns null.
@@ -1501,6 +1506,11 @@
             </summary>
         </member>
         <member name="M:Sentry.Extensibility.HubAdapter.StartTransaction(Sentry.ITransactionContext,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>
+            Forwards the call to <see cref="T:Sentry.SentrySdk"/>.
+            </summary>
+        </member>
+        <member name="M:Sentry.Extensibility.HubAdapter.BindException(System.Exception,Sentry.ISpan)">
             <summary>
             Forwards the call to <see cref="T:Sentry.SentrySdk"/>.
             </summary>
@@ -2172,6 +2182,14 @@
             Starts a transaction.
             </summary>
         </member>
+        <member name="M:Sentry.IHub.BindException(System.Exception,Sentry.ISpan)">
+            <summary>
+            Binds specified exception the specified span.
+            </summary>
+            <remarks>
+            This method is used internally and is not meant for public use.
+            </remarks>
+        </member>
         <member name="M:Sentry.IHub.GetSpan">
             <summary>
             Gets the currently ongoing (not finished) span or <code>null</code> if none available.
@@ -2446,11 +2464,6 @@
             </remarks>
             <param name="hub">The hub.</param>
         </member>
-        <member name="F:Sentry.Internal.MainSentryEventProcessor.UserIpServerInferred">
-            <summary>
-            A flag that tells the endpoint to figure out the user ip.
-            </summary>
-        </member>
         <member name="T:Sentry.Internal.MonoSentryStackTraceFactory">
             <summary>
             Mono factory to <see cref="T:Sentry.SentryStackTrace" /> from an <see cref="T:System.Exception" />.
@@ -2504,7 +2517,7 @@
             </summary>
             <remarks>
             Note: this method is NOT meant to be called from user code!
-            Instead, call <see cref="M:Sentry.ISpan.Finish"/> on the transaction.
+            Instead, call <see cref="M:Sentry.ISpan.Finish(Sentry.SpanStatus)"/> on the transaction.
             </remarks>
             <param name="transaction">The transaction.</param>
         </member>
@@ -2618,9 +2631,19 @@
             Starts a child span.
             </summary>
         </member>
-        <member name="M:Sentry.ISpan.Finish">
+        <member name="M:Sentry.ISpan.Finish(Sentry.SpanStatus)">
             <summary>
-            Finishes the span.
+            Finishes the span with the specified status.
+            </summary>
+        </member>
+        <member name="M:Sentry.ISpan.Finish(System.Exception,Sentry.SpanStatus)">
+            <summary>
+            Finishes the span with the specified exception and status.
+            </summary>
+        </member>
+        <member name="M:Sentry.ISpan.Finish(System.Exception)">
+            <summary>
+            Finishes the span with the specified exception and automatically inferred status.
             </summary>
         </member>
         <member name="M:Sentry.ISpan.GetTraceHeader">
@@ -2636,11 +2659,6 @@
         <member name="M:Sentry.SpanExtensions.StartChild(Sentry.ISpan,System.String,System.String)">
             <summary>
             Starts a child span.
-            </summary>
-        </member>
-        <member name="M:Sentry.SpanExtensions.Finish(Sentry.ISpan,Sentry.SpanStatus)">
-            <summary>
-            Finishes the span.
             </summary>
         </member>
         <member name="T:Sentry.ISpanContext">
@@ -3934,7 +3952,13 @@
         </member>
         <member name="P:Sentry.SentryOptions.MaxQueueItems">
             <summary>
-            The maximum number of events to keep while the worker attempts to send them
+            The maximum number of events to keep while the worker attempts to send them.
+            </summary>
+        </member>
+        <member name="P:Sentry.SentryOptions.MaxCacheItems">
+            <summary>
+            The maximum number of events to keep in cache.
+            This option only works if <see cref="P:Sentry.SentryOptions.CacheDirectoryPath"/> is configured as well.
             </summary>
         </member>
         <member name="P:Sentry.SentryOptions.ShutdownTimeout">
@@ -4119,6 +4143,12 @@
             </summary>
             <param name="options">The SentryOptions to remove the integration from.</param>
         </member>
+        <member name="M:Sentry.SentryOptionsExtensions.DisableTaskUnobservedTaskExceptionCapture(Sentry.SentryOptions)">
+            <summary>
+            Disables the capture of errors through <see cref="E:System.Threading.Tasks.TaskScheduler.UnobservedTaskException"/>.
+            </summary>
+            <param name="options">The SentryOptions to remove the integration from.</param>
+        </member>
         <member name="M:Sentry.SentryOptionsExtensions.DisableAppDomainProcessExitFlush(Sentry.SentryOptions)">
             <summary>
             Disables the capture of errors through <see cref="E:System.AppDomain.ProcessExit"/>
@@ -4225,12 +4255,12 @@
             <param name="options">The SentryOptions to hold the processor provider.</param>
             <param name="sentryStackTraceFactory">The stack trace factory.</param>
         </member>
-        <member name="M:Sentry.SentryOptionsExtensions.ApplyDefaultTags(Sentry.SentryOptions,Sentry.SentryEvent)">
+        <member name="M:Sentry.SentryOptionsExtensions.ApplyDefaultTags(Sentry.SentryOptions,Sentry.IHasTags)">
             <summary>
             Applies the default tags to an event without resetting existing tags.
             </summary>
             <param name="options">The options to read the default tags from.</param>
-            <param name="event">The event to apply the tags to.</param>
+            <param name="hasTags">The event to apply the tags to.</param>
         </member>
         <member name="T:Sentry.SentrySdk">
             <summary>
@@ -4462,6 +4492,14 @@
             Starts a transaction.
             </summary>
         </member>
+        <member name="M:Sentry.SentrySdk.BindException(System.Exception,Sentry.ISpan)">
+            <summary>
+            Binds specified exception the specified span.
+            </summary>
+            <remarks>
+            This method is used internally and is not meant for public use.
+            </remarks>
+        </member>
         <member name="M:Sentry.SentrySdk.GetSpan">
             <summary>
             Gets the last active span.
@@ -4613,7 +4651,7 @@
         <member name="M:Sentry.Span.SetExtra(System.String,System.Object)">
             <inheritdoc />
         </member>
-        <member name="M:Sentry.Span.#ctor(Sentry.Transaction,System.Nullable{Sentry.SpanId},System.String)">
+        <member name="M:Sentry.Span.#ctor(Sentry.IHub,Sentry.Transaction,System.Nullable{Sentry.SpanId},System.String)">
             <summary>
             Initializes an instance of <see cref="T:Sentry.Span"/>.
             </summary>
@@ -4621,7 +4659,13 @@
         <member name="M:Sentry.Span.StartChild(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Sentry.Span.Finish">
+        <member name="M:Sentry.Span.Finish(Sentry.SpanStatus)">
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Span.Finish(System.Exception,Sentry.SpanStatus)">
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Span.Finish(System.Exception)">
             <inheritdoc />
         </member>
         <member name="M:Sentry.Span.GetTraceHeader">
@@ -4771,7 +4815,7 @@
             <summary>Already exists (409).</summary>
         </member>
         <member name="F:Sentry.SpanStatus.FailedPrecondition">
-            <summary>Operation was rejected because the system is not in a state required for the operation's</summary>
+            <summary>Operation was rejected because the system is not in a state required for the operation.</summary>
         </member>
         <member name="F:Sentry.SpanStatus.Aborted">
             <summary>The operation was aborted, typically due to a concurrency issue.</summary>
@@ -4896,12 +4940,12 @@
         <member name="P:Sentry.Transaction.IsFinished">
             <inheritdoc />
         </member>
-        <member name="M:Sentry.Transaction.#ctor(Sentry.ISentryClient,System.String,System.String)">
+        <member name="M:Sentry.Transaction.#ctor(Sentry.IHub,System.String,System.String)">
             <summary>
             Initializes an instance of <see cref="T:Sentry.Transaction"/>.
             </summary>
         </member>
-        <member name="M:Sentry.Transaction.#ctor(Sentry.ISentryClient,Sentry.ITransactionContext)">
+        <member name="M:Sentry.Transaction.#ctor(Sentry.IHub,Sentry.ITransactionContext)">
             <summary>
             Initializes an instance of <see cref="T:Sentry.Transaction"/>.
             </summary>
@@ -4921,7 +4965,13 @@
         <member name="M:Sentry.Transaction.StartChild(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Sentry.Transaction.Finish">
+        <member name="M:Sentry.Transaction.Finish(Sentry.SpanStatus)">
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Transaction.Finish(System.Exception,Sentry.SpanStatus)">
+            <inheritdoc />
+        </member>
+        <member name="M:Sentry.Transaction.Finish(System.Exception)">
             <inheritdoc />
         </member>
         <member name="M:Sentry.Transaction.GetLastActiveSpan">
@@ -5467,6 +5517,27 @@
                 The return value condition.
                 If the method returns this value, the associated parameter will not be <see langword="null"/>.
             </param>
+        </member>
+        <member name="T:SentryExceptionExtensions">
+            <summary>
+            Extends Exception with formatted data that can be used by Sentry SDK.
+            </summary>
+        </member>
+        <member name="M:SentryExceptionExtensions.AddSentryTag(System.Exception,System.String,System.String)">
+            <summary>
+            Set a Sentry's Tag to the Exception.
+            </summary>
+            <param name="ex">The exception.</param>
+            <param name="name">The name of the tag.</param>
+            <param name="value">The value of the key.</param>
+        </member>
+        <member name="M:SentryExceptionExtensions.AddSentryContext(System.Exception,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>
+            Set a Sentry's structured Context to the Exception.
+            </summary>
+            <param name="ex">The exception.</param>
+            <param name="name">The context name.</param>
+            <param name="data">The context data.</param>
         </member>
     </members>
 </doc>
