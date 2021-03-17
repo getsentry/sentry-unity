@@ -15,5 +15,12 @@
     "email": "oss@sentry.io",
     "url": "https://github.com/getsentry/sentry-unity"
   },
-  "type": "library"
+  "type": "library",
+  "samples": [
+    {
+      "displayName": "unity-of-bugs",
+      "description": "Sentry SDK example project",
+      "path": "Samples~/unity-of-bugs"
+    }
+  ]
 }
