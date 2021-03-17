@@ -25,6 +25,8 @@ namespace Sentry.Unity
         internal static ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal static LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
 
+        internal static bool IsInit { get; private set; }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
@@ -55,7 +57,7 @@ namespace Sentry.Unity
             Init(options);
         }
 
-        private static void Init(UnitySentryOptions options)
+        internal static void Init(UnitySentryOptions options)
         {
             _ = SentrySdk.Init(o =>
             {
@@ -124,11 +126,13 @@ namespace Sentry.Unity
             IDictionary<string, string>? data = null;
             if (SceneManager.GetActiveScene().name is { } name)
             {
-                data = new Dictionary<string, string> {{"scene", name}};
+                data = new Dictionary<string, string> { { "scene", name } };
             }
             SentrySdk.AddBreadcrumb("BeforeSceneLoad", data: data);
 
             options.Logger?.Log(SentryLevel.Debug, "Complete Sentry SDK initialization.");
+
+            IsInit = true;
         }
 
         // Happens with Domain Reloading
