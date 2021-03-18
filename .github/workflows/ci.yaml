@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:/Program Files/Unity
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ UNITY_TARGET_DOWNLOAD_URL }}
+          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
 
       - name: Install Unity
         run: |
