@@ -169,21 +169,31 @@ jobs:
             exit 1
           }
 
+      # Professional licenses are per-seat so we should always try to return them
+      - name: Return Unity license
+        run: |
+          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
+        if: ${{ always() }}
+
+  pack:
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+        with:
+          submodules: recursive
+
       - name: Prepare Sentry package for release
         run: |
           New-Item "package-release" -ItemType Directory
           Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "Tests", "Tests.meta", "package.json" -Recurse
           Copy-Item "package/package.json" -Destination "package-release/package.json"
-          Copy-Item "samples/" -Destination "package-release/Samples~/" -Exclude "artifacts" -Recurse
+          Copy-Item "samples/" -Destination "package-release/Samples~/" -Recurse
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v1
         with:
           name: ${{ github.sha }}
           path: package-release
-
-      # Professional licenses are per-seat so we should always try to return them
-      - name: Return Unity license
-        run: |
-          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
-        if: ${{ always() }}
