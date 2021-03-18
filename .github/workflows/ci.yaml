@@ -6,7 +6,6 @@ env:
   # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
   UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
   UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
-  PROJECT_PATH: samples/unity-of-bugs
 
 jobs:
 
@@ -28,7 +27,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:/Program Files/Unity
-          key: ${{ env.UNITY_VERSION }}-0002
+          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ UNITY_TARGET_DOWNLOAD_URL }}
 
       - name: Install Unity
         run: |
@@ -76,13 +75,13 @@ jobs:
 
       - name: Build project
         run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath ${{ env.PROJECT_PATH }} -buildWindows64Player artifacts/build/game.exe | Out-Default
+          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player artifacts/build/game.exe | Out-Default
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v1
         with:
           name: Build output
-          path: ${{ env.PROJECT_PATH }}/artifacts/build
+          path: samples/unity-of-bugs/artifacts/build
 
       # The working directory must be set because the project uses
       # relative paths for certain things.
@@ -98,20 +97,20 @@ jobs:
       # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
       - name: Run Unity tests (playmode)
         run: |
-          unity -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/playmode/results.xml | Out-Default
+          unity -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath samples/unity-of-bugs -testResults artifacts/test/playmode/results.xml | Out-Default
           $LASTEXITCODE = 0
 
       - name: Upload test artifacts (playmode)
         uses: actions/upload-artifact@v1
         with:
           name: Test results (playmode)
-          path: ${{ env.PROJECT_PATH }}/artifacts/test/playmode
+          path: samples/unity-of-bugs/artifacts/test/playmode
 
       # Running tests does not print anything useful to the console
       # so we need to parse the results to figure out how things went.
       - name: Parse test results (playmode)
         run: |
-          $testRun = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/playmode/results.xml -XPath "/test-run" | Select-Object -Last 1
+          $testRun = Select-Xml -Path samples/unity-of-bugs/artifacts/test/playmode/results.xml -XPath "/test-run" | Select-Object -Last 1
 
           Write-Output "Playmode test run completed in $($testRun.Node.duration) seconds."
           Write-Output "-- Result: $($testRun.Node.result)"
@@ -136,20 +135,20 @@ jobs:
 
       - name: Run Unity tests (editmode)
         run: |
-          unity -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath ${{ env.PROJECT_PATH }} -testResults artifacts/test/editmode/results.xml | Out-Default
+          unity -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath samples/unity-of-bugs -testResults artifacts/test/editmode/results.xml | Out-Default
           $LASTEXITCODE = 0
 
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v1
         with:
           name: Test results (editmode)
-          path: ${{ env.PROJECT_PATH }}/artifacts/test/editmode
+          path: samples/unity-of-bugs/artifacts/test/editmode
 
       - name: Parse test results (editmode)
         run: |
-          $testRun = Select-Xml -Path ${{ env.PROJECT_PATH }}/artifacts/test/editmode/results.xml -XPath "/test-run" | Select-Object -Last 1
+          $testRun = Select-Xml -Path samples/unity-of-bugs/artifacts/test/editmode/results.xml -XPath "/test-run" | Select-Object -Last 1
 
-          Write-Output "Editor test run completed in $($testRun.Node.duration) seconds."
+          Write-Output "Editmode test run completed in $($testRun.Node.duration) seconds."
           Write-Output "-- Result: $($testRun.Node.result)"
           Write-Output "-- Total: $($testRun.Node.total)"
           Write-Output "-- Passed: $($testRun.Node.passed)"
@@ -169,6 +168,19 @@ jobs:
             Write-Output "::error ::Test run completed with $($testRun.Node.failed) failing test(s)."
             exit 1
           }
+
+      - name: Prepare Sentry package for release
+        run: |
+          New-Item "package-release" -ItemType Directory
+          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "Tests", "Tests.meta", "package.json" -Recurse
+          Copy-Item "package/package.json" -Destination "package-release/package.json"
+          Copy-Item "samples/" -Destination "package-release/Samples~/" -Recurse
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ github.sha }}
+          path: package-release
 
       # Professional licenses are per-seat so we should always try to return them
       - name: Return Unity license
