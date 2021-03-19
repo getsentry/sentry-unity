@@ -65,7 +65,7 @@ namespace Sentry.Unity.Editor
                 var emptyOptions = JsonSerializer.Serialize(UnitySentryOptionsDefault, _jsonOptions);
                 File.WriteAllText(SentryOptionsJsonPathFull, emptyOptions);
 
-                // Must be called, otherwise Unity won't be able to load it with the nex call. *.meta should be created for new file
+                // Must be called, otherwise Unity won't be able to load it with the next call. *.meta should be created for new file
                 AssetDatabase.Refresh();
             }
 
@@ -126,6 +126,8 @@ namespace Sentry.Unity.Editor
 
             var text = JsonSerializer.Serialize(Options, _jsonOptions);
             File.WriteAllText(SentryOptionsJsonPathFull, text);
+            // Write is not enough for Unity, must update its asset database.
+            AssetDatabase.Refresh();
 
             /*AssetDatabase.SaveAssets();
             // TODO: This should be gone
