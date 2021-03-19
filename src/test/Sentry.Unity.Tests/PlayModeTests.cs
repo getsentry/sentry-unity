@@ -11,7 +11,8 @@ namespace Sentry.Unity.Tests
 {
     public sealed class PlayModeTests
     {
-        [UnitySetUp]
+        // Disabled (json approach)
+        // [UnitySetUp]
         public IEnumerator InitializeOptions()
         {
             // Due to an issue, Sentry doesn't always load UnitySentryOptions, which

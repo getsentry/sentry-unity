@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,16 +16,27 @@ namespace Sentry.Unity.Editor
 
         protected string SentryOptionsAssetPath => $"Assets/Resources/Sentry/{SentryOptionsAssetName}.asset";
 
+        protected string SentryOptionsJsonPath => $"Sentry/SentryOptionsJson";
+
+        // Will be used only from Unity Editor
+        protected string SentryOptionsJsonPathFull => $"{Application.dataPath}/Resources/{SentryOptionsJsonPath}.json";
+
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
+
+        private readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         private void OnEnable()
         {
             SetTitle();
 
-            Options = AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryOptionsAssetPath);
-            if (Options is null)
+            Options = LoadSentryJsonConfig();
+
+            /*if (Options is null)
             {
                 Options = CreateInstance<UnitySentryOptions>();
                 if (!AssetDatabase.IsValidFolder("Assets/Resources"))
@@ -38,7 +50,28 @@ namespace Sentry.Unity.Editor
                 AssetDatabase.CreateAsset(Options, SentryOptionsAssetPath);
             }
 
-            EditorUtility.SetDirty(Options);
+            EditorUtility.SetDirty(Options);*/
+        }
+
+        private UnitySentryOptions LoadSentryJsonConfig()
+        {
+            if (!File.Exists(SentryOptionsJsonPathFull))
+            {
+                var UnitySentryOptionsDefault = new UnitySentryOptions
+                {
+                    Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
+                    Enabled = true
+                };
+                var emptyOptions = JsonSerializer.Serialize(UnitySentryOptionsDefault, _jsonOptions);
+                File.WriteAllText(SentryOptionsJsonPathFull, emptyOptions);
+
+                // Must be called, otherwise Unity won't be able to load it with the nex call. *.meta should be created for new file
+                AssetDatabase.Refresh();
+            }
+
+            // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
+            var sentryOptionsTextAsset = Resources.Load<TextAsset>(SentryOptionsJsonPath);
+            return JsonSerializer.Deserialize<UnitySentryOptions>(sentryOptionsTextAsset.text, _jsonOptions)!;
         }
 
         private void SetTitle()
@@ -90,9 +123,13 @@ namespace Sentry.Unity.Editor
         public void OnLostFocus()
         {
             Validate();
-            AssetDatabase.SaveAssets();
+
+            var text = JsonSerializer.Serialize(Options, _jsonOptions);
+            File.WriteAllText(SentryOptionsJsonPathFull, text);
+
+            /*AssetDatabase.SaveAssets();
             // TODO: This should be gone
-            AssetDatabase.Refresh();
+            AssetDatabase.Refresh();*/
         }
 
         // ReSharper disable once UnusedMember.Local

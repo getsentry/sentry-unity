@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
@@ -26,15 +28,24 @@ namespace Sentry.Unity
         internal static LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
 
         internal static bool IsInit { get; private set; }
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        private static string SentryOptionsJsonPath => $"Sentry/SentryOptionsJson";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            if (!(Resources.Load("Sentry/SentryOptions") is UnitySentryOptions options))
+            var sentryOptionsTextAsset = Resources.Load<TextAsset>(SentryOptionsJsonPath);
+            var options = JsonSerializer.Deserialize<UnitySentryOptions>(sentryOptionsTextAsset.text, _jsonOptions)!;
+
+            /*if (!(Resources.Load("Sentry/SentryOptions") is UnitySentryOptions options))
             {
                 Debug.LogWarning("Sentry Options asset not found. Did you configure it on Component/Sentry?");
                 return;
-            }
+            }*/
 
             if (!options.Enabled)
             {

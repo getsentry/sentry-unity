@@ -28,6 +28,8 @@
         <type fullname="System.ComponentModel.UInt32Converter" preserve="all"/>
         <type fullname="System.ComponentModel.UInt64Converter" preserve="all"/>
     </assembly>
+    
+    <assembly fullname="System.Text.Json" preserve="all"/>
 
     <!--https://docs.microsoft.com/en-us/dotnet/api/system.linq.expressions.lambdaexpression.name?view=netframework-4.7.2&viewFallbackFrom=netframework-2.0-->
     <assembly fullname="System.Core">
