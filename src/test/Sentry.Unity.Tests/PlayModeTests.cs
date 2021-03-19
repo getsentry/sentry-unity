@@ -11,8 +11,7 @@ namespace Sentry.Unity.Tests
 {
     public sealed class PlayModeTests
     {
-        // Disabled (json approach)
-        // [UnitySetUp]
+        [UnitySetUp]
         public IEnumerator InitializeOptions()
         {
             // Due to an issue, Sentry doesn't always load UnitySentryOptions, which
@@ -24,7 +23,7 @@ namespace Sentry.Unity.Tests
             // and we should find a proper way to solve this.
             if (!SentryInitialization.IsInit)
             {
-                var options = ScriptableObject.CreateInstance<UnitySentryOptions>();
+                var options = new UnitySentryOptions();
                 options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
                 options.Enabled = true;
 
