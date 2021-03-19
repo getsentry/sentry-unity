@@ -39,8 +39,8 @@ namespace Sentry.Unity
         public static void Init()
         {
             var sentryOptionsTextAsset = Resources.Load<TextAsset>(SentryOptionsJsonPath);
-            var options = JsonSerializer.Deserialize<UnitySentryOptions>(sentryOptionsTextAsset.text, _jsonOptions)!;
-
+            var optionsJson = JsonSerializer.Deserialize<UnitySentryOptionsJson>(sentryOptionsTextAsset.text, _jsonOptions)!;
+            var options = optionsJson.ToUnitySentryOptions();
             /*if (!(Resources.Load("Sentry/SentryOptions") is UnitySentryOptions options))
             {
                 Debug.LogWarning("Sentry Options asset not found. Did you configure it on Component/Sentry?");

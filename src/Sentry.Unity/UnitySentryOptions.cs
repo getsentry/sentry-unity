@@ -12,6 +12,18 @@ namespace Sentry.Unity
         Fastest = 2,
         NoCompression = 3
     }
+
+    // We need to think carefully about what types should be placed here, because of ILL2CPP stripping
+    public sealed class UnitySentryOptionsJson
+    {
+        public bool Enabled { get; set; }
+
+        public string Dsn { get; set; }
+
+        public UnitySentryOptions ToUnitySentryOptions()
+            => new () { Enabled = Enabled, Dsn = Dsn };
+    }
+
     [Serializable]
     public sealed class UnitySentryOptions : ScriptableObject
     {

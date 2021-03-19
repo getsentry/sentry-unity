@@ -9,8 +9,7 @@ namespace Sentry.Unity.Editor.Tests
 {
     public sealed class EditorModeTests
     {
-        // Disabled (json approach)
-        // [UnitySetUp]
+        [UnitySetUp]
         public IEnumerator InitializeOptions()
         {
             // Due to an issue, Sentry doesn't always load UnitySentryOptions, which

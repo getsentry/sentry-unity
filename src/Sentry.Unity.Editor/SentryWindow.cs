@@ -34,7 +34,7 @@ namespace Sentry.Unity.Editor
         {
             SetTitle();
 
-            Options = LoadSentryJsonConfig();
+            Options = LoadSentryJsonConfig().ToUnitySentryOptions();
 
             /*if (Options is null)
             {
@@ -53,16 +53,16 @@ namespace Sentry.Unity.Editor
             EditorUtility.SetDirty(Options);*/
         }
 
-        private UnitySentryOptions LoadSentryJsonConfig()
+        private UnitySentryOptionsJson LoadSentryJsonConfig()
         {
             if (!File.Exists(SentryOptionsJsonPathFull))
             {
-                var UnitySentryOptionsDefault = new UnitySentryOptions
+                var unitySentryOptionsJson = new UnitySentryOptionsJson
                 {
                     Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
                     Enabled = true
                 };
-                var emptyOptions = JsonSerializer.Serialize(UnitySentryOptionsDefault, _jsonOptions);
+                var emptyOptions = JsonSerializer.Serialize(unitySentryOptionsJson, _jsonOptions);
                 File.WriteAllText(SentryOptionsJsonPathFull, emptyOptions);
 
                 // Must be called, otherwise Unity won't be able to load it with the next call. *.meta should be created for new file
@@ -71,7 +71,7 @@ namespace Sentry.Unity.Editor
 
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>(SentryOptionsJsonPath);
-            return JsonSerializer.Deserialize<UnitySentryOptions>(sentryOptionsTextAsset.text, _jsonOptions)!;
+            return JsonSerializer.Deserialize<UnitySentryOptionsJson>(sentryOptionsTextAsset.text, _jsonOptions)!;
         }
 
         private void SetTitle()
@@ -124,6 +124,7 @@ namespace Sentry.Unity.Editor
         {
             Validate();
 
+            // Saving `UnitySentryOptions` and not `UnitySentryOptionsJson` for OnGUI backward-compat
             var text = JsonSerializer.Serialize(Options, _jsonOptions);
             File.WriteAllText(SentryOptionsJsonPathFull, text);
             // Write is not enough for Unity, must update its asset database.
