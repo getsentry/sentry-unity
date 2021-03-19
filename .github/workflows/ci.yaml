@@ -75,13 +75,13 @@ jobs:
 
       - name: Build project
         run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player artifacts/build/game.exe | Out-Default
+          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v1
         with:
           name: Build output
-          path: samples/unity-of-bugs/artifacts/build
+          path: artifacts/build
 
       # The working directory must be set because the project uses
       # relative paths for certain things.
@@ -97,20 +97,20 @@ jobs:
       # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
       - name: Run Unity tests (playmode)
         run: |
-          unity -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath samples/unity-of-bugs -testResults artifacts/test/playmode/results.xml | Out-Default
+          unity -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath samples/unity-of-bugs -testResults ../../artifacts/test/playmode/results.xml | Out-Default
           $LASTEXITCODE = 0
 
       - name: Upload test artifacts (playmode)
         uses: actions/upload-artifact@v1
         with:
           name: Test results (playmode)
-          path: samples/unity-of-bugs/artifacts/test/playmode
+          path: artifacts/test/playmode
 
       # Running tests does not print anything useful to the console
       # so we need to parse the results to figure out how things went.
       - name: Parse test results (playmode)
         run: |
-          $testRun = Select-Xml -Path samples/unity-of-bugs/artifacts/test/playmode/results.xml -XPath "/test-run" | Select-Object -Last 1
+          $testRun = Select-Xml -Path artifacts/test/playmode/results.xml -XPath "/test-run" | Select-Object -Last 1
 
           Write-Output "Playmode test run completed in $($testRun.Node.duration) seconds."
           Write-Output "-- Result: $($testRun.Node.result)"
@@ -135,18 +135,18 @@ jobs:
 
       - name: Run Unity tests (editmode)
         run: |
-          unity -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath samples/unity-of-bugs -testResults artifacts/test/editmode/results.xml | Out-Default
+          unity -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath samples/unity-of-bugs -testResults ../../artifacts/test/editmode/results.xml | Out-Default
           $LASTEXITCODE = 0
 
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v1
         with:
           name: Test results (editmode)
-          path: samples/unity-of-bugs/artifacts/test/editmode
+          path: artifacts/test/editmode
 
       - name: Parse test results (editmode)
         run: |
-          $testRun = Select-Xml -Path samples/unity-of-bugs/artifacts/test/editmode/results.xml -XPath "/test-run" | Select-Object -Last 1
+          $testRun = Select-Xml -Path artifacts/test/editmode/results.xml -XPath "/test-run" | Select-Object -Last 1
 
           Write-Output "Editmode test run completed in $($testRun.Node.duration) seconds."
           Write-Output "-- Result: $($testRun.Node.result)"
@@ -169,22 +169,6 @@ jobs:
             exit 1
           }
 
-      # Professional licenses are per-seat so we should always try to return them
-      - name: Return Unity license
-        run: |
-          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
-        if: ${{ always() }}
-
-  pack:
-    needs: build
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.3
-        with:
-          submodules: recursive
-
       - name: Prepare Sentry package for release
         run: |
           New-Item "package-release" -ItemType Directory
@@ -197,3 +181,9 @@ jobs:
         with:
           name: ${{ github.sha }}
           path: package-release
+
+      # Professional licenses are per-seat so we should always try to return them
+      - name: Return Unity license
+        run: |
+          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
+        if: ${{ always() }}
