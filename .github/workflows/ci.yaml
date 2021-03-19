@@ -172,8 +172,10 @@ jobs:
       - name: Prepare Sentry package for release
         run: |
           New-Item "package-release" -ItemType Directory
-          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "Tests", "Tests.meta", "package.json" -Recurse
+          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta" -Recurse
           Copy-Item "package/package.json" -Destination "package-release/package.json"
+          Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
+          Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v1
