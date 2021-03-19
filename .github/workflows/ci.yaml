@@ -174,7 +174,6 @@ jobs:
           New-Item "package-release" -ItemType Directory
           Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "Tests", "Tests.meta", "package.json" -Recurse
           Copy-Item "package/package.json" -Destination "package-release/package.json"
-          Copy-Item "samples/" -Destination "package-release/Samples~/" -Recurse
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v1
