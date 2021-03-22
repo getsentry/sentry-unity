@@ -62,16 +62,16 @@ namespace Sentry.Unity.Editor
                     Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
                     Enabled = true
                 };
+
                 var emptyOptions = JsonSerializer.Serialize(unitySentryOptionsJson, _jsonOptions);
                 File.WriteAllText(SentryOptionsJsonPathFull, emptyOptions);
 
-                // Must be called, otherwise Unity won't be able to load it with the next call. *.meta should be created for new file
-                AssetDatabase.Refresh();
+                return unitySentryOptionsJson;
             }
 
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>(SentryOptionsJsonPath);
-            return JsonSerializer.Deserialize<UnitySentryOptionsJson>(sentryOptionsTextAsset.text, _jsonOptions)!;
+            return JsonSerializer.Deserialize<UnitySentryOptionsJson>(sentryOptionsTextAsset.bytes, _jsonOptions)!;
         }
 
         private void SetTitle()
