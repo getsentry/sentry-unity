@@ -28,24 +28,13 @@ namespace Sentry.Unity
         internal static LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
 
         internal static bool IsInit { get; private set; }
-        private static readonly JsonSerializerOptions _jsonOptions = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
 
-        private static string SentryOptionsJsonPath => $"Sentry/SentryOptionsJson";
+        private static string SentryOptionsPath => $"Sentry/SentryOptionsJson";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            var sentryOptionsTextAsset = Resources.Load<TextAsset>(SentryOptionsJsonPath);
-            var optionsJson = JsonSerializer.Deserialize<UnitySentryOptionsJson>(sentryOptionsTextAsset.text, _jsonOptions)!;
-            var options = optionsJson.ToUnitySentryOptions();
-            /*if (!(Resources.Load("Sentry/SentryOptions") is UnitySentryOptions options))
-            {
-                Debug.LogWarning("Sentry Options asset not found. Did you configure it on Component/Sentry?");
-                return;
-            }*/
+            var options = UnitySentryOptions.LoadFromUnity(SentryOptionsPath).TryAttachLogger();
 
             if (!options.Enabled)
             {
