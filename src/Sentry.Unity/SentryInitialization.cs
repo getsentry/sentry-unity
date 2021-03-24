@@ -29,12 +29,10 @@ namespace Sentry.Unity
 
         internal static bool IsInit { get; private set; }
 
-        private static string SentryOptionsPath => $"Sentry/SentryOptionsJson";
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            var options = UnitySentryOptions.LoadFromUnity(SentryOptionsPath).TryAttachLogger();
+            var options = UnitySentryOptions.LoadFromUnity();
 
             if (!options.Enabled)
             {

@@ -11,14 +11,11 @@ namespace Sentry.Unity.Editor
         public static SentryWindow OpenSentryWindow()
             => (SentryWindow)GetWindow(typeof(SentryWindow));
 
-        protected virtual string SentryOptionsAssetName { get; } = "SentryOptions";
-
-        protected string SentryOptionsAssetPath => $"Assets/Resources/Sentry/{SentryOptionsAssetName}.asset";
-
-        protected string SentryOptionsPath => $"Sentry/SentryOptionsJson";
+        protected virtual string SentryOptionsAssetName { get; } = UnitySentryOptions.ConfigName;
 
         // Will be used only from Unity Editor
-        protected string SentryOptionsPathFull => $"{Application.dataPath}/Resources/{SentryOptionsPath}.json";
+        protected string SentryOptionsAssetPath
+            => $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{SentryOptionsAssetName}.json";
 
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
@@ -27,21 +24,22 @@ namespace Sentry.Unity.Editor
         private void OnEnable()
         {
             SetTitle();
+            TryCreateSentryFolder();
 
             Options = LoadUnitySentryOptions();
         }
 
         private UnitySentryOptions LoadUnitySentryOptions()
         {
-            if (File.Exists(SentryOptionsPathFull))
+            if (File.Exists(SentryOptionsAssetPath))
             {
-                return UnitySentryOptions.LoadFromUnity(SentryOptionsPath).TryAttachLogger();
+                return UnitySentryOptions.LoadFromUnity();
             }
 
             var unitySentryOptions = new UnitySentryOptions { Enabled = true };
             unitySentryOptions
                 .TryAttachLogger()
-                .SaveToUnity(SentryOptionsPathFull);
+                .SaveToUnity(SentryOptionsAssetPath);
 
             return unitySentryOptions;
         }
@@ -95,8 +93,9 @@ namespace Sentry.Unity.Editor
         public void OnLostFocus()
         {
             Validate();
+            TryCreateSentryFolder();
 
-            Options.SaveToUnity(SentryOptionsPathFull);
+            Options.SaveToUnity(SentryOptionsAssetPath);
             AssetDatabase.Refresh();
         }
 
@@ -159,6 +158,22 @@ namespace Sentry.Unity.Editor
             // organization = EditorGUILayout.TextField("Organization", organization);
             // project = EditorGUILayout.TextField("Project", project);
             // EditorGUILayout.EndToggleGroup();
+        }
+
+        /// <summary>
+        /// Creates Sentry folder for storing its configs - Assets/Resources/Sentry
+        /// </summary>
+        private static void TryCreateSentryFolder()
+        {
+            // TODO: revise, 'Resources' is a special Unity folder which is created by default. Not sure this check is needed.
+            if (!AssetDatabase.IsValidFolder("Assets/Resources"))
+            {
+                AssetDatabase.CreateFolder("Assets", "Resources");
+            }
+            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{UnitySentryOptions.ConfigRootFolder}"))
+            {
+                AssetDatabase.CreateFolder("Assets/Resources", UnitySentryOptions.ConfigRootFolder);
+            }
         }
     }
 

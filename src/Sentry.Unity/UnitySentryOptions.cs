@@ -17,6 +17,12 @@ namespace Sentry.Unity
     [Serializable]
     public sealed class UnitySentryOptions
     {
+        /// <summary>
+        /// Relative to Assets/Resources
+        /// </summary>
+        public const string ConfigRootFolder = "Sentry";
+        public const string ConfigName = "SentryOptions";
+
         public bool Enabled { get; set; } = true;
         public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
         public string? Dsn { get; set; }
@@ -93,12 +99,12 @@ namespace Sentry.Unity
                 Environment = json.GetPropertyOrNull("environment")?.GetString()
             };
 
-        public static UnitySentryOptions LoadFromUnity(string path)
+        public static UnitySentryOptions LoadFromUnity()
         {
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
-            var sentryOptionsTextAsset = Resources.Load<TextAsset>(path);
+            var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
             using var jsonDocument = JsonDocument.Parse(sentryOptionsTextAsset.bytes);
-            return FromJson(jsonDocument.RootElement);
+            return FromJson(jsonDocument.RootElement).TryAttachLogger();
         }
 
         public void SaveToUnity(string path)
