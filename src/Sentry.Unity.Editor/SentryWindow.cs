@@ -24,7 +24,9 @@ namespace Sentry.Unity.Editor
         private void OnEnable()
         {
             SetTitle();
+
             TryCreateSentryFolder();
+            TryCopyLinkXml();
 
             Options = LoadUnitySentryOptions();
         }
@@ -93,7 +95,6 @@ namespace Sentry.Unity.Editor
         public void OnLostFocus()
         {
             Validate();
-            TryCreateSentryFolder();
 
             Options.SaveToUnity(SentryOptionsAssetPath);
             AssetDatabase.Refresh();
@@ -173,6 +174,64 @@ namespace Sentry.Unity.Editor
             if (!AssetDatabase.IsValidFolder($"Assets/Resources/{UnitySentryOptions.ConfigRootFolder}"))
             {
                 AssetDatabase.CreateFolder("Assets/Resources", UnitySentryOptions.ConfigRootFolder);
+            }
+        }
+
+        /// <summary>
+        /// Find and copy 'link.xml' into current Unity project for IL2CPP builds
+        /// </summary>
+        private static void TryCopyLinkXml()
+        {
+            const string linkXmlFileName = "link.xml";
+
+            var linkXmlPath = $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{linkXmlFileName}";
+            if (File.Exists(linkXmlPath))
+            {
+                // TODO: should we log here?
+                return;
+            }
+
+            var linkPath = GetLinkXmlPath(linkXmlFileName);
+            if (linkPath == null)
+            {
+                // TODO: should we log here?
+                return;
+            }
+
+            var linkXmlAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(linkPath);
+            File.WriteAllBytes(linkXmlPath, linkXmlAsset.bytes);
+        }
+
+        /// <summary>
+        /// Get Unity path to 'link.xml' file from `Packages` folder
+        /// </summary>
+        private static string? GetLinkXmlPath(string linkXmlFileName)
+        {
+            var assetIds = AssetDatabase.FindAssets("io.sentry.unity", new [] { "Packages" });
+            for (var i = 0; i < assetIds.Length; i++)
+            {
+                var assetName = AssetDatabase.GUIDToAssetPath(assetIds[i]);
+                if (assetName.Contains("Runtime"))
+                {
+                    var linkFolderPath = ExtractLinkFolderPathFromEnd(assetName);
+                    return $"{linkFolderPath}/{linkXmlFileName}";
+                }
+            }
+
+            return null;
+
+            static string ExtractLinkFolderPathFromEnd(string value)
+            {
+                var endIndex = 0;
+                for (var i = value.Length - 1; i > 0; i--)
+                {
+                    if (value[i] == '/')
+                    {
+                        endIndex = i;
+                        break;
+                    }
+                }
+                return value.Substring(0, endIndex);
             }
         }
     }
