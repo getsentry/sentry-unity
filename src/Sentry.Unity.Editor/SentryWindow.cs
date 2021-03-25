@@ -187,14 +187,15 @@ namespace Sentry.Unity.Editor
             var linkXmlPath = $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{linkXmlFileName}";
             if (File.Exists(linkXmlPath))
             {
-                // TODO: should we log here?
                 return;
             }
+
+            Debug.Log($"'{linkXmlFileName}' is not found. Creating one!");
 
             var linkPath = GetLinkXmlPath(linkXmlFileName);
             if (linkPath == null)
             {
-                // TODO: should we log here?
+                Debug.LogWarning($"Couldn't locate '{linkXmlFileName}' in 'Packages'.");
                 return;
             }
 
