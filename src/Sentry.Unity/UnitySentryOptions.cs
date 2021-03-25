@@ -14,7 +14,6 @@ namespace Sentry.Unity
         NoCompression = 3
     }
 
-    [Serializable]
     public sealed class UnitySentryOptions
     {
         /// <summary>

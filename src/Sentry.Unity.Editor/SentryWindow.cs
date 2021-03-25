@@ -213,26 +213,12 @@ namespace Sentry.Unity.Editor
                 var assetName = AssetDatabase.GUIDToAssetPath(assetIds[i]);
                 if (assetName.Contains("Runtime"))
                 {
-                    var linkFolderPath = ExtractLinkFolderPathFromEnd(assetName);
-                    return $"{linkFolderPath}/{linkXmlFileName}";
+                    var linkFolderPath = Path.GetDirectoryName(assetName)!;
+                    return Path.Combine(linkFolderPath, linkXmlFileName);
                 }
             }
 
             return null;
-
-            static string ExtractLinkFolderPathFromEnd(string value)
-            {
-                var endIndex = 0;
-                for (var i = value.Length - 1; i > 0; i--)
-                {
-                    if (value[i] == '/')
-                    {
-                        endIndex = i;
-                        break;
-                    }
-                }
-                return value.Substring(0, endIndex);
-            }
         }
     }
 
