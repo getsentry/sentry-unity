@@ -63,8 +63,8 @@ namespace Sentry.Unity
 
             writer.WriteBoolean("debug", Debug);
             writer.WriteBoolean("debugOnlyInEditor", DebugOnlyInEditor);
-            writer.WriteString("diagnosticsLevel", DiagnosticsLevel.ToString().ToLowerInvariant());
-            writer.WriteString("requestBodyCompressionLevel", RequestBodyCompressionLevel.ToString());
+            writer.WriteNumber("diagnosticsLevel", (int)DiagnosticsLevel);
+            writer.WriteNumber("requestBodyCompressionLevel", (int)RequestBodyCompressionLevel);
             writer.WriteBoolean("attachStacktrace", AttachStacktrace);
             writer.WriteNumber("sampleRate", SampleRate);
 
