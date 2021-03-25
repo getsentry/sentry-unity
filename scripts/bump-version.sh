@@ -7,5 +7,5 @@ cd $SCRIPT_DIR/..
 OLD_VERSION="$1"
 NEW_VERSION="$2"
 
-sed -i '' -e "1,/<Version>/ s!<Version>.*</Version>!<Version>$NEW_VERSION</Version>!" Directory.Build.props
+sed -i '' -e "1,/<Version>/ s!<Version>.*</Version>!<Version>$NEW_VERSION</Version>!" src/Directory.Build.props
 
