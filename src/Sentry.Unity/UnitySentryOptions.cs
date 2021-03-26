@@ -101,7 +101,7 @@ namespace Sentry.Unity
                 DebugOnlyInEditor = json.GetPropertyOrNull("debugOnlyInEditor")?.GetBoolean() ?? true,
                 DiagnosticsLevel = json.GetEnumOrNull<SentryLevel>("diagnosticsLevel") ?? SentryLevel.Error,
                 RequestBodyCompressionLevel = json.GetEnumOrNull<SentryUnityCompression>("requestBodyCompressionLevel") ?? SentryUnityCompression.Auto,
-                AttachStacktrace = json.GetPropertyOrNull("debugOnlyInEditor")?.GetBoolean() ?? false,
+                AttachStacktrace = json.GetPropertyOrNull("attachStacktrace")?.GetBoolean() ?? false,
                 SampleRate = json.GetPropertyOrNull("sampleRate")?.GetSingle() ?? 1.0f,
                 Release = json.GetPropertyOrNull("release")?.GetString(),
                 Environment = json.GetPropertyOrNull("environment")?.GetString()
