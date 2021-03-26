@@ -120,6 +120,7 @@ namespace Sentry.Unity.Tests
             SentryInitialization.EventCapture = testEventCapture;
             SentryInitialization.ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
             SentryInitialization.LogTimeDebounce = new(TimeSpan.FromSeconds(1));
+            SentryInitialization.WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
             return testEventCapture;
         }
     }

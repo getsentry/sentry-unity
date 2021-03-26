@@ -45,4 +45,12 @@ namespace Sentry.Unity
     {
         public ErrorTimeDebounce(TimeSpan debounceOffset) => _debounceOffset = debounceOffset;
     }
+
+    /// <summary>
+    /// This class is not thread-safe and is designed to be called by Unity non-threaded logger callback
+    /// </summary>
+    internal sealed class WarningTimeDebounce : TimeDebounceBase
+    {
+        public WarningTimeDebounce(TimeSpan debounceOffset) => _debounceOffset = debounceOffset;
+    }
 }
