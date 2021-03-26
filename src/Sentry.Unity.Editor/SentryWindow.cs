@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,9 +27,10 @@ namespace Sentry.Unity.Editor
             SetTitle();
 
             TryCreateSentryFolder();
-            TryCopyLinkXml();
 
             Options = LoadUnitySentryOptions();
+
+            TryCopyLinkXml(Options.Logger);
         }
 
         private UnitySentryOptions LoadUnitySentryOptions()
@@ -180,7 +182,7 @@ namespace Sentry.Unity.Editor
         /// <summary>
         /// Find and copy 'link.xml' into current Unity project for IL2CPP builds
         /// </summary>
-        private static void TryCopyLinkXml()
+        private static void TryCopyLinkXml(IDiagnosticLogger? logger)
         {
             const string linkXmlFileName = "link.xml";
 
@@ -190,12 +192,12 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
-            Debug.Log($"'{linkXmlFileName}' is not found. Creating one!");
+            logger?.Log(SentryLevel.Debug, $"'{linkXmlFileName}' is not found. Creating one!");
 
             var linkPath = GetLinkXmlPath(linkXmlFileName);
             if (linkPath == null)
             {
-                Debug.LogWarning($"Couldn't locate '{linkXmlFileName}' in 'Packages'.");
+                logger?.Log(SentryLevel.Fatal, $"Couldn't locate '{linkXmlFileName}' in 'Packages'.");
                 return;
             }
 
