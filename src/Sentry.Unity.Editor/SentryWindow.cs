@@ -204,11 +204,19 @@ namespace Sentry.Unity.Editor
         }
 
         /// <summary>
-        /// Get Unity path to 'link.xml' file from `Packages` folder
+        /// Get Unity path to 'link.xml' file from `Packages` folder.
+        ///
+        /// Release UPM:
+        ///   Given:   link.xml
+        ///   Returns: Packages/io.sentry.unity/Runtime/link.xml
+        ///
+        /// Dev UPM:
+        ///   Given:   link.xml
+        ///   Returns: Packages/io.sentry.unity.dev/Runtime/link.xml
         /// </summary>
         private static string? GetLinkXmlPath(string linkXmlFileName)
         {
-            var assetIds = AssetDatabase.FindAssets("io.sentry.unity", new [] { "Packages" });
+            var assetIds = AssetDatabase.FindAssets(UnitySentryOptions.PackageName, new [] { "Packages" });
             for (var i = 0; i < assetIds.Length; i++)
             {
                 var assetName = AssetDatabase.GUIDToAssetPath(assetIds[i]);

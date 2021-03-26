@@ -20,7 +20,16 @@ namespace Sentry.Unity
         /// Relative to Assets/Resources
         /// </summary>
         public const string ConfigRootFolder = "Sentry";
+
+        /// <summary>
+        /// Main Sentry config name for Unity
+        /// </summary>
         public const string ConfigName = "SentryOptions";
+
+        /// <summary>
+        /// UPM name of Sentry Unity SDK (package.json)
+        /// </summary>
+        public const string PackageName = "io.sentry.unity";
 
         public bool Enabled { get; set; } = true;
         public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
