@@ -7,7 +7,7 @@ namespace Sentry.Unity.Editor
 {
     public class SentryWindow : EditorWindow
     {
-        [MenuItem("Component/Sentry")]
+        [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
             => (SentryWindow)GetWindow(typeof(SentryWindow));
 
