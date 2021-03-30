@@ -3,4 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>$(PackageRuntimeTestsPath)</OutDir>
   </PropertyGroup>
+  <ItemGroup>
+    <None Update="TestSentryOptions.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

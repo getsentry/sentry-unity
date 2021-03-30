@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
@@ -7,6 +9,20 @@ namespace Sentry.Unity.Tests
 {
     public sealed class UnitySentryOptionsTest
     {
+        private const string TestSentryOptionsFileName = "TestSentryOptions.json";
+
+        [Test]
+        public void Options_ReadFromFile_Success()
+        {
+            var optionsFilePath = GetTestOptionsFilePath();
+            Assert.IsTrue(File.Exists(optionsFilePath));
+
+            var jsonRaw = File.ReadAllText(optionsFilePath);
+            using var jsonDocument = JsonDocument.Parse(jsonRaw);
+
+            UnitySentryOptions.FromJson(jsonDocument.RootElement);
+        }
+
         [Test]
         public void Options_WriteRead_Equals()
         {
@@ -36,17 +52,29 @@ namespace Sentry.Unity.Tests
             var optionsActual = UnitySentryOptions.FromJson(jsonDocument.RootElement);
 
             // assert
-            Assert.AreEqual(optionsExpected.Enabled, optionsActual.Enabled);
-            Assert.AreEqual(optionsExpected.Dsn, optionsActual.Dsn);
-            Assert.AreEqual(optionsExpected.CaptureInEditor, optionsActual.CaptureInEditor);
-            Assert.AreEqual(optionsExpected.Debug, optionsActual.Debug);
-            Assert.AreEqual(optionsExpected.DebugOnlyInEditor, optionsActual.DebugOnlyInEditor);
-            Assert.AreEqual(optionsExpected.DiagnosticsLevel, optionsActual.DiagnosticsLevel);
-            Assert.AreEqual(optionsExpected.RequestBodyCompressionLevel, optionsActual.RequestBodyCompressionLevel);
-            Assert.AreEqual(optionsExpected.AttachStacktrace, optionsActual.AttachStacktrace);
-            Assert.AreEqual(optionsExpected.SampleRate, optionsActual.SampleRate);
-            Assert.AreEqual(optionsExpected.Release, optionsActual.Release);
-            Assert.AreEqual(optionsExpected.Environment, optionsActual.Environment);
+            AssertOptions(optionsActual, optionsExpected);
+        }
+
+        private static void AssertOptions(UnitySentryOptions actual, UnitySentryOptions expected)
+        {
+            Assert.AreEqual(expected.Enabled, actual.Enabled);
+            Assert.AreEqual(expected.Dsn, actual.Dsn);
+            Assert.AreEqual(expected.CaptureInEditor, actual.CaptureInEditor);
+            Assert.AreEqual(expected.Debug, actual.Debug);
+            Assert.AreEqual(expected.DebugOnlyInEditor, actual.DebugOnlyInEditor);
+            Assert.AreEqual(expected.DiagnosticsLevel, actual.DiagnosticsLevel);
+            Assert.AreEqual(expected.RequestBodyCompressionLevel, actual.RequestBodyCompressionLevel);
+            Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
+            Assert.AreEqual(expected.SampleRate, actual.SampleRate);
+            Assert.AreEqual(expected.Release, actual.Release);
+            Assert.AreEqual(expected.Environment, actual.Environment);
+        }
+
+        private static string GetTestOptionsFilePath()
+        {
+            var assemblyFolderPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Assert.NotNull(assemblyFolderPath);
+            return Path.Combine(assemblyFolderPath!, TestSentryOptionsFileName);
         }
     }
 }
