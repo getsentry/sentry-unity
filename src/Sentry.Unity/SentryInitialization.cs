@@ -31,11 +31,7 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            if (!(Resources.Load("Sentry/SentryOptions") is UnitySentryOptions options))
-            {
-                Debug.LogWarning("Sentry Options asset not found. Did you configure it on Component/Sentry?");
-                return;
-            }
+            var options = UnitySentryOptions.LoadFromUnity();
 
             if (!options.Enabled)
             {
