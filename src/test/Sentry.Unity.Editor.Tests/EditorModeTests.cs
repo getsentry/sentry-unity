@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
@@ -21,9 +22,11 @@ namespace Sentry.Unity.Editor.Tests
             // and we should find a proper way to solve this.
             if (!SentryInitialization.IsInit)
             {
-                var options = ScriptableObject.CreateInstance<UnitySentryOptions>();
-                options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-                options.Enabled = true;
+                var options = new UnitySentryOptions
+                {
+                    Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
+                    Enabled = true
+                };
 
                 SentryInitialization.Init(options);
 
@@ -54,6 +57,19 @@ namespace Sentry.Unity.Editor.Tests
             // assert
             Assert.AreEqual(1, validationErrors.Count);
             Assert.NotNull(validationErrors.SingleOrDefault(e => e.PropertyName.Contains(nameof(SentryTestWindow.Options.Dsn))));
+        }
+
+        // This test method has a side effect of creating 'link.xml' if file doesn't exits.
+        [Test]
+        public void SentryTestWindow_OpenAndLinkXmlCopied_Successful()
+        {
+            LogAssert.ignoreFailingMessages = true; // mandatory
+
+            // Open & Close window to trigger 'link.xml' logic
+            SentryTestWindow.Open().Dispose();
+
+            var linkXmlPath = $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/link.xml";
+            Assert.IsTrue(File.Exists(linkXmlPath));
         }
     }
 }

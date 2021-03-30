@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,13 +8,15 @@ namespace Sentry.Unity.Editor
 {
     public class SentryWindow : EditorWindow
     {
-        [MenuItem("Component/Sentry")]
+        [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
             => (SentryWindow)GetWindow(typeof(SentryWindow));
 
-        protected virtual string SentryOptionsAssetName { get; } = "SentryOptions";
+        protected virtual string SentryOptionsAssetName { get; } = UnitySentryOptions.ConfigName;
 
-        protected string SentryOptionsAssetPath => $"Assets/Resources/Sentry/{SentryOptionsAssetName}.asset";
+        // Will be used only from Unity Editor
+        protected string SentryOptionsAssetPath
+            => $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{SentryOptionsAssetName}.json";
 
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
@@ -23,22 +26,26 @@ namespace Sentry.Unity.Editor
         {
             SetTitle();
 
-            Options = AssetDatabase.LoadAssetAtPath<UnitySentryOptions>(SentryOptionsAssetPath);
-            if (Options is null)
+            TryCreateSentryFolder();
+
+            Options = LoadUnitySentryOptions();
+
+            TryCopyLinkXml(Options.Logger);
+        }
+
+        private UnitySentryOptions LoadUnitySentryOptions()
+        {
+            if (File.Exists(SentryOptionsAssetPath))
             {
-                Options = CreateInstance<UnitySentryOptions>();
-                if (!AssetDatabase.IsValidFolder("Assets/Resources"))
-                {
-                    AssetDatabase.CreateFolder("Assets", "Resources");
-                }
-                if (!AssetDatabase.IsValidFolder("Assets/Resources/Sentry"))
-                {
-                    AssetDatabase.CreateFolder("Assets/Resources", "Sentry");
-                }
-                AssetDatabase.CreateAsset(Options, SentryOptionsAssetPath);
+                return UnitySentryOptions.LoadFromUnity();
             }
 
-            EditorUtility.SetDirty(Options);
+            var unitySentryOptions = new UnitySentryOptions { Enabled = true };
+            unitySentryOptions
+                .TryAttachLogger()
+                .SaveToUnity(SentryOptionsAssetPath);
+
+            return unitySentryOptions;
         }
 
         private void SetTitle()
@@ -90,8 +97,8 @@ namespace Sentry.Unity.Editor
         public void OnLostFocus()
         {
             Validate();
-            AssetDatabase.SaveAssets();
-            // TODO: This should be gone
+
+            Options.SaveToUnity(SentryOptionsAssetPath);
             AssetDatabase.Refresh();
         }
 
@@ -154,6 +161,75 @@ namespace Sentry.Unity.Editor
             // organization = EditorGUILayout.TextField("Organization", organization);
             // project = EditorGUILayout.TextField("Project", project);
             // EditorGUILayout.EndToggleGroup();
+        }
+
+        /// <summary>
+        /// Creates Sentry folder for storing its configs - Assets/Resources/Sentry
+        /// </summary>
+        private static void TryCreateSentryFolder()
+        {
+            // TODO: revise, 'Resources' is a special Unity folder which is created by default. Not sure this check is needed.
+            if (!AssetDatabase.IsValidFolder("Assets/Resources"))
+            {
+                AssetDatabase.CreateFolder("Assets", "Resources");
+            }
+            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{UnitySentryOptions.ConfigRootFolder}"))
+            {
+                AssetDatabase.CreateFolder("Assets/Resources", UnitySentryOptions.ConfigRootFolder);
+            }
+        }
+
+        /// <summary>
+        /// Find and copy 'link.xml' into current Unity project for IL2CPP builds
+        /// </summary>
+        private static void TryCopyLinkXml(IDiagnosticLogger? logger)
+        {
+            const string linkXmlFileName = "link.xml";
+
+            var linkXmlPath = $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{linkXmlFileName}";
+            if (File.Exists(linkXmlPath))
+            {
+                return;
+            }
+
+            logger?.Log(SentryLevel.Debug, $"'{linkXmlFileName}' is not found. Creating one!");
+
+            var linkPath = GetLinkXmlPath(linkXmlFileName);
+            if (linkPath == null)
+            {
+                logger?.Log(SentryLevel.Fatal, $"Couldn't locate '{linkXmlFileName}' in 'Packages'.");
+                return;
+            }
+
+            var linkXmlAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(linkPath);
+            File.WriteAllBytes(linkXmlPath, linkXmlAsset.bytes);
+        }
+
+        /// <summary>
+        /// Get Unity path to 'link.xml' file from `Packages` folder.
+        ///
+        /// Release UPM:
+        ///   Given:   link.xml
+        ///   Returns: Packages/io.sentry.unity/Runtime/link.xml
+        ///
+        /// Dev UPM:
+        ///   Given:   link.xml
+        ///   Returns: Packages/io.sentry.unity.dev/Runtime/link.xml
+        /// </summary>
+        private static string? GetLinkXmlPath(string linkXmlFileName)
+        {
+            var assetIds = AssetDatabase.FindAssets(UnitySentryOptions.PackageName, new [] { "Packages" });
+            for (var i = 0; i < assetIds.Length; i++)
+            {
+                var assetName = AssetDatabase.GUIDToAssetPath(assetIds[i]);
+                if (assetName.Contains("Runtime"))
+                {
+                    var linkFolderPath = Path.GetDirectoryName(assetName)!;
+                    return Path.Combine(linkFolderPath, linkXmlFileName);
+                }
+            }
+
+            return null;
         }
     }
 

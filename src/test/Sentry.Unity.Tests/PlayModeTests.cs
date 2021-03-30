@@ -23,9 +23,11 @@ namespace Sentry.Unity.Tests
             // and we should find a proper way to solve this.
             if (!SentryInitialization.IsInit)
             {
-                var options = ScriptableObject.CreateInstance<UnitySentryOptions>();
-                options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-                options.Enabled = true;
+                var options = new UnitySentryOptions
+                {
+                    Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
+                    Enabled = true
+                };
 
                 SentryInitialization.Init(options);
 
@@ -120,6 +122,7 @@ namespace Sentry.Unity.Tests
             SentryInitialization.EventCapture = testEventCapture;
             SentryInitialization.ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
             SentryInitialization.LogTimeDebounce = new(TimeSpan.FromSeconds(1));
+            SentryInitialization.WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
             return testEventCapture;
         }
     }
