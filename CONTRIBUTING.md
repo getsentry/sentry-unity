@@ -88,5 +88,5 @@ The release folder is `src/package`. In order to make a release, the contents of
 The release can be tested via `github`. `UPM` supports various installation options.
 
 * install `release` package - `https://github.com/getsentry/sentry-unity.git?path=/package` from `package` folder, `main` branch 
-* install `release` package - `https://github.com/getsentry/sentry-unity.git?path=/package#feature/package-updated` from `pacakge` folder, `feature/package-updated` branch
+* install `release` package - `https://github.com/getsentry/sentry-unity.git?path=/package#feature/package-updated` from `package` folder, `feature/package-updated` branch
 * install `dev` package - `https://github.com/getsentry/sentry-unity.git?path=/package-dev` from `package-dev` folder, `main` branch
