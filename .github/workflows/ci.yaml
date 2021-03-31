@@ -186,7 +186,7 @@ jobs:
           Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
 
           # Create zip
-          Compress-Archive "package-release/*"" -DestinationPath "package-release.zip" -Force
+          Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v1
