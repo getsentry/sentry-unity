@@ -185,11 +185,14 @@ jobs:
           Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
           Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
 
+          # Create zip
+          Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
+
       - name: Upload release artifacts
         uses: actions/upload-artifact@v1
         with:
           name: ${{ github.sha }}
-          path: package-release
+          path: package-release.zip
 
       # Professional licenses are per-seat so we should always try to return them
       - name: Return Unity license
