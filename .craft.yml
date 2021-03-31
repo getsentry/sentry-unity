@@ -1,4 +1,5 @@
 minVersion: '0.18.0'
+preReleaseCommand: powershell ./scripts/bump-version.ps1
 github:
   owner: getsentry
   repo: sentry-unity
