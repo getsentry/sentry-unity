@@ -12,7 +12,7 @@ Sentry SDK for Unity
 
 For the stable Unity SDK, please go to [Sentry Unity Lite](https://github.com/getsentry/sentry-unity-lite).
 
-Install via `UPM`: `https://github.com/getsentry/sentry-unity.git?path=/package`
+Install via `UPM`: `https://github.com/getsentry/unity.git#x.x.x` where `x.x.x` is [the latest release](https://github.com/getsentry/unity/releases).
 
 ## Sentry SDKs: Unity vs Unity Lite
 
