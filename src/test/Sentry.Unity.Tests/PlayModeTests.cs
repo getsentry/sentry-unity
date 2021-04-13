@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEngine;
@@ -94,6 +95,32 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(1, testEventCapture.Events.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator UnityEventExceptionProcessor_ILL2CPPStackTraceFilenameWithZeroes_ShouldReturnEmptyString()
+        {
+            yield return SetupSceneCoroutine("BugFarmScene");
+
+            // arrange
+            var unityEventProcessor = new UnityEventExceptionProcessor();
+            var ill2CppUnityLogException = new UnityLogException(
+                "one: two",
+                "BugFarm.ThrowNull () (at <00000000000000000000000000000000>:0)");
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(ill2CppUnityLogException, sentryEvent);
+
+            // assert
+            Assert.NotNull(sentryEvent.SentryExceptions);
+
+            var sentryException = sentryEvent.SentryExceptions!.First();
+            Assert.NotNull(sentryException.Stacktrace);
+            Assert.Greater(sentryException.Stacktrace!.Frames.Count, 0);
+
+            var sentryExceptionFirstFrame = sentryException.Stacktrace!.Frames[0];
+            Assert.AreEqual(string.Empty, sentryExceptionFirstFrame.FileName);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)
