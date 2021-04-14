@@ -214,7 +214,7 @@ namespace Sentry.Unity
 
                 frames.Add(new SentryStackFrame
                 {
-                    FileName = TryResolveFileNameForMono(filename),
+                    FileName = TryResolveFileNameForMono(StripZeroes(filename)),
                     AbsolutePath = filename,
                     Function = functionName,
                     LineNumber = lineNo,
@@ -239,6 +239,12 @@ namespace Sentry.Unity
                 Value = excValue
             };
         }
+
+        // https://github.com/getsentry/sentry-unity/issues/103
+        private static string StripZeroes(string filename)
+            => filename.Equals("<00000000000000000000000000000000>", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : filename;
 
         // TODO: discuss
         private static string TryResolveFileNameForMono(string fileName)
