@@ -4,7 +4,8 @@
 
 ### Features
 
-- Strip zeroes for ill2cpp builds(#108)
+- Strip zeroes for ill2cpp builds (#108)
+- Proper sdk name reporting for sentry event (#96)
 
 ## 0.0.6
 
