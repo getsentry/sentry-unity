@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using UnityEngine;
@@ -10,9 +11,10 @@ namespace Sentry.Unity
 {
     internal static class UnitySdkInfo
     {
-        public const string Version = "0.0.1-alpha";
+        public static string Version { get; } = Assembly.GetCallingAssembly().GetName().Version.ToString();
+
         public const string Name = "sentry.dotnet.unity";
-        public const string PackageName = "github:sentry.unity";
+        public const string PackageName = "upm:sentry.unity";
     }
 
     internal class UnityEventProcessor : ISentryEventProcessor
