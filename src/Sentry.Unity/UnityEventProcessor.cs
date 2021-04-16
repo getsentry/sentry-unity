@@ -11,7 +11,8 @@ namespace Sentry.Unity
 {
     internal static class UnitySdkInfo
     {
-        public static string Version { get; } = Assembly.GetCallingAssembly().GetName().Version.ToString();
+        public static string Version { get; } = typeof(UnitySdkInfo).Assembly.GetName().Version.ToString();
+
 
         public const string Name = "sentry.dotnet.unity";
         public const string PackageName = "upm:sentry.unity";
