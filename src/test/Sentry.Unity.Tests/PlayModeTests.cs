@@ -123,6 +123,28 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(string.Empty, sentryExceptionFirstFrame.FileName);
         }
 
+        [UnityTest]
+        public IEnumerator UnityEventProcessor_SdkInfo_Correct()
+        {
+            yield return SetupSceneCoroutine("BugFarmScene");
+
+            // arrange
+            var unityEventProcessor = new UnityEventProcessor();
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(sentryEvent);
+
+            // assert
+            Assert.AreEqual(UnitySdkInfo.Name, sentryEvent.Sdk.Name);
+            Assert.AreEqual(UnitySdkInfo.Version, sentryEvent.Sdk.Version);
+
+            var package = sentryEvent.Sdk.Packages.FirstOrDefault();
+            Assert.IsNotNull(package);
+            Assert.AreEqual(UnitySdkInfo.PackageName, package!.Name);
+            Assert.AreEqual(UnitySdkInfo.Version, package!.Version);
+        }
+
         private static IEnumerator SetupSceneCoroutine(string sceneName)
         {
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);
