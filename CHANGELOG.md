@@ -7,6 +7,7 @@
 - Strip zeroes for ill2cpp builds (#108)
 - Proper sdk name reporting for sentry event (#111)
 - Bump .NET SDK to 3.3.1 (#115)
+- Release package samples (#113)
 
 ## 0.0.6
 
