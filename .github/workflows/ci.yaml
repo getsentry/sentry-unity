@@ -1,6 +1,11 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - release/*
+  pull_request:
 
 env:
   # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
