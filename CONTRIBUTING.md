@@ -9,7 +9,15 @@
 * clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
 * restore submodules `git submodule update --init --recursive`
 > Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
-* make sure you have `UnityPath` configured in `src/Directory.Build.props` for your operating system
+* make sure you have the pinned down version of Unity, or [adjust the Unity version in the `Directory.Build.props`](https://github.com/getsentry/sentry-unity/blob/cb9e03ace66cdb7379a210d713a925dd4db4169e/src/Directory.Build.props#L6)
+
+Overall, there are two "flows" to take into account - `Development` and `Release`. Each has its corresponding structures and things to consider.
+
+## Finding the Unity installation
+
+The `UnityPath` configured in `src/Directory.Build.props` does a lookup at different locations to find Unity.
+This is different per operating system. You can adjust it as needed:
+
 ```xml
 <Project>
   <!-- Other propertes & groups -->
@@ -19,8 +27,6 @@
 </Project>
 ```
 > There is a configuration in place already. Just make sure it works for you or reconfigure for your needs.
-
-Overall, there are two "flows" to take into account - `Development` and `Release`. Each has its corresponding structures and things to consider.
 
 # Development
 
@@ -81,12 +87,6 @@ In order to run the tests
 
 # Release
 
-The release folder is `src/package`. In order to make a release, the contents of `src/package-dev/Editor` and `src/package-dev/Runtime` folders should be copied into `src/package`.
+The release is done by pushing the artifact built in CI [to a new repo](https://github.com/getsentry/unity). The artifact is built by using the template files in the `package` directory. In order to make a release, the contents of `package-dev/Editor` and `package-dev/Runtime` folders should be copied into `package`.
 
 > **Don't** copy `package-dev` specific files like `package.json`, `Runtime/*.asmdef`, `Editor/*.asmdef` into `package`. Those files contain package specific information.
-
-The release can be tested via `github`. `UPM` supports various installation options.
-
-* install `release` package - `https://github.com/getsentry/sentry-unity.git?path=/package` from `package` folder, `main` branch 
-* install `release` package - `https://github.com/getsentry/sentry-unity.git?path=/package#feature/package-updated` from `package` folder, `feature/package-updated` branch
-* install `dev` package - `https://github.com/getsentry/sentry-unity.git?path=/package-dev` from `package-dev` folder, `main` branch
