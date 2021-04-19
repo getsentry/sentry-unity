@@ -6,6 +6,7 @@
 
 - Strip zeroes for ill2cpp builds (#108)
 - Proper sdk name reporting for sentry event (#111)
+- Release package samples (#113)
 
 ## 0.0.6
 
