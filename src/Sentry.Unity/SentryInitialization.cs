@@ -32,6 +32,7 @@ namespace Sentry.Unity
         public static void Init()
         {
             var options = UnitySentryOptions.LoadFromUnity();
+            System.Console.WriteLine("test");
 
             if (!options.Enabled)
             {
