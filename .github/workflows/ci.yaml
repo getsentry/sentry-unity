@@ -183,10 +183,11 @@ jobs:
           New-Item "package-release" -ItemType Directory
 
           # Copy `package-dev` stuff
-          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta" -Recurse
+          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta" -Recurse
 
           # Copy `package` stuff
           Copy-Item "package/package.json" -Destination "package-release/package.json"
+          Copy-Item "package/README.md" -Destination "package-release/README.md"
           Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
           Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
 
