@@ -60,6 +60,9 @@ namespace Sentry.Unity
             {
                 o.Dsn = options.Dsn;
 
+                // IL2CPP doesn't support Process.GetCurrentProcess().StartupUpTime
+                o.DetectStartupTime = StartupTimeDetectionMode.Fast;
+
                 if (options.Logger != null)
                 {
                     o.Debug = true;
