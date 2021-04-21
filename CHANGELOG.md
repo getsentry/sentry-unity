@@ -5,6 +5,7 @@
 ### Fixes
 
 - Bump sentry-dotnet to 8ca0906 - fix IL2CPP crash (#122) 
+- IL2CPP players crash due to startup time detection (#123) 
 
 ## 0.0.7
 
