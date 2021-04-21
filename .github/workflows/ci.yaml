@@ -5,7 +5,11 @@ on:
     branches:
       - main
       - release/*
+
   pull_request:
+    paths:
+    - 'src/**'
+    - 'sample/**'
 
 env:
   # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21

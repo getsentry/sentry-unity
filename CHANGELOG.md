@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Bump sentry-dotnet to 8ca0906 - fix IL2CPP crash (#122) 
+
 ## 0.0.7
 
 ### Features
