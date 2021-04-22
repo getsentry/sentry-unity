@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- UPM meta updated (#124)
+
 ## 0.0.8
 
 ### Fixes
