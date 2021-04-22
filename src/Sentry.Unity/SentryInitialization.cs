@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,6 +32,12 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
+            if (!File.Exists($"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{UnitySentryOptions.ConfigName}.json"))
+            {
+                Debug.LogWarning("Sentry Logging has been disabled.\nSentry has not been configured yet. Please go to Tools/Sentry...");
+                return;
+            }
+
             var options = UnitySentryOptions.LoadFromUnity();
 
             if (!options.Enabled)
