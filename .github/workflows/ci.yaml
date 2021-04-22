@@ -188,8 +188,11 @@ jobs:
           # Copy `package` stuff
           Copy-Item "package/package.json" -Destination "package-release/package.json"
           Copy-Item "package/README.md" -Destination "package-release/README.md"
+          Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
+          Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
           Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
           Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
+          Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
 
           # Copy samples
           Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
