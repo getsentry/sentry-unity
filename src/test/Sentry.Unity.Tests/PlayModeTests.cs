@@ -135,7 +135,7 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
-        private static void InitSentrySdk(Action<SentryUnity>? sentryUnity = null)
+        private static void InitSentrySdk(Action<SentryUnity>? unityConfigure = null)
             => SentryUnity.Init(
                 opt =>
                 {
@@ -143,7 +143,7 @@ namespace Sentry.Unity.Tests
                     opt.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
                     opt.Logger = new UnityLogger(SentryLevel.Warning);
                 },
-                sentryUnity);
+                unityConfigure);
     }
 
     /*
