@@ -82,6 +82,12 @@ jobs:
             Write-Host "::error ::Failed to activate license after multiple attempts."
           }
 
+      - name: Restore previous build
+        uses: actions/cache@v2
+        with:
+          path: artifacts/build
+          key: test-key
+
       - name: Build project
         run: |
           unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
