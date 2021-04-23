@@ -12,39 +12,14 @@ namespace Sentry.Unity.Tests
 {
     public sealed class PlayModeTests
     {
-        [UnitySetUp]
-        public IEnumerator InitializeOptions()
-        {
-            // Due to an issue, Sentry doesn't always load UnitySentryOptions, which
-            // results in tests not running on clean clone or on CI.
-            // https://github.com/getsentry/sentry-unity/issues/77
-            //
-            // This hack sets the options manually if that happens.
-            // Since this skips a layer of testing, this is not desirable long term
-            // and we should find a proper way to solve this.
-            if (!SentryInitialization.IsInit)
-            {
-                var options = new UnitySentryOptions
-                {
-                    Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
-                    Enabled = true
-                };
-
-                SentryInitialization.Init(options);
-
-                Debug.LogWarning("Sentry has not been initialized prior to running tests. Using manual configuration.");
-            }
-
-            yield break;
-        }
-
         [UnityTest]
         public IEnumerator BugFarmScene_ObjectCreatedWithExceptionLogicAndCalled_OneEventIsCreated()
         {
             yield return SetupSceneCoroutine("BugFarmScene");
 
             // arrange
-            var testEventCapture = CreateAndSetupSentryTestService();
+            var testEventCapture = new TestEventCapture();
+            InitSentrySdk(opt => opt.EventCapture = testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
@@ -64,7 +39,9 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("BugFarmScene");
 
             // arrange
-            var testEventCapture = CreateAndSetupSentryTestService();
+            var testEventCapture = new TestEventCapture();
+            InitSentrySdk(opt => opt.EventCapture = testEventCapture);
+
             /*
              * We should NOT use 'GameObject.Find', it's quite expensive.
              * 'GameObject.FindWithTag' is better but it needs additional setup.
@@ -86,7 +63,8 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("EmptyScene");
 
             // arrange
-            var testEventCapture = CreateAndSetupSentryTestService();
+            var testEventCapture = new TestEventCapture();
+            InitSentrySdk(opt => opt.EventCapture = testEventCapture);
 
             // act
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -157,23 +135,15 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
-        /*
-         * TODO:
-         *
-         * The current Sentry initialization is static. It means that the initialization is done once for all the tests.
-         * That's why we need to alter some state on 'per test' level before running them in bulk.
-         *
-         * This problem will be mitigated as we implement this https://github.com/getsentry/sentry-unity/issues/66
-         */
-        private static TestEventCapture CreateAndSetupSentryTestService()
-        {
-            var testEventCapture = new TestEventCapture();
-            SentryInitialization.EventCapture = testEventCapture;
-            SentryInitialization.ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
-            SentryInitialization.LogTimeDebounce = new(TimeSpan.FromSeconds(1));
-            SentryInitialization.WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
-            return testEventCapture;
-        }
+        private static void InitSentrySdk(Action<SentryUnity>? sentryUnity = null)
+            => SentryUnity.Init(
+                opt =>
+                {
+                    opt.Enabled = true;
+                    opt.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+                    opt.Logger = new UnityLogger(SentryLevel.Warning);
+                },
+                sentryUnity);
     }
 
     /*
