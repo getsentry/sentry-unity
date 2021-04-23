@@ -1,7 +1,7 @@
-using System;
 using System.IO;
 using System.Text.Json;
 using Sentry.Extensibility;
+using Sentry.Unity.Extensions;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -14,6 +14,7 @@ namespace Sentry.Unity
         NoCompression = 3
     }
 
+    // TODO: rename to `SentryUnityOptions` for consistency across dotnet Sentry SDK
     public sealed class UnitySentryOptions
     {
         /// <summary>
@@ -43,7 +44,7 @@ namespace Sentry.Unity
         public bool AttachStacktrace { get; set; }
         public float SampleRate { get; set; } = 1.0f;
 
-        public IDiagnosticLogger? Logger { get; private set; }
+        public IDiagnosticLogger? Logger { get; set; }
         public string? Release { get; set; }
         public string? Environment { get; set; }
 
@@ -91,6 +92,27 @@ namespace Sentry.Unity
             writer.Flush();
         }
 
+        public SentryOptions ToSentryOptions()
+        {
+            var sentryOptions = new SentryOptions
+            {
+                Dsn = Dsn,
+                // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
+                DetectStartupTime = StartupTimeDetectionMode.Fast,
+                SampleRate = SampleRate,
+                // If PDBs are available, CaptureMessage also includes a stack trace
+                AttachStacktrace = AttachStacktrace
+            };
+            sentryOptions.ConfigureLogger(this);
+            sentryOptions.ConfigureRelease(this);
+            sentryOptions.ConfigureEnvironment(this);
+            sentryOptions.ConfigureRequestBodyCompressionLevel(this);
+            sentryOptions.RegisterInAppExclude();
+            sentryOptions.RegisterEventProcessors();
+
+            return sentryOptions;
+        }
+
         public static UnitySentryOptions FromJson(JsonElement json)
             => new()
             {
@@ -120,48 +142,6 @@ namespace Sentry.Unity
             using var fileStream = new FileStream(path, FileMode.Create);
             using var writer = new Utf8JsonWriter(fileStream);
             WriteTo(writer);
-        }
-    }
-
-    internal static class JsonExtensions
-    {
-        // From Sentry.Internal.Extensions.JsonExtensions
-        public static JsonElement? GetPropertyOrNull(this JsonElement json, string name)
-        {
-            if (json.ValueKind != JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            if (json.TryGetProperty(name, out var result))
-            {
-                if (json.ValueKind == JsonValueKind.Undefined ||
-                    json.ValueKind == JsonValueKind.Null)
-                {
-                    return null;
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        public static TEnum? GetEnumOrNull<TEnum>(this JsonElement json, string name)
-            where TEnum : struct
-        {
-            var enumString = json.GetPropertyOrNull(name)?.ToString();
-            if (string.IsNullOrWhiteSpace(enumString))
-            {
-                return null;
-            }
-
-            if (!Enum.TryParse(enumString, true, out TEnum value))
-            {
-                return null;
-            }
-
-            return value;
         }
     }
 }
