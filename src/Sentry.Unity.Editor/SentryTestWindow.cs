@@ -14,7 +14,7 @@ namespace Sentry.Unity.Editor
         public void Dispose()
         {
             Close(); // calls 'OnLostFocus' implicitly
-            File.Delete(SentryOptionsAssetPath);
+            File.Delete(UnitySentryOptions.GetConfigPath());
             AssetDatabase.Refresh();
         }
     }

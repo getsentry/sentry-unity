@@ -32,9 +32,9 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            if (!File.Exists($"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{UnitySentryOptions.ConfigName}.json"))
+            if (!File.Exists(UnitySentryOptions.GetConfigPath()))
             {
-                Debug.LogWarning("Sentry Logging has been disabled.\nSentry has not been configured yet. Please go to Tools/Sentry...");
+                Debug.LogWarning("Couldn't find the configuration file SentryOptions.json. Did you already configure Sentry?\nYou can do that through the editor: Tools -> Sentry");
                 return;
             }
 
