@@ -3,6 +3,10 @@
 ## Unreleased
 
 - UPM meta updated (#124)
+- Bump dotnet 3.3.4 (#132)
+  - https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#334
+  - Bug fixes for performance monitoring
+  - Ability to keep failed envelopes for troubleshooting when they are too large
 
 ## 0.0.8
 
