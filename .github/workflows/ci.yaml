@@ -8,6 +8,7 @@ on:
 
   pull_request:
     paths:
+    - '.github/**/*.yaml'
     - 'src/**'
     - 'sample/**'
 
@@ -85,12 +86,6 @@ jobs:
       - name: Build project
         run: |
           unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v1
-        with:
-          name: Build output
-          path: artifacts/build
 
       # The working directory must be set because the project uses
       # relative paths for certain things.
@@ -204,6 +199,13 @@ jobs:
 
           # Create zip
           Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
+
+      - name: Upload build artifacts if build failed
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build output
+          path: artifacts/build
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v1
