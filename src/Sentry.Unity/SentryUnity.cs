@@ -1,62 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sentry.Extensibility;
+using Sentry.Integrations;
+using Sentry.Unity.Extensions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity
 {
-    public sealed class SentryUnity : IDisposable
+    public sealed class SentryUnity
     {
-        private static SentryUnity? Instance;
-
-        internal readonly ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
-        internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
-        internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
-
-        internal UnitySentryOptions? Options { get; private set; }
-
-        internal IEventCapture EventCapture { get; set; } = new EventCapture();
-
-        public static SentryUnity Init(UnitySentryOptions unitySentryOptions, Action<SentryUnity>? unityConfigure = null)
+        public static IDisposable Init(UnitySentryOptions unitySentryOptions)
         {
-            // Force dispose if new Init
-            if (Instance != null)
-            {
-                // TODO: discuss
-                // using the logger of a new instance
-                unitySentryOptions.Logger?.Log(SentryLevel.Warning, "RE-INIT");
+            // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
+            unitySentryOptions.DetectStartupTime = StartupTimeDetectionMode.Fast;
 
-                Instance.Dispose();
-            }
+            unitySentryOptions.ConfigureRelease();
+            unitySentryOptions.ConfigureEnvironment();
+            unitySentryOptions.ConfigureRequestBodyCompressionLevel();
+            unitySentryOptions.AddInAppExclude("UnityEngine");
+            unitySentryOptions.AddInAppExclude("UnityEditor");
+            unitySentryOptions.AddEventProcessor(new UnityEventProcessor());
+            unitySentryOptions.AddExceptionProcessor(new UnityEventExceptionProcessor());
 
-            SentrySdk.Init(unitySentryOptions.ToSentryOptions());
+            // TODO: extract?
+            FinalizeSetup(unitySentryOptions.DiagnosticLogger);
 
-            Instance = new SentryUnity { Options = unitySentryOptions }
-                .WithApplicationEvents()
-                .FinalizeSetup(unitySentryOptions.Logger);
-            unityConfigure?.Invoke(Instance);
-            return Instance;
+            return SentrySdk.Init(unitySentryOptions);
         }
 
-        public static SentryUnity Init(
-            Action<UnitySentryOptions> unitySentryOptionsConfigure,
-            Action<SentryUnity>? unityConfigure = null)
+        public static IDisposable Init(Action<UnitySentryOptions> unitySentryOptionsConfigure)
         {
             var unitySentryOptions = new UnitySentryOptions();
             unitySentryOptionsConfigure.Invoke(unitySentryOptions);
-            return Init(unitySentryOptions, unityConfigure);
+            return Init(unitySentryOptions);
         }
 
-        private SentryUnity WithApplicationEvents()
-        {
-            Application.logMessageReceived += OnLogMessageReceived;
-            Application.quitting += OnQuitting;
-
-            return this;
-        }
-
-        private SentryUnity FinalizeSetup(IDiagnosticLogger? diagnosticLogger)
+        private static void FinalizeSetup(IDiagnosticLogger? diagnosticLogger)
         {
             var data = SceneManager.GetActiveScene().name is { } name
                 ? new Dictionary<string, string> {{"scene", name}}
@@ -65,8 +45,26 @@ namespace Sentry.Unity
             SentrySdk.AddBreadcrumb("BeforeSceneLoad", data: data);
 
             diagnosticLogger?.Log(SentryLevel.Debug, "Complete Sentry SDK initialization.");
+        }
+    }
 
-            return this;
+    internal sealed class UnityApplicationLoggingIntegration : ISdkIntegration
+    {
+        private readonly IEventCapture _eventCapture;
+
+        internal readonly ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
+        internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
+        internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
+
+        public UnityApplicationLoggingIntegration(IEventCapture eventCapture)
+        {
+            _eventCapture = eventCapture;
+        }
+
+        public void Register(IHub _, SentryOptions options)
+        {
+            Application.logMessageReceived += OnLogMessageReceived;
+            Application.quitting += OnQuitting;
         }
 
         private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
@@ -94,30 +92,8 @@ namespace Sentry.Unity
 
             var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
             sentryEvent.SetTag("log.type", ToEventTagType(type));
-            _ = EventCapture?.Capture(sentryEvent);
+            _ = _eventCapture?.Capture(sentryEvent);
             SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
-
-            static string ToEventTagType(LogType logType)
-                => logType switch
-                {
-                    LogType.Assert => "assert",
-                    LogType.Error => "error",
-                    LogType.Exception => "exception",
-                    LogType.Log => "log",
-                    LogType.Warning => "warning",
-                    _ => "unknown"
-                };
-
-            static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
-                => logType switch
-                {
-                    LogType.Assert => BreadcrumbLevel.Error,
-                    LogType.Error => BreadcrumbLevel.Error,
-                    LogType.Exception => BreadcrumbLevel.Error,
-                    LogType.Log => BreadcrumbLevel.Info,
-                    LogType.Warning => BreadcrumbLevel.Warning,
-                    _ => BreadcrumbLevel.Info
-                };
         }
 
         private void OnQuitting()
@@ -130,11 +106,26 @@ namespace Sentry.Unity
             SentrySdk.Close();
         }
 
-        public void Dispose()
-        {
-            Application.logMessageReceived -= OnLogMessageReceived;
-            Application.quitting -= OnQuitting;
-            SentrySdk.Close();
-        }
+        private static string ToEventTagType(LogType logType)
+            => logType switch
+            {
+                LogType.Assert => "assert",
+                LogType.Error => "error",
+                LogType.Exception => "exception",
+                LogType.Log => "log",
+                LogType.Warning => "warning",
+                _ => "unknown"
+            };
+
+        private static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
+            => logType switch
+            {
+                LogType.Assert => BreadcrumbLevel.Error,
+                LogType.Error => BreadcrumbLevel.Error,
+                LogType.Exception => BreadcrumbLevel.Error,
+                LogType.Log => BreadcrumbLevel.Info,
+                LogType.Warning => BreadcrumbLevel.Warning,
+                _ => BreadcrumbLevel.Info
+            };
     }
 }

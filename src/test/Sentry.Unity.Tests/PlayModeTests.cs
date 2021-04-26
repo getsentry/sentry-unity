@@ -19,7 +19,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            InitSentrySdk(opt => opt.EventCapture = testEventCapture);
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
@@ -40,7 +40,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            InitSentrySdk(opt => opt.EventCapture = testEventCapture);
+            using var _ = InitSentrySdk(testEventCapture);
 
             /*
              * We should NOT use 'GameObject.Find', it's quite expensive.
@@ -64,7 +64,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            InitSentrySdk(opt => opt.EventCapture = testEventCapture);
+            using var _ = InitSentrySdk(testEventCapture);
 
             // act
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -135,15 +135,14 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
-        private static void InitSentrySdk(Action<SentryUnity>? unityConfigure = null)
-            => SentryUnity.Init(
-                opt =>
+        private static IDisposable InitSentrySdk(IEventCapture eventCapture)
+            => SentryUnity.Init(options =>
                 {
-                    opt.Enabled = true;
-                    opt.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-                    opt.Logger = new UnityLogger(SentryLevel.Warning);
-                },
-                unityConfigure);
+                    options.Enabled = true;
+                    options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+                    options.DiagnosticLogger = new UnityLogger(SentryLevel.Warning);
+                    options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture));
+                });
     }
 
     /*

@@ -12,29 +12,24 @@ namespace Sentry.Unity
 
             if (!options.Enabled)
             {
-                options.Logger?.Log(SentryLevel.Debug, "Disabled In Options.");
+                options.DiagnosticLogger?.Log(SentryLevel.Debug, "Disabled In Options.");
                 return;
             }
 
             if (!options.CaptureInEditor && Application.isEditor)
             {
-                options.Logger?.Log(SentryLevel.Info, "Disabled while in the Editor.");
+                options.DiagnosticLogger?.Log(SentryLevel.Info, "Disabled while in the Editor.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(options.Dsn))
             {
-                options.Logger?.Log(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
+                options.DiagnosticLogger?.Log(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
                 return;
             }
 
+            options.AddIntegration(new UnityApplicationLoggingIntegration(new EventCapture()));
             SentryUnity.Init(options);
-
-            /*SentryUnity.Init(new UnitySentryOptions
-            {
-                Enabled = true,
-                Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182"
-            });*/
         }
     }
 }

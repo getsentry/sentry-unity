@@ -30,7 +30,7 @@ namespace Sentry.Unity.Editor
 
             Options = LoadUnitySentryOptions();
 
-            TryCopyLinkXml(Options.Logger);
+            TryCopyLinkXml(Options.DiagnosticLogger);
         }
 
         private UnitySentryOptions LoadUnitySentryOptions()

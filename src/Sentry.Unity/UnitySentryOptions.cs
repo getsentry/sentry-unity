@@ -1,6 +1,5 @@
 using System.IO;
 using System.Text.Json;
-using Sentry.Extensibility;
 using Sentry.Unity.Extensions;
 using UnityEngine;
 
@@ -15,7 +14,7 @@ namespace Sentry.Unity
     }
 
     // TODO: rename to `SentryUnityOptions` for consistency across dotnet Sentry SDK
-    public sealed class UnitySentryOptions
+    public sealed class UnitySentryOptions : SentryOptions
     {
         /// <summary>
         /// Relative to Assets/Resources
@@ -34,25 +33,20 @@ namespace Sentry.Unity
 
         public bool Enabled { get; set; } = true;
         public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
-        public string? Dsn { get; set; }
         public bool Debug { get; set; } = true; // By default on only
         public bool DebugOnlyInEditor { get; set; } = true;
         public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
         // Ideally this would be per platform
         // Auto allows us to try figure out things in the SDK depending on the platform. Any other value means an explicit user choice.
         public SentryUnityCompression RequestBodyCompressionLevel { get; set; } = SentryUnityCompression.Auto;
-        public bool AttachStacktrace { get; set; }
+        // public bool AttachStacktrace { get; set; }
         public float SampleRate { get; set; } = 1.0f;
-
-        public IDiagnosticLogger? Logger { get; set; }
-        public string? Release { get; set; }
-        public string? Environment { get; set; }
 
         // Can't rely on Unity's OnEnable() hook.
         public UnitySentryOptions TryAttachLogger()
         {
-            Logger = Debug
-                     && (!DebugOnlyInEditor || Application.isEditor)
+            DiagnosticLogger = Debug
+                               && (!DebugOnlyInEditor || Application.isEditor)
                 ? new UnityLogger(DiagnosticsLevel)
                 : null;
 
@@ -90,27 +84,6 @@ namespace Sentry.Unity
 
             writer.WriteEndObject();
             writer.Flush();
-        }
-
-        public SentryOptions ToSentryOptions()
-        {
-            var sentryOptions = new SentryOptions
-            {
-                Dsn = Dsn,
-                // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
-                DetectStartupTime = StartupTimeDetectionMode.Fast,
-                SampleRate = SampleRate,
-                // If PDBs are available, CaptureMessage also includes a stack trace
-                AttachStacktrace = AttachStacktrace
-            };
-            sentryOptions.ConfigureLogger(this);
-            sentryOptions.ConfigureRelease(this);
-            sentryOptions.ConfigureEnvironment(this);
-            sentryOptions.ConfigureRequestBodyCompressionLevel(this);
-            sentryOptions.RegisterInAppExclude();
-            sentryOptions.RegisterEventProcessors();
-
-            return sentryOptions;
         }
 
         public static UnitySentryOptions FromJson(JsonElement json)
