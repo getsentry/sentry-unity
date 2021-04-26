@@ -197,8 +197,12 @@ jobs:
           Copy-Item "package/README.md" -Destination "package-release/README.md"
           Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
           Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
+          New-Item -Type dir "package-release/Editor/" -Force
           Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
+          New-Item -Type dir "package-release/Runtime/" -Force
           Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
+          # Destination directory need to exist if we're copying a file instead of a directory
+          New-Item -Type dir "package-release/Documentation~/" -Force
           Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
 
           # Copy samples
