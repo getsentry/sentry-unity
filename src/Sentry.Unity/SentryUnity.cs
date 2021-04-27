@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sentry.Extensibility;
 using Sentry.Integrations;
 using Sentry.Unity.Extensions;
 using UnityEngine;
@@ -23,9 +22,6 @@ namespace Sentry.Unity
             unitySentryOptions.AddEventProcessor(new UnityEventProcessor());
             unitySentryOptions.AddExceptionProcessor(new UnityEventExceptionProcessor());
 
-            // TODO: extract?
-            FinalizeSetup(unitySentryOptions.DiagnosticLogger);
-
             return SentrySdk.Init(unitySentryOptions);
         }
 
@@ -35,8 +31,11 @@ namespace Sentry.Unity
             unitySentryOptionsConfigure.Invoke(unitySentryOptions);
             return Init(unitySentryOptions);
         }
+    }
 
-        private static void FinalizeSetup(IDiagnosticLogger? diagnosticLogger)
+    internal sealed class UnityBeforeSceneLoadIntegration : ISdkIntegration
+    {
+        public void Register(IHub hub, SentryOptions options)
         {
             var data = SceneManager.GetActiveScene().name is { } name
                 ? new Dictionary<string, string> {{"scene", name}}
@@ -44,7 +43,7 @@ namespace Sentry.Unity
 
             SentrySdk.AddBreadcrumb("BeforeSceneLoad", data: data);
 
-            diagnosticLogger?.Log(SentryLevel.Debug, "Complete Sentry SDK initialization.");
+            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Complete Sentry SDK initialization.");
         }
     }
 

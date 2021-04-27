@@ -5,18 +5,6 @@ namespace Sentry.Unity.Extensions
 {
     internal static class SentryOptionsExtensions
     {
-        /*public static void ConfigureLogger(this SentryOptions sentryOptions, UnitySentryOptions unitySentryOptions)
-        {
-            if (unitySentryOptions.Logger == null)
-            {
-                return;
-            }
-
-            sentryOptions.Debug = unitySentryOptions.Debug;
-            sentryOptions.DiagnosticLogger = unitySentryOptions.Logger;
-            sentryOptions.DiagnosticLevel = unitySentryOptions.DiagnosticsLevel;
-        }*/
-
         public static void ConfigureRelease(this SentryOptions sentryOptions)
             // Uses the game `version` as Release
             => sentryOptions.Release = sentryOptions.Release is { } release

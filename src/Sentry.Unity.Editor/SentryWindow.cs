@@ -120,7 +120,7 @@ namespace Sentry.Unity.Editor
                 Options.Dsn);
             Options.SampleRate = EditorGUILayout.Slider(
                 new GUIContent("Event Sample Rate", "What random sample rate to apply. 1.0 captures everything, 0.7 captures 70%."),
-                Options.SampleRate, 0.01f, 1);
+                Options.SampleRate ?? 1.0f, 0.01f, 1);
             Options.RequestBodyCompressionLevel = (SentryUnityCompression)EditorGUILayout.EnumPopup(
                 new GUIContent("Compress Payload", "The compression level to use on the data sent to Sentry. " +
                                                    "Some platforms don't support GZip, 'auto' attempts to disable compression in those cases."),

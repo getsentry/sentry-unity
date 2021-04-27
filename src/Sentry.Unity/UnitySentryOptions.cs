@@ -33,14 +33,14 @@ namespace Sentry.Unity
 
         public bool Enabled { get; set; } = true;
         public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
-        public bool Debug { get; set; } = true; // By default on only
+        // public bool Debug { get; set; } = true; // By default on only
         public bool DebugOnlyInEditor { get; set; } = true;
         public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
         // Ideally this would be per platform
         // Auto allows us to try figure out things in the SDK depending on the platform. Any other value means an explicit user choice.
         public SentryUnityCompression RequestBodyCompressionLevel { get; set; } = SentryUnityCompression.Auto;
-        // public bool AttachStacktrace { get; set; }
-        public float SampleRate { get; set; } = 1.0f;
+
+        // public float SampleRate { get; set; } = 1.0f;
 
         // Can't rely on Unity's OnEnable() hook.
         public UnitySentryOptions TryAttachLogger()
@@ -70,7 +70,11 @@ namespace Sentry.Unity
             writer.WriteNumber("diagnosticsLevel", (int)DiagnosticsLevel);
             writer.WriteNumber("requestBodyCompressionLevel", (int)RequestBodyCompressionLevel);
             writer.WriteBoolean("attachStacktrace", AttachStacktrace);
-            writer.WriteNumber("sampleRate", SampleRate);
+
+            if (SampleRate != null)
+            {
+                writer.WriteNumber("sampleRate", SampleRate.Value);
+            }
 
             if (!string.IsNullOrWhiteSpace(Release))
             {
