@@ -2,7 +2,7 @@
 using Sentry.Integrations;
 using UnityEngine.SceneManagement;
 
-namespace Sentry.Unity
+namespace Sentry.Unity.Integrations
 {
     internal sealed class UnityBeforeSceneLoadIntegration : ISdkIntegration
     {

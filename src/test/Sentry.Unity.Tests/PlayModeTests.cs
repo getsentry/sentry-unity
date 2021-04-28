@@ -137,13 +137,21 @@ namespace Sentry.Unity.Tests
         }
 
         private static IDisposable InitSentrySdk(IEventCapture eventCapture)
-            => SentryUnity.Init(options =>
-                {
-                    options.Enabled = true;
-                    options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-                    options.DiagnosticLogger = new UnityLogger(SentryLevel.Warning);
-                    options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture));
-                });
+        {
+            SentryUnity.Init(options =>
+            {
+                options.Enabled = true;
+                options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+                options.DiagnosticLogger = new UnityLogger(SentryLevel.Warning);
+                options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture));
+            });
+            return new SentryDisposable();
+        }
+
+        private sealed class SentryDisposable : IDisposable
+        {
+            public void Dispose() => SentrySdk.Close();
+        }
     }
 
     /*

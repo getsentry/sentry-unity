@@ -5,7 +5,7 @@ namespace Sentry.Unity
 {
     public sealed class SentryUnity
     {
-        public static IDisposable Init(UnitySentryOptions unitySentryOptions)
+        public static void Init(UnitySentryOptions unitySentryOptions)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             unitySentryOptions.DetectStartupTime = StartupTimeDetectionMode.Fast;
@@ -18,14 +18,14 @@ namespace Sentry.Unity
             unitySentryOptions.AddEventProcessor(new UnityEventProcessor());
             unitySentryOptions.AddExceptionProcessor(new UnityEventExceptionProcessor());
 
-            return SentrySdk.Init(unitySentryOptions);
+            SentrySdk.Init(unitySentryOptions);
         }
 
-        public static IDisposable Init(Action<UnitySentryOptions> unitySentryOptionsConfigure)
+        public static void Init(Action<UnitySentryOptions> unitySentryOptionsConfigure)
         {
             var unitySentryOptions = new UnitySentryOptions();
             unitySentryOptionsConfigure.Invoke(unitySentryOptions);
-            return Init(unitySentryOptions);
+            Init(unitySentryOptions);
         }
     }
 }
