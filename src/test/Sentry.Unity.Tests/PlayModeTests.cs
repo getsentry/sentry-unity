@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEngine;
 using UnityEngine.SceneManagement;

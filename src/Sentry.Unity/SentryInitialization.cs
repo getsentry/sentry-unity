@@ -1,3 +1,4 @@
+using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity
