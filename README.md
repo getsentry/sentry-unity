@@ -8,15 +8,13 @@
 Sentry SDK for Unity
 ===========
 
-> This is a work in progress.
+Install it via `UPM`: `https://github.com/getsentry/unity.git#x.x.x` where `x.x.x` is [the latest release](https://github.com/getsentry/unity/releases).
 
-For the stable Unity SDK, please go to [Sentry Unity Lite](https://github.com/getsentry/sentry-unity-lite).
-
-Install via `UPM`: `https://github.com/getsentry/unity.git#x.x.x` where `x.x.x` is [the latest release](https://github.com/getsentry/unity/releases).
+Check the Sentry [Unity documentation for more details](https://docs.sentry.io/platforms/unity/).
 
 ## Sentry SDKs: Unity vs Unity Lite
 
-Sentry's current stable SDK is on a [different repository called `sentry-unity-lite`](https://github.com/getsentry/sentry-unity-lite).
+Sentry offers a minimalistic but stable SDK called `sentry-unity-lite`. It's available on a [different repository](https://github.com/getsentry/sentry-unity-lite). That SDK is being replaced with the work done on this repository.
 
 This repository is home of the new Sentry SDK for Unity with support to native crash support and offline caching.
 
