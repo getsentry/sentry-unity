@@ -1,5 +1,6 @@
 ﻿using System;
 using Sentry.Unity.Extensions;
+using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
 {
@@ -17,6 +18,8 @@ namespace Sentry.Unity
             unitySentryOptions.AddInAppExclude("UnityEditor");
             unitySentryOptions.AddEventProcessor(new UnityEventProcessor());
             unitySentryOptions.AddExceptionProcessor(new UnityEventExceptionProcessor());
+            unitySentryOptions.AddIntegration(new UnityApplicationLoggingIntegration(new EventCapture()));
+            unitySentryOptions.AddIntegration(new UnityBeforeSceneLoadIntegration());
 
             SentrySdk.Init(unitySentryOptions);
         }

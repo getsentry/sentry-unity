@@ -29,8 +29,6 @@ namespace Sentry.Unity
                 return;
             }
 
-            options.AddIntegration(new UnityApplicationLoggingIntegration(new EventCapture()));
-            options.AddIntegration(new UnityBeforeSceneLoadIntegration());
             SentryUnity.Init(options);
         }
     }
