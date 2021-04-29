@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- CI build caching to speed up build times (#)
 - UPM meta updated (#124)
 - Bump dotnet 3.3.4 (#132)
   - https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#334
