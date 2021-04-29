@@ -26,7 +26,7 @@ namespace Sentry.Unity
         /// </summary>
         public const string ConfigName = "SentryOptions";
 
-        internal static string GetConfigPath(string? notDefaultConfigName = null)
+        public static string GetConfigPath(string? notDefaultConfigName = null)
             => $"{Application.dataPath}/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.json";
 
         /// <summary>
