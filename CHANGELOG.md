@@ -7,6 +7,8 @@
   - https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#334
   - Bug fixes for performance monitoring
   - Ability to keep failed envelopes for troubleshooting when they are too large
+- Unity Sentry SDK programmatic setup (#130)
+  - SentryWindow updated
 
 ## 0.0.8
 
