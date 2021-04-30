@@ -10,7 +10,7 @@ namespace Sentry.Unity.Integrations
         internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
 
-        // TODO: remove 'IEventCapture' in  fyrther iteration
+        // TODO: remove 'IEventCapture' in  further iteration
         private readonly IEventCapture? _eventCapture;
         private readonly IAppDomain _appDomain;
 
@@ -18,8 +18,8 @@ namespace Sentry.Unity.Integrations
 
         public UnityApplicationLoggingIntegration(IAppDomain? appDomain = null, IEventCapture? eventCapture = null)
         {
-            _eventCapture = eventCapture;
             _appDomain = appDomain ?? UnityAppDomain.Instance;
+            _eventCapture = eventCapture;
         }
 
         public void Register(IHub hub, SentryOptions _)
