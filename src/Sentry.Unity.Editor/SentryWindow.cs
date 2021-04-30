@@ -104,9 +104,6 @@ namespace Sentry.Unity.Editor
             AssetDatabase.Refresh();
         }
 
-        private bool _open;
-        private CompressionLevel _content;
-
         // ReSharper disable once UnusedMember.Local
         private void OnGUI()
         {
