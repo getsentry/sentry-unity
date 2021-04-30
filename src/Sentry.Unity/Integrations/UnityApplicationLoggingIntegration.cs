@@ -6,24 +6,32 @@ namespace Sentry.Unity.Integrations
 {
     internal sealed class UnityApplicationLoggingIntegration : ISdkIntegration
     {
-        private readonly IEventCapture _eventCapture;
-
         internal readonly ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
 
-        public UnityApplicationLoggingIntegration(IEventCapture eventCapture)
+        // TODO: remove 'IEventCapture' in  fyrther iteration
+        private readonly IEventCapture? _eventCapture;
+        private readonly IAppDomain _appDomain;
+
+        private IHub? _hub;
+
+        public UnityApplicationLoggingIntegration(IAppDomain? appDomain = null, IEventCapture? eventCapture = null)
         {
             _eventCapture = eventCapture;
+            _appDomain = appDomain ?? UnityAppDomain.Instance;
         }
 
-        public void Register(IHub _, SentryOptions __)
+        public void Register(IHub hub, SentryOptions _)
         {
-            Application.logMessageReceived += OnLogMessageReceived;
-            Application.quitting += OnQuitting;
+            _hub = hub;
+
+            _appDomain.LogMessageReceived += OnLogMessageReceived;
+            _appDomain.Quitting += OnQuitting;
         }
 
-        private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
+        // Internal for testability
+        internal void OnLogMessageReceived(string condition, string stackTrace, LogType type)
         {
             var debounced = type switch
             {
@@ -42,14 +50,17 @@ namespace Sentry.Unity.Integrations
             {
                 // TODO: MinBreadcrumbLevel
                 // options.MinBreadcrumbLevel
-                SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
+                _hub?.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
                 return;
             }
 
             var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
             sentryEvent.SetTag("log.type", ToEventTagType(type));
-            _ = _eventCapture?.Capture(sentryEvent);
-            SentrySdk.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
+
+            _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
+            _hub?.CaptureEvent(sentryEvent);
+
+            _hub?.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
         }
 
         private void OnQuitting()

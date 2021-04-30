@@ -24,16 +24,14 @@ namespace Sentry.Unity.Extensions
 
         public static void ConfigureRequestBodyCompressionLevel(this UnitySentryOptions unitySentryOptions)
         {
-            // TODO: Hack. 'RequestBodyCompressionLevel' properties differ in type. Should we stick to 'SentryOptions.CompressionLevel'?
-            var sentryOptions = (SentryOptions)unitySentryOptions;
-            sentryOptions.RequestBodyCompressionLevel = unitySentryOptions.RequestBodyCompressionLevel switch
+            // The target platform is known when building the player, so 'auto' should resolve there.
+            // Since some platforms don't support GZipping fallback no no compression.
+            if (unitySentryOptions.DisableAutoCompression)
             {
-                SentryUnityCompression.Fastest => CompressionLevel.Fastest,
-                SentryUnityCompression.Optimal => CompressionLevel.Optimal,
-                // The target platform is known when building the player, so 'auto' should resolve there.
-                // Since some platforms don't support GZipping fallback no no compression.
-                SentryUnityCompression.Auto or SentryUnityCompression.NoCompression or _ => CompressionLevel.NoCompression,
-            };
+                return;
+            }
+
+            unitySentryOptions.RequestBodyCompressionLevel = CompressionLevel.NoCompression;
         }
     }
 }

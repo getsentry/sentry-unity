@@ -1,4 +1,3 @@
-using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -10,6 +9,16 @@ namespace Sentry.Unity
         public static void Init()
         {
             var options = UnitySentryOptions.LoadFromUnity();
+
+            if (!options.DisableProgrammaticInitialization)
+            {
+                /*
+                 * Call Unity's `Debug.Log()` directly via Sentry `UnityLogger`
+                 * We want to display the message in spite of how SentryOptions.json is configured
+                 */
+                new UnityLogger(SentryLevel.Info).Log(SentryLevel.Info, "Programmatic access enabled. Configure Sentry manually.");
+                return;
+            }
 
             if (!options.Enabled)
             {

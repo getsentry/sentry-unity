@@ -4,6 +4,8 @@ using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
 
+using CompressionLevel = System.IO.Compression.CompressionLevel;
+
 namespace Sentry.Unity.Editor
 {
     public class SentryWindow : EditorWindow
@@ -102,13 +104,22 @@ namespace Sentry.Unity.Editor
             AssetDatabase.Refresh();
         }
 
+        private bool _open;
+        private CompressionLevel _content;
+
         // ReSharper disable once UnusedMember.Local
         private void OnGUI()
         {
             GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+            Options.DisableProgrammaticInitialization = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Disable Programmatic Initialization", "Disable manual Sentry setup. Rely on SentryOptions config."),
+                Options.DisableProgrammaticInitialization);
+
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
             Options.Enabled = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable", "Controls enabling Sentry by initializing the SDK or not."),
                 Options.Enabled);
+
             Options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
                 Options.CaptureInEditor);
@@ -121,10 +132,6 @@ namespace Sentry.Unity.Editor
             Options.SampleRate = EditorGUILayout.Slider(
                 new GUIContent("Event Sample Rate", "What random sample rate to apply. 1.0 captures everything, 0.7 captures 70%."),
                 Options.SampleRate ?? 1.0f, 0.01f, 1);
-            Options.RequestBodyCompressionLevel = (SentryUnityCompression)EditorGUILayout.EnumPopup(
-                new GUIContent("Compress Payload", "The compression level to use on the data sent to Sentry. " +
-                                                   "Some platforms don't support GZip, 'auto' attempts to disable compression in those cases."),
-                Options.RequestBodyCompressionLevel);
             Options.AttachStacktrace = EditorGUILayout.Toggle(
                 new GUIContent("Stacktrace For Logs", "Whether to include a stack trace for non error events like logs. " +
                                                                 "Even when Unity didn't include and no Exception was thrown.."),
@@ -139,6 +146,15 @@ namespace Sentry.Unity.Editor
                 Options.Environment);
 
             GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+            Options.DisableAutoCompression = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Disable Auto Compress Payload", "Disable auto Sentry setup. Rely on SentryOptions config."),
+                Options.DisableAutoCompression);
+            Options.RequestBodyCompressionLevel = (CompressionLevel)EditorGUILayout.EnumPopup(
+                new GUIContent("Compress Payload", "The URL to your project inside Sentry. Get yours in Sentry, Project Settings."),
+                Options.RequestBodyCompressionLevel);
+            EditorGUILayout.EndToggleGroup();
+
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
             Options.Debug = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Debug Mode", "Whether the Sentry SDK should print its diagnostic logs to the console."),
                 Options.Debug);
@@ -151,6 +167,8 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Verbosity level", "The minimum level allowed to be printed to the console. " +
                                                   "Log messages with a level below this level are dropped."),
                 Options.DiagnosticsLevel);
+            EditorGUILayout.EndToggleGroup();
+
             EditorGUILayout.EndToggleGroup();
 
             EditorGUILayout.EndToggleGroup();

@@ -3,16 +3,10 @@ using System.Text.Json;
 using Sentry.Unity.Extensions;
 using UnityEngine;
 
+using CompressionLevel = System.IO.Compression.CompressionLevel;
+
 namespace Sentry.Unity
 {
-    public enum SentryUnityCompression
-    {
-        Auto = 0,
-        Optimal = 1,
-        Fastest = 2,
-        NoCompression = 3
-    }
-
     // TODO: rename to `SentryUnityOptions` for consistency across dotnet Sentry SDK
     public sealed class UnitySentryOptions : SentryOptions
     {
@@ -31,16 +25,13 @@ namespace Sentry.Unity
         /// </summary>
         public const string PackageName = "io.sentry.unity";
 
+        public bool DisableProgrammaticInitialization { get; set; }
+
         public bool Enabled { get; set; } = true;
         public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
-        // public bool Debug { get; set; } = true; // By default on only
         public bool DebugOnlyInEditor { get; set; } = true;
         public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
-        // Ideally this would be per platform
-        // Auto allows us to try figure out things in the SDK depending on the platform. Any other value means an explicit user choice.
-        public SentryUnityCompression RequestBodyCompressionLevel { get; set; } = SentryUnityCompression.Auto;
-
-        // public float SampleRate { get; set; } = 1.0f;
+        public bool DisableAutoCompression { get; set; }
 
         // Can't rely on Unity's OnEnable() hook.
         public UnitySentryOptions TryAttachLogger()
@@ -57,6 +48,7 @@ namespace Sentry.Unity
         {
             writer.WriteStartObject();
 
+            writer.WriteBoolean("disableProgrammaticInitialization", DisableProgrammaticInitialization);
             writer.WriteBoolean("enabled", Enabled);
             writer.WriteBoolean("captureInEditor", CaptureInEditor);
 
@@ -68,8 +60,10 @@ namespace Sentry.Unity
             writer.WriteBoolean("debug", Debug);
             writer.WriteBoolean("debugOnlyInEditor", DebugOnlyInEditor);
             writer.WriteNumber("diagnosticsLevel", (int)DiagnosticsLevel);
-            writer.WriteNumber("requestBodyCompressionLevel", (int)RequestBodyCompressionLevel);
             writer.WriteBoolean("attachStacktrace", AttachStacktrace);
+
+            writer.WriteBoolean("disableAutoCompression", DisableAutoCompression);
+            writer.WriteNumber("requestBodyCompressionLevel", DisableAutoCompression ? (int)RequestBodyCompressionLevel : (int)CompressionLevel.NoCompression);
 
             if (SampleRate != null)
             {
@@ -93,13 +87,15 @@ namespace Sentry.Unity
         public static UnitySentryOptions FromJson(JsonElement json)
             => new()
             {
+                DisableProgrammaticInitialization = json.GetPropertyOrNull("disableProgrammaticInitialization")?.GetBoolean() ?? false,
                 Enabled = json.GetPropertyOrNull("enabled")?.GetBoolean() ?? true,
                 Dsn = json.GetPropertyOrNull("dsn")?.GetString(),
                 CaptureInEditor = json.GetPropertyOrNull("captureInEditor")?.GetBoolean() ?? false,
                 Debug = json.GetPropertyOrNull("debug")?.GetBoolean() ?? true,
                 DebugOnlyInEditor = json.GetPropertyOrNull("debugOnlyInEditor")?.GetBoolean() ?? true,
                 DiagnosticsLevel = json.GetEnumOrNull<SentryLevel>("diagnosticsLevel") ?? SentryLevel.Error,
-                RequestBodyCompressionLevel = json.GetEnumOrNull<SentryUnityCompression>("requestBodyCompressionLevel") ?? SentryUnityCompression.Auto,
+                RequestBodyCompressionLevel = json.GetEnumOrNull<CompressionLevel>("requestBodyCompressionLevel") ?? CompressionLevel.NoCompression,
+                DisableAutoCompression = json.GetPropertyOrNull("disableAutoCompression")?.GetBoolean() ?? false,
                 AttachStacktrace = json.GetPropertyOrNull("attachStacktrace")?.GetBoolean() ?? false,
                 SampleRate = json.GetPropertyOrNull("sampleRate")?.GetSingle() ?? 1.0f,
                 Release = json.GetPropertyOrNull("release")?.GetString(),
