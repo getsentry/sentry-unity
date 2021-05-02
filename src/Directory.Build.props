@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-    <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
+    <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
     <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
     <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
     <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
@@ -39,9 +39,9 @@
     <ArtifactName>game</ArtifactName>
   </PropertyGroup>
 
-  <Target Name="BuildUnityProject" BeforeTargets="PrepareForBuild">
+  <Target Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'" Name="BuildUnityProject" BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath ../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName) "></Exec>
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(MSBuildProjectDirectory)/../../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName) "></Exec>
   </Target>
 
 </Project>
