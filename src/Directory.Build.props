@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
     <Version>0.0.8</Version>
     <LangVersion>9</LangVersion>
@@ -10,17 +11,37 @@
     <PackageRuntimePath>../../$(PackageFolderName)/Runtime</PackageRuntimePath>
     <PackageEditorPath>../../$(PackageFolderName)/Editor</PackageEditorPath>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.0" PrivateAssets="All" />
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
-  <PropertyGroup>
-    <UnityPath Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed</UnityPath>
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/</UnityPath>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
     <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor\Data\Managed</UnityPath>
-    <UnityPath Condition="$(UnityPath) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/Contents/Managed</UnityPath>
+    <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
+    <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
+    <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
+    <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
+    <ArtifactName>game.exe</ArtifactName>
   </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
+    <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
+    <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
+    <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
+    <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
+    <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
+    <ArtifactName>game</ArtifactName>
+  </PropertyGroup>
+
+  <Target Name="BuildUnityProject" BeforeTargets="PrepareForBuild">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath ../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName) "></Exec>
+  </Target>
+
 </Project>

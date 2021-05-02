@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="UnityEditor">
-      <HintPath>$(UnityPath)/UnityEditor.dll</HintPath>
+      <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
