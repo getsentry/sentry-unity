@@ -16,7 +16,9 @@ Check the Sentry [Unity documentation for more details](https://docs.sentry.io/p
 
 Sentry offers a minimalistic but stable SDK called `sentry-unity-lite`. It's available on a [different repository](https://github.com/getsentry/sentry-unity-lite). That SDK is being replaced with the work done on this repository.
 
-This repository is home of the new Sentry SDK for Unity with support to native crash support and offline caching.
+This repository is home of the new Sentry SDK for Unity with offline caching, performance monitoring and more.
+
+> Note the goal is to soon add support to native crashes, release health and more features.
 
 If you'd like to get involved in the SDK development, you can [join Sentry's Discord server and say hi on the `#unity` channel](https://discord.gg/UmjjsgRAFa).
 
