@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.0.9
 
 - UPM meta updated (#124)
 - Bump dotnet 3.3.4 (#132)
