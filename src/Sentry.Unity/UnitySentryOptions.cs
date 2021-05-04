@@ -1,8 +1,11 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Sentry.Extensibility;
 using UnityEngine;
+
+[assembly: InternalsVisibleTo("Sentry.Unity.Editor")]
 
 namespace Sentry.Unity
 {
@@ -26,7 +29,7 @@ namespace Sentry.Unity
         /// </summary>
         public const string ConfigName = "SentryOptions";
 
-        public static string GetConfigPath(string? notDefaultConfigName = null)
+        internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"{Application.dataPath}/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.json";
 
         /// <summary>
