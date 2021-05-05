@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add missing meta files (cd9c7fd)
+
+## 0.0.9
+
 - UPM meta updated (#124)
 - Bump dotnet 3.3.4 (#132)
   - https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#334
