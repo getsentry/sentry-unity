@@ -1,11 +1,8 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Sentry.Extensibility;
 using UnityEngine;
-
-[assembly: InternalsVisibleTo("Sentry.Unity.Editor")]
 
 namespace Sentry.Unity
 {
