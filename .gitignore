@@ -19,6 +19,7 @@ package-dev/**/*.dll
 package-dev/**/*.meta
 package-dev/**/*.pdb
 package-dev/**/*.xml
+package-dev/**/TestSentryOptions.json
 
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/
