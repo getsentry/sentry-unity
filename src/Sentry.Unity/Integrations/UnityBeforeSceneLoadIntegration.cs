@@ -5,14 +5,14 @@ namespace Sentry.Unity.Integrations
 {
     internal sealed class UnityBeforeSceneLoadIntegration : ISdkIntegration
     {
-        private readonly IAppDomain _appDomain;
+        private readonly IApplication _application;
 
-        public UnityBeforeSceneLoadIntegration(IAppDomain? appDomain = null)
-            => _appDomain = appDomain ?? UnityAppDomain.Instance;
+        public UnityBeforeSceneLoadIntegration(IApplication? appDomain = null)
+            => _application = appDomain ?? ApplicationAdapter.Instance;
 
         public void Register(IHub hub, SentryOptions options)
         {
-            var data = _appDomain.ActiveSceneName is { } name
+            var data = _application.ActiveSceneName is { } name
                 ? new Dictionary<string, string> {{"scene", name}}
                 : null;
 

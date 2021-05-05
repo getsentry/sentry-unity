@@ -9,10 +9,10 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public TestHub Hub => new ();
-            public IAppDomain AppDomain => new TestAppDomain();
+            public TestHub Hub => new();
+            public IApplication Application => new TestApplication();
 
-            public UnityApplicationLoggingIntegration GetSut() => new (AppDomain);
+            public UnityApplicationLoggingIntegration GetSut() => new(Application);
         }
 
         private readonly Fixture _fixture = new();

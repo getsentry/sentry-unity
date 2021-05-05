@@ -1,11 +1,10 @@
 ﻿using System;
-using Sentry.Integrations;
 using Sentry.Unity.Extensions;
 using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
 {
-    public sealed class SentryUnity
+    public static class SentryUnity
     {
         public static void Init(UnitySentryOptions unitySentryOptions)
         {

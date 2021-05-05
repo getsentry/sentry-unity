@@ -4,18 +4,18 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Integrations
 {
-    internal interface IAppDomain
+    internal interface IApplication
     {
         event Application.LogCallback LogMessageReceived;
         event Action Quitting;
         string ActiveSceneName { get; }
     }
 
-    internal sealed class UnityAppDomain : IAppDomain
+    internal sealed class ApplicationAdapter : IApplication
     {
-        public static readonly UnityAppDomain Instance = new();
+        public static readonly ApplicationAdapter Instance = new();
 
-        private UnityAppDomain()
+        private ApplicationAdapter()
         {
             Application.logMessageReceived += OnLogMessageReceived;
             Application.quitting += OnQuitting;

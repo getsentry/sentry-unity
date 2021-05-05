@@ -6,7 +6,7 @@ namespace Sentry.Unity.Extensions
     internal static class SentryOptionsExtensions
     {
         public static void ConfigureRelease(this SentryOptions sentryOptions)
-            // Uses the game `version` as Release
+            // Uses the game `version` as Release unless the user defined one via the Options
             => sentryOptions.Release = sentryOptions.Release is { } release
                 ? release
                 : Application.version;

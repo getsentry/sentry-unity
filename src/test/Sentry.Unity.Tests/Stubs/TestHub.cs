@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace Sentry.Unity.Tests.Stubs
 {
     internal sealed class TestHub : IHub
     {
-        private readonly List<SentryEvent> _capturedEvents = new ();
+        private readonly List<SentryEvent> _capturedEvents = new();
 
         public IReadOnlyList<SentryEvent> CapturedEvents => _capturedEvents;
 

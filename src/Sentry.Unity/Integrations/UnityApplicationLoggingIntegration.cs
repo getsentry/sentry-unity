@@ -12,13 +12,13 @@ namespace Sentry.Unity.Integrations
 
         // TODO: remove 'IEventCapture' in  further iteration
         private readonly IEventCapture? _eventCapture;
-        private readonly IAppDomain _appDomain;
+        private readonly IApplication _application;
 
         private IHub? _hub;
 
-        public UnityApplicationLoggingIntegration(IAppDomain? appDomain = null, IEventCapture? eventCapture = null)
+        public UnityApplicationLoggingIntegration(IApplication? appDomain = null, IEventCapture? eventCapture = null)
         {
-            _appDomain = appDomain ?? UnityAppDomain.Instance;
+            _application = appDomain ?? ApplicationAdapter.Instance;
             _eventCapture = eventCapture;
         }
 
@@ -26,8 +26,8 @@ namespace Sentry.Unity.Integrations
         {
             _hub = hub;
 
-            _appDomain.LogMessageReceived += OnLogMessageReceived;
-            _appDomain.Quitting += OnQuitting;
+            _application.LogMessageReceived += OnLogMessageReceived;
+            _application.Quitting += OnQuitting;
         }
 
         // Internal for testability
@@ -40,7 +40,7 @@ namespace Sentry.Unity.Integrations
                 LogType.Warning => WarningTimeDebounce.Debounced(),
                 _ => true
             };
-            if (!debounced)
+            if (!debounced || _hub is null)
             {
                 return;
             }
@@ -50,7 +50,7 @@ namespace Sentry.Unity.Integrations
             {
                 // TODO: MinBreadcrumbLevel
                 // options.MinBreadcrumbLevel
-                _hub?.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
+                _hub.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
                 return;
             }
 
@@ -58,9 +58,9 @@ namespace Sentry.Unity.Integrations
             sentryEvent.SetTag("log.type", ToEventTagType(type));
 
             _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
-            _hub?.CaptureEvent(sentryEvent);
+            _hub.CaptureEvent(sentryEvent);
 
-            _hub?.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
+            _hub.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
         }
 
         private void OnQuitting()
@@ -69,7 +69,7 @@ namespace Sentry.Unity.Integrations
             //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
             // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
             // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
-            Application.logMessageReceived -= OnLogMessageReceived;
+            _application.LogMessageReceived -= OnLogMessageReceived;
             SentrySdk.Close();
         }
 
