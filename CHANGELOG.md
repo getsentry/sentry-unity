@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add missing meta files (cd9c7fd)
+
 ## 0.0.9
 
 - UPM meta updated (#124)
