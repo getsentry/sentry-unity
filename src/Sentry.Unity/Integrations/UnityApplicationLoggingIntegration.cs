@@ -70,7 +70,7 @@ namespace Sentry.Unity.Integrations
             // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
             // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
             _application.LogMessageReceived -= OnLogMessageReceived;
-            SentrySdk.Close();
+            (_hub as IDisposable)?.Dispose();
         }
 
         private static string ToEventTagType(LogType logType)

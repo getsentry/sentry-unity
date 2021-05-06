@@ -1,6 +1,7 @@
 ﻿using System;
 using Sentry.Unity.Extensions;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -11,9 +12,25 @@ namespace Sentry.Unity
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             unitySentryOptions.DetectStartupTime = StartupTimeDetectionMode.Fast;
 
-            unitySentryOptions.ConfigureRelease();
-            unitySentryOptions.ConfigureEnvironment();
-            unitySentryOptions.ConfigureRequestBodyCompressionLevel();
+            // Uses the game `version` as Release unless the user defined one via the Options
+            unitySentryOptions.Release ??= Application.version;
+
+            // The target platform is known when building the player, so 'auto' should resolve there.
+            // Since some platforms don't support GZipping fallback no no compression.
+            unitySentryOptions.RequestBodyCompressionLevel = unitySentryOptions.DisableAutoCompression
+                ? unitySentryOptions.RequestBodyCompressionLevel
+                : System.IO.Compression.CompressionLevel.NoCompression;
+
+            unitySentryOptions.Environment = unitySentryOptions.Environment is { } environment
+                ? environment
+                : Application.isEditor
+                    ? "editor"
+#if DEVELOPMENT_BUILD
+                    : "development";
+#else
+                    : "production";
+#endif 
+
             unitySentryOptions.AddInAppExclude("UnityEngine");
             unitySentryOptions.AddInAppExclude("UnityEditor");
             unitySentryOptions.AddEventProcessor(new UnityEventProcessor());
