@@ -15,12 +15,12 @@ Overall, there are two "flows" to take into account - `Development` and `Release
 
 ## Finding the Unity installation
 
-The `UnityPath` configured in `src/Directory.Build.props` does a lookup at different locations to find Unity.
+The `UnityPath` in `src/Directory.Build.props` does a lookup at different locations to find Unity.
 This is different per operating system. You can adjust it as needed:
 
 ```xml
 <Project>
-  <!-- Other propertes & groups -->
+  <!-- Other properties & groups -->
   <PropertyGroup>
     <UnityPath Condition="<YOUR_PATH_CONDITION>">YOUR_PATH</UnityPath>
   </PropertyGroup>

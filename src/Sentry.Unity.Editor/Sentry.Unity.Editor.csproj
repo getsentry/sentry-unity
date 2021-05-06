@@ -7,11 +7,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
-      <HintPath>$(UnityPath)\UnityEngine.dll</HintPath>
+      <HintPath>$(UnityManagedPath)\UnityEngine.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEditor">
-      <HintPath>$(UnityPath)\UnityEditor.dll</HintPath>
+      <HintPath>$(UnityManagedPath)\UnityEditor.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
