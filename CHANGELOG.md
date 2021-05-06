@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.0.10
 
 - Add missing meta files (cd9c7fd)
 
