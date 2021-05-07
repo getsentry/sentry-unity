@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using Sentry.Unity.Extensions;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 
 using CompressionLevel = System.IO.Compression.CompressionLevel;
@@ -33,11 +34,39 @@ namespace Sentry.Unity
         public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
         public bool DisableAutoCompression { get; set; }
 
+        public UnitySentryOptions()
+        {
+            // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
+            DetectStartupTime = StartupTimeDetectionMode.Fast;
+
+            // Uses the game `version` as Release unless the user defined one via the Options
+            Release ??= Application.version; // TODO: Should we move it out and use via IApplication something?
+
+            // The target platform is known when building the player, so 'auto' should resolve there.
+            // Since some platforms don't support GZipping fallback no no compression.
+            RequestBodyCompressionLevel = DisableAutoCompression
+                ? RequestBodyCompressionLevel
+                : CompressionLevel.NoCompression;
+
+            Environment = Environment is { } environment
+                ? environment
+                : Application.isEditor // TODO: Should we move it out and use via IApplication something?
+                    ? "editor"
+                    : "production";
+
+            this.AddInAppExclude("UnityEngine");
+            this.AddInAppExclude("UnityEditor");
+            this.AddEventProcessor(new UnityEventProcessor());
+            this.AddExceptionProcessor(new UnityEventExceptionProcessor());
+            this.AddIntegration(new UnityApplicationLoggingIntegration());
+            this.AddIntegration(new UnityBeforeSceneLoadIntegration());
+        }
+
         // Can't rely on Unity's OnEnable() hook.
         public UnitySentryOptions TryAttachLogger()
         {
             DiagnosticLogger = Debug
-                               && (!DebugOnlyInEditor || Application.isEditor)
+                               && (!DebugOnlyInEditor || Application.isEditor) // TODO: Should we move it out and use via IApplication something?
                 ? new UnityLogger(DiagnosticsLevel)
                 : null;
 
