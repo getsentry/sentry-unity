@@ -25,11 +25,7 @@ namespace Sentry.Unity
                 ? environment
                 : Application.isEditor
                     ? "editor"
-#if DEVELOPMENT_BUILD
-                    : "development";
-#else
                     : "production";
-#endif 
 
             unitySentryOptions.AddInAppExclude("UnityEngine");
             unitySentryOptions.AddInAppExclude("UnityEditor");
