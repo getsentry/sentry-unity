@@ -54,8 +54,10 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace));
-            sentryEvent.SetTag("log.type", ToEventTagType(type));
+            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+            {
+                Level = ToEventTagType(type)
+            };
 
             _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
             _hub.CaptureEvent(sentryEvent);
@@ -73,15 +75,15 @@ namespace Sentry.Unity.Integrations
             (_hub as IDisposable)?.Dispose();
         }
 
-        private static string ToEventTagType(LogType logType)
+        private static SentryLevel ToEventTagType(LogType logType)
             => logType switch
             {
-                LogType.Assert => "assert",
-                LogType.Error => "error",
-                LogType.Exception => "exception",
-                LogType.Log => "log",
-                LogType.Warning => "warning",
-                _ => "unknown"
+                LogType.Assert => SentryLevel.Error,
+                LogType.Error => SentryLevel.Error,
+                LogType.Exception => SentryLevel.Error,
+                LogType.Log => SentryLevel.Info,
+                LogType.Warning => SentryLevel.Warning,
+                _ => SentryLevel.Fatal
             };
 
         private static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
