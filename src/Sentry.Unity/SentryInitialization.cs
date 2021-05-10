@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,6 +32,12 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
+            if (!File.Exists(UnitySentryOptions.GetConfigPath()))
+            {
+                Debug.LogWarning("Couldn't find the configuration file SentryOptions.json. Did you already configure Sentry?\nYou can do that through the editor: Tools -> Sentry");
+                return;
+            }
+
             var options = UnitySentryOptions.LoadFromUnity();
 
             if (!options.Enabled)
