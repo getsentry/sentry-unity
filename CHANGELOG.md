@@ -1,14 +1,8 @@
 # Changelog
 
-## Unreleased
-
-### Fixes
-
-- Missing meta files warnings (#146)
-
 ## 0.0.12
 
-- Craft Release v2
+- Missing meta files warnings (#146)
 
 ## 0.0.11
 
