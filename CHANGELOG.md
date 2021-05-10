@@ -1,8 +1,12 @@
 # Changelog
 
-## 0.0.12
+## 0.0.13
 
 - Missing meta files warnings (#146)
+
+## 0.0.12
+
+- Release process improvements
 
 ## 0.0.11
 
