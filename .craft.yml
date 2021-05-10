@@ -9,8 +9,8 @@ artifactProvider:
   name: github
 targets:
   - name: upm
-    releaseOwner: "getsentry"
-    releaseRepo: "unity"
+    releaseRepoOwner: "getsentry"
+    releaseRepoName: "unity"
   - name: github
   - name: registry
     type: sdk
