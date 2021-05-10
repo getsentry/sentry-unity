@@ -1,3 +1,6 @@
 [submodule "src/sentry-dotnet"]
 	path = src/sentry-dotnet
 	url = https://github.com/getsentry/sentry-dotnet.git
+[submodule "src/sentry-java"]
+	path = src/sentry-java
+	url = git@github.com:getsentry/sentry-java.git
