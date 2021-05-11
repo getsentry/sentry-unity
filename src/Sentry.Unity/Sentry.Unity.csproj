@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
-      <HintPath>$(UnityPath)\UnityEngine.dll</HintPath>
+      <HintPath>$(UnityManagedPath)\UnityEngine.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

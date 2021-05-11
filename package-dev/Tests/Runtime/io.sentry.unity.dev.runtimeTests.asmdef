@@ -1,21 +1,23 @@
 {
-  "name": "io.sentry.unity.dev.runtimeTests",
-  "references": [
-    "io.sentry.unity.dev.runtime",
-    "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
-  ],
-  "includePlatforms": [],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": true,
-  "precompiledReferences": [
-    "nunit.framework.dll"
-  ],
-  "autoReferenced": false,
-  "defineConstraints": [
-    "UNITY_INCLUDE_TESTS"
-  ],
-  "versionDefines": [],
-  "noEngineReferences": false
+    "name": "io.sentry.unity.dev.runtimeTests",
+    "references": [
+        "io.sentry.unity.dev.runtime",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [
+        "Editor"
+    ],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

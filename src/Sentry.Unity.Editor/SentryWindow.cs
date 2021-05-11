@@ -16,10 +16,6 @@ namespace Sentry.Unity.Editor
 
         protected virtual string SentryOptionsAssetName { get; } = UnitySentryOptions.ConfigName;
 
-        // Will be used only from Unity Editor
-        protected string SentryOptionsAssetPath
-            => $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{SentryOptionsAssetName}.json";
-
         public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
@@ -37,7 +33,7 @@ namespace Sentry.Unity.Editor
 
         private UnitySentryOptions LoadUnitySentryOptions()
         {
-            if (File.Exists(SentryOptionsAssetPath))
+            if (File.Exists(UnitySentryOptions.GetConfigPath()))
             {
                 return UnitySentryOptions.LoadFromUnity();
             }
@@ -45,7 +41,7 @@ namespace Sentry.Unity.Editor
             var unitySentryOptions = new UnitySentryOptions { Enabled = true };
             unitySentryOptions
                 .TryAttachLogger()
-                .SaveToUnity(SentryOptionsAssetPath);
+                .SaveToUnity(UnitySentryOptions.GetConfigPath());
 
             return unitySentryOptions;
         }
@@ -100,7 +96,7 @@ namespace Sentry.Unity.Editor
         {
             Validate();
 
-            Options.SaveToUnity(SentryOptionsAssetPath);
+            Options.SaveToUnity(UnitySentryOptions.GetConfigPath());
             AssetDatabase.Refresh();
         }
 

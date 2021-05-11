@@ -1,6 +1,22 @@
 # Changelog
 
-## Unreleased
+## 0.0.13
+
+- Missing meta files warnings (#146)
+
+## 0.0.12
+
+- Release process improvements
+
+## 0.0.11
+
+- Craft Release
+
+## 0.0.10
+
+- Add missing meta files (cd9c7fd)
+
+## 0.0.9
 
 - UPM meta updated (#124)
 - Bump dotnet 3.3.4 (#132)

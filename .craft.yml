@@ -1,4 +1,4 @@
-minVersion: '0.18.0'
+minVersion: "0.18.0"
 github:
   owner: getsentry
   repo: sentry-unity
@@ -8,6 +8,9 @@ statusProvider:
 artifactProvider:
   name: github
 targets:
+  - name: upm
+    releaseRepoOwner: "getsentry"
+    releaseRepoName: "unity"
   - name: github
   - name: registry
     type: sdk
