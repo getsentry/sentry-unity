@@ -44,7 +44,7 @@ async function checkChangelog() {
 
   markdown(
     `
-**Instructions and example for changelog**
+### Instructions and example for changelog
 
 Please add an entry to \`CHANGELOG.md\` to the "Unreleased" section. Make sure the entry includes this PR's number.
 
