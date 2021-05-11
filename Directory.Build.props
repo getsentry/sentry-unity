@@ -19,6 +19,13 @@
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
     <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
     <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
@@ -56,12 +63,5 @@
     IgnoreStandardErrorWarningFormat="true"
     IgnoreExitCode="true"></Exec>
   </Target>
-
-  <ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
 
 </Project>
