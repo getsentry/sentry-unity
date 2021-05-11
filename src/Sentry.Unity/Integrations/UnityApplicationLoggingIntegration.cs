@@ -10,17 +10,14 @@ namespace Sentry.Unity.Integrations
         internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
 
-        // TODO: remove 'IEventCapture' in  further iteration
-        private readonly IEventCapture? _eventCapture;
         private readonly IApplication _application;
 
         private IHub? _hub;
         private SentryOptions? _sentryOptions;
 
-        public UnityApplicationLoggingIntegration(IApplication? appDomain = null, IEventCapture? eventCapture = null)
+        public UnityApplicationLoggingIntegration(IApplication? appDomain = null)
         {
             _application = appDomain ?? ApplicationAdapter.Instance;
-            _eventCapture = eventCapture;
         }
 
         public void Register(IHub hub, SentryOptions sentryOptions)
@@ -61,7 +58,6 @@ namespace Sentry.Unity.Integrations
                 Level = ToEventTagType(type)
             };
 
-            _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
             _hub.CaptureEvent(sentryEvent);
 
             // So the next event includes this error as a breadcrumb:

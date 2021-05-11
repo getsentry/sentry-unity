@@ -8,8 +8,13 @@ using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
 {
-    // TODO: rename to `SentryUnityOptions` for consistency across dotnet Sentry SDK
-    public sealed class UnitySentryOptions : SentryOptions
+    /// <summary>
+    /// Sentry Unity Options.
+    /// </summary>
+    /// <remarks>
+    /// Options to configure Unity while extending the Sentry .NET SDK functionality.
+    /// </remarks>
+    public sealed class SentryUnityOptions : SentryOptions
     {
         /// <summary>
         /// Relative to Assets/Resources
@@ -35,7 +40,7 @@ namespace Sentry.Unity
         public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
         public bool EnableAutoPayloadCompression { get; set; }
 
-        public UnitySentryOptions()
+        public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
@@ -64,7 +69,7 @@ namespace Sentry.Unity
         }
 
         // Can't rely on Unity's OnEnable() hook.
-        public UnitySentryOptions TryAttachLogger()
+        public SentryUnityOptions TryAttachLogger()
         {
             DiagnosticLogger = Debug
                                && (!DebugOnlyInEditor || Application.isEditor) // TODO: Should we move it out and use via IApplication something?
@@ -113,7 +118,7 @@ namespace Sentry.Unity
             writer.Flush();
         }
 
-        public static UnitySentryOptions FromJson(JsonElement json)
+        public static SentryUnityOptions FromJson(JsonElement json)
             => new()
             {
                 Enabled = json.GetPropertyOrNull("enabled")?.GetBoolean() ?? true,
@@ -130,7 +135,7 @@ namespace Sentry.Unity
                 Environment = json.GetPropertyOrNull("environment")?.GetString()
             };
 
-        public static UnitySentryOptions LoadFromUnity()
+        public static SentryUnityOptions LoadFromUnity()
         {
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");

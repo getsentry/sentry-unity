@@ -8,7 +8,7 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public TestHub Hub => new();
+            public Stubs.TestHub Hub => new();
             public IApplication Application => new TestApplication();
 
             public UnityBeforeSceneLoadIntegration GetSut() => new(Application);
