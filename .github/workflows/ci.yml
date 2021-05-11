@@ -10,6 +10,7 @@ on:
     paths:
     - '.github/**/*.yaml'
     - 'src/**'
+    - 'test/**'
     - 'sample/**'
 
 env:
@@ -101,7 +102,6 @@ jobs:
         run: |
           dotnet nuget locals all --clear
           dotnet build -c Release "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed"
-        working-directory: src/
 
       # Don't fail the build here, we have a more detailed step later that provides more info.
       # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
