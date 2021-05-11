@@ -1,20 +1,15 @@
-using System;
 using System.IO;
 using System.Text.Json;
-using Sentry.Extensibility;
+using Sentry.Unity.Extensions;
+using Sentry.Unity.Integrations;
 using UnityEngine;
+
+using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
 {
-    public enum SentryUnityCompression
-    {
-        Auto = 0,
-        Optimal = 1,
-        Fastest = 2,
-        NoCompression = 3
-    }
-
-    public sealed class UnitySentryOptions
+    // TODO: rename to `SentryUnityOptions` for consistency across dotnet Sentry SDK
+    public sealed class UnitySentryOptions : SentryOptions
     {
         /// <summary>
         /// Relative to Assets/Resources
@@ -36,25 +31,43 @@ namespace Sentry.Unity
 
         public bool Enabled { get; set; } = true;
         public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
-        public string? Dsn { get; set; }
-        public bool Debug { get; set; } = true; // By default on only
         public bool DebugOnlyInEditor { get; set; } = true;
         public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
-        // Ideally this would be per platform
-        // Auto allows us to try figure out things in the SDK depending on the platform. Any other value means an explicit user choice.
-        public SentryUnityCompression RequestBodyCompressionLevel { get; set; } = SentryUnityCompression.Auto;
-        public bool AttachStacktrace { get; set; }
-        public float SampleRate { get; set; } = 1.0f;
+        public bool EnableAutoPayloadCompression { get; set; }
 
-        public IDiagnosticLogger? Logger { get; private set; }
-        public string? Release { get; set; }
-        public string? Environment { get; set; }
+        public UnitySentryOptions()
+        {
+            // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
+            DetectStartupTime = StartupTimeDetectionMode.Fast;
+
+            // Uses the game `version` as Release unless the user defined one via the Options
+            Release ??= Application.version; // TODO: Should we move it out and use via IApplication something?
+
+            // The target platform is known when building the player, so 'auto' should resolve there.
+            // Since some platforms don't support GZipping fallback no no compression.
+            RequestBodyCompressionLevel = EnableAutoPayloadCompression
+                ? CompressionLevel.NoCompression
+                : RequestBodyCompressionLevel;
+
+            Environment = Environment is { } environment
+                ? environment
+                : Application.isEditor // TODO: Should we move it out and use via IApplication something?
+                    ? "editor"
+                    : "production";
+
+            this.AddInAppExclude("UnityEngine");
+            this.AddInAppExclude("UnityEditor");
+            this.AddEventProcessor(new UnityEventProcessor());
+            this.AddExceptionProcessor(new UnityEventExceptionProcessor());
+            this.AddIntegration(new UnityApplicationLoggingIntegration());
+            this.AddIntegration(new UnityBeforeSceneLoadIntegration());
+        }
 
         // Can't rely on Unity's OnEnable() hook.
         public UnitySentryOptions TryAttachLogger()
         {
-            Logger = Debug
-                     && (!DebugOnlyInEditor || Application.isEditor)
+            DiagnosticLogger = Debug
+                               && (!DebugOnlyInEditor || Application.isEditor) // TODO: Should we move it out and use via IApplication something?
                 ? new UnityLogger(DiagnosticsLevel)
                 : null;
 
@@ -76,9 +89,15 @@ namespace Sentry.Unity
             writer.WriteBoolean("debug", Debug);
             writer.WriteBoolean("debugOnlyInEditor", DebugOnlyInEditor);
             writer.WriteNumber("diagnosticsLevel", (int)DiagnosticsLevel);
-            writer.WriteNumber("requestBodyCompressionLevel", (int)RequestBodyCompressionLevel);
             writer.WriteBoolean("attachStacktrace", AttachStacktrace);
-            writer.WriteNumber("sampleRate", SampleRate);
+
+            writer.WriteBoolean("enableAutoPayloadCompression", EnableAutoPayloadCompression);
+            writer.WriteNumber("requestBodyCompressionLevel", EnableAutoPayloadCompression ? (int)CompressionLevel.NoCompression : (int)RequestBodyCompressionLevel);
+
+            if (SampleRate != null)
+            {
+                writer.WriteNumber("sampleRate", SampleRate.Value);
+            }
 
             if (!string.IsNullOrWhiteSpace(Release))
             {
@@ -103,7 +122,8 @@ namespace Sentry.Unity
                 Debug = json.GetPropertyOrNull("debug")?.GetBoolean() ?? true,
                 DebugOnlyInEditor = json.GetPropertyOrNull("debugOnlyInEditor")?.GetBoolean() ?? true,
                 DiagnosticsLevel = json.GetEnumOrNull<SentryLevel>("diagnosticsLevel") ?? SentryLevel.Error,
-                RequestBodyCompressionLevel = json.GetEnumOrNull<SentryUnityCompression>("requestBodyCompressionLevel") ?? SentryUnityCompression.Auto,
+                RequestBodyCompressionLevel = json.GetEnumOrNull<CompressionLevel>("requestBodyCompressionLevel") ?? CompressionLevel.NoCompression,
+                EnableAutoPayloadCompression = json.GetPropertyOrNull("enableAutoPayloadCompression")?.GetBoolean() ?? false,
                 AttachStacktrace = json.GetPropertyOrNull("attachStacktrace")?.GetBoolean() ?? false,
                 SampleRate = json.GetPropertyOrNull("sampleRate")?.GetSingle() ?? 1.0f,
                 Release = json.GetPropertyOrNull("release")?.GetString(),
@@ -123,48 +143,6 @@ namespace Sentry.Unity
             using var fileStream = new FileStream(path, FileMode.Create);
             using var writer = new Utf8JsonWriter(fileStream);
             WriteTo(writer);
-        }
-    }
-
-    internal static class JsonExtensions
-    {
-        // From Sentry.Internal.Extensions.JsonExtensions
-        public static JsonElement? GetPropertyOrNull(this JsonElement json, string name)
-        {
-            if (json.ValueKind != JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            if (json.TryGetProperty(name, out var result))
-            {
-                if (json.ValueKind == JsonValueKind.Undefined ||
-                    json.ValueKind == JsonValueKind.Null)
-                {
-                    return null;
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        public static TEnum? GetEnumOrNull<TEnum>(this JsonElement json, string name)
-            where TEnum : struct
-        {
-            var enumString = json.GetPropertyOrNull(name)?.ToString();
-            if (string.IsNullOrWhiteSpace(enumString))
-            {
-                return null;
-            }
-
-            if (!Enum.TryParse(enumString, true, out TEnum value))
-            {
-                return null;
-            }
-
-            return value;
         }
     }
 }

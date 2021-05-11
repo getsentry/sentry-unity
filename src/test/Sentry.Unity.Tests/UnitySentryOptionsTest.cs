@@ -1,5 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -35,9 +35,10 @@ namespace Sentry.Unity.Tests
                 Debug = true,
                 DebugOnlyInEditor = false,
                 DiagnosticsLevel = SentryLevel.Info,
-                RequestBodyCompressionLevel = SentryUnityCompression.Optimal,
+                EnableAutoPayloadCompression = false,
+                RequestBodyCompressionLevel = CompressionLevel.NoCompression,
                 AttachStacktrace = true,
-                SampleRate = 1.15f,
+                SampleRate = 1f,
                 Release = "release",
                 Environment = "test"
             };
@@ -63,11 +64,12 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.Debug, actual.Debug);
             Assert.AreEqual(expected.DebugOnlyInEditor, actual.DebugOnlyInEditor);
             Assert.AreEqual(expected.DiagnosticsLevel, actual.DiagnosticsLevel);
-            Assert.AreEqual(expected.RequestBodyCompressionLevel, actual.RequestBodyCompressionLevel);
             Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);
             Assert.AreEqual(expected.Release, actual.Release);
             Assert.AreEqual(expected.Environment, actual.Environment);
+            Assert.AreEqual(expected.EnableAutoPayloadCompression, actual.EnableAutoPayloadCompression);
+            Assert.AreEqual(expected.RequestBodyCompressionLevel, actual.RequestBodyCompressionLevel);
         }
 
         private static string GetTestOptionsFilePath()
