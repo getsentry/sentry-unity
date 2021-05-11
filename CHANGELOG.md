@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update and extend dangerfile ([#156](https://github.com/getsentry/sentry-unity/pull/156))
+
 ## 0.0.13
 
 - Missing meta files warnings (#146)
