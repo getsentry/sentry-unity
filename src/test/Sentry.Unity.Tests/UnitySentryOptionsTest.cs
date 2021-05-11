@@ -35,7 +35,7 @@ namespace Sentry.Unity.Tests
                 Debug = true,
                 DebugOnlyInEditor = false,
                 DiagnosticsLevel = SentryLevel.Info,
-                DisableAutoCompression = false,
+                EnableAutoPayloadCompression = false,
                 RequestBodyCompressionLevel = CompressionLevel.NoCompression,
                 AttachStacktrace = true,
                 SampleRate = 1f,
@@ -68,7 +68,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);
             Assert.AreEqual(expected.Release, actual.Release);
             Assert.AreEqual(expected.Environment, actual.Environment);
-            Assert.AreEqual(expected.DisableAutoCompression, actual.DisableAutoCompression);
+            Assert.AreEqual(expected.EnableAutoPayloadCompression, actual.EnableAutoPayloadCompression);
             Assert.AreEqual(expected.RequestBodyCompressionLevel, actual.RequestBodyCompressionLevel);
         }
 

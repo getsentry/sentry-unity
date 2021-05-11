@@ -15,6 +15,7 @@ namespace Sentry.Unity.Integrations
         private readonly IApplication _application;
 
         private IHub? _hub;
+        private SentryOptions? _sentryOptions;
 
         public UnityApplicationLoggingIntegration(IApplication? appDomain = null, IEventCapture? eventCapture = null)
         {
@@ -22,9 +23,10 @@ namespace Sentry.Unity.Integrations
             _eventCapture = eventCapture;
         }
 
-        public void Register(IHub hub, SentryOptions _)
+        public void Register(IHub hub, SentryOptions sentryOptions)
         {
             _hub = hub;
+            _sentryOptions = sentryOptions;
 
             _application.LogMessageReceived += OnLogMessageReceived;
             _application.Quitting += OnQuitting;
@@ -62,6 +64,7 @@ namespace Sentry.Unity.Integrations
             _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
             _hub.CaptureEvent(sentryEvent);
 
+            // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
         }
 
@@ -72,7 +75,7 @@ namespace Sentry.Unity.Integrations
             // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
             // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
             _application.LogMessageReceived -= OnLogMessageReceived;
-            (_hub as IDisposable)?.Dispose();
+            _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
         }
 
         private static SentryLevel ToEventTagType(LogType logType)

@@ -26,13 +26,11 @@ namespace Sentry.Unity
         /// </summary>
         public const string PackageName = "io.sentry.unity";
 
-        public bool DisableProgrammaticInitialization { get; set; }
-
         public bool Enabled { get; set; } = true;
         public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
         public bool DebugOnlyInEditor { get; set; } = true;
         public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
-        public bool DisableAutoCompression { get; set; }
+        public bool EnableAutoPayloadCompression { get; set; }
 
         public UnitySentryOptions()
         {
@@ -44,9 +42,9 @@ namespace Sentry.Unity
 
             // The target platform is known when building the player, so 'auto' should resolve there.
             // Since some platforms don't support GZipping fallback no no compression.
-            RequestBodyCompressionLevel = DisableAutoCompression
-                ? RequestBodyCompressionLevel
-                : CompressionLevel.NoCompression;
+            RequestBodyCompressionLevel = EnableAutoPayloadCompression
+                ? CompressionLevel.NoCompression
+                : RequestBodyCompressionLevel;
 
             Environment = Environment is { } environment
                 ? environment
@@ -77,7 +75,6 @@ namespace Sentry.Unity
         {
             writer.WriteStartObject();
 
-            writer.WriteBoolean("disableProgrammaticInitialization", DisableProgrammaticInitialization);
             writer.WriteBoolean("enabled", Enabled);
             writer.WriteBoolean("captureInEditor", CaptureInEditor);
 
@@ -91,8 +88,8 @@ namespace Sentry.Unity
             writer.WriteNumber("diagnosticsLevel", (int)DiagnosticsLevel);
             writer.WriteBoolean("attachStacktrace", AttachStacktrace);
 
-            writer.WriteBoolean("disableAutoCompression", DisableAutoCompression);
-            writer.WriteNumber("requestBodyCompressionLevel", DisableAutoCompression ? (int)RequestBodyCompressionLevel : (int)CompressionLevel.NoCompression);
+            writer.WriteBoolean("enableAutoPayloadCompression", EnableAutoPayloadCompression);
+            writer.WriteNumber("requestBodyCompressionLevel", EnableAutoPayloadCompression ? (int)CompressionLevel.NoCompression : (int)RequestBodyCompressionLevel);
 
             if (SampleRate != null)
             {
@@ -116,7 +113,6 @@ namespace Sentry.Unity
         public static UnitySentryOptions FromJson(JsonElement json)
             => new()
             {
-                DisableProgrammaticInitialization = json.GetPropertyOrNull("disableProgrammaticInitialization")?.GetBoolean() ?? false,
                 Enabled = json.GetPropertyOrNull("enabled")?.GetBoolean() ?? true,
                 Dsn = json.GetPropertyOrNull("dsn")?.GetString(),
                 CaptureInEditor = json.GetPropertyOrNull("captureInEditor")?.GetBoolean() ?? false,
@@ -124,7 +120,7 @@ namespace Sentry.Unity
                 DebugOnlyInEditor = json.GetPropertyOrNull("debugOnlyInEditor")?.GetBoolean() ?? true,
                 DiagnosticsLevel = json.GetEnumOrNull<SentryLevel>("diagnosticsLevel") ?? SentryLevel.Error,
                 RequestBodyCompressionLevel = json.GetEnumOrNull<CompressionLevel>("requestBodyCompressionLevel") ?? CompressionLevel.NoCompression,
-                DisableAutoCompression = json.GetPropertyOrNull("disableAutoCompression")?.GetBoolean() ?? false,
+                EnableAutoPayloadCompression = json.GetPropertyOrNull("enableAutoPayloadCompression")?.GetBoolean() ?? false,
                 AttachStacktrace = json.GetPropertyOrNull("attachStacktrace")?.GetBoolean() ?? false,
                 SampleRate = json.GetPropertyOrNull("sampleRate")?.GetSingle() ?? 1.0f,
                 Release = json.GetPropertyOrNull("release")?.GetString(),
