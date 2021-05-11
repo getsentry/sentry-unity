@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- SDK version format correction (#120)
+
 ## 0.0.13
 
 - Missing meta files warnings (#146)

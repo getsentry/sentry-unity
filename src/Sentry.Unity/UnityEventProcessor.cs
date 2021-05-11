@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using Sentry.Extensibility;
 using Sentry.Protocol;
+using Sentry.Reflection;
 using UnityEngine;
 using DeviceOrientation = Sentry.Protocol.DeviceOrientation;
 
@@ -11,8 +12,7 @@ namespace Sentry.Unity
 {
     internal static class UnitySdkInfo
     {
-        public static string Version { get; } = typeof(UnitySdkInfo).Assembly.GetName().Version.ToString();
-
+        public static string Version { get; } = typeof(UnitySdkInfo).Assembly.GetNameAndVersion().Version ?? "0.0.0";
 
         public const string Name = "sentry.dotnet.unity";
         public const string PackageName = "upm:sentry.unity";
