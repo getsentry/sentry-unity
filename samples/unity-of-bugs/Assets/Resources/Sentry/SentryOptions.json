@@ -1,1 +1,1 @@
-{"enabled":true,"captureInEditor":true,"dsn":"https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417","debug":false,"debugOnlyInEditor":true,"diagnosticsLevel":3,"attachStacktrace":false,"enableAutoPayloadCompression":false,"requestBodyCompressionLevel":0,"sampleRate":1}
+{"enabled":true,"captureInEditor":true,"debug":false,"debugOnlyInEditor":true,"diagnosticsLevel":3,"attachStacktrace":false,"requestBodyCompressionLevel":2,"sampleRate":1}

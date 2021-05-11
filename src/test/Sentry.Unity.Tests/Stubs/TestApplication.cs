@@ -9,5 +9,10 @@ namespace Sentry.Unity.Tests.Stubs
         public event Application.LogCallback? LogMessageReceived;
         public event Action? Quitting;
         public string ActiveSceneName => "TestSceneName";
+
+        private void OnQuitting() => Quitting?.Invoke();
+
+        private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
+            => LogMessageReceived?.Invoke(condition, stacktrace, type);
     }
 }

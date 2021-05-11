@@ -30,13 +30,12 @@ namespace Sentry.Unity.Tests
             var optionsExpected = new UnitySentryOptions
             {
                 Enabled = true,
-                Dsn = "http://test.com",
+                Dsn = "https://test.com",
                 CaptureInEditor = true,
                 Debug = true,
                 DebugOnlyInEditor = false,
                 DiagnosticsLevel = SentryLevel.Info,
-                EnableAutoPayloadCompression = false,
-                RequestBodyCompressionLevel = CompressionLevel.NoCompression,
+                RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression,
                 AttachStacktrace = true,
                 SampleRate = 1f,
                 Release = "release",
@@ -68,7 +67,6 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);
             Assert.AreEqual(expected.Release, actual.Release);
             Assert.AreEqual(expected.Environment, actual.Environment);
-            Assert.AreEqual(expected.EnableAutoPayloadCompression, actual.EnableAutoPayloadCompression);
             Assert.AreEqual(expected.RequestBodyCompressionLevel, actual.RequestBodyCompressionLevel);
         }
 
