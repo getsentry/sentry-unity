@@ -22,7 +22,7 @@ async function checkChangelog() {
     changelogFile
   );
 
-  const hasChangelogEntry = RegExp(`#${danger.github.pr.number}\b`).test(
+  const hasChangelogEntry = RegExp(`#${danger.github.pr.number}\\b`).test(
     changelogContents
   );
 
