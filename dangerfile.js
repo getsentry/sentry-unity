@@ -44,19 +44,21 @@ async function checkChangelog() {
 
   markdown(
     `
-    <details>
-    <summary>**Instructions and example for changelog**</summary>
+<details>
+<summary><b>Instructions and example for changelog</b></summary>
 
-    Please add an entry to \`CHANGELOG.md\` to the "Unreleased" section. Make sure the entry includes this PR's number.
+Please add an entry to \`CHANGELOG.md\` to the "Unreleased" section. Make sure the entry includes this PR's number.
 
-    Example:
+Example:
 
-    \`\`\`markdown
-    - ${prTitleFormatted} ([#${danger.github.pr.number}](${danger.github.pr.html_url})) by [@${danger.github.pr.user.login}](${danger.github.pr.user.href})
-    \`\`\`
+\`\`\`markdown
+## Unreleased
 
-    If none of the above apply, you can opt out of this check by adding \`_#skip-changelog_\` to the PR description.
-    </details>`.trim()
+- ${prTitleFormatted} ([#${danger.github.pr.number}](${danger.github.pr.html_url})) by [@${danger.github.pr.user.login}](https://github.com/${danger.github.pr.user.login})
+\`\`\`
+
+If none of the above apply, you can opt out of this check by adding \`_#skip-changelog_\` to the PR description.
+</details>`.trim()
   );
 }
 
