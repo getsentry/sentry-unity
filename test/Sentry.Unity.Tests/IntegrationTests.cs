@@ -19,7 +19,11 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("BugFarmScene");
 
             // arrange
-            using var _ = InitSentrySdk(o => o.Transport);
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
@@ -50,9 +54,7 @@ namespace Sentry.Unity.Tests
             SentryUnity.Init(options =>
             {
                 options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-                // options.Enabled = true;
-                // options.DiagnosticLogger = new UnityLogger(SentryLevel.Warning);
-                // options.AddIntegration(new UnityApplicationLoggingIntegration());
+                configure.Invoke(options);
             });
             return new SentryDisposable();
         }
@@ -60,6 +62,22 @@ namespace Sentry.Unity.Tests
         private sealed class SentryDisposable : IDisposable
         {
             public void Dispose() => SentrySdk.Close();
+        }
+    }
+
+    /*
+     * Example of event capture which is used in Sentry.Unity infra
+     */
+    internal sealed class TestEventCapture : IEventCapture
+    {
+        private readonly List<SentryEvent> _events = new();
+
+        public IReadOnlyCollection<SentryEvent> Events => _events.AsReadOnly();
+
+        public SentryId Capture(SentryEvent sentryEvent)
+        {
+            _events.Add(sentryEvent);
+            return sentryEvent.EventId;
         }
     }
 }

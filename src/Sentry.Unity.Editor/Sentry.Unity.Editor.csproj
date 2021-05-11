@@ -6,20 +6,16 @@
     <OutDir>$(PackageEditorPath)</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>$(UnityManagedPath)\UnityEngine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
     <Reference Include="UnityEditor">
-      <HintPath>$(UnityManagedPath)\UnityEditor.dll</HintPath>
+      <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj">
+    <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Sentry.Unity\Sentry.Unity.csproj">
+    <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj">
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>

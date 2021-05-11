@@ -5,12 +5,6 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>$(UnityManagedPath)\UnityEngine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <None Update="link.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
