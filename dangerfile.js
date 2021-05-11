@@ -22,8 +22,8 @@ async function checkChangelog() {
     changelogFile
   );
 
-  const hasChangelogEntry = changelogContents.includes(
-    `(#${danger.github.pr.number})`
+  const hasChangelogEntry = RegExp(`#${danger.github.pr.number}\b`).test(
+    changelogContents
   );
 
   if (hasChangelogEntry) {
