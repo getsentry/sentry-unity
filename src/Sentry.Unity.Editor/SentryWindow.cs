@@ -120,12 +120,11 @@ namespace Sentry.Unity.Editor
             Options.SampleRate = EditorGUILayout.Slider(
                 new GUIContent("Event Sample Rate", "What random sample rate to apply. 1.0 captures everything, 0.7 captures 70%."),
                 Options.SampleRate ?? 1.0f, 0.01f, 1);
-            Options.EnableAutoPayloadCompression = EditorGUILayout.Toggle(
-                new GUIContent("Compress Payload (Auto)", "The level of which to compress the Sentry event before sending to Sentry (Auto)."),
-                Options.EnableAutoPayloadCompression);
-            Options.RequestBodyCompressionLevel = (CompressionLevel)EditorGUILayout.EnumPopup(
+
+            Options.RequestBodyCompressionLevel = (CompressionLevelWithAuto)EditorGUILayout.EnumPopup(
                 new GUIContent("Compress Payload", "The level of which to compress the Sentry event before sending to Sentry."),
                 Options.RequestBodyCompressionLevel);
+
             Options.AttachStacktrace = EditorGUILayout.Toggle(
                 new GUIContent("Stacktrace For Logs", "Whether to include a stack trace for non error events like logs. " +
                                                       "Even when Unity didn't include and no Exception was thrown.."),
