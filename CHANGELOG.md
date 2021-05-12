@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Sentry UnityLogger alligned to Unity Debug api ([#163](https://github.com/getsentry/sentry-unity/pull/163))
+- Sentry UnityLogger aligned to Unity Debug API ([#163](https://github.com/getsentry/sentry-unity/pull/163))
 
 ### Fixes
 
