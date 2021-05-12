@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <Version>0.0.14</Version>
+    <Version>0.0.13</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
     <UnityVersion>2019.4.21f1</UnityVersion>
