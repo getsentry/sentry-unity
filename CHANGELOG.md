@@ -5,6 +5,7 @@
 ### Fixes
 
 - SDK version format correction (#120)
+- Auto compression option is part of drop down (no extra checkbox) (#160)
 
 ## 0.0.13
 
