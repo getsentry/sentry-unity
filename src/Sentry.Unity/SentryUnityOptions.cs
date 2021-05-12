@@ -8,15 +8,13 @@ using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
 {
-    public enum CompressionLevelWithAuto
-    {
-        Auto = -1,
-        Optimal = CompressionLevel.Optimal,
-        Fastest = CompressionLevel.Fastest,
-        NoCompression = CompressionLevel.NoCompression,
-    }
-    // TODO: rename to `SentryUnityOptions` for consistency across dotnet Sentry SDK
-    public sealed class UnitySentryOptions : SentryOptions
+    /// <summary>
+    /// Sentry Unity Options.
+    /// </summary>
+    /// <remarks>
+    /// Options to configure Unity while extending the Sentry .NET SDK functionality.
+    /// </remarks>
+    public sealed class SentryUnityOptions : SentryOptions
     {
         /// <summary>
         /// Relative to Assets/Resources
@@ -65,7 +63,7 @@ namespace Sentry.Unity
             }
         }
 
-        public UnitySentryOptions()
+        public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
@@ -88,7 +86,7 @@ namespace Sentry.Unity
         }
 
         // Can't rely on Unity's OnEnable() hook.
-        public UnitySentryOptions TryAttachLogger()
+        public SentryUnityOptions TryAttachLogger()
         {
             DiagnosticLogger = Debug
                                && (!DebugOnlyInEditor || Application.isEditor) // TODO: Should we move it out and use via IApplication something?
@@ -136,7 +134,7 @@ namespace Sentry.Unity
             writer.Flush();
         }
 
-        public static UnitySentryOptions FromJson(JsonElement json)
+        public static SentryUnityOptions FromJson(JsonElement json)
             => new()
             {
                 Enabled = json.GetPropertyOrNull("enabled")?.GetBoolean() ?? true,
@@ -152,7 +150,7 @@ namespace Sentry.Unity
                 Environment = json.GetPropertyOrNull("environment")?.GetString()
             };
 
-        public static UnitySentryOptions LoadFromUnity()
+        public static SentryUnityOptions LoadFromUnity()
         {
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
@@ -166,5 +164,28 @@ namespace Sentry.Unity
             using var writer = new Utf8JsonWriter(fileStream);
             WriteTo(writer);
         }
+    }
+
+    /// <summary>
+    /// <see cref="CompressionLevel"/> with an additional value for Automatic
+    /// </summary>
+    public enum CompressionLevelWithAuto
+    {
+        /// <summary>
+        /// The Unity SDK will attempt to choose the best option for the target player.
+        /// </summary>
+        Auto = -1,
+        /// <summary>
+        /// The compression operation should be optimally compressed, even if the operation takes a longer time (and CPU) to complete.
+        /// </summary>
+        Optimal = CompressionLevel.Optimal,
+        /// <summary>
+        /// The compression operation should complete as quickly as possible, even if the resulting data is not optimally compressed.
+        /// </summary>
+        Fastest = CompressionLevel.Fastest,
+        /// <summary>
+        /// No compression should be performed.
+        /// </summary>
+        NoCompression = CompressionLevel.NoCompression,
     }
 }

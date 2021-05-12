@@ -12,9 +12,9 @@ namespace Sentry.Unity
         /// Initializes Sentry Unity SDK while configuring the options.
         /// </summary>
         /// <param name="unitySentryOptionsConfigure">Callback to configure the options.</param>
-        public static void Init(Action<UnitySentryOptions> unitySentryOptionsConfigure)
+        public static void Init(Action<SentryUnityOptions> unitySentryOptionsConfigure)
         {
-            var unitySentryOptions = new UnitySentryOptions();
+            var unitySentryOptions = new SentryUnityOptions();
             unitySentryOptionsConfigure.Invoke(unitySentryOptions);
             Init(unitySentryOptions);
         }
@@ -24,7 +24,7 @@ namespace Sentry.Unity
         /// </summary>
         /// <param name="unitySentryOptions">The options object.</param>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void Init(UnitySentryOptions unitySentryOptions)
+        public static void Init(SentryUnityOptions unitySentryOptions)
             => SentrySdk.Init(unitySentryOptions);
     }
 }

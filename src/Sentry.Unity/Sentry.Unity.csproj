@@ -1,21 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>$(PackageRuntimePath)</OutDir>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>$(UnityManagedPath)\UnityEngine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
+
+  <Target Name="CleanDotnetSdkFiles" AfterTargets="Clean">
+    <!-- CopyLocalLockFileAssemblies brings the .NET SDK assemblies to the output dir.
+         For that reason they are not clean by the Sentry project clean Target. -->
+    <ItemGroup>
+      <FilesToDelete Include="$(OutDir)/*.dll"/>
+      <FilesToDelete Include="$(OutDir)/*.xml"/>
+      <FilesToDelete Include="$(OutDir)/*.pdb"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" ContinueOnError="true" />
+  </Target>
+
   <ItemGroup>
     <None Update="link.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj" />
   </ItemGroup>
+
 </Project>

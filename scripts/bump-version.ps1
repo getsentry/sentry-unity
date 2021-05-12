@@ -9,5 +9,5 @@ function Replace-TextInFile {
     [IO.File]::WriteAllText($filePath, $content, $utf8NoBomEncoding)
 }
 
-Replace-TextInFile "$PSScriptRoot/../src/Directory.Build.props" '(?<=<Version>)(.*?)(?=</Version>)' $newVersion
+Replace-TextInFile "$PSScriptRoot/../Directory.Build.props" '(?<=<Version>)(.*?)(?=</Version>)' $newVersion
 Replace-TextInFile "$PSScriptRoot/../package/package.json" '(?<="version": ")(.*?)(?=")' $newVersion

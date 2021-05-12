@@ -41,7 +41,7 @@ namespace Sentry.Unity.Editor.Tests
             // Open & Close window to trigger 'link.xml' logic
             SentryTestWindow.Open().Dispose();
 
-            var linkXmlPath = $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/link.xml";
+            var linkXmlPath = $"{Application.dataPath}/Resources/{SentryUnityOptions.ConfigRootFolder}/link.xml";
             Assert.IsTrue(File.Exists(linkXmlPath));
         }
     }

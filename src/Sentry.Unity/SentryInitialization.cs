@@ -11,13 +11,13 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            if (!File.Exists(UnitySentryOptions.GetConfigPath()))
+            if (!File.Exists(SentryUnityOptions.GetConfigPath()))
             {
                 Debug.LogWarning("Couldn't find the configuration file SentryOptions.json. Did you already configure Sentry?\nYou can do that through the editor: Tools -> Sentry");
                 return;
             }
 
-            var options = UnitySentryOptions.LoadFromUnity();
+            var options = SentryUnityOptions.LoadFromUnity();
 
             if (!options.Enabled)
             {
