@@ -14,9 +14,9 @@ namespace Sentry.Unity.Editor
         public static SentryWindow OpenSentryWindow()
             => (SentryWindow)GetWindow(typeof(SentryWindow));
 
-        protected virtual string SentryOptionsAssetName { get; } = UnitySentryOptions.ConfigName;
+        protected virtual string SentryOptionsAssetName { get; } = SentryUnityOptions.ConfigName;
 
-        public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
+        public SentryUnityOptions Options { get; set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
@@ -31,17 +31,17 @@ namespace Sentry.Unity.Editor
             TryCopyLinkXml(Options.DiagnosticLogger);
         }
 
-        private UnitySentryOptions LoadUnitySentryOptions()
+        private SentryUnityOptions LoadUnitySentryOptions()
         {
-            if (File.Exists(UnitySentryOptions.GetConfigPath()))
+            if (File.Exists(SentryUnityOptions.GetConfigPath()))
             {
-                return UnitySentryOptions.LoadFromUnity();
+                return SentryUnityOptions.LoadFromUnity();
             }
 
-            var unitySentryOptions = new UnitySentryOptions { Enabled = true };
+            var unitySentryOptions = new SentryUnityOptions { Enabled = true };
             unitySentryOptions
                 .TryAttachLogger()
-                .SaveToUnity(UnitySentryOptions.GetConfigPath());
+                .SaveToUnity(SentryUnityOptions.GetConfigPath());
 
             return unitySentryOptions;
         }
@@ -96,7 +96,7 @@ namespace Sentry.Unity.Editor
         {
             Validate();
 
-            Options.SaveToUnity(UnitySentryOptions.GetConfigPath());
+            Options.SaveToUnity(SentryUnityOptions.GetConfigPath());
             AssetDatabase.Refresh();
         }
 
@@ -176,9 +176,9 @@ namespace Sentry.Unity.Editor
             {
                 AssetDatabase.CreateFolder("Assets", "Resources");
             }
-            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{UnitySentryOptions.ConfigRootFolder}"))
+            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{SentryUnityOptions.ConfigRootFolder}"))
             {
-                AssetDatabase.CreateFolder("Assets/Resources", UnitySentryOptions.ConfigRootFolder);
+                AssetDatabase.CreateFolder("Assets/Resources", SentryUnityOptions.ConfigRootFolder);
             }
         }
 
@@ -189,7 +189,7 @@ namespace Sentry.Unity.Editor
         {
             const string linkXmlFileName = "link.xml";
 
-            var linkXmlPath = $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{linkXmlFileName}";
+            var linkXmlPath = $"{Application.dataPath}/Resources/{SentryUnityOptions.ConfigRootFolder}/{linkXmlFileName}";
             if (File.Exists(linkXmlPath))
             {
                 return;
@@ -221,7 +221,7 @@ namespace Sentry.Unity.Editor
         /// </summary>
         private static string? GetLinkXmlPath(string linkXmlFileName)
         {
-            var assetIds = AssetDatabase.FindAssets(UnitySentryOptions.PackageName, new [] { "Packages" });
+            var assetIds = AssetDatabase.FindAssets(SentryUnityOptions.PackageName, new [] { "Packages" });
             for (var i = 0; i < assetIds.Length; i++)
             {
                 var assetName = AssetDatabase.GUIDToAssetPath(assetIds[i]);

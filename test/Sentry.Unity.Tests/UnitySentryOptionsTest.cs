@@ -20,14 +20,14 @@ namespace Sentry.Unity.Tests
             var jsonRaw = File.ReadAllText(optionsFilePath);
             using var jsonDocument = JsonDocument.Parse(jsonRaw);
 
-            UnitySentryOptions.FromJson(jsonDocument.RootElement);
+            SentryUnityOptions.FromJson(jsonDocument.RootElement);
         }
 
         [Test]
         public void Options_WriteRead_Equals()
         {
             // arrange
-            var optionsExpected = new UnitySentryOptions
+            var optionsExpected = new SentryUnityOptions
             {
                 Enabled = true,
                 Dsn = "http://test.com",
@@ -50,13 +50,13 @@ namespace Sentry.Unity.Tests
 
             var jsonRaw = Encoding.UTF8.GetString(memory.ToArray());
             using var jsonDocument = JsonDocument.Parse(jsonRaw);
-            var optionsActual = UnitySentryOptions.FromJson(jsonDocument.RootElement);
+            var optionsActual = SentryUnityOptions.FromJson(jsonDocument.RootElement);
 
             // assert
             AssertOptions(optionsActual, optionsExpected);
         }
 
-        private static void AssertOptions(UnitySentryOptions actual, UnitySentryOptions expected)
+        private static void AssertOptions(SentryUnityOptions actual, SentryUnityOptions expected)
         {
             Assert.AreEqual(expected.Enabled, actual.Enabled);
             Assert.AreEqual(expected.Dsn, actual.Dsn);

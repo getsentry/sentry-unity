@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
@@ -19,7 +20,10 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
@@ -45,14 +49,12 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
-        private static IDisposable InitSentrySdk(IEventCapture eventCapture)
+        private static IDisposable InitSentrySdk(Action<SentryUnityOptions> configure)
         {
             SentryUnity.Init(options =>
             {
-                options.Enabled = true;
                 options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-                options.DiagnosticLogger = new UnityLogger(SentryLevel.Warning);
-                options.AddIntegration(new UnityApplicationLoggingIntegration(null, eventCapture));
+                configure.Invoke(options);
             });
             return new SentryDisposable();
         }

@@ -1,15 +1,3 @@
-# Development setup
-
-All build variables and settings are stored in `Directory.Build.props`.
-
-## Sentry.Unity
-
-TBD
-
-## Sentry.Unity.Editor
-
-TBD
-
 ## Sentry.Unity.Tests
 
 We need to support `Unity` [coroutines](https://docs.unity3d.com/Manual/Coroutines.html) in `nunit` tests. This is done via `UnityTestAttribute` which is **NOT** included in `nunit`. The needed infrastructure for the attribute (and the attribute itself) is located inside `UnityEngine.TestRunner.dll`.
@@ -25,7 +13,3 @@ Run manually or via `CLI`
     * Windows example - `Unity.exe -batchmode -projectPath c:\Projects\Unity\sentry-unity\samples\unity-of-bugs\ -exit`
 
 > If you want to use another project (not the one used as an example) just make sure the project you assign dependencies from, has UPM `com.unity.test-framework` in `<project_path>/Packages/manifest.json` (`dependencies` property).
-
-## sentry-dotnet
-
-TBD

@@ -1,0 +1,67 @@
+<Project>
+
+  <PropertyGroup>
+    <Version>0.0.12</Version>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
+    <UnityVersion>2019.4.21f1</UnityVersion>
+    <WarningsAsErrors>true</WarningsAsErrors>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <DevPackageFolderName>package-dev</DevPackageFolderName>
+    <Deterministic>true</Deterministic>
+    <Features>strict</Features>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.0" PrivateAssets="All" />
+    <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
+    <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
+    <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
+    <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
+    <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
+    <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
+    <ArtifactName>game.exe</ArtifactName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
+    <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
+    <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
+    <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
+    <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
+    <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
+    <ArtifactName>game</ArtifactName>
+  </PropertyGroup>
+
+  <!-- If Unity Libraries don't exist, run a Unity build -->
+  <Target Name="BuildUnityProject"
+    Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' and !Exists('$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/Library')"
+    BeforeTargets="BeforeBuild">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
+    We need to run a unity build to restore the test packages and for that reason we'll ignore errors here and assume a later step will validation the build is actually working:
+      The offending error:
+      [usbmuxd] Stop listen thread
+      [usbmuxd] Error:
+      [usbmuxd] Listen thread exitingit -batchmode -nographics -logFile - -projectPath $(MSBuildProjectDirectory)/../../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName)
+    Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(MSBuildProjectDirectory)/../../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName) "
+    IgnoreStandardErrorWarningFormat="true"
+    IgnoreExitCode="true"></Exec>
+  </Target>
+
+</Project>

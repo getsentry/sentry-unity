@@ -8,4 +8,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
