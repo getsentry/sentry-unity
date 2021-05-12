@@ -17,6 +17,7 @@ samples/**/*.sln
 # Ignore build and Unity artifacts
 package-dev/**/*.dll
 package-dev/**/*.meta
+!package-dev/Tests/*.meta
 package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/TestSentryOptions.json
