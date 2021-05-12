@@ -1,59 +1,61 @@
-﻿using Sentry;
-using Sentry.Extensibility;
+﻿using Sentry.Extensibility;
 using System;
 using UnityEngine;
 using static System.String;
 
-internal interface IUnityLoggerInterceptor
+namespace Sentry.Unity
 {
-    void Intercept(string logMessage);
-}
-
-internal class UnityLogger : IDiagnosticLogger
-{
-    private readonly SentryLevel _minimalLevel;
-    private readonly IUnityLoggerInterceptor? _interceptor;
-
-    public bool IsEnabled(SentryLevel level) => level >= _minimalLevel;
-
-    public UnityLogger(SentryLevel minimalLevel, IUnityLoggerInterceptor? interceptor = null)
+    internal interface IUnityLoggerInterceptor
     {
-        _minimalLevel = minimalLevel;
-        _interceptor = interceptor;
+        void Intercept(string logMessage);
     }
 
-    public void Log(SentryLevel logLevel, string? message, Exception? exception = null, params object?[] args)
+    internal class UnityLogger : IDiagnosticLogger
     {
-        if (!IsEnabled(logLevel))
+        private readonly SentryLevel _minimalLevel;
+        private readonly IUnityLoggerInterceptor? _interceptor;
+
+        public bool IsEnabled(SentryLevel level) => level >= _minimalLevel;
+
+        public UnityLogger(SentryLevel minimalLevel, IUnityLoggerInterceptor? interceptor = null)
         {
-            return;
+            _minimalLevel = minimalLevel;
+            _interceptor = interceptor;
         }
 
-        switch (logLevel)
+        public void Log(SentryLevel logLevel, string? message, Exception? exception = null, params object?[] args)
         {
-            case SentryLevel.Debug or SentryLevel.Info:
-                Debug.Log(GetLog());
-                break;
-            case SentryLevel.Warning:
-                Debug.LogWarning(GetLog());
-                break;
-            case SentryLevel.Error or SentryLevel.Fatal:
-                Debug.LogError(GetLog());
-                break;
-            default:
-                Debug.Log(GetLog());
-                break;
-        }
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
 
-        string GetLog()
-        {
-            var log = $@"Sentry: {logLevel}
+            switch (logLevel)
+            {
+                case SentryLevel.Debug or SentryLevel.Info:
+                    Debug.Log(GetLog());
+                    break;
+                case SentryLevel.Warning:
+                    Debug.LogWarning(GetLog());
+                    break;
+                case SentryLevel.Error or SentryLevel.Fatal:
+                    Debug.LogError(GetLog());
+                    break;
+                default:
+                    Debug.Log(GetLog());
+                    break;
+            }
+
+            string GetLog()
+            {
+                var log = $@"Sentry: {logLevel}
 {Format(message, args)}
 {exception}";
-            _interceptor?.Intercept(log);
-            return log;
+                _interceptor?.Intercept(log);
+                return log;
+            }
         }
-    }
 
-    public override string ToString() => nameof(UnityLogger);
+        public override string ToString() => nameof(UnityLogger);
+    }
 }
