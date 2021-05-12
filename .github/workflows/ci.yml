@@ -8,7 +8,7 @@ on:
 
   pull_request:
     paths:
-    - '.github/**/*.yaml'
+    - '.github/**/*.yml'
     - 'src/**'
     - 'test/**'
     - 'sample/**'
