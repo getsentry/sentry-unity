@@ -1,0 +1,3 @@
+<Project>
+    <!-- Stops msbuild from looking on the part directory. Can't deal with the properties set such as C# 9 -->
+</Project>
