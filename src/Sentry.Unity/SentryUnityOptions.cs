@@ -166,7 +166,6 @@ namespace Sentry.Unity
         }
     }
 
-
     /// <summary>
     /// <see cref="CompressionLevel"/> with an additional value for Automatic
     /// </summary>
