@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Sentry UnityLogger aligned to Unity Debug API ([#163](https://github.com/getsentry/sentry-unity/pull/163))
+
 ### Fixes
 
 - SDK version format correction (#120)

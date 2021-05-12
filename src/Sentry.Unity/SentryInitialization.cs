@@ -13,7 +13,7 @@ namespace Sentry.Unity
         {
             if (!File.Exists(SentryUnityOptions.GetConfigPath()))
             {
-                Debug.LogWarning("Couldn't find the configuration file SentryOptions.json. Did you already configure Sentry?\nYou can do that through the editor: Tools -> Sentry");
+                new UnityLogger(SentryLevel.Warning).Log(SentryLevel.Warning, "Couldn't find the configuration file SentryOptions.json. Did you already configure Sentry?\nYou can do that through the editor: Tools -> Sentry");
                 return;
             }
 
