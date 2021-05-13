@@ -2,7 +2,7 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <UnityTestPath Condition="Exists('$(SolutionDir)/samples/unity-of-bugs/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')">$(SolutionDir)/samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
+    <UnityTestPath>$(SolutionDir)/samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
   </PropertyGroup>
 
   <PropertyGroup>
