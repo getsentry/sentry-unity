@@ -100,6 +100,7 @@ namespace Sentry.Unity
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
+            this.AddIntegration(new SceneManagerIntegration());
         }
 
         // Can't rely on Unity's OnEnable() hook.

@@ -5,6 +5,7 @@
 ### Features
 
 - Sentry UnityLogger aligned to Unity Debug API ([#163](https://github.com/getsentry/sentry-unity/pull/163))
+- Scene manager integration for breadcrumbs ([#170](https://github.com/getsentry/sentry-unity/pull/170))
 
 ### Fixes
 
