@@ -94,6 +94,12 @@ jobs:
         run: |
           unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
 
+      - name: Restore Unity Packages
+        uses: actions/cache@v2
+        with:
+          path: samples/unity-of-bugs/Library
+          key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+
       # The working directory must be set because the project uses
       # relative paths for certain things.
       # Also, we need to provide the path to Unity because
