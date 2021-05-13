@@ -10,9 +10,9 @@
     <!-- CopyLocalLockFileAssemblies brings the .NET SDK assemblies to the output dir.
          For that reason they are not clean by the Sentry project clean Target. -->
     <ItemGroup>
-      <FilesToDelete Include="$(OutDir)/*.dll"/>
-      <FilesToDelete Include="$(OutDir)/*.xml"/>
-      <FilesToDelete Include="$(OutDir)/*.pdb"/>
+      <FilesToDelete Include="$(OutDir)/*.dll" />
+      <FilesToDelete Include="$(OutDir)/*.xml" />
+      <FilesToDelete Include="$(OutDir)/*.pdb" />
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" ContinueOnError="true" />
   </Target>
