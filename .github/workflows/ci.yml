@@ -55,12 +55,6 @@ jobs:
         run: |
           Write-Output "C:/Program Files/Unity/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # .NET SDK is needed to build sentry-unity package
-      - name: Install .NET
-        uses: actions/setup-dotnet@v1.7.2
-        with:
-          dotnet-version: 5.0.x
-
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate Unity license
