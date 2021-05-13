@@ -97,7 +97,7 @@ jobs:
       # relative paths for certain things.
       # Also, we need to provide the path to Unity because
       # the test project references some of its assemblies.
-      - name: Build Sentry package
+      - name: Build Sentry.Unity Solution
         run: |
           dotnet nuget locals all --clear
           dotnet build -c Release
