@@ -102,6 +102,10 @@ jobs:
           dotnet nuget locals all --clear
           dotnet build -c Release
 
+      - name: Build project
+        run: |
+          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
+
       # Don't fail the build here, we have a more detailed step later that provides more info.
       # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
       - name: Run Unity tests (playmode)
