@@ -102,7 +102,7 @@ jobs:
           dotnet nuget locals all --clear
           dotnet build -c Release
 
-      - name: Build project
+      - name: Build sample game
         run: |
           unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
 
