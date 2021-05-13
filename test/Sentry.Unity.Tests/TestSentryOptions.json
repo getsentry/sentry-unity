@@ -1,1 +1,1 @@
-{"enabled":true,"captureInEditor":true,"dsn":"http://test.com","debug":true,"debugOnlyInEditor":true,"diagnosticsLevel":3,"requestBodyCompressionLevel":1,"attachStacktrace":true,"sampleRate":1,"release":"release","environment":"test"}
+{"enabled":true,"captureInEditor":true,"dsn":"http://test.com","debug":true,"debugOnlyInEditor":true,"diagnosticLevel":3,"requestBodyCompressionLevel":1,"attachStacktrace":true,"sampleRate":1,"release":"release","environment":"test"}

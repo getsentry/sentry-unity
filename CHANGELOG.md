@@ -2,12 +2,15 @@
 
 ## Unreleased
 
+### Features
+
 - Sentry UnityLogger aligned to Unity Debug API ([#163](https://github.com/getsentry/sentry-unity/pull/163))
 
 ### Fixes
 
-- SDK version format correction (#120)
-- Auto compression option is part of drop down (no extra checkbox) (#160)
+- SDK version format correction ([#120](https://github.com/getsentry/sentry-unity/pull/120))
+- Auto compression option is part of drop down (no extra checkbox) ([#160](https://github.com/getsentry/sentry-unity/pull/160))
+- Rename DiagnosticsLogger to DiagnosticLogger ([#168](https://github.com/getsentry/sentry-unity/pull/168))
 
 ## 0.0.13
 
