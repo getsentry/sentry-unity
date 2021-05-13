@@ -90,15 +90,15 @@ jobs:
           path: artifacts/build
           key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
 
-      - name: Build project
-        run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
-
       - name: Restore Unity Packages
         uses: actions/cache@v2
         with:
           path: samples/unity-of-bugs/Library
           key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+
+      - name: Build project
+        run: |
+          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
 
       # The working directory must be set because the project uses
       # relative paths for certain things.
