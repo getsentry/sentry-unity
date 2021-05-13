@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
-        with:
-          submodules: recursive
 
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
@@ -95,10 +93,6 @@ jobs:
             Write-Host "::error ::Failed to activate license after multiple attempts."
           }
 
-      - name: Build project
-        run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
-
       # The working directory must be set because the project uses
       # relative paths for certain things.
       # Also, we need to provide the path to Unity because
@@ -106,7 +100,7 @@ jobs:
       - name: Build Sentry package
         run: |
           dotnet nuget locals all --clear
-          dotnet build -c Release "-p:UnityPath=C:/Program Files/Unity/Editor/Data/Managed"
+          dotnet build -c Release
 
       # Don't fail the build here, we have a more detailed step later that provides more info.
       # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
