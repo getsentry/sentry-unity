@@ -34,7 +34,7 @@ namespace Sentry.Unity.Tests
                 CaptureInEditor = true,
                 Debug = true,
                 DebugOnlyInEditor = false,
-                DiagnosticsLevel = SentryLevel.Info,
+                DiagnosticLevel = SentryLevel.Info,
                 RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression,
                 AttachStacktrace = true,
                 SampleRate = 1f,
@@ -62,7 +62,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.CaptureInEditor, actual.CaptureInEditor);
             Assert.AreEqual(expected.Debug, actual.Debug);
             Assert.AreEqual(expected.DebugOnlyInEditor, actual.DebugOnlyInEditor);
-            Assert.AreEqual(expected.DiagnosticsLevel, actual.DiagnosticsLevel);
+            Assert.AreEqual(expected.DiagnosticLevel, actual.DiagnosticLevel);
             Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);
             Assert.AreEqual(expected.Release, actual.Release);
