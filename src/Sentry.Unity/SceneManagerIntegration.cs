@@ -22,7 +22,7 @@ namespace Sentry.Unity
             _sceneManager.SceneUnloaded += SceneManagerOnSceneUnloaded;
             _sceneManager.ActiveSceneChanged += SceneManagerOnActiveSceneChanged;
 
-            void OnSceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
+            void OnSceneManagerOnSceneLoaded(SceneAdapter scene, LoadSceneMode mode)
             {
                 // In case Hub is disabled, avoid allocations below
                 if (!hub.IsEnabled)
@@ -31,22 +31,24 @@ namespace Sentry.Unity
                 }
 
                 hub.AddBreadcrumb(
-                    $"Scene '{scene.name}' was loaded",
-                    category: "scene.load",
+                    $"Scene '{scene.Name}' was loaded",
+                    category: "scene.loaded",
                     // TODO: What is worth paying the price of allocation in order to add here?
                     data: new Dictionary<string, string>
                     {
-                        {"name", scene.name},
-                        {"path", scene.path},
-                        {"isDirty", scene.isDirty.ToString()},
-                        {"mode", mode.ToString()}
-                    },
-                    level: scene.IsValid()
-                        ? BreadcrumbLevel.Error
-                        : BreadcrumbLevel.Info);
+                        {"name", scene.Name},
+                        // TODO: Should we benchmark before getting these? Are these and/or other unused fields useful?
+                        // {"path", scene.path},
+                        // {"isDirty", scene.isDirty.ToString()},
+                    }
+                    // TODO: Is this useful? Does it happen that IsValid returns false at runtime?
+                    // level: scene.IsValid()
+                    //     ? BreadcrumbLevel.Error
+                    //     : BreadcrumbLevel.Info
+                );
             }
 
-            void SceneManagerOnSceneUnloaded(Scene scene)
+            void SceneManagerOnSceneUnloaded(SceneAdapter scene)
             {
                 // In case Hub is disabled, avoid allocations below
                 if (!hub.IsEnabled)
@@ -55,20 +57,15 @@ namespace Sentry.Unity
                 }
 
                 hub.AddBreadcrumb(
-                    $"Scene '{scene.name}' was unloaded",
-                    category: "scene.unload",
+                    $"Scene '{scene.Name}' was unloaded",
+                    category: "scene.unloaded",
                     data: new Dictionary<string, string>
                     {
-                        {"name", scene.name},
-                        {"path", scene.path},
-                        {"isDirty", scene.isDirty.ToString()},
-                    },
-                    level: scene.IsValid()
-                        ? BreadcrumbLevel.Error
-                        : BreadcrumbLevel.Info);
+                        {"name", scene.Name},
+                    });
             }
 
-            void SceneManagerOnActiveSceneChanged(Scene fromScene, Scene toScene)
+            void SceneManagerOnActiveSceneChanged(SceneAdapter fromScene, SceneAdapter toScene)
             {
                 // In case Hub is disabled, avoid allocations below
                 if (!hub.IsEnabled)
@@ -77,7 +74,7 @@ namespace Sentry.Unity
                 }
 
                 hub.AddBreadcrumb(
-                    $"Changed active scene '{fromScene.name}' to '{toScene.name}'",
+                    $"Changed active scene '{fromScene.Name}' to '{toScene.Name}'",
                     category: "scene.changed");
             }
         }

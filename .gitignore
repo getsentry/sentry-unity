@@ -13,6 +13,7 @@ sentry-unity/build:*
 
 samples/**/*.csproj
 samples/**/*.sln
+samples/unity-of-bugs/Assets/InitTestScene*
 
 # Ignore build and Unity artifacts
 package-dev/**/*.dll

@@ -1,7 +1,7 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests
@@ -28,10 +28,7 @@ namespace Sentry.Unity.Tests
 
             sut.Register(_fixture.TestHub, _fixture.SentryOptions);
             const string? sceneName = "scene name";
-            var expectedScene = new Scene
-            {
-                name = sceneName,
-            };
+            var expectedScene = new SceneAdapter(sceneName);
             _fixture.SceneManager.OnSceneLoaded(expectedScene,
                 LoadSceneMode.Additive);
 
@@ -41,9 +38,76 @@ namespace Sentry.Unity.Tests
             var actualCrumb = scope.Breadcrumbs.Single();
 
             Assert.AreEqual($"Scene '{sceneName}' was loaded", actualCrumb.Message);
+            Assert.AreEqual("scene.loaded", actualCrumb.Category);
             Assert.AreEqual(sceneName, actualCrumb.Data!["name"]);
-            // To assert the other fields we'd need to abstract the Scene (struct with extern) away
-            // which would mean allocations on each call. For that reason doing only validation on the 'name'
+        }
+
+        [Test]
+        public void SceneUnloaded_DisabledHub_NoCrumbAdded()
+        {
+            _fixture.TestHub = new TestHub(false);
+            var sut = _fixture.GetSut();
+
+            sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+            _fixture.SceneManager.OnSceneUnloaded(default);
+
+            Assert.Zero(_fixture.TestHub.ConfigureScopeCalls.Count);
+        }
+
+        [Test]
+        public void SceneUnloaded_EnabledHub_CrumbAdded()
+        {
+            _fixture.TestHub = new TestHub();
+            var sut = _fixture.GetSut();
+
+            sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+            const string? sceneName = "scene name";
+            var expectedScene = new SceneAdapter(sceneName);
+            _fixture.SceneManager.OnSceneUnloaded(expectedScene);
+
+            var configureScope = _fixture.TestHub.ConfigureScopeCalls.Single();
+            var scope = new Scope(_fixture.SentryOptions);
+            configureScope(scope);
+            var actualCrumb = scope.Breadcrumbs.Single();
+
+            Assert.AreEqual($"Scene '{sceneName}' was unloaded", actualCrumb.Message);
+            Assert.AreEqual("scene.unloaded", actualCrumb.Category);
+            Assert.AreEqual(sceneName, actualCrumb.Data!["name"]);
+        }
+
+        [Test]
+        public void ActiveSceneChanged_DisabledHub_NoCrumbAdded()
+        {
+            _fixture.TestHub = new TestHub(false);
+            var sut = _fixture.GetSut();
+
+            sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+            _fixture.SceneManager.OnActiveSceneChanged(default, default);
+
+            Assert.Zero(_fixture.TestHub.ConfigureScopeCalls.Count);
+        }
+
+        [Test]
+        public void ActiveSceneChanged_EnabledHub_CrumbAdded()
+        {
+            _fixture.TestHub = new TestHub();
+            var sut = _fixture.GetSut();
+
+            sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+            const string? fromSceneName = "from scene name";
+            const string? toSceneName = "to scene name";
+            var expectedFromScene = new SceneAdapter(fromSceneName);
+            var expectedToScene = new SceneAdapter(toSceneName);
+            _fixture.SceneManager.OnActiveSceneChanged(expectedFromScene, expectedToScene);
+
+            var configureScope = _fixture.TestHub.ConfigureScopeCalls.Single();
+            var scope = new Scope(_fixture.SentryOptions);
+            configureScope(scope);
+            var actualCrumb = scope.Breadcrumbs.Single();
+
+            Assert.AreEqual($"Changed active scene '{expectedFromScene.Name}' to '{expectedToScene.Name}'", actualCrumb.Message);
+            Assert.AreEqual("scene.changed", actualCrumb.Category);
+            Assert.Null(actualCrumb.Data);
         }
 
         private class Fixture
@@ -58,12 +122,12 @@ namespace Sentry.Unity.Tests
 
         private class FakeSceneManager : ISceneManager
         {
-            public event UnityAction<Scene, LoadSceneMode>? SceneLoaded;
-            public event UnityAction<Scene>? SceneUnloaded;
-            public event UnityAction<Scene, Scene>? ActiveSceneChanged;
-            public void OnSceneLoaded(Scene scene, LoadSceneMode mode) => SceneLoaded?.Invoke(scene, mode);
-            public void OnSceneUnloaded(Scene scene) => SceneUnloaded?.Invoke(scene);
-            public void OnActiveSceneChanged(Scene fromScene, Scene toScene) => ActiveSceneChanged?.Invoke(fromScene, toScene);
+            public event Action<SceneAdapter, LoadSceneMode>? SceneLoaded;
+            public event Action<SceneAdapter>? SceneUnloaded;
+            public event Action<SceneAdapter, SceneAdapter>? ActiveSceneChanged;
+            public void OnSceneLoaded(SceneAdapter scene, LoadSceneMode mode) => SceneLoaded?.Invoke(scene, mode);
+            public void OnSceneUnloaded(SceneAdapter scene) => SceneUnloaded?.Invoke(scene);
+            public void OnActiveSceneChanged(SceneAdapter fromScene, SceneAdapter toScene) => ActiveSceneChanged?.Invoke(fromScene, toScene);
         }
     }
 }
