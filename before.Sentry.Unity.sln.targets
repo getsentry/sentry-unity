@@ -1,7 +1,7 @@
 <Project>
   <!-- If sentry-dotnet is not found, restore git submodules -->
   <Target Name="RestoreSubmodule"
-    Condition="!Exists('src/sentry-dotnet')"
+    Condition="!Exists('src/sentry-dotnet/src/Sentry/Sentry.csproj')"
     BeforeTargets="Build">
     <Message Importance="High" Text="sentry-dotnet not found. Restoring git submodules."></Message>
     <Exec Command="git submodule update --init --recursive"></Exec>
