@@ -59,7 +59,7 @@
       [usbmuxd] Error:
       [usbmuxd] Listen thread exitingit -batchmode -nographics -logFile - -projectPath $(MSBuildProjectDirectory)/../../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName)
     Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(MSBuildProjectDirectory)/../../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(MSBuildProjectDirectory)/../../samples/unity-of-bugs -$(StandalonePlayerName) $(ArtifactName) "
     IgnoreStandardErrorWarningFormat="true"
     IgnoreExitCode="true"></Exec>
   </Target>
