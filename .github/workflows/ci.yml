@@ -36,24 +36,24 @@ jobs:
       # Caching still takes some time, but brings it down to about 5 minutes.
       # Note: if you change the installation step, remember to update the value
       # at the end of the key.
-      - name: Restore cached Unity installation
-        id: cache-unity
-        uses: actions/cache@v2
-        with:
-          path: C:/Program Files/Unity
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+      # - name: Restore cached Unity installation
+      #   id: cache-unity
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: C:/Program Files/Unity
+      #     key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
 
-      - name: Restore previous build
-        uses: actions/cache@v2
-        with:
-          path: artifacts/build
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+      # - name: Restore previous build
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: artifacts/build
+      #     key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
 
-      - name: Restore Unity Packages
-        uses: actions/cache@v2
-        with:
-          path: samples/unity-of-bugs/Library
-          key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+      # - name: Restore Unity Packages
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: samples/unity-of-bugs/Library
+      #     key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Install Unity
         run: |
