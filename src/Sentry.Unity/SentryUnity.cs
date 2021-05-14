@@ -25,6 +25,9 @@ namespace Sentry.Unity
         /// <param name="unitySentryOptions">The options object.</param>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions unitySentryOptions)
-            => SentrySdk.Init(unitySentryOptions);
+        {
+            unitySentryOptions.TryAttachLogger();
+            SentrySdk.Init(unitySentryOptions);
+        }
     }
 }

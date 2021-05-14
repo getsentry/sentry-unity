@@ -11,18 +11,15 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            if (!File.Exists(SentryUnityOptions.GetConfigPath()))
+            var options = SentryUnityOptions.LoadFromUnity();
+            if (options == null)
             {
-                new UnityLogger(SentryLevel.Warning).Log(SentryLevel.Warning, "Couldn't find the configuration file SentryOptions.json. Did you already configure Sentry?\nYou can do that through the editor: Tools -> Sentry");
+                new UnityLogger(SentryLevel.Warning).Log(SentryLevel.Warning, "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
                 return;
             }
 
-            var options = SentryUnityOptions.LoadFromUnity();
-
             if (!options.Enabled)
             {
-                // We want to display the message in spite of how SentryOptions.json is configured
-                new UnityLogger(SentryLevel.Info).Log(SentryLevel.Info, "Programmatic access enabled. Configure Sentry manually.");
                 return;
             }
 
@@ -42,4 +39,3 @@ namespace Sentry.Unity
         }
     }
 }
-

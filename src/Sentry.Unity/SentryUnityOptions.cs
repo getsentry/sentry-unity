@@ -106,7 +106,8 @@ namespace Sentry.Unity
         // Can't rely on Unity's OnEnable() hook.
         public SentryUnityOptions TryAttachLogger()
         {
-            DiagnosticLogger = Debug
+            DiagnosticLogger = DiagnosticLogger is null
+                               && Debug
                                && (!DebugOnlyInEditor || Application.isEditor) // TODO: Should we move it out and use via IApplication something?
                 ? new UnityLogger(DiagnosticLevel)
                 : null;
@@ -168,10 +169,18 @@ namespace Sentry.Unity
                 Environment = json.GetPropertyOrNull("environment")?.GetString()
             };
 
-        public static SentryUnityOptions LoadFromUnity()
+        /// <summary>
+        /// Try load SentryOptions.json in a platform-agnostic way.
+        /// </summary>
+        public static SentryUnityOptions? LoadFromUnity()
         {
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
+            if (sentryOptionsTextAsset == null)
+            {
+                // Config not found.
+                return null;
+            }
             using var jsonDocument = JsonDocument.Parse(sentryOptionsTextAsset.bytes);
             return FromJson(jsonDocument.RootElement).TryAttachLogger();
         }
