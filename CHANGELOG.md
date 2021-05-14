@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
+
 ### Features
 
 - Sentry UnityLogger aligned to Unity Debug API ([#163](https://github.com/getsentry/sentry-unity/pull/163))
