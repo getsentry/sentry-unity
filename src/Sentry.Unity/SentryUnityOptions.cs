@@ -106,7 +106,8 @@ namespace Sentry.Unity
         // Can't rely on Unity's OnEnable() hook.
         public SentryUnityOptions TryAttachLogger()
         {
-            DiagnosticLogger = Debug
+            DiagnosticLogger = DiagnosticLogger is null
+                               && Debug
                                && (!DebugOnlyInEditor || Application.isEditor) // TODO: Should we move it out and use via IApplication something?
                 ? new UnityLogger(DiagnosticLevel)
                 : null;
