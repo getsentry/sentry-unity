@@ -37,9 +37,7 @@ namespace Sentry.Unity
                 return;
             }
 
-
             SentryUnity.Init(options);
         }
     }
 }
-

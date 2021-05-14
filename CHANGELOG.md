@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Fixes
+
 - SentryOptions config proper check ([#176](https://github.com/getsentry/sentry-unity/pull/176))
 
 ### Features
