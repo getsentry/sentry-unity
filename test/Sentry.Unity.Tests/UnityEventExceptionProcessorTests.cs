@@ -27,6 +27,7 @@ namespace Sentry.Unity.Tests
 
             var sentryExceptionFirstFrame = sentryException.Stacktrace!.Frames[0];
             Assert.AreEqual(string.Empty, sentryExceptionFirstFrame.FileName);
+            Assert.AreEqual(string.Empty, sentryExceptionFirstFrame.AbsolutePath);
         }
 
         [Test]
