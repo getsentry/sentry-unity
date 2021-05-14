@@ -36,33 +36,33 @@ jobs:
       # Caching still takes some time, but brings it down to about 5 minutes.
       # Note: if you change the installation step, remember to update the value
       # at the end of the key.
-      # - name: Restore cached Unity installation
-      #   id: cache-unity
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: C:/Program Files/Unity
-      #     key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+      - name: Restore cached Unity installation
+        id: cache-unity
+        uses: actions/cache@v2
+        with:
+          path: C:/Program Files/Unity
+          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
 
-      # - name: Restore previous build
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: artifacts/build
-      #     key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+      - name: Restore previous build
+        uses: actions/cache@v2
+        with:
+          path: artifacts/build
+          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
 
-      # - name: Restore Unity Packages
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: samples/unity-of-bugs/Library
-      #     key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+      - name: Restore Unity Packages
+        uses: actions/cache@v2
+        with:
+          path: samples/unity-of-bugs/Library
+          key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Install Unity
+        if: ${{ !steps.cache-unity.outputs.cache-hit }}
         run: |
           Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile unity_install.exe
           Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -OutFile unity_target_install.exe
 
           ./unity_install.exe /S | Out-Default
           ./unity_target_install.exe /S | Out-Default
-        if: ${{ !steps.cache-unity.outputs.cache-hit }}
 
       # Need to write to $GITHUB_PATH to make the environment variable
       # available to other steps.
@@ -101,10 +101,6 @@ jobs:
         run: |
           dotnet nuget locals all --clear
           dotnet build -c Release
-
-      - name: Build sample game
-        run: |
-          unity -quit -batchmode -nographics -logFile - -projectPath samples/unity-of-bugs -buildWindows64Player ../../artifacts/build/game.exe | Out-Default
 
       # Don't fail the build here, we have a more detailed step later that provides more info.
       # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
@@ -226,6 +222,6 @@ jobs:
 
       # Professional licenses are per-seat so we should always try to return them
       - name: Return Unity license
+        if: ${{ always() }}
         run: |
           unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
-        if: ${{ always() }}
