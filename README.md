@@ -8,6 +8,9 @@
 Sentry SDK for Unity
 ===========
 
+[![build](https://github.com/getsentry/sentry-unity/workflows/CI/badge.svg?branch=main)](https://github.com/getsentry/sentry-unity/actions?query=branch%3Amain)
+[![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/PXa5Apfe7K)
+
 Install it via `UPM`: `https://github.com/getsentry/unity.git#x.x.x` where `x.x.x` is [the latest release](https://github.com/getsentry/unity/releases).
 
 Check the Sentry [Unity documentation for more details](https://docs.sentry.io/platforms/unity/).
