@@ -31,11 +31,12 @@ namespace Sentry.Unity.Editor
             TryCopyLinkXml(Options.DiagnosticLogger);
         }
 
-        private SentryUnityOptions LoadUnitySentryOptions()
+        private static SentryUnityOptions LoadUnitySentryOptions()
         {
-            if (File.Exists(SentryUnityOptions.GetConfigPath()))
+            var options = SentryUnityOptions.LoadFromUnity();
+            if (options != null)
             {
-                return SentryUnityOptions.LoadFromUnity();
+                return options;
             }
 
             var unitySentryOptions = new SentryUnityOptions { Enabled = true };

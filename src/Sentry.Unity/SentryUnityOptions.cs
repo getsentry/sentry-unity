@@ -168,10 +168,18 @@ namespace Sentry.Unity
                 Environment = json.GetPropertyOrNull("environment")?.GetString()
             };
 
-        public static SentryUnityOptions LoadFromUnity()
+        /// <summary>
+        /// Try load SentryOptions.json in a platform-agnostic way.
+        /// </summary>
+        public static SentryUnityOptions? LoadFromUnity()
         {
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
+            if (sentryOptionsTextAsset == null)
+            {
+                // Config not found.
+                return null;
+            }
             using var jsonDocument = JsonDocument.Parse(sentryOptionsTextAsset.bytes);
             return FromJson(jsonDocument.RootElement).TryAttachLogger();
         }

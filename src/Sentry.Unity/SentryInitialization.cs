@@ -11,13 +11,12 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            if (!File.Exists(SentryUnityOptions.GetConfigPath()))
+            var options = SentryUnityOptions.LoadFromUnity();
+            if (options == null)
             {
                 new UnityLogger(SentryLevel.Warning).Log(SentryLevel.Warning, "Couldn't find the configuration file SentryOptions.json. Did you already configure Sentry?\nYou can do that through the editor: Tools -> Sentry");
                 return;
             }
-
-            var options = SentryUnityOptions.LoadFromUnity();
 
             if (!options.Enabled)
             {
@@ -37,6 +36,7 @@ namespace Sentry.Unity
                 options.DiagnosticLogger?.Log(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
                 return;
             }
+
 
             SentryUnity.Init(options);
         }
