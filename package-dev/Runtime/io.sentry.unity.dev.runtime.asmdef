@@ -1,6 +1,6 @@
 {
     "name": "io.sentry.unity.dev.runtime",
-    "references": [],
+    "references": [""],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
