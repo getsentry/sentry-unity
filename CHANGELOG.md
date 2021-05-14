@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- SentryOptions config proper check ([#176](https://github.com/getsentry/sentry-unity/pull/176))
+
 ### Features
 
 - Sentry UnityLogger aligned to Unity Debug API ([#163](https://github.com/getsentry/sentry-unity/pull/163))
