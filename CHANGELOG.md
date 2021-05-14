@@ -2,9 +2,7 @@
 
 ## Unreleased
 
-### Fixes
-
-- SentryOptions config proper check ([#176](https://github.com/getsentry/sentry-unity/pull/176))
+- il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
 
 ### Features
 
@@ -16,6 +14,7 @@
 - SDK version format correction ([#120](https://github.com/getsentry/sentry-unity/pull/120))
 - Auto compression option is part of drop down (no extra checkbox) ([#160](https://github.com/getsentry/sentry-unity/pull/160))
 - Rename DiagnosticsLogger to DiagnosticLogger ([#168](https://github.com/getsentry/sentry-unity/pull/168))
+- SentryOptions config proper check ([#176](https://github.com/getsentry/sentry-unity/pull/176))
 
 ## 0.0.13
 
