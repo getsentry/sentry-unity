@@ -9,6 +9,7 @@ namespace Sentry.Unity.Integrations
         event Application.LogCallback LogMessageReceived;
         event Action Quitting;
         string ActiveSceneName { get; }
+        bool IsSimulator { get; }
     }
 
     internal sealed class ApplicationAdapter : IApplication
@@ -26,6 +27,8 @@ namespace Sentry.Unity.Integrations
         public event Action? Quitting;
 
         public string ActiveSceneName => SceneManager.GetActiveScene().name;
+
+        public bool IsSimulator => Application.isEditor;
 
         private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
             => LogMessageReceived?.Invoke(condition, stackTrace, type);

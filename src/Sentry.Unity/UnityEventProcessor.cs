@@ -5,6 +5,7 @@ using System.Reflection;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 using DeviceOrientation = Sentry.Protocol.DeviceOrientation;
 
@@ -20,6 +21,13 @@ namespace Sentry.Unity
 
     internal class UnityEventProcessor : ISentryEventProcessor
     {
+        private readonly IApplication _appDomain;
+
+        public UnityEventProcessor(IApplication? appDomain = null)
+        {
+            _appDomain = appDomain ?? ApplicationAdapter.Instance;
+        }
+
         public SentryEvent Process(SentryEvent @event)
         {
             @event.Sdk.AddPackage(UnitySdkInfo.PackageName, UnitySdkInfo.Version);
@@ -116,12 +124,7 @@ namespace Sentry.Unity
                 @event.Contexts.App.BuildType = "release";
             }
 
-            // TODO: 'UNITY_EDITOR' preprocessor is not known from within 'Sentry.Unity'
-#if UNITY_EDITOR
-            @event.Contexts.Device.Simulator = true;
-#else
-            @event.Contexts.Device.Simulator = false;
-#endif
+            @event.Contexts.Device.Simulator = _appDomain.IsSimulator;
 
             return @event;
         }

@@ -9,6 +9,7 @@ namespace Sentry.Unity.Tests.Stubs
         public event Application.LogCallback? LogMessageReceived;
         public event Action? Quitting;
         public string ActiveSceneName => "TestSceneName";
+        public bool IsSimulator => true;
 
         private void OnQuitting() => Quitting?.Invoke();
 
