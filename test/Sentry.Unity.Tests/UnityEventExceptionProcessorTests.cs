@@ -51,7 +51,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(UnitySdkInfo.PackageName, package!.Name);
             Assert.AreEqual(UnitySdkInfo.Version, package!.Version);
 
-            Assert.AreEqual(testApplication.IsSimulator, sentryEvent.Contexts.Device.Simulator);
+            Assert.AreEqual(testApplication.IsEditor, sentryEvent.Contexts.Device.Simulator);
         }
     }
 }

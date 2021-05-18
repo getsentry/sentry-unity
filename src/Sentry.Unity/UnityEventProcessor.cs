@@ -21,11 +21,11 @@ namespace Sentry.Unity
 
     internal class UnityEventProcessor : ISentryEventProcessor
     {
-        private readonly IApplication _appDomain;
+        private readonly IApplication _application;
 
-        public UnityEventProcessor(IApplication? appDomain = null)
+        public UnityEventProcessor(IApplication? application = null)
         {
-            _appDomain = appDomain ?? ApplicationAdapter.Instance;
+            _application = application ?? ApplicationAdapter.Instance;
         }
 
         public SentryEvent Process(SentryEvent @event)
@@ -124,7 +124,7 @@ namespace Sentry.Unity
                 @event.Contexts.App.BuildType = "release";
             }
 
-            @event.Contexts.Device.Simulator = _appDomain.IsSimulator;
+            @event.Contexts.Device.Simulator = _application.IsEditor;
 
             return @event;
         }
