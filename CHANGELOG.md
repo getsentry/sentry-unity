@@ -3,6 +3,7 @@
 ## Unreleased
 
 - il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
+- Transition scene to test scene loading events (breadcrumbs) ([#185](https://github.com/getsentry/sentry-unity/pull/185))
 
 ### Features
 
