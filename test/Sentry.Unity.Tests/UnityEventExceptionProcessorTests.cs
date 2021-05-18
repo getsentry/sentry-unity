@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Tests
 {
@@ -34,7 +35,8 @@ namespace Sentry.Unity.Tests
         public void Process_SdkInfo_Correct()
         {
             // arrange
-            var unityEventProcessor = new UnityEventProcessor();
+            var testApplication = new TestApplication();
+            var unityEventProcessor = new UnityEventProcessor(testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
@@ -48,6 +50,8 @@ namespace Sentry.Unity.Tests
             Assert.IsNotNull(package);
             Assert.AreEqual(UnitySdkInfo.PackageName, package!.Name);
             Assert.AreEqual(UnitySdkInfo.Version, package!.Version);
+
+            Assert.AreEqual(testApplication.IsEditor, sentryEvent.Contexts.Device.Simulator);
         }
     }
 }
