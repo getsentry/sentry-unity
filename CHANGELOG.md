@@ -4,6 +4,7 @@
 
 - il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
 - Flag simulator based on Application.isEditor ([#184](https://github.com/getsentry/sentry-unity/pull/184))
+- Simulator is set only when Application.isEditor is true ([#190](https://github.com/getsentry/sentry-unity/pull/190))
 
 ### Features
 
