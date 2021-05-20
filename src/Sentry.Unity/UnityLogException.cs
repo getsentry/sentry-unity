@@ -49,7 +49,7 @@ namespace Sentry.Unity
             var excType = exc[0];
             // TODO: condition may NOT contain ':' separator
             var excValue = exc.Length == 1 ? exc[0] : exc[1].Substring(1); // strip the space
-            var stackList = LogStackTrace.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var stackList = LogStackTrace.Split('\n');
 
             // The format is as follows:
             // Module.Class.Method[.Invoke] (arguments) (at filename:lineno)
