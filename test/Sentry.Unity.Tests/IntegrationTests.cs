@@ -13,7 +13,7 @@ namespace Sentry.Unity.Tests
 {
     public sealed class IntegrationTests
     {
-        [UnityTest]
+        // [UnityTest]
         public IEnumerator BugFarmScene_ObjectCreatedWithExceptionLogicAndCalled_OneEventIsCreated()
         {
             yield return SetupSceneCoroutine("BugFarmScene");
