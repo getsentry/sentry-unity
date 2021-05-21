@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using UnityEditor.VersionControl;
-using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Editor.Tests
