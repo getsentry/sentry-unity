@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Exclude SentryOptions.json from release package ([#195](https://github.com/getsentry/sentry-unity/pull/195))
+
 ## 0.0.14
 
 - il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
