@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Embedded link.xml in assembly ([194]https://github.com/getsentry/sentry-unity/pull/194))
+
 ## 0.0.14
 
 - il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
