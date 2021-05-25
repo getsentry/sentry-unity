@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Embedded link.xml in assembly ([#194](https://github.com/getsentry/sentry-unity/pull/194))
+- Exclude SentryOptions.json from release package ([#195](https://github.com/getsentry/sentry-unity/pull/195))
 
 ## 0.0.14
 
