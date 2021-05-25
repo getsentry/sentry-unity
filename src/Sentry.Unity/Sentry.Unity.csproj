@@ -18,13 +18,13 @@
   </Target>
 
   <ItemGroup>
-    <None Update="link.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="Resources\link.xml">
+      <LogicalName>Sentry.Unity.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj" />
   </ItemGroup>
-
+  
 </Project>
