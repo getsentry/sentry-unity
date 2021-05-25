@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Reflection;
 using NUnit.Framework;
 
 namespace Sentry.Unity.Tests
@@ -9,10 +7,10 @@ namespace Sentry.Unity.Tests
         [Test]
         public void LinkXml_Embedded()
         {
-            var resourceNames = Assembly.GetAssembly(typeof(SentryUnity)).GetManifestResourceNames();
+            var resourceNames = typeof(SentryUnity).Assembly.GetManifestResourceNames();
 
             Assert.NotNull(resourceNames);
-            Assert.IsTrue(resourceNames.Contains("Sentry.Unity.xml"));
+            Assert.Contains("Sentry.Unity.xml", resourceNames);
         }
     }
 }
