@@ -36,7 +36,7 @@ namespace Sentry.Unity
                     // TODO: What is worth paying the price of allocation in order to add here?
                     // data: new Dictionary<string, string>
                     // {
-                    //     {"name", scene.Name},
+                        // {"name", scene.Name},
                         // TODO: Should we benchmark before getting these? Are these and/or other unused fields useful?
                         // {"path", scene.path},
                         // {"isDirty", scene.isDirty.ToString()},
@@ -59,10 +59,6 @@ namespace Sentry.Unity
                 hub.AddBreadcrumb(
                     $"Scene '{scene.Name}' was unloaded",
                     category: "scene.unloaded"
-                    // data: new Dictionary<string, string>
-                    // {
-                    //     {"name", scene.Name},
-                    // }
                 );
             }
 
