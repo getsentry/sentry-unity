@@ -577,7 +577,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Load TransitionScene
+  m_Text: Load 2_TransitionScene
 --- !u!222 &272343838
 CanvasRenderer:
   m_ObjectHideFlags: 0

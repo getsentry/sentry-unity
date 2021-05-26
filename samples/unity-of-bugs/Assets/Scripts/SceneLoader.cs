@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoader : MonoBehaviour
 {
-    public void LoadTransitionScene() => SceneManager.LoadScene("TransitionScene");
+    public void LoadBugFarmScene() => SceneManager.LoadScene("1_BugFarmScene");
 
-    public void LoadBugFarmScene() => SceneManager.LoadScene("BugFarmScene");
+    public void LoadTransitionScene() => SceneManager.LoadScene("2_TransitionScene");
 }

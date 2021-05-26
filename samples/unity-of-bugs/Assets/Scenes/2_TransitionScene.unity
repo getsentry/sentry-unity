@@ -579,7 +579,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Load BugFarmScene
+  m_Text: Load 1_BugFarmScene
 --- !u!222 &936404631
 CanvasRenderer:
   m_ObjectHideFlags: 0
