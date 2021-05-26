@@ -6,12 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/BugFarmScene.unity
+    path: Assets/Scenes/1_BugfarmScene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/TransitionScene.unity
+    path: Assets/Scenes/2_TransitionScene.unity
     guid: e1f7138e265169147b8437fb0820f447
   - enabled: 1
-    path: Assets/Scenes/EmptyScene.unity
+    path: Assets/Scenes/3_EmptyScene.unity
     guid: 8920455e39181fe469e9ddc3cef376a9
   m_configObjects: {}
