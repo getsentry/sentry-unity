@@ -189,6 +189,12 @@ namespace Sentry.Unity
 
         public void SaveToUnity(string path)
         {
+            var directory = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             using var fileStream = new FileStream(path, FileMode.Create);
             using var writer = new Utf8JsonWriter(fileStream);
             WriteTo(writer);
