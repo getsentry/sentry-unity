@@ -16,7 +16,7 @@ namespace Sentry.Unity
 
         public void Register(IHub hub, SentryOptions options)
         {
-            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registering BeforeSceneLoad integration.");
+            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registering SceneManager integration.");
 
             _sceneManager.SceneLoaded += OnSceneManagerOnSceneLoaded;
             _sceneManager.SceneUnloaded += SceneManagerOnSceneUnloaded;
