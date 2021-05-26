@@ -39,7 +39,6 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual($"Scene '{sceneName}' was loaded", actualCrumb.Message);
             Assert.AreEqual("scene.loaded", actualCrumb.Category);
-            Assert.AreEqual(sceneName, actualCrumb.Data!["name"]);
         }
 
         [Test]
@@ -72,7 +71,6 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual($"Scene '{sceneName}' was unloaded", actualCrumb.Message);
             Assert.AreEqual("scene.unloaded", actualCrumb.Category);
-            Assert.AreEqual(sceneName, actualCrumb.Data!["name"]);
         }
 
         [Test]
