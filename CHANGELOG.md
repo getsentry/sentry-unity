@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Add product name to release as default ([#202](https://github.com/getsentry/sentry-unity/pull/202))
+
 ## 0.1.0
 
 ### Features
