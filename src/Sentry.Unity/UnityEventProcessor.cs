@@ -45,6 +45,7 @@ namespace Sentry.Unity
             }
 
             @event.Release = Application.version;
+            @event.ServerName = null;
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
