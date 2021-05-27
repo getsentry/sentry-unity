@@ -52,7 +52,7 @@ namespace Sentry.Unity.Integrations
             {
                 // TODO: MinBreadcrumbLevel
                 // options.MinBreadcrumbLevel
-                _hub.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
+                _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
                 return;
             }
 
@@ -65,7 +65,7 @@ namespace Sentry.Unity.Integrations
             _hub.CaptureEvent(sentryEvent);
 
             // So the next event includes this error as a breadcrumb:
-            _hub.AddBreadcrumb(condition, level: ToBreadcrumbLevel(type));
+            _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
         }
 
         private void OnQuitting()
