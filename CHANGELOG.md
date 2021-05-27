@@ -13,6 +13,7 @@
 - Check/create directory before saving ([#196](https://github.com/getsentry/sentry-unity/pull/196))
 - Exclude SentryOptions.json from release package ([#195](https://github.com/getsentry/sentry-unity/pull/195))
 - default env and version ([#199](https://github.com/getsentry/sentry-unity/pull/199))
+- SentryEvent.ServerName forced to 'null' ([#201](https://github.com/getsentry/sentry-unity/pull/201))
 
 ## 0.0.14
 
