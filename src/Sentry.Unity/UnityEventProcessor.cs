@@ -30,6 +30,7 @@ namespace Sentry.Unity
 
         public SentryEvent Process(SentryEvent @event)
         {
+            @event.ServerName = null;
             @event.Sdk.AddPackage(UnitySdkInfo.PackageName, UnitySdkInfo.Version);
             @event.Sdk.Name = UnitySdkInfo.Name;
             @event.Sdk.Version = UnitySdkInfo.Version;
