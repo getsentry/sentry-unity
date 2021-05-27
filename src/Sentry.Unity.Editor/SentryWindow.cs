@@ -20,13 +20,21 @@ namespace Sentry.Unity.Editor
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
+        internal string? _release;
+        internal string? _environment;
+
         private void OnEnable()
         {
+            Debug.Log("on enable test");
+            
             SetTitle();
 
             TryCreateSentryFolder();
 
             Options = LoadUnitySentryOptions();
+
+            _release = Options.Release == SentryUnityOptions.GetDefaultRelease() ? "" : Options.Release;
+            _environment = Options.Environment == SentryUnityOptions.GetDefaultEnvironment() ? "" : Options.Environment;
         }
 
         private static SentryUnityOptions LoadUnitySentryOptions()
@@ -128,14 +136,20 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Stacktrace For Logs", "Whether to include a stack trace for non error events like logs. " +
                                                       "Even when Unity didn't include and no Exception was thrown.."),
                 Options.AttachStacktrace);
-            Options.Release = EditorGUILayout.TextField(
+
+            _release = EditorGUILayout.TextField(
                 new GUIContent("Override Release", "By default release is taken from 'Application.version'. " +
                                                    "This option is an override."),
-                Options.Release);
-            Options.Environment = EditorGUILayout.TextField(
+                _release);
+            Options.Release = String.IsNullOrWhiteSpace(_release) ? SentryUnityOptions.GetDefaultRelease() : _release;
+
+            _environment = EditorGUILayout.TextField(
                 new GUIContent("Override Environment", "An explicit environment. " +
                                                        "If not set, auto detects such as 'development', 'production' or 'editor'."),
-                Options.Environment);
+                _environment);
+            Options.Environment = String.IsNullOrWhiteSpace(_environment)
+                ? SentryUnityOptions.GetDefaultEnvironment()
+                : _environment;
 
             GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
 

@@ -29,6 +29,9 @@ namespace Sentry.Unity
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"{Application.dataPath}/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.json";
 
+        internal static string GetDefaultRelease() => Application.version;
+        internal static string GetDefaultEnvironment() => Application.isEditor ? "editor" : "production";
+
         /// <summary>
         /// UPM name of Sentry Unity SDK (package.json)
         /// </summary>
@@ -86,13 +89,8 @@ namespace Sentry.Unity
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
             // Uses the game `version` as Release unless the user defined one via the Options
-            Release ??= Application.version; // TODO: Should we move it out and use via IApplication something?
-
-            Environment = Environment is { } environment
-                ? environment
-                : Application.isEditor // TODO: Should we move it out and use via IApplication something?
-                    ? "editor"
-                    : "production";
+            Release = GetDefaultRelease(); // TODO: Should we move it out and use via IApplication something?
+            Environment = GetDefaultEnvironment(); // TODO: Should we move it out and use via IApplication something?
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
