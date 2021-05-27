@@ -2,25 +2,29 @@
 
 ## Unreleased
 
+### Features
+
 - Simplified scene breadcrumbs messages ([#197](https://github.com/getsentry/sentry-unity/pull/197))
-- Check/create directory before saving ([#196](https://github.com/getsentry/sentry-unity/pull/196))
 - Embedded link.xml in assembly ([#194](https://github.com/getsentry/sentry-unity/pull/194))
-- Exclude SentryOptions.json from release package ([#195](https://github.com/getsentry/sentry-unity/pull/195))
 - Transition scene to test scene loading events (breadcrumbs) ([#185](https://github.com/getsentry/sentry-unity/pull/185))
+
+### Fixes
+
+- Check/create directory before saving ([#196](https://github.com/getsentry/sentry-unity/pull/196))
+- Exclude SentryOptions.json from release package ([#195](https://github.com/getsentry/sentry-unity/pull/195))
 
 ## 0.0.14
 
-- il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
-- Flag simulator based on Application.isEditor ([#184](https://github.com/getsentry/sentry-unity/pull/184))
-- Simulator is set only when Application.isEditor is true ([#190](https://github.com/getsentry/sentry-unity/pull/190))
-
 ### Features
 
+- Simulator is set only when Application.isEditor is true ([#190](https://github.com/getsentry/sentry-unity/pull/190))
 - Sentry UnityLogger aligned to Unity Debug API ([#163](https://github.com/getsentry/sentry-unity/pull/163))
 - Scene manager integration for breadcrumbs ([#170](https://github.com/getsentry/sentry-unity/pull/170))
 
 ### Fixes
 
+- Flag simulator based on Application.isEditor ([#184](https://github.com/getsentry/sentry-unity/pull/184))
+- il2cpp remove zeroes from path ([#179](https://github.com/getsentry/sentry-unity/pull/179))
 - SDK version format correction ([#120](https://github.com/getsentry/sentry-unity/pull/120))
 - Auto compression option is part of drop down (no extra checkbox) ([#160](https://github.com/getsentry/sentry-unity/pull/160))
 - Rename DiagnosticsLogger to DiagnosticLogger ([#168](https://github.com/getsentry/sentry-unity/pull/168))
@@ -29,29 +33,42 @@
 
 ## 0.0.13
 
+### Fixes
+
 - Missing meta files warnings ([#146](https://github.com/getsentry/sentry-unity/pull/146))
 
 ## 0.0.12
+
+### Fixes
 
 - Release process improvements
 
 ## 0.0.11
 
+### Feature
+
 - Craft Release
 
 ## 0.0.10
 
+### Fixes
+
 - Add missing meta files (cd9c7fd)
 
 ## 0.0.9
+
+### Features
+
+- Unity Sentry SDK programmatic setup ([#130](https://github.com/getsentry/sentry-unity/pull/130))
+  - SentryWindow updated
+
+### Fixes
 
 - UPM meta updated ([#124](https://github.com/getsentry/sentry-unity/pull/124))
 - Bump dotnet 3.3.4 ([#132](https://github.com/getsentry/sentry-unity/pull/132))
   - https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#334
   - Bug fixes for performance monitoring
   - Ability to keep failed envelopes for troubleshooting when they are too large
-- Unity Sentry SDK programmatic setup ([#130](https://github.com/getsentry/sentry-unity/pull/130))
-  - SentryWindow updated
 
 ## 0.0.8
 
