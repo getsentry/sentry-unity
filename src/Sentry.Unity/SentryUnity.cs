@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -25,6 +26,25 @@ namespace Sentry.Unity
         /// <param name="unitySentryOptions">The options object.</param>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions unitySentryOptions)
-            => SentrySdk.Init(unitySentryOptions);
+        {
+            unitySentryOptions.TryAttachLogger();
+
+            // Uses the game `version` as Release unless the user defined one via the Options
+            if (unitySentryOptions.Release == null)
+            {
+                unitySentryOptions.Release = Application.version;
+                unitySentryOptions.DiagnosticLogger?.Log(SentryLevel.Debug,
+                    "Setting Sentry Release to Unity App.Version: {0}",
+                    null, unitySentryOptions.Release);
+            }
+
+            unitySentryOptions.Environment = unitySentryOptions.Environment is { } environment
+                ? environment
+                : Application.isEditor // TODO: Should we move it out and use via IApplication something?
+                    ? "editor"
+                    : "production";
+
+            SentrySdk.Init(unitySentryOptions);
+        }
     }
 }

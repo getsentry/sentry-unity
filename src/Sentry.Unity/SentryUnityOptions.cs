@@ -34,13 +34,30 @@ namespace Sentry.Unity
         /// </summary>
         public const string PackageName = "io.sentry.unity";
 
+        /// <summary>
+        /// Whether the SDK should automatically enable or not.
+        /// </summary>
+        /// <remarks>
+        /// At a minimum, the <see cref="Dsn"/> need to be provided.
+        /// </remarks>
         public bool Enabled { get; set; } = true;
-        public bool CaptureInEditor { get; set; } = true; // Lower entry barrier, likely set to false after initial setup.
+
+        /// <summary>
+        /// Whether Sentry events should be captured while in the Unity Editor.
+        /// </summary>
+        // Lower entry barrier, likely set to false after initial setup.
+        public bool CaptureInEditor { get; set; } = true;
+
+        /// <summary>
+        /// Whether the SDK should be in <see cref="Debug"/> mode only while in the Unity Editor.
+        /// </summary>
         public bool DebugOnlyInEditor { get; set; } = true;
-        public SentryLevel DiagnosticsLevel { get; set; } = SentryLevel.Error; // By default logs out Error or higher.
 
         private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
 
+        /// <summary>
+        /// The level which to compress the request body sent to Sentry.
+        /// </summary>
         public new CompressionLevelWithAuto RequestBodyCompressionLevel
         {
             get => _requestBodyCompressionLevel;
@@ -68,30 +85,25 @@ namespace Sentry.Unity
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
-            // Uses the game `version` as Release unless the user defined one via the Options
-            Release ??= Application.version; // TODO: Should we move it out and use via IApplication something?
-
-            Environment = Environment is { } environment
-                ? environment
-                : Application.isEditor // TODO: Should we move it out and use via IApplication something?
-                    ? "editor"
-                    : "production";
-
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor());
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
+            this.AddIntegration(new SceneManagerIntegration());
         }
 
         // Can't rely on Unity's OnEnable() hook.
         public SentryUnityOptions TryAttachLogger()
         {
-            DiagnosticLogger = Debug
-                               && (!DebugOnlyInEditor || Application.isEditor) // TODO: Should we move it out and use via IApplication something?
-                ? new UnityLogger(DiagnosticsLevel)
-                : null;
+            if (DiagnosticLogger is null
+                && Debug
+                // TODO: Move it out and use via IApplication
+                && (!DebugOnlyInEditor || Application.isEditor))
+            {
+                DiagnosticLogger = new UnityLogger(DiagnosticLevel);
+            }
 
             return this;
         }
@@ -110,7 +122,7 @@ namespace Sentry.Unity
 
             writer.WriteBoolean("debug", Debug);
             writer.WriteBoolean("debugOnlyInEditor", DebugOnlyInEditor);
-            writer.WriteNumber("diagnosticsLevel", (int)DiagnosticsLevel);
+            writer.WriteNumber("diagnosticLevel", (int)DiagnosticLevel);
             writer.WriteBoolean("attachStacktrace", AttachStacktrace);
 
             writer.WriteNumber("requestBodyCompressionLevel", (int)RequestBodyCompressionLevel);
@@ -142,7 +154,7 @@ namespace Sentry.Unity
                 CaptureInEditor = json.GetPropertyOrNull("captureInEditor")?.GetBoolean() ?? false,
                 Debug = json.GetPropertyOrNull("debug")?.GetBoolean() ?? true,
                 DebugOnlyInEditor = json.GetPropertyOrNull("debugOnlyInEditor")?.GetBoolean() ?? true,
-                DiagnosticsLevel = json.GetEnumOrNull<SentryLevel>("diagnosticsLevel") ?? SentryLevel.Error,
+                DiagnosticLevel = json.GetEnumOrNull<SentryLevel>("diagnosticLevel") ?? SentryLevel.Error,
                 RequestBodyCompressionLevel = json.GetEnumOrNull<CompressionLevelWithAuto>("requestBodyCompressionLevel") ?? CompressionLevelWithAuto.Auto,
                 AttachStacktrace = json.GetPropertyOrNull("attachStacktrace")?.GetBoolean() ?? false,
                 SampleRate = json.GetPropertyOrNull("sampleRate")?.GetSingle() ?? 1.0f,
@@ -150,16 +162,30 @@ namespace Sentry.Unity
                 Environment = json.GetPropertyOrNull("environment")?.GetString()
             };
 
-        public static SentryUnityOptions LoadFromUnity()
+        /// <summary>
+        /// Try load SentryOptions.json in a platform-agnostic way.
+        /// </summary>
+        public static SentryUnityOptions? LoadFromUnity()
         {
             // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
+            if (sentryOptionsTextAsset == null)
+            {
+                // Config not found.
+                return null;
+            }
             using var jsonDocument = JsonDocument.Parse(sentryOptionsTextAsset.bytes);
             return FromJson(jsonDocument.RootElement).TryAttachLogger();
         }
 
         public void SaveToUnity(string path)
         {
+            var directory = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             using var fileStream = new FileStream(path, FileMode.Create);
             using var writer = new Utf8JsonWriter(fileStream);
             WriteTo(writer);

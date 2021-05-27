@@ -34,7 +34,7 @@ namespace Sentry.Unity.Tests
                 CaptureInEditor = true,
                 Debug = true,
                 DebugOnlyInEditor = false,
-                DiagnosticsLevel = SentryLevel.Info,
+                DiagnosticLevel = SentryLevel.Info,
                 RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression,
                 AttachStacktrace = true,
                 SampleRate = 1f,
@@ -55,6 +55,12 @@ namespace Sentry.Unity.Tests
             AssertOptions(optionsActual, optionsExpected);
         }
 
+        [Test]
+        public void Ctor_Release_IsNull() => Assert.IsNull(new SentryUnityOptions().Release);
+
+        [Test]
+        public void Ctor_Environment_IsNull() => Assert.IsNull(new SentryUnityOptions().Environment);
+
         private static void AssertOptions(SentryUnityOptions actual, SentryUnityOptions expected)
         {
             Assert.AreEqual(expected.Enabled, actual.Enabled);
@@ -62,7 +68,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.CaptureInEditor, actual.CaptureInEditor);
             Assert.AreEqual(expected.Debug, actual.Debug);
             Assert.AreEqual(expected.DebugOnlyInEditor, actual.DebugOnlyInEditor);
-            Assert.AreEqual(expected.DiagnosticsLevel, actual.DiagnosticsLevel);
+            Assert.AreEqual(expected.DiagnosticLevel, actual.DiagnosticLevel);
             Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);
             Assert.AreEqual(expected.Release, actual.Release);

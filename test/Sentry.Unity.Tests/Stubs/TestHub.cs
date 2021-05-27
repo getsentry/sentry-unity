@@ -7,10 +7,16 @@ namespace Sentry.Unity.Tests.Stubs
     internal sealed class TestHub : IHub
     {
         private readonly List<SentryEvent> _capturedEvents = new();
+        private readonly List<Action<Scope>> _configureScopeCalls = new();
 
         public IReadOnlyList<SentryEvent> CapturedEvents => _capturedEvents;
+        public IReadOnlyList<Action<Scope>> ConfigureScopeCalls => _configureScopeCalls;
 
-        public bool IsEnabled { get; } = true;
+        public TestHub(bool isEnabled = true)
+        {
+            IsEnabled = isEnabled;
+        }
+        public bool IsEnabled { get; }
 
         public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null)
         {
@@ -32,10 +38,7 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
-        public void ConfigureScope(Action<Scope> configureScope)
-        {
-            _ = configureScope;
-        }
+        public void ConfigureScope(Action<Scope> configureScope) => _configureScopeCalls.Add(configureScope);
 
         public Task ConfigureScopeAsync(Func<Scope, Task> configureScope)
         {

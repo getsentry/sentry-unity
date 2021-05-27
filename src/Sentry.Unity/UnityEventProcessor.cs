@@ -5,6 +5,7 @@ using System.Reflection;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 using DeviceOrientation = Sentry.Protocol.DeviceOrientation;
 
@@ -20,6 +21,13 @@ namespace Sentry.Unity
 
     internal class UnityEventProcessor : ISentryEventProcessor
     {
+        private readonly IApplication _application;
+
+        public UnityEventProcessor(IApplication? application = null)
+        {
+            _application = application ?? ApplicationAdapter.Instance;
+        }
+
         public SentryEvent Process(SentryEvent @event)
         {
             @event.Sdk.AddPackage(UnitySdkInfo.PackageName, UnitySdkInfo.Version);
@@ -37,6 +45,7 @@ namespace Sentry.Unity
             }
 
             @event.Release = Application.version;
+            @event.ServerName = null;
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
@@ -116,12 +125,8 @@ namespace Sentry.Unity
                 @event.Contexts.App.BuildType = "release";
             }
 
-            // TODO: 'UNITY_EDITOR' preprocessor is not known from within 'Sentry.Unity'
-#if UNITY_EDITOR
-            @event.Contexts.Device.Simulator = true;
-#else
-            @event.Contexts.Device.Simulator = false;
-#endif
+            // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
+            @event.Contexts.Device.Simulator = _application.IsEditor ? true : null;
 
             return @event;
         }
@@ -138,6 +143,129 @@ namespace Sentry.Unity
                 // a stacktrace but also the exception message and type so currently can't be hooked into StackTraceFactory
                 sentryEvent.SentryExceptions = new[] { ule.ToSentryException() };
                 sentryEvent.SetTag("source", "log");
+            }
+        }
+
+        private static SentryException GetException(string condition, string stackTrace)
+        {
+            var frames = new List<SentryStackFrame>();
+            var exc = condition.Split(new char[] { ':' }, 2);
+            var excType = exc[0];
+            // TODO: condition may NOT contain ':' separator
+            var excValue = exc.Length == 1 ? exc[0] : exc[1].Substring(1); // strip the space
+            var stackList = stackTrace.Split('\n');
+
+            // The format is as follows:
+            // Module.Class.Method[.Invoke] (arguments) (at filename:lineno)
+            // where :lineno is optional, will be ommitted in builds
+            for (var i = 0; i < stackList.Length; i++)
+            {
+                string functionName;
+                string filename;
+                int lineNo;
+
+                var item = stackList[i];
+                if (item == string.Empty)
+                {
+                    continue;
+                }
+
+                var closingParen = item.IndexOf(')');
+
+                if (closingParen == -1)
+                {
+                    functionName = item;
+                    lineNo = -1;
+                    filename = string.Empty;
+                }
+                else
+                {
+                    try
+                    {
+                        functionName = item.Substring(0, closingParen + 1);
+                        if (item.Substring(closingParen + 1, 5) != " (at ")
+                        {
+                            // we did something wrong, failed the check
+                            Debug.Log("failed parsing " + item);
+                            functionName = item;
+                            lineNo = -1;
+                            filename = string.Empty;
+                        }
+                        else
+                        {
+                            var colon = item.LastIndexOf(':', item.Length - 1, item.Length - closingParen);
+                            if (closingParen == item.Length - 1)
+                            {
+                                filename = string.Empty;
+                                lineNo = -1;
+                            }
+                            else if (colon == -1)
+                            {
+                                filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
+                                lineNo = -1;
+                            }
+                            else
+                            {
+                                filename = item.Substring(closingParen + 6, colon - closingParen - 6);
+                                lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        functionName = item;
+                        lineNo = -1;
+                        filename = string.Empty; // we have no clue
+                    }
+                }
+
+                var filenameWithoutZeroes = StripZeroes(filename);
+                frames.Add(new SentryStackFrame
+                {
+                    FileName = TryResolveFileNameForMono(filenameWithoutZeroes),
+                    AbsolutePath = filenameWithoutZeroes,
+                    Function = functionName,
+                    LineNumber = lineNo,
+                    InApp = functionName != null
+                        && !functionName.StartsWith("UnityEngine", StringComparison.Ordinal)
+                        && !functionName.StartsWith("System", StringComparison.Ordinal)
+                });
+            }
+
+            frames.Reverse();
+
+            var stacktrace = new SentryStackTrace();
+            foreach (var frame in frames)
+            {
+                stacktrace.Frames.Add(frame);
+            }
+
+            return new SentryException
+            {
+                Stacktrace = stacktrace,
+                Type = excType,
+                Value = excValue
+            };
+        }
+
+        // https://github.com/getsentry/sentry-unity/issues/103
+        private static string StripZeroes(string filename)
+            => filename.Equals("<00000000000000000000000000000000>", StringComparison.OrdinalIgnoreCase)
+                ? string.Empty
+                : filename;
+
+        // TODO: discuss
+        private static string TryResolveFileNameForMono(string fileName)
+        {
+            try
+            {
+                // throws on Mono for <1231231231> paths
+                return Path.GetFileName(fileName);
+            }
+            catch
+            {
+                // mono path
+                return "Unknown";
             }
         }
     }
