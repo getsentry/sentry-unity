@@ -11,7 +11,7 @@ on:
     - '.github/**/*.yml'
     - 'src/**'
     - 'test/**'
-    - 'sample/**'
+    - 'samples/**'
     - 'Directory.Build.props'
     - '*sln*'
     - '*NuGet*'
