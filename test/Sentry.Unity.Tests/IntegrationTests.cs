@@ -16,7 +16,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_ObjectCreatedWithExceptionLogicAndCalled_OneEventIsCreated()
         {
-            yield return SetupSceneCoroutine("BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarmScene");
 
             // arrange
             var testEventCapture = new TestEventCapture();
