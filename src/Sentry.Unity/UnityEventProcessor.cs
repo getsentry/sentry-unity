@@ -44,8 +44,6 @@ namespace Sentry.Unity
                 @event.Contexts.Device.BatteryLevel = (short?)(SystemInfo.batteryLevel * 100);
             }
 
-            @event.Release = Application.version;
-
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
             @event.Contexts.Device.MemorySize = SystemInfo.systemMemorySize;
