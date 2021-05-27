@@ -32,7 +32,7 @@ namespace Sentry.Unity
 
                 hub.AddBreadcrumb(
                     $"Scene '{scene.Name}' was loaded",
-                    category: "scene.loaded");
+                    "scene.loaded");
             }
 
             void SceneManagerOnSceneUnloaded(SceneAdapter scene)
@@ -45,7 +45,7 @@ namespace Sentry.Unity
 
                 hub.AddBreadcrumb(
                     $"Scene '{scene.Name}' was unloaded",
-                    category: "scene.unloaded");
+                    "scene.unloaded");
             }
 
             void SceneManagerOnActiveSceneChanged(SceneAdapter fromScene, SceneAdapter toScene)
@@ -57,10 +57,10 @@ namespace Sentry.Unity
                 }
 
                 hub.AddBreadcrumb(
-                    message: fromScene.Name == null
+                    fromScene.Name == null
                         ? $"Changed active scene to '{toScene.Name}'"
                         : $"Changed active scene '{fromScene.Name}' to '{toScene.Name}'",
-                    category: "scene.changed");
+                    "scene.changed");
             }
         }
     }
