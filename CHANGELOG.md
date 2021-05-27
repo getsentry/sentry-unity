@@ -7,6 +7,7 @@
 - Simplified scene breadcrumbs messages ([#197](https://github.com/getsentry/sentry-unity/pull/197))
 - Embedded link.xml in assembly ([#194](https://github.com/getsentry/sentry-unity/pull/194))
 - Transition scene to test scene loading events (breadcrumbs) ([#185](https://github.com/getsentry/sentry-unity/pull/185))
+- Breadcrumb categories added ([#203](https://github.com/getsentry/sentry-unity/pull/203))
 
 ### Fixes
 
