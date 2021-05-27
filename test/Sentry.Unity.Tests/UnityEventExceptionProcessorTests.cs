@@ -72,5 +72,19 @@ namespace Sentry.Unity.Tests
             new object[] { true, true },
             new object[] { false, null! },
         };
+
+        [Test]
+        public void Process_ServerName_IsNull()
+        {
+            // arrange
+            var unityEventProcessor = new UnityEventProcessor();
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(sentryEvent);
+
+            // assert
+            Assert.IsNull(sentryEvent.ServerName);
+        }
     }
 }
