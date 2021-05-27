@@ -25,8 +25,6 @@ namespace Sentry.Unity.Editor
 
         private void OnEnable()
         {
-            Debug.Log("on enable test");
-            
             SetTitle();
 
             TryCreateSentryFolder();
