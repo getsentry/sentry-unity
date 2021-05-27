@@ -40,7 +40,7 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease()
+        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationProductNameAtVersionAsRelease()
         {
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
@@ -55,7 +55,28 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+            Assert.AreEqual(Application.productName + "@" + Application.version, testEventCapture.Events.First().Release);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_IncludesCustomRelease()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            // arrange
+            var customRelease = "CustomRelease";
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.Release = customRelease;
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreEqual(customRelease, testEventCapture.Events.First().Release);
         }
 
         [UnityTest]

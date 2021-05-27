@@ -44,7 +44,6 @@ namespace Sentry.Unity
                 @event.Contexts.Device.BatteryLevel = (short?)(SystemInfo.batteryLevel * 100);
             }
 
-            @event.Release = Application.version;
             @event.ServerName = null;
 
             // This is the approximate amount of system memory in megabytes.
