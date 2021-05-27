@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEngine;
@@ -35,6 +37,47 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(1, testEventCapture.Events.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            // arrange
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationInEditorOrProduction()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            // arrange
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            var actual = testEventCapture.Events.First();
+            Assert.AreEqual(Application.isEditor
+                ? "editor"
+                : "production",
+                actual.Environment);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)
