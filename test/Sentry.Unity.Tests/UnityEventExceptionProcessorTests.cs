@@ -6,7 +6,6 @@ namespace Sentry.Unity.Tests
 {
     public class UnityEventExceptionProcessorTests
     {
-        [Ignore("Parsing seem to have regressed")]
         [Test]
         public void Process_IL2CPPStackTraceFilenameWithZeroes_ShouldReturnEmptyString()
         {

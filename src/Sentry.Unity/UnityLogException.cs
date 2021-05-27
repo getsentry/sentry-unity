@@ -115,10 +115,11 @@ namespace Sentry.Unity
                     }
                 }
 
+                var filenameWithoutZeroes = StripZeroes(filename);
                 frames.Add(new SentryStackFrame
                 {
-                    FileName = TryResolveFileNameForMono(StripZeroes(filename)),
-                    AbsolutePath = filename,
+                    FileName = TryResolveFileNameForMono(filenameWithoutZeroes),
+                    AbsolutePath = filenameWithoutZeroes,
                     Function = functionName,
                     LineNumber = lineNo,
                     InApp = functionName != null
