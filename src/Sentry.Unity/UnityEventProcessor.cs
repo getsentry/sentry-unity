@@ -125,7 +125,8 @@ namespace Sentry.Unity
                 @event.Contexts.App.BuildType = "release";
             }
 
-            @event.Contexts.Device.Simulator = _application.IsEditor;
+            // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
+            @event.Contexts.Device.Simulator = _application.IsEditor ? true : null;
 
             return @event;
         }

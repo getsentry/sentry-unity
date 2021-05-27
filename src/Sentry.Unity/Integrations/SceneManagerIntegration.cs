@@ -16,7 +16,7 @@ namespace Sentry.Unity
 
         public void Register(IHub hub, SentryOptions options)
         {
-            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registering BeforeSceneLoad integration.");
+            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registering SceneManager integration.");
 
             _sceneManager.SceneLoaded += OnSceneManagerOnSceneLoaded;
             _sceneManager.SceneUnloaded += SceneManagerOnSceneUnloaded;
@@ -31,21 +31,8 @@ namespace Sentry.Unity
                 }
 
                 hub.AddBreadcrumb(
-                    $"Scene '{scene.Name}' was loaded",
-                    category: "scene.loaded",
-                    // TODO: What is worth paying the price of allocation in order to add here?
-                    data: new Dictionary<string, string>
-                    {
-                        {"name", scene.Name},
-                        // TODO: Should we benchmark before getting these? Are these and/or other unused fields useful?
-                        // {"path", scene.path},
-                        // {"isDirty", scene.isDirty.ToString()},
-                    }
-                    // TODO: Is this useful? Does it happen that IsValid returns false at runtime?
-                    // level: scene.IsValid()
-                    //     ? BreadcrumbLevel.Error
-                    //     : BreadcrumbLevel.Info
-                );
+                    message: $"Scene '{scene.Name}' was loaded",
+                    category: "scene.loaded");
             }
 
             void SceneManagerOnSceneUnloaded(SceneAdapter scene)
@@ -57,12 +44,8 @@ namespace Sentry.Unity
                 }
 
                 hub.AddBreadcrumb(
-                    $"Scene '{scene.Name}' was unloaded",
-                    category: "scene.unloaded",
-                    data: new Dictionary<string, string>
-                    {
-                        {"name", scene.Name},
-                    });
+                    message: $"Scene '{scene.Name}' was unloaded",
+                    category: "scene.unloaded");
             }
 
             void SceneManagerOnActiveSceneChanged(SceneAdapter fromScene, SceneAdapter toScene)
@@ -74,7 +57,9 @@ namespace Sentry.Unity
                 }
 
                 hub.AddBreadcrumb(
-                    $"Changed active scene '{fromScene.Name}' to '{toScene.Name}'",
+                    message: fromScene.Name == null
+                        ? $"Changed active scene to '{toScene.Name}'"
+                        : $"Changed active scene '{fromScene.Name}' to '{toScene.Name}'",
                     category: "scene.changed");
             }
         }

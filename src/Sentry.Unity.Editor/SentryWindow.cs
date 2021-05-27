@@ -27,8 +27,6 @@ namespace Sentry.Unity.Editor
             TryCreateSentryFolder();
 
             Options = LoadUnitySentryOptions();
-
-            TryCopyLinkXml(Options.DiagnosticLogger);
         }
 
         private static SentryUnityOptions LoadUnitySentryOptions()
@@ -180,59 +178,6 @@ namespace Sentry.Unity.Editor
             {
                 AssetDatabase.CreateFolder("Assets/Resources", SentryUnityOptions.ConfigRootFolder);
             }
-        }
-
-        /// <summary>
-        /// Find and copy 'link.xml' into current Unity project for IL2CPP builds
-        /// </summary>
-        private static void TryCopyLinkXml(IDiagnosticLogger? logger)
-        {
-            const string linkXmlFileName = "link.xml";
-
-            var linkXmlPath = $"{Application.dataPath}/Resources/{SentryUnityOptions.ConfigRootFolder}/{linkXmlFileName}";
-            if (File.Exists(linkXmlPath))
-            {
-                return;
-            }
-
-            logger?.Log(SentryLevel.Debug, $"'{linkXmlFileName}' is not found. Creating one!");
-
-            var linkPath = GetLinkXmlPath(linkXmlFileName);
-            if (linkPath == null)
-            {
-                logger?.Log(SentryLevel.Fatal, $"Couldn't locate '{linkXmlFileName}' in 'Packages'.");
-                return;
-            }
-
-            var linkXmlAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(linkPath);
-            File.WriteAllBytes(linkXmlPath, linkXmlAsset.bytes);
-        }
-
-        /// <summary>
-        /// Get Unity path to 'link.xml' file from `Packages` folder.
-        ///
-        /// Release UPM:
-        ///   Given:   link.xml
-        ///   Returns: Packages/io.sentry.unity/Runtime/link.xml
-        ///
-        /// Dev UPM:
-        ///   Given:   link.xml
-        ///   Returns: Packages/io.sentry.unity.dev/Runtime/link.xml
-        /// </summary>
-        private static string? GetLinkXmlPath(string linkXmlFileName)
-        {
-            var assetIds = AssetDatabase.FindAssets(SentryUnityOptions.PackageName, new [] { "Packages" });
-            for (var i = 0; i < assetIds.Length; i++)
-            {
-                var assetName = AssetDatabase.GUIDToAssetPath(assetIds[i]);
-                if (assetName.Contains("Runtime"))
-                {
-                    var linkFolderPath = Path.GetDirectoryName(assetName)!;
-                    return Path.Combine(linkFolderPath, linkXmlFileName);
-                }
-            }
-
-            return null;
         }
     }
 

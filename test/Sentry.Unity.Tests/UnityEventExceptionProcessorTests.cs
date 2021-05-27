@@ -50,10 +50,29 @@ namespace Sentry.Unity.Tests
             Assert.IsNotNull(package);
             Assert.AreEqual(UnitySdkInfo.PackageName, package!.Name);
             Assert.AreEqual(UnitySdkInfo.Version, package!.Version);
-
-            Assert.AreEqual(testApplication.IsEditor, sentryEvent.Contexts.Device.Simulator);
         }
 
+        [TestCaseSource(nameof(EditorSimulatorValues))]
+        public void Process_EventDeviceSimulator_SetCorrectly(bool isEditor, bool? isSimulator)
+        {
+            // arrange
+            var testApplication = new TestApplication(isEditor);
+            var unityEventProcessor = new UnityEventProcessor(testApplication);
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(sentryEvent);
+
+            // assert
+            Assert.AreEqual(sentryEvent.Contexts.Device.Simulator, isSimulator);
+        }
+
+        private static readonly object[] EditorSimulatorValues =
+        {
+            new object[] { true, true },
+            new object[] { false, null! },
+        };
+        
         [Test]
         public void Process_ServerName_IsNull()
         {
