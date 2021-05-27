@@ -55,6 +55,12 @@ namespace Sentry.Unity.Tests
             AssertOptions(optionsActual, optionsExpected);
         }
 
+        [Test]
+        public void Ctor_Release_IsNull() => Assert.IsNull(new SentryUnityOptions().Release);
+
+        [Test]
+        public void Ctor_Environment_IsNull() => Assert.IsNull(new SentryUnityOptions().Environment);
+
         private static void AssertOptions(SentryUnityOptions actual, SentryUnityOptions expected)
         {
             Assert.AreEqual(expected.Enabled, actual.Enabled);
