@@ -1,0 +1,5 @@
+* text=auto
+*.cs text=auto diff=csharp
+*.sln text=auto eol=crlf
+*.sh eol=lf
+CHANGELOG.md merge=union

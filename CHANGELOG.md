@@ -5,6 +5,7 @@
 ### Fixes
 
 - Add product name to release as default ([#202](https://github.com/getsentry/sentry-unity/pull/202))
+- normalize line endings ([#204](https://github.com/getsentry/sentry-unity/pull/204))
 
 ## 0.1.0
 
