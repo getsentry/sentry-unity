@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Sentry.Protocol;
@@ -166,3 +166,4 @@ namespace Sentry.Unity
         }
     }
 }
+
