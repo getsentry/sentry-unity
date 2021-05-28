@@ -32,7 +32,7 @@ namespace Sentry.Unity
             // Uses the game `version` as Release unless the user defined one via the Options
             if (unitySentryOptions.Release == null)
             {
-                unitySentryOptions.Release = String.IsNullOrWhiteSpace(Application.productName)
+                unitySentryOptions.Release = string.IsNullOrWhiteSpace(Application.productName)
                     ? $"{Application.version}"
                     : $"{Application.productName}@{Application.version}";
 
