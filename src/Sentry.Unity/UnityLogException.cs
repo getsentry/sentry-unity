@@ -60,13 +60,13 @@ namespace Sentry.Unity
                 string filename;
                 int lineNo;
 
-                var item = stackList[i];
+                var item = stackList[i].TrimEnd('\r');
                 if (item == string.Empty)
                 {
                     continue;
                 }
 
-                var closingParen = item.IndexOf(")", StringComparison.InvariantCultureIgnoreCase);
+                var closingParen = item.IndexOf(')');
 
                 if (closingParen == -1)
                 {
