@@ -66,7 +66,7 @@ namespace Sentry.Unity
                     continue;
                 }
 
-                var closingParen = item.IndexOf(')');
+                var closingParen = item.IndexOf(")", StringComparison.InvariantCultureIgnoreCase);
 
                 if (closingParen == -1)
                 {
