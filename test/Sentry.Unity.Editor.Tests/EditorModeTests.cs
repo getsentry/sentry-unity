@@ -26,7 +26,7 @@ namespace Sentry.Unity.Editor.Tests
             }
 
             // assert
-            Assert.AreEqual(5, validationErrors.Count);
+            Assert.AreEqual(1, validationErrors.Count);
             Assert.NotNull(validationErrors.SingleOrDefault(e => e.PropertyName.Contains(nameof(SentryTestWindow.Options.Dsn))));
         }
     }

@@ -28,7 +28,7 @@ namespace Sentry.Unity.Tests
 
             sut.OnLogMessageReceived("condition", "stacktrace", LogType.Error);
 
-            Assert.AreEqual(1, hub.CapturedEvents.Count);
+            Assert.AreEqual(3, hub.CapturedEvents.Count);
         }
 
         [Test]
