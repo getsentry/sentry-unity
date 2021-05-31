@@ -93,21 +93,11 @@ jobs:
             Write-Host "::error ::Failed to activate license after multiple attempts."
           }
 
-      # The working directory must be set because the project uses
-      # relative paths for certain things.
-      # Also, we need to provide the path to Unity because
-      # the test project references some of its assemblies.
       - name: Build Sentry.Unity Solution
-        run: |
-          dotnet nuget locals all --clear
-          dotnet build -c Release
+        run: dotnet build -c Release
 
-      # Don't fail the build here, we have a more detailed step later that provides more info.
-      # Note: this command doesn't work with the `-quit` option, unlike all the other ones.
       - name: Run Unity tests (playmode)
-        run: |
-          unity -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath samples/unity-of-bugs -testResults ../../artifacts/test/playmode/results.xml | Out-Default
-          $LASTEXITCODE = 0
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
 
       - name: Upload test artifacts (playmode)
         uses: actions/upload-artifact@v1
@@ -115,68 +105,14 @@ jobs:
           name: Test results (playmode)
           path: artifacts/test/playmode
 
-      # Running tests does not print anything useful to the console
-      # so we need to parse the results to figure out how things went.
-      - name: Parse test results (playmode)
-        run: |
-          $testRun = Select-Xml -Path artifacts/test/playmode/results.xml -XPath "/test-run" | Select-Object -Last 1
-
-          Write-Output "Playmode test run completed in $($testRun.Node.duration) seconds."
-          Write-Output "-- Result: $($testRun.Node.result)"
-          Write-Output "-- Total: $($testRun.Node.total)"
-          Write-Output "-- Passed: $($testRun.Node.passed)"
-          Write-Output "-- Failed: $($testRun.Node.failed)"
-          Write-Output "-- Inconclusive: $($testRun.Node.inconclusive)"
-          Write-Output "-- Skipped: $($testRun.Node.skipped)"
-          Write-Output ""
-
-          if ($testRun.Node.failed -gt 0) {
-            $failedTests = $testRun.Node."test-suite"
-
-            foreach ($failedTest in $failedTests) {
-                Write-Output $failedTest.Node."#text"
-                Write-Output ""
-            }
-
-            Write-Output "::error ::Test run completed with $($testRun.Node.failed) failing test(s)."
-            exit 1
-          }
-
       - name: Run Unity tests (editmode)
-        run: |
-          unity -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath samples/unity-of-bugs -testResults ../../artifacts/test/editmode/results.xml | Out-Default
-          $LASTEXITCODE = 0
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v1
         with:
           name: Test results (editmode)
           path: artifacts/test/editmode
-
-      - name: Parse test results (editmode)
-        run: |
-          $testRun = Select-Xml -Path artifacts/test/editmode/results.xml -XPath "/test-run" | Select-Object -Last 1
-
-          Write-Output "Editmode test run completed in $($testRun.Node.duration) seconds."
-          Write-Output "-- Result: $($testRun.Node.result)"
-          Write-Output "-- Total: $($testRun.Node.total)"
-          Write-Output "-- Passed: $($testRun.Node.passed)"
-          Write-Output "-- Failed: $($testRun.Node.failed)"
-          Write-Output "-- Inconclusive: $($testRun.Node.inconclusive)"
-          Write-Output "-- Skipped: $($testRun.Node.skipped)"
-          Write-Output ""
-
-          if ($testRun.Node.failed -gt 0) {
-            $failedTests = $testRun.Node."test-suite"
-
-            foreach ($failedTest in $failedTests) {
-                Write-Output $failedTest.Node."#text"
-                Write-Output ""
-            }
-
-            Write-Output "::error ::Test run completed with $($testRun.Node.failed) failing test(s)."
-            exit 1
-          }
 
       - name: Prepare Sentry package for release
         run: |
