@@ -102,7 +102,7 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void Default_CachePath_Is_PersistentDataPath()
+        public void DefaultCachePath_Is_PersistentDataPath()
         {
             // arrange
             var defaultCachePath = "";
