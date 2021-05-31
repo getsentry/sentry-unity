@@ -101,20 +101,6 @@ namespace Sentry.Unity.Tests
                 actual.Environment);
         }
 
-        [Test]
-        public void DefaultCachePath_Is_PersistentDataPath()
-        {
-            // arrange
-            var defaultCachePath = "";
-            using var _ = InitSentrySdk(o =>
-            {
-                defaultCachePath = o.CacheDirectoryPath;
-            });
-
-            // assert
-            Assert.AreEqual(Application.persistentDataPath, defaultCachePath);
-        }
-
         private static IEnumerator SetupSceneCoroutine(string sceneName)
         {
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);

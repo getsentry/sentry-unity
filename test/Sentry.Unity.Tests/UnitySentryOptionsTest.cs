@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
@@ -60,6 +61,10 @@ namespace Sentry.Unity.Tests
 
         [Test]
         public void Ctor_Environment_IsNull() => Assert.IsNull(new SentryUnityOptions().Environment);
+
+        [Test]
+        public void Ctor_CacheDirectoryPath_Is_PersistentDataPath()
+            => Assert.AreEqual(Application.persistentDataPath, new SentryUnityOptions().CacheDirectoryPath);
 
         private static void AssertOptions(SentryUnityOptions actual, SentryUnityOptions expected)
         {
