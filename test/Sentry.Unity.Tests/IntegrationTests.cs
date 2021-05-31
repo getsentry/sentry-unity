@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -77,6 +78,46 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(customRelease, testEventCapture.Events.First().Release);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease_WhenProductNameWhitespace()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            // arrange
+            PlayerSettings.productName = " ";
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease_WhenProductNameEmpty()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            // arrange
+            PlayerSettings.productName = null;
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
         }
 
         [UnityTest]
