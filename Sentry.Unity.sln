@@ -14,6 +14,7 @@ ProjectSection(SolutionItems) = preProject
 	Directory.Build.props = Directory.Build.props
 	CHANGELOG.md = CHANGELOG.md
 	CONTRIBUTING.md = CONTRIBUTING.md
+	Directory.Build.targets = Directory.Build.targets
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6A85CE0A-6FE4-4190-ABEE-7E8BCFF9AF4D}"
