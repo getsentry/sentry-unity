@@ -4,6 +4,7 @@
     <UnityVersion>2019.4.21f1</UnityVersion>
   </PropertyGroup>
 
+    <!-- Unity paths on Windows -->
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
     <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
     <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
@@ -14,6 +15,7 @@
     <ArtifactName>game.exe</ArtifactName>
   </PropertyGroup>
 
+    <!-- Unity paths on macOS -->
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
     <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
@@ -53,7 +55,7 @@
       IgnoreExitCode="true"></Exec>
   </Target>
 
-  <!-- Run PlayMode tests with dotnet test -->
+  <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
   <Target Name="UnityPlayModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
@@ -67,7 +69,7 @@
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
-  <!-- Run EditMode tests with dotnet test. -->
+  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest. -->
   <Target Name="UnityEditModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
@@ -82,6 +84,7 @@
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
 
+    <!-- Parse test results -->
   <UsingTask
     TaskName="UnityTestResults"
     TaskFactory="RoslynCodeTaskFactory"
