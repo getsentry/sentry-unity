@@ -9,12 +9,12 @@ namespace Sentry.Unity
         {
             application ??= ApplicationAdapter.Instance;
 
-            FillRelease(options, application);
-            FillEnvironment(options, application);
-            FillCacheDirectoryPath(options, application);
+            SetRelease(options, application);
+            SetEnvironment(options, application);
+            SetCacheDirectoryPath(options, application);
         }
 
-        private static void FillRelease(SentryUnityOptions options, IApplication application)
+        private static void SetRelease(SentryUnityOptions options, IApplication application)
         {
             options.Release ??= application.ProductName is string productName
                 && !string.IsNullOrWhiteSpace(productName)
@@ -24,13 +24,13 @@ namespace Sentry.Unity
             Log(options.DiagnosticLogger, "Release", options.Release);
         }
 
-        private static void FillEnvironment(SentryUnityOptions options, IApplication application)
+        private static void SetEnvironment(SentryUnityOptions options, IApplication application)
         {
             options.Environment ??= application.IsEditor ? "editor" : "production";
             Log(options.DiagnosticLogger, "Environment", options.Environment);
         }
 
-        private static void FillCacheDirectoryPath(SentryUnityOptions options, IApplication application)
+        private static void SetCacheDirectoryPath(SentryUnityOptions options, IApplication application)
         {
             options.CacheDirectoryPath ??= application.PersistentDataPath;
             Log(options.DiagnosticLogger, "Cache Directory", options.CacheDirectoryPath);
