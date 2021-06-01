@@ -43,5 +43,18 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual(1, hub.CapturedEvents.Count);
         }
+
+        [Test]
+        public void OnLogMessageReceived_Breadcrumbs_Added()
+        {
+            var sut = _fixture.GetSut();
+            var hub = _fixture.Hub;
+            sut.Register(hub, SentryOptions);
+
+            sut.OnLogMessageReceived("condition", "stacktrace", LogType.Warning);
+            sut.OnLogMessageReceived("condition", "stacktrace", LogType.Error);
+
+            Assert.AreEqual(2, hub.ConfigureScopeCalls.Count);
+        }
     }
 }

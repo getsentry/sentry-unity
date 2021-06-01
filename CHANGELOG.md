@@ -2,8 +2,13 @@
 
 ## Unreleased
 
+- Breadcrumb categories added ([#206](https://github.com/getsentry/sentry-unity/pull/206))
+
+## 0.1.1
+
 ### Fixes
 
+- Fallback for missing/empty product name ([#205](https://github.com/getsentry/sentry-unity/pull/205))
 - Add product name to release as default ([#202](https://github.com/getsentry/sentry-unity/pull/202))
 - normalize line endings ([#204](https://github.com/getsentry/sentry-unity/pull/204))
 

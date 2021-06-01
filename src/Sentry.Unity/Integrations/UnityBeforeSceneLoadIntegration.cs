@@ -16,7 +16,7 @@ namespace Sentry.Unity.Integrations
                 ? new Dictionary<string, string> {{"scene", name}}
                 : null;
 
-            hub.AddBreadcrumb("BeforeSceneLoad", data: data);
+            hub.AddBreadcrumb(message: "BeforeSceneLoad", category: "scene.beforeload", data: data);
 
             options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registered BeforeSceneLoad integration.");
         }
