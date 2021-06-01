@@ -3,7 +3,7 @@ using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Tests
 {
-    public class SentryDefaultOptionsTests
+    public class SentryOptionsUtilityTests
     {
         [Test]
         public void SetDefaults_Release_IsApplicationProductNameAtVersion()
