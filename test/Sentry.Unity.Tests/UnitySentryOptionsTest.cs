@@ -1,10 +1,8 @@
 ﻿using System.IO;
-using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
