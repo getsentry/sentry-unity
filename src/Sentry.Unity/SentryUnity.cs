@@ -29,9 +29,7 @@ namespace Sentry.Unity
         {
             unitySentryOptions.TryAttachLogger();
 
-            SentryDefaultOptionSetter.SetRelease(unitySentryOptions);
-            SentryDefaultOptionSetter.SetEnvironment(unitySentryOptions);
-            SentryDefaultOptionSetter.SetCacheDirectoryPath(unitySentryOptions);
+            SentryOptionsUtility.SetDefaults(unitySentryOptions);
 
             SentrySdk.Init(unitySentryOptions);
         }

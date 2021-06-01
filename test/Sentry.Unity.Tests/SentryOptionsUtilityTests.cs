@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class UnitySentryOptionsTest
+    public sealed class SentryOptionsUtilityTests
     {
         private const string TestSentryOptionsFileName = "TestSentryOptions.json";
 
