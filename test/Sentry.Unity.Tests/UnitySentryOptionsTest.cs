@@ -63,8 +63,7 @@ namespace Sentry.Unity.Tests
         public void Ctor_Environment_IsNull() => Assert.IsNull(new SentryUnityOptions().Environment);
 
         [Test]
-        public void Ctor_CacheDirectoryPath_Is_PersistentDataPath()
-            => Assert.AreEqual(Application.persistentDataPath, new SentryUnityOptions().CacheDirectoryPath);
+        public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(new SentryUnityOptions().CacheDirectoryPath);
 
         private static void AssertOptions(SentryUnityOptions actual, SentryUnityOptions expected)
         {

@@ -84,7 +84,6 @@ namespace Sentry.Unity
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
-            CacheDirectoryPath = Application.persistentDataPath;
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
