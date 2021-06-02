@@ -17,9 +17,9 @@ namespace Sentry.Unity.Integrations
         private IHub? _hub;
         private SentryOptions? _sentryOptions;
 
-        public UnityApplicationLoggingIntegration(IApplication? appDomain = null, IEventCapture? eventCapture = null)
+        public UnityApplicationLoggingIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
         {
-            _application = appDomain ?? ApplicationAdapter.Instance;
+            _application = application ?? ApplicationAdapter.Instance;
             _eventCapture = eventCapture;
         }
 

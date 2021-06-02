@@ -7,8 +7,8 @@ namespace Sentry.Unity.Integrations
     {
         private readonly IApplication _application;
 
-        public UnityBeforeSceneLoadIntegration(IApplication? appDomain = null)
-            => _application = appDomain ?? ApplicationAdapter.Instance;
+        public UnityBeforeSceneLoadIntegration(IApplication? application = null)
+            => _application = application ?? ApplicationAdapter.Instance;
 
         public void Register(IHub hub, SentryOptions options)
         {

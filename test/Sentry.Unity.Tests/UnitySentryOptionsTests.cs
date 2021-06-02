@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -7,7 +6,7 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class UnitySentryOptionsTest
+    public sealed class UnitySentryOptionsTests
     {
         private const string TestSentryOptionsFileName = "TestSentryOptions.json";
 
@@ -60,6 +59,9 @@ namespace Sentry.Unity.Tests
 
         [Test]
         public void Ctor_Environment_IsNull() => Assert.IsNull(new SentryUnityOptions().Environment);
+
+        [Test]
+        public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(new SentryUnityOptions().CacheDirectoryPath);
 
         private static void AssertOptions(SentryUnityOptions actual, SentryUnityOptions expected)
         {
