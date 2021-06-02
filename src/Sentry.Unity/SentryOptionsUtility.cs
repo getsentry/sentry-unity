@@ -37,8 +37,6 @@ namespace Sentry.Unity
         }
 
         private static void Log(IDiagnosticLogger? logger, string option, object value)
-        {
-            logger?.Log(SentryLevel.Debug, "Setting Sentry {0} to: {1}", null, option, value);
-        }
+            => logger?.Log(SentryLevel.Debug, "Setting Sentry {0} to: {1}", null, option, value);
     }
 }
