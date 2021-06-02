@@ -1,18 +1,11 @@
-minVersion: "0.22.0"
-github:
-  owner: getsentry
-  repo: sentry-unity
+minVersion: 0.23.1
 changelogPolicy: auto
-statusProvider:
-  name: github
-artifactProvider:
-  name: github
 targets:
   - name: upm
-    releaseRepoOwner: "getsentry"
-    releaseRepoName: "unity"
+    releaseRepoOwner: getsentry
+    releaseRepoName: unity
   - name: github
   - name: registry
-    type: sdk
-    config:
-      canonical: "upm:sentry-unity"
+    sdks:
+      upm:sentry-unity:
+        name: registry
