@@ -115,7 +115,7 @@ namespace Sentry.Unity.Tests
             });
 
             var nextEventCapture = new TestEventCapture();
-            var nextDsn = "<REAL_NEXT_DSN>";
+            var nextDsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250";
             SentryUnity.Init(options =>
             {
                 options.Dsn = nextDsn;
