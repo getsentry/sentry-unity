@@ -101,6 +101,34 @@ namespace Sentry.Unity.Tests
                 actual.Environment);
         }
 
+        [UnityTest]
+        public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            var sourceEventCapture = new TestEventCapture();
+            var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+            SentryUnity.Init(options =>
+            {
+                options.Dsn = sourceDsn;
+                options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
+            });
+
+            var nextEventCapture = new TestEventCapture();
+            var nextDsn = "<REAL_NEXT_DSN>";
+            SentryUnity.Init(options =>
+            {
+                options.Dsn = nextDsn;
+                options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
+            });
+
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            Assert.AreEqual(0, sourceEventCapture.Events.Count, sourceDsn);
+            Assert.AreEqual(1, nextEventCapture.Events.Count, nextDsn);
+        }
+
         private static IEnumerator SetupSceneCoroutine(string sceneName)
         {
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);
