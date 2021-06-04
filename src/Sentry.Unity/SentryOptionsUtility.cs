@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -24,9 +25,17 @@ namespace Sentry.Unity
                 return;
             }
 
-            Log(logger, "Release", options.Release);
-            Log(logger, "Environment", options.Environment);
-            Log(logger, "Cache Directory", options.CacheDirectoryPath);
+            LogOption(logger, "Release", options.Release);
+            LogOption(logger, "Environment", options.Environment);
+
+            if (options.CacheDirectoryPath == null)
+            {
+                logger.Log(SentryLevel.Debug, "Offline Caching disabled.");
+            }
+            else
+            {
+                LogOption(logger, "Cache Directory", options.CacheDirectoryPath);
+            }
         }
 
         private static void SetRelease(SentryUnityOptions options, IApplication application)
@@ -47,7 +56,7 @@ namespace Sentry.Unity
             options.CacheDirectoryPath ??= application.PersistentDataPath;
         }
 
-        private static void Log(IDiagnosticLogger logger, string option, object value)
+        private static void LogOption(IDiagnosticLogger logger, string option, object value)
             => logger.Log(SentryLevel.Debug, "Setting Sentry {0} to: {1}", null, option, value);
     }
 }
