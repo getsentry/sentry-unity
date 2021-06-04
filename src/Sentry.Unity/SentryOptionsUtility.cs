@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using Sentry.Extensibility;
 
 namespace Sentry.Unity
 {
@@ -21,22 +22,19 @@ namespace Sentry.Unity
                     ? $"{productName}@{application.Version}"
                     : $"{application.Version}";
 
-            Log(options.DiagnosticLogger, "Release", options.Release);
+            options.DiagnosticLogger?.LogDebug("option.Release: {0}", options.Release);
         }
 
         private static void SetEnvironment(SentryUnityOptions options, IApplication application)
         {
             options.Environment ??= application.IsEditor ? "editor" : "production";
-            Log(options.DiagnosticLogger, "Environment", options.Environment);
+            options.DiagnosticLogger?.LogDebug("option.Environment: {0}", options.Environment);
         }
 
         private static void SetCacheDirectoryPath(SentryUnityOptions options, IApplication application)
         {
             options.CacheDirectoryPath ??= application.PersistentDataPath;
-            Log(options.DiagnosticLogger, "Cache Directory", options.CacheDirectoryPath);
+            options.DiagnosticLogger?.LogDebug("option.CacheDirectoryPath: {0}", options.CacheDirectoryPath);
         }
-
-        private static void Log(IDiagnosticLogger? logger, string option, object value)
-            => logger?.Log(SentryLevel.Debug, "Setting Sentry {0} to: {1}", null, option, value);
     }
 }
