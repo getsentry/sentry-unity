@@ -31,6 +31,16 @@ namespace Sentry.Unity
 
             SentryOptionsUtility.SetDefaults(unitySentryOptions);
 
+            switch (Application.platform)
+            {
+                case RuntimePlatform.Android:
+                    // Init Android SDK
+                    break;
+                case RuntimePlatform.IPhonePlayer:
+                    // Init iOS SDK
+                    break;
+            }
+
             SentrySdk.Init(unitySentryOptions);
         }
     }
