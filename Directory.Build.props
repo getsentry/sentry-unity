@@ -4,7 +4,7 @@
     <Version>0.1.1</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
-    <WarningsAsErrors>true</WarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <DevPackageFolderName>package-dev</DevPackageFolderName>
     <Deterministic>true</Deterministic>
