@@ -13,6 +13,7 @@
     <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
     <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
     <ArtifactName>game.exe</ArtifactName>
+    <UnityBuildMethod>Builder.BuildWindowsIl2CPPPlayer</UnityBuildMethod>
   </PropertyGroup>
 
     <!-- Unity paths on macOS -->
@@ -24,6 +25,7 @@
     <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
     <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
     <ArtifactName>game</ArtifactName>
+    <UnityBuildMethod>Builder.BuildMacIl2CPPPlayer</UnityBuildMethod>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -46,15 +48,14 @@ We need to run a unity build to restore the test packages and for that reason we
 For that reason, Exec tasks to unity all ignore error. That means that subsequent tasks must exist to validate the command (i.e: parse logs, etc).
 Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
 
-  <!-- Build a IL2CPP player -->
+  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerIL2CPP -->
   <Target Name="UnityBuildPlayerIL2CPP"
-          DependsOnTargets="Build"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName) -executeMethod $(UnityBuildMethod) "
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>

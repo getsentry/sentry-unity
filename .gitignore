@@ -20,6 +20,8 @@ samples/unity-of-bugs/Assets/InitTestScene*
 package-dev/**/*.dll
 package-dev/**/*.meta
 !package-dev/Tests/*.meta
+!package-dev/Tests/**/*.asmdef.meta
+!package-dev/Tests/**/*.asmdef
 package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/TestSentryOptions.json
