@@ -6,9 +6,9 @@
 
 - Offline caching ([#208](https://github.com/getsentry/sentry-unity/pull/208))
 - Breadcrumb categories added ([#206](https://github.com/getsentry/sentry-unity/pull/206))
-- Bump Sentry .NET SDK 3.4.0 ([#214](https://github.com/getsentry/sentry-unity/pull/214))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#340)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.3.4...3.4.0)
+- Bump Sentry .NET SDK 3.5.0 ([#218](https://github.com/getsentry/sentry-unity/pull/218))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#350)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.3.4...3.5.0)
 
 ## 0.1.1
 
