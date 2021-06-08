@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using Sentry.Extensibility;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -25,13 +26,13 @@ namespace Sentry.Unity
 
             if (!options.CaptureInEditor && Application.isEditor)
             {
-                options.DiagnosticLogger?.Log(SentryLevel.Info, "Disabled while in the Editor.");
+                options.DiagnosticLogger?.LogInfo("Disabled while in the Editor.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(options.Dsn))
             {
-                options.DiagnosticLogger?.Log(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
+                options.DiagnosticLogger?.LogWarning("No Sentry DSN configured. Sentry will be disabled.");
                 return;
             }
 

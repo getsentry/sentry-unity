@@ -44,19 +44,20 @@ namespace Sentry.Unity
                 && !string.IsNullOrWhiteSpace(productName)
                     ? $"{productName}@{application.Version}"
                     : $"{application.Version}";
+
+            options.DiagnosticLogger?.LogDebug("option.Release: {0}", options.Release);
         }
 
         private static void SetEnvironment(SentryUnityOptions options, IApplication application)
         {
             options.Environment ??= application.IsEditor ? "editor" : "production";
+            options.DiagnosticLogger?.LogDebug("option.Environment: {0}", options.Environment);
         }
 
         private static void SetCacheDirectoryPath(SentryUnityOptions options, IApplication application)
         {
             options.CacheDirectoryPath ??= application.PersistentDataPath;
+            options.DiagnosticLogger?.LogDebug("option.CacheDirectoryPath: {0}", options.CacheDirectoryPath);
         }
-
-        private static void LogOption(IDiagnosticLogger logger, string option, object value)
-            => logger.Log(SentryLevel.Debug, "Setting Sentry {0} to: {1}", null, option, value);
     }
 }
