@@ -108,6 +108,9 @@ jobs:
       - name: Run Unity tests (editmode)
         run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
+      - name: Build Standalone Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
+
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v1
         with:
