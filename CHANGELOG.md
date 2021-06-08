@@ -3,7 +3,6 @@
 ## Unreleased
 
 ### Features 
-### Features
 
 - Offline caching ([#208](https://github.com/getsentry/sentry-unity/pull/208))
 - Breadcrumb categories added ([#206](https://github.com/getsentry/sentry-unity/pull/206))
