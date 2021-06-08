@@ -1,9 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Offline caching ([#208](https://github.com/getsentry/sentry-unity/pull/208))
+- Breadcrumb categories added ([#206](https://github.com/getsentry/sentry-unity/pull/206))
+- Bump Sentry .NET SDK 3.4.0 ([#214](https://github.com/getsentry/sentry-unity/pull/214))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#340)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.3.4...3.4.0)
+
 ## 0.1.1
 
 ### Fixes
 
+- Fallback for missing/empty product name ([#205](https://github.com/getsentry/sentry-unity/pull/205))
 - Add product name to release as default ([#202](https://github.com/getsentry/sentry-unity/pull/202))
 - normalize line endings ([#204](https://github.com/getsentry/sentry-unity/pull/204))
 

@@ -7,8 +7,8 @@ namespace Sentry.Unity.Integrations
     {
         private readonly IApplication _application;
 
-        public UnityBeforeSceneLoadIntegration(IApplication? appDomain = null)
-            => _application = appDomain ?? ApplicationAdapter.Instance;
+        public UnityBeforeSceneLoadIntegration(IApplication? application = null)
+            => _application = application ?? ApplicationAdapter.Instance;
 
         public void Register(IHub hub, SentryOptions options)
         {
@@ -16,7 +16,7 @@ namespace Sentry.Unity.Integrations
                 ? new Dictionary<string, string> {{"scene", name}}
                 : null;
 
-            hub.AddBreadcrumb("BeforeSceneLoad", data: data);
+            hub.AddBreadcrumb(message: "BeforeSceneLoad", category: "scene.beforeload", data: data);
 
             options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registered BeforeSceneLoad integration.");
         }

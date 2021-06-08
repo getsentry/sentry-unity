@@ -8,7 +8,7 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public Stubs.TestHub Hub => new();
+            public TestHub Hub => new();
             public IApplication Application => new TestApplication();
 
             public UnityBeforeSceneLoadIntegration GetSut() => new(Application);
@@ -18,12 +18,15 @@ namespace Sentry.Unity.Tests
 
         private SentryOptions SentryOptions { get; set; } = new();
 
-        // TODO: How to stub Scope with Breadcrumbs?
-        public void BreadcrumbSceneName()
+        [Test]
+        public void Register_Breadcrumb_Added()
         {
             var sut = _fixture.GetSut();
             var hub = _fixture.Hub;
+
             sut.Register(hub, SentryOptions);
+
+            Assert.AreEqual(1, hub.ConfigureScopeCalls.Count);
         }
     }
 }
