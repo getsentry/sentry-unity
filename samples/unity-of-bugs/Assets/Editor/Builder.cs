@@ -8,8 +8,6 @@ public class Builder
 {
     public static void BuildIl2CPPPlayer(BuildTarget target)
     {
-        string[] scenes = { "Assets/MyScene.unity" };
-
         var buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
@@ -40,6 +38,7 @@ public class Builder
         {
             var message = $"Build succeeded with {summary.totalErrors} error{(summary.totalErrors > 1 ? "s" : "")}.";
             Debug.Log(message);
+            // Break the build
             throw new Exception(message);
         }
 
