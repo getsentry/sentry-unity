@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -8,26 +9,19 @@ public class Builder
     public static void BuildIl2CPPPlayer(BuildTarget target)
     {
         string[] scenes = { "Assets/MyScene.unity" };
-        // BuildPipeline.BuildPlayer(scenes, ...);
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
-            locationPathName = "il2cpp_build",
+            locationPathName = Path.Combine("..", "artifacts", "build", "il2cpp_player"),
             target = target,
             options = BuildOptions.None
-        };
-
-        Application.logMessageReceived += (condition, trace, type) =>
-        {
-            Debug.Log($"LOGGING SHIT:{type}: {condition} \n{trace}");
         };
 
         var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
         var summary = report.summary;
 
-        Debug.Log("BUILD RESULT: " + report);
-        Debug.Log("BUILD outputPath: " + report.summary.outputPath);
+        Debug.Log("Build result at outputPath: " + report.summary.outputPath);
 
         switch (summary.result)
         {
@@ -51,9 +45,7 @@ public class Builder
 
         if (summary.totalWarnings > 0)
         {
-            var message = $"Build succeeded with {summary.totalWarnings} warning{(summary.totalWarnings > 1 ? "s" : "")}.";
-            Debug.Log(message);
-            throw new Exception(message);
+            Debug.Log($"Build succeeded with {summary.totalWarnings} warning{(summary.totalWarnings > 1 ? "s" : "")}.");
         }
     }
 
