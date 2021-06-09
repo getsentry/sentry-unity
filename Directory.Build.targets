@@ -13,6 +13,7 @@
     <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
     <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
     <ArtifactName>game.exe</ArtifactName>
+    <UnityBuildMethod>Builder.BuildWindowsIl2CPPPlayer</UnityBuildMethod>
   </PropertyGroup>
 
     <!-- Unity paths on macOS -->
@@ -24,6 +25,7 @@
     <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
     <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
     <ArtifactName>game</ArtifactName>
+    <UnityBuildMethod>Builder.BuildMacIl2CPPPlayer</UnityBuildMethod>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -37,20 +39,34 @@
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
   </Target>
 
+  <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
+We need to run a unity build to restore the test packages and for that reason we'll ignore errors here and assume a later step will validate the build is actually working:
+  The offending error:
+  [usbmuxd] Stop listen thread
+  [usbmuxd] Error:
+  [usbmuxd] Listen thread exitingit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName)
+For that reason, Exec tasks to unity all ignore error. That means that subsequent tasks must exist to validate the command (i.e: parse logs, etc).
+Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
+
+  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerIL2CPP -->
+  <Target Name="UnityBuildPlayerIL2CPP"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Building Player with IL2CPP."></Message>
+
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName) -executeMethod $(UnityBuildMethod) "
+          IgnoreStandardErrorWarningFormat="true"
+          IgnoreExitCode="true"></Exec>
+  </Target>
+
   <!-- If Unity Libraries don't exist, run a Unity build -->
   <Target Name="UnityRestorePackages"
     Condition="!Exists('$(UnitySampleProjectPath)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')"
     BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
-    <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
-    We need to run a unity build to restore the test packages and for that reason we'll ignore errors here and assume a later step will validate the build is actually working:
-      The offending error:
-      [usbmuxd] Stop listen thread
-      [usbmuxd] Error:
-      [usbmuxd] Listen thread exitingit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName)
-    Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
   </Target>
@@ -62,7 +78,7 @@
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
-    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath) "
+    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
 
@@ -77,7 +93,7 @@
 
     <Message Importance="High" Text="Running Unity EditMode tests."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath) "
+    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
 
