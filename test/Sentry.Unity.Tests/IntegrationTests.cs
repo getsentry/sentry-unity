@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NUnit.Framework;
-using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
@@ -86,6 +84,7 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             // arrange
+            // var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = " ";
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
@@ -98,6 +97,8 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+
+            // PlayerSettings.productName = originalProductName;
         }
 
         [UnityTest]
@@ -106,6 +107,7 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             // arrange
+            // var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = null;
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
@@ -118,6 +120,8 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+
+            // PlayerSettings.productName = originalProductName;
         }
 
         [UnityTest]

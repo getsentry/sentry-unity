@@ -19,17 +19,6 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void SetDefaults_Release_IsCustomRelease()
-        {
-            var customRelease = "TestRelease";
-            var options = new SentryUnityOptions {Release = customRelease};
-
-            SentryOptionsUtility.SetDefaults(options, new TestApplication());
-
-            Assert.AreEqual(customRelease, options.Release);
-        }
-
-        [Test]
         public void SetDefaults_Environment_IsEditorInEditor()
         {
             var options = new SentryUnityOptions();
@@ -52,17 +41,6 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void SetDefaults_Environment_IsCustomEnvironment()
-        {
-            var customEnvironment = "TestEnvironment";
-            var options = new SentryUnityOptions {Environment = customEnvironment};
-
-            SentryOptionsUtility.SetDefaults(options, new TestApplication());
-
-            Assert.AreEqual(customEnvironment, options.Environment);
-        }
-
-        [Test]
         public void SetDefaults_CacheDirectoryPath_IsPersistentDataPath()
         {
             var options = new SentryUnityOptions();
@@ -72,17 +50,6 @@ namespace Sentry.Unity.Tests
             SentryOptionsUtility.SetDefaults(options, application);
 
             Assert.AreEqual(persistentPath, options.CacheDirectoryPath);
-        }
-
-        [Test]
-        public void SetDefaults_CacheDirectoryPath_IsCustomCacheDirectoryPath()
-        {
-            var customCacheDirectoryPath = "custom/cache/directory/path";
-            var options = new SentryUnityOptions { CacheDirectoryPath = customCacheDirectoryPath };
-
-            SentryOptionsUtility.SetDefaults(options, new TestApplication());
-
-            Assert.AreEqual(customCacheDirectoryPath, options.CacheDirectoryPath);
         }
     }
 }

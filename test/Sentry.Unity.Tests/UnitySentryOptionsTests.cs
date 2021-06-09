@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
@@ -14,11 +15,14 @@ namespace Sentry.Unity.Tests
         public void Options_ReadFromFile_Success()
         {
             var optionsFilePath = GetTestOptionsFilePath();
+            Debug.Log(optionsFilePath);
             Assert.IsTrue(File.Exists(optionsFilePath));
 
+            Debug.Log("file existed");
             var jsonRaw = File.ReadAllText(optionsFilePath);
             using var jsonDocument = JsonDocument.Parse(jsonRaw);
 
+            Debug.Log("parsed");
             SentryUnityOptions.FromJson(jsonDocument.RootElement);
         }
 

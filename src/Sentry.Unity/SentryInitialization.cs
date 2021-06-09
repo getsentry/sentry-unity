@@ -12,10 +12,11 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            var options = SentryUnityOptions.LoadFromUnity();
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options == null)
             {
-                new UnityLogger(SentryLevel.Warning).Log(SentryLevel.Warning, "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                new UnityLogger(SentryLevel.Warning).Log(SentryLevel.Warning,
+                    "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
                 return;
             }
 
@@ -36,7 +37,6 @@ namespace Sentry.Unity
                 return;
             }
 
-            SentryOptionsUtility.SetDefaults(options);
             SentryUnity.Init(options);
         }
     }
