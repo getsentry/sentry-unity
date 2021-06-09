@@ -16,7 +16,10 @@ namespace Sentry.Unity
         public static void Init(Action<SentryUnityOptions> unitySentryOptionsConfigure)
         {
             var unitySentryOptions = new SentryUnityOptions();
+            SentryOptionsUtility.SetDefaults(unitySentryOptions);
+
             unitySentryOptionsConfigure.Invoke(unitySentryOptions);
+
             Init(unitySentryOptions);
         }
 
@@ -27,9 +30,7 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions unitySentryOptions)
         {
-            unitySentryOptions.TryAttachLogger();
-
-            SentryOptionsUtility.SetDefaults(unitySentryOptions);
+            SentryOptionsUtility.LogOptions(unitySentryOptions);
 
             SentrySdk.Init(unitySentryOptions);
         }
