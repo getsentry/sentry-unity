@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Force 'Auto' from sentry window ([#219](https://github.com/getsentry/sentry-unity/pull/219))
+
 ### Features
 
 - Offline caching ([#208](https://github.com/getsentry/sentry-unity/pull/208))
