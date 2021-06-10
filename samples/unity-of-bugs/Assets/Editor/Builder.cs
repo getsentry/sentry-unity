@@ -8,10 +8,15 @@ public class Builder
 {
     public static void BuildIl2CPPPlayer(BuildTarget target)
     {
+        var path = Path.Combine("..", "artifacts", "build", "il2cpp_player");
+        if (Application.platform == RuntimePlatform.WindowsPlayer)
+        {
+            path += ".exe";
+        }
         var buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
-            locationPathName = Path.Combine("..", "artifacts", "build", "il2cpp_player"),
+            locationPathName = path,
             target = target,
             options = BuildOptions.None
         };

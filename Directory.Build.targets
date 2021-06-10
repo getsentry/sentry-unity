@@ -20,7 +20,7 @@
     <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
     <ArtifactName>game.exe</ArtifactName>
     <UnityBuildMethod>Builder.BuildWindowsIl2CPPPlayer</UnityBuildMethod>
-    <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player/unity-of-bugs.exe</PlayerArtifactPath>
+    <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.exe</PlayerArtifactPath>
   </PropertyGroup>
 
     <!-- Unity paths on macOS -->
