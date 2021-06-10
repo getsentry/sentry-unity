@@ -4,19 +4,40 @@
 	* [Tests](#tests)
 * [Release](#release)
 
-# Setup
+# Basics
 
-* clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
-* restore submodules `git submodule update --init --recursive`
+## Get the code
+
+Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
+   
+## Build the project
+
+`dotnet build`
+
 > Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
-* make sure you have the pinned down version of Unity, or [adjust the Unity version in the `Directory.Build.props`](https://github.com/getsentry/sentry-unity/blob/cb9e03ace66cdb7379a210d713a925dd4db4169e/src/Directory.Build.props#L6)
+> The submodule will be restored as a result of `dotnet build`. 
+> The Unity editor is also loaded via the build if needed to restore any UPM package required by the project, like testing libraries.
 
-Overall, there are two "flows" to take into account - `Development` and `Release`. Each has its corresponding structures and things to consider.
+### Run tests
+
+```sh
+dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release
+```
+
+### Smoke test by building and running a player with IL2CPP::
+
+```sh
+ dotnet msbuild /t:"UnityBuildPlayerIL2CPP;UnitySmokeTestPlayerIL2CPP"
+```
+
+After this you can open your IDE (i.e: Visual Studio or Rider) and Unity Editor for development.
+
+# Advanced and Troubleshooting
 
 ## Finding the Unity installation
 
-The `UnityPath` in `src/Directory.Build.props` does a lookup at different locations to find Unity.
-This is different per operating system. You can adjust it as needed:
+The `UnityPath` in `src/Directory.Build.targets` does a lookup at different locations to find Unity.
+This is different per operating system. The repository is configured for Windows and macOS. You can adjust it as needed:
 
 ```xml
 <Project>
@@ -28,7 +49,7 @@ This is different per operating system. You can adjust it as needed:
 ```
 > There is a configuration in place already. Just make sure it works for you or reconfigure for your needs.
 
-# Development
+## Project Structure
 
 There are two projects involved in `sentry-unity` development. `UPM` package (`src` and `package-dev` folders) and `Unity` project (`samples/unity-of-bugs` folder, `BugFarmScene.unity`) to test the package in.
 
@@ -85,7 +106,7 @@ In order to run the tests
 * open `TestRunner` via `Windows -> General -> Test Runner`
 * run `PlayMode` or `EditMode` tests
 
-# Release
+## Release
 
 The release is done by pushing the artifact built in CI [to a new repo](https://github.com/getsentry/unity). The artifact is built by using the template files in the `package` directory. In order to make a release, the contents of `package-dev/Editor` and `package-dev/Runtime` folders should be copied into `package`.
 
