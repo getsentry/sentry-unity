@@ -4,6 +4,7 @@
 
 ### Features
 
+- Release Health through Sessions ([#223](https://github.com/getsentry/sentry-unity/pull/223))
 - Offline caching ([#208](https://github.com/getsentry/sentry-unity/pull/208))
 - Breadcrumb categories added ([#206](https://github.com/getsentry/sentry-unity/pull/206))
 - Bump Sentry .NET SDK 3.5.0 ([#218](https://github.com/getsentry/sentry-unity/pull/218))
