@@ -6,12 +6,6 @@
     <OutDir>$(PackageEditorPath)</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="UnityEditor">
-      <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj">
       <Private>false</Private>
     </ProjectReference>
@@ -23,4 +17,14 @@
     <EmbeddedResource Include="SentryLogoLight.png" />
     <EmbeddedResource Include="SentryLogoDark.png" />
   </ItemGroup>
+
+  <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
+  <Target Name="ReferenceUnityEditor" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <ItemGroup>
+      <Reference Include="UnityEditor">
+        <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
 </Project>

@@ -18,11 +18,13 @@
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
+  <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
+  <Target Name="ReferenceUnity" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <ItemGroup>
+      <Reference Include="UnityEngine">
+        <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
 </Project>
