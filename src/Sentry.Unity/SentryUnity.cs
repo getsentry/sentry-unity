@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -32,6 +31,7 @@ namespace Sentry.Unity
             SentryOptionsUtility.SetDefaults(unitySentryOptions);
 
             SentrySdk.Init(unitySentryOptions);
+            SentrySdk.StartSession();
         }
     }
 }
