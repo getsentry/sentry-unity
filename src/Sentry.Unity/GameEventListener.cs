@@ -8,12 +8,6 @@ namespace Sentry.Unity
         public event Action<bool>? ApplicationPause;
         public event Action<bool>? ApplicationFocus;
 
-        private void Awake()
-        {
-            Debug.Log("Start listening to game events.");
-        }
-
-        // Gets initially called by Awake
         private void OnApplicationPause(bool pauseStatus)
         {
             Debug.Log($"Paused: {pauseStatus}");
