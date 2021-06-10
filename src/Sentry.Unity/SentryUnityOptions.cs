@@ -203,10 +203,12 @@ namespace Sentry.Unity
         Auto = -1,
         /// <summary>
         /// The compression operation should be optimally compressed, even if the operation takes a longer time (and CPU) to complete.
+        /// Not supported on IL2CPP.
         /// </summary>
         Optimal = CompressionLevel.Optimal,
         /// <summary>
         /// The compression operation should complete as quickly as possible, even if the resulting data is not optimally compressed.
+        /// Not supported on IL2CPP.
         /// </summary>
         Fastest = CompressionLevel.Fastest,
         /// <summary>

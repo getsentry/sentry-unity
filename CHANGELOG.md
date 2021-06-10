@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Force 'Auto' from sentry window ([#219](https://github.com/getsentry/sentry-unity/pull/219))
 - Hub.IsEnabled check in logging integration ([#210](https://github.com/getsentry/sentry-unity/pull/210))
 
 ### Features
