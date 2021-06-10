@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Hub.IsEnabled check in logging integration ([#210](https://github.com/getsentry/sentry-unity/pull/210))
+
 ### Features
 
 - Offline caching ([#208](https://github.com/getsentry/sentry-unity/pull/208))
