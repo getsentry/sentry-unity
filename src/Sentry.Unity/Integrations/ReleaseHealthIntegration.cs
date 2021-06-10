@@ -17,10 +17,10 @@ namespace Sentry.Unity.Integrations
         {
             options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registering SceneManager integration.");
 
-            _sceneManager.ActiveSceneChanged += Sneak;
+            _sceneManager.ActiveSceneChanged += CreateEventListener;
         }
 
-        private void Sneak(SceneAdapter fromScene, SceneAdapter toScene)
+        private void CreateEventListener(SceneAdapter fromScene, SceneAdapter toScene)
         {
             var gameListenerObject = new GameObject("SentryListener");
             gameListenerObject.hideFlags = HideFlags.HideInHierarchy;
