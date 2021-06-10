@@ -120,9 +120,6 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Event Sample Rate", "What random sample rate to apply. 1.0 captures everything, 0.7 captures 70%."),
                 Options.SampleRate ?? 1.0f, 0.01f, 1);
 
-            // 'Optimal' and 'Fastest' don't work on IL2CPP. Forcing 'Auto'.
-            Options.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
-
             Options.AttachStacktrace = EditorGUILayout.Toggle(
                 new GUIContent("Stacktrace For Logs", "Whether to include a stack trace for non error events like logs. " +
                                                       "Even when Unity didn't include and no Exception was thrown.."),
