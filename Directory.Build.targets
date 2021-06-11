@@ -100,7 +100,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
-    <!-- <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) " -->
     <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
