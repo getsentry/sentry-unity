@@ -20,35 +20,23 @@ namespace Sentry.Unity
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.asset";
 
-        [field: SerializeField]
-        public bool Enabled { get; set; }
+        [field: SerializeField] public bool Enabled { get; set; }
 
-        [field: SerializeField]
-        public bool CaptureInEditor { get; set; }
+        [field: SerializeField] public bool CaptureInEditor { get; set; }
 
-        [field: SerializeField]
-        public string Dsn { get; set; } = "";
+        [field: SerializeField] public string Dsn { get; set; } = "";
 
-        [field: SerializeField]
-        public float SampleRate { get; set; } = 1.0f;
-        [field: SerializeField]
-        public CompressionLevelWithAuto RequestBodyCompressionLevel { get; set; } = CompressionLevelWithAuto.Auto;
+        [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
+        [field: SerializeField] public CompressionLevelWithAuto RequestBodyCompressionLevel { get; set; } = CompressionLevelWithAuto.Auto;
 
-        [field: SerializeField]
-        public bool AttachStacktrace { get; set; }
-        [field: SerializeField]
-        public string ReleaseOverride { get; set; } = "";
-        [field: SerializeField]
-        public string EnvironmentOverride { get; set; } = "";
-        [field: SerializeField]
-        public bool EnableOfflineCaching { get; set; }
+        [field: SerializeField] public bool AttachStacktrace { get; set; }
+        [field: SerializeField] public string ReleaseOverride { get; set; } = "";
+        [field: SerializeField] public string EnvironmentOverride { get; set; } = "";
+        [field: SerializeField] public bool EnableOfflineCaching { get; set; }
 
-        [field: SerializeField]
-        public bool Debug { get; set; }
-        [field: SerializeField]
-        public bool DebugOnlyInEditor { get; set; }
-        [field: SerializeField]
-        public SentryLevel DiagnosticLevel { get; set; }
+        [field: SerializeField] public bool Debug { get; set; }
+        [field: SerializeField] public bool DebugOnlyInEditor { get; set; }
+        [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; }
 
         public static SentryUnityOptions? LoadSentryUnityOptions()
         {
