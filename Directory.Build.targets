@@ -83,9 +83,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
   </Target>
 
-  <!-- /Applications/Unity/Hub/Editor/2019.4.21f1/Unity.app/Contents/MacOS/Unity -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -createProject temp/temp-proj-1 -->
-  <!-- cp samples/unity-of-bugs/Packages/manifest.json temp/temp-proj-1/Packages/manifest.json  -->
-
   <!-- If Unity Library Project doesn't exist, create a Unity project -->
   <Target Name="UnityCreatePackages"
     Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -109,7 +106,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       IgnoreExitCode="true"></Exec>
 
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found."></Error>
-      <!-- TODO: Check if the file in the condition actually got created -->
   </Target>
 
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
