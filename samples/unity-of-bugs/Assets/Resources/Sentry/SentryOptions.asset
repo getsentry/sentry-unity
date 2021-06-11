@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -668357930, guid: 95c03329586934b57b94222fa40a36ce, type: 3}
+  m_Script: {fileID: -668357930, guid: b3df9ace81e67434081cc8ad98c8512c, type: 3}
   m_Name: SentryOptions
   m_EditorClassIdentifier: 
   <Enabled>k__BackingField: 1
