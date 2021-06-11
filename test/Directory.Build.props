@@ -2,7 +2,7 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <UnityTestPath>$(SolutionDir)/samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
+    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
   </PropertyGroup>
 
   <PropertyGroup>
