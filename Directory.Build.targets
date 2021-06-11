@@ -83,7 +83,8 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
   </Target>
 
-  <!-- If Unity Library Project doesn't exist, create a Unity project -->
+  <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
+  this solution without using the sample project which depends on the output of this build. -->
   <Target Name="UnityCreatePackages"
     Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -91,8 +92,14 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
-    <Copy SourceFiles="$(UnitySampleProjectPath)/Packages/manifest.json" DestinationFiles="$(UnityPackageProject)/Packages/manifest.json" />
+    <PropertyGroup>
+      <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
+      <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
+    </PropertyGroup>
+    <Copy SourceFiles="$(SourceManifestFile)" DestinationFiles="$(DestinationManifestFile)" />
+    <ExcludePackage PackageManifestFile="$(DestinationManifestFile)" PackageToRemove="io.sentry.unity.dev" />
   </Target>
+
   <!-- If Unity Libraries don't exist, load a Unity project to restore UPM packages -->
   <Target Name="UnityRestorePackages"
     DependsOnTargets="UnityCreatePackages"
@@ -167,6 +174,33 @@ if (version == null)
 UnityVersion = version.Substring("m_EditorVersion: ".Length);;
 
 Log.LogMessage("Unity Version:" + version);
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <!-- Exclude package from manifest -->
+  <UsingTask
+    TaskName="ExcludePackage"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup>
+      <PackageManifestFile ParameterType="System.String" Required="true" />
+      <PackageToRemove ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+if (!File.Exists(PackageManifestFile))
+{
+    Log.LogError("No manifest file at " + PackageManifestFile);
+    return false;
+}
+var lines = File.ReadLines(PackageManifestFile).Where(l => !l.Contains($"\"{PackageToRemove}\"")).ToArray();
+File.WriteAllLines(PackageManifestFile, lines);
 ]]>
       </Code>
     </Task>
