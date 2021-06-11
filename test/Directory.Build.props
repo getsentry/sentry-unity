@@ -2,7 +2,7 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <UnityTestPath>$(SolutionDir)/samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
+    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,6 +12,7 @@
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnityEditor" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+  <Message Text="UnityTestPath: $(UnityTestPath)" Importance="high"/>
     <ItemGroup>
       <Reference Include="UnityEditor">
         <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
