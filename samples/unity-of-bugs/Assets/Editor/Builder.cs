@@ -11,9 +11,9 @@ public class Builder
         var buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
-            locationPathName = Path.Combine("..", "artifacts", "build", "il2cpp_player"),
+            locationPathName = Path.Combine("..", "artifacts", "build", "il2cpp_player.exe"),
             target = target,
-            options = BuildOptions.None
+            options = BuildOptions.StrictMode,
         };
 
         var report = BuildPipeline.BuildPlayer(buildPlayerOptions);

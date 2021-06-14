@@ -1,42 +1,50 @@
-<Project>
+<Project InitialTargets="FindUnity">
 
   <PropertyGroup>
-    <UnityVersion>2019.4.21f1</UnityVersion>
-  </PropertyGroup>
-
-    <!-- Unity paths on Windows -->
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-    <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
-    <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
-    <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
-    <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
-    <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
-    <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
-    <ArtifactName>game.exe</ArtifactName>
-    <UnityBuildMethod>Builder.BuildWindowsIl2CPPPlayer</UnityBuildMethod>
-  </PropertyGroup>
-
-    <!-- Unity paths on macOS -->
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
-    <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
-    <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
-    <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
-    <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
-    <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
-    <ArtifactName>game</ArtifactName>
-    <UnityBuildMethod>Builder.BuildMacIl2CPPPlayer</UnityBuildMethod>
-  </PropertyGroup>
-
-  <PropertyGroup>
+    <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs</UnitySampleProjectPath>
+    <!-- Assumes running `dotnet` from the root of the repo: -->
+    <UnitySampleProjectUnityVersion>$(MSBuildStartupDirectory)/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
   </PropertyGroup>
 
+  <!-- Use the Unity Editor version set in the sample project of the repo -->
+  <Target Name="FindUnity">
+    <LocateUnityVersion ProjectSettingsPath="$(UnitySampleProjectUnityVersion)">
+      <Output PropertyName="UnityVersion" TaskParameter="UnityVersion" />
+    </LocateUnityVersion>
+    <Message Text="Unity Version: $(UnityVersion)" Importance="Normal" />
+
+    <!-- Unity paths on Windows -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+      <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
+      <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
+      <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
+      <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
+      <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
+      <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
+      <UnityBuildMethod>Builder.BuildWindowsIl2CPPPlayer</UnityBuildMethod>
+      <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.exe</PlayerArtifactPath>
+    </PropertyGroup>
+
+    <!-- Unity paths on macOS -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+      <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
+      <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
+      <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
+      <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
+      <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
+      <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
+      <UnityBuildMethod>Builder.BuildMacIl2CPPPlayer</UnityBuildMethod>
+      <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.app/Contents/MacOS/unity-of-bugs</PlayerArtifactPath>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
+    <RemoveDir Directories="$(UnityPackageProject)" />
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
@@ -60,15 +68,50 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
           IgnoreExitCode="true"></Exec>
   </Target>
 
-  <!-- If Unity Libraries don't exist, run a Unity build -->
+  <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP -->
+  <Target Name="UnitySmokeTestPlayerIL2CPP"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Running smoke test on player."></Message>
+
+    <Exec Command="$(PlayerArtifactPath) --test smoke"
+          IgnoreExitCode="true"
+          ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="SmokeTestExitCode"/>
+    </Exec>
+    <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
+  </Target>
+
+  <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
+  this solution without using the sample project which depends on the output of this build. -->
+  <Target Name="UnityCreatePackages"
+    Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) "
+      IgnoreStandardErrorWarningFormat="true"
+      IgnoreExitCode="true"></Exec>
+    <PropertyGroup>
+      <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
+      <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
+    </PropertyGroup>
+    <Copy SourceFiles="$(SourceManifestFile)" DestinationFiles="$(DestinationManifestFile)" />
+    <ExcludePackage PackageManifestFile="$(DestinationManifestFile)" PackageToRemove="io.sentry.unity.dev" />
+  </Target>
+
+  <!-- If Unity Libraries don't exist, load a Unity project to restore UPM packages -->
   <Target Name="UnityRestorePackages"
-    Condition="!Exists('$(UnitySampleProjectPath)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')"
+    DependsOnTargets="UnityCreatePackages"
+    Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll') AND '$(MSBuildProjectName)' == 'Sentry.Unity'"
     BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
+
+    <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found."></Error>
   </Target>
 
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
@@ -99,6 +142,69 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
+
+  <!-- Read Unity Version -->
+  <UsingTask
+    TaskName="LocateUnityVersion"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup>
+      <ProjectSettingsPath ParameterType="System.String" Required="true" />
+      <UnityVersion ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+
+if (!File.Exists(ProjectSettingsPath))
+{
+    Log.LogError("Can't find Unity version because project settings file not found at " + ProjectSettingsPath);
+    return false;
+}
+
+var version = File.ReadLines(ProjectSettingsPath).FirstOrDefault(l => l.StartsWith("m_EditorVersion: "));
+if (version == null)
+{
+    Log.LogError("Unity version not found in file: " + ProjectSettingsPath);
+    return false;
+}
+UnityVersion = version.Substring("m_EditorVersion: ".Length);;
+
+Log.LogMessage("Unity Version:" + version);
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <!-- Exclude package from manifest -->
+  <UsingTask
+    TaskName="ExcludePackage"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup>
+      <PackageManifestFile ParameterType="System.String" Required="true" />
+      <PackageToRemove ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+if (!File.Exists(PackageManifestFile))
+{
+    Log.LogError("No manifest file at " + PackageManifestFile);
+    return false;
+}
+var lines = File.ReadLines(PackageManifestFile).Where(l => !l.Contains($"\"{PackageToRemove}\"")).ToArray();
+File.WriteAllLines(PackageManifestFile, lines);
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
 
     <!-- Parse test results -->
   <UsingTask

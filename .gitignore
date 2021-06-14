@@ -11,6 +11,7 @@ Build/
 sentry-unity/build:*
 .DS_Store
 artifacts/
+temp/
 
 samples/**/*.csproj
 samples/**/*.sln

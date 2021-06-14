@@ -53,7 +53,10 @@ namespace Sentry.Unity
 
         private static bool Enabled() => true;
         private static bool CaptureInEditor() => true;
-        private static CompressionLevelWithAuto RequestBodyCompressionLevel() => CompressionLevelWithAuto.Auto;
+        
+        // 'Optimal' and 'Fastest' don't work on IL2CPP. Forcing 'NoCompression'.
+        private static CompressionLevelWithAuto RequestBodyCompressionLevel() => CompressionLevelWithAuto.NoCompression;
+
         private static bool AttackStackTrace() => false;
         private static StackTraceMode StackTraceMode() => default;
         private static float SampleRate() => 1.0f;
