@@ -35,6 +35,11 @@ namespace Sentry.Unity.Integrations
         // Internal for testability
         internal void OnLogMessageReceived(string condition, string stackTrace, LogType type)
         {
+            if (_hub is null || !_hub.IsEnabled)
+            {
+                return;
+            }
+
             var debounced = type switch
             {
                 LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
@@ -42,7 +47,7 @@ namespace Sentry.Unity.Integrations
                 LogType.Warning => WarningTimeDebounce.Debounced(),
                 _ => true
             };
-            if (!debounced || _hub is null)
+            if (!debounced)
             {
                 return;
             }

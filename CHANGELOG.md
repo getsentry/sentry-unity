@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 ### Features
 
@@ -10,6 +10,11 @@
 - Bump Sentry .NET SDK 3.5.0 ([#218](https://github.com/getsentry/sentry-unity/pull/218))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#350)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.3.4...3.5.0)
+
+### Fixes
+
+- Force 'Auto' from sentry window ([#219](https://github.com/getsentry/sentry-unity/pull/219))
+- Hub.IsEnabled check in logging integration ([#210](https://github.com/getsentry/sentry-unity/pull/210))
 
 ## 0.1.1
 
