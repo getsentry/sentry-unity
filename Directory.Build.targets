@@ -4,7 +4,7 @@
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs</UnitySampleProjectPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
-    <UnitySampleProjectUnityVersion>$(MSBuildStartupDirectory)/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
+    <UnitySampleProjectUnityVersion>$(SolutionDir)/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
   </PropertyGroup>
