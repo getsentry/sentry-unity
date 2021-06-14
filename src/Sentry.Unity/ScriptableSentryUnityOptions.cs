@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Sentry.Unity.Extensions;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -27,7 +29,6 @@ namespace Sentry.Unity
         [field: SerializeField] public string Dsn { get; set; } = "";
 
         [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
-        [field: SerializeField] public CompressionLevelWithAuto RequestBodyCompressionLevel { get; set; } = CompressionLevelWithAuto.Auto;
 
         [field: SerializeField] public bool AttachStacktrace { get; set; }
         [field: SerializeField] public string ReleaseOverride { get; set; } = "";
@@ -40,12 +41,80 @@ namespace Sentry.Unity
 
         public static SentryUnityOptions? LoadSentryUnityOptions()
         {
-            var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
-            if (scriptableOptions == null)
+            // TODO: Deprecated and to be removed once we update far enough.
+            var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
+            if (sentryOptionsTextAsset != null)
             {
-                return null;
+                var options = LoadFromJson(sentryOptionsTextAsset);
+                return options;
             }
 
+            var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
+            if (scriptableOptions != null)
+            {
+                return LoadFromSerializableObject(scriptableOptions);
+            }
+
+            return null;
+        }
+
+        private static SentryUnityOptions? LoadFromJson(TextAsset sentryOptionsTextAsset)
+        {
+            var options = new SentryUnityOptions();
+            SentryOptionsUtility.SetDefaults(options);
+
+            var json = JsonDocument.Parse(sentryOptionsTextAsset.bytes).RootElement;
+
+            if (json.GetPropertyOrNull("enabled") is {} enabled)
+            {
+                options.Enabled = enabled.GetBoolean();
+            }
+            if (json.GetPropertyOrNull("dsn") is {} dsn)
+            {
+                options.Dsn = dsn.GetString();
+            }
+            if (json.GetPropertyOrNull("captureInEditor") is {} captureInEditor)
+            {
+                options.CaptureInEditor = captureInEditor.GetBoolean();
+            }
+            if (json.GetPropertyOrNull("debug") is {} debug)
+            {
+                options.Debug = debug.GetBoolean();
+            }
+            if (json.GetPropertyOrNull("debugOnlyInEditor") is {} debugOnlyInEditor)
+            {
+                options.DebugOnlyInEditor = debugOnlyInEditor.GetBoolean();
+            }
+            if (json.GetEnumOrNull<SentryLevel>("diagnosticLevel") is {} diagnosticLevel)
+            {
+                options.DiagnosticLevel = diagnosticLevel;
+            }
+            if (json.GetEnumOrNull<CompressionLevelWithAuto>("requestBodyCompressionLevel") is {} requestBodyCompressionLevel)
+            {
+                options.RequestBodyCompressionLevel = requestBodyCompressionLevel;
+            }
+            if (json.GetPropertyOrNull("attachStacktrace") is {} attachStacktrace)
+            {
+                options.AttachStacktrace = attachStacktrace.GetBoolean();
+            }
+            if (json.GetPropertyOrNull("sampleRate") is {} sampleRate)
+            {
+                options.SampleRate = sampleRate.GetSingle();
+            }
+            if (json.GetPropertyOrNull("release") is {} release)
+            {
+                options.Release = release.GetString();
+            }
+            if (json.GetPropertyOrNull("environment") is {} environment)
+            {
+                options.Environment = environment.GetString();
+            }
+
+            return options;
+        }
+
+        private static SentryUnityOptions? LoadFromSerializableObject(ScriptableSentryUnityOptions scriptableOptions)
+        {
             var options = new SentryUnityOptions();
             SentryOptionsUtility.SetDefaults(options);
 
@@ -53,7 +122,6 @@ namespace Sentry.Unity
             options.CaptureInEditor = scriptableOptions.CaptureInEditor;
             options.Dsn = scriptableOptions.Dsn;
             options.SampleRate = scriptableOptions.SampleRate;
-            options.RequestBodyCompressionLevel = scriptableOptions.RequestBodyCompressionLevel;
             options.AttachStacktrace = scriptableOptions.AttachStacktrace;
 
             if (!string.IsNullOrEmpty(scriptableOptions.ReleaseOverride))
