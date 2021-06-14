@@ -9,6 +9,9 @@ namespace Sentry.Unity
         {
             application ??= ApplicationAdapter.Instance;
 
+            // 'Optimal' and 'Fastest' don't work on IL2CPP. Forcing 'NoCompression'.
+            options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
+
             SetRelease(options, application);
             SetEnvironment(options, application);
             SetCacheDirectoryPath(options, application);

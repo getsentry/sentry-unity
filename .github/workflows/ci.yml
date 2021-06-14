@@ -111,6 +111,9 @@ jobs:
       - name: Build Standalone Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
 
+      - name: Run Smoke Tests
+        run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
+
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v1
         with:

@@ -2,7 +2,7 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <UnityTestPath>$(SolutionDir)/samples/unity-of-bugs/Library/ScriptAssemblies</UnityTestPath>
+    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -10,20 +10,23 @@
     <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="UnityEditor">
-      <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="UnityEditor.TestRunner">
-      <HintPath>$(UnityTestPath)/UnityEditor.TestRunner.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="UnityEngine.TestRunner">
-      <HintPath>$(UnityTestPath)/UnityEngine.TestRunner.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
+  <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
+  <Target Name="ReferenceUnityEditor" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <ItemGroup>
+      <Reference Include="UnityEditor">
+        <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEditor.TestRunner">
+        <HintPath>$(UnityTestPath)/UnityEditor.TestRunner.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.TestRunner">
+        <HintPath>$(UnityTestPath)/UnityEngine.TestRunner.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup>
     <!-- warning NU1701: Package 'NUnit 3.5.0' was restored using '.NETFramework,Version=v4.6.1
