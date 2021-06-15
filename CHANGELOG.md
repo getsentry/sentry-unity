@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Additional tests ([#232](https://github.com/getsentry/sentry-unity/pull/232))
+
 ## 0.2.0
 
 ### Features
