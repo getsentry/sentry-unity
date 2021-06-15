@@ -80,6 +80,11 @@ namespace Sentry.Unity
             }
         }
 
+        /// <summary>
+        /// Whether the SDK should be tracking the session automatically.
+        /// </summary>
+        public bool EnableAutoSessionTracking { get; set; } = false;
+
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime

@@ -1,3 +1,4 @@
+using System;
 using Sentry.Integrations;
 using UnityEngine;
 
@@ -6,12 +7,17 @@ namespace Sentry.Unity.Integrations
     public class ReleaseHealthIntegration : ISdkIntegration
     {
         private readonly ISceneManager _sceneManager;
+        private readonly ITime _time;
 
-        public ReleaseHealthIntegration() : this(SceneManagerAdapter.Instance)
+        public ReleaseHealthIntegration() : this(SceneManagerAdapter.Instance, TimeAdapter.Instance)
         {
         }
 
-        internal ReleaseHealthIntegration(ISceneManager sceneManager) => _sceneManager = sceneManager;
+        internal ReleaseHealthIntegration(ISceneManager sceneManager, ITime time)
+        {
+            _sceneManager = sceneManager;
+            _time = time;
+        }
 
         public void Register(IHub hub, SentryOptions options)
         {
@@ -26,18 +32,41 @@ namespace Sentry.Unity.Integrations
             gameListenerObject.hideFlags = HideFlags.HideInHierarchy;
 
             var gameListener = gameListenerObject.AddComponent<GameEventListener>();
-            gameListener.ApplicationPause += OnApplicationPaused;
-            gameListener.ApplicationFocus += OnApplicationFocus;
+            gameListener.ApplicationEnter += OnApplicationEnter;
+            gameListener.ApplicationExit += OnApplicationExit;
         }
 
-        private void OnApplicationPaused(bool isPaused)
+        private void OnApplicationEnter()
         {
-            // Session magic here
+            // If a session has been running and not properly closed
+            if (PlayerPrefs.HasKey("ExitTime"))
+            {
+                var dateTimeString = PlayerPrefs.GetString("ExitTime");
+                PlayerPrefs.DeleteKey("ExitTime");
+
+                var lastExit = Convert.ToDateTime(dateTimeString);
+
+                var inactiveDuration = _time.Now - lastExit;
+                if (inactiveDuration.TotalSeconds >= 5.0f)
+                {
+                    // TODO: fetch session end status
+                    // SentrySdk.EndSession();
+                    Debug.Log("Session end");
+                    // SentrySdk.StartSession();
+                    Debug.Log("New Session start");
+                }
+            }
+            else
+            {
+                // SentrySdk.StartSession();
+                Debug.Log("Session start");
+            }
         }
 
-        private void OnApplicationFocus(bool hasFocus)
+        private void OnApplicationExit()
         {
-            // Session magic here
+            // TODO: save the session end status as well
+            PlayerPrefs.SetString("ExitTime", _time.Now.ToString());
         }
     }
 }

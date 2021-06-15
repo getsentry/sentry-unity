@@ -5,19 +5,42 @@ namespace Sentry.Unity
 {
     public class GameEventListener : MonoBehaviour
     {
-        public event Action<bool>? ApplicationPause;
-        public event Action<bool>? ApplicationFocus;
+        public event Action? ApplicationEnter;
+        public event Action? ApplicationExit;
 
         private void OnApplicationPause(bool pauseStatus)
         {
-            Debug.Log($"Paused: {pauseStatus}");
-            ApplicationPause?.Invoke(pauseStatus);
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                return;
+            }
+
+            if (pauseStatus)
+            {
+                ApplicationExit?.Invoke();
+            }
+            else
+            {
+                ApplicationEnter?.Invoke();
+            }
         }
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            Debug.Log($"Has focus: {hasFocus}");
-            ApplicationFocus?.Invoke(hasFocus);
+
+            if (Application.platform != RuntimePlatform.Android)
+            {
+                return;
+            }
+
+            if (hasFocus)
+            {
+                ApplicationEnter?.Invoke();
+            }
+            else
+            {
+                ApplicationExit?.Invoke();
+            }
         }
     }
 }
