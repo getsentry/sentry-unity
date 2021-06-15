@@ -7,11 +7,11 @@ using UnityEngine.TestTools;
 namespace Sentry.Unity.Tests
 {
     /// <summary>
-    /// Testing real in realtime.
+    /// Testing debouncer in realtime.
     /// </summary>
     public sealed class DebouncerTests
     {
-        private readonly TimeSpan DefaultOffset = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan DefaultOffset = TimeSpan.FromMilliseconds(100);
 
         [UnityTest]
         public IEnumerator LogTimeDebounce()
@@ -36,17 +36,17 @@ namespace Sentry.Unity.Tests
             // pass
             Assert.IsTrue(debouncer.Debounced());
 
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.050f);
 
             // skip
             Assert.IsFalse(debouncer.Debounced());
 
-            yield return new WaitForSeconds(0.4f);
+            yield return new WaitForSeconds(0.02f);
 
             // skip
             Assert.IsFalse(debouncer.Debounced());
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.04f);
 
             // pass
             Assert.IsTrue(debouncer.Debounced());
