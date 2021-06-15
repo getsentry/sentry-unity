@@ -45,7 +45,7 @@ namespace Sentry.Unity
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
             if (sentryOptionsTextAsset != null)
             {
-                var options = LoadFromJson(sentryOptionsTextAsset);
+                var options = JsonSentryUnityOptions.LoadFromJson(sentryOptionsTextAsset);
                 return options;
             }
 
@@ -56,61 +56,6 @@ namespace Sentry.Unity
             }
 
             return null;
-        }
-
-        private static SentryUnityOptions? LoadFromJson(TextAsset sentryOptionsTextAsset)
-        {
-            var options = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(options);
-
-            var json = JsonDocument.Parse(sentryOptionsTextAsset.bytes).RootElement;
-
-            if (json.GetPropertyOrNull("enabled") is {} enabled)
-            {
-                options.Enabled = enabled.GetBoolean();
-            }
-            if (json.GetPropertyOrNull("dsn") is {} dsn)
-            {
-                options.Dsn = dsn.GetString();
-            }
-            if (json.GetPropertyOrNull("captureInEditor") is {} captureInEditor)
-            {
-                options.CaptureInEditor = captureInEditor.GetBoolean();
-            }
-            if (json.GetPropertyOrNull("debug") is {} debug)
-            {
-                options.Debug = debug.GetBoolean();
-            }
-            if (json.GetPropertyOrNull("debugOnlyInEditor") is {} debugOnlyInEditor)
-            {
-                options.DebugOnlyInEditor = debugOnlyInEditor.GetBoolean();
-            }
-            if (json.GetEnumOrNull<SentryLevel>("diagnosticLevel") is {} diagnosticLevel)
-            {
-                options.DiagnosticLevel = diagnosticLevel;
-            }
-            if (json.GetEnumOrNull<CompressionLevelWithAuto>("requestBodyCompressionLevel") is {} requestBodyCompressionLevel)
-            {
-                options.RequestBodyCompressionLevel = requestBodyCompressionLevel;
-            }
-            if (json.GetPropertyOrNull("attachStacktrace") is {} attachStacktrace)
-            {
-                options.AttachStacktrace = attachStacktrace.GetBoolean();
-            }
-            if (json.GetPropertyOrNull("sampleRate") is {} sampleRate)
-            {
-                options.SampleRate = sampleRate.GetSingle();
-            }
-            if (json.GetPropertyOrNull("release") is {} release)
-            {
-                options.Release = release.GetString();
-            }
-            if (json.GetPropertyOrNull("environment") is {} environment)
-            {
-                options.Environment = environment.GetString();
-            }
-
-            return options;
         }
 
         private static SentryUnityOptions? LoadFromSerializableObject(ScriptableSentryUnityOptions scriptableOptions)

@@ -22,6 +22,8 @@ namespace Sentry.Unity.Editor
         private void OnEnable()
         {
             SetTitle();
+
+            CheckForAndConvertJsonConfig();
             Options = LoadOptions();
         }
 
@@ -33,15 +35,41 @@ namespace Sentry.Unity.Editor
             if (options == null)
             {
                 CreateConfigDirectory();
-                options = CreateInstance<ScriptableSentryUnityOptions>();
-                SentryOptionsUtility.SetDefaults(options);
-
-                AssetDatabase.CreateAsset(options, ScriptableSentryUnityOptions.GetConfigPath());
-
-                EditorUtility.SetDirty(options);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
+                options = CreateScriptableSentryUnityOptions();
             }
+
+            return options;
+        }
+
+        private void CheckForAndConvertJsonConfig()
+        {
+            var sentryOptionsTextAsset = AssetDatabase.LoadAssetAtPath(JsonSentryUnityOptions.GetConfigPath(), typeof(TextAsset)) as TextAsset;
+            if (sentryOptionsTextAsset == null)
+            {
+                // Json config not found, nothing to do.
+                return;
+            }
+
+            var scriptableOptions = CreateScriptableSentryUnityOptions();
+            JsonSentryUnityOptions.ConvertToScriptable(sentryOptionsTextAsset, scriptableOptions);
+
+            EditorUtility.SetDirty(scriptableOptions);
+            AssetDatabase.SaveAssets();
+
+            AssetDatabase.DeleteAsset(JsonSentryUnityOptions.GetConfigPath());
+            AssetDatabase.Refresh();
+        }
+
+        private ScriptableSentryUnityOptions CreateScriptableSentryUnityOptions()
+        {
+            var options = CreateInstance<ScriptableSentryUnityOptions>();
+            SentryOptionsUtility.SetDefaults(options);
+
+            AssetDatabase.CreateAsset(options, ScriptableSentryUnityOptions.GetConfigPath());
+
+            EditorUtility.SetDirty(options);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
             return options;
         }
