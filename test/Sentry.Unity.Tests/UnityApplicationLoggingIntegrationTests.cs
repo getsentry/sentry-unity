@@ -64,36 +64,54 @@ namespace Sentry.Unity.Tests
         }
 
         [TestCaseSource(nameof(LogTypesAndSentryLevels))]
-        public void OnLogMessageReceived_UnityErrorLogTypes_CapturedAndCorrespondToSentryLevel(LogType unityLogType, SentryLevel sentryLevel)
+        public void OnLogMessageReceived_UnityErrorLogTypes_CapturedAndCorrespondToSentryLevel(LogType unityLogType, SentryLevel sentryLevel, BreadcrumbLevel breadcrumbLevel)
         {
             var sut = _fixture.GetSut(_hub, _sentryOptions);
+            var condition = "condition";
 
-            sut.OnLogMessageReceived("condition", "stacktrace", unityLogType);
+            sut.OnLogMessageReceived(condition, "stacktrace", unityLogType);
+
+            var configureScope = _hub.ConfigureScopeCalls.Single();
+            var scope = new Scope(_sentryOptions);
+            configureScope(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
 
             Assert.NotNull(_hub.CapturedEvents.SingleOrDefault(capturedEvent => capturedEvent.Level == sentryLevel));
+            Assert.AreEqual(condition, breadcrumb.Message);
+            Assert.AreEqual("unity.logger", breadcrumb.Category);
+            Assert.AreEqual(breadcrumbLevel, breadcrumb.Level);
         }
 
         private static readonly object[] LogTypesAndSentryLevels =
         {
-            new object[] { LogType.Error, SentryLevel.Error },
-            new object[] { LogType.Exception, SentryLevel.Error },
-            new object[] { LogType.Assert, SentryLevel.Error }
+            new object[] { LogType.Error, SentryLevel.Error, BreadcrumbLevel.Error },
+            new object[] { LogType.Exception, SentryLevel.Error, BreadcrumbLevel.Error },
+            new object[] { LogType.Assert, SentryLevel.Error, BreadcrumbLevel.Error }
         };
 
         [TestCaseSource(nameof(LogTypesNotCaptured))]
-        public void OnLogMessageReceived_UnityNotErrorLogTypes_NotCaptured(LogType unityLogType)
+        public void OnLogMessageReceived_UnityNotErrorLogTypes_NotCaptured(LogType unityLogType, BreadcrumbLevel breadcrumbLevel)
         {
             var sut = _fixture.GetSut(_hub, _sentryOptions);
+            var condition = "condition";
 
-            sut.OnLogMessageReceived("condition", "stacktrace", unityLogType);
+            sut.OnLogMessageReceived(condition, "stacktrace", unityLogType);
+
+            var configureScope = _hub.ConfigureScopeCalls.Single();
+            var scope = new Scope(_sentryOptions);
+            configureScope(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
 
             Assert.AreEqual(0, _hub.CapturedEvents.Count);
+            Assert.AreEqual(condition, breadcrumb.Message);
+            Assert.AreEqual("unity.logger", breadcrumb.Category);
+            Assert.AreEqual(breadcrumbLevel, breadcrumb.Level);
         }
 
         private static readonly object[] LogTypesNotCaptured =
         {
-            new object[] { LogType.Log },
-            new object[] { LogType.Warning }
+            new object[] { LogType.Log, BreadcrumbLevel.Info },
+            new object[] { LogType.Warning, BreadcrumbLevel.Warning }
         };
     }
 }
