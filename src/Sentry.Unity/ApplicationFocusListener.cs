@@ -6,8 +6,14 @@ namespace Sentry.Unity
     /// <summary>
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
+    [DefaultExecutionOrder(-900)]
     internal class ApplicationFocusListener : MonoBehaviour
     {
+        private void Awake()
+        {
+            Debug.Log("VAR");
+        }
+
         /// <summary>
         /// Hook to receive an event when the application gains focus.
         /// <remarks>
