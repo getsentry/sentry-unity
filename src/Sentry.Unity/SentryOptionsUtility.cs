@@ -12,6 +12,7 @@ namespace Sentry.Unity
             // 'Optimal' and 'Fastest' don't work on IL2CPP. Forcing 'NoCompression'.
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
             options.EnableAutoSessionTracking = true;
+            options.SessionFocusTimeout = 5.0f;
 
             SetRelease(options, application);
             SetEnvironment(options, application);
