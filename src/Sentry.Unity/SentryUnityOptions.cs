@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text.Json;
 using Sentry.Unity.Extensions;
@@ -81,9 +82,33 @@ namespace Sentry.Unity
         }
 
         /// <summary>
-        /// Whether the SDK should be tracking the session automatically.
+        /// The timeout in [ms] between the application losing focus and regaining it to still count as one session.
         /// </summary>
-        public bool EnableAutoSessionTracking { get; set; } = false;
+        private float? _sessionFocusTimeout;
+        /// <summary>
+        /// The timeout in [ms] between the application losing focus and regaining it to still count as one session.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
+        public float? SessionFocusTimeout
+        {
+            get => _sessionFocusTimeout;
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new InvalidOperationException($"The value {value} is not valid. Use a value greater than 0.");
+                }
+                _sessionFocusTimeout = value;
+            }
+        }
+
+        /// <summary>
+        /// Whether the SDK should be tracking the session automatically.
+        /// <remarks>
+        /// This will come from the .NET SDK main options and can be removed in the future.
+        /// </remarks>
+        /// </summary>
+        public bool EnableAutoSessionTracking { get; set; }
 
         public SentryUnityOptions()
         {
@@ -97,7 +122,7 @@ namespace Sentry.Unity
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new ReleaseHealthIntegration());
+            this.AddIntegration(new SessionIntegration());
         }
 
         // Can't rely on Unity's OnEnable() hook.
