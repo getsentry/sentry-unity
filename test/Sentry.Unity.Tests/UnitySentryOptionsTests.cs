@@ -59,6 +59,41 @@ namespace Sentry.Unity.Tests
         // }
 
         [Test]
+        public void Options_CreateSentryOptionsFromScriptableObject_Success()
+        {
+            var optionsExpected = new SentryUnityOptions
+            {
+                Enabled = true,
+                Dsn = "https://test.com",
+                CaptureInEditor = true,
+                Debug = true,
+                DebugOnlyInEditor = false,
+                DiagnosticLevel = SentryLevel.Info,
+                AttachStacktrace = true,
+                SampleRate = 1f,
+                Release = "Release",
+                Environment = "Environment"
+            };
+
+            var scriptableSentryUnity = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+            scriptableSentryUnity.Enabled = optionsExpected.Enabled;
+            scriptableSentryUnity.Dsn = optionsExpected.Dsn;
+            scriptableSentryUnity.CaptureInEditor = optionsExpected.CaptureInEditor;
+            scriptableSentryUnity.Debug = optionsExpected.Debug;
+            scriptableSentryUnity.DebugOnlyInEditor = optionsExpected.DebugOnlyInEditor;
+            scriptableSentryUnity.DiagnosticLevel = optionsExpected.DiagnosticLevel;
+            scriptableSentryUnity.AttachStacktrace = optionsExpected.AttachStacktrace;
+            scriptableSentryUnity.SampleRate = (float)optionsExpected.SampleRate;
+            scriptableSentryUnity.ReleaseOverride = optionsExpected.Release;
+            scriptableSentryUnity.EnvironmentOverride = optionsExpected.Environment;
+
+            // Act
+            var optionsActual = ScriptableSentryUnityOptions.LoadFromSerializableObject(scriptableSentryUnity);
+
+            AssertOptions(optionsExpected, optionsActual);
+        }
+
+        [Test]
         public void Ctor_Release_IsNull() => Assert.IsNull(new SentryUnityOptions().Release);
 
         [Test]
@@ -67,7 +102,7 @@ namespace Sentry.Unity.Tests
         [Test]
         public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(new SentryUnityOptions().CacheDirectoryPath);
 
-        private static void AssertOptions(SentryUnityOptions actual, SentryUnityOptions expected)
+        private static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
         {
             Assert.AreEqual(expected.Enabled, actual.Enabled);
             Assert.AreEqual(expected.Dsn, actual.Dsn);
@@ -79,7 +114,6 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);
             Assert.AreEqual(expected.Release, actual.Release);
             Assert.AreEqual(expected.Environment, actual.Environment);
-            Assert.AreEqual(expected.RequestBodyCompressionLevel, actual.RequestBodyCompressionLevel);
         }
 
         private static string GetTestOptionsFilePath()
