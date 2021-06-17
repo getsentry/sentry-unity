@@ -151,7 +151,6 @@ namespace Sentry.Unity.Tests
             using var _ = InitSentrySdk(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-                o.IsEnvironmentUser = true;
             });
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
