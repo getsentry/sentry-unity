@@ -157,7 +157,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreNotEqual(Environment.MachineName, testEventCapture.Events.First().User.Username);
+            Assert.AreNotEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
         }
 
         // TODO: Uncomment after https://github.com/getsentry/sentry-unity/pull/220
@@ -178,7 +178,7 @@ namespace Sentry.Unity.Tests
         //     testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
         //
         //     // assert
-        //     Assert.Equals(Environment.MachineName, testEventCapture.Events.First().User.Username);
+        //     Assert.Equals(Environment.UserName, testEventCapture.Events.First().User.Username);
         // }
 
         [UnityTest]
