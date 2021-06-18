@@ -69,14 +69,12 @@ namespace Sentry.Unity
 
         public static void ConvertToScriptable(TextAsset sentryOptionsTextAsset, ScriptableSentryUnityOptions options)
         {
-            Debug.Log("converting ");
             var jsonOptions = LoadFromJson(sentryOptionsTextAsset);
 
             options.Enabled = jsonOptions.Enabled;
 
             if (jsonOptions.Dsn is { } dsn)
             {
-                Debug.Log($"{dsn}");
                 options.Dsn = dsn;
             }
 
@@ -89,6 +87,16 @@ namespace Sentry.Unity
             if (jsonOptions.SampleRate is { } sampleRate)
             {
                 options.SampleRate = sampleRate;
+            }
+
+            if (jsonOptions.Release is { } release)
+            {
+                options.ReleaseOverride = release;
+            }
+
+            if (jsonOptions.Environment is { } environment)
+            {
+                options.EnvironmentOverride = environment;
             }
         }
     }

@@ -97,8 +97,26 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+        }
 
-            // PlayerSettings.productName = originalProductName;
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_UserNameIsMachineNameWithDefaultPii()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+                o.SendDefaultPii = true;
+                o.IsEnvironmentUser = true;
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.Equals(Environment.UserName, testEventCapture.Events.First().User.Username);
         }
 
         [UnityTest]
@@ -172,6 +190,20 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual(0, sourceEventCapture.Events.Count, sourceDsn);
             Assert.AreEqual(1, nextEventCapture.Events.Count, nextDsn);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_Init_OptionsAreDefaulted()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            var expectedOptions = new SentryUnityOptions();
+            SentryOptionsUtility.SetDefaults(expectedOptions);
+
+            var actualOptions = new SentryUnityOptions();
+            SentryUnity.Init(options => actualOptions = options);
+
+            UnitySentryOptionsTests.AssertOptions(expectedOptions, actualOptions);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)

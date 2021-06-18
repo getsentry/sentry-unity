@@ -10,6 +10,7 @@ namespace Sentry.Unity
             application ??= ApplicationAdapter.Instance;
 
             options.Enabled = Enabled;
+            options.Dsn = string.Empty;
             options.CaptureInEditor = CaptureInEditor;
             options.RequestBodyCompressionLevel = RequestBodyCompressionLevel;
             options.AttachStacktrace = AttackStackTrace;
@@ -32,14 +33,15 @@ namespace Sentry.Unity
         public static void SetDefaults(ScriptableSentryUnityOptions options)
         {
             options.Enabled = Enabled;
+            options.Dsn = string.Empty;
             options.CaptureInEditor = CaptureInEditor;
             options.Debug = Debug;
             options.DiagnosticLevel = DiagnosticLevel;
             options.AttachStacktrace = AttackStackTrace;
             options.SampleRate = SampleRate;
 
-            options.ReleaseOverride = "";
-            options.EnvironmentOverride = "";
+            options.ReleaseOverride = string.Empty;
+            options.EnvironmentOverride = string.Empty;
 
             options.EnableOfflineCaching = true;
 

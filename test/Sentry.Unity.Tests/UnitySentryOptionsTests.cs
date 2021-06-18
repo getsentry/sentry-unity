@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 
 namespace Sentry.Unity.Tests
@@ -11,52 +12,19 @@ namespace Sentry.Unity.Tests
     {
         private const string TestSentryOptionsFileName = "TestSentryOptions.json";
 
-        // [Test]
-        // public void Options_ReadFromFile_Success()
-        // {
-        //     var optionsFilePath = GetTestOptionsFilePath();
-        //     Debug.Log(optionsFilePath);
-        //     Assert.IsTrue(File.Exists(optionsFilePath));
-        //
-        //     Debug.Log("file existed");
-        //     var jsonRaw = File.ReadAllText(optionsFilePath);
-        //     using var jsonDocument = JsonDocument.Parse(jsonRaw);
-        //
-        //     Debug.Log("parsed");
-        //     SentryUnityOptions.FromJson(jsonDocument.RootElement);
-        // }
-        //
-        // [Test]
-        // public void Options_WriteRead_Equals()
-        // {
-        //     // arrange
-        //     var optionsExpected = new SentryUnityOptions
-        //     {
-        //         Enabled = true,
-        //         Dsn = "https://test.com",
-        //         CaptureInEditor = true,
-        //         Debug = true,
-        //         DebugOnlyInEditor = false,
-        //         DiagnosticLevel = SentryLevel.Info,
-        //         RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression,
-        //         AttachStacktrace = true,
-        //         SampleRate = 1f,
-        //         Release = "release",
-        //         Environment = "test"
-        //     };
-        //
-        //     // act
-        //     using var memory = new MemoryStream();
-        //     using var writer = new Utf8JsonWriter(memory);
-        //     optionsExpected.WriteTo(writer);
-        //
-        //     var jsonRaw = Encoding.UTF8.GetString(memory.ToArray());
-        //     using var jsonDocument = JsonDocument.Parse(jsonRaw);
-        //     var optionsActual = SentryUnityOptions.FromJson(jsonDocument.RootElement);
-        //
-        //     // assert
-        //     AssertOptions(optionsActual, optionsExpected);
-        // }
+        [Test]
+        public void Options_ReadFromJson_Success()
+        {
+            var optionsFilePath = GetTestOptionsFilePath();
+            Debug.Log(optionsFilePath);
+            Assert.IsTrue(File.Exists(optionsFilePath));
+
+            Debug.Log("file existed");
+            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
+
+            Debug.Log("parsed");
+            JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
+        }
 
         [Test]
         public void Options_CreateSentryOptionsFromScriptableObject_Success()
@@ -88,9 +56,24 @@ namespace Sentry.Unity.Tests
             scriptableSentryUnity.EnvironmentOverride = optionsExpected.Environment;
 
             // Act
-            var optionsActual = ScriptableSentryUnityOptions.LoadFromSerializableObject(scriptableSentryUnity);
+            var optionsActual = ScriptableSentryUnityOptions.LoadFromScriptableObject(scriptableSentryUnity);
 
             AssertOptions(optionsExpected, optionsActual);
+        }
+
+        [Test]
+        public void Options_JsonAndScriptable_Equal()
+        {
+            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
+            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+
+            var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
+
+            // Act
+            JsonSentryUnityOptions.ConvertToScriptable(jsonTextAsset, scriptableOptions);
+            var actualOptions = ScriptableSentryUnityOptions.LoadFromScriptableObject(scriptableOptions);
+
+            AssertOptions(expectedOptions, actualOptions);
         }
 
         [Test]
@@ -102,7 +85,7 @@ namespace Sentry.Unity.Tests
         [Test]
         public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(new SentryUnityOptions().CacheDirectoryPath);
 
-        private static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
+        public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
         {
             Assert.AreEqual(expected.Enabled, actual.Enabled);
             Assert.AreEqual(expected.Dsn, actual.Dsn);

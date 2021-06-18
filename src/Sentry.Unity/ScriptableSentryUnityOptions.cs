@@ -26,13 +26,13 @@ namespace Sentry.Unity
 
         [field: SerializeField] public bool CaptureInEditor { get; set; }
 
-        [field: SerializeField] public string Dsn { get; set; } = "";
+        [field: SerializeField] public string Dsn { get; set; } = string.Empty;
 
         [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
 
         [field: SerializeField] public bool AttachStacktrace { get; set; }
-        [field: SerializeField] public string ReleaseOverride { get; set; } = "";
-        [field: SerializeField] public string EnvironmentOverride { get; set; } = "";
+        [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
+        [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
         [field: SerializeField] public bool EnableOfflineCaching { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; }
@@ -52,13 +52,13 @@ namespace Sentry.Unity
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions != null)
             {
-                return LoadFromSerializableObject(scriptableOptions);
+                return LoadFromScriptableObject(scriptableOptions);
             }
 
             return null;
         }
 
-        internal static SentryUnityOptions LoadFromSerializableObject(ScriptableSentryUnityOptions scriptableOptions)
+        internal static SentryUnityOptions LoadFromScriptableObject(ScriptableSentryUnityOptions scriptableOptions)
         {
             var options = new SentryUnityOptions();
             SentryOptionsUtility.SetDefaults(options);
@@ -69,12 +69,12 @@ namespace Sentry.Unity
             options.SampleRate = scriptableOptions.SampleRate;
             options.AttachStacktrace = scriptableOptions.AttachStacktrace;
 
-            if (!string.IsNullOrEmpty(scriptableOptions.ReleaseOverride))
+            if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))
             {
                 options.Release = scriptableOptions.ReleaseOverride;
             }
 
-            if (!string.IsNullOrEmpty(scriptableOptions.EnvironmentOverride))
+            if (!string.IsNullOrWhiteSpace(scriptableOptions.EnvironmentOverride))
             {
                 options.Environment = scriptableOptions.EnvironmentOverride;
             }
