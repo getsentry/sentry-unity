@@ -84,7 +84,7 @@ namespace Sentry.Unity
                 && options.Debug
                 && (!options.DebugOnlyInEditor || application.IsEditor))
             {
-                options.DiagnosticLogger = new UnityLogger(options.DiagnosticLevel);
+                options.DiagnosticLogger = new UnityLogger(options);
             }
         }
 
