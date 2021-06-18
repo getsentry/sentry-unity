@@ -58,7 +58,7 @@ namespace Sentry.Unity
             return null;
         }
 
-        private static SentryUnityOptions? LoadFromSerializableObject(ScriptableSentryUnityOptions scriptableOptions)
+        internal static SentryUnityOptions LoadFromSerializableObject(ScriptableSentryUnityOptions scriptableOptions)
         {
             var options = new SentryUnityOptions();
             SentryOptionsUtility.SetDefaults(options);
