@@ -17,8 +17,8 @@ MonoBehaviour:
   <Dsn>k__BackingField: https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
   <SampleRate>k__BackingField: 1
   <AttachStacktrace>k__BackingField: 0
-  <ReleaseOverride>k__BackingField: unity-of-bugs@0.1
-  <EnvironmentOverride>k__BackingField: editor
+  <ReleaseOverride>k__BackingField: 
+  <EnvironmentOverride>k__BackingField: 
   <EnableOfflineCaching>k__BackingField: 1
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0
