@@ -160,27 +160,6 @@ namespace Sentry.Unity.Tests
             Assert.AreNotEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
         }
 
-        // TODO: Uncomment after https://github.com/getsentry/sentry-unity/pull/220
-        // [UnityTest]
-        // public IEnumerator BugFarmScene_EventCaptured_UserNameIsMachineNameWithDefaultPii()
-        // {
-        //     yield return SetupSceneCoroutine("1_BugFarmScene");
-        //
-        //     var testEventCapture = new TestEventCapture();
-        //     using var _ = InitSentrySdk(o =>
-        //     {
-        //         o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-        //         o.SendDefaultPii = true;
-        //         o.IsEnvironmentUser = true;
-        //     });
-        //     var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
-        //
-        //     testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
-        //
-        //     // assert
-        //     Assert.Equals(Environment.UserName, testEventCapture.Events.First().User.Username);
-        // }
-
         [UnityTest]
         public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
         {
