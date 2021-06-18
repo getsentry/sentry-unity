@@ -88,16 +88,6 @@ namespace Sentry.Unity
             {
                 options.SampleRate = sampleRate;
             }
-
-            if (jsonOptions.Release is { } release)
-            {
-                options.ReleaseOverride = release;
-            }
-
-            if (jsonOptions.Environment is { } environment)
-            {
-                options.EnvironmentOverride = environment;
-            }
         }
     }
 }

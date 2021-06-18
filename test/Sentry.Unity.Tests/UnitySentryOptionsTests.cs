@@ -39,8 +39,6 @@ namespace Sentry.Unity.Tests
                 DiagnosticLevel = SentryLevel.Info,
                 AttachStacktrace = true,
                 SampleRate = 1f,
-                Release = "Release",
-                Environment = "Environment"
             };
 
             var scriptableSentryUnity = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
@@ -52,8 +50,6 @@ namespace Sentry.Unity.Tests
             scriptableSentryUnity.DiagnosticLevel = optionsExpected.DiagnosticLevel;
             scriptableSentryUnity.AttachStacktrace = optionsExpected.AttachStacktrace;
             scriptableSentryUnity.SampleRate = (float)optionsExpected.SampleRate;
-            scriptableSentryUnity.ReleaseOverride = optionsExpected.Release;
-            scriptableSentryUnity.EnvironmentOverride = optionsExpected.Environment;
 
             // Act
             var optionsActual = ScriptableSentryUnityOptions.LoadFromScriptableObject(scriptableSentryUnity);
@@ -95,8 +91,6 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.DiagnosticLevel, actual.DiagnosticLevel);
             Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);
-            Assert.AreEqual(expected.Release, actual.Release);
-            Assert.AreEqual(expected.Environment, actual.Environment);
         }
 
         private static string GetTestOptionsFilePath()
