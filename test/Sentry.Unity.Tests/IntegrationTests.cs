@@ -143,7 +143,7 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_UserNameIsNotMachineNameByDefault()
+        public IEnumerator BugFarmScene_EventCaptured_UserNameIsNotEnvironmentUserNameByDefault()
         {
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
