@@ -116,7 +116,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.Equals(Environment.UserName, testEventCapture.Events.First().User.Username);
+            Assert.AreEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
         }
 
         [UnityTest]
@@ -162,6 +162,24 @@ namespace Sentry.Unity.Tests
                 ? "editor"
                 : "production",
                 actual.Environment);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_UserNameIsNotEnvironmentUserNameByDefault()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreNotEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
         }
 
         [UnityTest]

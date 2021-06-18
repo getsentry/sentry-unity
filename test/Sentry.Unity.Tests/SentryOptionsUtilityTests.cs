@@ -51,5 +51,15 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual(persistentPath, options.CacheDirectoryPath);
         }
+
+        [Test]
+        public void SetDefaults_IsEnvironmentUser_IsFalse()
+        {
+            var options = new SentryUnityOptions();
+
+            SentryOptionsUtility.SetDefaults(options, new TestApplication());
+
+            Assert.AreEqual(false, options.IsEnvironmentUser);
+        }
     }
 }
