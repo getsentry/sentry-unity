@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Sentry config is now a scriptable object ([#220](https://github.com/getsentry/sentry-unity/pull/220))
+
 ### Fixes
 
 - Setting IsEnvironmentUser to false by default ([#230](https://github.com/getsentry/sentry-unity/pull/230))
