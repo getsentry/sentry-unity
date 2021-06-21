@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using Sentry.Unity.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -33,7 +34,7 @@ namespace Sentry.Unity.Editor
             var options = AssetDatabase.LoadAssetAtPath(
                 ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName), typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
 
-            if (options == null)
+            if (options is null)
             {
                 CreateConfigDirectory();
                 options = CreateScriptableSentryUnityOptions();
@@ -52,7 +53,7 @@ namespace Sentry.Unity.Editor
             }
 
             var scriptableOptions = CreateScriptableSentryUnityOptions();
-            JsonSentryUnityOptions.ConvertToScriptable(sentryOptionsTextAsset, scriptableOptions);
+            JsonSentryUnityOptions.ToScriptableOptions(sentryOptionsTextAsset, scriptableOptions);
 
             EditorUtility.SetDirty(scriptableOptions);
             AssetDatabase.SaveAssets();
@@ -171,8 +172,7 @@ namespace Sentry.Unity.Editor
             var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
             OnValidationError(validationError);
 
-            new UnityLogger(new SentryOptions{DiagnosticLevel = SentryLevel.Warning})
-                .LogWarning(validationError.ToString());
+            new UnityLogger(new SentryOptions()).LogWarning(validationError.ToString());
         }
 
         /// <summary>

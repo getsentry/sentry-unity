@@ -11,12 +11,13 @@ namespace Sentry.Unity
             application ??= ApplicationAdapter.Instance;
 
             options.Enabled = true;
-            options.Dsn = string.Empty;
+            options.Dsn = null;
             options.CaptureInEditor = true;
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
             options.AttachStacktrace = false;
-            options.StackTraceMode = default;
-            options.SampleRate = 1.0f;
+
+            options.StackTraceMode = StackTraceMode.Original;
+            options.SampleRate = null;
             options.IsEnvironmentUser = false;
 
             options.Release = Release(application);
@@ -49,18 +50,13 @@ namespace Sentry.Unity
             options.DiagnosticLevel = SentryLevel.Warning;
         }
 
-        private static string Release(IApplication application)
-        {
-            return application.ProductName is string productName
-                && !string.IsNullOrWhiteSpace(productName)
-                    ? $"{productName}@{application.Version}"
-                    : $"{application.Version}";
-        }
+        private static string Release(IApplication application) =>
+            application.ProductName is string productName
+            && !string.IsNullOrWhiteSpace(productName)
+                ? $"{productName}@{application.Version}"
+                : $"{application.Version}";
 
-        private static string Environment(IApplication application)
-        {
-            return application.IsEditor ? "editor" : "production";
-        }
+        private static string Environment(IApplication application) => application.IsEditor ? "editor" : "production";
 
         private static void TryAttachLogger(SentryUnityOptions options, IApplication application)
         {

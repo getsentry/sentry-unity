@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
+using Sentry.Unity.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void Options_CreateSentryOptionsFromScriptableObject_Success()
+        public void ToSentryUnityOptions_MapsOfOptions()
         {
             var optionsExpected = new SentryUnityOptions
             {
@@ -32,7 +33,7 @@ namespace Sentry.Unity.Tests
                 Dsn = "https://test.com",
                 CaptureInEditor = true,
                 Debug = true,
-                DebugOnlyInEditor = false,
+                DebugOnlyInEditor = true,
                 DiagnosticLevel = SentryLevel.Info,
                 AttachStacktrace = true,
                 SampleRate = 1f,
@@ -48,7 +49,7 @@ namespace Sentry.Unity.Tests
             scriptableSentryUnity.AttachStacktrace = optionsExpected.AttachStacktrace;
             scriptableSentryUnity.SampleRate = (float)optionsExpected.SampleRate;
 
-            var optionsActual = ScriptableSentryUnityOptions.LoadFromScriptableObject(scriptableSentryUnity);
+            var optionsActual = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableSentryUnity);
 
             AssertOptions(optionsExpected, optionsActual);
         }
@@ -61,8 +62,8 @@ namespace Sentry.Unity.Tests
 
             var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
 
-            JsonSentryUnityOptions.ConvertToScriptable(jsonTextAsset, scriptableOptions);
-            var actualOptions = ScriptableSentryUnityOptions.LoadFromScriptableObject(scriptableOptions);
+            JsonSentryUnityOptions.ToScriptableOptions(jsonTextAsset, scriptableOptions);
+            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions);
 
             AssertOptions(expectedOptions, actualOptions);
         }
@@ -85,7 +86,11 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.DebugOnlyInEditor, actual.DebugOnlyInEditor);
             Assert.AreEqual(expected.DiagnosticLevel, actual.DiagnosticLevel);
             Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
-            Assert.AreEqual(expected.SampleRate, actual.SampleRate);
+
+            // SampleRate cannot be null in the editor-window so it defaults to 1.0f.
+            var expectedSampleRate = expected.SampleRate == 1.0f ? null : expected.SampleRate;
+            var actualSampleRate = actual.SampleRate == 1.0f ? null : actual.SampleRate;
+            Assert.AreEqual(expectedSampleRate, actualSampleRate);
         }
 
         private static string GetTestOptionsFilePath()

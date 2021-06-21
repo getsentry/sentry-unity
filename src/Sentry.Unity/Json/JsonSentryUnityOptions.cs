@@ -2,10 +2,10 @@ using System.Text.Json;
 using Sentry.Unity.Extensions;
 using UnityEngine;
 
-namespace Sentry.Unity
+namespace Sentry.Unity.Json
 {
     // This code exists for backward compatibility and will be removed in the future
-    public static class JsonSentryUnityOptions
+    internal static class JsonSentryUnityOptions
     {
         /// <summary>
         /// Path for the json config for Unity
@@ -13,7 +13,7 @@ namespace Sentry.Unity
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Resources/{ScriptableSentryUnityOptions.ConfigRootFolder}/{notDefaultConfigName ?? ScriptableSentryUnityOptions.ConfigName}.json";
 
-        public static SentryUnityOptions LoadFromJson(TextAsset sentryOptionsTextAsset)
+        internal static SentryUnityOptions LoadFromJson(TextAsset sentryOptionsTextAsset)
         {
             var options = new SentryUnityOptions();
             SentryOptionsUtility.SetDefaults(options);
@@ -26,7 +26,7 @@ namespace Sentry.Unity
             }
             if (json.GetPropertyOrNull("dsn") is {} dsn)
             {
-                options.Dsn = dsn.GetString();
+                options.Dsn = string.Equals(dsn.GetString(), string.Empty) ? null : dsn.GetString();
             }
             if (json.GetPropertyOrNull("captureInEditor") is {} captureInEditor)
             {
@@ -54,7 +54,7 @@ namespace Sentry.Unity
             }
             if (json.GetPropertyOrNull("sampleRate") is {} sampleRate)
             {
-                options.SampleRate = sampleRate.GetSingle();
+                options.SampleRate = sampleRate.GetSingle() >= 1.0f ? null : sampleRate.GetSingle();
             }
             if (json.GetPropertyOrNull("release") is {} release)
             {
@@ -68,7 +68,7 @@ namespace Sentry.Unity
             return options;
         }
 
-        public static void ConvertToScriptable(TextAsset sentryOptionsTextAsset, ScriptableSentryUnityOptions options)
+        internal static void ToScriptableOptions(TextAsset sentryOptionsTextAsset, ScriptableSentryUnityOptions options)
         {
             var jsonOptions = LoadFromJson(sentryOptionsTextAsset);
 

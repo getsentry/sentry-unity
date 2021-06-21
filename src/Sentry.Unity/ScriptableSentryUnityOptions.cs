@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Sentry.Unity.Extensions;
+using Sentry.Unity.Json;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -50,23 +51,24 @@ namespace Sentry.Unity
             }
 
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
-            if (scriptableOptions != null)
+            if (scriptableOptions is not null)
             {
-                return LoadFromScriptableObject(scriptableOptions);
+                return ToSentryUnityOptions(scriptableOptions);
             }
 
             return null;
         }
 
-        internal static SentryUnityOptions LoadFromScriptableObject(ScriptableSentryUnityOptions scriptableOptions)
+        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions)
         {
             var options = new SentryUnityOptions();
             SentryOptionsUtility.SetDefaults(options);
 
             options.Enabled = scriptableOptions.Enabled;
             options.CaptureInEditor = scriptableOptions.CaptureInEditor;
-            options.Dsn = scriptableOptions.Dsn;
-            options.SampleRate = scriptableOptions.SampleRate;
+
+            options.Dsn = string.Equals(scriptableOptions.Dsn, string.Empty) ? null : scriptableOptions.Dsn;
+            options.SampleRate = (scriptableOptions.SampleRate == 1.0f) ? null : scriptableOptions.SampleRate;
             options.AttachStacktrace = scriptableOptions.AttachStacktrace;
 
             if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))

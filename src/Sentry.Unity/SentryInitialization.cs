@@ -10,9 +10,9 @@ namespace Sentry.Unity
         public static void Init()
         {
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
-            if (options == null)
+            if (options is null)
             {
-                new UnityLogger(new SentryOptions{DiagnosticLevel = SentryLevel.Warning}).LogWarning(
+                new UnityLogger(new SentryOptions()).LogWarning(
                     "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
                 return;
             }

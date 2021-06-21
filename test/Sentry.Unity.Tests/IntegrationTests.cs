@@ -191,18 +191,18 @@ namespace Sentry.Unity.Tests
 
             var sourceEventCapture = new TestEventCapture();
             var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-            SentryUnity.Init(options =>
+            using var firstDisposable = InitSentrySdk(o =>
             {
-                options.Dsn = sourceDsn;
-                options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
+                o.Dsn = sourceDsn;
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
             });
 
             var nextEventCapture = new TestEventCapture();
             var nextDsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250";
-            SentryUnity.Init(options =>
+            using var secondDisposable = InitSentrySdk(o =>
             {
-                options.Dsn = nextDsn;
-                options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
+                o.Dsn = nextDsn;
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
             });
 
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -219,17 +219,17 @@ namespace Sentry.Unity.Tests
 
             var expectedOptions = new SentryUnityOptions();
             SentryOptionsUtility.SetDefaults(expectedOptions);
+            expectedOptions.Dsn = string.Empty; // The SentrySDK tries to resolve the DSN from the environment when it's null
 
             SentryUnityOptions? actualOptions = null;
-            SentryUnity.Init(options => actualOptions = options);
+            using var _ = InitSentrySdk(o =>
+            {
+                o.Dsn = null; // InitSentrySDK already sets a test dsn
+                actualOptions = o;
+            });
 
             Assert.NotNull(actualOptions);
-            if (actualOptions is null)
-            {
-                yield break;
-            }
-
-            UnitySentryOptionsTests.AssertOptions(expectedOptions, actualOptions);
+            UnitySentryOptionsTests.AssertOptions(expectedOptions, actualOptions!);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)
