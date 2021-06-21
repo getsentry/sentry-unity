@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -9,57 +10,44 @@ namespace Sentry.Unity
         {
             application ??= ApplicationAdapter.Instance;
 
-            options.Enabled = Enabled;
+            options.Enabled = true;
             options.Dsn = string.Empty;
-            options.CaptureInEditor = CaptureInEditor;
-            options.RequestBodyCompressionLevel = RequestBodyCompressionLevel;
-            options.AttachStacktrace = AttackStackTrace;
-            options.StackTraceMode = StackTraceMode;
-            options.SampleRate = SampleRate;
-            options.IsEnvironmentUser = IsEnvironmentUser;
+            options.CaptureInEditor = true;
+            options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
+            options.AttachStacktrace = false;
+            options.StackTraceMode = default;
+            options.SampleRate = 1.0f;
+            options.IsEnvironmentUser = false;
 
             options.Release = Release(application);
             options.Environment = Environment(application);
 
             options.CacheDirectoryPath = application.PersistentDataPath;
 
-            options.Debug = Debug;
-            options.DebugOnlyInEditor = DebugOnlyInEditor;
-            options.DiagnosticLevel = DiagnosticLevel;
+            options.Debug = true;
+            options.DebugOnlyInEditor = true;
+            options.DiagnosticLevel = SentryLevel.Warning;
 
             TryAttachLogger(options, application);
         }
 
         public static void SetDefaults(ScriptableSentryUnityOptions options)
         {
-            options.Enabled = Enabled;
+            options.Enabled = true;
             options.Dsn = string.Empty;
-            options.CaptureInEditor = CaptureInEditor;
-            options.Debug = Debug;
-            options.DiagnosticLevel = DiagnosticLevel;
-            options.AttachStacktrace = AttackStackTrace;
-            options.SampleRate = SampleRate;
+            options.CaptureInEditor = true;
+            options.AttachStacktrace = false;
+            options.SampleRate = 1.0f;
 
             options.ReleaseOverride = string.Empty;
             options.EnvironmentOverride = string.Empty;
 
             options.EnableOfflineCaching = true;
 
-            options.Debug = Debug;
-            options.DebugOnlyInEditor = DebugOnlyInEditor;
-            options.DiagnosticLevel = DiagnosticLevel;
+            options.Debug = true;
+            options.DebugOnlyInEditor = true;
+            options.DiagnosticLevel = SentryLevel.Warning;
         }
-
-        private static bool Enabled = true;
-        private static bool CaptureInEditor = true;
-
-        // 'Optimal' and 'Fastest' don't work on IL2CPP. Forcing 'NoCompression'.
-        private static CompressionLevelWithAuto RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
-
-        private static bool AttackStackTrace = false;
-        private static StackTraceMode StackTraceMode = default;
-        private static float SampleRate = 1.0f;
-        private static bool IsEnvironmentUser = false;
 
         private static string Release(IApplication application)
         {
@@ -73,10 +61,6 @@ namespace Sentry.Unity
         {
             return application.IsEditor ? "editor" : "production";
         }
-
-        private static bool Debug = true;
-        private static bool DebugOnlyInEditor = true;
-        private static SentryLevel DiagnosticLevel = SentryLevel.Warning;
 
         private static void TryAttachLogger(SentryUnityOptions options, IApplication application)
         {
