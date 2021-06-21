@@ -30,7 +30,7 @@ namespace Sentry.Unity.Editor
         private ScriptableSentryUnityOptions LoadOptions()
         {
             var options = AssetDatabase.LoadAssetAtPath(
-                ScriptableSentryUnityOptions.GetConfigPath(), typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
+                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName), typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
 
             if (options == null)
             {
@@ -57,7 +57,6 @@ namespace Sentry.Unity.Editor
             AssetDatabase.SaveAssets();
 
             AssetDatabase.DeleteAsset(JsonSentryUnityOptions.GetConfigPath());
-            AssetDatabase.Refresh();
         }
 
         private ScriptableSentryUnityOptions CreateScriptableSentryUnityOptions()
@@ -65,11 +64,10 @@ namespace Sentry.Unity.Editor
             var options = CreateInstance<ScriptableSentryUnityOptions>();
             SentryOptionsUtility.SetDefaults(options);
 
-            AssetDatabase.CreateAsset(options, ScriptableSentryUnityOptions.GetConfigPath());
+            AssetDatabase.CreateAsset(options, ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
 
             EditorUtility.SetDirty(options);
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
 
             return options;
         }
@@ -158,7 +156,7 @@ namespace Sentry.Unity.Editor
 
         private void ValidateDsn()
         {
-            if (string.IsNullOrEmpty(Options.Dsn))
+            if (string.IsNullOrWhiteSpace(Options.Dsn))
             {
                 return;
             }
