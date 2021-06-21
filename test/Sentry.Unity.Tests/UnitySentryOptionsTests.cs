@@ -16,13 +16,10 @@ namespace Sentry.Unity.Tests
         public void Options_ReadFromJson_Success()
         {
             var optionsFilePath = GetTestOptionsFilePath();
-            Debug.Log(optionsFilePath);
             Assert.IsTrue(File.Exists(optionsFilePath));
 
-            Debug.Log("file existed");
             var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
 
-            Debug.Log("parsed");
             JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
         }
 
@@ -51,7 +48,6 @@ namespace Sentry.Unity.Tests
             scriptableSentryUnity.AttachStacktrace = optionsExpected.AttachStacktrace;
             scriptableSentryUnity.SampleRate = (float)optionsExpected.SampleRate;
 
-            // Act
             var optionsActual = ScriptableSentryUnityOptions.LoadFromScriptableObject(scriptableSentryUnity);
 
             AssertOptions(optionsExpected, optionsActual);
@@ -65,7 +61,6 @@ namespace Sentry.Unity.Tests
 
             var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
 
-            // Act
             JsonSentryUnityOptions.ConvertToScriptable(jsonTextAsset, scriptableOptions);
             var actualOptions = ScriptableSentryUnityOptions.LoadFromScriptableObject(scriptableOptions);
 

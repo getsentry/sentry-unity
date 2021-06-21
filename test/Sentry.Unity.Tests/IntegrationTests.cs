@@ -125,7 +125,6 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             // arrange
-            // var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = null;
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
@@ -138,8 +137,6 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
-
-            // PlayerSettings.productName = originalProductName;
         }
 
         [UnityTest]
@@ -211,15 +208,21 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_Init_OptionsAreDefaulted()
+        public IEnumerator Init_OptionsAreDefaulted()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return null;
 
             var expectedOptions = new SentryUnityOptions();
             SentryOptionsUtility.SetDefaults(expectedOptions);
 
-            var actualOptions = new SentryUnityOptions();
+            SentryUnityOptions? actualOptions = null;
             SentryUnity.Init(options => actualOptions = options);
+
+            Assert.NotNull(actualOptions);
+            if (actualOptions is null)
+            {
+                yield break;
+            }
 
             UnitySentryOptionsTests.AssertOptions(expectedOptions, actualOptions);
         }

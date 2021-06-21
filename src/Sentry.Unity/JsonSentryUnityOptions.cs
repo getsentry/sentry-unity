@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
+    // This code exists for backward compatibility and will be removed in the future
     public static class JsonSentryUnityOptions
     {
         /// <summary>
