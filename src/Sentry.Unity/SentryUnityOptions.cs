@@ -1,6 +1,3 @@
-using System.IO;
-using System.Text.Json;
-using Sentry.Unity.Extensions;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
