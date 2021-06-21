@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Sentry.Extensibility;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -30,7 +31,7 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions unitySentryOptions)
         {
-            SentryOptionsUtility.LogOptions(unitySentryOptions);
+            unitySentryOptions.DiagnosticLogger?.LogDebug(unitySentryOptions.ToString());
 
             SentrySdk.Init(unitySentryOptions);
         }

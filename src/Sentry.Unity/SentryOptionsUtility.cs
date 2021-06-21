@@ -87,27 +87,5 @@ namespace Sentry.Unity
                 options.DiagnosticLogger = new UnityLogger(options);
             }
         }
-
-        public static void LogOptions(SentryUnityOptions options)
-        {
-            var logger = options.DiagnosticLogger;
-            if (logger == null)
-            {
-                return;
-            }
-
-            // TODO: Add missing logs for options of interest
-            logger.LogDebug("Setting Release to: {0}", options.Release);
-            logger.LogDebug("Setting Environment to: {0}", options.Environment);
-
-            if (options.CacheDirectoryPath == null)
-            {
-                logger.LogDebug("Offline Caching: Disabled");
-            }
-            else
-            {
-                logger.LogDebug("Setting Cache Directory to: {0}", options.CacheDirectoryPath);
-            }
-        }
     }
 }

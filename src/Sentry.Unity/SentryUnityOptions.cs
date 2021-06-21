@@ -80,6 +80,16 @@ namespace Sentry.Unity
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
         }
+
+        public override string ToString()
+        {
+            return $@"Sentry SDK Options:
+Capture In Editor: {CaptureInEditor}
+Release: {Release}
+Environment: {Environment}
+Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
+";
+        }
     }
 
     /// <summary>
