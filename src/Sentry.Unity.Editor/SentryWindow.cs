@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
 
@@ -169,7 +170,9 @@ namespace Sentry.Unity.Editor
             var fullFieldName = $"{nameof(Options)}.{nameof(Options.Dsn)}";
             var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
             OnValidationError(validationError);
-            Debug.LogError(validationError.ToString());
+
+            new UnityLogger(new SentryOptions{DiagnosticLevel = SentryLevel.Warning})
+                .LogWarning(validationError.ToString());
         }
 
         /// <summary>
