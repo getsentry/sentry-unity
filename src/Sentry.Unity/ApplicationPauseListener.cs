@@ -7,7 +7,7 @@ namespace Sentry.Unity
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
     [DefaultExecutionOrder(-900)]
-    internal class ApplicationFocusListener : MonoBehaviour
+    internal class ApplicationPauseListener : MonoBehaviour
     {
         /// <summary>
         /// Hook to receive an event when the application gains focus.
@@ -15,7 +15,7 @@ namespace Sentry.Unity
         /// Listens to OnApplicationFocus for all platforms except Android, where we listen to OnApplicationPause.
         /// </remarks>
         /// </summary>
-        public event Action? ApplicationFocusGaining;
+        public event Action? ApplicationResuming;
 
         /// <summary>
         /// Hook to receive an event when the application loses focus.
@@ -23,7 +23,7 @@ namespace Sentry.Unity
         /// Listens to OnApplicationFocus for all platforms except Android, where we listen to OnApplicationPause.
         /// </remarks>
         /// </summary>
-        public event Action? ApplicationFocusLosing;
+        public event Action? ApplicationPausing;
 
         /// <summary>
         /// To receive Leaving/Resuming events on Android.
@@ -43,11 +43,11 @@ namespace Sentry.Unity
 
             if (pauseStatus)
             {
-                ApplicationFocusLosing?.Invoke();
+                ApplicationPausing?.Invoke();
             }
             else
             {
-                ApplicationFocusGaining?.Invoke();
+                ApplicationResuming?.Invoke();
             }
         }
 
@@ -57,7 +57,7 @@ namespace Sentry.Unity
         /// <param name="hasFocus"></param>
         private void OnApplicationFocus(bool hasFocus)
         {
-            // To avoid event duplication on Android
+            // To avoid event duplication on Android since the pause event will be handled via OnApplicationPause
             if (Application.platform == RuntimePlatform.Android)
             {
                 return;
@@ -65,11 +65,11 @@ namespace Sentry.Unity
 
             if (hasFocus)
             {
-                ApplicationFocusGaining?.Invoke();
+                ApplicationResuming?.Invoke();
             }
             else
             {
-                ApplicationFocusLosing?.Invoke();
+                ApplicationPausing?.Invoke();
             }
         }
     }

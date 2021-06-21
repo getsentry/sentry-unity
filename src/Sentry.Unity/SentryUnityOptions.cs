@@ -81,35 +81,6 @@ namespace Sentry.Unity
             }
         }
 
-        /// <summary>
-        /// The timeout in [ms] between the application losing focus and regaining it to still count as one session.
-        /// </summary>
-        private float? _sessionFocusTimeout;
-        /// <summary>
-        /// The timeout in [ms] between the application losing focus and regaining it to still count as one session.
-        /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
-        public float? SessionFocusTimeout
-        {
-            get => _sessionFocusTimeout;
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new InvalidOperationException($"The value {value} is not valid. Use a value greater than 0.");
-                }
-                _sessionFocusTimeout = value;
-            }
-        }
-
-        /// <summary>
-        /// Whether the SDK should be tracking the session automatically.
-        /// <remarks>
-        /// This will come from the .NET SDK main options and can be removed in the future.
-        /// </remarks>
-        /// </summary>
-        public bool EnableAutoSessionTracking { get; set; }
-
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
