@@ -131,6 +131,11 @@ namespace Sentry.Unity
             gpu.NpotSupport = SystemInfo.npotSupport.ToString();
             gpu.Version = SystemInfo.graphicsDeviceVersion;
             gpu.ApiType = SystemInfo.graphicsDeviceType.ToString();
+            gpu.MaxTextureSize = SystemInfo.maxTextureSize;
+            gpu.SupportsDrawCallInstancing = SystemInfo.supportsInstancing;
+            gpu.SupportsRayTracing = SystemInfo.supportsRayTracing;
+            gpu.SupportsComputeShaders = SystemInfo.supportsComputeShaders;
+            gpu.SupportsGeometryShaders = SystemInfo.supportsGeometryShaders;
         }
 
         private static void PopulateUnity(Protocol.Unity unity)
