@@ -5,8 +5,7 @@ using Sentry.Unity.Extensions;
 
 namespace Sentry.Unity.Protocol
 {
-    // TODO: implement 'IJsonSerializable' when public
-    public sealed class Unity
+    public sealed class Unity : IJsonSerializable
     {
         /// <summary>
         /// Tells Sentry which type of context this is.
