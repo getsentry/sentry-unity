@@ -76,11 +76,6 @@ namespace Sentry.Unity.Protocol
                 RenderingThreadingMode = json.GetPropertyOrNull("rendering_threading_mode")?.GetString()
             };
 
-        /*
-         * TODO:
-         * Logic from 'Sentry.Tests.Helpers.JsonSerializableExtensions'.
-         * Need to reuse when 'Sentry.IJsonSerializable' is public (internal for now).
-        */
         public string ToJsonString()
         {
             using var stream = new MemoryStream();
