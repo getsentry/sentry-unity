@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 using DeviceOrientation = Sentry.Protocol.DeviceOrientation;
+using OperatingSystem = Sentry.Protocol.OperatingSystem;
 
 namespace Sentry.Unity
 {
@@ -30,104 +28,114 @@ namespace Sentry.Unity
 
         public SentryEvent Process(SentryEvent @event)
         {
-            @event.Sdk.AddPackage(UnitySdkInfo.PackageName, UnitySdkInfo.Version);
-            @event.Sdk.Name = UnitySdkInfo.Name;
-            @event.Sdk.Version = UnitySdkInfo.Version;
-
-            @event.Contexts.OperatingSystem.Name = SystemInfo.operatingSystem;
-
-            @event.Contexts.Device.Name = SystemInfo.deviceName;
-#pragma warning disable RECS0018 // Value is exact when expressing no battery level
-            if (SystemInfo.batteryLevel != -1.0)
-#pragma warning restore RECS0018
-            {
-                @event.Contexts.Device.BatteryLevel = (short?)(SystemInfo.batteryLevel * 100);
-            }
+            PopulateSdk(@event.Sdk);
+            PopulateApp(@event.Contexts.App);
+            PopulateOperatingSystem(@event.Contexts.OperatingSystem);
+            PopulateDevice(@event.Contexts.Device, _application);
+            PopulateGpu(@event.Contexts.Gpu);
+            PopulateUnity((Protocol.Unity)@event.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity()));
 
             @event.ServerName = null;
 
+            return @event;
+        }
+
+        private static void PopulateSdk(SdkVersion sdk)
+        {
+            sdk.AddPackage(UnitySdkInfo.PackageName, UnitySdkInfo.Version);
+            sdk.Name = UnitySdkInfo.Name;
+            sdk.Version = UnitySdkInfo.Version;
+        }
+
+        private static void PopulateApp(App app)
+        {
+            app.StartTime = DateTimeOffset.UtcNow
+                // NOTE: Time API requires main thread
+                .AddSeconds(-Time.realtimeSinceStartup);
+
+            app.BuildType = Debug.isDebugBuild ? "debug" : "release";
+        }
+
+        private static void PopulateOperatingSystem(OperatingSystem operatingSystem)
+        {
+            // TODO: Will move to raw_description once parsing is done in Sentry
+            operatingSystem.Name = SystemInfo.operatingSystem;
+        }
+
+        private static void PopulateDevice(Device device, IApplication application)
+        {
+            device.ProcessorCount = SystemInfo.processorCount;
+            device.SupportsVibration = SystemInfo.supportsVibration;
+            device.BatteryStatus = SystemInfo.batteryStatus.ToString();
+            device.DeviceType = SystemInfo.deviceType.ToString();
+            device.CpuDescription = SystemInfo.processorType;
+            device.Timezone = TimeZoneInfo.Local;
+            device.ProcessorCount = SystemInfo.processorCount;
+            device.SupportsVibration = SystemInfo.supportsVibration;
+            device.Name = SystemInfo.deviceName;
+
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
-            @event.Contexts.Device.MemorySize = SystemInfo.systemMemorySize;
+            device.MemorySize = SystemInfo.systemMemorySize;
 
-            @event.Contexts.Device.Timezone = TimeZoneInfo.Local;
-
-            @event.Contexts.App.StartTime = DateTimeOffset.UtcNow.AddSeconds(-Time.realtimeSinceStartup);
-
-            // TODO:  @event.Contexts["Unity"] = new UnityContext (values to be read on the main thread)
-            @event.SetExtra("unity:processorCount", SystemInfo.processorCount.ToString());
-            @event.SetExtra("unity:supportsVibration", SystemInfo.supportsVibration.ToString());
-            @event.SetExtra("unity:installMode", Application.installMode.ToString());
-
-            // TODO: Will move to raw_description once parsing is done in Sentry
-            @event.Contexts.OperatingSystem.Name = SystemInfo.operatingSystem;
-
-            switch (Input.deviceOrientation)
-            {
-                case UnityEngine.DeviceOrientation.Portrait:
-                case UnityEngine.DeviceOrientation.PortraitUpsideDown:
-                    @event.Contexts.Device.Orientation = DeviceOrientation.Portrait;
-                    break;
-                case UnityEngine.DeviceOrientation.LandscapeLeft:
-                case UnityEngine.DeviceOrientation.LandscapeRight:
-                    @event.Contexts.Device.Orientation = DeviceOrientation.Landscape;
-                    break;
-                case UnityEngine.DeviceOrientation.FaceUp:
-                case UnityEngine.DeviceOrientation.FaceDown:
-                    // TODO: Add to protocol?
-                    break;
-            }
+            // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
+            device.Simulator = application.IsEditor ? true : null;
 
             var model = SystemInfo.deviceModel;
             if (model != SystemInfo.unsupportedIdentifier
                 // Returned by the editor
                 && model != "System Product Name (System manufacturer)")
             {
-                @event.Contexts.Device.Model = model;
+                device.Model = model;
             }
 
-            //device.DeviceType = SystemInfo.deviceType.ToString();
-            //device.CpuDescription = SystemInfo.processorType;
-            //device.BatteryStatus = SystemInfo.batteryStatus.ToString();
-
-            @event.SetExtra("unity:batteryStatus", SystemInfo.batteryStatus.ToString());
-            @event.SetExtra("unity:deviceType", SystemInfo.deviceType.ToString());
-            @event.SetExtra("unity:processorType", SystemInfo.processorType);
+#pragma warning disable RECS0018 // Value is exact when expressing no battery level
+            if (SystemInfo.batteryLevel != -1.0)
+#pragma warning restore RECS0018
+            {
+                device.BatteryLevel = (short?)(SystemInfo.batteryLevel * 100);
+            }
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
             if (SystemInfo.systemMemorySize != 0)
             {
-                @event.Contexts.Device.MemorySize = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
+                device.MemorySize = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
             }
 
-            @event.Contexts.Gpu.Id = SystemInfo.graphicsDeviceID;
-            @event.Contexts.Gpu.Name = SystemInfo.graphicsDeviceName;
-            @event.Contexts.Gpu.VendorId = SystemInfo.graphicsDeviceVendorID.ToString();
-            @event.Contexts.Gpu.VendorName = SystemInfo.graphicsDeviceVendor;
-            @event.Contexts.Gpu.MemorySize = SystemInfo.graphicsMemorySize;
-            @event.Contexts.Gpu.MultiThreadedRendering = SystemInfo.graphicsMultiThreaded;
-            @event.Contexts.Gpu.NpotSupport = SystemInfo.npotSupport.ToString();
-            @event.Contexts.Gpu.Version = SystemInfo.graphicsDeviceVersion;
-            @event.Contexts.Gpu.ApiType = SystemInfo.graphicsDeviceType.ToString();
-
-            @event.Contexts.App.StartTime = DateTimeOffset.UtcNow
-                // NOTE: Time API requires main thread
-                .AddSeconds(-Time.realtimeSinceStartup);
-
-            if (Debug.isDebugBuild)
+            switch (Input.deviceOrientation)
             {
-                @event.Contexts.App.BuildType = "debug";
+                case UnityEngine.DeviceOrientation.Portrait:
+                case UnityEngine.DeviceOrientation.PortraitUpsideDown:
+                    device.Orientation = DeviceOrientation.Portrait;
+                    break;
+                case UnityEngine.DeviceOrientation.LandscapeLeft:
+                case UnityEngine.DeviceOrientation.LandscapeRight:
+                    device.Orientation = DeviceOrientation.Landscape;
+                    break;
+                case UnityEngine.DeviceOrientation.FaceUp:
+                case UnityEngine.DeviceOrientation.FaceDown:
+                    // TODO: Add to protocol?
+                    break;
             }
-            else
-            {
-                @event.Contexts.App.BuildType = "release";
-            }
+        }
 
-            // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
-            @event.Contexts.Device.Simulator = _application.IsEditor ? true : null;
+        private static void PopulateGpu(Gpu gpu)
+        {
+            gpu.Id = SystemInfo.graphicsDeviceID;
+            gpu.Name = SystemInfo.graphicsDeviceName;
+            gpu.VendorId = SystemInfo.graphicsDeviceVendorID.ToString();
+            gpu.VendorName = SystemInfo.graphicsDeviceVendor;
+            gpu.MemorySize = SystemInfo.graphicsMemorySize;
+            gpu.MultiThreadedRendering = SystemInfo.graphicsMultiThreaded;
+            gpu.NpotSupport = SystemInfo.npotSupport.ToString();
+            gpu.Version = SystemInfo.graphicsDeviceVersion;
+            gpu.ApiType = SystemInfo.graphicsDeviceType.ToString();
+        }
 
-            return @event;
+        private static void PopulateUnity(Protocol.Unity unity)
+        {
+            unity.InstallMode = Application.installMode.ToString();
         }
     }
 
