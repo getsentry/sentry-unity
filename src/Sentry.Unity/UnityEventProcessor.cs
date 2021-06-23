@@ -19,10 +19,12 @@ namespace Sentry.Unity
 
     internal class UnityEventProcessor : ISentryEventProcessor
     {
+        private readonly SentryOptions _sentryOptions;
         private readonly IApplication _application;
 
-        public UnityEventProcessor(IApplication? application = null)
+        public UnityEventProcessor(SentryOptions sentryOptions, IApplication? application = null)
         {
+            _sentryOptions = sentryOptions;
             _application = application ?? ApplicationAdapter.Instance;
         }
 
@@ -31,9 +33,10 @@ namespace Sentry.Unity
             PopulateSdk(@event.Sdk);
             PopulateApp(@event.Contexts.App);
             PopulateOperatingSystem(@event.Contexts.OperatingSystem);
-            PopulateDevice(@event.Contexts.Device, _application);
+            PopulateDevice(@event.Contexts.Device);
             PopulateGpu(@event.Contexts.Gpu);
             PopulateUnity((Protocol.Unity)@event.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity()));
+            PopulateTags(@event);
 
             @event.ServerName = null;
 
@@ -62,7 +65,7 @@ namespace Sentry.Unity
             operatingSystem.Name = SystemInfo.operatingSystem;
         }
 
-        private static void PopulateDevice(Device device, IApplication application)
+        private void PopulateDevice(Device device)
         {
             device.ProcessorCount = SystemInfo.processorCount;
             device.SupportsVibration = SystemInfo.supportsVibration;
@@ -79,7 +82,8 @@ namespace Sentry.Unity
             device.MemorySize = SystemInfo.systemMemorySize;
 
             // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
-            device.Simulator = application.IsEditor ? true : null;
+            device.Simulator = _application.IsEditor ? true : null;
+            device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? SystemInfo.deviceUniqueIdentifier : null;
 
             var model = SystemInfo.deviceModel;
             if (model != SystemInfo.unsupportedIdentifier
@@ -136,11 +140,38 @@ namespace Sentry.Unity
             gpu.SupportsRayTracing = SystemInfo.supportsRayTracing;
             gpu.SupportsComputeShaders = SystemInfo.supportsComputeShaders;
             gpu.SupportsGeometryShaders = SystemInfo.supportsGeometryShaders;
+            gpu.GraphicsShaderLevel = ToGraphicShaderLevelDescription(SystemInfo.graphicsShaderLevel);
+
+            static string ToGraphicShaderLevelDescription(int shaderLevel)
+                => shaderLevel switch
+                {
+                    20 => "Shader Model 2.0",
+                    25 => "Shader Model 2.5",
+                    30 => "Shader Model 3.0",
+                    35 => "OpenGL ES 3.0",
+                    40 => "Shader Model 4.0",
+                    45 => "Metal / OpenGL ES 3.1",
+                    46 => "OpenGL 4.1",
+                    50 => "Shader Model 5.0",
+                    _ => shaderLevel.ToString()
+                };
         }
 
         private static void PopulateUnity(Protocol.Unity unity)
         {
             unity.InstallMode = Application.installMode.ToString();
+        }
+
+        private void PopulateTags(SentryEvent @event)
+        {
+            @event.SetTag("unity.gpu.supports_instancing", SystemInfo.supportsInstancing.ToString());
+            @event.SetTag("unity.device.device_type", SystemInfo.deviceType.ToString());
+            @event.SetTag("unity.install_mode", Application.installMode.ToString());
+
+            if (_sentryOptions.SendDefaultPii)
+            {
+                @event.SetTag("unity.device.unique_identifier", SystemInfo.deviceUniqueIdentifier);
+            }
         }
     }
 

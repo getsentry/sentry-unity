@@ -36,7 +36,7 @@ namespace Sentry.Unity.Tests
         {
             // arrange
             var testApplication = new TestApplication();
-            var unityEventProcessor = new UnityEventProcessor(testApplication);
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
@@ -57,7 +57,7 @@ namespace Sentry.Unity.Tests
         {
             // arrange
             var testApplication = new TestApplication(isEditor);
-            var unityEventProcessor = new UnityEventProcessor(testApplication);
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
@@ -77,7 +77,7 @@ namespace Sentry.Unity.Tests
         public void Process_ServerName_IsNull()
         {
             // arrange
-            var unityEventProcessor = new UnityEventProcessor();
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions());
             var sentryEvent = new SentryEvent();
 
             // act
