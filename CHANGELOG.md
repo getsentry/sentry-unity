@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Sentry config is now a scriptable object ([#220](https://github.com/getsentry/sentry-unity/pull/220))
+
 ### Fixes
 
 - Un-embedding the link.xml to fix code stripping ([#237]/(https://github.com/getsentry/sentry-unity/pull/237))
