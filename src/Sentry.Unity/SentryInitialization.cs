@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
 using Sentry.Extensibility;
 using UnityEngine;
 
@@ -12,10 +9,11 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            var options = SentryUnityOptions.LoadFromUnity();
-            if (options == null)
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
+            if (options is null)
             {
-                new UnityLogger(SentryLevel.Warning).Log(SentryLevel.Warning, "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                new UnityLogger(new SentryOptions()).LogWarning(
+                    "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
                 return;
             }
 
