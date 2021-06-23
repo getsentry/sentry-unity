@@ -2,15 +2,21 @@
 
 ## Unreleased
 
+### Features
+
+- Sentry config is now a scriptable object ([#220](https://github.com/getsentry/sentry-unity/pull/220))
+- Release Health through Sessions ([#223](https://github.com/getsentry/sentry-unity/pull/223))
+- Unity protocol ([#234](https://github.com/getsentry/sentry-unity/pull/234))
+
 ### Fixes
 
+- Un-embedding the link.xml to fix code stripping ([#237]/(https://github.com/getsentry/sentry-unity/pull/237))
 - Setting IsEnvironmentUser to false by default ([#230](https://github.com/getsentry/sentry-unity/pull/230))
 
 ## 0.2.0
 
 ### Features
 
-- Release Health through Sessions ([#223](https://github.com/getsentry/sentry-unity/pull/223))
 - Offline caching ([#208](https://github.com/getsentry/sentry-unity/pull/208))
 - Breadcrumb categories added ([#206](https://github.com/getsentry/sentry-unity/pull/206))
 - Bump Sentry .NET SDK 3.5.0 ([#218](https://github.com/getsentry/sentry-unity/pull/218))

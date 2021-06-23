@@ -36,7 +36,7 @@ namespace Sentry.Unity.Tests
         {
             // arrange
             var testApplication = new TestApplication();
-            var unityEventProcessor = new UnityEventProcessor(testApplication);
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
@@ -57,7 +57,7 @@ namespace Sentry.Unity.Tests
         {
             // arrange
             var testApplication = new TestApplication(isEditor);
-            var unityEventProcessor = new UnityEventProcessor(testApplication);
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
@@ -77,7 +77,7 @@ namespace Sentry.Unity.Tests
         public void Process_ServerName_IsNull()
         {
             // arrange
-            var unityEventProcessor = new UnityEventProcessor();
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions());
             var sentryEvent = new SentryEvent();
 
             // act
@@ -85,6 +85,55 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.IsNull(sentryEvent.ServerName);
+        }
+
+        [Test]
+        public void Process_DeviceUniqueIdentifierWithSendDefaultPii_IsNotNull()
+        {
+            // arrange
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions { SendDefaultPii = true });
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(sentryEvent);
+
+            // assert
+            Assert.IsNotNull(sentryEvent.Contexts.Device.DeviceUniqueIdentifier);
+        }
+
+        [Test]
+        public void Process_StartTimeOnMainThread_IsNotNull()
+        {
+            // arrange
+            var application = new TestApplication(isMainThread: true);
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), application);
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(sentryEvent);
+
+            // assert
+            Assert.IsNotNull(sentryEvent.Contexts.App.StartTime);
+        }
+
+        [Test]
+        public void Process_Tags_Set()
+        {
+            // arrange
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions { SendDefaultPii = true });
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(sentryEvent);
+
+            // assert
+            var tags = sentryEvent.Tags;
+
+            Assert.IsNotNull(tags);
+            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.gpu.supports_instancing"));
+            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.device.supports_instancing"));
+            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.gpu.device_type"));
+            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.device.unique_identifier"));
         }
     }
 }
