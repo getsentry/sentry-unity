@@ -5,12 +5,12 @@ using Sentry.Unity.Json;
 using UnityEditor;
 using UnityEngine;
 
-using CompressionLevel = System.IO.Compression.CompressionLevel;
-
 namespace Sentry.Unity.Editor
 {
     public class SentryWindow : EditorWindow
     {
+        private const string LinkXmlPath = "Assets/Plugins/Sentry/link.xml";
+
         [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
             => (SentryWindow)GetWindow(typeof(SentryWindow));
@@ -24,6 +24,8 @@ namespace Sentry.Unity.Editor
         private void OnEnable()
         {
             SetTitle();
+
+            CopyLinkXmlToPlugins();
 
             CheckForAndConvertJsonConfig();
             Options = LoadOptions();
@@ -192,13 +194,37 @@ namespace Sentry.Unity.Editor
             AssetDatabase.Refresh();
         }
 
+        /// <summary>
+        /// Creates Sentry folder 'Plugins/Sentry' and copies the link.xml into it
+        /// </summary>
+        private void CopyLinkXmlToPlugins()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Plugins"))
+            {
+                AssetDatabase.CreateFolder("Assets", "Plugins");
+            }
+            if (!AssetDatabase.IsValidFolder("Assets/Plugins/Sentry"))
+            {
+                AssetDatabase.CreateFolder("Assets/Plugins", "Sentry");
+            }
+
+            if (!AssetDatabase.IsValidFolder(LinkXmlPath))
+            {
+                using var fileStream = File.Create(LinkXmlPath);
+                using var resourceStream = GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
+                resourceStream.CopyTo(fileStream);
+
+                AssetDatabase.ImportAsset(LinkXmlPath);
+            }
+        }
+
         private void SetTitle()
         {
             var isDarkMode = EditorGUIUtility.isProSkin;
             var texture = new Texture2D(16, 16);
             using var memStream = new MemoryStream();
             using var stream = GetType().Assembly
-                .GetManifestResourceStream($"Sentry.Unity.Editor.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
+                .GetManifestResourceStream($"Sentry.Unity.Editor.Resources.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
             stream.CopyTo(memStream);
             stream.Flush();
             memStream.Position = 0;

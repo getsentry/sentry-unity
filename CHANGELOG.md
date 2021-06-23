@@ -6,9 +6,11 @@
 
 - Sentry config is now a scriptable object ([#220](https://github.com/getsentry/sentry-unity/pull/220))
 - Release Health through Sessions ([#223](https://github.com/getsentry/sentry-unity/pull/223))
+- Unity protocol ([#234](https://github.com/getsentry/sentry-unity/pull/234))
 
 ### Fixes
 
+- Un-embedding the link.xml to fix code stripping ([#237]/(https://github.com/getsentry/sentry-unity/pull/237))
 - Setting IsEnvironmentUser to false by default ([#230](https://github.com/getsentry/sentry-unity/pull/230))
 
 ## 0.2.0

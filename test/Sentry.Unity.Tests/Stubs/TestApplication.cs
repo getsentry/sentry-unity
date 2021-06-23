@@ -11,12 +11,14 @@ namespace Sentry.Unity.Tests.Stubs
             bool isEditor = true,
             string productName = "",
             string version = "",
-            string persistentDataPath = "")
+            string persistentDataPath = "",
+            bool isMainThread = true)
         {
             IsEditor = isEditor;
             ProductName = productName;
             Version = version;
             PersistentDataPath = persistentDataPath;
+            IsMainThread = isMainThread;
         }
 
         public event Application.LogCallback? LogMessageReceived;
@@ -26,6 +28,7 @@ namespace Sentry.Unity.Tests.Stubs
         public string ProductName { get; }
         public string Version { get; }
         public string PersistentDataPath { get; }
+        public bool IsMainThread { get; }
 
         private void OnQuitting() => Quitting?.Invoke();
 
