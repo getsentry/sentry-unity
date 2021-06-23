@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -7,10 +8,14 @@ namespace Sentry.Unity.Editor
 {
     public class SentryPreprocessBuild : IPreprocessBuildWithReport
     {
-        public int callbackOrder { get; private set; }
+        public static string LinkXmlFolder => "io.sentry";
+
+        public int callbackOrder { get; }
 
         public void OnPreprocessBuild(BuildReport report)
         {
+            // WriteLinkXmlToAssets();
+
             // var options = AssetDatabase.LoadAssetAtPath<SentryCliOptions>(SentryWindows.SentryCliOptionsAssetPath);
 
             switch (report.summary.platform)
@@ -37,6 +42,22 @@ namespace Sentry.Unity.Editor
             }
             // file: summary.outputPath
             // guid: summary.guid
+        }
+
+        internal void WriteLinkXmlToAssets()
+        {
+            var linkXmlPath = $"Assets/{LinkXmlFolder}/link.xml";
+
+            AssetDatabase.CreateFolder("Assets", LinkXmlFolder);
+            using var fileStream = File.Create(linkXmlPath);
+
+            using var resourceStream = GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.link.xml");
+            resourceStream.CopyTo(fileStream);
+
+            fileStream.Close();
+            resourceStream.Flush();
+
+            AssetDatabase.ImportAsset(linkXmlPath);
         }
     }
 }

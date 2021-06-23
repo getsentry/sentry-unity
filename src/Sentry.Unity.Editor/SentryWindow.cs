@@ -10,6 +10,8 @@ namespace Sentry.Unity.Editor
 {
     public class SentryWindow : EditorWindow
     {
+        private const string LinkXmlPath = "Assets/Plugins/Sentry/link.xml";
+
         [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
             => (SentryWindow)GetWindow(typeof(SentryWindow));
@@ -24,7 +26,8 @@ namespace Sentry.Unity.Editor
         {
             SetTitle();
 
-            TryCreateSentryFolder();
+            CreateSentryConfigFolder();
+            CopyLinkXmlToPlugins();
 
             Options = LoadUnitySentryOptions();
         }
@@ -51,7 +54,7 @@ namespace Sentry.Unity.Editor
             var texture = new Texture2D(16, 16);
             using var memStream = new MemoryStream();
             using var stream = GetType().Assembly
-                .GetManifestResourceStream($"Sentry.Unity.Editor.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
+                .GetManifestResourceStream($"Sentry.Unity.Editor.Resources.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
             stream.CopyTo(memStream);
             stream.Flush();
             memStream.Position = 0;
@@ -161,10 +164,11 @@ namespace Sentry.Unity.Editor
         }
 
         /// <summary>
-        /// Creates Sentry folder for storing its configs - Assets/Resources/Sentry
+        /// Creates Sentry folder 'Resource/Sentry' used to store the config that will be included in the build
         /// </summary>
-        private static void TryCreateSentryFolder()
+        private void CreateSentryConfigFolder()
         {
+            //
             // TODO: revise, 'Resources' is a special Unity folder which is created by default. Not sure this check is needed.
             if (!AssetDatabase.IsValidFolder("Assets/Resources"))
             {
@@ -174,6 +178,30 @@ namespace Sentry.Unity.Editor
             {
                 AssetDatabase.CreateFolder("Assets/Resources", SentryUnityOptions.ConfigRootFolder);
             }
+        }
+
+        /// <summary>
+        /// Creates Sentry folder 'Plugins/Sentry' used to store built time relevant data like link.xml
+        /// </summary>
+        private void CopyLinkXmlToPlugins()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Plugins"))
+            {
+                AssetDatabase.CreateFolder("Assets", "Plugins");
+            }
+            if (!AssetDatabase.IsValidFolder("Assets/Plugins/Sentry"))
+            {
+                AssetDatabase.CreateFolder("Assets/Plugins", "Sentry");
+            }
+
+            using var fileStream = File.Create(LinkXmlPath);
+            using var resourceStream = GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
+            resourceStream.CopyTo(fileStream);
+
+            fileStream.Close();
+            resourceStream.Flush();
+
+            AssetDatabase.ImportAsset(LinkXmlPath);
         }
     }
 
