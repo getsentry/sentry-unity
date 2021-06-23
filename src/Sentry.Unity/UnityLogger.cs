@@ -12,14 +12,14 @@ namespace Sentry.Unity
 
     internal class UnityLogger : IDiagnosticLogger
     {
-        private readonly SentryLevel _minimalLevel;
+        private readonly SentryOptions _sentryOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
 
-        public bool IsEnabled(SentryLevel level) => level >= _minimalLevel;
+        public bool IsEnabled(SentryLevel level) => level >= _sentryOptions.DiagnosticLevel;
 
-        public UnityLogger(SentryLevel minimalLevel, IUnityLoggerInterceptor? interceptor = null)
+        public UnityLogger(SentryOptions sentryOptions, IUnityLoggerInterceptor? interceptor = null)
         {
-            _minimalLevel = minimalLevel;
+            _sentryOptions = sentryOptions;
             _interceptor = interceptor;
         }
 

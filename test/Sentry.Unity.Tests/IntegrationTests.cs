@@ -2,9 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NUnit.Framework;
-using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
@@ -86,6 +84,7 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             // arrange
+            var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = " ";
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
@@ -98,6 +97,28 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+
+            PlayerSettings.productName = originalProductName;
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_UserNameIsEnvironmentUserNameWithDefaultPii()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+                o.SendDefaultPii = true;
+                o.IsEnvironmentUser = true;
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
         }
 
         [UnityTest]
@@ -106,6 +127,7 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             // arrange
+            var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = null;
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
@@ -118,6 +140,8 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+
+            PlayerSettings.productName = originalProductName;
         }
 
         [UnityTest]
@@ -143,24 +167,42 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator BugFarmScene_EventCaptured_UserNameIsNotEnvironmentUserNameByDefault()
+        {
+            yield return SetupSceneCoroutine("1_BugFarmScene");
+
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+
+            // assert
+            Assert.AreNotEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
+        }
+
+        [UnityTest]
         public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
         {
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             var sourceEventCapture = new TestEventCapture();
             var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-            SentryUnity.Init(options =>
+            using var firstDisposable = InitSentrySdk(o =>
             {
-                options.Dsn = sourceDsn;
-                options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
+                o.Dsn = sourceDsn;
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
             });
 
             var nextEventCapture = new TestEventCapture();
             var nextDsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250";
-            SentryUnity.Init(options =>
+            using var secondDisposable = InitSentrySdk(o =>
             {
-                options.Dsn = nextDsn;
-                options.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
+                o.Dsn = nextDsn;
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
             });
 
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -168,6 +210,26 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual(0, sourceEventCapture.Events.Count, sourceDsn);
             Assert.AreEqual(1, nextEventCapture.Events.Count, nextDsn);
+        }
+
+        [UnityTest]
+        public IEnumerator Init_OptionsAreDefaulted()
+        {
+            yield return null;
+
+            var expectedOptions = new SentryUnityOptions();
+            SentryOptionsUtility.SetDefaults(expectedOptions);
+            expectedOptions.Dsn = string.Empty; // The SentrySDK tries to resolve the DSN from the environment when it's null
+
+            SentryUnityOptions? actualOptions = null;
+            using var _ = InitSentrySdk(o =>
+            {
+                o.Dsn = null; // InitSentrySDK already sets a test dsn
+                actualOptions = o;
+            });
+
+            Assert.NotNull(actualOptions);
+            UnitySentryOptionsTests.AssertOptions(expectedOptions, actualOptions!);
         }
 
         private static IEnumerator SetupSceneCoroutine(string sceneName)

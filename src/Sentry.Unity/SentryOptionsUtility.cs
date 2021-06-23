@@ -1,4 +1,3 @@
-using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
@@ -9,35 +8,63 @@ namespace Sentry.Unity
         {
             application ??= ApplicationAdapter.Instance;
 
-            // 'Optimal' and 'Fastest' don't work on IL2CPP. Forcing 'NoCompression'.
+            options.Enabled = true;
+            options.Dsn = null;
+            options.AutoSessionTracking = false;
+            options.CaptureInEditor = true;
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
-            options.AutoSessionTracking = true;
+            options.AttachStacktrace = false;
 
-            SetRelease(options, application);
-            SetEnvironment(options, application);
-            SetCacheDirectoryPath(options, application);
+            options.StackTraceMode = StackTraceMode.Original;
+            options.SampleRate = null;
+            options.IsEnvironmentUser = false;
+
+            options.Release = Release(application);
+            options.Environment = Environment(application);
+
+            options.CacheDirectoryPath = application.PersistentDataPath;
+
+            options.Debug = true;
+            options.DebugOnlyInEditor = true;
+            options.DiagnosticLevel = SentryLevel.Warning;
+
+            TryAttachLogger(options, application);
         }
 
-        private static void SetRelease(SentryUnityOptions options, IApplication application)
+        public static void SetDefaults(ScriptableSentryUnityOptions options)
         {
-            options.Release ??= application.ProductName is string productName
-                && !string.IsNullOrWhiteSpace(productName)
-                    ? $"{productName}@{application.Version}"
-                    : $"{application.Version}";
+            options.Enabled = true;
+            options.Dsn = string.Empty;
+            options.CaptureInEditor = true;
+            options.AttachStacktrace = false;
+            options.SampleRate = 1.0f;
 
-            options.DiagnosticLogger?.LogDebug("option.Release: {0}", options.Release);
+            options.ReleaseOverride = string.Empty;
+            options.EnvironmentOverride = string.Empty;
+
+            options.EnableOfflineCaching = true;
+
+            options.Debug = true;
+            options.DebugOnlyInEditor = true;
+            options.DiagnosticLevel = SentryLevel.Warning;
         }
 
-        private static void SetEnvironment(SentryUnityOptions options, IApplication application)
-        {
-            options.Environment ??= application.IsEditor ? "editor" : "production";
-            options.DiagnosticLogger?.LogDebug("option.Environment: {0}", options.Environment);
-        }
+        private static string Release(IApplication application) =>
+            application.ProductName is string productName
+            && !string.IsNullOrWhiteSpace(productName)
+                ? $"{productName}@{application.Version}"
+                : $"{application.Version}";
 
-        private static void SetCacheDirectoryPath(SentryUnityOptions options, IApplication application)
+        private static string Environment(IApplication application) => application.IsEditor ? "editor" : "production";
+
+        private static void TryAttachLogger(SentryUnityOptions options, IApplication application)
         {
-            options.CacheDirectoryPath ??= application.PersistentDataPath;
-            options.DiagnosticLogger?.LogDebug("option.CacheDirectoryPath: {0}", options.CacheDirectoryPath);
+            if (options.DiagnosticLogger is null
+                && options.Debug
+                && (!options.DebugOnlyInEditor || application.IsEditor))
+            {
+                options.DiagnosticLogger = new UnityLogger(options);
+            }
         }
     }
 }

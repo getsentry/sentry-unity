@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Text.Json;
-using Sentry.Unity.Extensions;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -17,19 +13,6 @@ namespace Sentry.Unity
     /// </remarks>
     public sealed class SentryUnityOptions : SentryOptions
     {
-        /// <summary>
-        /// Relative to Assets/Resources
-        /// </summary>
-        public const string ConfigRootFolder = "Sentry";
-
-        /// <summary>
-        /// Main Sentry config name for Unity
-        /// </summary>
-        public const string ConfigName = "SentryOptions";
-
-        internal static string GetConfigPath(string? notDefaultConfigName = null)
-            => $"{Application.dataPath}/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.json";
-
         /// <summary>
         /// UPM name of Sentry Unity SDK (package.json)
         /// </summary>
@@ -96,101 +79,14 @@ namespace Sentry.Unity
             this.AddIntegration(new SessionIntegration());
         }
 
-        // Can't rely on Unity's OnEnable() hook.
-        public SentryUnityOptions TryAttachLogger()
+        public override string ToString()
         {
-            if (DiagnosticLogger is null
-                && Debug
-                // TODO: Move it out and use via IApplication
-                && (!DebugOnlyInEditor || Application.isEditor))
-            {
-                DiagnosticLogger = new UnityLogger(DiagnosticLevel);
-            }
-
-            return this;
-        }
-
-        public void WriteTo(Utf8JsonWriter writer)
-        {
-            writer.WriteStartObject();
-
-            writer.WriteBoolean("enabled", Enabled);
-            writer.WriteBoolean("captureInEditor", CaptureInEditor);
-
-            if (!string.IsNullOrWhiteSpace(Dsn))
-            {
-                writer.WriteString("dsn", Dsn);
-            }
-
-            writer.WriteBoolean("debug", Debug);
-            writer.WriteBoolean("debugOnlyInEditor", DebugOnlyInEditor);
-            writer.WriteNumber("diagnosticLevel", (int)DiagnosticLevel);
-            writer.WriteBoolean("attachStacktrace", AttachStacktrace);
-
-            writer.WriteNumber("requestBodyCompressionLevel", (int)RequestBodyCompressionLevel);
-
-            if (SampleRate != null)
-            {
-                writer.WriteNumber("sampleRate", SampleRate.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(Release))
-            {
-                writer.WriteString("release", Release);
-            }
-
-            if (!string.IsNullOrWhiteSpace(Environment))
-            {
-                writer.WriteString("environment", Environment);
-            }
-
-            writer.WriteEndObject();
-            writer.Flush();
-        }
-
-        public static SentryUnityOptions FromJson(JsonElement json)
-            => new()
-            {
-                Enabled = json.GetPropertyOrNull("enabled")?.GetBoolean() ?? true,
-                Dsn = json.GetPropertyOrNull("dsn")?.GetString(),
-                CaptureInEditor = json.GetPropertyOrNull("captureInEditor")?.GetBoolean() ?? false,
-                Debug = json.GetPropertyOrNull("debug")?.GetBoolean() ?? true,
-                DebugOnlyInEditor = json.GetPropertyOrNull("debugOnlyInEditor")?.GetBoolean() ?? true,
-                DiagnosticLevel = json.GetEnumOrNull<SentryLevel>("diagnosticLevel") ?? SentryLevel.Error,
-                RequestBodyCompressionLevel = json.GetEnumOrNull<CompressionLevelWithAuto>("requestBodyCompressionLevel") ?? CompressionLevelWithAuto.Auto,
-                AttachStacktrace = json.GetPropertyOrNull("attachStacktrace")?.GetBoolean() ?? false,
-                SampleRate = json.GetPropertyOrNull("sampleRate")?.GetSingle() ?? 1.0f,
-                Release = json.GetPropertyOrNull("release")?.GetString(),
-                Environment = json.GetPropertyOrNull("environment")?.GetString()
-            };
-
-        /// <summary>
-        /// Try load SentryOptions.json in a platform-agnostic way.
-        /// </summary>
-        public static SentryUnityOptions? LoadFromUnity()
-        {
-            // We should use `TextAsset` for read-only access in runtime. It's platform agnostic.
-            var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
-            if (sentryOptionsTextAsset == null)
-            {
-                // Config not found.
-                return null;
-            }
-            using var jsonDocument = JsonDocument.Parse(sentryOptionsTextAsset.bytes);
-            return FromJson(jsonDocument.RootElement).TryAttachLogger();
-        }
-
-        public void SaveToUnity(string path)
-        {
-            var directory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            using var fileStream = new FileStream(path, FileMode.Create);
-            using var writer = new Utf8JsonWriter(fileStream);
-            WriteTo(writer);
+            return $@"Sentry SDK Options:
+Capture In Editor: {CaptureInEditor}
+Release: {Release}
+Environment: {Environment}
+Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
+";
         }
     }
 
