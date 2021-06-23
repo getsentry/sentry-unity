@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Unity protocol ([#234](https://github.com/getsentry/sentry-unity/pull/234))
+
 ### Fixes
 
 - Setting IsEnvironmentUser to false by default ([#230](https://github.com/getsentry/sentry-unity/pull/230))
