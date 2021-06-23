@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Sentry.Extensibility;
 
 namespace Sentry.Unity
 {
@@ -15,7 +16,10 @@ namespace Sentry.Unity
         public static void Init(Action<SentryUnityOptions> unitySentryOptionsConfigure)
         {
             var unitySentryOptions = new SentryUnityOptions();
+            SentryOptionsUtility.SetDefaults(unitySentryOptions);
+
             unitySentryOptionsConfigure.Invoke(unitySentryOptions);
+
             Init(unitySentryOptions);
         }
 
@@ -24,11 +28,9 @@ namespace Sentry.Unity
         /// </summary>
         /// <param name="unitySentryOptions">The options object.</param>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void Init(SentryUnityOptions unitySentryOptions)
+        internal static void Init(SentryUnityOptions unitySentryOptions)
         {
-            unitySentryOptions.TryAttachLogger();
-
-            SentryOptionsUtility.SetDefaults(unitySentryOptions);
+            unitySentryOptions.DiagnosticLogger?.LogDebug(unitySentryOptions.ToString());
 
             SentrySdk.Init(unitySentryOptions);
             SentrySdk.StartSession();
