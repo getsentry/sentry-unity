@@ -200,9 +200,6 @@ namespace Sentry.Unity.Editor
                 using var resourceStream = GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
                 resourceStream.CopyTo(fileStream);
 
-                fileStream.Close();
-                resourceStream.Flush();
-
                 AssetDatabase.ImportAsset(LinkXmlPath);
             }
         }
