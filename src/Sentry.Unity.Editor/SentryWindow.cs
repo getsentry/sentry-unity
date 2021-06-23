@@ -29,13 +29,10 @@ namespace Sentry.Unity.Editor
 
             CheckForAndConvertJsonConfig();
             Options = LoadOptions();
-
-            Debug.Log("options finished");
         }
 
         private ScriptableSentryUnityOptions LoadOptions()
         {
-            Debug.Log("options");
             var options = AssetDatabase.LoadAssetAtPath(
                 ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName), typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
 
@@ -50,7 +47,6 @@ namespace Sentry.Unity.Editor
 
         private void CheckForAndConvertJsonConfig()
         {
-            Debug.Log("json");
             var sentryOptionsTextAsset = AssetDatabase.LoadAssetAtPath(JsonSentryUnityOptions.GetConfigPath(), typeof(TextAsset)) as TextAsset;
             if (sentryOptionsTextAsset == null)
             {
@@ -65,8 +61,6 @@ namespace Sentry.Unity.Editor
             AssetDatabase.SaveAssets();
 
             AssetDatabase.DeleteAsset(JsonSentryUnityOptions.GetConfigPath());
-
-            Debug.Log("json finished");
         }
 
         private ScriptableSentryUnityOptions CreateScriptableSentryUnityOptions()
@@ -148,10 +142,10 @@ namespace Sentry.Unity.Editor
 
         private void OnLostFocus()
         {
-            // Validate();
-            //
-            // EditorUtility.SetDirty(Options);
-            // AssetDatabase.SaveAssets();
+            Validate();
+
+            EditorUtility.SetDirty(Options);
+            AssetDatabase.SaveAssets();
         }
 
         private void Validate()
@@ -205,7 +199,6 @@ namespace Sentry.Unity.Editor
         /// </summary>
         private void CopyLinkXmlToPlugins()
         {
-            Debug.Log("xml");
             if (!AssetDatabase.IsValidFolder("Assets/Plugins"))
             {
                 AssetDatabase.CreateFolder("Assets", "Plugins");
@@ -223,8 +216,6 @@ namespace Sentry.Unity.Editor
 
                 AssetDatabase.ImportAsset(LinkXmlPath);
             }
-
-            Debug.Log("xml finished");
         }
 
         private void SetTitle()
