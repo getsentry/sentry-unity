@@ -33,6 +33,11 @@ namespace Sentry.Unity.Tests.Stubs
         {
         }
 
+        public void CaptureSession(SessionUpdate sessionUpdate)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task FlushAsync(TimeSpan timeout)
         {
             throw new NotImplementedException();
@@ -82,6 +87,16 @@ namespace Sentry.Unity.Tests.Stubs
         }
 
         public SentryTraceHeader? GetTraceHeader()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void StartSession()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void EndSession(SessionEndStatus status = SessionEndStatus.Exited)
         {
             throw new NotImplementedException();
         }

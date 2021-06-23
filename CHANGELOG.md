@@ -5,6 +5,7 @@
 ### Features
 
 - Sentry config is now a scriptable object ([#220](https://github.com/getsentry/sentry-unity/pull/220))
+- Unity protocol ([#234](https://github.com/getsentry/sentry-unity/pull/234))
 
 ### Fixes
 

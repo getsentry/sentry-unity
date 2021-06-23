@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,6 +14,7 @@ namespace Sentry.Unity.Integrations
         string ProductName { get; }
         string Version { get; }
         string PersistentDataPath { get; }
+        bool IsMainThread { get; }
     }
 
     internal sealed class ApplicationAdapter : IApplication
@@ -38,6 +40,8 @@ namespace Sentry.Unity.Integrations
         public string Version => Application.version;
 
         public string PersistentDataPath => Application.persistentDataPath;
+
+        public bool IsMainThread => Thread.CurrentThread.ManagedThreadId == 1;
 
         private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
             => LogMessageReceived?.Invoke(condition, stackTrace, type);
