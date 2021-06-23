@@ -102,6 +102,21 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        public void Process_StartTimeOnMainThread_IsNotNull()
+        {
+            // arrange
+            var application = new TestApplication(isMainThread: true);
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), application);
+            var sentryEvent = new SentryEvent();
+
+            // act
+            unityEventProcessor.Process(sentryEvent);
+
+            // assert
+            Assert.IsNotNull(sentryEvent.Contexts.App.StartTime);
+        }
+
+        [Test]
         public void Process_Tags_Set()
         {
             // arrange

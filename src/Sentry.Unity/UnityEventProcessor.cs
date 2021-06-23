@@ -50,11 +50,14 @@ namespace Sentry.Unity
             sdk.Version = UnitySdkInfo.Version;
         }
 
-        private static void PopulateApp(App app)
+        private void PopulateApp(App app)
         {
-            app.StartTime = DateTimeOffset.UtcNow
-                // NOTE: Time API requires main thread
-                .AddSeconds(-Time.realtimeSinceStartup);
+            if (_application.IsMainThread)
+            {
+                app.StartTime = DateTimeOffset.UtcNow
+                    // NOTE: Time API requires main thread
+                    .AddSeconds(-Time.realtimeSinceStartup);
+            }
 
             app.BuildType = Debug.isDebugBuild ? "debug" : "release";
         }
