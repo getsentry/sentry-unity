@@ -77,10 +77,6 @@ namespace Sentry.Unity
             device.SupportsVibration = SystemInfo.supportsVibration;
             device.Name = SystemInfo.deviceName;
 
-            // This is the approximate amount of system memory in megabytes.
-            // This function is not supported on Windows Store Apps and will always return 0.
-            device.MemorySize = SystemInfo.systemMemorySize;
-
             // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
             device.Simulator = _application.IsEditor ? true : null;
             device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? SystemInfo.deviceUniqueIdentifier : null;
