@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- Un-embedding the link.xml to fix code stripping ([#237]/(https://github.com/getsentry/sentry-unity/pull/237))
 - Setting IsEnvironmentUser to false by default ([#230](https://github.com/getsentry/sentry-unity/pull/230))
 
 ## 0.2.0
