@@ -76,7 +76,7 @@ namespace Sentry.Unity
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new ReleaseHealthIntegration());
+            this.AddIntegration(new SessionIntegration());
         }
 
         public override string ToString()
