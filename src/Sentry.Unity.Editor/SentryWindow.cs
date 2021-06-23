@@ -181,7 +181,7 @@ namespace Sentry.Unity.Editor
         }
 
         /// <summary>
-        /// Creates Sentry folder 'Plugins/Sentry' used to store built time relevant data like link.xml
+        /// Creates Sentry folder 'Plugins/Sentry' and copies the link.xml into it
         /// </summary>
         private void CopyLinkXmlToPlugins()
         {
@@ -194,14 +194,17 @@ namespace Sentry.Unity.Editor
                 AssetDatabase.CreateFolder("Assets/Plugins", "Sentry");
             }
 
-            using var fileStream = File.Create(LinkXmlPath);
-            using var resourceStream = GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
-            resourceStream.CopyTo(fileStream);
+            if (!AssetDatabase.IsValidFolder(LinkXmlPath))
+            {
+                using var fileStream = File.Create(LinkXmlPath);
+                using var resourceStream = GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
+                resourceStream.CopyTo(fileStream);
 
-            fileStream.Close();
-            resourceStream.Flush();
+                fileStream.Close();
+                resourceStream.Flush();
 
-            AssetDatabase.ImportAsset(LinkXmlPath);
+                AssetDatabase.ImportAsset(LinkXmlPath);
+            }
         }
     }
 
