@@ -30,13 +30,20 @@ namespace Sentry.Unity
 
         public SentryEvent Process(SentryEvent @event)
         {
-            PopulateSdk(@event.Sdk);
-            PopulateApp(@event.Contexts.App);
-            PopulateOperatingSystem(@event.Contexts.OperatingSystem);
-            PopulateDevice(@event.Contexts.Device);
-            PopulateGpu(@event.Contexts.Gpu);
-            PopulateUnity((Protocol.Unity)@event.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity()));
-            PopulateTags(@event);
+            try
+            {
+                PopulateSdk(@event.Sdk);
+                PopulateApp(@event.Contexts.App);
+                PopulateOperatingSystem(@event.Contexts.OperatingSystem);
+                PopulateDevice(@event.Contexts.Device);
+                PopulateGpu(@event.Contexts.Gpu);
+                PopulateUnity((Protocol.Unity)@event.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity()));
+                PopulateTags(@event);
+            }
+            catch (Exception ex)
+            {
+                _sentryOptions.DiagnosticLogger?.LogError("{0} processing failed.", ex, nameof(SentryEvent));
+            }
 
             @event.ServerName = null;
 
