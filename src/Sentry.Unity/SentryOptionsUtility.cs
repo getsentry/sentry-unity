@@ -1,3 +1,4 @@
+using System;
 using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
@@ -11,6 +12,7 @@ namespace Sentry.Unity
             options.Enabled = true;
             options.Dsn = null;
             options.AutoSessionTracking = true;
+            options.AutoSessionTrackingInterval = TimeSpan.FromSeconds(5);
             options.CaptureInEditor = true;
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
             options.AttachStacktrace = false;
@@ -25,7 +27,7 @@ namespace Sentry.Unity
             options.CacheDirectoryPath = application.PersistentDataPath;
 
             options.Debug = true;
-            options.DebugOnlyInEditor = true;
+            options.DebugOnlyInEditor = false;
             options.DiagnosticLevel = SentryLevel.Warning;
 
             TryAttachLogger(options, application);
@@ -45,7 +47,7 @@ namespace Sentry.Unity
             options.EnableOfflineCaching = true;
 
             options.Debug = true;
-            options.DebugOnlyInEditor = true;
+            options.DebugOnlyInEditor = false;
             options.DiagnosticLevel = SentryLevel.Warning;
         }
 
