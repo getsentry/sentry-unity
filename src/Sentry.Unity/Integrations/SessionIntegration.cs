@@ -9,16 +9,8 @@ namespace Sentry.Unity.Integrations
 {
     public class SessionIntegration : ISdkIntegration
     {
-        private readonly ISceneManager _sceneManager;
-
-        public SessionIntegration() : this(SceneManagerAdapter.Instance)
-        {
-        }
-
-        internal SessionIntegration(ISceneManager sceneManager)
-        {
-            _sceneManager = sceneManager;
-        }
+        public SessionIntegration()
+        { }
 
         public void Register(IHub hub, SentryOptions options)
         {
@@ -29,23 +21,26 @@ namespace Sentry.Unity.Integrations
 
             options.DiagnosticLogger?.LogDebug("Registering Session integration.");
 
-            _sceneManager.ActiveSceneChanged += CreateFocusListenerGameObject;
-            void CreateFocusListenerGameObject(SceneAdapter fromScene, SceneAdapter toScene)
+            var gameListenerObject = new GameObject("SentryListener");
+            gameListenerObject.hideFlags = HideFlags.HideAndDontSave;
+
+            var gameListener = gameListenerObject.AddComponent<ApplicationPauseListener>();
+            gameListener.ApplicationResuming += () =>
             {
-                var gameListenerObject = new GameObject("SentryListener");
-                gameListenerObject.hideFlags = HideFlags.HideInHierarchy;
+                Debug.Log("resuming");
+                hub.ResumeSession();
+            };
 
-                var gameListener = gameListenerObject.AddComponent<ApplicationPauseListener>();
-                gameListener.ApplicationResuming += () =>
-                {
-                    hub.ResumeSession();
-                };
+            gameListener.ApplicationPausing += () =>
+            {
+                Debug.Log("pausing");
+                hub.PauseSession();
+            };
 
-                gameListener.ApplicationPausing += () =>
-                {
-                    hub.PauseSession();
-                };
-            }
+            gameListener.ApplicationQuitting += () =>
+            {
+                Debug.Log("quitting");
+            };
         }
     }
 }

@@ -25,6 +25,8 @@ namespace Sentry.Unity
         /// </summary>
         public event Action? ApplicationPausing;
 
+        public event Action? ApplicationQuitting;
+
         /// <summary>
         /// To receive Leaving/Resuming events on Android.
         /// <remarks>
@@ -71,6 +73,22 @@ namespace Sentry.Unity
             {
                 ApplicationPausing?.Invoke();
             }
+        }
+
+        private void OnApplicationQuit()
+        {
+            ApplicationQuitting?.Invoke();
+            Destroy(gameObject);
+        }
+
+        private void Awake()
+        {
+            Debug.Log("Listener created");
+        }
+
+        private void OnDestroy()
+        {
+            Debug.Log("Listener destroyed");
         }
     }
 }
