@@ -55,7 +55,7 @@ namespace Sentry.Unity
             {
                 ApplicationPausing?.Invoke();
             }
-            else if (!pauseStatus)
+            else
             {
                 ApplicationResuming?.Invoke();
             }
@@ -83,7 +83,7 @@ namespace Sentry.Unity
             {
                 ApplicationResuming?.Invoke();
             }
-            else if (!hasFocus)
+            else
             {
                 ApplicationPausing?.Invoke();
             }
