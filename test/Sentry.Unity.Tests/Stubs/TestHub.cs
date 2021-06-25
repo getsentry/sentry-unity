@@ -35,20 +35,16 @@ namespace Sentry.Unity.Tests.Stubs
 
         public void CaptureSession(SessionUpdate sessionUpdate)
         {
-            throw new NotImplementedException();
         }
 
         public Task FlushAsync(TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public void ConfigureScope(Action<Scope> configureScope) => _configureScopeCalls.Add(configureScope);
 
-        public Task ConfigureScopeAsync(Func<Scope, Task> configureScope)
-        {
-            throw new NotImplementedException();
-        }
+        public Task ConfigureScopeAsync(Func<Scope, Task> configureScope) => Task.CompletedTask;
 
         public void BindClient(ISentryClient client)
         {
@@ -93,12 +89,22 @@ namespace Sentry.Unity.Tests.Stubs
 
         public void StartSession()
         {
-            throw new NotImplementedException();
+            // TODO: test sessions
+        }
+
+        public void PauseSession()
+        {
+            // TODO: test sessions
+        }
+
+        public void ResumeSession()
+        {
+            // TODO: test sessions
         }
 
         public void EndSession(SessionEndStatus status = SessionEndStatus.Exited)
         {
-            throw new NotImplementedException();
+            // TODO: test sessions
         }
     }
 }
