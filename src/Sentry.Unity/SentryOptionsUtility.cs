@@ -25,8 +25,8 @@ namespace Sentry.Unity
 
             options.CacheDirectoryPath = application.PersistentDataPath;
 
-            options.Debug = true;
-            options.DebugOnlyInEditor = true;
+            options.Debug = false;
+            options.DebugOnlyInEditor = false;
             options.DiagnosticLevel = SentryLevel.Warning;
 
             TryAttachLogger(options, application);
@@ -47,7 +47,7 @@ namespace Sentry.Unity
 
             options.Debug = true;
             options.DebugOnlyInEditor = true;
-            options.DiagnosticLevel = SentryLevel.Warning;
+            options.DiagnosticLevel = SentryLevel.Debug;
         }
 
         private static string Release(IApplication application) =>
