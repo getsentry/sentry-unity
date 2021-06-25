@@ -5,7 +5,6 @@
 ### Features
 
 - Sentry config is now a scriptable object ([#220](https://github.com/getsentry/sentry-unity/pull/220))
-- Release Health through Sessions ([#223](https://github.com/getsentry/sentry-unity/pull/223))
 - Unity protocol ([#234](https://github.com/getsentry/sentry-unity/pull/234))
 - Release health integration & Event-listener ([#225](https://github.com/getsentry/sentry-unity/pull/225))
 

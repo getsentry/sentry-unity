@@ -12,7 +12,6 @@ namespace Sentry.Unity
             options.Enabled = true;
             options.Dsn = null;
             options.AutoSessionTracking = true;
-            options.AutoSessionTrackingInterval = TimeSpan.FromSeconds(5);
             options.CaptureInEditor = true;
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
             options.AttachStacktrace = false;
