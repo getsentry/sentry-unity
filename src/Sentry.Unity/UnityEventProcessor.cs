@@ -170,7 +170,7 @@ namespace Sentry.Unity
 
         private void PopulateTags(SentryEvent @event)
         {
-            @event.SetTag("unity.gpu.supports_instancing", SystemInfo.supportsInstancing.ToString());
+            @event.SetTag("unity.gpu.supports_instancing", SystemInfo.supportsInstancing ? "true" : "false");
             @event.SetTag("unity.device.device_type", SystemInfo.deviceType.ToString());
             @event.SetTag("unity.install_mode", Application.installMode.ToString());
 
