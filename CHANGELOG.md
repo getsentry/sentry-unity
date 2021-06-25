@@ -10,6 +10,7 @@
 
 ### Fixes
 
+- Default options values ([#241](https://github.com/getsentry/sentry-unity/pull/241))
 - Un-embedding the link.xml to fix code stripping ([#237]/(https://github.com/getsentry/sentry-unity/pull/237))
 - Setting IsEnvironmentUser to false by default ([#230](https://github.com/getsentry/sentry-unity/pull/230))
 
