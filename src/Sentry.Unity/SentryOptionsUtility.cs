@@ -1,6 +1,5 @@
-using Sentry.Extensibility;
+using System;
 using Sentry.Unity.Integrations;
-using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -11,9 +10,10 @@ namespace Sentry.Unity
             application ??= ApplicationAdapter.Instance;
 
             options.Enabled = true;
+
+            options.AutoSessionTracking = true;
             options.CaptureInEditor = true;
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
-            options.AttachStacktrace = false;
 
             options.StackTraceMode = StackTraceMode.Original;
             options.IsEnvironmentUser = false;
