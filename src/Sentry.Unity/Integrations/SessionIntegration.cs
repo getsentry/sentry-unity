@@ -1,17 +1,11 @@
-using System;
 using Sentry.Extensibility;
-using Sentry.Infrastructure;
 using Sentry.Integrations;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Integrations
 {
     public class SessionIntegration : ISdkIntegration
     {
-        public SessionIntegration()
-        { }
-
         public void Register(IHub hub, SentryOptions options)
         {
             if (!options.AutoSessionTracking)
@@ -21,25 +15,18 @@ namespace Sentry.Unity.Integrations
 
             options.DiagnosticLogger?.LogDebug("Registering Session integration.");
 
-            var gameListenerObject = new GameObject("SentryListener");
-            gameListenerObject.hideFlags = HideFlags.HideAndDontSave;
-
+            // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
+            var gameListenerObject = new GameObject("SentryListener") {hideFlags = HideFlags.HideAndDontSave};
             var gameListener = gameListenerObject.AddComponent<ApplicationPauseListener>();
             gameListener.ApplicationResuming += () =>
             {
-                Debug.Log("resuming");
+                options.DiagnosticLogger?.LogDebug("Resuming session.");
                 hub.ResumeSession();
             };
-
             gameListener.ApplicationPausing += () =>
             {
-                Debug.Log("pausing");
+                options.DiagnosticLogger?.LogDebug("Pausing session.");
                 hub.PauseSession();
-            };
-
-            gameListener.ApplicationQuitting += () =>
-            {
-                Debug.Log("quitting");
             };
         }
     }

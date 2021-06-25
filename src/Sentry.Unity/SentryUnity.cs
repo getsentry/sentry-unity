@@ -33,7 +33,6 @@ namespace Sentry.Unity
             unitySentryOptions.DiagnosticLogger?.LogDebug(unitySentryOptions.ToString());
 
             SentrySdk.Init(unitySentryOptions);
-            SentrySdk.StartSession();
         }
     }
 }

@@ -25,7 +25,9 @@ namespace Sentry.Unity
         /// </summary>
         public event Action? ApplicationPausing;
 
-        public event Action? ApplicationQuitting;
+        // OnApplicationPause and OnApplicationFocus get called during startup and would fire false resume events
+        private bool _pauseInit;
+        private bool _focusInit;
 
         /// <summary>
         /// To receive Leaving/Resuming events on Android.
@@ -38,6 +40,12 @@ namespace Sentry.Unity
         /// </summary>
         private void OnApplicationPause(bool pauseStatus)
         {
+            if (!_pauseInit)
+            {
+                _pauseInit = true;
+                return;
+            }
+
             if (Application.platform != RuntimePlatform.Android)
             {
                 return;
@@ -47,7 +55,7 @@ namespace Sentry.Unity
             {
                 ApplicationPausing?.Invoke();
             }
-            else
+            else if (!pauseStatus)
             {
                 ApplicationResuming?.Invoke();
             }
@@ -59,6 +67,12 @@ namespace Sentry.Unity
         /// <param name="hasFocus"></param>
         private void OnApplicationFocus(bool hasFocus)
         {
+            if (!_focusInit)
+            {
+                _focusInit = true;
+                return;
+            }
+
             // To avoid event duplication on Android since the pause event will be handled via OnApplicationPause
             if (Application.platform == RuntimePlatform.Android)
             {
@@ -69,26 +83,16 @@ namespace Sentry.Unity
             {
                 ApplicationResuming?.Invoke();
             }
-            else
+            else if (!hasFocus)
             {
                 ApplicationPausing?.Invoke();
             }
         }
 
+        // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
         private void OnApplicationQuit()
         {
-            ApplicationQuitting?.Invoke();
             Destroy(gameObject);
-        }
-
-        private void Awake()
-        {
-            Debug.Log("Listener created");
-        }
-
-        private void OnDestroy()
-        {
-            Debug.Log("Listener destroyed");
         }
     }
 }
