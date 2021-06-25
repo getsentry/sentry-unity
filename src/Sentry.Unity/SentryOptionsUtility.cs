@@ -27,7 +27,7 @@ namespace Sentry.Unity
 
             options.Debug = false;
             options.DebugOnlyInEditor = false;
-            options.DiagnosticLevel = SentryLevel.Warning;
+            options.DiagnosticLevel = SentryLevel.Debug;
 
             TryAttachLogger(options, application);
         }
@@ -47,7 +47,7 @@ namespace Sentry.Unity
 
             options.Debug = true;
             options.DebugOnlyInEditor = true;
-            options.DiagnosticLevel = SentryLevel.Debug;
+            options.DiagnosticLevel = SentryLevel.Warning;
         }
 
         private static string Release(IApplication application) =>
