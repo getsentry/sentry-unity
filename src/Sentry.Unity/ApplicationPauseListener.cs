@@ -25,9 +25,8 @@ namespace Sentry.Unity
         /// </summary>
         public event Action? ApplicationPausing;
 
-        // OnApplicationPause and OnApplicationFocus get called during startup and would fire false resume events
-        private bool _pauseInit;
-        private bool _focusInit;
+        // Keeping internal track of running state because OnApplicationPause and OnApplicationFocus get called during startup and would fire false resume events
+        private bool _isRunning = true;
 
         /// <summary>
         /// To receive Leaving/Resuming events on Android.
@@ -40,23 +39,19 @@ namespace Sentry.Unity
         /// </summary>
         private void OnApplicationPause(bool pauseStatus)
         {
-            if (!_pauseInit)
-            {
-                _pauseInit = true;
-                return;
-            }
-
             if (Application.platform != RuntimePlatform.Android)
             {
                 return;
             }
 
-            if (pauseStatus)
+            if (pauseStatus && _isRunning)
             {
+                _isRunning = false;
                 ApplicationPausing?.Invoke();
             }
-            else
+            else if (!pauseStatus && !_isRunning)
             {
+                _isRunning = true;
                 ApplicationResuming?.Invoke();
             }
         }
@@ -67,24 +62,20 @@ namespace Sentry.Unity
         /// <param name="hasFocus"></param>
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (!_focusInit)
-            {
-                _focusInit = true;
-                return;
-            }
-
             // To avoid event duplication on Android since the pause event will be handled via OnApplicationPause
             if (Application.platform == RuntimePlatform.Android)
             {
                 return;
             }
 
-            if (hasFocus)
+            if (hasFocus && !_isRunning)
             {
+                _isRunning = true;
                 ApplicationResuming?.Invoke();
             }
-            else
+            else if (!hasFocus && _isRunning)
             {
+                _isRunning = false;
                 ApplicationPausing?.Invoke();
             }
         }
