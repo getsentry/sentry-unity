@@ -35,7 +35,7 @@ namespace Sentry.Unity
             scriptableOptions.Dsn = options.Dsn;
             scriptableOptions.CaptureInEditor = options.CaptureInEditor;
             scriptableOptions.TracesSampleRate = options.TracesSampleRate;
-            scriptableOptions.AutoSessionTrackingInterval = options.AutoSessionTrackingInterval;
+            scriptableOptions.AutoSessionTrackingInterval = (int) options.AutoSessionTrackingInterval.TotalMilliseconds;
             scriptableOptions.AutoSessionTracking = options.AutoSessionTracking;
 
             scriptableOptions.AttachStacktrace = options.AttachStacktrace;
@@ -45,9 +45,9 @@ namespace Sentry.Unity
             scriptableOptions.IsEnvironmentUser = options.IsEnvironmentUser;
 
             scriptableOptions.MaxCacheItems = options.MaxCacheItems;
-            scriptableOptions.InitCacheFlushTimeout = options.InitCacheFlushTimeout;
+            scriptableOptions.InitCacheFlushTimeout = (int) options.InitCacheFlushTimeout.TotalMilliseconds;
             scriptableOptions.SampleRate = options.SampleRate;
-            scriptableOptions.ShutdownTimeout = options.ShutdownTimeout;
+            scriptableOptions.ShutdownTimeout = (int) options.ShutdownTimeout.TotalMilliseconds;
             scriptableOptions.MaxQueueItems = options.MaxQueueItems;
 
             // Config window specifics

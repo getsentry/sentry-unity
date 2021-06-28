@@ -13,7 +13,11 @@ namespace Sentry.Unity.Editor
 
         [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
-            => (SentryWindow)GetWindow(typeof(SentryWindow));
+        {
+            var window = (SentryWindow)GetWindow(typeof(SentryWindow));
+            window.minSize = new Vector2(335, 350);
+            return window;
+        }
 
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
 
@@ -36,7 +40,8 @@ namespace Sentry.Unity.Editor
         private ScriptableSentryUnityOptions LoadOptions()
         {
             var options = AssetDatabase.LoadAssetAtPath(
-                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName), typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
+                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName),
+                typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
 
             if (options is null)
             {
@@ -61,7 +66,8 @@ namespace Sentry.Unity.Editor
             var scriptableOptions = CreateInstance<ScriptableSentryUnityOptions>();
             SentryOptionsUtility.SetDefaults(scriptableOptions);
 
-            AssetDatabase.CreateAsset(scriptableOptions, ScriptableSentryUnityOptions.GetConfigPath(notDefaultConfigName));
+            AssetDatabase.CreateAsset(scriptableOptions,
+                ScriptableSentryUnityOptions.GetConfigPath(notDefaultConfigName));
             AssetDatabase.SaveAssets();
 
             return scriptableOptions;
@@ -69,7 +75,8 @@ namespace Sentry.Unity.Editor
 
         private void CheckForAndConvertJsonConfig()
         {
-            var sentryOptionsTextAsset = AssetDatabase.LoadAssetAtPath(JsonSentryUnityOptions.GetConfigPath(), typeof(TextAsset)) as TextAsset;
+            var sentryOptionsTextAsset =
+                AssetDatabase.LoadAssetAtPath(JsonSentryUnityOptions.GetConfigPath(), typeof(TextAsset)) as TextAsset;
             if (sentryOptionsTextAsset is null)
             {
                 // Json config not found, nothing to do.
@@ -169,11 +176,10 @@ namespace Sentry.Unity.Editor
                                                         "when it's closed."),
                 Options.AutoSessionTracking);
 
-            var autoSessionTrackingInterval = EditorGUILayout.DoubleField(
+            Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
                 new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
                                                        "before it's considered ended."),
-                Options.AutoSessionTrackingInterval.TotalMilliseconds);
-            Options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(autoSessionTrackingInterval);
+                Options.AutoSessionTrackingInterval);
 
             EditorGUILayout.EndToggleGroup();
         }
@@ -223,8 +229,8 @@ namespace Sentry.Unity.Editor
 
             Options.IsEnvironmentUser = EditorGUILayout.Toggle(
                 new GUIContent("Auto Set UserName", "Whether to report the 'Environment.UserName' as " +
-                                                            "the User affected in the event. Should be disabled for " +
-                                                            "Android and iOS."),
+                                                    "the User affected in the event. Should be disabled for " +
+                                                    "Android and iOS."),
                 Options.IsEnvironmentUser);
 
             Options.ServerNameOverride = EditorGUILayout.TextField(
@@ -244,8 +250,8 @@ namespace Sentry.Unity.Editor
                 Options.MaxBreadcrumbs);
 
             Options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
-                new GUIContent("Report Assemblies","Whether or not to include referenced assemblies " +
-                                                   "in each event sent to sentry."),
+                new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
+                                                         "in each event sent to sentry."),
                 Options.ReportAssembliesMode);
         }
 
@@ -260,11 +266,10 @@ namespace Sentry.Unity.Editor
                                                   "maintain the integrity of your release health stats.\nDefault: 30"),
                 Options.MaxCacheItems);
 
-            var initCacheFlushTimeout = EditorGUILayout.DoubleField(
+            Options.InitCacheFlushTimeout = EditorGUILayout.IntField(
                 new GUIContent("Init Flush Timeout [ms]", "The timeout that limits how long the SDK " +
                                                           "will attempt to flush existing cache during initialization."),
-                Options.InitCacheFlushTimeout.TotalMilliseconds);
-            Options.InitCacheFlushTimeout = TimeSpan.FromMilliseconds(initCacheFlushTimeout);
+                Options.InitCacheFlushTimeout);
 
             EditorGUILayout.EndToggleGroup();
 
@@ -288,11 +293,10 @@ namespace Sentry.Unity.Editor
                 Options.SampleRate = sampleRate;
             }
 
-            var shutDownTimeout = EditorGUILayout.DoubleField(
+            Options.ShutdownTimeout = EditorGUILayout.IntField(
                 new GUIContent("Shut Down Timeout [ms]", "How many seconds to wait before shutting down to " +
-                                                    "give Sentry time to send events from the background queue."),
-                Options.ShutdownTimeout.TotalMilliseconds);
-            Options.ShutdownTimeout = TimeSpan.FromMilliseconds(shutDownTimeout);
+                                                         "give Sentry time to send events from the background queue."),
+                Options.ShutdownTimeout);
 
             Options.MaxQueueItems = EditorGUILayout.IntField(
                 new GUIContent("Max Queue Items", "The maximum number of events to keep while the " +
@@ -400,7 +404,8 @@ namespace Sentry.Unity.Editor
             var texture = new Texture2D(16, 16);
             using var memStream = new MemoryStream();
             using var stream = GetType().Assembly
-                .GetManifestResourceStream($"Sentry.Unity.Editor.Resources.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
+                .GetManifestResourceStream(
+                    $"Sentry.Unity.Editor.Resources.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
             stream.CopyTo(memStream);
             stream.Flush();
             memStream.Position = 0;

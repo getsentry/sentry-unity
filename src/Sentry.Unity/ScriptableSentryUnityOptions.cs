@@ -27,8 +27,9 @@ namespace Sentry.Unity
         [field: SerializeField] internal string? Dsn { get; set; } = string.Empty;
         [field: SerializeField] internal bool CaptureInEditor { get; set; }
         [field: SerializeField] internal double TracesSampleRate { get; set; }
-        [field: SerializeField] internal TimeSpan AutoSessionTrackingInterval { get; set; }
         [field: SerializeField] internal bool AutoSessionTracking { get; set; }
+        [field: SerializeField] internal int AutoSessionTrackingInterval { get; set; }
+
 
         [field: SerializeField] internal string ReleaseOverride { get; set; } = string.Empty;
         [field: SerializeField] internal string EnvironmentOverride { get; set; } = string.Empty;
@@ -41,9 +42,9 @@ namespace Sentry.Unity
 
         [field: SerializeField] internal bool EnableOfflineCaching { get; set; }
         [field: SerializeField] internal int MaxCacheItems { get; set; }
-        [field: SerializeField] internal TimeSpan InitCacheFlushTimeout { get; set; }
+        [field: SerializeField] internal int InitCacheFlushTimeout { get; set; }
         [field: SerializeField] internal float? SampleRate { get; set; }
-        [field: SerializeField] internal TimeSpan ShutdownTimeout { get; set; }
+        [field: SerializeField] internal int ShutdownTimeout { get; set; }
         [field: SerializeField] internal int MaxQueueItems { get; set; }
 
         [field: SerializeField] internal bool Debug { get; set; }
@@ -79,7 +80,7 @@ namespace Sentry.Unity
             options.Dsn = scriptableOptions.Dsn;
             options.CaptureInEditor = scriptableOptions.CaptureInEditor;
             options.TracesSampleRate = scriptableOptions.TracesSampleRate;
-            options.AutoSessionTrackingInterval = scriptableOptions.AutoSessionTrackingInterval;
+            options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval);
             options.AutoSessionTracking = scriptableOptions.AutoSessionTracking;
 
             options.AttachStacktrace = scriptableOptions.AttachStacktrace;
@@ -89,9 +90,9 @@ namespace Sentry.Unity
             options.IsEnvironmentUser = scriptableOptions.IsEnvironmentUser;
 
             options.MaxCacheItems = scriptableOptions.MaxCacheItems;
-            options.InitCacheFlushTimeout = scriptableOptions.InitCacheFlushTimeout;
+            options.InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout);
             options.SampleRate = scriptableOptions.SampleRate;
-            options.ShutdownTimeout = scriptableOptions.ShutdownTimeout;
+            options.ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout);
             options.MaxQueueItems = scriptableOptions.MaxQueueItems;
 
             if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))
