@@ -24,7 +24,7 @@ namespace Sentry.Unity
 
         [field: SerializeField] internal bool Enabled { get; set; }
 
-        [field: SerializeField] internal string? Dsn { get; set; } = string.Empty;
+        [field: SerializeField] internal string? Dsn { get; set; }
         [field: SerializeField] internal bool CaptureInEditor { get; set; }
         [field: SerializeField] internal double TracesSampleRate { get; set; }
         [field: SerializeField] internal bool AutoSessionTracking { get; set; }
