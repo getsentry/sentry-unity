@@ -158,6 +158,24 @@ namespace Sentry.Unity.Editor
             {
                 Options.TracesSampleRate = (double)traceSampleRate;
             }
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Session Tracking", "Whether the SDK should start a session " +
+                                                        "automatically when it's initialized and end the session " +
+                                                        "when it's closed."),
+                Options.AutoSessionTracking);
+
+            var autoSessionTrackingInterval = EditorGUILayout.DoubleField(
+                new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
+                                                       "before it's considered ended."),
+                Options.AutoSessionTrackingInterval.TotalMilliseconds);
+            Options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(autoSessionTrackingInterval);
+
+            EditorGUILayout.EndToggleGroup();
         }
 
         private void DisplayEnrichment()
