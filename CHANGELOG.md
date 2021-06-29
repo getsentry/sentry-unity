@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Logger now attaching again ([#244](https://github.com/getsentry/sentry-unity/pull/244))
+
 ## 0.3.0
 
 ### Features
