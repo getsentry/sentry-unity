@@ -13,7 +13,7 @@ namespace Sentry.Unity.Tests
 
             var gameObject = new GameObject("PauseTest");
             var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication {Platform = RuntimePlatform.Android};
+            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
             listener.ApplicationPausing += () => wasPausingCalled = true;
 
             listener.OnApplicationPause(true);
@@ -28,7 +28,7 @@ namespace Sentry.Unity.Tests
 
             var gameObject = new GameObject("PauseTest");
             var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication {Platform = RuntimePlatform.IPhonePlayer};
+            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
             listener.ApplicationPausing += () => wasPausingCalled = true;
 
             listener.OnApplicationPause(true);
@@ -43,7 +43,7 @@ namespace Sentry.Unity.Tests
 
             var gameObject = new GameObject("PauseTest");
             var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication {Platform = RuntimePlatform.Android};
+            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
             listener.ApplicationPausing += () => pauseEventTriggerCounter++;
 
             listener.OnApplicationPause(true);
@@ -60,7 +60,7 @@ namespace Sentry.Unity.Tests
 
             var gameObject = new GameObject("PauseTest");
             var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication {Platform = RuntimePlatform.Android};
+            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
             listener.ApplicationPausing += () => wasPausingCalled = true;
             listener.ApplicationResuming += () => wasResumingCalled = true;
 
@@ -82,7 +82,7 @@ namespace Sentry.Unity.Tests
 
             var gameObject = new GameObject("PauseTest");
             var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication {Platform = RuntimePlatform.Android};
+            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
             listener.ApplicationPausing += () => wasPausingCalled = true;
 
             listener.OnApplicationFocus(false);
@@ -97,12 +97,28 @@ namespace Sentry.Unity.Tests
 
             var gameObject = new GameObject("PauseTest");
             var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication {Platform = RuntimePlatform.IPhonePlayer};
+            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
             listener.ApplicationPausing += () => wasPausingCalled = true;
 
             listener.OnApplicationFocus(false);
 
             Assert.IsTrue(wasPausingCalled);
+        }
+
+        [Test]
+        public void OnApplicationFocus_NotOnAndroid_ApplicationPausingTriggeredOnlyOnce()
+        {
+            var pauseEventTriggerCounter = 0;
+
+            var gameObject = new GameObject("PauseTest");
+            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
+            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
+            listener.ApplicationPausing += () => pauseEventTriggerCounter++;
+
+            listener.OnApplicationFocus(false);
+            listener.OnApplicationFocus(false);
+
+            Assert.AreEqual(1, pauseEventTriggerCounter);
         }
 
         [Test]
@@ -113,7 +129,7 @@ namespace Sentry.Unity.Tests
 
             var gameObject = new GameObject("PauseTest");
             var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication {Platform = RuntimePlatform.IPhonePlayer};
+            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
             listener.ApplicationPausing += () => wasPausingCalled = true;
             listener.ApplicationResuming += () => wasResumingCalled = true;
 

@@ -1,9 +1,5 @@
-using System;
 using System.Collections;
-using System.Linq;
 using NUnit.Framework;
-using Sentry.Unity.Integrations;
-using Sentry.Unity.Tests.TestBehaviours;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -11,19 +7,21 @@ namespace Sentry.Unity.Tests
 {
     public class SessionIntegrationTests
     {
-            [UnityTest]
-            public IEnumerator SessionIntegration_SentryMonoBehaviourCreated()
+        [UnityTest]
+        public IEnumerator SessionIntegration_Init_SentryMonoBehaviourCreated()
+        {
+            yield return null;
+
+            using var _ = IntegrationTests.InitSentrySdk(o =>
             {
-                yield return null;
+                // o.AutoSessionTracking = true; We expect this to be true by default
+            });
 
-                using var _ = IntegrationTests.InitSentrySdk(o =>
-                {
-                    o.AutoSessionTracking = true;
-                    o.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(10);
-                });
-                var testBehaviour = GameObject.FindObjectOfType<SentryMonoBehaviour>();
+            var sentryGameObject = GameObject.Find("SentryMonoBehaviour");
+            var sentryMonoBehaviour = sentryGameObject.GetComponent<SentryMonoBehaviour>();
 
-                Assert.IsNotNull(testBehaviour);
-            }
+            Assert.IsNotNull(sentryGameObject);
+            Assert.IsNotNull(sentryMonoBehaviour);
+        }
     }
 }
