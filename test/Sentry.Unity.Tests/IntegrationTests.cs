@@ -232,7 +232,7 @@ namespace Sentry.Unity.Tests
             UnitySentryOptionsTests.AssertOptions(expectedOptions, actualOptions!);
         }
 
-        private static IEnumerator SetupSceneCoroutine(string sceneName)
+        internal static IEnumerator SetupSceneCoroutine(string sceneName)
         {
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);
             SceneManager.LoadScene(sceneName);
@@ -244,7 +244,7 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
-        private static IDisposable InitSentrySdk(Action<SentryUnityOptions> configure)
+        internal static IDisposable InitSentrySdk(Action<SentryUnityOptions> configure)
         {
             SentryUnity.Init(options =>
             {
