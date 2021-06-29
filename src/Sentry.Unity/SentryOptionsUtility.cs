@@ -24,8 +24,6 @@ namespace Sentry.Unity
             options.CacheDirectoryPath = application.PersistentDataPath;
 
             options.DebugOnlyInEditor = false;
-
-            TryAttachLogger(options, application);
         }
 
         public static void SetDefaults(ScriptableSentryUnityOptions options)
@@ -54,8 +52,10 @@ namespace Sentry.Unity
 
         private static string Environment(IApplication application) => application.IsEditor ? "editor" : "production";
 
-        private static void TryAttachLogger(SentryUnityOptions options, IApplication application)
+        public static void TryAttachLogger(SentryUnityOptions options, IApplication? application = null)
         {
+            application ??= ApplicationAdapter.Instance;
+
             if (options.DiagnosticLogger is null
                 && options.Debug
                 && (!options.DebugOnlyInEditor || application.IsEditor))
