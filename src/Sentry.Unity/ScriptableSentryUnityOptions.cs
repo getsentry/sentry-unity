@@ -80,8 +80,8 @@ namespace Sentry.Unity
             options.Dsn = scriptableOptions.Dsn;
             options.CaptureInEditor = scriptableOptions.CaptureInEditor;
             options.TracesSampleRate = scriptableOptions.TracesSampleRate;
-            options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval);
             options.AutoSessionTracking = scriptableOptions.AutoSessionTracking;
+            options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval);
 
             options.AttachStacktrace = scriptableOptions.AttachStacktrace;
             options.MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs;
