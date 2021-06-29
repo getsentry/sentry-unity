@@ -353,7 +353,7 @@ namespace Sentry.Unity.Editor
             ValidateDsn();
         }
 
-        private void ValidateDsn()
+        internal void ValidateDsn()
         {
             if (string.IsNullOrWhiteSpace(Options.Dsn))
             {
