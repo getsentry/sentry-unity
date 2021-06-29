@@ -17,7 +17,7 @@ namespace Sentry.Unity.Integrations
 
             // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
             var gameListenerObject = new GameObject("SentryListener") {hideFlags = HideFlags.HideAndDontSave};
-            var gameListener = gameListenerObject.AddComponent<ApplicationPauseListener>();
+            var gameListener = gameListenerObject.AddComponent<SentryMonoBehaviour>();
             gameListener.ApplicationResuming += () =>
             {
                 options.DiagnosticLogger?.LogDebug("Resuming session.");

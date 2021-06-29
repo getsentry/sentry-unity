@@ -1,4 +1,5 @@
 using System;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -7,7 +8,7 @@ namespace Sentry.Unity
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
     [DefaultExecutionOrder(-900)]
-    internal class ApplicationPauseListener : MonoBehaviour
+    internal class SentryMonoBehaviour : MonoBehaviour
     {
         /// <summary>
         /// Hook to receive an event when the application gains focus.
@@ -28,6 +29,17 @@ namespace Sentry.Unity
         // Keeping internal track of running state because OnApplicationPause and OnApplicationFocus get called during startup and would fire false resume events
         private bool _isRunning = true;
 
+        private IApplication? _application;
+        internal IApplication Application
+        {
+            get
+            {
+                _application ??= ApplicationAdapter.Instance;
+                return _application;
+            }
+            set => _application = value;
+        }
+
         /// <summary>
         /// To receive Leaving/Resuming events on Android.
         /// <remarks>
@@ -37,9 +49,9 @@ namespace Sentry.Unity
         /// </remarks>
         /// <seealso href="https://docs.unity3d.com/2019.4/Documentation/ScriptReference/MonoBehaviour.OnApplicationPause.html"/>
         /// </summary>
-        private void OnApplicationPause(bool pauseStatus)
+        internal void OnApplicationPause(bool pauseStatus)
         {
-            if (Application.platform != RuntimePlatform.Android)
+            if (Application.Platform != RuntimePlatform.Android)
             {
                 return;
             }
@@ -60,10 +72,10 @@ namespace Sentry.Unity
         /// To receive Leaving/Resuming events on all platforms except Android.
         /// </summary>
         /// <param name="hasFocus"></param>
-        private void OnApplicationFocus(bool hasFocus)
+        internal void OnApplicationFocus(bool hasFocus)
         {
             // To avoid event duplication on Android since the pause event will be handled via OnApplicationPause
-            if (Application.platform == RuntimePlatform.Android)
+            if (Application.Platform == RuntimePlatform.Android)
             {
                 return;
             }
