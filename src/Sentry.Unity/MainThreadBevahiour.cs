@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
-    // Example of a data storage from main thread.
+    // Example of a main thread data storage
     internal sealed class MainThreadData
     {
         internal int? MainThreadId { get; set; }
