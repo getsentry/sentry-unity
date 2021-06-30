@@ -20,6 +20,7 @@ namespace Sentry.Unity
 
             unitySentryOptionsConfigure.Invoke(unitySentryOptions);
 
+            SentryOptionsUtility.TryAttachLogger(unitySentryOptions);
             Init(unitySentryOptions);
         }
 

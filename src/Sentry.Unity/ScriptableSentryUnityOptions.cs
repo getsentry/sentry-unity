@@ -119,6 +119,7 @@ namespace Sentry.Unity
             options.DebugOnlyInEditor = scriptableOptions.DebugOnlyInEditor;
             options.DiagnosticLevel = scriptableOptions.DiagnosticLevel;
 
+            SentryOptionsUtility.TryAttachLogger(options);
             return options;
         }
     }

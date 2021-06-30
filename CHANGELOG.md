@@ -5,6 +5,12 @@
 ### Features
 
 - New config window ([#243](https://github.com/getsentry/sentry-unity/pull/243))
+### Fixes
+
+- Logger now attaching again ([#244](https://github.com/getsentry/sentry-unity/pull/244))
+## 0.3.1
+
+- No documented changes.
 
 ## 0.3.0
 
