@@ -6,17 +6,38 @@ namespace Sentry.Unity.Tests
 {
     public class SentryMonoBehaviourTests
     {
+        private class Fixture
+        {
+            public SentryMonoBehaviour GetSut(RuntimePlatform platform)
+            {
+                var gameObject = new GameObject("PauseTest");
+                var sentryMonoBehaviour = gameObject.AddComponent<SentryMonoBehaviour>();
+                sentryMonoBehaviour.Application = new TestApplication(platform: platform);
+
+                return sentryMonoBehaviour;
+            }
+        }
+
+        private Fixture _fixture = null!;
+
+
+
+
+        [SetUp]
+        public void SetUp()
+        {
+            _fixture = new Fixture();
+        }
+
         [Test]
         public void OnApplicationPause_OnAndroid_ApplicationPausingTriggered()
         {
             var wasPausingCalled = false;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
-            listener.ApplicationPausing += () => wasPausingCalled = true;
+            var sut = _fixture.GetSut(RuntimePlatform.Android);
+            sut.ApplicationPausing += () => wasPausingCalled = true;
 
-            listener.OnApplicationPause(true);
+            sut.OnApplicationPause(true);
 
             Assert.IsTrue(wasPausingCalled);
         }
@@ -26,12 +47,10 @@ namespace Sentry.Unity.Tests
         {
             var wasPausingCalled = false;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
-            listener.ApplicationPausing += () => wasPausingCalled = true;
+            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
+            sut.ApplicationPausing += () => wasPausingCalled = true;
 
-            listener.OnApplicationPause(true);
+            sut.OnApplicationPause(true);
 
             Assert.IsFalse(wasPausingCalled);
         }
@@ -41,13 +60,11 @@ namespace Sentry.Unity.Tests
         {
             var pauseEventTriggerCounter = 0;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
-            listener.ApplicationPausing += () => pauseEventTriggerCounter++;
+            var sut = _fixture.GetSut(RuntimePlatform.Android);
+            sut.ApplicationPausing += () => pauseEventTriggerCounter++;
 
-            listener.OnApplicationPause(true);
-            listener.OnApplicationPause(true);
+            sut.OnApplicationPause(true);
+            sut.OnApplicationPause(true);
 
             Assert.AreEqual(1, pauseEventTriggerCounter);
         }
@@ -58,18 +75,16 @@ namespace Sentry.Unity.Tests
             var wasPausingCalled = false;
             var wasResumingCalled = false;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
-            listener.ApplicationPausing += () => wasPausingCalled = true;
-            listener.ApplicationResuming += () => wasResumingCalled = true;
+            var sut = _fixture.GetSut(RuntimePlatform.Android);
+            sut.ApplicationPausing += () => wasPausingCalled = true;
+            sut.ApplicationResuming += () => wasResumingCalled = true;
 
-            listener.OnApplicationPause(false);
+            sut.OnApplicationPause(false);
 
             Assert.IsFalse(wasResumingCalled);
 
-            listener.OnApplicationPause(true);
-            listener.OnApplicationPause(false);
+            sut.OnApplicationPause(true);
+            sut.OnApplicationPause(false);
 
             Assert.IsTrue(wasPausingCalled);
             Assert.IsTrue(wasResumingCalled);
@@ -80,12 +95,10 @@ namespace Sentry.Unity.Tests
         {
             var wasPausingCalled = false;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.Android);
-            listener.ApplicationPausing += () => wasPausingCalled = true;
+            var sut = _fixture.GetSut(RuntimePlatform.Android);
+            sut.ApplicationPausing += () => wasPausingCalled = true;
 
-            listener.OnApplicationFocus(false);
+            sut.OnApplicationFocus(false);
 
             Assert.IsFalse(wasPausingCalled);
         }
@@ -95,12 +108,10 @@ namespace Sentry.Unity.Tests
         {
             var wasPausingCalled = false;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
-            listener.ApplicationPausing += () => wasPausingCalled = true;
+            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
+            sut.ApplicationPausing += () => wasPausingCalled = true;
 
-            listener.OnApplicationFocus(false);
+            sut.OnApplicationFocus(false);
 
             Assert.IsTrue(wasPausingCalled);
         }
@@ -110,13 +121,11 @@ namespace Sentry.Unity.Tests
         {
             var pauseEventTriggerCounter = 0;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
-            listener.ApplicationPausing += () => pauseEventTriggerCounter++;
+            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
+            sut.ApplicationPausing += () => pauseEventTriggerCounter++;
 
-            listener.OnApplicationFocus(false);
-            listener.OnApplicationFocus(false);
+            sut.OnApplicationFocus(false);
+            sut.OnApplicationFocus(false);
 
             Assert.AreEqual(1, pauseEventTriggerCounter);
         }
@@ -127,18 +136,16 @@ namespace Sentry.Unity.Tests
             var wasPausingCalled = false;
             var wasResumingCalled = false;
 
-            var gameObject = new GameObject("PauseTest");
-            var listener = gameObject.AddComponent<SentryMonoBehaviour>();
-            listener.Application = new TestApplication (platform: RuntimePlatform.IPhonePlayer);
-            listener.ApplicationPausing += () => wasPausingCalled = true;
-            listener.ApplicationResuming += () => wasResumingCalled = true;
+            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
+            sut.ApplicationPausing += () => wasPausingCalled = true;
+            sut.ApplicationResuming += () => wasResumingCalled = true;
 
-            listener.OnApplicationFocus(true);
+            sut.OnApplicationFocus(true);
 
             Assert.IsFalse(wasResumingCalled);
 
-            listener.OnApplicationFocus(false);
-            listener.OnApplicationFocus(true);
+            sut.OnApplicationFocus(false);
+            sut.OnApplicationFocus(true);
 
             Assert.IsTrue(wasPausingCalled);
             Assert.IsTrue(wasResumingCalled);
