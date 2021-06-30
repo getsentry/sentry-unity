@@ -20,9 +20,6 @@ namespace Sentry.Unity.Tests
 
         private Fixture _fixture = null!;
 
-
-
-
         [SetUp]
         public void SetUp()
         {
