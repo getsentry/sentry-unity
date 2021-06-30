@@ -64,6 +64,9 @@ namespace Sentry.Unity
             }
         }
 
+        // Singleton for root components
+        private static readonly MainThreadBevahiour _mainThreadBehaviour = CreateRootBehaviours();
+
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
@@ -71,12 +74,20 @@ namespace Sentry.Unity
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this));
+            this.AddEventProcessor(new UnityEventProcessor(this, mainThreadData: _mainThreadBehaviour.MainThreadData));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
             this.AddIntegration(new SessionIntegration());
+        }
+
+        private static MainThreadBevahiour CreateRootBehaviours()
+        {
+            // Hide the object in hierarchy, if you want to debug, remove 'hideFlags'
+            var rootGameObject = new GameObject("SentryOptionsRoot") { hideFlags = HideFlags.HideInHierarchy };
+            // Add more components and return as a tuple
+            return rootGameObject.AddComponent<MainThreadBevahiour>();
         }
 
         public override string ToString()

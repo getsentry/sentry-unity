@@ -20,11 +20,13 @@ namespace Sentry.Unity
     internal class UnityEventProcessor : ISentryEventProcessor
     {
         private readonly SentryOptions _sentryOptions;
+        private readonly MainThreadData _mainThreadData;
         private readonly IApplication _application;
 
-        public UnityEventProcessor(SentryOptions sentryOptions, IApplication? application = null)
+        public UnityEventProcessor(SentryOptions sentryOptions, IApplication? application = null, MainThreadData? mainThreadData = null)
         {
             _sentryOptions = sentryOptions;
+            _mainThreadData = mainThreadData ?? new MainThreadData { MainThreadId = 1 }; // test
             _application = application ?? ApplicationAdapter.Instance;
         }
 
@@ -59,7 +61,7 @@ namespace Sentry.Unity
 
         private void PopulateApp(App app)
         {
-            if (_application.IsMainThread)
+            if (_mainThreadData.IsMainThread())
             {
                 app.StartTime = DateTimeOffset.UtcNow
                     // NOTE: Time API requires main thread
@@ -69,10 +71,10 @@ namespace Sentry.Unity
             app.BuildType = Debug.isDebugBuild ? "debug" : "release";
         }
 
-        private static void PopulateOperatingSystem(OperatingSystem operatingSystem)
+        private void PopulateOperatingSystem(OperatingSystem operatingSystem)
         {
             // TODO: Will move to raw_description once parsing is done in Sentry
-            operatingSystem.Name = SystemInfo.operatingSystem;
+            operatingSystem.Name = _mainThreadData.OperatingSystem;
         }
 
         private void PopulateDevice(Device device)
