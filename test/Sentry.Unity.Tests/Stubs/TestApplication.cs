@@ -1,7 +1,6 @@
 ﻿using System;
 using Sentry.Unity.Integrations;
 using UnityEngine;
-using UnityEngine.TestTools.Constraints;
 
 namespace Sentry.Unity.Tests.Stubs
 {
@@ -12,13 +11,16 @@ namespace Sentry.Unity.Tests.Stubs
             string productName = "",
             string version = "",
             string persistentDataPath = "",
-            bool isMainThread = true)
+            bool isMainThread = true,
+            RuntimePlatform platform = RuntimePlatform.WindowsEditor
+            )
         {
             IsEditor = isEditor;
             ProductName = productName;
             Version = version;
             PersistentDataPath = persistentDataPath;
             IsMainThread = isMainThread;
+            Platform = platform;
         }
 
         public event Application.LogCallback? LogMessageReceived;
@@ -29,7 +31,7 @@ namespace Sentry.Unity.Tests.Stubs
         public string Version { get; }
         public string PersistentDataPath { get; }
         public bool IsMainThread { get; }
-
+        public RuntimePlatform Platform { get; }
         private void OnQuitting() => Quitting?.Invoke();
 
         private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
