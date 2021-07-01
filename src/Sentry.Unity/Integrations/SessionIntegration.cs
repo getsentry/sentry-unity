@@ -1,11 +1,18 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
-using UnityEngine;
 
 namespace Sentry.Unity.Integrations
 {
-    public class SessionIntegration : ISdkIntegration
+    internal class SessionIntegration : ISdkIntegration
     {
+        private readonly Func<SentryMonoBehaviour> _sentryMonoBehaviourGenerator;
+
+        public SessionIntegration(Func<SentryMonoBehaviour> sentryMonoBehaviourGenerator)
+        {
+            _sentryMonoBehaviourGenerator = sentryMonoBehaviourGenerator;
+        }
+
         public void Register(IHub hub, SentryOptions options)
         {
             if (!options.AutoSessionTracking)
@@ -15,9 +22,7 @@ namespace Sentry.Unity.Integrations
 
             options.DiagnosticLogger?.LogDebug("Registering Session integration.");
 
-            // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
-            var gameListenerObject = new GameObject("SentryMonoBehaviour") {hideFlags = HideFlags.HideAndDontSave};
-            var gameListener = gameListenerObject.AddComponent<SentryMonoBehaviour>();
+            var gameListener = _sentryMonoBehaviourGenerator();
             gameListener.ApplicationResuming += () =>
             {
                 options.DiagnosticLogger?.LogDebug("Resuming session.");

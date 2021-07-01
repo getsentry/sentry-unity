@@ -1,3 +1,4 @@
+using System;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -64,30 +65,36 @@ namespace Sentry.Unity
             }
         }
 
-        // Singleton for root components
-        private static readonly MainThreadBevahiour _mainThreadBehaviour = CreateRootBehaviours();
+        private SentryMonoBehaviour? _sentryMonoBehaviour;
+        internal Func<SentryMonoBehaviour> SentryMonoBehaviourGenerator;
 
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
+            SentryMonoBehaviourGenerator = CreateSentryMonoBehaviour;
+
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, mainThreadData: _mainThreadBehaviour.MainThreadData));
+            this.AddEventProcessor(new UnityEventProcessor(this, sentryMonoBehaviourGenerator: SentryMonoBehaviourGenerator));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new SessionIntegration());
+            this.AddIntegration(new SessionIntegration(SentryMonoBehaviourGenerator));
         }
 
-        private static MainThreadBevahiour CreateRootBehaviours()
+        private SentryMonoBehaviour CreateSentryMonoBehaviour()
         {
-            // Hide the object in hierarchy, if you want to debug, remove 'hideFlags'
-            var rootGameObject = new GameObject("SentryOptionsRoot") { hideFlags = HideFlags.HideInHierarchy };
-            // Add more components and return as a tuple
-            return rootGameObject.AddComponent<MainThreadBevahiour>();
+            if (_sentryMonoBehaviour is not null)
+            {
+                return _sentryMonoBehaviour;
+            }
+
+            // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
+            var rootGameObject = new GameObject("SentryMonoBehaviour") { hideFlags = HideFlags.DontUnloadUnusedAsset };
+            return _sentryMonoBehaviour = rootGameObject.AddComponent<SentryMonoBehaviour>();
         }
 
         public override string ToString()

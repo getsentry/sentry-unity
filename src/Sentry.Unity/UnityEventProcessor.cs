@@ -23,10 +23,10 @@ namespace Sentry.Unity
         private readonly MainThreadData _mainThreadData;
         private readonly IApplication _application;
 
-        public UnityEventProcessor(SentryOptions sentryOptions, IApplication? application = null, MainThreadData? mainThreadData = null)
+        public UnityEventProcessor(SentryOptions sentryOptions, IApplication? application = null, Func<SentryMonoBehaviour>? sentryMonoBehaviourGenerator = null)
         {
             _sentryOptions = sentryOptions;
-            _mainThreadData = mainThreadData ?? new MainThreadData { MainThreadId = 1 }; // test
+            _mainThreadData = sentryMonoBehaviourGenerator?.Invoke().MainThreadData ?? new MainThreadData { MainThreadId = 1 }; // test
             _application = application ?? ApplicationAdapter.Instance;
         }
 

@@ -1,14 +1,44 @@
 using System;
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity
 {
     /// <summary>
+    /// Singleton and DontDestroyOnLoad setup.
+    /// </summary>
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+    internal partial class SentryMonoBehaviour
+    {
+        private static SentryMonoBehaviour? Instance;
+
+        // ReSharper disable once UnusedMember.Local
+        private void Awake()
+        {
+            // Unity overrides `==` operator in MonoBehaviours
+            // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
+            if (Instance is null)
+            {
+                Instance = this;
+                // Don't destroy when changing scenes
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    /// <summary>
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
     [DefaultExecutionOrder(-900)]
-    internal class SentryMonoBehaviour : MonoBehaviour
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+    internal partial class SentryMonoBehaviour : MonoBehaviour
     {
         /// <summary>
         /// Hook to receive an event when the application gains focus.
@@ -93,6 +123,27 @@ namespace Sentry.Unity
         }
 
         // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
+        // ReSharper disable once UnusedMember.Local
         private void OnApplicationQuit() => Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// Main thread data collector.
+    /// </summary>
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+    internal partial class SentryMonoBehaviour
+    {
+        internal readonly MainThreadData MainThreadData = new();
+
+        // ReSharper disable once UnusedMember.Local
+        private void Start()
+            => StartCoroutine(CollectData());
+
+        private IEnumerator CollectData()
+        {
+            MainThreadData.MainThreadId = Thread.CurrentThread.ManagedThreadId;
+            yield return null;
+            MainThreadData.OperatingSystem = SystemInfo.operatingSystem;
+        }
     }
 }
