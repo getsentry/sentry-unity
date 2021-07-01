@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Json;
@@ -15,7 +16,7 @@ namespace Sentry.Unity.Editor
         public static SentryWindow OpenSentryWindow()
         {
             var window = (SentryWindow)GetWindow(typeof(SentryWindow));
-            window.minSize = new Vector2(335, 350);
+            window.minSize = new Vector2(400, 350);
             return window;
         }
 
@@ -26,7 +27,7 @@ namespace Sentry.Unity.Editor
         public event Action<ValidationError> OnValidationError = _ => { };
 
         private int _currentTab = 0;
-        private string[] _tabs = new[] {"Core", "Enrichment", "Transport", "Debug"};
+        private string[] _tabs = new[] {"Core", "Enrichment", "Transport", "Sessions", "Debug"};
 
         private void OnEnable()
         {
@@ -122,6 +123,9 @@ namespace Sentry.Unity.Editor
                     DisplayTransport();
                     break;
                 case 3:
+                    DisplaySessions();
+                    break;
+                case 4:
                     DisplayDebug();
                     break;
                 default:
@@ -165,23 +169,6 @@ namespace Sentry.Unity.Editor
             {
                 Options.TracesSampleRate = (double)traceSampleRate;
             }
-
-            EditorGUILayout.Space();
-            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-            EditorGUILayout.Space();
-
-            Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Auto Session Tracking", "Whether the SDK should start a session " +
-                                                        "automatically when it's initialized and end the session " +
-                                                        "when it's closed."),
-                Options.AutoSessionTracking);
-
-            Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
-                new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
-                                                       "before it's considered ended."),
-                Options.AutoSessionTrackingInterval);
-
-            EditorGUILayout.EndToggleGroup();
         }
 
         private void DisplayEnrichment()
@@ -288,10 +275,7 @@ namespace Sentry.Unity.Editor
                                                     "captured. Setting this to 0.1 captures 10% of events. " +
                                                     "Setting this to 1.0 captures all events. Events are picked randomly."),
                 sampleRate, 0.01f, 1);
-            if (sampleRate < 1.0f)
-            {
-                Options.SampleRate = sampleRate;
-            }
+            Options.SampleRate = (sampleRate < 1.0f) ? sampleRate : null;
 
             Options.ShutdownTimeout = EditorGUILayout.IntField(
                 new GUIContent("Shut Down Timeout [ms]", "How many seconds to wait before shutting down to " +
@@ -303,6 +287,22 @@ namespace Sentry.Unity.Editor
                                                   "worker attempts to send them."),
                 Options.MaxQueueItems
             );
+        }
+
+        private void DisplaySessions()
+        {
+            Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Session Tracking", "Whether the SDK should start a session " +
+                                                        "automatically when it's initialized and end the session " +
+                                                        "when it's closed."),
+                Options.AutoSessionTracking);
+
+            Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
+                new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
+                                                       "before it's considered ended."),
+                Options.AutoSessionTrackingInterval);
+
+            EditorGUILayout.EndToggleGroup();
         }
 
         private void DisplayDebug()
@@ -318,7 +318,7 @@ namespace Sentry.Unity.Editor
                 Options.DebugOnlyInEditor);
 
             Options.DiagnosticLevel = (SentryLevel)EditorGUILayout.EnumPopup(
-                new GUIContent("Verbosity level", "The minimum level allowed to be printed to the console. " +
+                new GUIContent("Verbosity Level", "The minimum level allowed to be printed to the console. " +
                                                   "Log messages with a level below this level are dropped."),
                 Options.DiagnosticLevel);
 
