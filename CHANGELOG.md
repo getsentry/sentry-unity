@@ -4,10 +4,11 @@
 
 ### Fixes
 
-- Logger now attaching again ([#244](https://github.com/getsentry/sentry-unity/pull/244))
+- Link.xml file exist check ([#248](https://github.com/getsentry/sentry-unity/pull/248))
+
 ## 0.3.1
 
-- No documented changes.
+- Logger now attaching again ([#244](https://github.com/getsentry/sentry-unity/pull/244))
 
 ## 0.3.0
 
