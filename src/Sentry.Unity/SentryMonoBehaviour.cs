@@ -143,7 +143,16 @@ namespace Sentry.Unity
         {
             MainThreadData.MainThreadId = Thread.CurrentThread.ManagedThreadId;
             yield return null;
+            MainThreadData.ProcessorCount = SystemInfo.processorCount;
+            MainThreadData.DeviceType = SystemInfo.deviceType.ToString();
             MainThreadData.OperatingSystem = SystemInfo.operatingSystem;
+            MainThreadData.CpuDescription = SystemInfo.processorType;
+            MainThreadData.SupportsVibration = SystemInfo.supportsVibration;
+            MainThreadData.DeviceName = SystemInfo.deviceName;
+            MainThreadData.DeviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
+            MainThreadData.DeviceModel = SystemInfo.deviceModel;
+            MainThreadData.SystemMemorySize = SystemInfo.systemMemorySize;
+            yield return null;
         }
     }
 }
