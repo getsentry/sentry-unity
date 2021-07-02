@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Invalid memory size on iOS ([#250](https://github.com/getsentry/sentry-unity/pull/250))
+
 ## 0.3.3
 
 ### Fixes
