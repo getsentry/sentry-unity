@@ -136,7 +136,7 @@ namespace Sentry.Unity
         internal readonly MainThreadData MainThreadData = new();
 
         private ISentrySystemInfo? _sentrySystemInfo;
-        internal ISentrySystemInfo SentrySentrySystemInfo
+        internal ISentrySystemInfo SentrySystemInfo
         {
             get
             {
@@ -152,33 +152,33 @@ namespace Sentry.Unity
 
         private IEnumerator CollectData()
         {
-            MainThreadData.MainThreadId = SentrySentrySystemInfo.MainThreadId;
+            MainThreadData.MainThreadId = SentrySystemInfo.MainThreadId;
             yield return null;
-            MainThreadData.ProcessorCount = SentrySentrySystemInfo.ProcessorCount;
-            MainThreadData.DeviceType = SentrySentrySystemInfo.DeviceType;
-            MainThreadData.OperatingSystem = SentrySentrySystemInfo.OperatingSystem;
-            MainThreadData.CpuDescription = SentrySentrySystemInfo.CpuDescription;
-            MainThreadData.SupportsVibration = SentrySentrySystemInfo.SupportsVibration;
-            MainThreadData.DeviceName = SentrySentrySystemInfo.DeviceName;
-            MainThreadData.DeviceUniqueIdentifier = SentrySentrySystemInfo.DeviceUniqueIdentifier;
-            MainThreadData.DeviceModel = SentrySentrySystemInfo.DeviceModel;
-            MainThreadData.SystemMemorySize = SentrySentrySystemInfo.SystemMemorySize;
+            MainThreadData.ProcessorCount = SentrySystemInfo.ProcessorCount;
+            MainThreadData.DeviceType = SentrySystemInfo.DeviceType;
+            MainThreadData.OperatingSystem = SentrySystemInfo.OperatingSystem;
+            MainThreadData.CpuDescription = SentrySystemInfo.CpuDescription;
+            MainThreadData.SupportsVibration = SentrySystemInfo.SupportsVibration;
+            MainThreadData.DeviceName = SentrySystemInfo.DeviceName;
+            MainThreadData.DeviceUniqueIdentifier = SentrySystemInfo.DeviceUniqueIdentifier;
+            MainThreadData.DeviceModel = SentrySystemInfo.DeviceModel;
+            MainThreadData.SystemMemorySize = SentrySystemInfo.SystemMemorySize;
             yield return null;
-            MainThreadData.GraphicsDeviceId = SentrySentrySystemInfo.GraphicsDeviceId;
-            MainThreadData.GraphicsDeviceName = SentrySentrySystemInfo.GraphicsDeviceName;
-            MainThreadData.GraphicsDeviceVendorId = SentrySentrySystemInfo.GraphicsDeviceVendorId;
-            MainThreadData.GraphicsDeviceVendor = SentrySentrySystemInfo.GraphicsDeviceVendor;
-            MainThreadData.GraphicsMemorySize = SentrySentrySystemInfo.GraphicsMemorySize;
-            MainThreadData.GraphicsMultiThreaded = SentrySentrySystemInfo.GraphicsMultiThreaded;
-            MainThreadData.NpotSupport = SentrySentrySystemInfo.NpotSupport;
-            MainThreadData.GraphicsDeviceVersion = SentrySentrySystemInfo.GraphicsDeviceVersion;
-            MainThreadData.GraphicsDeviceType = SentrySentrySystemInfo.GraphicsDeviceType;
-            MainThreadData.MaxTextureSize = SentrySentrySystemInfo.MaxTextureSize;
-            MainThreadData.SupportsDrawCallInstancing = SentrySentrySystemInfo.SupportsDrawCallInstancing;
-            MainThreadData.SupportsRayTracing = SentrySentrySystemInfo.SupportsRayTracing;
-            MainThreadData.SupportsComputeShaders = SentrySentrySystemInfo.SupportsComputeShaders;
-            MainThreadData.SupportsGeometryShaders = SentrySentrySystemInfo.SupportsGeometryShaders;
-            MainThreadData.GraphicsShaderLevel = SentrySentrySystemInfo.GraphicsShaderLevel;
+            MainThreadData.GraphicsDeviceId = SentrySystemInfo.GraphicsDeviceId;
+            MainThreadData.GraphicsDeviceName = SentrySystemInfo.GraphicsDeviceName;
+            MainThreadData.GraphicsDeviceVendorId = SentrySystemInfo.GraphicsDeviceVendorId;
+            MainThreadData.GraphicsDeviceVendor = SentrySystemInfo.GraphicsDeviceVendor;
+            MainThreadData.GraphicsMemorySize = SentrySystemInfo.GraphicsMemorySize;
+            MainThreadData.GraphicsMultiThreaded = SentrySystemInfo.GraphicsMultiThreaded;
+            MainThreadData.NpotSupport = SentrySystemInfo.NpotSupport;
+            MainThreadData.GraphicsDeviceVersion = SentrySystemInfo.GraphicsDeviceVersion;
+            MainThreadData.GraphicsDeviceType = SentrySystemInfo.GraphicsDeviceType;
+            MainThreadData.MaxTextureSize = SentrySystemInfo.MaxTextureSize;
+            MainThreadData.SupportsDrawCallInstancing = SentrySystemInfo.SupportsDrawCallInstancing;
+            MainThreadData.SupportsRayTracing = SentrySystemInfo.SupportsRayTracing;
+            MainThreadData.SupportsComputeShaders = SentrySystemInfo.SupportsComputeShaders;
+            MainThreadData.SupportsGeometryShaders = SentrySystemInfo.SupportsGeometryShaders;
+            MainThreadData.GraphicsShaderLevel = SentrySystemInfo.GraphicsShaderLevel;
         }
     }
 }
