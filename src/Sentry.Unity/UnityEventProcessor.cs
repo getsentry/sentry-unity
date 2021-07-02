@@ -26,7 +26,11 @@ namespace Sentry.Unity
         public UnityEventProcessor(SentryOptions sentryOptions, IApplication? application = null, Func<SentryMonoBehaviour>? sentryMonoBehaviourGenerator = null)
         {
             _sentryOptions = sentryOptions;
-            _mainThreadData = sentryMonoBehaviourGenerator?.Invoke().MainThreadData ?? new MainThreadData { MainThreadId = 1 }; // test
+            _mainThreadData = sentryMonoBehaviourGenerator?.Invoke().MainThreadData ?? new MainThreadData
+            {
+                MainThreadId = 1,
+                DeviceUniqueIdentifier = "not_empty"
+            }; // TODO: test
             _application = application ?? ApplicationAdapter.Instance;
         }
 
@@ -131,23 +135,23 @@ namespace Sentry.Unity
             }
         }
 
-        private static void PopulateGpu(Gpu gpu)
+        private void PopulateGpu(Gpu gpu)
         {
-            gpu.Id = SystemInfo.graphicsDeviceID;
-            gpu.Name = SystemInfo.graphicsDeviceName;
-            gpu.VendorId = SystemInfo.graphicsDeviceVendorID.ToString();
-            gpu.VendorName = SystemInfo.graphicsDeviceVendor;
-            gpu.MemorySize = SystemInfo.graphicsMemorySize;
-            gpu.MultiThreadedRendering = SystemInfo.graphicsMultiThreaded;
-            gpu.NpotSupport = SystemInfo.npotSupport.ToString();
-            gpu.Version = SystemInfo.graphicsDeviceVersion;
-            gpu.ApiType = SystemInfo.graphicsDeviceType.ToString();
-            gpu.MaxTextureSize = SystemInfo.maxTextureSize;
-            gpu.SupportsDrawCallInstancing = SystemInfo.supportsInstancing;
-            gpu.SupportsRayTracing = SystemInfo.supportsRayTracing;
-            gpu.SupportsComputeShaders = SystemInfo.supportsComputeShaders;
-            gpu.SupportsGeometryShaders = SystemInfo.supportsGeometryShaders;
-            gpu.GraphicsShaderLevel = ToGraphicShaderLevelDescription(SystemInfo.graphicsShaderLevel);
+            gpu.Id = _mainThreadData.GraphicsDeviceId;
+            gpu.Name = _mainThreadData.GraphicsDeviceName;
+            gpu.VendorId = _mainThreadData.GraphicsDeviceVendorId;
+            gpu.VendorName = _mainThreadData.GraphicsDeviceVendor;
+            gpu.MemorySize = _mainThreadData.GraphicsMemorySize;
+            gpu.MultiThreadedRendering = _mainThreadData.GraphicsMultiThreaded;
+            gpu.NpotSupport = _mainThreadData.NpotSupport;
+            gpu.Version = _mainThreadData.GraphicsDeviceVersion;
+            gpu.ApiType = _mainThreadData.GraphicsDeviceType;
+            gpu.MaxTextureSize = _mainThreadData.MaxTextureSize;
+            gpu.SupportsDrawCallInstancing = _mainThreadData.SupportsDrawCallInstancing;
+            gpu.SupportsRayTracing = _mainThreadData.SupportsRayTracing;
+            gpu.SupportsComputeShaders = _mainThreadData.SupportsComputeShaders;
+            gpu.SupportsGeometryShaders = _mainThreadData.SupportsGeometryShaders;
+            gpu.GraphicsShaderLevel = ToGraphicShaderLevelDescription(_mainThreadData.GraphicsShaderLevel ?? -1);
 
             static string ToGraphicShaderLevelDescription(int shaderLevel)
                 => shaderLevel switch
@@ -171,13 +175,21 @@ namespace Sentry.Unity
 
         private void PopulateTags(SentryEvent @event)
         {
-            @event.SetTag("unity.gpu.supports_instancing", SystemInfo.supportsInstancing ? "true" : "false");
-            @event.SetTag("unity.device.device_type", SystemInfo.deviceType.ToString());
-            @event.SetTag("unity.install_mode", Application.installMode.ToString());
+            @event.SetTag("unity.install_mode", _application.InstallMode.ToString());
 
-            if (_sentryOptions.SendDefaultPii)
+            if (_mainThreadData.SupportsDrawCallInstancing.HasValue)
             {
-                @event.SetTag("unity.device.unique_identifier", SystemInfo.deviceUniqueIdentifier);
+                @event.SetTag("unity.gpu.supports_instancing", _mainThreadData.SupportsDrawCallInstancing.Value ? "true" : "false");
+            }
+
+            if (_mainThreadData.DeviceType is not null)
+            {
+                @event.SetTag("unity.device.device_type", _mainThreadData.DeviceType);
+            }
+
+            if (_sentryOptions.SendDefaultPii && _mainThreadData.DeviceUniqueIdentifier is not null)
+            {
+                @event.SetTag("unity.device.unique_identifier", _mainThreadData.DeviceUniqueIdentifier);
             }
         }
     }

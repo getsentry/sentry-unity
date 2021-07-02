@@ -153,6 +153,21 @@ namespace Sentry.Unity
             MainThreadData.DeviceModel = SystemInfo.deviceModel;
             MainThreadData.SystemMemorySize = SystemInfo.systemMemorySize;
             yield return null;
+            MainThreadData.GraphicsDeviceId = SystemInfo.graphicsDeviceID;
+            MainThreadData.GraphicsDeviceName = SystemInfo.graphicsDeviceName;
+            MainThreadData.GraphicsDeviceVendorId = SystemInfo.graphicsDeviceVendorID.ToString();
+            MainThreadData.GraphicsDeviceVendor = SystemInfo.graphicsDeviceVendor;
+            MainThreadData.GraphicsMemorySize = SystemInfo.graphicsMemorySize;
+            MainThreadData.GraphicsMultiThreaded = SystemInfo.graphicsMultiThreaded;
+            MainThreadData.NpotSupport = SystemInfo.npotSupport.ToString();
+            MainThreadData.GraphicsDeviceVersion = SystemInfo.graphicsDeviceVersion;
+            MainThreadData.GraphicsDeviceType = SystemInfo.graphicsDeviceType.ToString();
+            MainThreadData.MaxTextureSize = SystemInfo.maxTextureSize;
+            MainThreadData.SupportsDrawCallInstancing = SystemInfo.supportsInstancing;
+            MainThreadData.SupportsRayTracing = SystemInfo.supportsRayTracing;
+            MainThreadData.SupportsComputeShaders = SystemInfo.supportsComputeShaders;
+            MainThreadData.SupportsGeometryShaders = SystemInfo.supportsGeometryShaders;
+            MainThreadData.GraphicsShaderLevel = SystemInfo.graphicsShaderLevel;
         }
     }
 }

@@ -24,6 +24,36 @@ namespace Sentry.Unity
 
         public int? SystemMemorySize { get; set; }
 
+        public int? GraphicsDeviceId { get; set; }
+
+        public string? GraphicsDeviceName { get; set; }
+
+        public string? GraphicsDeviceVendorId { get; set; }
+
+        public string? GraphicsDeviceVendor { get; set; }
+
+        public int? GraphicsMemorySize { get; set; }
+
+        public bool? GraphicsMultiThreaded { get; set; }
+
+        public string? NpotSupport { get; set; }
+
+        public string? GraphicsDeviceVersion { get; set; }
+
+        public string? GraphicsDeviceType { get; set; }
+
+        public int? MaxTextureSize { get; set; }
+
+        public bool? SupportsDrawCallInstancing { get; set; }
+
+        public bool? SupportsRayTracing { get; set; }
+
+        public bool? SupportsComputeShaders { get; set; }
+
+        public bool? SupportsGeometryShaders { get; set; }
+
+        public int? GraphicsShaderLevel { get; set; }
+
         public bool IsMainThread()
             => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
     }
