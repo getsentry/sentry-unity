@@ -108,7 +108,8 @@ namespace Sentry.Unity
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
-            if (SystemInfo.systemMemorySize != 0)
+            // Additionally: iOS issue with reporting negative memory size https://issuetracker.unity3d.com/issues/ios-if-memory-of-device-is-2gb-over-systeminfo-dot-systemmemorysize-is-returned-wrong-value-on-ios
+            if (SystemInfo.systemMemorySize > 0)
             {
                 device.MemorySize = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
             }
