@@ -104,21 +104,24 @@ namespace Sentry.Unity.Tests
             Assert.IsNotNull(sentryEvent.Contexts.Device.DeviceUniqueIdentifier);
         }
 
-        // TODO: populate App
-        /*[Test]
-        public void Process_StartTimeOnMainThread_IsNotNull()
+        [UnityTest]
+        public IEnumerator Process_StartTimeOnMainThread_IsNotNull()
         {
             // arrange
-            var application = new TestApplication(isMainThread: true);
-            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), application);
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            {
+                MainThreadId = 1
+            };
+            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), _sentryMonoBehaviourGenerator, _testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
+            yield return _sentryMonoBehaviour.CollectData();
             unityEventProcessor.Process(sentryEvent);
 
             // assert
             Assert.IsNotNull(sentryEvent.Contexts.App.StartTime);
-        }*/
+        }
 
         [UnityTest]
         public IEnumerator Process_Tags_Set()

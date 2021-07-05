@@ -109,7 +109,7 @@ namespace Sentry.Unity
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
-            if (_mainThreadData.SystemMemorySize != 0)
+            if (_mainThreadData.SystemMemorySize > 0)
             {
                 device.MemorySize = _mainThreadData.SystemMemorySize * 1048576L; // Sentry device mem is in Bytes
             }
