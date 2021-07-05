@@ -199,6 +199,7 @@ namespace Sentry.Unity.Editor
                                                       "exception was thrown. Refer to AttachStacktrace on sentry docs."),
                 Options.AttachStacktrace);
 
+            // Enhanced not supported on IL2CPP so not displaying this for the time being:
             // Options.StackTraceMode = (StackTraceMode) EditorGUILayout.EnumPopup(
             //     new GUIContent("Stacktrace Mode", "Enhanced is the default." +
             //                                       "\n - Enhanced: Include async, return type, args,..." +
@@ -238,7 +239,7 @@ namespace Sentry.Unity.Editor
 
             Options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
                 new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
-                                                         "in each event sent to sentry."),
+                                                         "Version or InformationalVersion in each event sent to sentry."),
                 Options.ReportAssembliesMode);
         }
 
@@ -248,14 +249,16 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Enable Offline Caching", ""),
                 Options.EnableOfflineCaching);
             Options.MaxCacheItems = EditorGUILayout.IntField(
-                new GUIContent("Max Cache Items", "The maximum number of items to keep in cache. SDK " +
-                                                  "deletes the oldest and migrates the sessions to the next to " +
-                                                  "maintain the integrity of your release health stats.\nDefault: 30"),
+                new GUIContent("Max Cache Items", "The maximum number of files to keep in the disk cache. " +
+                                                  "The SDK deletes the oldest when the limit is reached.\nDefault: 30"),
                 Options.MaxCacheItems);
 
             Options.InitCacheFlushTimeout = EditorGUILayout.IntField(
                 new GUIContent("Init Flush Timeout [ms]", "The timeout that limits how long the SDK " +
-                                                          "will attempt to flush existing cache during initialization."),
+                                                          "will attempt to flush existing cache during initialization." +
+                                                          "\nThis features allows capturing errors that happen during " +
+                                                          "game startup and would not be captured because the process " +
+                                                          "would be killed before Sentry had a chance to capture the event."),
                 Options.InitCacheFlushTimeout);
 
             EditorGUILayout.EndToggleGroup();
@@ -273,7 +276,9 @@ namespace Sentry.Unity.Editor
             sampleRate = EditorGUILayout.Slider(
                 new GUIContent("Event Sample Rate", "Indicates the percentage of events that are " +
                                                     "captured. Setting this to 0.1 captures 10% of events. " +
-                                                    "Setting this to 1.0 captures all events. Events are picked randomly."),
+                                                    "Setting this to 1.0 captures all events." +
+                                                    "\nThis affects only errors and logs, not performance " +
+                                                    "(transactions) data. See TraceSampleRate for that."),
                 sampleRate, 0.01f, 1);
             Options.SampleRate = (sampleRate < 1.0f) ? sampleRate : null;
 
@@ -283,8 +288,8 @@ namespace Sentry.Unity.Editor
                 Options.ShutdownTimeout);
 
             Options.MaxQueueItems = EditorGUILayout.IntField(
-                new GUIContent("Max Queue Items", "The maximum number of events to keep while the " +
-                                                  "worker attempts to send them."),
+                new GUIContent("Max Queue Items", "The maximum number of events to keep in memory while " +
+                                                  "the worker attempts to send them."),
                 Options.MaxQueueItems
             );
         }
@@ -292,14 +297,15 @@ namespace Sentry.Unity.Editor
         private void DisplaySessions()
         {
             Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Auto Session Tracking", "Whether the SDK should start a session " +
-                                                        "automatically when it's initialized and end the session " +
-                                                        "when it's closed."),
+                new GUIContent("Auto Session Tracking", "Whether the SDK should start and end sessions " +
+                                                        "automatically. If the timeout is reached the old session will" +
+                                                        "be ended and a new one started."),
                 Options.AutoSessionTracking);
 
             Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
                 new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
-                                                       "before it's considered ended."),
+                                                       "(i.e. the application has been put in the background) before " +
+                                                       "it is considered ended."),
                 Options.AutoSessionTrackingInterval);
 
             EditorGUILayout.EndToggleGroup();
