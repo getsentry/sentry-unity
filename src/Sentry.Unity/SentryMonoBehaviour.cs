@@ -150,7 +150,7 @@ namespace Sentry.Unity
         private void Start()
             => StartCoroutine(CollectData());
 
-        private IEnumerator CollectData()
+        internal IEnumerator CollectData()
         {
             MainThreadData.MainThreadId = SentrySystemInfo.MainThreadId;
             yield return null;

@@ -49,6 +49,9 @@ namespace Sentry.Unity
         public string? DeviceName => SystemInfo.deviceName;
         public string? DeviceUniqueIdentifier => SystemInfo.deviceUniqueIdentifier;
         public string? DeviceModel => SystemInfo.deviceModel;
+        /// <summary>
+        /// System memory size in megabytes.
+        /// </summary>
         public int? SystemMemorySize => SystemInfo.systemMemorySize;
         public int? GraphicsDeviceId => SystemInfo.graphicsDeviceID;
         public string? GraphicsDeviceName => SystemInfo.graphicsDeviceName;
