@@ -1,10 +1,13 @@
 # Changelog
 
-## 0.3.3
+## Unreleased
 
 ### Features
 
 - New config window ([#243](https://github.com/getsentry/sentry-unity/pull/243))
+
+## 0.3.3
+
 ### Fixes
 
 - Release process cleanup
