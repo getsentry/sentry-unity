@@ -232,7 +232,7 @@ namespace Sentry.Unity.Tests
             SentryUnityOptionsTests.AssertOptions(expectedOptions, actualOptions!);
         }
 
-        private static IEnumerator SetupSceneCoroutine(string sceneName)
+        internal static IEnumerator SetupSceneCoroutine(string sceneName)
         {
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);
             SceneManager.LoadScene(sceneName);
@@ -244,11 +244,12 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
-        private static IDisposable InitSentrySdk(Action<SentryUnityOptions> configure)
+        internal static IDisposable InitSentrySdk(Action<SentryUnityOptions> configure)
         {
             SentryUnity.Init(options =>
             {
                 options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+
                 configure.Invoke(options);
             });
             return new SentryDisposable();

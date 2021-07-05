@@ -1,16 +1,25 @@
 # Changelog
 
-## Unreleased
+## 0.3.3
 
 ### Features
 
 - New config window ([#243](https://github.com/getsentry/sentry-unity/pull/243))
 ### Fixes
 
-- Logger now attaching again ([#244](https://github.com/getsentry/sentry-unity/pull/244))
+- Release process cleanup
+
+## 0.3.2
+
+### Fixes
+
+- Link.xml file exist check ([#248](https://github.com/getsentry/sentry-unity/pull/248))
+
 ## 0.3.1
 
-- No documented changes.
+### Fixes
+
+- Logger now attaching again ([#244](https://github.com/getsentry/sentry-unity/pull/244))
 
 ## 0.3.0
 
@@ -23,7 +32,7 @@
 ### Fixes
 
 - Default options values ([#241](https://github.com/getsentry/sentry-unity/pull/241))
-- Un-embedding the link.xml to fix code stripping ([#237]/(https://github.com/getsentry/sentry-unity/pull/237))
+- Un-embedding the link.xml to fix code stripping ([#237](https://github.com/getsentry/sentry-unity/pull/237))
 - Setting IsEnvironmentUser to false by default ([#230](https://github.com/getsentry/sentry-unity/pull/230))
 
 ## 0.2.0

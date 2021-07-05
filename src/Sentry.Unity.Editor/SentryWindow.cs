@@ -387,14 +387,14 @@ namespace Sentry.Unity.Editor
                 AssetDatabase.CreateFolder("Assets/Plugins", "Sentry");
             }
 
-            if (!AssetDatabase.IsValidFolder(LinkXmlPath))
+            if (!File.Exists(LinkXmlPath))
             {
                 using var fileStream = File.Create(LinkXmlPath);
                 using var resourceStream =
                     GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
                 resourceStream.CopyTo(fileStream);
 
-                AssetDatabase.ImportAsset(LinkXmlPath);
+                AssetDatabase.Refresh();
             }
         }
 
