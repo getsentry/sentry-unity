@@ -11,7 +11,6 @@ namespace Sentry.Unity.Tests.Stubs
             string productName = "",
             string version = "",
             string persistentDataPath = "",
-            bool isMainThread = true,
             RuntimePlatform platform = RuntimePlatform.WindowsEditor,
             ApplicationInstallMode installMode = ApplicationInstallMode.DeveloperBuild)
         {
@@ -19,7 +18,6 @@ namespace Sentry.Unity.Tests.Stubs
             ProductName = productName;
             Version = version;
             PersistentDataPath = persistentDataPath;
-            IsMainThread = isMainThread;
             Platform = platform;
             InstallMode = installMode;
         }
@@ -31,7 +29,6 @@ namespace Sentry.Unity.Tests.Stubs
         public string ProductName { get; }
         public string Version { get; }
         public string PersistentDataPath { get; }
-        public bool IsMainThread { get; }
         public RuntimePlatform Platform { get; }
         public ApplicationInstallMode InstallMode { get; }
         private void OnQuitting() => Quitting?.Invoke();

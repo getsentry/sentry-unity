@@ -70,6 +70,7 @@ namespace Sentry.Unity
 
         public SentryUnityOptions()
         {
+            UnityEngine.Debug.Log($"ctor SentryUnityOptions");
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
@@ -77,7 +78,7 @@ namespace Sentry.Unity
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, sentryMonoBehaviourGenerator: SentryMonoBehaviourGenerator));
+            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviourGenerator));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());

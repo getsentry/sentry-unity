@@ -1,24 +1,47 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace Sentry.Unity.Tests
 {
     public sealed class UnityEventProcessorTests
     {
+        private GameObject _gameObject = null!;
+        private SentryMonoBehaviour _sentryMonoBehaviour = null!;
+        private SentryOptions _sentryOptions = null!;
+        private TestApplication _testApplication = null!;
+        private Func<SentryMonoBehaviour> _sentryMonoBehaviourGenerator = null!;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _gameObject = new GameObject("ProcessorTest");
+            _sentryMonoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
+            _sentryMonoBehaviourGenerator = () => _sentryMonoBehaviour;
+            _sentryOptions = new();
+            _testApplication = new();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Object.Destroy(_gameObject);
+        }
+
         [Test]
         public void Process_SdkInfo_Correct()
         {
             // arrange
-            var testApplication = new TestApplication();
-            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), testApplication);
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
-            unityEventProcessor.Process(sentryEvent);
+            sut.Process(sentryEvent);
 
             // assert
             Assert.AreEqual(UnitySdkInfo.Name, sentryEvent.Sdk.Name);
@@ -35,11 +58,11 @@ namespace Sentry.Unity.Tests
         {
             // arrange
             var testApplication = new TestApplication(isEditor);
-            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), testApplication);
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
-            unityEventProcessor.Process(sentryEvent);
+            sut.Process(sentryEvent);
 
             // assert
             Assert.AreEqual(sentryEvent.Contexts.Device.Simulator, isSimulator);
@@ -55,31 +78,34 @@ namespace Sentry.Unity.Tests
         public void Process_ServerName_IsNull()
         {
             // arrange
-            var unityEventProcessor = new UnityEventProcessor(new SentryOptions());
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
-            unityEventProcessor.Process(sentryEvent);
+            sut.Process(sentryEvent);
 
             // assert
             Assert.IsNull(sentryEvent.ServerName);
         }
 
-        [Test]
-        public void Process_DeviceUniqueIdentifierWithSendDefaultPii_IsNotNull()
+        [UnityTest]
+        public IEnumerator Process_DeviceUniqueIdentifierWithSendDefaultPii_IsNotNull()
         {
             // arrange
-            var unityEventProcessor = new UnityEventProcessor(new SentryOptions { SendDefaultPii = true });
+            var sentryOptions = new SentryOptions { SendDefaultPii = true };
+            var sut = new UnityEventProcessor(sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
-            unityEventProcessor.Process(sentryEvent);
+            yield return _sentryMonoBehaviour.CollectData();
+            sut.Process(sentryEvent);
 
             // assert
             Assert.IsNotNull(sentryEvent.Contexts.Device.DeviceUniqueIdentifier);
         }
 
-        [Test]
+        // TODO: populate App
+        /*[Test]
         public void Process_StartTimeOnMainThread_IsNotNull()
         {
             // arrange
@@ -92,83 +118,95 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.IsNotNull(sentryEvent.Contexts.App.StartTime);
-        }
+        }*/
 
-        [Test]
-        public void Process_Tags_Set()
+        [UnityTest]
+        public IEnumerator Process_Tags_Set()
         {
             // arrange
-            var unityEventProcessor = new UnityEventProcessor(new SentryOptions { SendDefaultPii = true });
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            {
+                SupportsDrawCallInstancing = true,
+                DeviceType = "test type",
+                DeviceUniqueIdentifier = "f810306c-68db-4ebe-89ba-13c457449339"
+            };
+
+            var sentryOptions = new SentryOptions { SendDefaultPii = true };
+            var application = new TestApplication(installMode: ApplicationInstallMode.Store);
+            var unityEventProcessor = new UnityEventProcessor(sentryOptions, _sentryMonoBehaviourGenerator, application);
             var sentryEvent = new SentryEvent();
 
             // act
+            yield return _sentryMonoBehaviour.CollectData();
             unityEventProcessor.Process(sentryEvent);
 
             // assert
             var tags = sentryEvent.Tags;
 
             Assert.IsNotNull(tags);
-            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.gpu.supports_instancing"));
-            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.device.supports_instancing"));
-            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.gpu.device_type"));
-            Assert.IsNotNull(tags.SingleOrDefault(t => t.Key == "unity.device.unique_identifier"));
+            Assert.NotZero(tags.Count);
+
+            var unityInstallMode = tags.SingleOrDefault(t => t.Key == "unity.install_mode");
+            Assert.NotNull(unityInstallMode);
+            Assert.AreEqual(application.InstallMode.ToString(), unityInstallMode.Value);
+
+            var supportsInstancing = tags.SingleOrDefault(t => t.Key == "unity.gpu.supports_instancing");
+            Assert.NotNull(supportsInstancing);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SupportsDrawCallInstancing, bool.Parse(supportsInstancing.Value));
+
+            var deviceType = tags.SingleOrDefault(t => t.Key == "unity.device.device_type");
+            Assert.NotNull(deviceType);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceType, deviceType.Value);
+
+            var deviceUniqueIdentifier = tags.SingleOrDefault(t => t.Key == "unity.device.unique_identifier");
+            Assert.NotNull(deviceUniqueIdentifier);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier, deviceUniqueIdentifier.Value);
         }
 
         [UnityTest]
         public IEnumerator Process_OperatingSystemProtocol_Assigned()
         {
-            // setup
-            var gameObject = new GameObject("ProcessorTest");
-            var sentryMonoBehaviour = gameObject.AddComponent<SentryMonoBehaviour>();
-
             // arrange
-            sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo { OperatingSystem = "Windows" };
-
-            var sentryOptions = new SentryOptions {SendDefaultPii = true};
-            var application = new TestApplication();
-            SentryMonoBehaviour SentryMonoBehaviourGenerator() => sentryMonoBehaviour;
-            var unityEventProcessor = new UnityEventProcessor(sentryOptions, application, SentryMonoBehaviourGenerator);
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo { OperatingSystem = "Windows" };
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
             // SentryInitialization always called
-            yield return sentryMonoBehaviour.CollectData();
-            unityEventProcessor.Process(sentryEvent);
+            yield return _sentryMonoBehaviour.CollectData();
+            sut.Process(sentryEvent);
 
             // assert
-            Assert.AreEqual(sentryMonoBehaviour.SentrySystemInfo.OperatingSystem, sentryEvent.Contexts.OperatingSystem.Name);
-
-            // TearDown
-            Object.Destroy(gameObject);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.OperatingSystem, sentryEvent.Contexts.OperatingSystem.Name);
         }
     }
 
     internal sealed class TestSentrySystemInfo : ISentrySystemInfo
     {
-        public int? MainThreadId { get; }
+        public int? MainThreadId { get; set; }
         public string? OperatingSystem { get; set; }
-        public int? ProcessorCount { get; }
-        public bool? SupportsVibration { get; }
-        public string? DeviceType { get; }
-        public string? CpuDescription { get; }
-        public string? DeviceName { get; }
-        public string? DeviceUniqueIdentifier { get; }
-        public string? DeviceModel { get; }
-        public int? SystemMemorySize { get; }
-        public int? GraphicsDeviceId { get; }
-        public string? GraphicsDeviceName { get; }
-        public string? GraphicsDeviceVendorId { get; }
-        public string? GraphicsDeviceVendor { get; }
-        public int? GraphicsMemorySize { get; }
-        public bool? GraphicsMultiThreaded { get; }
-        public string? NpotSupport { get; }
-        public string? GraphicsDeviceVersion { get; }
-        public string? GraphicsDeviceType { get; }
-        public int? MaxTextureSize { get; }
-        public bool? SupportsDrawCallInstancing { get; }
-        public bool? SupportsRayTracing { get; }
-        public bool? SupportsComputeShaders { get; }
-        public bool? SupportsGeometryShaders { get; }
-        public int? GraphicsShaderLevel { get; }
+        public int? ProcessorCount { get; set; }
+        public bool? SupportsVibration { get; set; }
+        public string? DeviceType { get; set; }
+        public string? CpuDescription { get; set; }
+        public string? DeviceName { get; set; }
+        public string? DeviceUniqueIdentifier { get; set; }
+        public string? DeviceModel { get; set; }
+        public int? SystemMemorySize { get; set; }
+        public int? GraphicsDeviceId { get; set; }
+        public string? GraphicsDeviceName { get; set; }
+        public string? GraphicsDeviceVendorId { get; set; }
+        public string? GraphicsDeviceVendor { get; set; }
+        public int? GraphicsMemorySize { get; set; }
+        public bool? GraphicsMultiThreaded { get; set; }
+        public string? NpotSupport { get; set; }
+        public string? GraphicsDeviceVersion { get; set; }
+        public string? GraphicsDeviceType { get; set; }
+        public int? MaxTextureSize { get; set; }
+        public bool? SupportsDrawCallInstancing { get; set; }
+        public bool? SupportsRayTracing { get; set; }
+        public bool? SupportsComputeShaders { get; set; }
+        public bool? SupportsGeometryShaders { get; set; }
+        public int? GraphicsShaderLevel { get; set; }
     }
 }
