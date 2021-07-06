@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Main thread data ([#245](https://github.com/getsentry/sentry-unity/pull/245))
+
 ### Fixes
 
 - Logger now attaching again ([#244](https://github.com/getsentry/sentry-unity/pull/244))
