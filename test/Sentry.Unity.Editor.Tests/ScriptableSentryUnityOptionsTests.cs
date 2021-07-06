@@ -31,7 +31,6 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("ReportAssembliesMode", optionsAsString);
             StringAssert.Contains("SendDefaultPii", optionsAsString);
             StringAssert.Contains("IsEnvironmentUser", optionsAsString);
-            StringAssert.Contains("ServerNameOverride", optionsAsString);
             StringAssert.Contains("EnableOfflineCaching", optionsAsString);
             StringAssert.Contains("MaxCacheItems", optionsAsString);
             StringAssert.Contains("InitCacheFlushTimeout", optionsAsString);
@@ -42,6 +41,7 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("DiagnosticLevel", optionsAsString);
 
             AssetDatabase.DeleteAsset(testOptionsPath);
+            AssetDatabase.Refresh();
         }
     }
 }

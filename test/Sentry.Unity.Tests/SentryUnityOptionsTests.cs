@@ -38,7 +38,6 @@ namespace Sentry.Unity.Tests
                 ReportAssembliesMode = ReportAssembliesMode.None,
                 SendDefaultPii = true,
                 IsEnvironmentUser = true,
-                ServerName = "testServer",
                 MaxCacheItems = 1,
                 InitCacheFlushTimeout = TimeSpan.FromSeconds(1),
                 SampleRate = 0.5f,
@@ -70,7 +69,6 @@ namespace Sentry.Unity.Tests
             scriptableOptions.MaxQueueItems = expectedOptions.MaxQueueItems;
             scriptableOptions.ReleaseOverride = expectedOptions.Release;
             scriptableOptions.EnvironmentOverride = expectedOptions.Environment;
-            scriptableOptions.ServerNameOverride = expectedOptions.ServerName;
             scriptableOptions.Debug = expectedOptions.Debug;
             scriptableOptions.DebugOnlyInEditor = expectedOptions.DebugOnlyInEditor;
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
@@ -117,7 +115,6 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.ReportAssembliesMode, actual.ReportAssembliesMode);
             Assert.AreEqual(expected.SendDefaultPii, actual.SendDefaultPii);
             Assert.AreEqual(expected.IsEnvironmentUser, actual.IsEnvironmentUser);
-            Assert.AreEqual(expected.ServerName, actual.ServerName);
             Assert.AreEqual(expected.MaxCacheItems, actual.MaxCacheItems);
             Assert.AreEqual(expected.InitCacheFlushTimeout, actual.InitCacheFlushTimeout);
             Assert.AreEqual(expected.SampleRate, actual.SampleRate);

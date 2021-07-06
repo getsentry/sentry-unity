@@ -38,7 +38,6 @@ namespace Sentry.Unity
         [field: SerializeField] internal ReportAssembliesMode ReportAssembliesMode { get; set; }
         [field: SerializeField] internal bool SendDefaultPii { get; set; }
         [field: SerializeField] internal bool IsEnvironmentUser { get; set; }
-        [field: SerializeField] internal string ServerNameOverride { get; set; } = string.Empty;
 
         [field: SerializeField] internal bool EnableOfflineCaching { get; set; }
         [field: SerializeField] internal int MaxCacheItems { get; set; }
@@ -103,11 +102,6 @@ namespace Sentry.Unity
             if (!string.IsNullOrWhiteSpace(scriptableOptions.EnvironmentOverride))
             {
                 options.Environment = scriptableOptions.EnvironmentOverride;
-            }
-
-            if (!string.IsNullOrWhiteSpace(scriptableOptions.ServerNameOverride))
-            {
-                options.ServerName = scriptableOptions.ServerNameOverride;
             }
 
             if (!scriptableOptions.EnableOfflineCaching)

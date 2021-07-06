@@ -52,7 +52,6 @@ namespace Sentry.Unity
             // Config window specifics
             scriptableOptions.ReleaseOverride = string.Empty;
             scriptableOptions.EnvironmentOverride = string.Empty;
-            scriptableOptions.ServerNameOverride = string.Empty;
 
             scriptableOptions.EnableOfflineCaching = true;
 

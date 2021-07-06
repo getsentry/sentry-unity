@@ -19,7 +19,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Toggle("Enable Sentry SDK", options.Enabled);
             EditorGUILayout.TextField("DSN", options.Dsn);
             EditorGUILayout.Toggle("Capture In Editor", options.CaptureInEditor);
-            EditorGUILayout.FloatField("Trace Sample Rate", (float)options.TracesSampleRate);
+            EditorGUILayout.FloatField("Traces Sample Rate", (float)options.TracesSampleRate);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
@@ -33,7 +33,6 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.EnumPopup("Report Assemblies Mode", options.ReportAssembliesMode);
             EditorGUILayout.Toggle("Send Default Pii", options.SendDefaultPii);
             EditorGUILayout.Toggle("Auto Set UserName", options.IsEnvironmentUser);
-            EditorGUILayout.TextField("Server Name Override", options.ServerNameOverride);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);

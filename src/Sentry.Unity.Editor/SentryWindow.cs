@@ -221,11 +221,6 @@ namespace Sentry.Unity.Editor
                                                     "Android and iOS."),
                 Options.IsEnvironmentUser);
 
-            Options.ServerNameOverride = EditorGUILayout.TextField(
-                new GUIContent("Server Name Override", "The name of the server running the application." +
-                                                       "\nThis option is an override."),
-                Options.ServerNameOverride);
-
             EditorGUILayout.EndToggleGroup();
 
             EditorGUILayout.Space();
@@ -333,13 +328,11 @@ namespace Sentry.Unity.Editor
 
         private void OnLostFocus()
         {
-            if (Options is null)
+            // Make sure the actual config asset exists before validating/saving. Crashes the editor otherwise.
+            if (!File.Exists(ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName)))
             {
-                return;
-            }
-
-            if (!AssetDatabase.IsValidFolder(ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName)))
-            {
+                new UnityLogger(new SentryOptions()).LogWarning("Sentry option could not been saved. " +
+                                                                "The configuration asset is missing.");
                 return;
             }
 
