@@ -20,7 +20,7 @@ namespace Sentry.Unity
         {
             // Unity overrides `==` operator in MonoBehaviours
             // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
-            if (Instance is null)
+            if (Instance == null)
             {
                 Instance = this;
                 // Don't destroy when changing scenes

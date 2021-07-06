@@ -93,7 +93,7 @@ namespace Sentry.Unity
             }
 
             // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
-            var rootGameObject = new GameObject("SentryMonoBehaviour") { hideFlags = HideFlags.DontUnloadUnusedAsset };
+            var rootGameObject = new GameObject("SentryMonoBehaviour") { hideFlags = HideFlags.HideAndDontSave };
             return _sentryMonoBehaviour = rootGameObject.AddComponent<SentryMonoBehaviour>();
         }
 
