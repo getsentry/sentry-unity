@@ -22,9 +22,7 @@ namespace Sentry.Unity.Editor.Tests
             using (var window = SentryTestWindow.Open())
             {
                 window.OnValidationError += error => validationErrors.Add(error);
-
                 window.Options.Dsn = "qwerty";
-                window.ValidateDsn();
             }
 
             // assert
@@ -46,9 +44,7 @@ namespace Sentry.Unity.Editor.Tests
             using (var window = SentryTestWindow.Open())
             {
                 window.OnValidationError += error => validationErrors.Add(error);
-
                 window.Options.Dsn = "";
-                window.ValidateDsn();
             }
 
             // assert
@@ -72,7 +68,6 @@ namespace Sentry.Unity.Editor.Tests
 
                 Uri.TryCreate("https://sentryTest.io", UriKind.Absolute, out Uri testUri);
                 window.Options.Dsn = testUri.ToString();
-                window.ValidateDsn();
             }
 
             // assert
