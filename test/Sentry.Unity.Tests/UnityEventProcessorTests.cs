@@ -105,7 +105,7 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator Process_StartTimeOnMainThread_IsNotNull()
+        public IEnumerator Process_AppProtocol_Assigned()
         {
             // arrange
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
@@ -182,6 +182,86 @@ namespace Sentry.Unity.Tests
             // assert
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.OperatingSystem, sentryEvent.Contexts.OperatingSystem.Name);
         }
+
+        [UnityTest]
+        public IEnumerator Process_GpuProtocol_Assigned()
+        {
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            {
+                GraphicsDeviceId = 1,
+                GraphicsDeviceName = "GeForce RTX 3090",
+                GraphicsDeviceVendorId = "25",
+                GraphicsDeviceVendor = "NVIDIA",
+                GraphicsMemorySize = 24000,
+                GraphicsMultiThreaded = true,
+                NpotSupport = "true",
+                GraphicsDeviceVersion = "version212134",
+                GraphicsDeviceType = "devicetype",
+                MaxTextureSize = 1680,
+                SupportsDrawCallInstancing = true,
+                SupportsRayTracing = true,
+                SupportsComputeShaders = true,
+                SupportsGeometryShaders = true
+            };
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
+            var sentryEvent = new SentryEvent();
+
+            // act
+            // SentryInitialization always called
+            yield return _sentryMonoBehaviour.CollectData();
+            sut.Process(sentryEvent);
+
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceId, sentryEvent.Contexts.Gpu.Id);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceName, sentryEvent.Contexts.Gpu.Name);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVendorId, sentryEvent.Contexts.Gpu.VendorId);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVendor, sentryEvent.Contexts.Gpu.VendorName);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsMemorySize, sentryEvent.Contexts.Gpu.MemorySize);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsMultiThreaded, sentryEvent.Contexts.Gpu.MultiThreadedRendering);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.NpotSupport, sentryEvent.Contexts.Gpu.NpotSupport);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVersion, sentryEvent.Contexts.Gpu.Version);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceType, sentryEvent.Contexts.Gpu.ApiType);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.MaxTextureSize, sentryEvent.Contexts.Gpu.MaxTextureSize);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SupportsDrawCallInstancing, sentryEvent.Contexts.Gpu.SupportsDrawCallInstancing);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SupportsRayTracing, sentryEvent.Contexts.Gpu.SupportsRayTracing);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SupportsComputeShaders, sentryEvent.Contexts.Gpu.SupportsComputeShaders);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SupportsGeometryShaders, sentryEvent.Contexts.Gpu.SupportsGeometryShaders);
+        }
+
+        [UnityTest]
+        public IEnumerator Process_GpuProtocolGraphicsShaderLevel_Assigned(
+            [ValueSource(nameof(ShaderLevels))] (int, string) shaderValue)
+        {
+            var (shaderLevel, shaderDescription) = shaderValue;
+
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            {
+                GraphicsShaderLevel = shaderLevel
+            };
+
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
+            var sentryEvent = new SentryEvent();
+
+            // act
+            // SentryInitialization always called
+            yield return _sentryMonoBehaviour.CollectData();
+            sut.Process(sentryEvent);
+
+            Assert.AreEqual(shaderDescription, sentryEvent.Contexts.Gpu.GraphicsShaderLevel);
+        }
+
+        private static readonly (int shaderLevel, string shaderDescription)[] ShaderLevels =
+        {
+           (20, "Shader Model 2.0"),
+           (25, "Shader Model 2.5"),
+           (30, "Shader Model 3.0"),
+           (35, "OpenGL ES 3.0"),
+           (40, "Shader Model 4.0"),
+           (45, "Metal / OpenGL ES 3.1"),
+           (46, "OpenGL 4.1"),
+           (50, "Shader Model 5.0"),
+           (-1, "-1"),
+           (21, "21")
+        };
     }
 
     internal sealed class TestSentrySystemInfo : ISentrySystemInfo
