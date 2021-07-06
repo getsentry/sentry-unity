@@ -69,26 +69,36 @@ namespace Sentry.Unity.Json
             return options;
         }
 
-        internal static void ToScriptableOptions(TextAsset sentryOptionsTextAsset, ScriptableSentryUnityOptions options)
+        internal static void ToScriptableOptions(TextAsset sentryOptionsTextAsset, ScriptableSentryUnityOptions scriptableOptions)
         {
             var jsonOptions = LoadFromJson(sentryOptionsTextAsset);
 
-            options.Enabled = jsonOptions.Enabled;
+            scriptableOptions.Enabled = jsonOptions.Enabled;
 
             if (jsonOptions.Dsn is { } dsn)
             {
-                options.Dsn = dsn;
+                scriptableOptions.Dsn = dsn;
             }
 
-            options.CaptureInEditor = jsonOptions.CaptureInEditor;
-            options.Debug = jsonOptions.Debug;
-            options.DebugOnlyInEditor = jsonOptions.DebugOnlyInEditor;
-            options.DiagnosticLevel = jsonOptions.DiagnosticLevel;
-            options.AttachStacktrace = jsonOptions.AttachStacktrace;
+            scriptableOptions.CaptureInEditor = jsonOptions.CaptureInEditor;
+            scriptableOptions.Debug = jsonOptions.Debug;
+            scriptableOptions.DebugOnlyInEditor = jsonOptions.DebugOnlyInEditor;
+            scriptableOptions.DiagnosticLevel = jsonOptions.DiagnosticLevel;
+            scriptableOptions.AttachStacktrace = jsonOptions.AttachStacktrace;
 
             if (jsonOptions.SampleRate is { } sampleRate)
             {
-                options.SampleRate = sampleRate;
+                scriptableOptions.SampleRate = sampleRate;
+            }
+
+            if (jsonOptions.Release is { } release)
+            {
+                scriptableOptions.ReleaseOverride = release;
+            }
+
+            if (jsonOptions.Environment is { } environment)
+            {
+                scriptableOptions.EnvironmentOverride = environment;
             }
         }
     }

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
@@ -60,6 +61,25 @@ namespace Sentry.Unity.Tests
             SentryOptionsUtility.SetDefaults(options, new TestApplication());
 
             Assert.AreEqual(false, options.IsEnvironmentUser);
+        }
+
+        [Test]
+        public void SetDefaults_OptionsCreated_AreEqual()
+        {
+            var expectedOptions = new SentryUnityOptions();
+            SentryOptionsUtility.SetDefaults(expectedOptions);
+
+            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+            SentryOptionsUtility.SetDefaults(scriptableOptions);
+
+            // These are config window specific differences in default values we actually want
+            scriptableOptions.Debug = false;
+            scriptableOptions.DebugOnlyInEditor = false;
+            scriptableOptions.DiagnosticLevel = SentryLevel.Debug;
+
+            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions);
+
+            SentryUnityOptionsTests.AssertOptions(expectedOptions, actualOptions);
         }
     }
 }

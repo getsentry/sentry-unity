@@ -1,5 +1,4 @@
-using System.Text.Json;
-using Sentry.Unity.Extensions;
+using System;
 using Sentry.Unity.Json;
 using UnityEngine;
 
@@ -10,12 +9,12 @@ namespace Sentry.Unity
         /// <summary>
         /// Relative to Assets/Resources
         /// </summary>
-        public const string ConfigRootFolder = "Sentry";
+        internal const string ConfigRootFolder = "Sentry";
 
         /// <summary>
         /// Main Sentry config name for Unity
         /// </summary>
-        public const string ConfigName = "SentryOptions";
+        internal const string ConfigName = "SentryOptions";
 
         /// <summary>
         /// Path for the config for Unity
@@ -23,24 +22,35 @@ namespace Sentry.Unity
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.asset";
 
-        [field: SerializeField] public bool Enabled { get; set; }
+        [field: SerializeField] internal bool Enabled { get; set; }
 
-        [field: SerializeField] public bool CaptureInEditor { get; set; }
+        [field: SerializeField] internal string? Dsn { get; set; }
+        [field: SerializeField] internal bool CaptureInEditor { get; set; }
+        [field: SerializeField] internal double TracesSampleRate { get; set; }
+        [field: SerializeField] internal bool AutoSessionTracking { get; set; }
+        [field: SerializeField] internal int AutoSessionTrackingInterval { get; set; }
 
-        [field: SerializeField] public string Dsn { get; set; } = string.Empty;
 
-        [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
+        [field: SerializeField] internal string ReleaseOverride { get; set; } = string.Empty;
+        [field: SerializeField] internal string EnvironmentOverride { get; set; } = string.Empty;
+        [field: SerializeField] internal bool AttachStacktrace { get; set; }
+        [field: SerializeField] internal int MaxBreadcrumbs { get; set; }
+        [field: SerializeField] internal ReportAssembliesMode ReportAssembliesMode { get; set; }
+        [field: SerializeField] internal bool SendDefaultPii { get; set; }
+        [field: SerializeField] internal bool IsEnvironmentUser { get; set; }
 
-        [field: SerializeField] public bool AttachStacktrace { get; set; }
-        [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
-        [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
-        [field: SerializeField] public bool EnableOfflineCaching { get; set; }
+        [field: SerializeField] internal bool EnableOfflineCaching { get; set; }
+        [field: SerializeField] internal int MaxCacheItems { get; set; }
+        [field: SerializeField] internal int InitCacheFlushTimeout { get; set; }
+        [field: SerializeField] internal float? SampleRate { get; set; }
+        [field: SerializeField] internal int ShutdownTimeout { get; set; }
+        [field: SerializeField] internal int MaxQueueItems { get; set; }
 
-        [field: SerializeField] public bool Debug { get; set; }
-        [field: SerializeField] public bool DebugOnlyInEditor { get; set; }
-        [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; }
+        [field: SerializeField] internal bool Debug { get; set; }
+        [field: SerializeField] internal bool DebugOnlyInEditor { get; set; }
+        [field: SerializeField] internal SentryLevel DiagnosticLevel { get; set; }
 
-        public static SentryUnityOptions? LoadSentryUnityOptions()
+        internal static SentryUnityOptions? LoadSentryUnityOptions()
         {
             // TODO: Deprecated and to be removed once we update far enough.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
@@ -65,11 +75,24 @@ namespace Sentry.Unity
             SentryOptionsUtility.SetDefaults(options);
 
             options.Enabled = scriptableOptions.Enabled;
-            options.CaptureInEditor = scriptableOptions.CaptureInEditor;
 
-            options.Dsn = string.Equals(scriptableOptions.Dsn, string.Empty) ? null : scriptableOptions.Dsn;
-            options.SampleRate = (scriptableOptions.SampleRate == 1.0f) ? null : scriptableOptions.SampleRate;
+            options.Dsn = scriptableOptions.Dsn;
+            options.CaptureInEditor = scriptableOptions.CaptureInEditor;
+            options.TracesSampleRate = scriptableOptions.TracesSampleRate;
+            options.AutoSessionTracking = scriptableOptions.AutoSessionTracking;
+            options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval);
+
             options.AttachStacktrace = scriptableOptions.AttachStacktrace;
+            options.MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs;
+            options.ReportAssembliesMode = scriptableOptions.ReportAssembliesMode;
+            options.SendDefaultPii = scriptableOptions.SendDefaultPii;
+            options.IsEnvironmentUser = scriptableOptions.IsEnvironmentUser;
+
+            options.MaxCacheItems = scriptableOptions.MaxCacheItems;
+            options.InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout);
+            options.SampleRate = scriptableOptions.SampleRate;
+            options.ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout);
+            options.MaxQueueItems = scriptableOptions.MaxQueueItems;
 
             if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))
             {

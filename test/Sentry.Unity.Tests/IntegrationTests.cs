@@ -229,7 +229,7 @@ namespace Sentry.Unity.Tests
             });
 
             Assert.NotNull(actualOptions);
-            UnitySentryOptionsTests.AssertOptions(expectedOptions, actualOptions!);
+            SentryUnityOptionsTests.AssertOptions(expectedOptions, actualOptions!);
         }
 
         internal static IEnumerator SetupSceneCoroutine(string sceneName)
