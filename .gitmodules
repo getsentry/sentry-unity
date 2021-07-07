@@ -4,3 +4,4 @@
 [submodule "src/sentry-java"]
 	path = src/sentry-java
 	url = https://github.com/getsentry/sentry-java.git
+	
