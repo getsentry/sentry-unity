@@ -1,7 +1,5 @@
 using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -10,16 +8,13 @@ namespace Sentry.Unity
     /// <summary>
     /// Singleton and DontDestroyOnLoad setup.
     /// </summary>
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     internal partial class SentryMonoBehaviour
     {
         private static SentryMonoBehaviour? Instance;
 
-        // ReSharper disable once UnusedMember.Local
         private void Awake()
         {
             // Unity overrides `==` operator in MonoBehaviours
-            // ReSharper disable once ConvertIfStatementToNullCoalescingAssignment
             if (Instance == null)
             {
                 Instance = this;
@@ -37,7 +32,6 @@ namespace Sentry.Unity
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
     [DefaultExecutionOrder(-900)]
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     internal partial class SentryMonoBehaviour : MonoBehaviour
     {
         /// <summary>
@@ -123,14 +117,12 @@ namespace Sentry.Unity
         }
 
         // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
-        // ReSharper disable once UnusedMember.Local
         private void OnApplicationQuit() => Destroy(gameObject);
     }
 
     /// <summary>
     /// Main thread data collector.
     /// </summary>
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     internal partial class SentryMonoBehaviour
     {
         internal readonly MainThreadData MainThreadData = new();
@@ -146,7 +138,6 @@ namespace Sentry.Unity
             set => _sentrySystemInfo = value;
         }
 
-        // ReSharper disable once UnusedMember.Local
         private void Start()
             => StartCoroutine(CollectData());
 
