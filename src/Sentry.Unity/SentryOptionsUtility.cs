@@ -13,6 +13,7 @@ namespace Sentry.Unity
             options.AutoSessionTracking = true;
             options.CaptureInEditor = true;
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
+            options.InitCacheFlushTimeout = System.TimeSpan.FromSeconds(2);
 
             options.StackTraceMode = StackTraceMode.Original;
             options.IsEnvironmentUser = false;
@@ -21,26 +22,42 @@ namespace Sentry.Unity
             options.Environment = Environment(application);
 
             options.CacheDirectoryPath = application.PersistentDataPath;
-
-            options.DebugOnlyInEditor = false;
         }
 
-        public static void SetDefaults(ScriptableSentryUnityOptions options)
+        public static void SetDefaults(ScriptableSentryUnityOptions scriptableOptions)
         {
-            options.Enabled = true;
-            options.Dsn = string.Empty;
-            options.CaptureInEditor = true;
-            options.AttachStacktrace = false;
-            options.SampleRate = 1.0f;
+            var options = new SentryUnityOptions();
+            SetDefaults(options);
 
-            options.ReleaseOverride = string.Empty;
-            options.EnvironmentOverride = string.Empty;
+            scriptableOptions.Enabled = options.Enabled;
 
-            options.EnableOfflineCaching = true;
+            scriptableOptions.Dsn = options.Dsn;
+            scriptableOptions.CaptureInEditor = options.CaptureInEditor;
+            scriptableOptions.TracesSampleRate = options.TracesSampleRate;
+            scriptableOptions.AutoSessionTrackingInterval = (int) options.AutoSessionTrackingInterval.TotalMilliseconds;
+            scriptableOptions.AutoSessionTracking = options.AutoSessionTracking;
 
-            options.Debug = true;
-            options.DebugOnlyInEditor = true;
-            options.DiagnosticLevel = SentryLevel.Warning;
+            scriptableOptions.AttachStacktrace = options.AttachStacktrace;
+            scriptableOptions.MaxBreadcrumbs = options.MaxBreadcrumbs;
+            scriptableOptions.ReportAssembliesMode = options.ReportAssembliesMode;
+            scriptableOptions.SendDefaultPii = options.SendDefaultPii;
+            scriptableOptions.IsEnvironmentUser = options.IsEnvironmentUser;
+
+            scriptableOptions.MaxCacheItems = options.MaxCacheItems;
+            scriptableOptions.InitCacheFlushTimeout = (int) options.InitCacheFlushTimeout.TotalMilliseconds;
+            scriptableOptions.SampleRate = options.SampleRate;
+            scriptableOptions.ShutdownTimeout = (int) options.ShutdownTimeout.TotalMilliseconds;
+            scriptableOptions.MaxQueueItems = options.MaxQueueItems;
+
+            // Config window specifics
+            scriptableOptions.ReleaseOverride = string.Empty;
+            scriptableOptions.EnvironmentOverride = string.Empty;
+
+            scriptableOptions.EnableOfflineCaching = true;
+
+            scriptableOptions.Debug = true;
+            scriptableOptions.DebugOnlyInEditor = true;
+            scriptableOptions.DiagnosticLevel = SentryLevel.Warning;
         }
 
         private static string Release(IApplication application) =>
