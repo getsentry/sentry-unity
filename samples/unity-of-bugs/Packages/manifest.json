@@ -2,8 +2,8 @@
   "dependencies": {
     "com.unity.ide.rider": "1.1.4",
     "com.unity.ide.vscode": "1.2.3",
-    "com.unity.test-framework": "1.1.22",
     "com.unity.textmeshpro": "2.1.1",
+    "com.unity.test-framework": "1.1.24",
     "com.unity.toolchain.macos-x86_64-linux-x86_64": "0.1.21-preview",
     "com.unity.ugui": "1.0.0",
     "io.sentry.unity.dev": "file:../../../package-dev",

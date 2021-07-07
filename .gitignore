@@ -10,13 +10,22 @@ Build/
 .gradle
 sentry-unity/build:*
 .DS_Store
+artifacts/
+temp/
 
 samples/**/*.csproj
 samples/**/*.sln
+samples/unity-of-bugs/Assets/InitTestScene*
 
 # Ignore build and Unity artifacts
 package-dev/**/*.dll
 package-dev/**/*.meta
+!package-dev/Runtime/Sentry.Unity.dll.meta
+!package-dev/Tests/*.meta
+# required to be marked as Editor only
+!package-dev/Tests/Runtime/Sentry.Unity.Tests.dll.meta
+!package-dev/Tests/**/*.asmdef.meta
+!package-dev/Tests/**/*.asmdef
 package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/TestSentryOptions.json

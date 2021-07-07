@@ -1,0 +1,40 @@
+<Project>
+  <Import Project="../Directory.Build.props" />
+
+  <PropertyGroup>
+    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageRuntimeTestsPath>../../$(DevPackageFolderName)/Tests/Runtime</PackageRuntimeTestsPath>
+    <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
+  </PropertyGroup>
+
+  <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
+  <Target Name="ReferenceUnityEditor" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <ItemGroup>
+      <Reference Include="UnityEditor">
+        <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEditor.TestRunner">
+        <HintPath>$(UnityTestPath)/UnityEditor.TestRunner.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.TestRunner">
+        <HintPath>$(UnityTestPath)/UnityEngine.TestRunner.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <!-- warning NU1701: Package 'NUnit 3.5.0' was restored using '.NETFramework,Version=v4.6.1
+      Can this be restored for ns2.0? -->
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.5.0" />
+  </ItemGroup>
+
+</Project>

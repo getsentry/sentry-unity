@@ -1,0 +1,34 @@
+<Project>
+
+  <PropertyGroup>
+    <Version>0.3.3</Version>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <DevPackageFolderName>package-dev</DevPackageFolderName>
+    <Deterministic>true</Deterministic>
+    <Features>strict</Features>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.0" PrivateAssets="All" />
+    <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <UnityPackageProject>$(SolutionDir)temp/unity-packages</UnityPackageProject>
+  </PropertyGroup>
+
+  <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
+  <Target Name="ReferenceUnity" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <ItemGroup>
+      <Reference Include="UnityEngine">
+        <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using Sentry.Unity.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,17 +9,15 @@ namespace Sentry.Unity.Editor
 {
     public class SentryWindow : EditorWindow
     {
+        private const string LinkXmlPath = "Assets/Plugins/Sentry/link.xml";
+
         [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
             => (SentryWindow)GetWindow(typeof(SentryWindow));
 
-        protected virtual string SentryOptionsAssetName { get; } = UnitySentryOptions.ConfigName;
+        protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
 
-        // Will be used only from Unity Editor
-        protected string SentryOptionsAssetPath
-            => $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{SentryOptionsAssetName}.json";
-
-        public UnitySentryOptions Options { get; set; } = null!; // Set by OnEnable()
+        public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
@@ -26,41 +25,127 @@ namespace Sentry.Unity.Editor
         {
             SetTitle();
 
-            TryCreateSentryFolder();
+            CopyLinkXmlToPlugins();
 
-            Options = LoadUnitySentryOptions();
-
-            TryCopyLinkXml(Options.Logger);
+            CheckForAndConvertJsonConfig();
+            Options = LoadOptions();
         }
 
-        private UnitySentryOptions LoadUnitySentryOptions()
+        private ScriptableSentryUnityOptions LoadOptions()
         {
-            if (File.Exists(SentryOptionsAssetPath))
+            var options = AssetDatabase.LoadAssetAtPath(
+                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName), typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
+
+            if (options is null)
             {
-                return UnitySentryOptions.LoadFromUnity();
+                CreateConfigDirectory();
+                options = CreateScriptableSentryUnityOptions();
             }
 
-            var unitySentryOptions = new UnitySentryOptions { Enabled = true };
-            unitySentryOptions
-                .TryAttachLogger()
-                .SaveToUnity(SentryOptionsAssetPath);
-
-            return unitySentryOptions;
+            return options;
         }
 
-        private void SetTitle()
+        private void CheckForAndConvertJsonConfig()
         {
-            var isDarkMode = EditorGUIUtility.isProSkin;
-            var texture = new Texture2D(16, 16);
-            using var memStream = new MemoryStream();
-            using var stream = GetType().Assembly
-                .GetManifestResourceStream($"Sentry.Unity.Editor.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
-            stream.CopyTo(memStream);
-            stream.Flush();
-            memStream.Position = 0;
-            texture.LoadImage(memStream.ToArray());
+            var sentryOptionsTextAsset = AssetDatabase.LoadAssetAtPath(JsonSentryUnityOptions.GetConfigPath(), typeof(TextAsset)) as TextAsset;
+            if (sentryOptionsTextAsset == null)
+            {
+                // Json config not found, nothing to do.
+                return;
+            }
 
-            titleContent = new GUIContent("Sentry", texture, "Sentry SDK Options");
+            var scriptableOptions = CreateScriptableSentryUnityOptions();
+            JsonSentryUnityOptions.ToScriptableOptions(sentryOptionsTextAsset, scriptableOptions);
+
+            EditorUtility.SetDirty(scriptableOptions);
+            AssetDatabase.SaveAssets();
+
+            AssetDatabase.DeleteAsset(JsonSentryUnityOptions.GetConfigPath());
+        }
+
+        private ScriptableSentryUnityOptions CreateScriptableSentryUnityOptions()
+        {
+            var options = CreateInstance<ScriptableSentryUnityOptions>();
+            SentryOptionsUtility.SetDefaults(options);
+
+            AssetDatabase.CreateAsset(options, ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
+
+            EditorUtility.SetDirty(options);
+            AssetDatabase.SaveAssets();
+
+            return options;
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        private void OnGUI()
+        {
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+            Options.Enabled = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Enable", "Controls enabling Sentry by initializing the SDK or not."),
+                Options.Enabled);
+
+            Options.CaptureInEditor = EditorGUILayout.Toggle(
+                new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
+                Options.CaptureInEditor);
+
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+            GUILayout.Label("SDK Options", EditorStyles.boldLabel);
+            Options.Dsn = EditorGUILayout.TextField(
+                new GUIContent("DSN", "The URL to your project inside Sentry. Get yours in Sentry, Project Settings."),
+                Options.Dsn);
+
+            Options.SampleRate = EditorGUILayout.Slider(
+                new GUIContent("Event Sample Rate", "What random sample rate to apply. 1.0 captures everything, 0.7 captures 70%."),
+                Options.SampleRate, 0.01f, 1);
+
+            Options.AttachStacktrace = EditorGUILayout.Toggle(
+                new GUIContent("Stacktrace For Logs", "Whether to include a stack trace for non error events like logs. " +
+                                                      "Even when Unity didn't include and no Exception was thrown.."),
+                Options.AttachStacktrace);
+
+            Options.ReleaseOverride = EditorGUILayout.TextField(
+                new GUIContent("Override Release", "By default release is taken from " +
+                                                   "'Application.version'. This option is an override."),
+                Options.ReleaseOverride);
+
+            Options.EnvironmentOverride = EditorGUILayout.TextField(
+                new GUIContent("Override Environment", "An explicit environment. If not set, auto " +
+                                                       "detects such as 'development', 'production' or 'editor'."),
+                Options.EnvironmentOverride);
+
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+
+            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
+            Options.Debug = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Debug Mode", "Whether the Sentry SDK should print its diagnostic logs to the console."),
+                Options.Debug);
+            Options.DebugOnlyInEditor = EditorGUILayout.Toggle(
+                new GUIContent(
+                    "Only In Editor",
+                    "Only print logs when in the editor. Development builds of the player will not include Sentry's SDK diagnostics."),
+                Options.DebugOnlyInEditor);
+            Options.DiagnosticLevel = (SentryLevel)EditorGUILayout.EnumPopup(
+                new GUIContent("Verbosity level", "The minimum level allowed to be printed to the console. " +
+                                                  "Log messages with a level below this level are dropped."),
+                Options.DiagnosticLevel);
+            EditorGUILayout.EndToggleGroup();
+
+            EditorGUILayout.EndToggleGroup();
+
+            // groupEnabled = EditorGUILayout.BeginToggleGroup("Sentry CLI Options", groupEnabled);
+            // uploadSymbols = EditorGUILayout.Toggle("Upload Proguard Mappings", uploadSymbols);
+            // auth = EditorGUILayout.TextField("Auth token", auth);
+            // organization = EditorGUILayout.TextField("Organization", organization);
+            // project = EditorGUILayout.TextField("Project", project);
+            // EditorGUILayout.EndToggleGroup();
+        }
+
+        private void OnLostFocus()
+        {
+            Validate();
+
+            EditorUtility.SetDirty(Options);
+            AssetDatabase.SaveAssets();
         }
 
         private void Validate()
@@ -75,7 +160,7 @@ namespace Sentry.Unity.Editor
 
         private void ValidateDsn()
         {
-            if (Options.Dsn == null)
+            if (string.IsNullOrWhiteSpace(Options.Dsn))
             {
                 return;
             }
@@ -88,148 +173,64 @@ namespace Sentry.Unity.Editor
             var fullFieldName = $"{nameof(Options)}.{nameof(Options.Dsn)}";
             var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
             OnValidationError(validationError);
-            Debug.LogError(validationError.ToString());
-        }
 
-        /// <summary>
-        /// Called if window focus is lost or 'Close' is called
-        /// </summary>
-        public void OnLostFocus()
-        {
-            Validate();
-
-            Options.SaveToUnity(SentryOptionsAssetPath);
-            AssetDatabase.Refresh();
-        }
-
-        // ReSharper disable once UnusedMember.Local
-        private void OnGUI()
-        {
-            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
-            Options.Enabled = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable", "Controls enabling Sentry by initializing the SDK or not."),
-                Options.Enabled);
-            Options.CaptureInEditor = EditorGUILayout.Toggle(
-                new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
-                Options.CaptureInEditor);
-
-            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
-            GUILayout.Label("SDK Options", EditorStyles.boldLabel);
-            Options.Dsn = EditorGUILayout.TextField(
-                new GUIContent("DSN", "The URL to your project inside Sentry. Get yours in Sentry, Project Settings."),
-                Options.Dsn);
-            Options.SampleRate = EditorGUILayout.Slider(
-                new GUIContent("Event Sample Rate", "What random sample rate to apply. 1.0 captures everything, 0.7 captures 70%."),
-                Options.SampleRate, 0.01f, 1);
-            Options.RequestBodyCompressionLevel = (SentryUnityCompression)EditorGUILayout.EnumPopup(
-                new GUIContent("Compress Payload", "The compression level to use on the data sent to Sentry. " +
-                                                   "Some platforms don't support GZip, 'auto' attempts to disable compression in those cases."),
-                Options.RequestBodyCompressionLevel);
-            Options.AttachStacktrace = EditorGUILayout.Toggle(
-                new GUIContent("Stacktrace For Logs", "Whether to include a stack trace for non error events like logs. " +
-                                                                "Even when Unity didn't include and no Exception was thrown.."),
-                Options.AttachStacktrace);
-            Options.Release = EditorGUILayout.TextField(
-                new GUIContent("Override Release", "By default release is taken from 'Application.version'. " +
-                                                   "This option is an override."),
-                Options.Release);
-            Options.Environment = EditorGUILayout.TextField(
-                new GUIContent("Override Environment", "An explicit environment. " +
-                                                       "If not set, auto detects such as 'development', 'production' or 'editor'."),
-                Options.Environment);
-
-            GUILayout.Label(new GUIContent(GUIContent.none), EditorStyles.boldLabel);
-            Options.Debug = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Debug Mode", "Whether the Sentry SDK should print its diagnostic logs to the console."),
-                Options.Debug);
-            Options.DebugOnlyInEditor = EditorGUILayout.Toggle(
-                new GUIContent(
-                    "Only In Editor",
-                    "Only print logs when in the editor. Development builds of the player will not include Sentry's SDK diagnostics."),
-                Options.DebugOnlyInEditor);
-            Options.DiagnosticsLevel = (SentryLevel)EditorGUILayout.EnumPopup(
-                new GUIContent("Verbosity level", "The minimum level allowed to be printed to the console. " +
-                                                  "Log messages with a level below this level are dropped."),
-                Options.DiagnosticsLevel);
-            EditorGUILayout.EndToggleGroup();
-
-            EditorGUILayout.EndToggleGroup();
-
-            // groupEnabled = EditorGUILayout.BeginToggleGroup("Sentry CLI Options", groupEnabled);
-            // uploadSymbols = EditorGUILayout.Toggle("Upload Proguard Mappings", uploadSymbols);
-            // auth = EditorGUILayout.TextField("Auth token", auth);
-            // organization = EditorGUILayout.TextField("Organization", organization);
-            // project = EditorGUILayout.TextField("Project", project);
-            // EditorGUILayout.EndToggleGroup();
+            new UnityLogger(new SentryOptions()).LogWarning(validationError.ToString());
         }
 
         /// <summary>
         /// Creates Sentry folder for storing its configs - Assets/Resources/Sentry
         /// </summary>
-        private static void TryCreateSentryFolder()
+        private void CreateConfigDirectory()
         {
-            // TODO: revise, 'Resources' is a special Unity folder which is created by default. Not sure this check is needed.
             if (!AssetDatabase.IsValidFolder("Assets/Resources"))
             {
                 AssetDatabase.CreateFolder("Assets", "Resources");
             }
-            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{UnitySentryOptions.ConfigRootFolder}"))
+            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{ScriptableSentryUnityOptions.ConfigRootFolder}"))
             {
-                AssetDatabase.CreateFolder("Assets/Resources", UnitySentryOptions.ConfigRootFolder);
+                AssetDatabase.CreateFolder("Assets/Resources", ScriptableSentryUnityOptions.ConfigRootFolder);
             }
+
+            AssetDatabase.Refresh();
         }
 
         /// <summary>
-        /// Find and copy 'link.xml' into current Unity project for IL2CPP builds
+        /// Creates Sentry folder 'Plugins/Sentry' and copies the link.xml into it
         /// </summary>
-        private static void TryCopyLinkXml(IDiagnosticLogger? logger)
+        private void CopyLinkXmlToPlugins()
         {
-            const string linkXmlFileName = "link.xml";
-
-            var linkXmlPath = $"{Application.dataPath}/Resources/{UnitySentryOptions.ConfigRootFolder}/{linkXmlFileName}";
-            if (File.Exists(linkXmlPath))
+            if (!AssetDatabase.IsValidFolder("Assets/Plugins"))
             {
-                return;
+                AssetDatabase.CreateFolder("Assets", "Plugins");
+            }
+            if (!AssetDatabase.IsValidFolder("Assets/Plugins/Sentry"))
+            {
+                AssetDatabase.CreateFolder("Assets/Plugins", "Sentry");
             }
 
-            logger?.Log(SentryLevel.Debug, $"'{linkXmlFileName}' is not found. Creating one!");
-
-            var linkPath = GetLinkXmlPath(linkXmlFileName);
-            if (linkPath == null)
+            if (!File.Exists(LinkXmlPath))
             {
-                logger?.Log(SentryLevel.Fatal, $"Couldn't locate '{linkXmlFileName}' in 'Packages'.");
-                return;
-            }
+                using var fileStream = File.Create(LinkXmlPath);
+                using var resourceStream = GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
+                resourceStream.CopyTo(fileStream);
 
-            var linkXmlAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(linkPath);
-            File.WriteAllBytes(linkXmlPath, linkXmlAsset.bytes);
+                AssetDatabase.Refresh();
+            }
         }
 
-        /// <summary>
-        /// Get Unity path to 'link.xml' file from `Packages` folder.
-        ///
-        /// Release UPM:
-        ///   Given:   link.xml
-        ///   Returns: Packages/io.sentry.unity/Runtime/link.xml
-        ///
-        /// Dev UPM:
-        ///   Given:   link.xml
-        ///   Returns: Packages/io.sentry.unity.dev/Runtime/link.xml
-        /// </summary>
-        private static string? GetLinkXmlPath(string linkXmlFileName)
+        private void SetTitle()
         {
-            var assetIds = AssetDatabase.FindAssets(UnitySentryOptions.PackageName, new [] { "Packages" });
-            for (var i = 0; i < assetIds.Length; i++)
-            {
-                var assetName = AssetDatabase.GUIDToAssetPath(assetIds[i]);
-                if (assetName.Contains("Runtime"))
-                {
-                    var linkFolderPath = Path.GetDirectoryName(assetName)!;
-                    return Path.Combine(linkFolderPath, linkXmlFileName);
-                }
-            }
+            var isDarkMode = EditorGUIUtility.isProSkin;
+            var texture = new Texture2D(16, 16);
+            using var memStream = new MemoryStream();
+            using var stream = GetType().Assembly
+                .GetManifestResourceStream($"Sentry.Unity.Editor.Resources.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
+            stream.CopyTo(memStream);
+            stream.Flush();
+            memStream.Position = 0;
+            texture.LoadImage(memStream.ToArray());
 
-            return null;
+            titleContent = new GUIContent("Sentry", texture, "Sentry SDK Options");
         }
     }
 
