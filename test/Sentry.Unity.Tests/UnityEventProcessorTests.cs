@@ -259,9 +259,27 @@ namespace Sentry.Unity.Tests
            (45, "Metal / OpenGL ES 3.1"),
            (46, "OpenGL 4.1"),
            (50, "Shader Model 5.0"),
-           (-1, "-1"),
            (21, "21")
         };
+
+        [UnityTest]
+        public IEnumerator Process_GpuProtocolGraphicsShaderLevelMinusOne_Ignored()
+        {
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            {
+                GraphicsShaderLevel = -1
+            };
+
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
+            var sentryEvent = new SentryEvent();
+
+            // act
+            // SentryInitialization always called
+            yield return _sentryMonoBehaviour.CollectData();
+            sut.Process(sentryEvent);
+
+            Assert.IsNull(sentryEvent.Contexts.Gpu.GraphicsShaderLevel);
+        }
     }
 
     internal sealed class TestSentrySystemInfo : ISentrySystemInfo

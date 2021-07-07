@@ -146,7 +146,11 @@ namespace Sentry.Unity
             gpu.SupportsRayTracing = _mainThreadData.SupportsRayTracing;
             gpu.SupportsComputeShaders = _mainThreadData.SupportsComputeShaders;
             gpu.SupportsGeometryShaders = _mainThreadData.SupportsGeometryShaders;
-            gpu.GraphicsShaderLevel = ToGraphicShaderLevelDescription(_mainThreadData.GraphicsShaderLevel ?? -1);
+
+            if (_mainThreadData.GraphicsShaderLevel.HasValue && _mainThreadData.GraphicsShaderLevel != -1)
+            {
+                gpu.GraphicsShaderLevel = ToGraphicShaderLevelDescription(_mainThreadData.GraphicsShaderLevel.Value);
+            }
 
             static string ToGraphicShaderLevelDescription(int shaderLevel)
                 => shaderLevel switch
