@@ -100,7 +100,6 @@ namespace Sentry.Unity
             }
 
 #pragma warning disable RECS0018 // Value is exact when expressing no battery level
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if (SystemInfo.batteryLevel != -1.0)
 #pragma warning restore RECS0018
             {
