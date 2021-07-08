@@ -1,3 +1,4 @@
+using System;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -64,19 +65,36 @@ namespace Sentry.Unity
             }
         }
 
+        private SentryMonoBehaviour? _sentryMonoBehaviour;
+        internal Func<SentryMonoBehaviour> SentryMonoBehaviourGenerator;
+
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
+            SentryMonoBehaviourGenerator = CreateSentryMonoBehaviour;
+
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this));
+            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviourGenerator));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new SessionIntegration());
+            this.AddIntegration(new SessionIntegration(SentryMonoBehaviourGenerator));
+        }
+
+        private SentryMonoBehaviour CreateSentryMonoBehaviour()
+        {
+            if (_sentryMonoBehaviour is not null)
+            {
+                return _sentryMonoBehaviour;
+            }
+
+            // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
+            var rootGameObject = new GameObject("SentryMonoBehaviour") { hideFlags = HideFlags.HideAndDontSave };
+            return _sentryMonoBehaviour = rootGameObject.AddComponent<SentryMonoBehaviour>();
         }
 
         public override string ToString()

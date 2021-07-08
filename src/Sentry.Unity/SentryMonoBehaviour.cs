@@ -1,14 +1,38 @@
 using System;
+using System.Collections;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity
 {
     /// <summary>
+    /// Singleton and DontDestroyOnLoad setup.
+    /// </summary>
+    internal partial class SentryMonoBehaviour
+    {
+        private static SentryMonoBehaviour? Instance;
+
+        private void Awake()
+        {
+            // Unity overrides `==` operator in MonoBehaviours
+            if (Instance == null)
+            {
+                Instance = this;
+                // Don't destroy when changing scenes
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    /// <summary>
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
     [DefaultExecutionOrder(-900)]
-    internal class SentryMonoBehaviour : MonoBehaviour
+    internal partial class SentryMonoBehaviour : MonoBehaviour
     {
         /// <summary>
         /// Hook to receive an event when the application gains focus.
@@ -94,5 +118,58 @@ namespace Sentry.Unity
 
         // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
         private void OnApplicationQuit() => Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// Main thread data collector.
+    /// </summary>
+    internal partial class SentryMonoBehaviour
+    {
+        internal readonly MainThreadData MainThreadData = new();
+
+        private ISentrySystemInfo? _sentrySystemInfo;
+        internal ISentrySystemInfo SentrySystemInfo
+        {
+            get
+            {
+                _sentrySystemInfo ??= SentrySystemInfoAdapter.Instance;
+                return _sentrySystemInfo;
+            }
+            set => _sentrySystemInfo = value;
+        }
+
+        private void Start()
+            => StartCoroutine(CollectData());
+
+        internal IEnumerator CollectData()
+        {
+            MainThreadData.MainThreadId = SentrySystemInfo.MainThreadId;
+            yield return null;
+            MainThreadData.ProcessorCount = SentrySystemInfo.ProcessorCount;
+            MainThreadData.DeviceType = SentrySystemInfo.DeviceType;
+            MainThreadData.OperatingSystem = SentrySystemInfo.OperatingSystem;
+            MainThreadData.CpuDescription = SentrySystemInfo.CpuDescription;
+            MainThreadData.SupportsVibration = SentrySystemInfo.SupportsVibration;
+            MainThreadData.DeviceName = SentrySystemInfo.DeviceName;
+            MainThreadData.DeviceUniqueIdentifier = SentrySystemInfo.DeviceUniqueIdentifier;
+            MainThreadData.DeviceModel = SentrySystemInfo.DeviceModel;
+            MainThreadData.SystemMemorySize = SentrySystemInfo.SystemMemorySize;
+            yield return null;
+            MainThreadData.GraphicsDeviceId = SentrySystemInfo.GraphicsDeviceId;
+            MainThreadData.GraphicsDeviceName = SentrySystemInfo.GraphicsDeviceName;
+            MainThreadData.GraphicsDeviceVendorId = SentrySystemInfo.GraphicsDeviceVendorId;
+            MainThreadData.GraphicsDeviceVendor = SentrySystemInfo.GraphicsDeviceVendor;
+            MainThreadData.GraphicsMemorySize = SentrySystemInfo.GraphicsMemorySize;
+            MainThreadData.GraphicsMultiThreaded = SentrySystemInfo.GraphicsMultiThreaded;
+            MainThreadData.NpotSupport = SentrySystemInfo.NpotSupport;
+            MainThreadData.GraphicsDeviceVersion = SentrySystemInfo.GraphicsDeviceVersion;
+            MainThreadData.GraphicsDeviceType = SentrySystemInfo.GraphicsDeviceType;
+            MainThreadData.MaxTextureSize = SentrySystemInfo.MaxTextureSize;
+            MainThreadData.SupportsDrawCallInstancing = SentrySystemInfo.SupportsDrawCallInstancing;
+            MainThreadData.SupportsRayTracing = SentrySystemInfo.SupportsRayTracing;
+            MainThreadData.SupportsComputeShaders = SentrySystemInfo.SupportsComputeShaders;
+            MainThreadData.SupportsGeometryShaders = SentrySystemInfo.SupportsGeometryShaders;
+            MainThreadData.GraphicsShaderLevel = SentrySystemInfo.GraphicsShaderLevel;
+        }
     }
 }

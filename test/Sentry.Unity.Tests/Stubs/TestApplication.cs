@@ -11,16 +11,15 @@ namespace Sentry.Unity.Tests.Stubs
             string productName = "",
             string version = "",
             string persistentDataPath = "",
-            bool isMainThread = true,
-            RuntimePlatform platform = RuntimePlatform.WindowsEditor
-            )
+            RuntimePlatform platform = RuntimePlatform.WindowsEditor,
+            ApplicationInstallMode installMode = ApplicationInstallMode.DeveloperBuild)
         {
             IsEditor = isEditor;
             ProductName = productName;
             Version = version;
             PersistentDataPath = persistentDataPath;
-            IsMainThread = isMainThread;
             Platform = platform;
+            InstallMode = installMode;
         }
 
         public event Application.LogCallback? LogMessageReceived;
@@ -30,8 +29,8 @@ namespace Sentry.Unity.Tests.Stubs
         public string ProductName { get; }
         public string Version { get; }
         public string PersistentDataPath { get; }
-        public bool IsMainThread { get; }
         public RuntimePlatform Platform { get; }
+        public ApplicationInstallMode InstallMode { get; }
         private void OnQuitting() => Quitting?.Invoke();
 
         private void OnLogMessageReceived(string condition, string stacktrace, LogType type)

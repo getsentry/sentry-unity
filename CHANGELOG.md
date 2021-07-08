@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Main thread data ([#245](https://github.com/getsentry/sentry-unity/pull/245))
+
 ### Features
 
 - New config window ([#243](https://github.com/getsentry/sentry-unity/pull/243))

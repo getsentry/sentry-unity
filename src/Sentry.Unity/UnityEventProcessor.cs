@@ -20,11 +20,13 @@ namespace Sentry.Unity
     internal class UnityEventProcessor : ISentryEventProcessor
     {
         private readonly SentryOptions _sentryOptions;
+        private readonly MainThreadData _mainThreadData;
         private readonly IApplication _application;
 
-        public UnityEventProcessor(SentryOptions sentryOptions, IApplication? application = null)
+        public UnityEventProcessor(SentryOptions sentryOptions, Func<SentryMonoBehaviour> sentryMonoBehaviourGenerator, IApplication? application = null)
         {
             _sentryOptions = sentryOptions;
+            _mainThreadData = sentryMonoBehaviourGenerator.Invoke().MainThreadData;
             _application = application ?? ApplicationAdapter.Instance;
         }
 
@@ -59,7 +61,7 @@ namespace Sentry.Unity
 
         private void PopulateApp(App app)
         {
-            if (_application.IsMainThread)
+            if (_mainThreadData.IsMainThread())
             {
                 app.StartTime = DateTimeOffset.UtcNow
                     // NOTE: Time API requires main thread
@@ -69,29 +71,27 @@ namespace Sentry.Unity
             app.BuildType = Debug.isDebugBuild ? "debug" : "release";
         }
 
-        private static void PopulateOperatingSystem(OperatingSystem operatingSystem)
+        private void PopulateOperatingSystem(OperatingSystem operatingSystem)
         {
             // TODO: Will move to raw_description once parsing is done in Sentry
-            operatingSystem.Name = SystemInfo.operatingSystem;
+            operatingSystem.Name = _mainThreadData.OperatingSystem;
         }
 
         private void PopulateDevice(Device device)
         {
-            device.ProcessorCount = SystemInfo.processorCount;
-            device.SupportsVibration = SystemInfo.supportsVibration;
-            device.BatteryStatus = SystemInfo.batteryStatus.ToString();
-            device.DeviceType = SystemInfo.deviceType.ToString();
-            device.CpuDescription = SystemInfo.processorType;
+            device.ProcessorCount = _mainThreadData.ProcessorCount;
+            device.BatteryStatus = SystemInfo.batteryStatus.ToString(); // don't cache
+            device.DeviceType = _mainThreadData.DeviceType;
+            device.CpuDescription = _mainThreadData.CpuDescription;
             device.Timezone = TimeZoneInfo.Local;
-            device.ProcessorCount = SystemInfo.processorCount;
-            device.SupportsVibration = SystemInfo.supportsVibration;
-            device.Name = SystemInfo.deviceName;
+            device.SupportsVibration = _mainThreadData.SupportsVibration;
+            device.Name = _mainThreadData.DeviceName;
 
             // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
             device.Simulator = _application.IsEditor ? true : null;
-            device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? SystemInfo.deviceUniqueIdentifier : null;
+            device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? _mainThreadData.DeviceUniqueIdentifier : null;
 
-            var model = SystemInfo.deviceModel;
+            var model = _mainThreadData.DeviceModel;
             if (model != SystemInfo.unsupportedIdentifier
                 // Returned by the editor
                 && model != "System Product Name (System manufacturer)")
@@ -108,9 +108,9 @@ namespace Sentry.Unity
 
             // This is the approximate amount of system memory in megabytes.
             // This function is not supported on Windows Store Apps and will always return 0.
-            if (SystemInfo.systemMemorySize != 0)
+            if (_mainThreadData.SystemMemorySize > 0)
             {
-                device.MemorySize = SystemInfo.systemMemorySize * 1048576L; // Sentry device mem is in Bytes
+                device.MemorySize = _mainThreadData.SystemMemorySize * 1048576L; // Sentry device mem is in Bytes
             }
 
             switch (Input.deviceOrientation)
@@ -130,23 +130,27 @@ namespace Sentry.Unity
             }
         }
 
-        private static void PopulateGpu(Gpu gpu)
+        private void PopulateGpu(Gpu gpu)
         {
-            gpu.Id = SystemInfo.graphicsDeviceID;
-            gpu.Name = SystemInfo.graphicsDeviceName;
-            gpu.VendorId = SystemInfo.graphicsDeviceVendorID.ToString();
-            gpu.VendorName = SystemInfo.graphicsDeviceVendor;
-            gpu.MemorySize = SystemInfo.graphicsMemorySize;
-            gpu.MultiThreadedRendering = SystemInfo.graphicsMultiThreaded;
-            gpu.NpotSupport = SystemInfo.npotSupport.ToString();
-            gpu.Version = SystemInfo.graphicsDeviceVersion;
-            gpu.ApiType = SystemInfo.graphicsDeviceType.ToString();
-            gpu.MaxTextureSize = SystemInfo.maxTextureSize;
-            gpu.SupportsDrawCallInstancing = SystemInfo.supportsInstancing;
-            gpu.SupportsRayTracing = SystemInfo.supportsRayTracing;
-            gpu.SupportsComputeShaders = SystemInfo.supportsComputeShaders;
-            gpu.SupportsGeometryShaders = SystemInfo.supportsGeometryShaders;
-            gpu.GraphicsShaderLevel = ToGraphicShaderLevelDescription(SystemInfo.graphicsShaderLevel);
+            gpu.Id = _mainThreadData.GraphicsDeviceId;
+            gpu.Name = _mainThreadData.GraphicsDeviceName;
+            gpu.VendorId = _mainThreadData.GraphicsDeviceVendorId;
+            gpu.VendorName = _mainThreadData.GraphicsDeviceVendor;
+            gpu.MemorySize = _mainThreadData.GraphicsMemorySize;
+            gpu.MultiThreadedRendering = _mainThreadData.GraphicsMultiThreaded;
+            gpu.NpotSupport = _mainThreadData.NpotSupport;
+            gpu.Version = _mainThreadData.GraphicsDeviceVersion;
+            gpu.ApiType = _mainThreadData.GraphicsDeviceType;
+            gpu.MaxTextureSize = _mainThreadData.MaxTextureSize;
+            gpu.SupportsDrawCallInstancing = _mainThreadData.SupportsDrawCallInstancing;
+            gpu.SupportsRayTracing = _mainThreadData.SupportsRayTracing;
+            gpu.SupportsComputeShaders = _mainThreadData.SupportsComputeShaders;
+            gpu.SupportsGeometryShaders = _mainThreadData.SupportsGeometryShaders;
+
+            if (_mainThreadData.GraphicsShaderLevel.HasValue && _mainThreadData.GraphicsShaderLevel != -1)
+            {
+                gpu.GraphicsShaderLevel = ToGraphicShaderLevelDescription(_mainThreadData.GraphicsShaderLevel.Value);
+            }
 
             static string ToGraphicShaderLevelDescription(int shaderLevel)
                 => shaderLevel switch
@@ -163,20 +167,28 @@ namespace Sentry.Unity
                 };
         }
 
-        private static void PopulateUnity(Protocol.Unity unity)
+        private void PopulateUnity(Protocol.Unity unity)
         {
-            unity.InstallMode = Application.installMode.ToString();
+            unity.InstallMode = _application.InstallMode.ToString();
         }
 
         private void PopulateTags(SentryEvent @event)
         {
-            @event.SetTag("unity.gpu.supports_instancing", SystemInfo.supportsInstancing ? "true" : "false");
-            @event.SetTag("unity.device.device_type", SystemInfo.deviceType.ToString());
-            @event.SetTag("unity.install_mode", Application.installMode.ToString());
+            @event.SetTag("unity.install_mode", _application.InstallMode.ToString());
 
-            if (_sentryOptions.SendDefaultPii)
+            if (_mainThreadData.SupportsDrawCallInstancing.HasValue)
             {
-                @event.SetTag("unity.device.unique_identifier", SystemInfo.deviceUniqueIdentifier);
+                @event.SetTag("unity.gpu.supports_instancing", _mainThreadData.SupportsDrawCallInstancing.Value ? "true" : "false");
+            }
+
+            if (_mainThreadData.DeviceType is not null)
+            {
+                @event.SetTag("unity.device.device_type", _mainThreadData.DeviceType);
+            }
+
+            if (_sentryOptions.SendDefaultPii && _mainThreadData.DeviceUniqueIdentifier is not null)
+            {
+                @event.SetTag("unity.device.unique_identifier", _mainThreadData.DeviceUniqueIdentifier);
             }
         }
     }
