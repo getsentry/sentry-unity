@@ -11,8 +11,6 @@ namespace Sentry.Unity.Editor
 {
     public static class BuildPostprocess
     {
-        private const string MainPath = "/Users/bitfox/_Workspace/unity/samples/builds/unity_ios/MainApp/main.mm";
-
         private const string Include = "#include <Sentry/Sentry.h>\n";
 
         private const string Init = @"        [SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
@@ -57,14 +55,15 @@ namespace Sentry.Unity.Editor
             project.WriteToFile(projectPath);
         }
 
-        private static void ModifyMain()
+        private static void ModifyMain(string pathToBuiltProject)
         {
-            if (!File.Exists(MainPath))
+            var mainPath = Path.Combine(pathToBuiltProject, "MainApp", "main.mm");
+            if (!File.Exists(mainPath))
             {
                 return;
             }
 
-            var text = File.ReadAllText(MainPath);
+            var text = File.ReadAllText(mainPath);
 
             var includeRegex = new Regex(@"\#include \<Sentry\/Sentry\.h\>");
             if (includeRegex.Match(text).Success)
@@ -82,7 +81,7 @@ namespace Sentry.Unity.Editor
                 text = text.Insert(match.Index + match.Length, Init);
             }
 
-            File.WriteAllText(MainPath, text);
+            File.WriteAllText(mainPath, text);
         }
     }
 }
