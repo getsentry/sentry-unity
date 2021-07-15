@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Persisted sessions logging ([#257](https://github.com/getsentry/sentry-unity/pull/257))
+
 ## 0.4.0
 
 ### Features
