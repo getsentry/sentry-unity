@@ -9,10 +9,9 @@ using UnityEditor.iOS.Xcode.Extensions;
 
 namespace Sentry.Unity.Editor
 {
-    public static class BuildPostprocess
+    public static class BuildPostProcess
     {
         private const string Include = "#include <Sentry/Sentry.h>\n";
-
         private const string Init = @"        [SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
             options.dsn = @""https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417"";
             options.enableAutoSessionTracking = NO;
