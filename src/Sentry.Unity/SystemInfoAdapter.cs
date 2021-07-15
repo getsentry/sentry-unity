@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -13,7 +14,7 @@ namespace Sentry.Unity
         string? CpuDescription { get; }
         string? DeviceName { get; }
         string? DeviceUniqueIdentifier { get; }
-        string? DeviceModel { get; }
+        Lazy<string>? DeviceModel { get; }
         int? SystemMemorySize { get; }
         int? GraphicsDeviceId { get; }
         string? GraphicsDeviceName { get; }
@@ -48,7 +49,7 @@ namespace Sentry.Unity
         public string? CpuDescription => SystemInfo.processorType;
         public string? DeviceName => SystemInfo.deviceName;
         public string? DeviceUniqueIdentifier => SystemInfo.deviceUniqueIdentifier;
-        public string? DeviceModel => SystemInfo.deviceModel;
+        public Lazy<string> DeviceModel => new(() => SystemInfo.deviceModel);
         /// <summary>
         /// System memory size in megabytes.
         /// </summary>
