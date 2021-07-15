@@ -20,18 +20,21 @@ namespace Sentry.Unity
     internal class UnityEventProcessor : ISentryEventProcessor
     {
         private readonly SentryOptions _sentryOptions;
-        private readonly MainThreadData _mainThreadData;
+        private readonly Func<SentryMonoBehaviour> _sentryMonoBehaviour;
         private readonly IApplication _application;
+
+        private MainThreadData _mainThreadData = null!;
 
         public UnityEventProcessor(SentryOptions sentryOptions, Func<SentryMonoBehaviour> sentryMonoBehaviourGenerator, IApplication? application = null)
         {
             _sentryOptions = sentryOptions;
-            _mainThreadData = sentryMonoBehaviourGenerator.Invoke().MainThreadData;
+            _sentryMonoBehaviour = sentryMonoBehaviourGenerator;
             _application = application ?? ApplicationAdapter.Instance;
         }
 
         public SentryEvent Process(SentryEvent @event)
         {
+            _mainThreadData = _sentryMonoBehaviour.Invoke().MainThreadData;
             try
             {
                 PopulateSdk(@event.Sdk);
