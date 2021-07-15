@@ -8,6 +8,10 @@
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#380)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.5.0...3.8.0)
 
+## 0.4.0
+
+- No documented changes.
+
 ## 0.3.3
 
 ### Fixes
