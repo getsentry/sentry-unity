@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Added IsGlobalModeEnabled to SetDefaults ([#260](https://github.com/getsentry/sentry-unity/pull/260))
+
 ## 0.4.1
 
 - Bump dotnet 3.8.1 persisted session logging ([#258](https://github.com/getsentry/sentry-unity/pull/258))
