@@ -5,7 +5,8 @@ namespace Sentry.Unity.Tests.Stubs
 {
     public static class TestSentryUnity
     {
-        internal static IDisposable Init(Action<SentryUnityOptions> configure,
+        internal static IDisposable Init(
+            Action<SentryUnityOptions> configure,
             Action<HttpRequestMessage>? httpRequestCallback = null)
         {
             SentryUnity.Init(options =>
