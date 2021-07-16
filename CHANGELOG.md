@@ -5,6 +5,9 @@
 ### Features
 
 - Added IsGlobalModeEnabled to SetDefaults ([#260](https://github.com/getsentry/sentry-unity/pull/260))
+## 0.4.2
+
+- No documented changes.
 
 ## 0.4.1
 
