@@ -63,6 +63,7 @@ public class Builder
     public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64);
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX);
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android);
+    public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS);
 
     private static string GetArg(string name)
     {
