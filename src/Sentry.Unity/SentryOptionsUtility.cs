@@ -9,6 +9,7 @@ namespace Sentry.Unity
             application ??= ApplicationAdapter.Instance;
 
             options.Enabled = true;
+            options.IsGlobalModeEnabled = true;
 
             options.AutoSessionTracking = true;
             options.CaptureInEditor = true;
