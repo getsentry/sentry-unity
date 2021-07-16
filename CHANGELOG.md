@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.1
 
 - Bump dotnet 3.8.1 persisted session logging ([#258](https://github.com/getsentry/sentry-unity/pull/258))
   - Persisted Sessions logging ([#1125](https://github.com/getsentry/sentry-dotnet/pull/1125))
