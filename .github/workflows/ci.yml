@@ -22,6 +22,7 @@ env:
   # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
   UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
   UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
+  UNITY_TARGET_ANDROID_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-2019.4.21f1.exe
 
 jobs:
 
@@ -41,13 +42,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:/Program Files/Unity
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}-S{{ env.UNITY_TARGET_ANDROID_DOWNLOAD_URL }}
 
       - name: Restore previous build
         uses: actions/cache@v2
         with:
           path: artifacts/build
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}-S{{ env.UNITY_TARGET_ANDROID_DOWNLOAD_URL }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
@@ -60,9 +61,11 @@ jobs:
         run: |
           Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile unity_install.exe
           Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -OutFile unity_target_install.exe
+          Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_ANDROID_DOWNLOAD_URL }} -OutFile unity_target_android_install.exe
 
           ./unity_install.exe /S | Out-Default
           ./unity_target_install.exe /S | Out-Default
+          ./unity_target_android_install.exe /S | Out-Default
 
       # Need to write to $GITHUB_PATH to make the environment variable
       # available to other steps.
