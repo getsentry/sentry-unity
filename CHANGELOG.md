@@ -2,9 +2,11 @@
 
 ## 0.4.1
 
-- Bump dotnet 3.8.1 persisted session logging ([#258](https://github.com/getsentry/sentry-unity/pull/258))
-  - Persisted Sessions logging ([#1125](https://github.com/getsentry/sentry-dotnet/pull/1125))
-  - Don't log an error when attempting to recover a persisted session but none exists ([#1123](https://github.com/getsentry/sentry-dotnet/pull/1123))
+### Fixes
+
+- Bump Sentry .NET SDK 3.8.1 ([#258](https://github.com/getsentry/sentry-unity/pull/258))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#381)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.0...3.8.1)
 
 ## 0.4.0
 
