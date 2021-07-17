@@ -20,8 +20,10 @@ on:
 
 env:
   # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
+  UNITY_HUB_URL: https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe
   UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
   UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
+  UNITY_TARGET_ANDROID_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-2019.4.21f1.exe
 
 jobs:
 
@@ -32,138 +34,149 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
+      - name: Install Unity Hub
+        run: |
+          Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile hub_installer.exe
+          ./hub_installer.exe /S
+        
+
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
       # Note: if you change the installation step, remember to update the value
       # at the end of the key.
-      - name: Restore cached Unity installation
-        id: cache-unity
-        uses: actions/cache@v2
-        with:
-          path: C:/Program Files/Unity
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+      # - name: Restore cached Unity installation
+      #   id: cache-unity
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: C:/Program Files/Unity
+      #     key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}-S{{ env.UNITY_TARGET_ANDROID_DOWNLOAD_URL }}
 
-      - name: Restore previous build
-        uses: actions/cache@v2
-        with:
-          path: artifacts/build
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+      # - name: Restore previous build
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: artifacts/build
+      #     key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}-S{{ env.UNITY_TARGET_ANDROID_DOWNLOAD_URL }}
 
-      - name: Restore Unity Packages
-        uses: actions/cache@v2
-        with:
-          path: samples/unity-of-bugs/Library
-          key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+      # - name: Restore Unity Packages
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: samples/unity-of-bugs/Library
+      #     key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - name: Install Unity
-        if: ${{ !steps.cache-unity.outputs.cache-hit }}
-        run: |
-          Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile unity_install.exe
-          Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -OutFile unity_target_install.exe
+      # - name: Install Unity
+      #   if: ${{ !steps.cache-unity.outputs.cache-hit }}
+      #   run: |
+      #     Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile unity_install.exe
+      #     Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -OutFile unity_target_install.exe
+      #     Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_ANDROID_DOWNLOAD_URL }} -OutFile unity_target_android_install.exe
 
-          ./unity_install.exe /S | Out-Default
-          ./unity_target_install.exe /S | Out-Default
+      #     ./unity_install.exe /S | Out-Default
+      #     ./unity_target_install.exe /S | Out-Default
+      #     ./unity_target_android_install.exe /S | Out-Default
 
-      # Need to write to $GITHUB_PATH to make the environment variable
-      # available to other steps.
-      - name: Add Unity on PATH
-        run: |
-          Write-Output "C:/Program Files/Unity/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      # # Need to write to $GITHUB_PATH to make the environment variable
+      # # available to other steps.
+      # - name: Add Unity on PATH
+      #   run: |
+      #     Write-Output "C:/Program Files/Unity/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # License activation sometimes fails due to a problem connecting
-      # to Unity's licensing backend. Retry a few times if it fails.
-      - name: Activate Unity license
-        id: activate-license
-        run: |
-          $attempts = 5
+      # # License activation sometimes fails due to a problem connecting
+      # # to Unity's licensing backend. Retry a few times if it fails.
+      # - name: Activate Unity license
+      #   id: activate-license
+      #   run: |
+      #     $attempts = 5
 
-          while ($attempts -gt 0) {
-            unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
+      #     while ($attempts -gt 0) {
+      #       unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
 
-            if ($LASTEXITCODE -eq 0) {
-              break
-            }
+      #       if ($LASTEXITCODE -eq 0) {
+      #         break
+      #       }
 
-            Write-Host "License activation failed. Retrying..."
-            Start-Sleep -Seconds 15
-            $attempts--
-          }
+      #       Write-Host "License activation failed. Retrying..."
+      #       Start-Sleep -Seconds 15
+      #       $attempts--
+      #     }
 
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "::error ::Failed to activate license after multiple attempts."
-          }
+      #     if ($LASTEXITCODE -ne 0) {
+      #       Write-Host "::error ::Failed to activate license after multiple attempts."
+      #     }
 
-      - name: Build Sentry.Unity Solution
-        run: dotnet build -c Release
+      # - name: Build Sentry.Unity Solution
+      #   run: dotnet build -c Release
 
-      - name: Run Unity tests (playmode)
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+      # - name: Run Unity tests (playmode)
+      #   run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
 
-      - name: Upload test artifacts (playmode)
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (playmode)
-          path: artifacts/test/playmode
+      # - name: Upload test artifacts (playmode)
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: Test results (playmode)
+      #     path: artifacts/test/playmode
 
-      - name: Run Unity tests (editmode)
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
+      # - name: Run Unity tests (editmode)
+      #   run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
-      - name: Build Standalone Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
+      # - name: Build Android Player with IL2CPP
+      #   run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
 
-      - name: Run Smoke Tests
-        run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
+      # - name: Build Standalone Player with IL2CPP
+      #   run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
 
-      - name: Upload test artifacts (editmode)
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (editmode)
-          path: artifacts/test/editmode
+      # - name: Run Smoke Tests
+      #   run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
 
-      - name: Prepare Sentry package for release
-        run: |
-          New-Item "package-release" -ItemType Directory
+      # - name: Upload test artifacts (editmode)
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: Test results (editmode)
+      #     path: artifacts/test/editmode
 
-          # Copy `package-dev` stuff
-          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
+      # - name: Prepare Sentry package for release
+      #   run: |
+      #     New-Item "package-release" -ItemType Directory
 
-          # Copy `package` stuff
-          Copy-Item "package/package.json" -Destination "package-release/package.json"
-          Copy-Item "package/README.md" -Destination "package-release/README.md"
-          Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
-          Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
-          Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
-          Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
-          New-Item -Type dir "package-release/Editor/" -Force
-          Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
-          New-Item -Type dir "package-release/Runtime/" -Force
-          Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
-          # Destination directory need to exist if we're copying a file instead of a directory
-          New-Item -Type dir "package-release/Documentation~/" -Force
-          Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
+      #     # Copy `package-dev` stuff
+      #     Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
 
-          # Copy samples
-          Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
-          Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
+      #     # Copy `package` stuff
+      #     Copy-Item "package/package.json" -Destination "package-release/package.json"
+      #     Copy-Item "package/README.md" -Destination "package-release/README.md"
+      #     Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
+      #     Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
+      #     Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
+      #     Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
+      #     New-Item -Type dir "package-release/Editor/" -Force
+      #     Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
+      #     New-Item -Type dir "package-release/Runtime/" -Force
+      #     Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
+      #     # Destination directory need to exist if we're copying a file instead of a directory
+      #     New-Item -Type dir "package-release/Documentation~/" -Force
+      #     Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
 
-          # Create zip
-          Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
+      #     # Copy samples
+      #     Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
+      #     Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
 
-      - name: Upload build artifacts if build failed
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v1
-        with:
-          name: Build output
-          path: artifacts/build
+      #     # Create zip
+      #     Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
 
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ github.sha }}
-          path: package-release.zip
+      # - name: Upload build artifacts if build failed
+      #   if: ${{ failure() }}
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: Build output
+      #     path: artifacts/build
 
-      # Professional licenses are per-seat so we should always try to return them
-      - name: Return Unity license
-        if: ${{ always() }}
-        run: |
-          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
+      # - name: Upload release artifacts
+      #   uses: actions/upload-artifact@v1
+      #   with:
+      #     name: ${{ github.sha }}
+      #     path: package-release.zip
+
+      # # Professional licenses are per-seat so we should always try to return them
+      # - name: Return Unity license
+      #   if: ${{ always() }}
+      #   run: |
+      #     unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default

@@ -3,6 +3,9 @@
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs</UnitySampleProjectPath>
+    <ArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/</ArtifactPath>
+    <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
+    <AndroidArtifactName>il2cpp_player.apk</AndroidArtifactName>    
     <!-- Assumes running `dotnet` from the root of the repo: -->
     <UnitySampleProjectUnityVersion>$(SolutionDir)/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
@@ -23,8 +26,8 @@
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
       <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
-      <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
-      <UnityBuildMethod>Builder.BuildWindowsIl2CPPPlayer</UnityBuildMethod>
+      <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
+      <StandaloneArtifactName>il2cpp_player.exe</StandaloneArtifactName>
       <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.exe</PlayerArtifactPath>
     </PropertyGroup>
 
@@ -35,9 +38,11 @@
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
       <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
-      <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
-      <UnityBuildMethod>Builder.BuildMacIl2CPPPlayer</UnityBuildMethod>
+      <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>      
+      <StandaloneArtifactName>il2cpp_player.app</StandaloneArtifactName>
       <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.app/Contents/MacOS/unity-of-bugs</PlayerArtifactPath>
+      <iOSBuildMethod>Builder.BuildIOSPlayer</iOSBuildMethod>
+      <iOSArtifactName>ios_player</iOSArtifactName>      
     </PropertyGroup>
   </Target>
 
@@ -63,7 +68,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName) -executeMethod $(UnityBuildMethod) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -artifactPath $(ArtifactPath) -artifactName $(StandaloneArtifactName) "
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
@@ -81,6 +86,30 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       <Output TaskParameter="ExitCode" PropertyName="SmokeTestExitCode"/>
     </Exec>
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
+  </Target>
+
+  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP -->
+  <Target Name="UnityBuildPlayerAndroidIL2CPP"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
+
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -artifactPath $(ArtifactPath) -artifactName $(AndroidArtifactName) "
+          IgnoreStandardErrorWarningFormat="true"
+          IgnoreExitCode="true"></Exec>
+  </Target>
+
+    <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS -->
+  <Target Name="UnityBuildPlayerIOS"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Building iOS Player."></Message>
+
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(iOSBuildMethod) -artifactPath $(ArtifactPath) -artifactName $(iOSArtifactName) "
+          IgnoreStandardErrorWarningFormat="true"
+          IgnoreExitCode="true"></Exec>
   </Target>
 
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build

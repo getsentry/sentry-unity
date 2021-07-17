@@ -6,13 +6,25 @@ using UnityEngine;
 
 public class Builder
 {
-    public static void BuildIl2CPPPlayer(BuildTarget target)
+    public static void BuildIl2CPPPlayer(BuildTarget buildTarget)
     {
+        var artifactPath = GetArg("-artifactPath");
+        if (artifactPath is null)
+        {
+            throw new Exception("No valid '-artifactPath' has been provided.");
+        }
+
+        var artifactName = GetArg("-artifactName");
+        if (artifactName is null)
+        {
+            throw new Exception("No valid '-artifactName' has been provided.");
+        }
+
         var buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
-            locationPathName = Path.Combine("..", "artifacts", "build", "il2cpp_player.exe"),
-            target = target,
+            locationPathName = Path.Combine(artifactPath, artifactName),
+            target = buildTarget,
             options = BuildOptions.StrictMode,
         };
 
@@ -50,4 +62,20 @@ public class Builder
 
     public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64);
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX);
+    public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android);
+    public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS);
+
+    private static string GetArg(string name)
+    {
+        var args = Environment.GetCommandLineArgs();
+        for (var i = 0; i < args.Length; i++)
+        {
+            if (args[i] == name && args.Length > i + 1)
+            {
+                return args[i + 1];
+            }
+        }
+
+        return null;
+    }
 }
