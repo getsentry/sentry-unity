@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.Tests.Stubs;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
             });
@@ -45,7 +46,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
             });
@@ -65,7 +66,7 @@ namespace Sentry.Unity.Tests
             // arrange
             var customRelease = "CustomRelease";
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.Release = customRelease;
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
@@ -87,7 +88,7 @@ namespace Sentry.Unity.Tests
             var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = " ";
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
             });
@@ -107,7 +108,7 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
                 o.SendDefaultPii = true;
@@ -130,7 +131,7 @@ namespace Sentry.Unity.Tests
             var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = null;
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
             });
@@ -151,7 +152,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
             });
@@ -172,7 +173,7 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarmScene");
 
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
             });
@@ -191,7 +192,7 @@ namespace Sentry.Unity.Tests
 
             var sourceEventCapture = new TestEventCapture();
             var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-            using var firstDisposable = InitSentrySdk(o =>
+            using var firstDisposable = TestSentryUnity.Init(o =>
             {
                 o.Dsn = sourceDsn;
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
@@ -199,7 +200,7 @@ namespace Sentry.Unity.Tests
 
             var nextEventCapture = new TestEventCapture();
             var nextDsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250";
-            using var secondDisposable = InitSentrySdk(o =>
+            using var secondDisposable = TestSentryUnity.Init(o =>
             {
                 o.Dsn = nextDsn;
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
@@ -222,7 +223,7 @@ namespace Sentry.Unity.Tests
             expectedOptions.Dsn = string.Empty; // The SentrySDK tries to resolve the DSN from the environment when it's null
 
             SentryUnityOptions? actualOptions = null;
-            using var _ = InitSentrySdk(o =>
+            using var _ = TestSentryUnity.Init(o =>
             {
                 o.Dsn = null; // InitSentrySDK already sets a test dsn
                 actualOptions = o;
@@ -242,22 +243,6 @@ namespace Sentry.Unity.Tests
 
             // don't fail test if exception is thrown via 'SendMessage', we want to continue
             LogAssert.ignoreFailingMessages = true;
-        }
-
-        internal static IDisposable InitSentrySdk(Action<SentryUnityOptions> configure)
-        {
-            SentryUnity.Init(options =>
-            {
-                options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-
-                configure.Invoke(options);
-            });
-            return new SentryDisposable();
-        }
-
-        private sealed class SentryDisposable : IDisposable
-        {
-            public void Dispose() => SentrySdk.Close();
         }
     }
 

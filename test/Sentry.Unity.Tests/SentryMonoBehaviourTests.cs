@@ -21,10 +21,7 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [SetUp]
-        public void SetUp()
-        {
-            _fixture = new Fixture();
-        }
+        public void SetUp() => _fixture = new Fixture();
 
         [Test]
         public void OnApplicationPause_OnAndroid_ApplicationPausingTriggered()
