@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Log in single line ([#262](https://github.com/getsentry/sentry-unity/pull/262))
+
 ## 0.4.2
 
 ### Features
