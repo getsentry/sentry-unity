@@ -48,9 +48,7 @@ namespace Sentry.Unity
 
             string GetLog()
             {
-                var log = $@"Sentry: {logLevel}
-{Format(message, args)}
-{exception}";
+                var log = $"Sentry: ({logLevel}) {Format(message, args)} {exception}";
                 _interceptor?.Intercept(log);
                 return log;
             }
