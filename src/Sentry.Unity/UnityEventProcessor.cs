@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
@@ -94,7 +95,7 @@ namespace Sentry.Unity
             device.Simulator = _application.IsEditor ? true : null;
             device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? _mainThreadData.DeviceUniqueIdentifier : null;
 
-            var model = _mainThreadData.DeviceModel;
+            var model = _mainThreadData.DeviceModel?.Value;
             if (model != SystemInfo.unsupportedIdentifier
                 // Returned by the editor
                 && model != "System Product Name (System manufacturer)")

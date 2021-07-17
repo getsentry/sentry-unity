@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace Sentry.Unity
 {
@@ -20,7 +21,7 @@ namespace Sentry.Unity
 
         public string? DeviceUniqueIdentifier { get; set; }
 
-        public string? DeviceModel { get; set; }
+        public Lazy<string>? DeviceModel { get; set; }
 
         public int? SystemMemorySize { get; set; }
 
