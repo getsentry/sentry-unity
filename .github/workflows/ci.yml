@@ -41,7 +41,7 @@ jobs:
         
       - name: Check for Hub Installation
         env:
-          HUBPATH: "C:\Program Files\Unity Hub\Unity Hub.exe"
+          HUBPATH: C:\Program Files\Unity Hub\Unity Hub.exe
         run: |
           if (test -f $HUBPATH) {
             echo "::debug::$HUBPATH exists."
