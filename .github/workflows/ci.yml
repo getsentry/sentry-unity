@@ -30,8 +30,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # - name: Checkout
-      #   uses: actions/checkout@v2.3.3
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
 
       # - name: Install Unity Hub
       #   run: |
@@ -39,8 +39,6 @@ jobs:
       #     ./hub_installer.exe /S
         
       - name: Install Unity Hub
-        env:
-          HUBPATH: C:\Program Files\Unity Hub\Unity Hub.exe
         run: ./.github/workflows/InstallUnityHub.ps1
         # run: |
         #   if (test -f $HUBPATH) {
