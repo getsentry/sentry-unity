@@ -36,12 +36,12 @@ jobs:
 
       - name: Install Unity Hub
         run: |
-          Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile hub_installer.exe
-          
+          Invoke-RestMethod -Uri ${{ env.UNITY_HUB_URL }} -OutFile hub_installer.exe
           ./hub_installer.exe /S
         
-          hubPath = "C:\Program Files\Unity Hub\Unity Hub.exe"
-          
+      - name: Check for Hub Installation
+        run: |
+          hubPath = "C:\Program Files\Unity Hub\Unity Hub.exe"          
           test -f "$hubPath" && echo "$hubPath exists."
 
       # Unity is about 3gb in size and takes 20 minutes to download and install.
