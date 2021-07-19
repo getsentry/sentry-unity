@@ -9,11 +9,7 @@ $hubPath = "C:\Program` Files\Unity` Hub\Unity` Hub.exe"
 
 Write-Host "Checking for $hubPath."
 
-if (Test-Path -Path $hubPath) {
-    Write-Host "Hub found"
-    exit 0
-}
-else {
+if (-not(Test-Path -Path $hubPath)) {
     Write-Host "Hub not found"
-    exit 1
+    exit -1
 }

@@ -30,21 +30,17 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.3
+      - uses: actions/checkout@v2.3.3
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
 
       # - name: Install Unity Hub
       #   run: |
       #     Invoke-RestMethod -Uri ${{ env.UNITY_HUB_URL }} -OutFile hub_installer.exe
       #     ./hub_installer.exe /S
         
-      - name: Install Unity Hub
-        run: ./.github/workflows/InstallUnityHub.ps1
-        # run: |
-        #   if (test -f $HUBPATH) {
-        #     Write-Host "::debug::$HUBPATH exists."
-        #   }
-
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
       # Note: if you change the installation step, remember to update the value
