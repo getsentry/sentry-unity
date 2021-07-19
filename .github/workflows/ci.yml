@@ -21,9 +21,9 @@ on:
 env:
   # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
   UNITY_HUB_URL: https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe
-  UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
-  UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
-  UNITY_TARGET_ANDROID_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-2019.4.21f1.exe
+  # UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
+  # UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
+  # UNITY_TARGET_ANDROID_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-2019.4.21f1.exe
 
 jobs:
 
@@ -37,8 +37,15 @@ jobs:
       - name: Install Unity Hub
         run: |
           Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile hub_installer.exe
+          
           ./hub_installer.exe /S
         
+          $hubPath = "C:\Program Files\Unity Hub\Unity Hub.exe"
+          
+          if test -f "$hubPath"; then
+            echo "$hubPath exists."
+          fi
+
 
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
