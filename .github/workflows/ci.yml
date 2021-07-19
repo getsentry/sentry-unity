@@ -40,8 +40,10 @@ jobs:
           ./hub_installer.exe /S
         
       - name: Check for Hub Installation
+        # env:
+        #   HUBPATH: "C:\Program Files\Unity Hub\Unity Hub.exe"
         run: |
-          $hubPath = "C:\Program Files\Unity Hub\Unity Hub.exe
+          $hubPath = "C:\Program Files\Unity Hub\Unity Hub.exe"
           if(test -f $hubPath) {
             Write-Output "$hubPath exists."
           }
