@@ -25,7 +25,7 @@ hubpath = r'C:\\Program Files\\Unity Hub\\Unity Hub.exe'
 
 
 print("Installing Unity")
-process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--version", "2019.4.28f1", "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE)
+process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--changeset", "b76dac84db26", "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE)
 
 while True:
 	output = process.stdout.readline().decode()
