@@ -34,15 +34,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
-      - name: Install Unity Hub
+      - name: Output Test
         run: |
-          Invoke-RestMethod -Uri ${{ env.UNITY_HUB_URL }} -OutFile hub_installer.exe
-          ./hub_installer.exe /S
+          echo "::debug:: Debug Output Test"
+          echo "Output Test"
+
+      # - name: Install Unity Hub
+      #   run: |
+      #     Invoke-RestMethod -Uri ${{ env.UNITY_HUB_URL }} -OutFile hub_installer.exe
+      #     ./hub_installer.exe /S
         
       - name: Check for Hub Installation
         env:
           HUBPATH: C:\Program Files\Unity Hub\Unity Hub.exe
-        run: ./install.sh
+        run: sh ./install.sh
         # run: |
         #   if (test -f $HUBPATH) {
         #     Write-Host "::debug::$HUBPATH exists."
