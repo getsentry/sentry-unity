@@ -31,7 +31,7 @@ jobs:
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
       
       - name: Install Unity
-        run: python .github/workflows/install_unity.py
+        run: python ./.github/workflows/install_unity.py
         
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
