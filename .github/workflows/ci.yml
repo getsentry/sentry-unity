@@ -40,12 +40,9 @@ jobs:
           
           ./hub_installer.exe /S
         
-          $hubPath = "C:\Program Files\Unity Hub\Unity Hub.exe"
+          hubPath = "C:\Program Files\Unity Hub\Unity Hub.exe"
           
-          if test -f "$hubPath"; then
-            echo "$hubPath exists."
-          fi
-
+          test -f "$hubPath" && echo "$hubPath exists."
 
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
