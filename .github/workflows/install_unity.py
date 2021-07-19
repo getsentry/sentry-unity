@@ -14,26 +14,25 @@ print("Installer installed.")
 
 hubpath = r'C:\\Program Files\\Unity Hub\\Unity Hub.exe'
 
-print("Checking out the installer")
-process = subprocess.Popen([hubpath, "--", "--headless",  "help"], stdout=subprocess.PIPE)
-while True:
-	output = process.stdout.readline().decode()
-	if output == '' and process.poll() is not None:
-		break
-	if output:
-		print(output, end =" ") # , end =" " so there are no double newlines
-
-
-# print("Installing Unity")
-# hubpath = r'C:\\Program Files\\Unity Hub\\Unity Hub.exe'
-# process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--version", "2019.4.28f1", "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE)
-
+# print("Checking out the installer")
+# process = subprocess.Popen([hubpath, "--", "--headless",  "help"], stdout=subprocess.PIPE)
 # while True:
 # 	output = process.stdout.readline().decode()
 # 	if output == '' and process.poll() is not None:
 # 		break
 # 	if output:
-# 		print(output, end =" ") # , end =" " so there are no double newlines 
+# 		print(output, end =" ") # , end =" " so there are no double newlines
 
-# rc = process.poll()
-# print(rc)
+
+print("Installing Unity")
+process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--version", "2019.4.28f1", "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE)
+
+while True:
+	output = process.stdout.readline().decode()
+	if output == '' and process.poll() is not None:
+		break
+	if output:
+		print(output, end =" ") # , end =" " so there are no double newlines 
+
+rc = process.poll()
+print(rc)
