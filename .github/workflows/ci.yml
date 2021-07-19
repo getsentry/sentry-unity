@@ -34,11 +34,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
-      - name: Output Test
-        run: |
-          echo "::debug:: Debug Output Test"
-          echo "Output Test"
-
       # - name: Install Unity Hub
       #   run: |
       #     Invoke-RestMethod -Uri ${{ env.UNITY_HUB_URL }} -OutFile hub_installer.exe
