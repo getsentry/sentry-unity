@@ -71,7 +71,7 @@ jobs:
       # available to other steps.
       - name: Add Unity on PATH
         run: |
-          Write-Output "C:\Program Files\Unity\Hub\Editor\2019.4.28f1\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "C:\Program Files\Unity\Hub\Editor\2019.4.21f1\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
