@@ -44,7 +44,7 @@ jobs:
           HUBPATH: C:\Program Files\Unity Hub\Unity Hub.exe
         run: |
           if (test -f $HUBPATH) {
-            echo "::debug::$HUBPATH exists."
+            Write-Host "::debug::$HUBPATH exists."
           }
 
       # Unity is about 3gb in size and takes 20 minutes to download and install.
