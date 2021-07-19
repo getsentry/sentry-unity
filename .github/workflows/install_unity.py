@@ -8,12 +8,21 @@ urllib.request.urlretrieve("https://public-cdn.cloud.unity3d.com/hub/prod/UnityH
 print("Installer downloaded.")
 
 print("Installing the installer")
-with open('hubinstaller.log', 'wb') as f: 
-    process = subprocess.Popen(["hubinstaller.exe", "/S"], shell=True, stdout=subprocess.PIPE
-    for c in iter(lambda: process.stdout.read(1), b''): 
-        sys.stdout.buffer.write(c)
-        f.buffer.write(c)
+subprocess.Popen(["hubinstaller.exe", "/S"], shell=True, stdout=subprocess.PIPE)
 print("Installer installed.")
+
+hubpath = r'C:\\Program Files\\Unity Hub\\Unity Hub.exe'
+
+print("Checking out the installer")
+process = subprocess.Popen([hubpath, "--", "--headless",  "help"], stdout=subprocess.PIPE)
+
+while True:
+	output = process.stdout.readline().decode()
+	if output == '' and process.poll() is not None:
+		break
+	if output:
+		print(output, end =" ") # , end =" " so there are no double newlines 
+
 
 # print("Installing Unity")
 # hubpath = r'C:\\Program Files\\Unity Hub\\Unity Hub.exe'
