@@ -18,7 +18,7 @@ on:
     - '.gitmodules'
     - '.craft.yml'
 
-env:
+# env:
   # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
   # UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
   # UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
@@ -38,7 +38,7 @@ jobs:
       #     Invoke-RestMethod -Uri ${{ env.UNITY_HUB_URL }} -OutFile hub_installer.exe
       #     ./hub_installer.exe /S
         
-      - name: Check for Hub Installation
+      - name: Install Unity Hub
         env:
           HUBPATH: C:\Program Files\Unity Hub\Unity Hub.exe
         run: ./.github/workflows/InstallUnityHub.ps1
