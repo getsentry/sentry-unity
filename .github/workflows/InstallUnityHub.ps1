@@ -5,7 +5,7 @@ Invoke-RestMethod -Uri https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSet
 Write-Host "Installing Unity Hub"
 ./hub_installer.exe /S
 
-$hubPath = &("C:\Program Files\Unity Hub\Unity Hub.exe")
+$hubPath = C:\Program` Files\Unity` Hub\Unity` Hub.exe
 
 Write-Host "Checking for $hubPath."
 
