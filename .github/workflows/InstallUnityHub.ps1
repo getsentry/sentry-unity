@@ -7,9 +7,13 @@ Write-Host "Installing Unity Hub"
 
 $hubPath = &("C:\Program Files\Unity Hub\Unity Hub.exe")
 
-if(Test-Path $hubPath -PathType Leaf) {
+Write-Host "Checking for $hubPath."
+
+if (Test-Path -Path $hubPath) {
     Write-Host "Hub found"
+    exit 0
 }
 else {
     Write-Host "Hub not found"
+    exit 1
 }
