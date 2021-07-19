@@ -47,7 +47,7 @@ jobs:
       - name: Check for Hub Installation
         env:
           HUBPATH: C:\Program Files\Unity Hub\Unity Hub.exe
-        run: sh ./install.sh
+        run: ./.github/workflows/InstallUnityHub.ps1
         # run: |
         #   if (test -f $HUBPATH) {
         #     Write-Host "::debug::$HUBPATH exists."
