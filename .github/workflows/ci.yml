@@ -65,8 +65,6 @@ jobs:
           unity-version-changeset:  ${{ env.CHANGESET }}
           unity-modules: android
         # outputs:
-        #   unity-version:
-        #     description: Unity version
         #   unity-path:
         #     description: Unity executable path. Also setted env UNITY_PATH
 
@@ -81,7 +79,7 @@ jobs:
       # available to other steps.
       - name: Add Unity on PATH
         run: |
-          Write-Output "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "{{ env.UNITY_PATH }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
@@ -109,32 +107,32 @@ jobs:
       - name: Build Sentry.Unity Solution
         run: dotnet build -c Release
 
-      # - name: Run Unity tests (playmode)
-      #   run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+      - name: Run Unity tests (playmode)
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
 
-      # - name: Upload test artifacts (playmode)
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: Test results (playmode)
-      #     path: artifacts/test/playmode
+      - name: Upload test artifacts (playmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
 
-      # - name: Run Unity tests (editmode)
-      #   run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
+      - name: Run Unity tests (editmode)
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
-      # - name: Upload test artifacts (editmode)
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: Test results (editmode)
-      #     path: artifacts/test/editmode
+      - name: Upload test artifacts (editmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
 
-      # - name: Build Android Player with IL2CPP
-      #   run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
+      - name: Build Android Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
 
-      # - name: Upload Android Build
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: Android Build
-      #     path: artifacts/builds/android
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v1
+        with:
+          name: Android Build
+          path: artifacts/builds/android
 
       # # - name: Build Standalone Player with IL2CPP
       # #   run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
