@@ -22,17 +22,15 @@ def install_unity():
 	print("\tversion:\t" + version)
 	print("\tchangeset:\t" + changeset)
 
-	# process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--version", version, "--changeset", changeset, "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE)
-	# while True:
-	# 	output = process.stdout.readline().decode()
-	# 	if output == '' and process.poll() is not None:
-	# 		break
-	# 	if output:
-	# 		print(output, end ="") # , end ="" so there are no double newlines 
+	process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--version", version, "--changeset", changeset, "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE)
+	while True:
+		output = process.stdout.readline().decode()
+		if output == '' and process.poll() is not None:
+			break
+		if output:
+			print(output, end ="") # , end ="" so there are no double newlines 
 
-	# rc = process.poll()
-	# print(rc)
-	return 0
+	return process.poll()
 
 def main():
 	download_hub()
