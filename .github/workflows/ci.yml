@@ -65,7 +65,7 @@ jobs:
       # available to other steps.
       - name: Add Unity on PATH
         run: |
-          Write-Output "C:\Program Files\Unity\Hub\Editor\${{env.UNITY_VERSION}}\Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
@@ -113,6 +113,12 @@ jobs:
 
       - name: Build Android Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v1
+        with:
+          name: Android Build
+          path: artifacts/test/editmode
 
       # # - name: Build Standalone Player with IL2CPP
       # #   run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release

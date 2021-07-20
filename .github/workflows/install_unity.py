@@ -10,8 +10,7 @@ def download_hub():
 
 def install_hub():	
 	print("Installing the hub.")
-	instalprocess = subprocess.Popen(["hubinstaller.exe", "/S"], shell=True, stdout=subprocess.PIPE)
-	instalprocess.wait()
+	subprocess.run(["hubinstaller.exe", "/S"], shell=True, capture_output=True)
 
 def install_unity():
 	hubpath = r'C:\\Program Files\\Unity Hub\\Unity Hub.exe'
@@ -22,15 +21,11 @@ def install_unity():
 	print("\tversion:\t" + version)
 	print("\tchangeset:\t" + changeset)
 
-	process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--version", version, "--changeset", changeset, "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE)
-	while True:
-		output = process.stdout.readline().decode()
-		if output == '' and process.poll() is not None:
-			break
-		if output:
-			print(output, end ="") # , end ="" so there are no double newlines 
+	process = subprocess.Popen([hubpath, "--", "--headless",  "install", "--version", version, "--changeset", changeset, "-m", "android", "-m", "android-sdk-ndk-tools"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	output, error = process.communicate()
 
-	return process.poll()
+	print(output)
+	print(error)
 
 def main():
 	download_hub()
