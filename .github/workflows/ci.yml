@@ -59,17 +59,17 @@ jobs:
 
       - name: Setup Unity
         uses: kuler90/setup-unity@v1.0.7
-          with:
-            unity-version: ${{ env.UNITY_VERSION }}
-            unity-version-changeset:  ${{ env.CHANGESET }}
-            unity-modules: android
+        with:
+          unity-version: ${{ env.UNITY_VERSION }}
+          unity-version-changeset:  ${{ env.CHANGESET }}
+          unity-modules: android
 
       - name: Activate Unity
         uses: kuler90/activate-unity@v1.1.1
-          with:
-            unity-username: ${{ secrets.UNITY_EMAIL }}
-            unity-password: ${{ secrets.UNITY_PASSWORD }}
-            unity-authenticator-key: ${{ secrets.UNITY_SERIAL }}
+        with:
+          unity-username: ${{ secrets.UNITY_EMAIL }}
+          unity-password: ${{ secrets.UNITY_PASSWORD }}
+          unity-authenticator-key: ${{ secrets.UNITY_SERIAL }}
 
 
       # Need to write to $GITHUB_PATH to make the environment variable
