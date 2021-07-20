@@ -2,16 +2,17 @@
 
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
-    <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs</UnitySampleProjectPath>
-    <ArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/</ArtifactPath>
+    <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
+    <ArtifactPath>$(UnitySampleProjectPath)../artifacts/builds/</ArtifactPath>
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
     <AndroidArtifactName>il2cpp_player.apk</AndroidArtifactName>
-    <AndroidArtifactPath>$(ArtifactPath)/android/</AndroidArtifactPath>
+    <AndroidArtifactPath>$(ArtifactPath)android/</AndroidArtifactPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
-    <UnitySampleProjectUnityVersion>$(SolutionDir)/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
+    <UnitySampleProjectUnityVersion>$(SolutionDir)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
   </PropertyGroup>
+
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
   <Target Name="FindUnity">
@@ -29,7 +30,7 @@
       <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneArtifactName>il2cpp_player.exe</StandaloneArtifactName>
-      <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.exe</PlayerArtifactPath>
+      <StandaloneArtifactPath>$(ArtifactPath)win/</StandaloneArtifactPath>
     </PropertyGroup>
 
     <!-- Unity paths on macOS -->
@@ -69,7 +70,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -artifactPath $(ArtifactPath) -artifactName $(StandaloneArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -artifactPath $(StandaloneArtifactPath) -artifactName $(StandaloneArtifactName) "
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
