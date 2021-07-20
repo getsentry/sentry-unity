@@ -6,14 +6,12 @@ import urllib.request
 
 def download_hub():
 	print("Downloading the hub installer.")
-	# urllib.request.urlretrieve("https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe", "hubinstaller.exe")
-	print("Download finished.")
+	urllib.request.urlretrieve("https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe", "hubinstaller.exe")
 
 def install_hub():	
 	print("Installing the hub.")
-	# instalprocess = subprocess.Popen(["hubinstaller.exe", "/S"], shell=True, stdout=subprocess.PIPE)
-	# instalprocess.wait()
-	print("Hub installer finished.")
+	instalprocess = subprocess.Popen(["hubinstaller.exe", "/S"], shell=True, stdout=subprocess.PIPE)
+	instalprocess.wait()
 
 def install_unity():
 	hubpath = r'C:\\Program Files\\Unity Hub\\Unity Hub.exe'
@@ -30,12 +28,11 @@ def install_unity():
 	# 	if output == '' and process.poll() is not None:
 	# 		break
 	# 	if output:
-	# 		print(output, end =" ") # , end =" " so there are no double newlines 
+	# 		print(output, end ="") # , end ="" so there are no double newlines 
 
 	# rc = process.poll()
 	# print(rc)
 	return 0
-
 
 def main():
 	download_hub()
