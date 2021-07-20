@@ -27,7 +27,7 @@ def install_unity():
 		if output == '' and process.poll() is not None:
 			break
 		if output:
-			print(output)
+			print("\t" + output)
 
 	return process.poll()
 

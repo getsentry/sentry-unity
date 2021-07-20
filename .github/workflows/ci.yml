@@ -38,12 +38,12 @@ jobs:
       # Caching still takes some time, but brings it down to about 5 minutes.
       # Note: if you change the installation step, remember to update the value
       # at the end of the key.
-      - name: Restore cached Unity installation
-        id: cache-unity
-        uses: actions/cache@v2
-        with:
-          path: C:/Program Files/Unity
-          key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
+      # - name: Restore cached Unity installation
+      #   id: cache-unity
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: C:/Program Files/Unity
+      #     key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
        
       - name: Restore previous build
         uses: actions/cache@v2
