@@ -35,7 +35,7 @@ jobs:
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
       
       - name: Python Test
-          run: python ./.github/workflows/python_test.py
+        run: python ./.github/workflows/python_test.py
 
       # - name: Install Unity
       #   run: python ./.github/workflows/install_unity.py
