@@ -118,7 +118,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Android Build
-          path: artifacts/test/editmode
+          path: artifacts/builds/android
 
       # # - name: Build Standalone Player with IL2CPP
       # #   run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release

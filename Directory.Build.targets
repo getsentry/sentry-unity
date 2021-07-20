@@ -5,7 +5,8 @@
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs</UnitySampleProjectPath>
     <ArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/</ArtifactPath>
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
-    <AndroidArtifactName>il2cpp_player.apk</AndroidArtifactName>    
+    <AndroidArtifactName>il2cpp_player.apk</AndroidArtifactName>
+    <AndroidArtifactPath>$(ArtifactPath)/android/</AndroidArtifactPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
     <UnitySampleProjectUnityVersion>$(SolutionDir)/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
@@ -95,7 +96,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -artifactPath $(ArtifactPath) -artifactName $(AndroidArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -artifactPath $(AndroidArtifactPath) -artifactName $(AndroidArtifactName) "
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
