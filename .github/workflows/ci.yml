@@ -59,7 +59,7 @@ jobs:
         with:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
-          unity-modules: windows          
+          unity-modules: android          
 
       # - name: Activate Unity
       #   uses: kuler90/activate-unity@v1.1.1
