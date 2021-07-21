@@ -20,8 +20,7 @@ on:
 
 env:
   UNITY_VERSION: 2019.4.21f1
-  CHANGESET: b76dac84db26
-  UNITY_PATH:
+  UNITY_VERSION_CHANGESET: b76dac84db26
 
 jobs:
 
@@ -40,13 +39,13 @@ jobs:
       #   uses: actions/cache@v2
       #   with:
       #     path: C:/Program Files/Unity
-      #     key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
+      #     key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
        
       - name: Restore previous build
         uses: actions/cache@v2
         with:
           path: artifacts/build
-          key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
+          key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
@@ -55,15 +54,12 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Setup Unity
-        uses: kuler90/setup-unity@v1.0.7
+        uses: kuler90/setup-unity@vf44e3f35ce3737316a15321ec3468161940e23e8
         id: setup-unity
         with:
           unity-version: ${{ env.UNITY_VERSION }}
-          unity-version-changeset:  ${{ env.CHANGESET }}
+          unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
           unity-modules: android
-
-      - name: Print Path
-        run: echo "${{ env.UNITY_PATH }}"
 
       # - name: Activate Unity
       #   uses: kuler90/activate-unity@v1.1.1
