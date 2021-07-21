@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -8,22 +9,13 @@ public class Builder
 {
     public static void BuildIl2CPPPlayer(BuildTarget buildTarget)
     {
-        var artifactPath = GetArg("-artifactPath");
-        if (artifactPath is null)
-        {
-            throw new Exception("No valid '-artifactPath' has been provided.");
-        }
-
-        var artifactName = GetArg("-artifactName");
-        if (artifactName is null)
-        {
-            throw new Exception("No valid '-artifactName' has been provided.");
-        }
+        var args = ParseCommandLineArguments();
+        ValidateArguments(args);
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
-            locationPathName = Path.Combine(artifactPath, artifactName),
+            locationPathName = Path.Combine(args["artifactPath"], args["artifactName"]),
             target = buildTarget,
             options = BuildOptions.StrictMode,
         };
@@ -65,17 +57,38 @@ public class Builder
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android);
     public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS);
 
-    private static string GetArg(string name)
+    private static Dictionary<string, string> ParseCommandLineArguments()
     {
+        var commandLineArguments = new Dictionary<string, string>();
         var args = Environment.GetCommandLineArgs();
-        for (var i = 0; i < args.Length; i++)
+
+        for (int current = 0, next = 1; current < args.Length; current++, next++)
         {
-            if (args[i] == name && args.Length > i + 1)
+            if (!args[current].StartsWith("-"))
             {
-                return args[i + 1];
+                continue;
             }
+
+            var flag = args[current].TrimStart('-');
+            var flagHasValue = next < args.Length && !args[next].StartsWith("-");
+            var flagValue = flagHasValue ? args[next].TrimStart('-') : "";
+
+            commandLineArguments.Add(flag, flagValue);
+        }
+        
+        return commandLineArguments;
+    }
+
+    private static void ValidateArguments(Dictionary<string, string> args)
+    {
+        if (!args.ContainsKey("artifactPath") || string.IsNullOrWhiteSpace(args["artifactPath"]))
+        {
+            throw new Exception("No valid '-artifactPath' has been provided.");
         }
 
-        return null;
+        if (!args.ContainsKey("artifactName") || string.IsNullOrWhiteSpace(args["artifactName"]))
+        {
+            throw new Exception("No valid '-artifactName' has been provided.");
+        }
     }
 }

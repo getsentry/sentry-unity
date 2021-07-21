@@ -59,7 +59,9 @@ jobs:
         with:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
-          unity-modules: android
+          unity-modules: 
+            windows
+            android
 
       # - name: Activate Unity
       #   uses: kuler90/activate-unity@v1.1.1
@@ -127,53 +129,53 @@ jobs:
           name: Android Build
           path: artifacts/builds/android
 
-      # # - name: Build Standalone Player with IL2CPP
-      # #   run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
+      - name: Build Standalone Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
 
-      # # - name: Run Smoke Tests
-      # #   run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
+      - name: Run Smoke Tests
+        run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
 
-      # - name: Prepare Sentry package for release
-      #   run: |
-      #     New-Item "package-release" -ItemType Directory
+      - name: Prepare Sentry package for release
+        run: |
+          New-Item "package-release" -ItemType Directory
 
-      #     # Copy `package-dev` stuff
-      #     Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
+          # Copy `package-dev` stuff
+          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
 
-      #     # Copy `package` stuff
-      #     Copy-Item "package/package.json" -Destination "package-release/package.json"
-      #     Copy-Item "package/README.md" -Destination "package-release/README.md"
-      #     Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
-      #     Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
-      #     Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
-      #     Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
-      #     New-Item -Type dir "package-release/Editor/" -Force
-      #     Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
-      #     New-Item -Type dir "package-release/Runtime/" -Force
-      #     Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
-      #     # Destination directory need to exist if we're copying a file instead of a directory
-      #     New-Item -Type dir "package-release/Documentation~/" -Force
-      #     Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
+          # Copy `package` stuff
+          Copy-Item "package/package.json" -Destination "package-release/package.json"
+          Copy-Item "package/README.md" -Destination "package-release/README.md"
+          Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
+          Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
+          Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
+          Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
+          New-Item -Type dir "package-release/Editor/" -Force
+          Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
+          New-Item -Type dir "package-release/Runtime/" -Force
+          Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
+          # Destination directory need to exist if we're copying a file instead of a directory
+          New-Item -Type dir "package-release/Documentation~/" -Force
+          Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
 
-      #     # Copy samples
-      #     Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
-      #     Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
+          # Copy samples
+          Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
+          Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
 
-      #     # Create zip
-      #     Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
+          # Create zip
+          Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
 
-      # - name: Upload build artifacts if build failed
-      #   if: ${{ failure() }}
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: Build output
-      #     path: artifacts/build
+      - name: Upload build artifacts if build failed
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build output
+          path: artifacts/build
 
-      # - name: Upload release artifacts
-      #   uses: actions/upload-artifact@v1
-      #   with:
-      #     name: ${{ github.sha }}
-      #     path: package-release.zip
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ github.sha }}
+          path: package-release.zip
 
       # Professional licenses are per-seat so we should always try to return them
       - name: Return Unity license

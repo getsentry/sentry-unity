@@ -42,9 +42,10 @@
       <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
       <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>      
       <StandaloneArtifactName>il2cpp_player.app</StandaloneArtifactName>
-      <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.app/Contents/MacOS/unity-of-bugs</PlayerArtifactPath>
+      <StandaloneArtifactPath>$(ArtifactPath)il2cpp_player.app/Contents/MacOS/unity-of-bugs</StandaloneArtifactPath>
       <iOSBuildMethod>Builder.BuildIOSPlayer</iOSBuildMethod>
-      <iOSArtifactName>ios_player</iOSArtifactName>      
+      <iOSArtifactName>ios_player</iOSArtifactName>
+      <iOSArtifactPath>$(ArtifactPath)iOS/</iOSArtifactPath>      
     </PropertyGroup>
   </Target>
 
@@ -109,7 +110,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building iOS Player."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(iOSBuildMethod) -artifactPath $(ArtifactPath) -artifactName $(iOSArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(iOSBuildMethod) -artifactPath $(iOSArtifactPath) -artifactName $(iOSArtifactName) "
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
