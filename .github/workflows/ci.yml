@@ -59,7 +59,9 @@ jobs:
         with:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
-          unity-modules: '[windows, android]'
+          unity-modules: |
+            windows-il2cpp
+            android
           
 
       # - name: Activate Unity
