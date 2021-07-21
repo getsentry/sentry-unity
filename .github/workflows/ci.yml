@@ -54,7 +54,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Setup Unity
-        uses: actions/checkout@vf44e3f35ce3737316a15321ec3468161940e23e8
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         id: setup-unity
         with:
           unity-version: ${{ env.UNITY_VERSION }}
