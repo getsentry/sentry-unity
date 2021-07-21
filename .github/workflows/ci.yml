@@ -21,6 +21,7 @@ on:
 env:
   UNITY_VERSION: 2019.4.21f1
   CHANGESET: b76dac84db26
+  UNITY_PATH:
 
 jobs:
 
@@ -34,28 +35,24 @@ jobs:
       # Caching still takes some time, but brings it down to about 5 minutes.
       # Note: if you change the installation step, remember to update the value
       # at the end of the key.
-      # - name: Restore cached Unity installation
-      #   id: cache-unity
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: C:/Program Files/Unity
-      #     key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
+      - name: Restore cached Unity installation
+        id: cache-unity
+        uses: actions/cache@v2
+        with:
+          path: C:/Program Files/Unity
+          key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
        
-      # - name: Restore previous build
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: artifacts/build
-      #     key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
+      - name: Restore previous build
+        uses: actions/cache@v2
+        with:
+          path: artifacts/build
+          key: ${{ env.UNITY_VERSION }}-${{ env.CHANGESET }}
 
-      # - name: Restore Unity Packages
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: samples/unity-of-bugs/Library
-      #     key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
-
-      # - name: Install Unity
-      #   if: ${{ !steps.cache-unity.outputs.cache-hit }}
-      #   run: python ./.github/workflows/install_unity.py
+      - name: Restore Unity Packages
+        uses: actions/cache@v2
+        with:
+          path: samples/unity-of-bugs/Library
+          key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@v1.0.7
@@ -65,6 +62,9 @@ jobs:
           unity-version-changeset:  ${{ env.CHANGESET }}
           unity-modules: android
 
+      - name: Print Path
+        run: echo ${{ env.UNITY_PATH }}
+        
       # - name: Activate Unity
       #   uses: kuler90/activate-unity@v1.1.1
       #   with:
@@ -179,8 +179,8 @@ jobs:
       #     name: ${{ github.sha }}
       #     path: package-release.zip
 
-      # # Professional licenses are per-seat so we should always try to return them
-      # - name: Return Unity license
-      #   if: ${{ always() }}
-      #   run: |
-      #     unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
+      # Professional licenses are per-seat so we should always try to return them
+      - name: Return Unity license
+        if: ${{ always() }}
+        run: |
+          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
