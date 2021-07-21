@@ -59,7 +59,8 @@ jobs:
         with:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
-          unity-modules: win
+          unity-modules: |
+            windows
             android
           
 
