@@ -17,17 +17,17 @@
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnityEditor" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
     <PropertyGroup>
-      <IosBuildTools>$(UnityRoot)/../PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll</IosBuildTools>
+      <IOSBuildTools>$(UnityRoot)/../PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll</IOSBuildTools>
     </PropertyGroup>
 
-    <Error Condition="!Exists('$(IosBuildTools)')" Text="iOS build tools not found."></Error>
+    <Error Condition="!Exists('$(IOSBuildTools)')" Text="iOS build tools not found."></Error>
     <ItemGroup>
       <Reference Include="UnityEditor">
         <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
         <Private>false</Private>
       </Reference>
       <Reference Include="UnityEditor.iOS.Extensions.Xcode">
-        <HintPath>$(IosBuildTools)</HintPath>
+        <HintPath>$(IOSBuildTools)</HintPath>
         <Private>false</Private>
       </Reference>
     </ItemGroup>

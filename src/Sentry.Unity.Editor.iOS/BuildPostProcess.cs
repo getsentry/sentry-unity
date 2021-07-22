@@ -20,6 +20,7 @@ namespace Sentry.Unity.Editor
 
 ";
 
+        // TODO: IMPORTANT! This HAS to match the location where unity copies the framework to and matches the location in the project
         private const string FrameworkLocation = "Frameworks/Plugins/iOS"; // The path where the framework is stored
         private const string FrameworkName = "Sentry.framework";
 
@@ -42,7 +43,13 @@ namespace Sentry.Unity.Editor
                 Path.Combine(FrameworkLocation, FrameworkName),
                 Path.Combine(FrameworkLocation, FrameworkName));
 
-            project.AddFileToBuild(targetGuid, fileGuid); // Ensures that the framework shows up on 'Link Binary with Libraries'
+
+            var unityLinkPhaseGuid = project.GetFrameworksBuildPhaseByTarget(targetGuid);
+
+            project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, fileGuid);
+
+
+            // project.AddFileToBuild(targetGuid, fileGuid); // Ensures that the framework shows up on 'Link Binary with Libraries'
             project.AddFileToEmbedFrameworks(targetGuid, fileGuid); // Embedding the framework because it's dynamic and needed at runtime
 
             project.SetBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
