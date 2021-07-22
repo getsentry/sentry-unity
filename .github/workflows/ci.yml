@@ -28,18 +28,19 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2.3.3
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
 
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
       # Note: if you change the installation step, remember to update the value
       # at the end of the key.
-      # - name: Restore cached Unity installation
-      #   id: cache-unity
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: C:/Program Files/Unity
-      #     key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
+      - name: Restore cached Unity installation
+        id: cache-unity
+        uses: actions/cache@v2
+        with:
+          path: C:/Program Files/Unity
+          key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
        
       - name: Restore previous build
         uses: actions/cache@v2
@@ -60,7 +61,7 @@ jobs:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
 
-      - name: Check available modules
+      - name: Check Unity Modules
         run: |
           Get-Content -Raw -Path "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/modules.json" | ConvertFrom-Json
 

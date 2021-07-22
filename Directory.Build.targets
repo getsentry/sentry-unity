@@ -41,8 +41,8 @@
       <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>      
       <StandaloneBuildPath>$(PlayerBuildPath)MacOS/IL2CPP_Player.app</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)/Contents/MacOS/unity-of-bugs</StandaloneExecutablePath>
-      <iOSBuildMethod>Builder.BuildIOSPlayer</iOSBuildMethod>
-      <iOSBuildPath>$(PlayerBuildPath)iOS/Xcode</iOSBuildPath>
+      <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
+      <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     </PropertyGroup>
   </Target>
 
@@ -100,14 +100,14 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
           IgnoreExitCode="true"></Exec>
   </Target>
 
-    <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS -->
+  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS -->
   <Target Name="UnityBuildPlayerIOS"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
-    <Message Importance="High" Text="Building iOS Player."></Message>
+    <Message Importance="High" Text="Building iOS Xcode project."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(iOSBuildMethod) -buildPath $(iOSBuildPath)"
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
