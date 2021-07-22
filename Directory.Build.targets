@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
-    <ArtifactPath>../../artifacts//builds/</ArtifactPath>
+    <ArtifactPath>../../artifacts/builds/</ArtifactPath>
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
     <AndroidArtifactName>il2cpp_player.apk</AndroidArtifactName>
     <AndroidArtifactPath>$(ArtifactPath)android/</AndroidArtifactPath>

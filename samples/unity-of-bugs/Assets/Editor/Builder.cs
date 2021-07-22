@@ -75,7 +75,7 @@ public class Builder
 
             commandLineArguments.Add(flag, flagValue);
         }
-        
+
         return commandLineArguments;
     }
 
