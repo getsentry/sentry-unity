@@ -66,7 +66,6 @@ jobs:
 
       - name: Setup Unity Modules - Windows IL2CPP
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
-        id: setup-unity
         with:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
@@ -74,7 +73,6 @@ jobs:
 
       - name: Setup Unity Modules - Android
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
-        id: setup-unity
         with:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
