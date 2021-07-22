@@ -3,16 +3,14 @@
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
-    <ArtifactPath>../../artifacts/builds/</ArtifactPath>
+    <PlayerBuildPath>$(UnitySampleProjectPath)../artifacts/builds/</PlayerBuildPath>
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
-    <AndroidArtifactName>il2cpp_player.apk</AndroidArtifactName>
-    <AndroidArtifactPath>$(ArtifactPath)android/</AndroidArtifactPath>
+    <AndroidBuildPath>$(PlayerBuildPath)Android/IL2CPP_Player.apk</AndroidBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
     <UnitySampleProjectUnityVersion>$(SolutionDir)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
   </PropertyGroup>
-
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
   <Target Name="FindUnity">
@@ -29,8 +27,8 @@
       <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
-      <StandaloneArtifactName>il2cpp_player.exe</StandaloneArtifactName>
-      <StandaloneArtifactPath>$(ArtifactPath)win/</StandaloneArtifactPath>
+      <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
+      <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
     </PropertyGroup>
 
     <!-- Unity paths on macOS -->
@@ -41,11 +39,10 @@
       <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
       <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>      
-      <StandaloneArtifactName>il2cpp_player.app</StandaloneArtifactName>
-      <StandaloneArtifactPath>$(ArtifactPath)il2cpp_player.app/Contents/MacOS/unity-of-bugs</StandaloneArtifactPath>
+      <StandaloneBuildPath>$(PlayerBuildPath)MacOS/IL2CPP_Player.app</StandaloneBuildPath>
+      <StandaloneExecutablePath>$(StandaloneBuildPath)/Contents/MacOS/unity-of-bugs</StandaloneExecutablePath>
       <iOSBuildMethod>Builder.BuildIOSPlayer</iOSBuildMethod>
-      <iOSArtifactName>ios_player</iOSArtifactName>
-      <iOSArtifactPath>$(ArtifactPath)iOS/</iOSArtifactPath>      
+      <iOSBuildPath>$(PlayerBuildPath)iOS/Xcode</iOSBuildPath>
     </PropertyGroup>
   </Target>
 
@@ -71,7 +68,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -artifactPath $(StandaloneArtifactPath) -artifactName $(StandaloneArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
@@ -83,7 +80,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running smoke test on player."></Message>
 
-    <Exec Command="$(PlayerArtifactPath) --test smoke"
+    <Exec Command="$(StandaloneExecutablePath) --test smoke"
           IgnoreExitCode="true"
           ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="SmokeTestExitCode"/>
@@ -98,7 +95,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -artifactPath $(AndroidArtifactPath) -artifactName $(AndroidArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
@@ -110,7 +107,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building iOS Player."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(iOSBuildMethod) -artifactPath $(iOSArtifactPath) -artifactName $(iOSArtifactName) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(iOSBuildMethod) -buildPath $(iOSBuildPath)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>

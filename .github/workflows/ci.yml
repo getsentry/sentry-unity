@@ -60,7 +60,7 @@ jobs:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
 
-      - name: Check what's there
+      - name: Check available modules
         run: |
           Get-Content -Raw -Path "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/modules.json" | ConvertFrom-Json
 
@@ -68,22 +68,13 @@ jobs:
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:
           unity-version: ${{ env.UNITY_VERSION }}
-          unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
           unity-modules: windows-il2cpp
 
       - name: Setup Unity Modules - Android
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:
           unity-version: ${{ env.UNITY_VERSION }}
-          unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
           unity-modules: android
-
-      # - name: Activate Unity
-      #   uses: kuler90/activate-unity@v1.1.1
-      #   with:
-      #     unity-username: ${{ secrets.UNITY_EMAIL }}
-      #     unity-password: ${{ secrets.UNITY_PASSWORD }}
-      #     unity-authenticator-key: ${{ secrets.UNITY_SERIAL }}
 
       # Need to write to $GITHUB_PATH to make the environment variable
       # available to other steps.
@@ -142,7 +133,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Android Build
-          path: artifacts/builds/android
+          path: samples/artifacts/builds/Android
 
       - name: Build Standalone Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release

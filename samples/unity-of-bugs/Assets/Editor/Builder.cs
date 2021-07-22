@@ -15,7 +15,7 @@ public class Builder
         var buildPlayerOptions = new BuildPlayerOptions
         {
             scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
-            locationPathName = Path.Combine(args["artifactPath"], args["artifactName"]),
+            locationPathName = args["buildPath"],
             target = buildTarget,
             options = BuildOptions.StrictMode,
         };
@@ -81,14 +81,9 @@ public class Builder
 
     private static void ValidateArguments(Dictionary<string, string> args)
     {
-        if (!args.ContainsKey("artifactPath") || string.IsNullOrWhiteSpace(args["artifactPath"]))
+        if (!args.ContainsKey("buildPath") || string.IsNullOrWhiteSpace(args["buildPath"]))
         {
-            throw new Exception("No valid '-artifactPath' has been provided.");
-        }
-
-        if (!args.ContainsKey("artifactName") || string.IsNullOrWhiteSpace(args["artifactName"]))
-        {
-            throw new Exception("No valid '-artifactName' has been provided.");
+            throw new Exception("No valid '-buildPath' has been provided.");
         }
     }
 }
