@@ -43,13 +43,9 @@ namespace Sentry.Unity.Editor
                 Path.Combine(FrameworkLocation, FrameworkName),
                 Path.Combine(FrameworkLocation, FrameworkName));
 
-
             var unityLinkPhaseGuid = project.GetFrameworksBuildPhaseByTarget(targetGuid);
 
-            project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, fileGuid);
-
-
-            // project.AddFileToBuild(targetGuid, fileGuid); // Ensures that the framework shows up on 'Link Binary with Libraries'
+            project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, fileGuid);// Link framework in 'Build Phases > Link Binary with Libraries'
             project.AddFileToEmbedFrameworks(targetGuid, fileGuid); // Embedding the framework because it's dynamic and needed at runtime
 
             project.SetBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
