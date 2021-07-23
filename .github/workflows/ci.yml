@@ -19,9 +19,8 @@ on:
     - '.craft.yml'
 
 env:
-  # Download links are sourced from here: https://unity3d.com/unity/whats-new/2019.4.21
-  UNITY_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/Windows64EditorInstaller/UnitySetup64.exe
-  UNITY_TARGET_DOWNLOAD_URL: https://download.unity3d.com/download_unity/b76dac84db26/TargetSupportInstaller/UnitySetup-Windows-IL2CPP-Support-for-Editor-2019.4.21f1.exe
+  UNITY_VERSION: 2019.4.21f1
+  UNITY_VERSION_CHANGESET: b76dac84db26
 
 jobs:
 
@@ -41,13 +40,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:/Program Files/Unity
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
-
+          key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
+       
       - name: Restore previous build
         uses: actions/cache@v2
         with:
           path: artifacts/build
-          key: ${{ env.UNITY_DOWNLOAD_URL }}-${{ env.UNITY_TARGET_DOWNLOAD_URL }}
+          key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
@@ -55,20 +54,34 @@ jobs:
           path: samples/unity-of-bugs/Library
           key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - name: Install Unity
-        if: ${{ !steps.cache-unity.outputs.cache-hit }}
-        run: |
-          Invoke-RestMethod -Uri ${{ env.UNITY_DOWNLOAD_URL }} -OutFile unity_install.exe
-          Invoke-RestMethod -Uri ${{ env.UNITY_TARGET_DOWNLOAD_URL }} -OutFile unity_target_install.exe
+      - name: Setup Unity
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        id: setup-unity
+        with:
+          unity-version: ${{ env.UNITY_VERSION }}
+          unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
 
-          ./unity_install.exe /S | Out-Default
-          ./unity_target_install.exe /S | Out-Default
+      - name: Check Unity Modules
+        run: |
+          Get-Content -Raw -Path "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/modules.json" | ConvertFrom-Json
+
+      - name: Setup Unity Modules - Windows IL2CPP
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ env.UNITY_VERSION }}
+          unity-modules: windows-il2cpp
+
+      - name: Setup Unity Modules - Android
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ env.UNITY_VERSION }}
+          unity-modules: android
 
       # Need to write to $GITHUB_PATH to make the environment variable
       # available to other steps.
       - name: Add Unity on PATH
         run: |
-          Write-Output "C:/Program Files/Unity/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
@@ -108,17 +121,26 @@ jobs:
       - name: Run Unity tests (editmode)
         run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
-      - name: Build Standalone Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
-
-      - name: Run Smoke Tests
-        run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
-
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v1
         with:
           name: Test results (editmode)
           path: artifacts/test/editmode
+
+      - name: Build Android Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v1
+        with:
+          name: Android Build
+          path: samples/artifacts/builds/Android
+
+      - name: Build Standalone Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
+
+      - name: Run Smoke Tests
+        run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
 
       - name: Prepare Sentry package for release
         run: |
