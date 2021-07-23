@@ -638,7 +638,8 @@ PlayerSettings:
   webGLThreadsSupport: 0
   webGLWasmStreaming: 0
   scriptingDefineSymbols: {}
-  platformArchitecture: {}
+  platformArchitecture:
+    iPhone: 2
   scriptingBackend:
     Android: 1
     Standalone: 1

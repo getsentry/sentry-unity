@@ -1,0 +1,15 @@
+#import <Foundation/Foundation.h>
+
+// IMPORTANT: DO NOT TOUCH! This file is generated during the Xcode project creation.
+// Your changes WILL be overwritten.
+
+static NSDictionary* GetOptions()
+{
+    NSDictionary* options = @{
+        @"dsn" : @"#",
+        @"enableAutoSessionTracking": @#,
+        @"debug" : @#
+    };
+    
+    return options;
+}
