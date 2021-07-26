@@ -65,37 +65,30 @@ namespace Sentry.Unity
             }
         }
 
-        private SentryMonoBehaviour? _sentryMonoBehaviour;
-        internal Func<SentryMonoBehaviour> SentryMonoBehaviourGenerator;
+        private readonly SentryMonoBehaviour _sentryMonoBehaviour;
 
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
-            CreateSentryMonoBehaviour(); // TODO: create GameObject immediately. Refactor & align (no Func).
-            SentryMonoBehaviourGenerator = CreateSentryMonoBehaviour;
+            _sentryMonoBehaviour = CreateSentryMonoBehaviour();
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviourGenerator));
+            this.AddEventProcessor(new UnityEventProcessor(this, _sentryMonoBehaviour));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new SessionIntegration(SentryMonoBehaviourGenerator));
+            this.AddIntegration(new SessionIntegration(_sentryMonoBehaviour));
         }
 
         private SentryMonoBehaviour CreateSentryMonoBehaviour()
         {
-            if (_sentryMonoBehaviour is not null)
-            {
-                return _sentryMonoBehaviour;
-            }
-
             // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
             var rootGameObject = new GameObject("SentryMonoBehaviour") { hideFlags = HideFlags.HideAndDontSave };
-            return _sentryMonoBehaviour = rootGameObject.AddComponent<SentryMonoBehaviour>();
+            return rootGameObject.AddComponent<SentryMonoBehaviour>();
         }
 
         public override string ToString()

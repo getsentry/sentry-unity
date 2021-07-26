@@ -20,21 +20,19 @@ namespace Sentry.Unity
     internal class UnityEventProcessor : ISentryEventProcessor
     {
         private readonly SentryOptions _sentryOptions;
-        private readonly Func<SentryMonoBehaviour> _sentryMonoBehaviour;
+        private readonly MainThreadData _mainThreadData;
         private readonly IApplication _application;
 
-        private MainThreadData _mainThreadData = null!;
 
-        public UnityEventProcessor(SentryOptions sentryOptions, Func<SentryMonoBehaviour> sentryMonoBehaviourGenerator, IApplication? application = null)
+        public UnityEventProcessor(SentryOptions sentryOptions, SentryMonoBehaviour sentryMonoBehaviour, IApplication? application = null)
         {
             _sentryOptions = sentryOptions;
-            _sentryMonoBehaviour = sentryMonoBehaviourGenerator;
+            _mainThreadData = sentryMonoBehaviour.MainThreadData;
             _application = application ?? ApplicationAdapter.Instance;
         }
 
         public SentryEvent Process(SentryEvent @event)
         {
-            _mainThreadData = _sentryMonoBehaviour.Invoke().MainThreadData;
             try
             {
                 PopulateSdk(@event.Sdk);
@@ -215,18 +213,32 @@ namespace Sentry.Unity
         /// - 'null' otherwise
         /// </summary>
         private string? SafeLazyUnwrap(Lazy<string>? lazyValue)
-            => _mainThreadData.IsMainThread()
-                ? lazyValue?.Value
-                : (lazyValue?.IsValueCreated!).Value
-                    ? lazyValue!.Value
+        {
+            if (lazyValue == null)
+            {
+                return null;
+            }
+
+            return _mainThreadData.IsMainThread()
+                ? lazyValue.Value
+                : lazyValue.IsValueCreated
+                    ? lazyValue.Value
                     : null;
+        }
 
         private bool? SafeLazyUnwrap(Lazy<bool>? lazyValue)
-            => _mainThreadData.IsMainThread()
-                ? lazyValue?.Value
-                : (lazyValue?.IsValueCreated!).Value
-                    ? lazyValue!.Value
+        {
+            if (lazyValue == null)
+            {
+                return null;
+            }
+
+            return _mainThreadData.IsMainThread()
+                ? lazyValue.Value
+                : lazyValue.IsValueCreated
+                    ? lazyValue.Value
                     : null;
+        }
     }
 
     internal class UnityEventExceptionProcessor : ISentryEventExceptionProcessor
