@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-    public static class Test
+    public static class Temp
     {
-        [MenuItem("Tools/Test")]
-        public static void DoTest()
+        [MenuItem("Tools/Temp")]
+        public static void DoTemp()
         {
             using StreamWriter sw = File.CreateText(Path.Combine("Assets/Plugins/Sentry", "SentryOptions.txt"));
             var templateLines = File.ReadAllLines("Assets/Plugins/Sentry/Template.txt");
