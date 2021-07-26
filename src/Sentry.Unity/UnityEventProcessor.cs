@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
@@ -72,7 +71,12 @@ namespace Sentry.Unity
                     .AddSeconds(-Time.realtimeSinceStartup);
             }
 
-            app.BuildType = Debug.isDebugBuild ? "debug" : "release";
+            var isDebugBuild = SafeLazyUnwrap(_mainThreadData.IsDebugBuild);
+            app.BuildType = isDebugBuild.HasValue
+                ? isDebugBuild.Value
+                    ? "debug"
+                    : "release"
+                : null;
         }
 
         private void PopulateOperatingSystem(OperatingSystem operatingSystem)
@@ -84,8 +88,6 @@ namespace Sentry.Unity
         private void PopulateDevice(Device device)
         {
             device.ProcessorCount = _mainThreadData.ProcessorCount;
-            device.BatteryStatus = SystemInfo.batteryStatus.ToString(); // don't cache
-            device.DeviceType = _mainThreadData.DeviceType;
             device.CpuDescription = _mainThreadData.CpuDescription;
             device.Timezone = TimeZoneInfo.Local;
             device.SupportsVibration = _mainThreadData.SupportsVibration;
@@ -93,21 +95,15 @@ namespace Sentry.Unity
 
             // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
             device.Simulator = _application.IsEditor ? true : null;
-            device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? _mainThreadData.DeviceUniqueIdentifier : null;
+            device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? SafeLazyUnwrap(_mainThreadData.DeviceUniqueIdentifier) : null;
+            device.DeviceType = SafeLazyUnwrap(_mainThreadData.DeviceType);
 
-            var model = _mainThreadData.DeviceModel?.Value;
+            var model = SafeLazyUnwrap(_mainThreadData.DeviceModel);
             if (model != SystemInfo.unsupportedIdentifier
                 // Returned by the editor
                 && model != "System Product Name (System manufacturer)")
             {
                 device.Model = model;
-            }
-
-#pragma warning disable RECS0018 // Value is exact when expressing no battery level
-            if (SystemInfo.batteryLevel != -1.0)
-#pragma warning restore RECS0018
-            {
-                device.BatteryLevel = (short?)(SystemInfo.batteryLevel * 100);
             }
 
             // This is the approximate amount of system memory in megabytes.
@@ -117,20 +113,33 @@ namespace Sentry.Unity
                 device.MemorySize = _mainThreadData.SystemMemorySize * 1048576L; // Sentry device mem is in Bytes
             }
 
-            switch (Input.deviceOrientation)
+            if (_mainThreadData.IsMainThread())
             {
-                case UnityEngine.DeviceOrientation.Portrait:
-                case UnityEngine.DeviceOrientation.PortraitUpsideDown:
-                    device.Orientation = DeviceOrientation.Portrait;
-                    break;
-                case UnityEngine.DeviceOrientation.LandscapeLeft:
-                case UnityEngine.DeviceOrientation.LandscapeRight:
-                    device.Orientation = DeviceOrientation.Landscape;
-                    break;
-                case UnityEngine.DeviceOrientation.FaceUp:
-                case UnityEngine.DeviceOrientation.FaceDown:
-                    // TODO: Add to protocol?
-                    break;
+                device.BatteryStatus = SystemInfo.batteryStatus.ToString(); // don't cache
+
+                var batteryLevel = SystemInfo.batteryLevel;
+#pragma warning disable RECS0018 // Value is exact when expressing no battery level
+                if (batteryLevel != -1.0)
+#pragma warning restore RECS0018
+                {
+                    device.BatteryLevel = (short?)(batteryLevel * 100); // don't cache
+                }
+
+                switch (Input.deviceOrientation)
+                {
+                    case UnityEngine.DeviceOrientation.Portrait:
+                    case UnityEngine.DeviceOrientation.PortraitUpsideDown:
+                        device.Orientation = DeviceOrientation.Portrait;
+                        break;
+                    case UnityEngine.DeviceOrientation.LandscapeLeft:
+                    case UnityEngine.DeviceOrientation.LandscapeRight:
+                        device.Orientation = DeviceOrientation.Landscape;
+                        break;
+                    case UnityEngine.DeviceOrientation.FaceUp:
+                    case UnityEngine.DeviceOrientation.FaceDown:
+                        // TODO: Add to protocol?
+                        break;
+                }
             }
         }
 
@@ -138,10 +147,8 @@ namespace Sentry.Unity
         {
             gpu.Id = _mainThreadData.GraphicsDeviceId;
             gpu.Name = _mainThreadData.GraphicsDeviceName;
-            gpu.VendorId = _mainThreadData.GraphicsDeviceVendorId;
             gpu.VendorName = _mainThreadData.GraphicsDeviceVendor;
             gpu.MemorySize = _mainThreadData.GraphicsMemorySize;
-            gpu.MultiThreadedRendering = _mainThreadData.GraphicsMultiThreaded;
             gpu.NpotSupport = _mainThreadData.NpotSupport;
             gpu.Version = _mainThreadData.GraphicsDeviceVersion;
             gpu.ApiType = _mainThreadData.GraphicsDeviceType;
@@ -150,6 +157,9 @@ namespace Sentry.Unity
             gpu.SupportsRayTracing = _mainThreadData.SupportsRayTracing;
             gpu.SupportsComputeShaders = _mainThreadData.SupportsComputeShaders;
             gpu.SupportsGeometryShaders = _mainThreadData.SupportsGeometryShaders;
+
+            gpu.VendorId = SafeLazyUnwrap(_mainThreadData.GraphicsDeviceVendorId);
+            gpu.MultiThreadedRendering = SafeLazyUnwrap(_mainThreadData.GraphicsMultiThreaded);
 
             if (_mainThreadData.GraphicsShaderLevel.HasValue && _mainThreadData.GraphicsShaderLevel != -1)
             {
@@ -173,28 +183,50 @@ namespace Sentry.Unity
 
         private void PopulateUnity(Protocol.Unity unity)
         {
-            unity.InstallMode = _application.InstallMode.ToString();
+            unity.InstallMode = _mainThreadData.InstallMode;
         }
 
         private void PopulateTags(SentryEvent @event)
         {
-            @event.SetTag("unity.install_mode", _application.InstallMode.ToString());
+            if (_mainThreadData.InstallMode is not null)
+            {
+                @event.SetTag("unity.install_mode", _mainThreadData.InstallMode);
+            }
 
             if (_mainThreadData.SupportsDrawCallInstancing.HasValue)
             {
                 @event.SetTag("unity.gpu.supports_instancing", _mainThreadData.SupportsDrawCallInstancing.Value ? "true" : "false");
             }
 
-            if (_mainThreadData.DeviceType is not null)
+            if (_mainThreadData.DeviceType is not null && _mainThreadData.DeviceType.IsValueCreated)
             {
-                @event.SetTag("unity.device.device_type", _mainThreadData.DeviceType);
+                @event.SetTag("unity.device.device_type", _mainThreadData.DeviceType.Value);
             }
 
-            if (_sentryOptions.SendDefaultPii && _mainThreadData.DeviceUniqueIdentifier is not null)
+            if (_sentryOptions.SendDefaultPii && _mainThreadData.DeviceUniqueIdentifier is not null && _mainThreadData.DeviceUniqueIdentifier.IsValueCreated)
             {
-                @event.SetTag("unity.device.unique_identifier", _mainThreadData.DeviceUniqueIdentifier);
+                @event.SetTag("unity.device.unique_identifier", _mainThreadData.DeviceUniqueIdentifier.Value);
             }
         }
+
+        /// <summary>
+        /// - If UI thread, extract the value (can be null)
+        /// - If non-UI thread, check if value is created, then extract
+        /// - 'null' otherwise
+        /// </summary>
+        private string? SafeLazyUnwrap(Lazy<string>? lazyValue)
+            => _mainThreadData.IsMainThread()
+                ? lazyValue?.Value
+                : (lazyValue?.IsValueCreated!).Value
+                    ? lazyValue!.Value
+                    : null;
+
+        private bool? SafeLazyUnwrap(Lazy<bool>? lazyValue)
+            => _mainThreadData.IsMainThread()
+                ? lazyValue?.Value
+                : (lazyValue?.IsValueCreated!).Value
+                    ? lazyValue!.Value
+                    : null;
     }
 
     internal class UnityEventExceptionProcessor : ISentryEventExceptionProcessor

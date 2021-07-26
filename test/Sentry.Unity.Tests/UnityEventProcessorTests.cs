@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
+using Sentry.Extensibility;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -130,8 +134,8 @@ namespace Sentry.Unity.Tests
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
                 SupportsDrawCallInstancing = true,
-                DeviceType = "test type",
-                DeviceUniqueIdentifier = "f810306c-68db-4ebe-89ba-13c457449339"
+                DeviceType = new Lazy<string>(() => "test type"),
+                DeviceUniqueIdentifier = new Lazy<string>(() => "f810306c-68db-4ebe-89ba-13c457449339")
             };
 
             var sentryOptions = new SentryOptions { SendDefaultPii = true };
@@ -190,7 +194,7 @@ namespace Sentry.Unity.Tests
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
                 ProcessorCount = 1,
-                DeviceType = "Console",
+                DeviceType = new Lazy<string>(() => "Console"),
                 CpuDescription = "Intel(R) Core(TM)2 Quad CPU Q6600 @ 2.40GHz",
                 SupportsVibration = true,
                 DeviceName = "hostname",
@@ -219,10 +223,10 @@ namespace Sentry.Unity.Tests
             {
                 GraphicsDeviceId = 1,
                 GraphicsDeviceName = "GeForce RTX 3090",
-                GraphicsDeviceVendorId = "25",
+                GraphicsDeviceVendorId = new Lazy<string>(() => "25"),
                 GraphicsDeviceVendor = "NVIDIA",
                 GraphicsMemorySize = 24000,
-                GraphicsMultiThreaded = true,
+                GraphicsMultiThreaded = new Lazy<bool>(() => true),
                 NpotSupport = "true",
                 GraphicsDeviceVersion = "version212134",
                 GraphicsDeviceType = "devicetype",
@@ -317,18 +321,18 @@ namespace Sentry.Unity.Tests
         public string? OperatingSystem { get; set; }
         public int? ProcessorCount { get; set; }
         public bool? SupportsVibration { get; set; }
-        public string? DeviceType { get; set; }
+        public Lazy<string>? DeviceType { get; set; }
         public string? CpuDescription { get; set; }
         public string? DeviceName { get; set; }
-        public string? DeviceUniqueIdentifier { get; set; }
+        public Lazy<string>? DeviceUniqueIdentifier { get; set; }
         public Lazy<string>? DeviceModel { get; set; }
         public int? SystemMemorySize { get; set; }
         public int? GraphicsDeviceId { get; set; }
         public string? GraphicsDeviceName { get; set; }
-        public string? GraphicsDeviceVendorId { get; set; }
+        public Lazy<string>? GraphicsDeviceVendorId { get; set; }
         public string? GraphicsDeviceVendor { get; set; }
         public int? GraphicsMemorySize { get; set; }
-        public bool? GraphicsMultiThreaded { get; set; }
+        public Lazy<bool>? GraphicsMultiThreaded { get; set; }
         public string? NpotSupport { get; set; }
         public string? GraphicsDeviceVersion { get; set; }
         public string? GraphicsDeviceType { get; set; }
@@ -338,5 +342,7 @@ namespace Sentry.Unity.Tests
         public bool? SupportsComputeShaders { get; set; }
         public bool? SupportsGeometryShaders { get; set; }
         public int? GraphicsShaderLevel { get; set; }
+        public Lazy<bool>? IsDebugBuild { get; set; }
+        public string? InstallMode { get; set; }
     }
 }

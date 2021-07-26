@@ -73,6 +73,7 @@ namespace Sentry.Unity
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
+            CreateSentryMonoBehaviour(); // TODO: create GameObject immediately. Refactor & align (no Func).
             SentryMonoBehaviourGenerator = CreateSentryMonoBehaviour;
 
             this.AddInAppExclude("UnityEngine");
