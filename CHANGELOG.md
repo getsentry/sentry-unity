@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.4.3
+
+### Features
+
+- Log in single line ([#262](https://github.com/getsentry/sentry-unity/pull/262))
+
+### Fixes
+
+- Bump Sentry .NET SDK 3.8.2 ([#263](https://github.com/getsentry/sentry-unity/pull/263))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#382)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.1...3.8.2)
+
+## 0.4.2
+
+### Features
+
+- Added IsGlobalModeEnabled to SetDefaults ([#260](https://github.com/getsentry/sentry-unity/pull/260))
+
+## 0.4.1
+
+### Fixes
+
+- Bump Sentry .NET SDK 3.8.1 ([#258](https://github.com/getsentry/sentry-unity/pull/258))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#381)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.0...3.8.1)
+
+## 0.4.0
+
 ### Features
 
 - Main thread data ([#245](https://github.com/getsentry/sentry-unity/pull/245))

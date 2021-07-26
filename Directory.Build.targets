@@ -2,9 +2,12 @@
 
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
-    <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs</UnitySampleProjectPath>
+    <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
+    <PlayerBuildPath>$(UnitySampleProjectPath)../artifacts/builds/</PlayerBuildPath>
+    <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
+    <AndroidBuildPath>$(PlayerBuildPath)Android/IL2CPP_Player.apk</AndroidBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
-    <UnitySampleProjectUnityVersion>$(SolutionDir)/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
+    <UnitySampleProjectUnityVersion>$(SolutionDir)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
   </PropertyGroup>
@@ -23,9 +26,9 @@
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
       <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
-      <StandalonePlayerName>buildWindows64Player</StandalonePlayerName>
-      <UnityBuildMethod>Builder.BuildWindowsIl2CPPPlayer</UnityBuildMethod>
-      <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.exe</PlayerArtifactPath>
+      <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
+      <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
+      <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
     </PropertyGroup>
 
     <!-- Unity paths on macOS -->
@@ -35,9 +38,11 @@
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
       <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
-      <StandalonePlayerName>buildMacOS64Player</StandalonePlayerName>
-      <UnityBuildMethod>Builder.BuildMacIl2CPPPlayer</UnityBuildMethod>
-      <PlayerArtifactPath>$(UnitySampleProjectPath)/../artifacts/build/il2cpp_player.app/Contents/MacOS/unity-of-bugs</PlayerArtifactPath>
+      <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>      
+      <StandaloneBuildPath>$(PlayerBuildPath)MacOS/IL2CPP_Player.app</StandaloneBuildPath>
+      <StandaloneExecutablePath>$(StandaloneBuildPath)/Contents/MacOS/unity-of-bugs</StandaloneExecutablePath>
+      <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
+      <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     </PropertyGroup>
   </Target>
 
@@ -63,7 +68,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -$(StandalonePlayerName) $(ArtifactName) -executeMethod $(UnityBuildMethod) "
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
   </Target>
@@ -75,12 +80,36 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running smoke test on player."></Message>
 
-    <Exec Command="$(PlayerArtifactPath) --test smoke"
+    <Exec Command="$(StandaloneExecutablePath) --test smoke"
           IgnoreExitCode="true"
           ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="SmokeTestExitCode"/>
     </Exec>
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
+  </Target>
+
+  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP -->
+  <Target Name="UnityBuildPlayerAndroidIL2CPP"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
+
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)"
+          IgnoreStandardErrorWarningFormat="true"
+          IgnoreExitCode="true"></Exec>
+  </Target>
+
+  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS -->
+  <Target Name="UnityBuildPlayerIOS"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Building iOS Xcode project."></Message>
+
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)"
+          IgnoreStandardErrorWarningFormat="true"
+          IgnoreExitCode="true"></Exec>
   </Target>
 
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build

@@ -7,6 +7,16 @@ namespace Sentry.Unity.Tests
     public class SentryOptionsUtilityTests
     {
         [Test]
+        public void SetDefaults_IsGlobalModeEnabled_IsTrue()
+        {
+            var options = new SentryUnityOptions();
+
+            SentryOptionsUtility.SetDefaults(options, new TestApplication());
+
+            Assert.IsTrue(options.IsGlobalModeEnabled);
+        }
+
+        [Test]
         public void SetDefaults_Release_IsApplicationProductNameAtVersion()
         {
             var options = new SentryUnityOptions();

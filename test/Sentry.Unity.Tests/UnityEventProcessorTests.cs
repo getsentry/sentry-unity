@@ -184,6 +184,35 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator Process_DeviceProtocol_Assigned()
+        {
+            const long toByte = 1048576L; // in `UnityEventProcessor.PopulateDevice`
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            {
+                ProcessorCount = 1,
+                DeviceType = "Console",
+                CpuDescription = "Intel(R) Core(TM)2 Quad CPU Q6600 @ 2.40GHz",
+                SupportsVibration = true,
+                DeviceName = "hostname",
+                DeviceModel = new Lazy<string>(() => "Samsung Galaxy S3"),
+                SystemMemorySize = 16000
+            };
+            var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviourGenerator, _testApplication);
+            var sentryEvent = new SentryEvent();
+
+            yield return _sentryMonoBehaviour.CollectData();
+            sut.Process(sentryEvent);
+
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.ProcessorCount, sentryEvent.Contexts.Device.ProcessorCount);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceType, sentryEvent.Contexts.Device.DeviceType);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.CpuDescription, sentryEvent.Contexts.Device.CpuDescription);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SupportsVibration, sentryEvent.Contexts.Device.SupportsVibration);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceName, sentryEvent.Contexts.Device.Name);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceModel?.Value, sentryEvent.Contexts.Device.Model);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SystemMemorySize * toByte, sentryEvent.Contexts.Device.MemorySize);
+        }
+
+        [UnityTest]
         public IEnumerator Process_GpuProtocol_Assigned()
         {
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
@@ -292,7 +321,7 @@ namespace Sentry.Unity.Tests
         public string? CpuDescription { get; set; }
         public string? DeviceName { get; set; }
         public string? DeviceUniqueIdentifier { get; set; }
-        public string? DeviceModel { get; set; }
+        public Lazy<string>? DeviceModel { get; set; }
         public int? SystemMemorySize { get; set; }
         public int? GraphicsDeviceId { get; set; }
         public string? GraphicsDeviceName { get; set; }
