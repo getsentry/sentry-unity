@@ -1,10 +1,5 @@
-using System.IO;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEngine;
-using UnityEditor.iOS.Xcode;
-using UnityEditor.iOS.Xcode.Extensions;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -25,10 +20,13 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var sentryXcodeProject = new SentryXcodeProject(pathToProject);
+            var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
+
             sentryXcodeProject.AddSentryFramework();
             sentryXcodeProject.CreateNativeOptions(options);
-            sentryXcodeProject.ModifyMain();
+            sentryXcodeProject.AddSentryToMain();
+
+            sentryXcodeProject.Save();
         }
     }
 }

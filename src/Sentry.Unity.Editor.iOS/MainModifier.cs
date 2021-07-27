@@ -1,30 +1,71 @@
+using System.IO;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
     public static class MainModifier
     {
         private const string Include = "#include <Sentry/Sentry.h>\n#include \"SentryOptions.m\"\n";
-        private const string Init = "\t\t[SentrySDK startWithOptions:GetOptions()];\n\n";
+        private const string Init = "\t\t[SentrySDK startWithOptions:getSentryOptions()];\n\n";
 
-        public static string? GetModifiedMain(string main)
+        public static void AddSentry(string mainPath)
         {
-            if(main.Contains(Include))
+            if (!DoesMainExist(mainPath))
             {
-                // TODO: Handling of "we already modified this main"
-                return null;
+                return;
             }
 
-            var modifiedMain = main.Insert(0, Include);
+            var main = File.ReadAllText(mainPath);
+            if (ContainsSentry(main))
+            {
+                return;
+            }
+
+            var sentryMain = AddSentryToMain(main);
+            if (sentryMain is null)
+            {
+                return;
+            }
+
+            File.WriteAllText(mainPath, sentryMain);
+        }
+
+        internal static bool DoesMainExist(string mainPath)
+        {
+            if (!File.Exists(mainPath))
+            {
+                Debug.LogWarning($"Could not find '{mainPath}'.");
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static bool ContainsSentry(string main)
+        {
+            if (main.Contains(Include))
+            {
+                Debug.Log("Sentry already added to 'main.mm'.");
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static string? AddSentryToMain(string main)
+        {
+            main = main.Insert(0, Include);
 
             var initRegex = new Regex(@"int main\(int argc, char\* argv\[\]\)\n{\n\s+@autoreleasepool\n.\s+{\n");
-            var match = initRegex.Match(modifiedMain);
+            var match = initRegex.Match(main);
             if (match.Success)
             {
-                modifiedMain = modifiedMain.Insert(match.Index + match.Length, Init);
+                return main.Insert(match.Index + match.Length, Init);
             }
 
-            return modifiedMain;
+            Debug.LogWarning("Failed to add Sentry to main.");
+            return null;
         }
     }
 }

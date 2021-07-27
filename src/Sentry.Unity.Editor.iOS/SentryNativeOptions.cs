@@ -11,7 +11,9 @@ namespace Sentry.Unity.Editor.iOS
 // IMPORTANT: DO NOT TOUCH! This file is generated during the Xcode project creation.
 // Your changes WILL be overwritten.
 
-static NSDictionary* GetOptions()
+// TODO: make pretty with docs maybe?
+
+static NSDictionary* getSentryOptions()
 {{
     NSDictionary* options = @{{
         @""dsn"" : @""{options.Dsn}"",
