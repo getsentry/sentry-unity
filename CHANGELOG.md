@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Bump Sentry .NET SDK 3.8.3 ([#269](https://github.com/getsentry/sentry-unity/pull/269))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#383)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.3...3.8.3)
+
 ## 0.4.3
 
 ### Features
