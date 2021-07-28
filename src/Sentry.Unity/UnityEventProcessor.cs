@@ -69,7 +69,7 @@ namespace Sentry.Unity
                     .AddSeconds(-Time.realtimeSinceStartup);
             }
 
-            var isDebugBuild = SafeLazyUnwrap(_mainThreadData.IsDebugBuild);
+            var isDebugBuild = SafeLazyUnwrap(_mainThreadData.IsDebugBuild, nameof(app.BuildType));
             app.BuildType = isDebugBuild.HasValue
                 ? isDebugBuild.Value
                     ? "debug"
@@ -93,10 +93,12 @@ namespace Sentry.Unity
 
             // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
             device.Simulator = _application.IsEditor ? true : null;
-            device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii ? SafeLazyUnwrap(_mainThreadData.DeviceUniqueIdentifier) : null;
-            device.DeviceType = SafeLazyUnwrap(_mainThreadData.DeviceType);
+            device.DeviceUniqueIdentifier = _sentryOptions.SendDefaultPii
+                ? SafeLazyUnwrap(_mainThreadData.DeviceUniqueIdentifier, nameof(device.DeviceUniqueIdentifier))
+                : null;
+            device.DeviceType = SafeLazyUnwrap(_mainThreadData.DeviceType, nameof(device.DeviceType));
 
-            var model = SafeLazyUnwrap(_mainThreadData.DeviceModel);
+            var model = SafeLazyUnwrap(_mainThreadData.DeviceModel, nameof(device.Model));
             if (model != SystemInfo.unsupportedIdentifier
                 // Returned by the editor
                 && model != "System Product Name (System manufacturer)")
@@ -156,8 +158,8 @@ namespace Sentry.Unity
             gpu.SupportsComputeShaders = _mainThreadData.SupportsComputeShaders;
             gpu.SupportsGeometryShaders = _mainThreadData.SupportsGeometryShaders;
 
-            gpu.VendorId = SafeLazyUnwrap(_mainThreadData.GraphicsDeviceVendorId);
-            gpu.MultiThreadedRendering = SafeLazyUnwrap(_mainThreadData.GraphicsMultiThreaded);
+            gpu.VendorId = SafeLazyUnwrap(_mainThreadData.GraphicsDeviceVendorId, nameof(gpu.VendorId));
+            gpu.MultiThreadedRendering = SafeLazyUnwrap(_mainThreadData.GraphicsMultiThreaded, nameof(gpu.MultiThreadedRendering));
 
             if (_mainThreadData.GraphicsShaderLevel.HasValue && _mainThreadData.GraphicsShaderLevel != -1)
             {
@@ -212,36 +214,58 @@ namespace Sentry.Unity
         /// - If non-UI thread, check if value is created, then extract
         /// - 'null' otherwise
         /// </summary>
-        private string? SafeLazyUnwrap(Lazy<string>? lazyValue)
+        private string? SafeLazyUnwrap(Lazy<string>? lazyValue, string? propertyName = null)
         {
             if (lazyValue == null)
             {
                 return null;
             }
 
-            return _mainThreadData.IsMainThread()
-                ? lazyValue.Value
-                : lazyValue.IsValueCreated
-                    ? lazyValue.Value
-                    : null;
+            if (_mainThreadData.IsMainThread())
+            {
+                return lazyValue.Value;
+            }
+
+            if (lazyValue.IsValueCreated)
+            {
+                return lazyValue.Value;
+            }
+
+            if (propertyName is not null)
+            {
+                _sentryOptions.DiagnosticLogger?.LogDebug("Not UI thread. Value hasn't been unwrapped yet, returning 'null' for property: {0}", propertyName);
+            }
+
+            return null;
         }
 
         /*
          * Can't be made generic. At the time of writing, you can't specify if 'T' is nullable for 'struct' and 'class' at the same time.
          * Check https://github.com/dotnet/csharplang/discussions/3060 and https://github.com/dotnet/csharplang/blob/main/meetings/2019/LDM-2019-11-25.md
          */
-        private bool? SafeLazyUnwrap(Lazy<bool>? lazyValue)
+        private bool? SafeLazyUnwrap(Lazy<bool>? lazyValue, string? propertyName = null)
         {
             if (lazyValue == null)
             {
                 return null;
             }
 
-            return _mainThreadData.IsMainThread()
-                ? lazyValue.Value
-                : lazyValue.IsValueCreated
-                    ? lazyValue.Value
-                    : null;
+            if (_mainThreadData.IsMainThread())
+            {
+                return lazyValue.Value;
+            }
+
+            if (lazyValue.IsValueCreated)
+            {
+                return lazyValue.Value;
+            }
+
+            if (propertyName is not null)
+            {
+                _sentryOptions.DiagnosticLogger?.LogDebug("Not UI thread. Value hasn't been unwrapped yet, returning 'null' for property: {0}", propertyName);
+            }
+
+            return null;
         }
     }
 

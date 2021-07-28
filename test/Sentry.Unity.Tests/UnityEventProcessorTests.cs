@@ -89,6 +89,7 @@ namespace Sentry.Unity.Tests
                 Enabled = true,
                 AttachStacktrace = true,
                 SendDefaultPii = true, // for Device.DeviceUniqueIdentifier
+                Debug = true,
                 DiagnosticLogger = _testLogger
             };
             options.AddEventProcessor(new UnityEventProcessor(options, _sentryMonoBehaviour, _testApplication));
@@ -99,11 +100,17 @@ namespace Sentry.Unity.Tests
             // act & assert
             var nonUiThreadEventDataNotCached = NonUiThread();
             Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Gpu.VendorId);
+            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Gpu.VendorId)));
             Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Gpu.MultiThreadedRendering);
+            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Gpu.MultiThreadedRendering)));
             Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.DeviceType);
+            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Device.DeviceType)));
             Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.Model);
+            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Device.Model)));
             Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.DeviceUniqueIdentifier);
+            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Device.DeviceUniqueIdentifier)));
             Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.App.BuildType);
+            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.App.BuildType)));
 
             var uiThreadEventDataCached = UiThread();
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVendorId!.Value, uiThreadEventDataCached.Contexts.Gpu.VendorId);
@@ -120,6 +127,11 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceModel!.Value, nonUiThreadEventDataCached.Contexts.Device.Model);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier!.Value, nonUiThreadEventDataCached.Contexts.Device.DeviceUniqueIdentifier);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.IsDebugBuild!.Value ? "debug" : "release", nonUiThreadEventDataCached.Contexts.App.BuildType);
+
+            bool NonUiThreadDebugMessageExists(string propertyName)
+                => _testLogger.Logs.Any(log =>
+                     log.logLevel == SentryLevel.Debug &&
+                     log.message.Contains(propertyName));
 
             static SentryEvent NonUiThread()
             {
