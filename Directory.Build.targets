@@ -75,7 +75,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP -->
   <Target Name="UnitySmokeTestStandalonePlayerIL2CPP"
-          DependsOnTargets="UnityBuildStandalonePlayerIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
