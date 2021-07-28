@@ -42,9 +42,10 @@ namespace Sentry.Unity.Tests
             // arrange
             var options = new SentryUnityOptions
             {
-                Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
+                Dsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250",
                 Enabled = true,
                 AttachStacktrace = true,
+                Debug = true,
                 DiagnosticLogger = _testLogger
             };
             SentryUnity.Init(options);
@@ -64,7 +65,9 @@ namespace Sentry.Unity.Tests
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
             // assert
-            Assert.Zero(_testLogger.Logs.Count(log => log.logLevel > SentryLevel.Error));
+            Assert.Zero(_testLogger.Logs.Count(log => log.logLevel >= SentryLevel.Warning));
+            // Sanity check: At least some logs must have been printed
+            Assert.NotZero(_testLogger.Logs.Count(log => log.logLevel <= SentryLevel.Info));
         }
 
         [UnityTest]
@@ -118,7 +121,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier!.Value, nonUiThreadEventDataCached.Contexts.Device.DeviceUniqueIdentifier);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.IsDebugBuild!.Value ? "debug" : "release", nonUiThreadEventDataCached.Contexts.App.BuildType);
 
-            SentryEvent NonUiThread()
+            static SentryEvent NonUiThread()
             {
                 var sentryEvent = CreateSentryEvent();
                 Task.Run(() => SentrySdk.CaptureEvent(sentryEvent))
@@ -127,7 +130,7 @@ namespace Sentry.Unity.Tests
                 return sentryEvent;
             }
 
-            SentryEvent UiThread()
+            static SentryEvent UiThread()
             {
                 var sentryEvent = CreateSentryEvent();
                 SentrySdk.CaptureEvent(sentryEvent);
@@ -149,7 +152,7 @@ namespace Sentry.Unity.Tests
         public void SentrySdkCaptureEvent_WrongDsn_CorrectException()
         {
             // arrange
-            const string wrongDsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.sentry.io/5606182";
+            const string wrongDsn = "https://key@fake.domain.fail.to.resolve/5606182";
             var options = new SentryUnityOptions
             {
                 Dsn = wrongDsn,

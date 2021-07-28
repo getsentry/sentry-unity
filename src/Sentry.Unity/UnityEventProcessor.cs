@@ -226,6 +226,10 @@ namespace Sentry.Unity
                     : null;
         }
 
+        /*
+         * Can't be made generic. At the time of writing, you can't specify if 'T' is nullable for 'struct' and 'class' at the same time.
+         * Check https://github.com/dotnet/csharplang/discussions/3060 and https://github.com/dotnet/csharplang/blob/main/meetings/2019/LDM-2019-11-25.md
+         */
         private bool? SafeLazyUnwrap(Lazy<bool>? lazyValue)
         {
             if (lazyValue == null)
