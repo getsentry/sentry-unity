@@ -137,10 +137,10 @@ jobs:
           path: samples/artifacts/builds/Android
 
       - name: Build Standalone Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildPlayerIL2CPP /p:Configuration=Release
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
 
       - name: Run Smoke Tests
-        run: dotnet msbuild /t:UnitySmokeTestPlayerIL2CPP
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
 
       - name: Prepare Sentry package for release
         run: |

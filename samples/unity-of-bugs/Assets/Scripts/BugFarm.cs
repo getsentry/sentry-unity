@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -99,9 +100,18 @@ public class BugFarm : MonoBehaviour
 
     public void CrashNative()
     {
-        // The method definition is missing
-        //crash();
+#if !UNITY_EDITOR
+        crash();
+#else
+        Debug.Log("Requires IL2CPP. Try this on a native player.");
+#endif
     }
+
+#if !UNITY_EDITOR
+    // NativeExample.c
+    [DllImport("__Internal")]
+    private static extern void crash();
+#endif
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void MethodA() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
@@ -109,10 +119,6 @@ public class BugFarm : MonoBehaviour
     // IL2CPP inlines this anyway
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void MethodB() => MethodA();
-
-    // The method definition is missing
-    //[DllImport("__Internal")]
-    //private static extern void crash();
 }
 
 public class CustomException : System.Exception
