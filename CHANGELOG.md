@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Native crash in sample ([#270](https://github.com/getsentry/sentry-unity/pull/270))
+
 ### Fixes
 
 - Bump Sentry .NET SDK 3.8.3 ([#269](https://github.com/getsentry/sentry-unity/pull/269))
