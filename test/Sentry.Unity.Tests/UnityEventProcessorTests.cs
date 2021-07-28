@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.Stubs;
@@ -11,20 +14,172 @@ using Object = UnityEngine.Object;
 
 namespace Sentry.Unity.Tests
 {
-    internal sealed class TestLogger : IDiagnosticLogger
+    public sealed class UnityEventProcessorThreadingTests
     {
-        internal readonly List<(SentryLevel logLevel, string message, Exception? exception)> _logs = new();
+        private GameObject _gameObject = null!;
+        private TestLogger _testLogger = null!;
+        private SentryMonoBehaviour _sentryMonoBehaviour = null!;
+        private TestApplication _testApplication = null!;
 
-        public bool IsEnabled(SentryLevel level) => true;
-
-        public void Log(SentryLevel logLevel, string message, Exception? exception = null, params object?[] args)
+        [SetUp]
+        public void SetUp()
         {
-            var log = (logLevel, string.Format(message, args), exception);
-            if (logLevel == SentryLevel.Error)
+            _gameObject = new GameObject("ProcessorTest");
+            _testLogger = new TestLogger();
+            _sentryMonoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
+            _testApplication = new();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Object.Destroy(_gameObject);
+        }
+
+        [Test]
+        public void SentrySdkCaptureEvent_OnNotUIThread_Succeeds()
+        {
+            // arrange
+            var options = new SentryUnityOptions
             {
-                Debug.Log(log.exception!.StackTrace);
+                Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
+                Enabled = true,
+                AttachStacktrace = true,
+                DiagnosticLogger = _testLogger
+            };
+            SentryUnity.Init(options);
+
+            var sentryEvent = new SentryEvent
+            {
+                Message = new SentryMessage
+                {
+                    Message = "Test message"
+                }
+            };
+
+            // act
+            Task.Run(() => SentrySdk.CaptureEvent(sentryEvent))
+                .Wait();
+
+            SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+
+            // assert
+            Assert.Zero(_testLogger.Logs.Count(log => log.logLevel > SentryLevel.Error));
+        }
+
+        [UnityTest]
+        public IEnumerator SentrySdkCaptureEvent_OnNotUIThreadThenUIThreadThenNotUIThread_Cached()
+        {
+            // arrange
+            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            {
+                GraphicsDeviceVendorId = new Lazy<string>(() => "VendorId"),
+                GraphicsMultiThreaded = new Lazy<bool>(() => true),
+                DeviceType = new Lazy<string>(() => "Android"),
+                DeviceModel = new Lazy<string>(() => "DeviceModel"),
+                DeviceUniqueIdentifier = new Lazy<string>(() => "83fdd6d4-50b1-4735-a4d1-d4f7de64aff0"),
+                IsDebugBuild = new Lazy<bool>(() => true)
+            };
+            var options = new SentryUnityOptions
+            {
+                Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
+                Enabled = true,
+                AttachStacktrace = true,
+                SendDefaultPii = true, // for Device.DeviceUniqueIdentifier
+                DiagnosticLogger = _testLogger
+            };
+            options.AddEventProcessor(new UnityEventProcessor(options, _sentryMonoBehaviour, _testApplication));
+            SentryUnity.Init(options);
+
+            yield return _sentryMonoBehaviour.CollectData();
+
+            // act & assert
+            var nonUiThreadEventDataNotCached = NonUiThread();
+            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Gpu.VendorId);
+            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Gpu.MultiThreadedRendering);
+            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.DeviceType);
+            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.Model);
+            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.DeviceUniqueIdentifier);
+            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.App.BuildType);
+
+            var uiThreadEventDataCached = UiThread();
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVendorId!.Value, uiThreadEventDataCached.Contexts.Gpu.VendorId);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsMultiThreaded!.Value, uiThreadEventDataCached.Contexts.Gpu.MultiThreadedRendering);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceType!.Value, uiThreadEventDataCached.Contexts.Device.DeviceType);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceModel!.Value, uiThreadEventDataCached.Contexts.Device.Model);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier!.Value, uiThreadEventDataCached.Contexts.Device.DeviceUniqueIdentifier);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.IsDebugBuild!.Value ? "debug" : "release", uiThreadEventDataCached.Contexts.App.BuildType);
+
+            var nonUiThreadEventDataCached = NonUiThread();
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVendorId!.Value, nonUiThreadEventDataCached.Contexts.Gpu.VendorId);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsMultiThreaded!.Value, nonUiThreadEventDataCached.Contexts.Gpu.MultiThreadedRendering);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceType!.Value, nonUiThreadEventDataCached.Contexts.Device.DeviceType);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceModel!.Value, nonUiThreadEventDataCached.Contexts.Device.Model);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier!.Value, nonUiThreadEventDataCached.Contexts.Device.DeviceUniqueIdentifier);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.IsDebugBuild!.Value ? "debug" : "release", nonUiThreadEventDataCached.Contexts.App.BuildType);
+
+            SentryEvent NonUiThread()
+            {
+                var sentryEvent = CreateSentryEvent();
+                Task.Run(() => SentrySdk.CaptureEvent(sentryEvent))
+                    .Wait();
+                SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+                return sentryEvent;
             }
-            _logs.Add(log);
+
+            SentryEvent UiThread()
+            {
+                var sentryEvent = CreateSentryEvent();
+                SentrySdk.CaptureEvent(sentryEvent);
+                SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+                return sentryEvent;
+            }
+
+            static SentryEvent CreateSentryEvent()
+                => new ()
+                {
+                    Message = new SentryMessage
+                    {
+                        Message = "Test message"
+                    }
+                };
+        }
+
+        [Test]
+        public void SentrySdkCaptureEvent_WrongDsn_CorrectException()
+        {
+            // arrange
+            const string wrongDsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.sentry.io/5606182";
+            var options = new SentryUnityOptions
+            {
+                Dsn = wrongDsn,
+                Enabled = true,
+                AttachStacktrace = true,
+                Debug = true,
+                DiagnosticLogger = _testLogger
+            };
+            SentryUnity.Init(options);
+
+            var sentryEvent = new SentryEvent
+            {
+                Message = new SentryMessage
+                {
+                    Message = "Test message"
+                }
+            };
+
+            // act
+            SentrySdk.CaptureEvent(sentryEvent);
+            SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+
+            // assert
+            var logError = _testLogger.Logs
+                .SingleOrDefault(log => log.logLevel == SentryLevel.Error && log.exception is HttpRequestException);
+            Assert.IsNotNull(logError);
+
+            var logErrorInnerException = logError.exception!.InnerException as WebException;
+            Assert.IsNotNull(logErrorInnerException);
+            Assert.IsTrue(logErrorInnerException!.Message.Contains("Error: NameResolutionFailure"));
         }
     }
 
@@ -329,6 +484,19 @@ namespace Sentry.Unity.Tests
             sut.Process(sentryEvent);
 
             Assert.IsNull(sentryEvent.Contexts.Gpu.GraphicsShaderLevel);
+        }
+    }
+
+    internal sealed class TestLogger : IDiagnosticLogger
+    {
+        internal readonly List<(SentryLevel logLevel, string message, Exception? exception)> Logs = new();
+
+        public bool IsEnabled(SentryLevel level) => true;
+
+        public void Log(SentryLevel logLevel, string message, Exception? exception = null, params object?[] args)
+        {
+            var log = (logLevel, string.Format(message, args), exception);
+            Logs.Add(log);
         }
     }
 
