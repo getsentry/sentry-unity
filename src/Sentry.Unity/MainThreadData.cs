@@ -59,6 +59,12 @@ namespace Sentry.Unity
 
         public string? InstallMode { get; set; }
 
+        public Lazy<string>? TargetFrameRate { get; set; }
+
+        public Lazy<string>? CopyTextureSupport { get; set; }
+
+        public Lazy<string>? RenderingThreadingMode { get; set; }
+
         public bool IsMainThread()
             => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
     }

@@ -172,6 +172,9 @@ namespace Sentry.Unity
             MainThreadData.GraphicsShaderLevel = SentrySystemInfo.GraphicsShaderLevel;
             MainThreadData.IsDebugBuild = SentrySystemInfo.IsDebugBuild;
             MainThreadData.InstallMode = SentrySystemInfo.InstallMode;
+            MainThreadData.TargetFrameRate = SentrySystemInfo.TargetFrameRate;
+            MainThreadData.CopyTextureSupport = SentrySystemInfo.CopyTextureSupport;
+            MainThreadData.RenderingThreadingMode = SentrySystemInfo.RenderingThreadingMode;
         }
     }
 }

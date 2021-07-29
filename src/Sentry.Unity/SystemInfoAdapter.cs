@@ -33,6 +33,9 @@ namespace Sentry.Unity
         int? GraphicsShaderLevel { get; }
         Lazy<bool>? IsDebugBuild { get; }
         string? InstallMode { get; }
+        Lazy<string>? TargetFrameRate { get; }
+        Lazy<string>? CopyTextureSupport { get; }
+        Lazy<string>? RenderingThreadingMode { get; }
     }
 
     internal sealed class SentrySystemInfoAdapter : ISentrySystemInfo
@@ -73,5 +76,8 @@ namespace Sentry.Unity
         public int? GraphicsShaderLevel => SystemInfo.graphicsShaderLevel;
         public Lazy<bool> IsDebugBuild => new (() => Debug.isDebugBuild);
         public string? InstallMode => Application.installMode.ToString();
+        public Lazy<string> TargetFrameRate => new (() => Application.targetFrameRate.ToString());
+        public Lazy<string> CopyTextureSupport => new (() => SystemInfo.copyTextureSupport.ToString());
+        public Lazy<string> RenderingThreadingMode => new (() => SystemInfo.renderingThreadingMode.ToString());
     }
 }
