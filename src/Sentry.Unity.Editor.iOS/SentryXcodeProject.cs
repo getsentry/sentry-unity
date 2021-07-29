@@ -2,6 +2,7 @@ using System.IO;
 using System.Xml.Linq;
 using UnityEditor.iOS.Xcode;
 using UnityEditor.iOS.Xcode.Extensions;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
@@ -9,7 +10,7 @@ namespace Sentry.Unity.Editor.iOS
     internal class SentryXcodeProject
     {
         // TODO: IMPORTANT! This HAS to match the location where unity copies the framework to and matches the location in the project
-        private const string FrameworkLocation = "Frameworks/Plugins/iOS"; // The path where the framework is stored
+        private const string FrameworkLocation = "Frameworks/io.sentry.unity.dev/Plugins/iOS"; // The path where the framework is stored
         private const string FrameworkName = "Sentry.framework";
 
         private const string MainPathRelative = "MainApp/main.mm";
