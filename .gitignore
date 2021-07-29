@@ -19,6 +19,7 @@ samples/unity-of-bugs/Assets/InitTestScene*
 
 # Ignore build and Unity artifacts
 package-dev/**/*.dll
+package-dev/**/*.framework
 package-dev/**/*.meta
 !package-dev/Runtime/Sentry.Unity.dll.meta
 !package-dev/Tests/*.meta

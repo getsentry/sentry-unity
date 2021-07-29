@@ -10,6 +10,9 @@
     <UnitySampleProjectUnityVersion>$(SolutionDir)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
+    <!-- Cocoa-->
+    <CocoaRoot>$(SolutionDir)src/sentry-cocoa/</CocoaRoot>
+    <CocoaFrameworkPath>$(SolutionDir)package-dev/Plugins/iOS/</CocoaFrameworkPath>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -50,6 +53,22 @@
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
     <RemoveDir Directories="$(UnityPackageProject)" />
+  </Target>
+
+  <Target Name="CleanCocoaSDK" AfterTargets"Clean">
+    <RemoveDir Directories="$(SolutionDir)package-dev/Plugins" />
+  </Target>
+
+  <Target Name="BuildCocoaSDK" 
+          Condition="$([MSBuild]::IsOSPlatform('OSX')) 
+          And '$(MSBuildProjectName)' == 'Sentry.Unity'
+          And !Exists('$(SolutionDir)/package-dev/Plugins/iOS/Sentry.framework')" 
+          BeforeTargets="BeforeBuild">    
+    <Error Condition="!Exists('$(CocoaRoot)')" Text="Couldn't find the Cocoa root at $(CocoaRoot)."></Error>      
+    
+    <Exec Command="sh $(SolutionDir)buildcocoa.sh $(CocoaRoot) $(CocoaFrameworkPath)"></Exec>
+
+    <Error Condition="!Exists('$(SolutionDir)/package-dev/Plugins/iOS/Sentry.framework')" Text="Couldn't build the Cocoa SDK."></Error>
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
