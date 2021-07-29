@@ -188,9 +188,9 @@ namespace Sentry.Unity
 
         private void PopulateTags(SentryEvent @event)
         {
-            if (_mainThreadData.InstallMode is not null)
+            if (_mainThreadData.InstallMode is { } installMode)
             {
-                @event.SetTag("unity.install_mode", _mainThreadData.InstallMode);
+                @event.SetTag("unity.install_mode", installMode);
             }
 
             if (_mainThreadData.SupportsDrawCallInstancing.HasValue)

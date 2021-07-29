@@ -32,7 +32,7 @@ namespace Sentry.Unity
         bool? SupportsGeometryShaders { get; }
         int? GraphicsShaderLevel { get; }
         Lazy<bool>? IsDebugBuild { get; }
-        public string? InstallMode { get; }
+        string? InstallMode { get; }
     }
 
     internal sealed class SentrySystemInfoAdapter : ISentrySystemInfo
