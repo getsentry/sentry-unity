@@ -5,12 +5,12 @@ using static System.String;
 
 namespace Sentry.Unity
 {
-    internal interface IUnityLoggerInterceptor
+    public interface IUnityLoggerInterceptor
     {
         void Intercept(string logMessage);
     }
 
-    internal class UnityLogger : IDiagnosticLogger
+    public class UnityLogger : IDiagnosticLogger
     {
         private readonly SentryOptions _sentryOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
