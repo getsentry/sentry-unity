@@ -4,21 +4,22 @@ namespace Sentry.Unity.Editor.iOS
     {
         private static string ToObjCString(this bool b) => b ? "YES" : "NO";
 
+        private int
+
         public static string GenerateOptions(SentryOptions options)
         {
-            var optionsTemplate = $@"#import <Foundation/Foundation.h>
+            var optionsTemplate = $@"// This file is generated during the Xcode project creation.
+// Any changes to it WILL be overwritten.
 
-// IMPORTANT: DO NOT TOUCH! This file is generated during the Xcode project creation.
-// Your changes WILL be overwritten.
-
-// TODO: make pretty with docs maybe?
+// TODO: make pretty with docs
 
 static NSDictionary* getSentryOptions()
 {{
     NSDictionary* options = @{{
         @""dsn"" : @""{options.Dsn}"",
-        @""enableAutoSessionTracking"": @{options.AutoSessionTracking.ToObjCString()},
+        @""enableAutoSessionTracking"": @NO,
         @""debug"" : @{options.Debug.ToObjCString()}
+        @""send-default-pii"" : @{options.SendDefaultPii.ToObjCString()}
     }};
 
     return options;
