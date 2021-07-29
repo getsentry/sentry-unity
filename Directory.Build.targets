@@ -55,8 +55,8 @@
     <RemoveDir Directories="$(UnityPackageProject)" />
   </Target>
 
-  <Target Name="CleanCocoaSDK" AfterTargets"Clean">
-    <RemoveDir Directories="$(SolutionDir)package-dev/Plugins" />
+  <Target Name="CleanCocoaSDK" AfterTargets="Clean">
+    <RemoveDir Directories="$(CocoaFrameworkPath)Sentry.framework" />
   </Target>
 
   <Target Name="BuildCocoaSDK" 
