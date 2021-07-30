@@ -5,7 +5,7 @@ using static System.String;
 
 namespace Sentry.Unity
 {
-    public interface IUnityLoggerInterceptor
+    internal interface IUnityLoggerInterceptor
     {
         void Intercept(string logMessage);
     }
@@ -17,7 +17,10 @@ namespace Sentry.Unity
 
         public bool IsEnabled(SentryLevel level) => level >= _sentryOptions.DiagnosticLevel;
 
-        public UnityLogger(SentryOptions sentryOptions, IUnityLoggerInterceptor? interceptor = null)
+        public UnityLogger(SentryOptions sentryOptions) : this(sentryOptions, null)
+        { }
+
+        internal UnityLogger(SentryOptions sentryOptions, IUnityLoggerInterceptor? interceptor = null)
         {
             _sentryOptions = sentryOptions;
             _interceptor = interceptor;
