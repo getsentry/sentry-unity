@@ -66,7 +66,7 @@
           BeforeTargets="BeforeBuild">    
     <Error Condition="!Exists('$(CocoaRoot)')" Text="Couldn't find the Cocoa root at $(CocoaRoot)."></Error>      
     
-    <Exec Command="sh $(SolutionDir)buildcocoa.sh $(CocoaRoot) $(CocoaFrameworkPath)"></Exec>
+    <Exec Command="sh $(SolutionDir)/scripts/build-cocoa-sdk.sh $(CocoaRoot) $(CocoaFrameworkPath)"></Exec>
 
     <Error Condition="!Exists('$(SolutionDir)/package-dev/Plugins/iOS/Sentry.framework')" Text="Couldn't build the Cocoa SDK."></Error>
   </Target>
