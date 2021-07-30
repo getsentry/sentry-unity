@@ -15,17 +15,19 @@ namespace Sentry.Unity.Editor.iOS
 
         public static string GenerateOptions(SentryOptions options)
         {
-            var optionsTemplate = $@"// This file is generated during the Xcode project creation.
-// Any changes to it WILL be overwritten.
+            var optionsTemplate = $@"#import <Foundation/Foundation.h>
 
-// TODO: make pretty with docs
+// IMPORTANT: Changes to this file will be lost!
+// This file is generated during the Xcode project creation.
+
+// TODO: make pretty with link to docs
 
 static NSDictionary* getSentryOptions()
 {{
     NSDictionary* options = @{{
         @""dsn"" : @""{options.Dsn}"",
         @""debug"" : @{options.Debug.ToObjCString()},
-        @""diagnosticLevel"" : @((SentryLevel){options.DiagnosticLevel.ToNativeDiagnosticLevel()}),
+        @""diagnosticLevel"" : @{options.DiagnosticLevel.ToNativeDiagnosticLevel()},
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,

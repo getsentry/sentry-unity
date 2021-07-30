@@ -6,8 +6,12 @@ namespace Sentry.Unity.Editor.iOS
 {
     public static class MainModifier
     {
-        private const string Include = "#include <Sentry/Sentry.h>\n#include \"SentryOptions.m\"\n";
-        private const string Init = "\t\t[SentrySDK startWithOptions:getSentryOptions()];\n\n";
+        private const string Include = @"#include <Sentry/Sentry.h>
+#include ""SentryOptions.m""
+";
+        private const string Init = @"
+        [SentrySDK startWithOptions:getSentryOptions()];
+";
 
         public static void AddSentry(string mainPath)
         {
@@ -57,7 +61,7 @@ namespace Sentry.Unity.Editor.iOS
         {
             main = main.Insert(0, Include);
 
-            var initRegex = new Regex(@"int main\(int argc, char\* argv\[\]\)\n{\n\s+@autoreleasepool\n.\s+{\n");
+            var initRegex = new Regex(@"int main\(int argc, char\* argv\[\]\)\s+{\s+@autoreleasepool\s+{");
             var match = initRegex.Match(main);
             if (match.Success)
             {

@@ -15,7 +15,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var nativeOptions = SentryNativeOptions.GenerateOptions(new SentryOptions());
             File.WriteAllText(testOptionsFileName, nativeOptions);
 
-            var process = Process.Start("clang", $"-fsyntax-only -framework Foundation {testOptionsFileName}");
+            var process = Process.Start("clang", $"-fsyntax-only {testOptionsFileName}");
             process.WaitForExit();
 
             Assert.AreEqual(0, process.ExitCode);
@@ -24,7 +24,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompiles()
+        public void GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile()
         {
             const string testOptionsFileName = "testOptions.m";
             var nativeOptions = SentryNativeOptions.GenerateOptions(new SentryOptions());
