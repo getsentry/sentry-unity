@@ -4,7 +4,14 @@ namespace Sentry.Unity.Editor.iOS
     {
         private static string ToObjCString(this bool b) => b ? "YES" : "NO";
 
-        private int
+        // Native Diagnostic Level:
+        // None = 0
+        // Debug = 1
+        // Info = 2
+        // Warning = 3
+        // Error = 4
+        // Fatal = 5
+        private static int ToNativeDiagnosticLevel(this SentryLevel diagnosticLevel) => (int)diagnosticLevel + 1;
 
         public static string GenerateOptions(SentryOptions options)
         {
@@ -17,8 +24,11 @@ static NSDictionary* getSentryOptions()
 {{
     NSDictionary* options = @{{
         @""dsn"" : @""{options.Dsn}"",
+        @""debug"" : @{options.Debug.ToObjCString()},
+        @""diagnosticLevel"" : @((SentryLevel){options.DiagnosticLevel.ToNativeDiagnosticLevel()}),
+        @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
+        @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
-        @""debug"" : @{options.Debug.ToObjCString()}
         @""send-default-pii"" : @{options.SendDefaultPii.ToObjCString()}
     }};
 
