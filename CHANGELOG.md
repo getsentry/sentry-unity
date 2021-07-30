@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Compile Initialization with the game ([#272](https://github.com/getsentry/sentry-unity/pull/272))
+
 ## 0.4.3
 
 ### Features
