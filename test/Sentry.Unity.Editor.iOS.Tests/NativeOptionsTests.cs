@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using NUnit.Framework;
-using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {

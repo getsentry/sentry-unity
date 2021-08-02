@@ -1,8 +1,6 @@
 using System.IO;
-using System.Xml.Linq;
 using UnityEditor.iOS.Xcode;
 using UnityEditor.iOS.Xcode.Extensions;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
