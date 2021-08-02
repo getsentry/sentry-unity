@@ -24,10 +24,10 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
 dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release
 ```
 
-### Smoke test by building and running a player with IL2CPP::
+### Smoke test by building and running a player with IL2CPP:
 
 ```sh
- dotnet msbuild /t:"UnityBuildPlayerIL2CPP;UnitySmokeTestPlayerIL2CPP"
+ dotnet msbuild /t:"Build;UnityBuildStandalonePlayerIL2CPP;UnitySmokeTestStandalonePlayerIL2CPP"
 ```
 
 After this you can open your IDE (i.e: Visual Studio or Rider) and Unity Editor for development.
