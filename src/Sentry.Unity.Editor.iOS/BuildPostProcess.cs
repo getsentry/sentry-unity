@@ -15,7 +15,7 @@ namespace Sentry.Unity.Editor.iOS
 
             // TODO: check for other criteria why we would stop touching the Xcode project
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
-            if (options is null)
+            if (options is null || !options.IOSNativeSupportEnabled)
             {
                 return;
             }
@@ -23,7 +23,7 @@ namespace Sentry.Unity.Editor.iOS
             var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
 
             sentryXcodeProject.AddSentryFramework();
-            sentryXcodeProject.CreateNativeOptions(options);
+            sentryXcodeProject.AddNativeOptions(options);
             sentryXcodeProject.AddSentryToMain();
 
             sentryXcodeProject.Save();

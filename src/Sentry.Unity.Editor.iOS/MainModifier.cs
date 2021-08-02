@@ -4,7 +4,12 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
-    public static class MainModifier
+    internal interface IMainModifier
+    {
+        public void AddSentry(string mainPath);
+    }
+
+    internal class MainModifier : IMainModifier
     {
         private const string Include = @"#include <Sentry/Sentry.h>
 #include ""SentryOptions.m""
@@ -13,7 +18,7 @@ namespace Sentry.Unity.Editor.iOS
         [SentrySDK startWithOptions:getSentryOptions()];
 ";
 
-        public static void AddSentry(string mainPath)
+        public void AddSentry(string mainPath)
         {
             if (!DoesMainExist(mainPath))
             {
@@ -35,7 +40,7 @@ namespace Sentry.Unity.Editor.iOS
             File.WriteAllText(mainPath, sentryMain);
         }
 
-        internal static bool DoesMainExist(string mainPath)
+        internal bool DoesMainExist(string mainPath)
         {
             if (!File.Exists(mainPath))
             {
@@ -46,7 +51,7 @@ namespace Sentry.Unity.Editor.iOS
             return true;
         }
 
-        internal static bool ContainsSentry(string main)
+        internal bool ContainsSentry(string main)
         {
             if (main.Contains(Include))
             {
@@ -57,7 +62,7 @@ namespace Sentry.Unity.Editor.iOS
             return false;
         }
 
-        internal static string? AddSentryToMain(string main)
+        internal string? AddSentryToMain(string main)
         {
             main = main.Insert(0, Include);
 

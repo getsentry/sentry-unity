@@ -11,8 +11,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void DoesMainExist_MainExists_ReturnsTrue()
         {
             var testPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles", "main_2019_4.txt");
+            var mainModifier = new MainModifier();
 
-            var doesExist = MainModifier.DoesMainExist(testPath);
+            var doesExist = mainModifier.DoesMainExist(testPath);
 
             Assert.IsTrue(doesExist);
         }
@@ -21,8 +22,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void DoesMainExist_MainDoesNotExist_ReturnsFalse()
         {
             var testPath = "nonexistent/path";
+            var mainModifier = new MainModifier();
 
-            var doesExist = MainModifier.DoesMainExist(testPath);
+            var doesExist = mainModifier.DoesMainExist(testPath);
 
             Assert.IsFalse(doesExist);
         }
@@ -31,8 +33,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void ContainsSentry_SentryAlreadyAdded_ReturnsTrue()
         {
             var main = GetFileContents("main_2019_4_expected.txt");
+            var mainModifier = new MainModifier();
 
-            var containsSentry = MainModifier.ContainsSentry(main);
+            var containsSentry = mainModifier.ContainsSentry(main);
 
             Assert.IsTrue(containsSentry);
         }
@@ -41,8 +44,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void ContainsSentry_SentryNotAdded_ReturnsFalse()
         {
             var main = GetFileContents("main_2019_4.txt");
+            var mainModifier = new MainModifier();
 
-            var containsSentry = MainModifier.ContainsSentry(main);
+            var containsSentry = mainModifier.ContainsSentry(main);
 
             Assert.IsFalse(containsSentry);
         }
@@ -52,8 +56,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var main = GetFileContents("main_2019_4.txt");
             var expectedMain = GetFileContents("main_2019_4_expected.txt");
+            var mainModifier = new MainModifier();
 
-            var actualMain = MainModifier.AddSentryToMain(main);
+            var actualMain = mainModifier.AddSentryToMain(main);
 
             Assert.AreEqual(expectedMain, actualMain);
         }
@@ -64,8 +69,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var expectedMain = GetFileContents("main_2019_4_expected.txt");
             var workingMainPath = "temp.txt";
             File.WriteAllText(workingMainPath, GetFileContents("main_2019_4.txt"));
+            var mainModifier = new MainModifier();
 
-            MainModifier.AddSentry(workingMainPath);
+            mainModifier.AddSentry(workingMainPath);
             var actualMain = File.ReadAllText(workingMainPath);
 
             Assert.AreEqual(expectedMain, actualMain);

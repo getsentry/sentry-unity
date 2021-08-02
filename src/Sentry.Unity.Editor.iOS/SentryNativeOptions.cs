@@ -1,21 +1,25 @@
+using System.IO;
+
 namespace Sentry.Unity.Editor.iOS
 {
-    public static class SentryNativeOptions
+    internal interface ISentryNativeOptions
     {
-        private static string ToObjCString(this bool b) => b ? "YES" : "NO";
+        void CreateOptionsFile(SentryOptions options, string path);
+    }
 
-        // Native Diagnostic Level:
-        // None = 0
-        // Debug = 1
-        // Info = 2
-        // Warning = 3
-        // Error = 4
-        // Fatal = 5
-        private static int ToNativeDiagnosticLevel(this SentryLevel diagnosticLevel) => (int)diagnosticLevel + 1;
-
-        public static string GenerateOptions(SentryOptions options)
+    internal class SentryNativeOptions : ISentryNativeOptions
+    {
+        public void CreateOptionsFile(SentryOptions options, string path)
         {
-            var optionsTemplate = $@"#import <Foundation/Foundation.h>
+            // TODO: options validity checks?
+
+            var nativeOptions = GenerateOptions(options);
+            File.WriteAllText(path, nativeOptions);
+        }
+
+        internal string GenerateOptions(SentryOptions options)
+        {
+            var nativeOptions = $@"#import <Foundation/Foundation.h>
 
 // IMPORTANT: Changes to this file will be lost!
 // This file is generated during the Xcode project creation.
@@ -37,7 +41,21 @@ static NSDictionary* getSentryOptions()
     return options;
 }}";
 
-            return optionsTemplate;
+            return nativeOptions;
         }
+    }
+
+    internal static class NativeOptionsUtils
+    {
+        internal static string ToObjCString(this bool b) => b ? "YES" : "NO";
+
+        // Native Diagnostic Level:
+        // None = 0
+        // Debug = 1
+        // Info = 2
+        // Warning = 3
+        // Error = 4
+        // Fatal = 5
+        internal static int ToNativeDiagnosticLevel(this SentryLevel diagnosticLevel) => (int)diagnosticLevel + 1;
     }
 }
