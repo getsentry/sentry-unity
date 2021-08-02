@@ -4,6 +4,7 @@
 
 ### Features
 
+- Compile Initialization with the game ([#272](https://github.com/getsentry/sentry-unity/pull/272))
 - Native crash in sample ([#270](https://github.com/getsentry/sentry-unity/pull/270))
 - Cache, background threads and data for UnityEventProcessor ([#268](https://github.com/getsentry/sentry-unity/pull/268))
 
