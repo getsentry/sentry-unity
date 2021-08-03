@@ -1,3 +1,4 @@
+using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
@@ -15,8 +16,14 @@ namespace Sentry.Unity.Editor.iOS
 
             // TODO: check for other criteria why we would stop touching the Xcode project
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
-            if (options is null || !options.IOSNativeSupportEnabled)
+            if (options is null)
             {
+                return;
+            }
+
+            if (!options.IOSNativeSupportEnabled)
+            {
+                options.DiagnosticLogger?.LogDebug("iOS Native support disabled. Won't modify the xcode project");
                 return;
             }
 

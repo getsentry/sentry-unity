@@ -68,7 +68,7 @@
     
     <Exec Command="sh $(SolutionDir)/scripts/build-cocoa-sdk.sh $(CocoaRoot) $(CocoaFrameworkPath)"></Exec>
 
-    <Error Condition="!Exists('$(SolutionDir)/package-dev/Plugins/iOS/Sentry.framework')" Text="Couldn't build the Cocoa SDK."></Error>
+    <Error Condition="!Exists('$(CocoaFrameworkPath)Sentry.framework')" Text="Failed to build the Cocoa SDK."></Error>
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.

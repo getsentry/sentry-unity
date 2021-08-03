@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 cocoaRoot=$1
 frameworkDestination=$2
 

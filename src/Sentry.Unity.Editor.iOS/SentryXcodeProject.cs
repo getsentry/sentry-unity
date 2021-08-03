@@ -62,8 +62,7 @@ namespace Sentry.Unity.Editor.iOS
             var frameworkPath = Path.Combine(_pathToProject, _relativeFrameworkPath, FrameworkName);
             if (!Directory.Exists(frameworkPath))
             {
-                Debug.LogWarning(
-                    $"Failed to locate 'Sentry.framework' within the Sentry package at '{frameworkPath}'.");
+                Debug.LogWarning($"Failed to locate 'Sentry.framework' within the Sentry package at '{frameworkPath}'.");
                 return false;
             }
 
