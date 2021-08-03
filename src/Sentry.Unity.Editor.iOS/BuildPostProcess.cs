@@ -22,6 +22,11 @@ namespace Sentry.Unity.Editor.iOS
 
             var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
 
+            if (!sentryXcodeProject.ValidateFramework())
+            {
+                return;
+            }
+
             sentryXcodeProject.AddSentryFramework();
             sentryXcodeProject.AddNativeOptions(options);
             sentryXcodeProject.AddSentryToMain();

@@ -19,11 +19,12 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void GetFrameworkPath_PathExists_ReturnsFrameworkPath()
         {
-            string root = Path.GetTempPath() + Path.GetRandomFileName();
+            var root = Path.GetTempPath() + Path.GetRandomFileName();
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
             Directory.CreateDirectory(Path.Combine(root, expectedFrameworkPath));
+            var xcodeProject = new SentryXcodeProject("", new NativeMainFixture(), new NativeOptionsFixture());
 
-            var actualFrameworkPath = SentryXcodeProject.GetFrameworkPath(root);
+            var actualFrameworkPath = xcodeProject.GetFrameworkPath(root);
 
             Assert.AreEqual(expectedFrameworkPath, actualFrameworkPath);
 
@@ -33,11 +34,12 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void GetFrameworkPath_DevPathExists_ReturnsDevFrameworkPath()
         {
-            string root = Path.GetTempPath() + Path.GetRandomFileName();
+            var root = Path.GetTempPath() + Path.GetRandomFileName();
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
             Directory.CreateDirectory(Path.Combine(root, expectedFrameworkPath));
+            var xcodeProject = new SentryXcodeProject("", new NativeMainFixture(), new NativeOptionsFixture());
 
-            var actualFrameworkPath = SentryXcodeProject.GetFrameworkPath(root);
+            var actualFrameworkPath = xcodeProject.GetFrameworkPath(root);
 
             Assert.AreEqual(expectedFrameworkPath, actualFrameworkPath);
 
@@ -47,23 +49,49 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void GetFrameworkPath_PathDoesNotExist_ReturnsEmpty()
         {
-            var actualFrameworkPath = SentryXcodeProject.GetFrameworkPath("Temp");
+            var xcodeProject = new SentryXcodeProject("", new NativeMainFixture(), new NativeOptionsFixture());
+
+            var actualFrameworkPath = xcodeProject.GetFrameworkPath("Temp");
 
             Assert.AreEqual(string.Empty, actualFrameworkPath);
         }
 
         [Test]
-        public void AddSentryToFramework_NewXcodeProject_SentryWasAdded()
+        public void ValidateFramework_SentryFrameworkDoesExist_ReturnsTrue()
+        {
+            var root = Path.GetTempPath() + Path.GetRandomFileName();
+            var frameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS", "Sentry.framework");
+            Directory.CreateDirectory(Path.Combine(root, frameworkPath));
+            var xcodeProject = new SentryXcodeProject(root, new NativeMainFixture(), new NativeOptionsFixture());
+
+            var valid = xcodeProject.ValidateFramework();
+
+            Assert.IsTrue(valid);
+
+            Directory.Delete(root, true);
+        }
+
+        [Test]
+        public void ValidateFramework_SentryFrameworkDoesNotExist_ReturnsFalse()
+        {
+            var root = Path.GetTempPath() + Path.GetRandomFileName();
+            var xcodeProject = new SentryXcodeProject(root, new NativeMainFixture(), new NativeOptionsFixture());
+
+            var valid = xcodeProject.ValidateFramework();
+
+            Assert.IsFalse(valid);
+        }
+
+        [Test]
+        public void AddSentryFramework_NewXcodeProject_SentryWasAdded()
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var projectPath = Path.Combine(assemblyPath, "TestFiles");
-            var xcodeProject = new SentryXcodeProject(projectPath, new NativeMainFixture(), new NativeOptions());
+            var xcodeProject = new SentryXcodeProject(projectPath, new NativeMainFixture(), new NativeOptionsFixture());
 
             xcodeProject.AddSentryFramework();
 
             var projectAsString = xcodeProject.ProjectToString();
-            StringAssert.Contains("Sentry.framework in Embed Frameworks", projectAsString);
-            StringAssert.Contains("$(PROJECT_DIR)/Frameworks/io.sentry.unity", projectAsString);
             StringAssert.Contains(@"OTHER_LDFLAGS = ""-ObjC"";", projectAsString);
         }
 
@@ -72,7 +100,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var projectPath = Path.Combine(assemblyPath, "TestFiles");
-            var xcodeProject = new SentryXcodeProject(projectPath, new NativeMainFixture(), new NativeOptions());
+            var xcodeProject = new SentryXcodeProject(projectPath, new NativeMainFixture(), new NativeOptionsFixture());
 
             xcodeProject.AddNativeOptions(new SentryOptions());
 
