@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
-    internal interface IMainModifier
+    internal interface INativeMain
     {
-        public void AddSentry(string mainPath);
+        public void AddSentry(string pathToMain);
     }
 
-    internal class MainModifier : IMainModifier
+    internal class NativeMain : INativeMain
     {
         private const string Include = @"#include <Sentry/Sentry.h>
 #include ""SentryOptions.m""
@@ -18,14 +18,14 @@ namespace Sentry.Unity.Editor.iOS
         [SentrySDK startWithOptions:getSentryOptions()];
 ";
 
-        public void AddSentry(string mainPath)
+        public void AddSentry(string pathToMain)
         {
-            if (!DoesMainExist(mainPath))
+            if (!DoesMainExist(pathToMain))
             {
                 return;
             }
 
-            var main = File.ReadAllText(mainPath);
+            var main = File.ReadAllText(pathToMain);
             if (ContainsSentry(main))
             {
                 return;
@@ -37,14 +37,14 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            File.WriteAllText(mainPath, sentryMain);
+            File.WriteAllText(pathToMain, sentryMain);
         }
 
-        internal bool DoesMainExist(string mainPath)
+        internal bool DoesMainExist(string pathToMain)
         {
-            if (!File.Exists(mainPath))
+            if (!File.Exists(pathToMain))
             {
-                Debug.LogWarning($"Could not find '{mainPath}'.");
+                Debug.LogWarning($"Could not find '{pathToMain}'.");
                 return false;
             }
 

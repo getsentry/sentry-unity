@@ -4,14 +4,14 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
-    public class MainModifierFixture : IMainModifier
+    public class NativeMainFixture : INativeMain
     {
-        public void AddSentry(string mainPath) { }
+        public void AddSentry(string pathToMain) { }
     }
 
-    public class SentryNativeOptionsFixture : ISentryNativeOptions
+    public class NativeOptionsFixture : ISentryNativeOptions
     {
-        public void CreateOptionsFile(SentryOptions options, string path) { }
+        public void CreateFile(SentryOptions options, string path) { }
     }
 
     public class SentryXcodeProjectTests
@@ -57,7 +57,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var projectPath = Path.Combine(assemblyPath, "TestFiles");
-            var xcodeProject = SentryXcodeProject.Open(projectPath, new MainModifierFixture(), new SentryNativeOptions());
+            var xcodeProject = new SentryXcodeProject(projectPath, new NativeMainFixture(), new NativeOptions());
 
             xcodeProject.AddSentryFramework();
 
@@ -72,7 +72,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var projectPath = Path.Combine(assemblyPath, "TestFiles");
-            var xcodeProject = SentryXcodeProject.Open(projectPath, new MainModifierFixture(), new SentryNativeOptionsFixture());
+            var xcodeProject = new SentryXcodeProject(projectPath, new NativeMainFixture(), new NativeOptions());
 
             xcodeProject.AddNativeOptions(new SentryOptions());
 

@@ -10,9 +10,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void GenerateOptions_NewSentryOptions_Compiles()
         {
             const string testOptionsFileName = "testOptions.m";
-            var sentryNativeOptions = new SentryNativeOptions();
-            var nativeOptions = sentryNativeOptions.GenerateOptions(new SentryOptions());
-            File.WriteAllText(testOptionsFileName, nativeOptions);
+            var nativeOptions = new NativeOptions();
+            var nativeOptionsString = nativeOptions.Generate(new SentryOptions());
+            File.WriteAllText(testOptionsFileName, nativeOptionsString);
 
             var process = Process.Start("clang", $"-fsyntax-only {testOptionsFileName}");
             process.WaitForExit();
@@ -26,11 +26,11 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile()
         {
             const string testOptionsFileName = "testOptions.m";
-            var sentryNativeOptions = new SentryNativeOptions();
-            var nativeOptions = sentryNativeOptions.GenerateOptions(new SentryOptions());
-            nativeOptions += "AppendedTextToFailCompilation";
+            var nativeOptions = new NativeOptions();
+            var nativeOptionsString = nativeOptions.Generate(new SentryOptions());
+            nativeOptionsString += "AppendedTextToFailCompilation";
 
-            File.WriteAllText(testOptionsFileName, nativeOptions);
+            File.WriteAllText(testOptionsFileName, nativeOptionsString);
 
             var process = Process.Start("clang", $"-fsyntax-only -framework Foundation {testOptionsFileName}");
             process.WaitForExit();
@@ -44,9 +44,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void CreateOptionsFile_NewSentryOptions_FileCreated()
         {
             const string testOptionsFileName = "testOptions.m";
-            var sentryNativeOptions = new SentryNativeOptions();
+            var nativeOptions = new NativeOptions();
 
-            sentryNativeOptions.CreateOptionsFile(new SentryOptions(), testOptionsFileName);
+            nativeOptions.CreateFile(new SentryOptions(), testOptionsFileName);
 
             Assert.IsTrue(File.Exists(testOptionsFileName));
 

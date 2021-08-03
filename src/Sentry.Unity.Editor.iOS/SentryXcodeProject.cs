@@ -19,10 +19,10 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _projectPath;
         private readonly string _frameworkLocation = ""; // The path within the Xcode project to the framework
 
-        private IMainModifier _mainModifier;
-        private ISentryNativeOptions _sentryNativeOptions;
+        private readonly INativeMain _nativeMain;
+        private readonly ISentryNativeOptions _sentryNativeOptions;
 
-        internal SentryXcodeProject(string pathToProject, IMainModifier? mainModifier, ISentryNativeOptions? sentryNativeOptions)
+        internal SentryXcodeProject(string pathToProject, INativeMain? mainModifier, ISentryNativeOptions? sentryNativeOptions)
         {
             _pathToProject = pathToProject;
 
@@ -32,16 +32,13 @@ namespace Sentry.Unity.Editor.iOS
 
             _frameworkLocation = GetFrameworkPath(_pathToProject);
 
-            _mainModifier = mainModifier ?? new MainModifier();
-            _sentryNativeOptions = sentryNativeOptions ?? new SentryNativeOptions();
+            _nativeMain = mainModifier ?? new NativeMain();
+            _sentryNativeOptions = sentryNativeOptions ?? new NativeOptions();
         }
 
-        public static SentryXcodeProject Open(
-            string path,
-            IMainModifier? mainModifier = null,
-            ISentryNativeOptions? sentryNativeOptions = null)
+        public static SentryXcodeProject Open(string path)
         {
-            return new (path, mainModifier, sentryNativeOptions);
+            return new (path, null, null);
         }
 
         internal static string GetFrameworkPath(string pathToProject)
@@ -65,36 +62,31 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddSentryFramework()
         {
-            AddSentryFramework(_project, _frameworkLocation);
-        }
+            var targetGuid = _project.GetUnityMainTargetGuid();
+            var fileGuid = _project.AddFile(
+                Path.Combine(_frameworkLocation, FrameworkName),
+                Path.Combine(_frameworkLocation, FrameworkName));
 
-        internal static void AddSentryFramework(PBXProject project, string frameworkLocation)
-        {
-            var targetGuid = project.GetUnityMainTargetGuid();
-            var fileGuid = project.AddFile(
-                Path.Combine(frameworkLocation, FrameworkName),
-                Path.Combine(frameworkLocation, FrameworkName));
+            var unityLinkPhaseGuid = _project.GetFrameworksBuildPhaseByTarget(targetGuid);
 
-            var unityLinkPhaseGuid = project.GetFrameworksBuildPhaseByTarget(targetGuid);
+            _project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, fileGuid); // Link framework in 'Build Phases > Link Binary with Libraries'
+            _project.AddFileToEmbedFrameworks(targetGuid, fileGuid); // Embedding the framework because it's dynamic and needed at runtime
 
-            project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, fileGuid); // Link framework in 'Build Phases > Link Binary with Libraries'
-            project.AddFileToEmbedFrameworks(targetGuid, fileGuid); // Embedding the framework because it's dynamic and needed at runtime
+            _project.SetBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
+            _project.AddBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", $"$(PROJECT_DIR)/{_frameworkLocation}/");
 
-            project.SetBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
-            project.AddBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", $"$(PROJECT_DIR)/{frameworkLocation}/");
-
-            project.AddBuildProperty(targetGuid, "OTHER_LDFLAGS", "-ObjC");
+            _project.AddBuildProperty(targetGuid, "OTHER_LDFLAGS", "-ObjC");
         }
 
         public void AddNativeOptions(SentryOptions options)
         {
-            _sentryNativeOptions.CreateOptionsFile(options, Path.Combine(_pathToProject, OptionsPathRelative));
+            _sentryNativeOptions.CreateFile(options, Path.Combine(_pathToProject, OptionsPathRelative));
             _project.AddFile(OptionsPathRelative, OptionsPathRelative);
         }
 
         public void AddSentryToMain()
         {
-            _mainModifier.AddSentry(Path.Combine(_pathToProject, MainPathRelative));
+            _nativeMain.AddSentry(Path.Combine(_pathToProject, MainPathRelative));
         }
 
         public void Save()
