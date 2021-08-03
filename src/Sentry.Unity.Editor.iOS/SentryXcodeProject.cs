@@ -9,8 +9,8 @@ namespace Sentry.Unity.Editor.iOS
     {
         private const string FrameworkName = "Sentry.framework";
 
-        private const string MainPathRelative = "MainApp/main.mm";
-        private const string OptionsPathRelative = "MainApp/SentryOptions.m";
+        private const string MainPath = "MainApp/main.mm";
+        private const string OptionsPath = "MainApp/SentryOptions.m";
 
         private readonly string _pathToProject;
         private readonly PBXProject _project;
@@ -40,7 +40,7 @@ namespace Sentry.Unity.Editor.iOS
                 Debug.LogWarning($"Could not locate generated Xcode project at {_projectPath}");
             }
 
-            _relativeFrameworkPath = GetFrameworkPath(_pathToProject);
+            _relativeFrameworkPath = GetRelativeFrameworkPath(_pathToProject);
 
             _nativeMain = mainModifier ?? new NativeMain();
             _sentryNativeOptions = sentryNativeOptions ?? new NativeOptions();
@@ -89,13 +89,13 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddNativeOptions(SentryOptions options)
         {
-            _sentryNativeOptions.CreateFile(options, Path.Combine(_pathToProject, OptionsPathRelative));
-            _project.AddFile(OptionsPathRelative, OptionsPathRelative);
+            _sentryNativeOptions.CreateFile(options, Path.Combine(_pathToProject, OptionsPath));
+            _project.AddFile(OptionsPath, OptionsPath);
         }
 
         public void AddSentryToMain()
         {
-            _nativeMain.AddSentry(Path.Combine(_pathToProject, MainPathRelative));
+            _nativeMain.AddSentry(Path.Combine(_pathToProject, MainPath));
         }
 
         public void Save()
@@ -103,7 +103,7 @@ namespace Sentry.Unity.Editor.iOS
             _project.WriteToFile(_projectPath);
         }
 
-        internal string GetFrameworkPath(string pathToProject)
+        internal string GetRelativeFrameworkPath(string pathToProject)
         {
             var relativeFrameworkPath = "Frameworks/io.sentry.unity";
             if (Directory.Exists(Path.Combine(pathToProject, relativeFrameworkPath)))

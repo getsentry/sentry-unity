@@ -17,14 +17,14 @@ namespace Sentry.Unity.Editor.iOS.Tests
     public class SentryXcodeProjectTests
     {
         [Test]
-        public void GetFrameworkPath_PathExists_ReturnsFrameworkPath()
+        public void GetRelativeFrameworkPath_PathExists_ReturnsFrameworkPath()
         {
             var root = Path.GetTempPath() + Path.GetRandomFileName();
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
             Directory.CreateDirectory(Path.Combine(root, expectedFrameworkPath));
             var xcodeProject = new SentryXcodeProject("", new NativeMainFixture(), new NativeOptionsFixture());
 
-            var actualFrameworkPath = xcodeProject.GetFrameworkPath(root);
+            var actualFrameworkPath = xcodeProject.GetRelativeFrameworkPath(root);
 
             Assert.AreEqual(expectedFrameworkPath, actualFrameworkPath);
 
@@ -32,14 +32,14 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void GetFrameworkPath_DevPathExists_ReturnsDevFrameworkPath()
+        public void GetRelativeFrameworkPath_DevPathExists_ReturnsDevFrameworkPath()
         {
             var root = Path.GetTempPath() + Path.GetRandomFileName();
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
             Directory.CreateDirectory(Path.Combine(root, expectedFrameworkPath));
             var xcodeProject = new SentryXcodeProject("", new NativeMainFixture(), new NativeOptionsFixture());
 
-            var actualFrameworkPath = xcodeProject.GetFrameworkPath(root);
+            var actualFrameworkPath = xcodeProject.GetRelativeFrameworkPath(root);
 
             Assert.AreEqual(expectedFrameworkPath, actualFrameworkPath);
 
@@ -47,11 +47,11 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void GetFrameworkPath_PathDoesNotExist_ReturnsEmpty()
+        public void GetRelativeFrameworkPath_PathDoesNotExist_ReturnsEmpty()
         {
             var xcodeProject = new SentryXcodeProject("", new NativeMainFixture(), new NativeOptionsFixture());
 
-            var actualFrameworkPath = xcodeProject.GetFrameworkPath("Temp");
+            var actualFrameworkPath = xcodeProject.GetRelativeFrameworkPath("Temp");
 
             Assert.AreEqual(string.Empty, actualFrameworkPath);
         }
