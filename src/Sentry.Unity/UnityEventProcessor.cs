@@ -184,6 +184,9 @@ namespace Sentry.Unity
         private void PopulateUnity(Protocol.Unity unity)
         {
             unity.InstallMode = _mainThreadData.InstallMode;
+            unity.TargetFrameRate = SafeLazyUnwrap(_mainThreadData.TargetFrameRate, nameof(unity.TargetFrameRate));
+            unity.CopyTextureSupport = SafeLazyUnwrap(_mainThreadData.CopyTextureSupport, nameof(unity.CopyTextureSupport));
+            unity.RenderingThreadingMode = SafeLazyUnwrap(_mainThreadData.RenderingThreadingMode, nameof(unity.RenderingThreadingMode));
         }
 
         private void PopulateTags(SentryEvent @event)

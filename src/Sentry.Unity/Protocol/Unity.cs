@@ -36,12 +36,20 @@ namespace Sentry.Unity.Protocol
         /// </example>
         public string? RenderingThreadingMode { get; set; }
 
+        /// <summary>
+        /// Instructs the game to try to render at a specified frame rate.
+        /// The default targetFrameRate is a special value of -1, which indicates that the game should render at the platform's default frame rate. This default rate depends on the platform.
+        /// Check https://docs.unity3d.com/ScriptReference/Application-targetFrameRate.html for more info.
+        /// </summary>
+        public string? TargetFrameRate { get; set; }
+
         internal Unity Clone()
             => new()
             {
                 InstallMode = InstallMode,
                 CopyTextureSupport = CopyTextureSupport,
-                RenderingThreadingMode = RenderingThreadingMode
+                RenderingThreadingMode = RenderingThreadingMode,
+                TargetFrameRate = TargetFrameRate
             };
 
         public void WriteTo(Utf8JsonWriter writer)
@@ -65,6 +73,11 @@ namespace Sentry.Unity.Protocol
                 writer.WriteString("rendering_threading_mode", RenderingThreadingMode);
             }
 
+            if (!string.IsNullOrWhiteSpace(TargetFrameRate))
+            {
+                writer.WriteString("target_frame_rate", TargetFrameRate);
+            }
+
             writer.WriteEndObject();
         }
 
@@ -73,7 +86,8 @@ namespace Sentry.Unity.Protocol
             {
                 InstallMode = json.GetPropertyOrNull("install_mode")?.GetString(),
                 CopyTextureSupport = json.GetPropertyOrNull("copy_texture_support")?.GetString(),
-                RenderingThreadingMode = json.GetPropertyOrNull("rendering_threading_mode")?.GetString()
+                RenderingThreadingMode = json.GetPropertyOrNull("rendering_threading_mode")?.GetString(),
+                TargetFrameRate = json.GetPropertyOrNull("target_frame_rate")?.GetString()
             };
 
         public string ToJsonString()
