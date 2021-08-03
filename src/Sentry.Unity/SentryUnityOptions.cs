@@ -68,7 +68,7 @@ namespace Sentry.Unity
         /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
-        public bool IOSNativeSupportEnabled = true;
+        public bool IOSNativeSupportEnabled { get; set; } = true;
 
         private SentryMonoBehaviour? _sentryMonoBehaviour;
         internal Func<SentryMonoBehaviour> SentryMonoBehaviourGenerator;

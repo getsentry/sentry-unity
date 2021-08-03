@@ -46,6 +46,8 @@ namespace Sentry.Unity
         [field: SerializeField] internal int ShutdownTimeout { get; set; }
         [field: SerializeField] internal int MaxQueueItems { get; set; }
 
+        [field: SerializeField] internal bool IOSNativeSupportEnabled { get; set; }
+
         [field: SerializeField] internal bool Debug { get; set; }
         [field: SerializeField] internal bool DebugOnlyInEditor { get; set; }
         [field: SerializeField] internal SentryLevel DiagnosticLevel { get; set; }
@@ -108,6 +110,8 @@ namespace Sentry.Unity
             {
                 options.CacheDirectoryPath = null;
             }
+
+            options.IOSNativeSupportEnabled = scriptableOptions.IOSNativeSupportEnabled;
 
             options.Debug = scriptableOptions.Debug;
             options.DebugOnlyInEditor = scriptableOptions.DebugOnlyInEditor;

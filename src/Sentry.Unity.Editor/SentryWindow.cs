@@ -15,7 +15,7 @@ namespace Sentry.Unity.Editor
         [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
         {
-            var window = (SentryWindow)GetWindow(typeof(SentryWindow));
+            var window = (SentryWindow) GetWindow(typeof(SentryWindow));
             window.minSize = new Vector2(400, 350);
             return window;
         }
@@ -159,7 +159,7 @@ namespace Sentry.Unity.Editor
 
             GUILayout.Label("Transactions", EditorStyles.boldLabel);
 
-            var traceSampleRate = (float?)Options.TracesSampleRate;
+            var traceSampleRate = (float?) Options.TracesSampleRate;
             Options.TracesSampleRate = EditorGUILayout.Slider(
                 new GUIContent("Trace Sample Rate", "Indicates the percentage of the transactions that is " +
                                                     "collected. Setting this to 0 discards all trace data. " +
@@ -167,8 +167,16 @@ namespace Sentry.Unity.Editor
                 traceSampleRate ??= 0.0f, 0.0f, 1.0f);
             if (traceSampleRate > 0.0f)
             {
-                Options.TracesSampleRate = (double)traceSampleRate;
+                Options.TracesSampleRate = (double) traceSampleRate;
             }
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            Options.IOSNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("iOS Native Support", "Whether to enable Native Support."),
+                Options.IOSNativeSupportEnabled);
         }
 
         private void DisplayEnrichment()
@@ -232,7 +240,7 @@ namespace Sentry.Unity.Editor
                                                   "\nDefault: 100"),
                 Options.MaxBreadcrumbs);
 
-            Options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
+            Options.ReportAssembliesMode = (ReportAssembliesMode) EditorGUILayout.EnumPopup(
                 new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
                                                          "Version or InformationalVersion in each event sent to sentry."),
                 Options.ReportAssembliesMode);
@@ -318,7 +326,7 @@ namespace Sentry.Unity.Editor
                                                  "builds of the player will not include Sentry's SDK diagnostics."),
                 Options.DebugOnlyInEditor);
 
-            Options.DiagnosticLevel = (SentryLevel)EditorGUILayout.EnumPopup(
+            Options.DiagnosticLevel = (SentryLevel) EditorGUILayout.EnumPopup(
                 new GUIContent("Verbosity Level", "The minimum level allowed to be printed to the console. " +
                                                   "Log messages with a level below this level are dropped."),
                 Options.DiagnosticLevel);
