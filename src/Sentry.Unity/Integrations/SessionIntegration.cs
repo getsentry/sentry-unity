@@ -6,11 +6,11 @@ namespace Sentry.Unity.Integrations
 {
     internal class SessionIntegration : ISdkIntegration
     {
-        private readonly Func<SentryMonoBehaviour> _sentryMonoBehaviourGenerator;
+        private readonly SentryMonoBehaviour _sentryMonoBehaviour;
 
-        public SessionIntegration(Func<SentryMonoBehaviour> sentryMonoBehaviourGenerator)
+        public SessionIntegration(SentryMonoBehaviour sentryMonoBehaviour)
         {
-            _sentryMonoBehaviourGenerator = sentryMonoBehaviourGenerator;
+            _sentryMonoBehaviour = sentryMonoBehaviour;
         }
 
         public void Register(IHub hub, SentryOptions options)
@@ -22,13 +22,12 @@ namespace Sentry.Unity.Integrations
 
             options.DiagnosticLogger?.LogDebug("Registering Session integration.");
 
-            var gameListener = _sentryMonoBehaviourGenerator();
-            gameListener.ApplicationResuming += () =>
+            _sentryMonoBehaviour.ApplicationResuming += () =>
             {
                 options.DiagnosticLogger?.LogDebug("Resuming session.");
                 hub.ResumeSession();
             };
-            gameListener.ApplicationPausing += () =>
+            _sentryMonoBehaviour.ApplicationPausing += () =>
             {
                 options.DiagnosticLogger?.LogDebug("Pausing session.");
                 hub.PauseSession();

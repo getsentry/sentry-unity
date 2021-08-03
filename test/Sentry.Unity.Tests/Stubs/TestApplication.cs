@@ -11,15 +11,13 @@ namespace Sentry.Unity.Tests.Stubs
             string productName = "",
             string version = "",
             string persistentDataPath = "",
-            RuntimePlatform platform = RuntimePlatform.WindowsEditor,
-            ApplicationInstallMode installMode = ApplicationInstallMode.DeveloperBuild)
+            RuntimePlatform platform = RuntimePlatform.WindowsEditor)
         {
             IsEditor = isEditor;
             ProductName = productName;
             Version = version;
             PersistentDataPath = persistentDataPath;
             Platform = platform;
-            InstallMode = installMode;
         }
 
         public event Application.LogCallback? LogMessageReceived;
@@ -30,7 +28,6 @@ namespace Sentry.Unity.Tests.Stubs
         public string Version { get; }
         public string PersistentDataPath { get; }
         public RuntimePlatform Platform { get; }
-        public ApplicationInstallMode InstallMode { get; }
         private void OnQuitting() => Quitting?.Invoke();
 
         private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
