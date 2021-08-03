@@ -21,13 +21,14 @@ samples/unity-of-bugs/Assets/InitTestScene*
 package-dev/**/*.dll
 package-dev/**/*.meta
 package-dev/**/*.framework
+# required to be makred as iOS only
 !package-dev/**/*.framework.meta
 !package-dev/Runtime/Sentry.Unity.dll.meta
 !package-dev/Tests/*.meta
 # required to be marked as Editor only
 !package-dev/Tests/Runtime/Sentry.Unity.Tests.dll.meta
-!package-dev/Tests/**/*.asmdef.meta
 !package-dev/Tests/**/*.asmdef
+!package-dev/Tests/**/*.asmdef.meta
 package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/TestSentryOptions.json
