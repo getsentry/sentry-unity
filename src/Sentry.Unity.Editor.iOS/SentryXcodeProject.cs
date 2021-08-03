@@ -7,8 +7,6 @@ namespace Sentry.Unity.Editor.iOS
 {
     internal class SentryXcodeProject
     {
-        // TODO: IMPORTANT! This HAS to match the location where unity copies the framework to and matches the location in the project
-        private const string PackageName = "io.sentry.unity";
         private const string FrameworkName = "Sentry.framework";
 
         private const string MainPathRelative = "MainApp/main.mm";
