@@ -29,6 +29,7 @@ package-dev/**/*.framework
 !package-dev/Tests/Runtime/Sentry.Unity.Tests.dll.meta
 !package-dev/Tests/**/*.asmdef
 !package-dev/Tests/**/*.asmdef.meta
+package-dev/Tests/Editor/TestFiles/
 package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/TestSentryOptions.json
