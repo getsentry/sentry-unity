@@ -48,7 +48,7 @@ namespace Sentry.Unity.Editor.iOS
 
         public static SentryXcodeProject Open(string path)
         {
-            return new (path);
+            return new(path);
         }
 
         public bool ValidateFramework()
@@ -62,7 +62,8 @@ namespace Sentry.Unity.Editor.iOS
             var frameworkPath = Path.Combine(_pathToProject, _relativeFrameworkPath, FrameworkName);
             if (!Directory.Exists(frameworkPath))
             {
-                Debug.LogWarning($"Failed to locate 'Sentry.framework' within the Sentry package at '{frameworkPath}'.");
+                Debug.LogWarning(
+                    $"Failed to locate 'Sentry.framework' within the Sentry package at '{frameworkPath}'.");
                 return false;
             }
 
@@ -72,14 +73,13 @@ namespace Sentry.Unity.Editor.iOS
         public void AddSentryFramework()
         {
             var targetGuid = _project.GetUnityMainTargetGuid();
-            var fileGuid = _project.AddFile(
-                Path.Combine(_relativeFrameworkPath, FrameworkName),
-                Path.Combine(_relativeFrameworkPath, FrameworkName));
+            var frameworkPath = Path.Combine(_relativeFrameworkPath, FrameworkName);
+            var frameworkGuid = _project.AddFile(frameworkPath, frameworkPath);
 
             var unityLinkPhaseGuid = _project.GetFrameworksBuildPhaseByTarget(targetGuid);
 
-            _project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, fileGuid); // Link framework in 'Build Phases > Link Binary with Libraries'
-            _project.AddFileToEmbedFrameworks(targetGuid, fileGuid); // Embedding the framework because it's dynamic and needed at runtime
+            _project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, frameworkGuid); // Link framework in 'Build Phases > Link Binary with Libraries'
+            _project.AddFileToEmbedFrameworks(targetGuid, frameworkGuid); // Embedding the framework because it's dynamic and needed at runtime
 
             _project.SetBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
             _project.AddBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", $"$(PROJECT_DIR)/{_relativeFrameworkPath}/");

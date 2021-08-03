@@ -6,7 +6,7 @@ namespace Sentry.Unity.Editor.iOS
 {
     internal interface INativeMain
     {
-        public void AddSentry(string pathToMain);
+        void AddSentry(string pathToMain);
     }
 
     internal class NativeMain : INativeMain
