@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -14,30 +15,29 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            // TODO: check for other criteria why we would stop touching the Xcode project
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
-            if (options is null)
+            if (!options.ShouldInitializeSdk())
             {
                 return;
             }
 
-            if (!options.IOSNativeSupportEnabled)
+            if (!options!.IOSNativeSupportEnabled)
             {
                 options.DiagnosticLogger?.LogDebug("iOS Native support disabled. Won't modify the xcode project");
                 return;
             }
 
-            var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
-            if (!sentryXcodeProject.ValidateFramework())
+            try
             {
-                return;
+                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, options);
+                sentryXcodeProject.AddSentryFramework();
+                sentryXcodeProject.AddNativeOptions();
+                sentryXcodeProject.AddSentryToMain();
             }
-
-            sentryXcodeProject.AddSentryFramework();
-            sentryXcodeProject.AddNativeOptions(options);
-            sentryXcodeProject.AddSentryToMain();
-
-            sentryXcodeProject.Save();
+            catch (Exception e)
+            {
+                options.DiagnosticLogger?.LogError(e.Message);
+            }
         }
     }
 }

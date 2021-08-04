@@ -46,7 +46,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             const string testOptionsFileName = "testOptions.m";
             var nativeOptions = new NativeOptions();
 
-            nativeOptions.CreateFile(new SentryOptions(), testOptionsFileName);
+            nativeOptions.CreateFile(testOptionsFileName, new SentryOptions());
 
             Assert.IsTrue(File.Exists(testOptionsFileName));
 

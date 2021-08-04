@@ -59,10 +59,11 @@
     <RemoveDir Directories="$(CocoaFrameworkPath)Sentry.framework" />
   </Target>
 
+  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
   <Target Name="BuildCocoaSDK" 
           Condition="$([MSBuild]::IsOSPlatform('OSX')) 
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
-          And !Exists('$(SolutionDir)/package-dev/Plugins/iOS/Sentry.framework')" 
+          And !Exists('$(CocoaFrameworkPath)Sentry.framework')" 
           BeforeTargets="BeforeBuild">    
     <Error Condition="!Exists('$(CocoaRoot)')" Text="Couldn't find the Cocoa root at $(CocoaRoot)."></Error>      
     

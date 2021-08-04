@@ -2,20 +2,14 @@ using System.IO;
 
 namespace Sentry.Unity.Editor.iOS
 {
-    internal interface ISentryNativeOptions
+    internal interface INativeOptions
     {
-        void CreateFile(SentryOptions options, string path);
+        public void CreateFile(string path, SentryOptions options);
     }
 
-    internal class NativeOptions : ISentryNativeOptions
+    internal class NativeOptions : INativeOptions
     {
-        public void CreateFile(SentryOptions options, string path)
-        {
-            // TODO: options validity checks?
-
-            var nativeOptions = Generate(options);
-            File.WriteAllText(path, nativeOptions);
-        }
+        public void CreateFile(string path, SentryOptions options) => File.WriteAllText(path, Generate(options));
 
         internal string Generate(SentryOptions options)
         {

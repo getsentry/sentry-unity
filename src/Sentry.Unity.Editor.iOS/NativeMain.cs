@@ -1,12 +1,13 @@
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using UnityEngine;
+using Sentry.Extensibility;
 
 namespace Sentry.Unity.Editor.iOS
 {
     internal interface INativeMain
     {
-        void AddSentry(string pathToMain);
+        public void AddSentry(string pathToMain, IDiagnosticLogger? logger);
     }
 
     internal class NativeMain : INativeMain
@@ -18,51 +19,35 @@ namespace Sentry.Unity.Editor.iOS
         [SentrySDK startWithOptions:getSentryOptions()];
 ";
 
-        public void AddSentry(string pathToMain)
+        public void AddSentry(string pathToMain, IDiagnosticLogger? logger)
         {
-            if (!DoesMainExist(pathToMain))
+            if (!File.Exists(pathToMain))
             {
-                return;
+                throw new FileNotFoundException($"Could not find '{pathToMain}'.");
             }
 
             var main = File.ReadAllText(pathToMain);
-            if (ContainsSentry(main))
+            if (ContainsSentry(main, logger))
             {
                 return;
             }
 
             var sentryMain = AddSentryToMain(main);
-            if (sentryMain is null)
-            {
-                return;
-            }
-
             File.WriteAllText(pathToMain, sentryMain);
         }
 
-        internal bool DoesMainExist(string pathToMain)
-        {
-            if (!File.Exists(pathToMain))
-            {
-                Debug.LogWarning($"Could not find '{pathToMain}'.");
-                return false;
-            }
-
-            return true;
-        }
-
-        internal bool ContainsSentry(string main)
+        internal bool ContainsSentry(string main, IDiagnosticLogger? logger)
         {
             if (main.Contains(Include))
             {
-                Debug.Log("Sentry already added to 'main.mm'.");
+                logger?.LogInfo("'main.mm' already contains Sentry.");
                 return true;
             }
 
             return false;
         }
 
-        internal string? AddSentryToMain(string main)
+        internal string AddSentryToMain(string main)
         {
             main = main.Insert(0, Include);
 
@@ -73,8 +58,7 @@ namespace Sentry.Unity.Editor.iOS
                 return main.Insert(match.Index + match.Length, Init);
             }
 
-            Debug.LogWarning("Failed to add Sentry to main.");
-            return null;
+            throw new ArgumentException($"Failed to add Sentry to main.\n{main}", nameof(main));
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEditor.iOS.Xcode;
 using UnityEditor.iOS.Xcode.Extensions;
@@ -5,74 +6,70 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
-    internal class SentryXcodeProject
+    internal class SentryXcodeProject : IDisposable
     {
         private const string FrameworkName = "Sentry.framework";
 
         private const string MainPath = "MainApp/main.mm";
         private const string OptionsPath = "MainApp/SentryOptions.m";
+        private string UnityPackageFrameworkRoot = Path.Combine("Frameworks", "io.sentry.unity");
 
-        private readonly string _pathToProject;
+        private readonly string _projectRoot;
+        private readonly SentryUnityOptions _options;
+
         private readonly PBXProject _project;
         private readonly string _projectPath;
 
-        private readonly INativeMain _nativeMain;
-        private readonly ISentryNativeOptions _sentryNativeOptions;
+        internal string? RelativeFrameworkPath { get; set; }
 
-        private readonly string _relativeFrameworkPath;
+        private readonly INativeMain _nativeMain;
+        private readonly INativeOptions _nativeOptions;
 
         internal SentryXcodeProject(
-            string pathToProject,
-            INativeMain? mainModifier = null,
-            ISentryNativeOptions? sentryNativeOptions = null)
-        {
-            _pathToProject = pathToProject;
+            string projectRoot,
+            SentryUnityOptions options)
+            : this(projectRoot, options, new NativeMain(), new NativeOptions())
+        { }
 
-            _projectPath = PBXProject.GetPBXProjectPath(pathToProject);
+        internal SentryXcodeProject(
+            string projectRoot,
+            SentryUnityOptions options,
+            INativeMain mainModifier,
+            INativeOptions sentryNativeOptions)
+        {
+            _projectRoot = projectRoot;
+            _options = options;
+
+            _projectPath = PBXProject.GetPBXProjectPath(projectRoot);
             _project = new PBXProject();
 
-            if (File.Exists(_projectPath))
-            {
-                _project.ReadFromString(File.ReadAllText(_projectPath));
-            }
-            else
-            {
-                Debug.LogWarning($"Could not locate generated Xcode project at {_projectPath}");
-            }
-
-            _relativeFrameworkPath = GetRelativeFrameworkPath(_pathToProject);
-
-            _nativeMain = mainModifier ?? new NativeMain();
-            _sentryNativeOptions = sentryNativeOptions ?? new NativeOptions();
+            _nativeMain = mainModifier;
+            _nativeOptions = sentryNativeOptions;
         }
 
-        public static SentryXcodeProject Open(string path)
+        public static SentryXcodeProject Open(string path, SentryUnityOptions options)
         {
-            return new(path);
+            var xcodeProject = new SentryXcodeProject(path, options);
+            xcodeProject.ReadFromProjectFile();
+            xcodeProject.SetRelativeFrameworkPath();
+
+            return xcodeProject;
         }
 
-        public bool ValidateFramework()
+        internal void ReadFromProjectFile()
         {
-            if (string.IsNullOrEmpty(_relativeFrameworkPath))
+            if (!File.Exists(_projectPath))
             {
-                Debug.LogWarning("Failed to locate the Sentry package within 'Frameworks'.");
-                return false;
+                throw new FileNotFoundException($"Could not locate generated Xcode project at {_projectPath}");
             }
 
-            var frameworkPath = Path.Combine(_pathToProject, _relativeFrameworkPath, FrameworkName);
-            if (!Directory.Exists(frameworkPath))
-            {
-                Debug.LogWarning($"Failed to locate 'Sentry.framework' within the Sentry package at '{frameworkPath}'.");
-                return false;
-            }
-
-            return true;
+            _project.ReadFromString(File.ReadAllText(_projectPath));
         }
 
         public void AddSentryFramework()
         {
             var targetGuid = _project.GetUnityMainTargetGuid();
-            var frameworkPath = Path.Combine(_relativeFrameworkPath, FrameworkName);
+            var frameworkPath = Path.Combine(RelativeFrameworkPath, FrameworkName);
             var frameworkGuid = _project.AddFile(frameworkPath, frameworkPath);
 
             var unityLinkPhaseGuid = _project.GetFrameworksBuildPhaseByTarget(targetGuid);
@@ -81,48 +78,40 @@ namespace Sentry.Unity.Editor.iOS
             _project.AddFileToEmbedFrameworks(targetGuid, frameworkGuid); // Embedding the framework because it's dynamic and needed at runtime
 
             _project.SetBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
-            _project.AddBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", $"$(PROJECT_DIR)/{_relativeFrameworkPath}/");
+            _project.AddBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", $"$(PROJECT_DIR)/{RelativeFrameworkPath}/");
 
             _project.AddBuildProperty(targetGuid, "OTHER_LDFLAGS", "-ObjC");
         }
 
-        public void AddNativeOptions(SentryOptions options)
+        public void AddNativeOptions()
         {
-            _sentryNativeOptions.CreateFile(options, Path.Combine(_pathToProject, OptionsPath));
+            _nativeOptions.CreateFile(Path.Combine(_projectRoot, OptionsPath), _options);
             _project.AddFile(OptionsPath, OptionsPath);
         }
 
-        public void AddSentryToMain()
-        {
-            _nativeMain.AddSentry(Path.Combine(_pathToProject, MainPath));
-        }
+        public void AddSentryToMain() => _nativeMain.AddSentry(Path.Combine(_projectRoot, MainPath), _options.DiagnosticLogger);
 
-        public void Save()
+        internal void SetRelativeFrameworkPath()
         {
-            _project.WriteToFile(_projectPath);
-        }
-
-        internal string GetRelativeFrameworkPath(string pathToProject)
-        {
-            var relativeFrameworkPath = "Frameworks/io.sentry.unity";
-            if (Directory.Exists(Path.Combine(pathToProject, relativeFrameworkPath)))
+            if (Directory.Exists(Path.Combine(_projectRoot, UnityPackageFrameworkRoot)))
             {
-                return Path.Combine(relativeFrameworkPath, "Plugins", "iOS");
+                RelativeFrameworkPath = Path.Combine(UnityPackageFrameworkRoot, "Plugins", "iOS");
+                return;
             }
 
             // For dev purposes - The framework path contains the package name
-            relativeFrameworkPath += ".dev";
-            if (Directory.Exists(Path.Combine(pathToProject, relativeFrameworkPath)))
+            var relativeFrameworkPath = UnityPackageFrameworkRoot + ".dev";
+            if (Directory.Exists(Path.Combine(_projectRoot, relativeFrameworkPath)))
             {
-                return Path.Combine(relativeFrameworkPath, "Plugins", "iOS");
+                RelativeFrameworkPath =  Path.Combine(relativeFrameworkPath, "Plugins", "iOS");
+                return;
             }
 
-            return string.Empty;
+            throw new FileNotFoundException("Could not locate the Sentry package inside the 'Frameworks' directory");
         }
 
-        internal string ProjectToString()
-        {
-            return _project.WriteToString();
-        }
+        internal string ProjectToString() => _project.WriteToString();
+
+        public void Dispose() => _project.WriteToFile(_projectPath);
     }
 }
