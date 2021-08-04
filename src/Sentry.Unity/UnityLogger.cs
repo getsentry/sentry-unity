@@ -10,14 +10,17 @@ namespace Sentry.Unity
         void Intercept(string logMessage);
     }
 
-    internal class UnityLogger : IDiagnosticLogger
+    public class UnityLogger : IDiagnosticLogger
     {
         private readonly SentryOptions _sentryOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
 
         public bool IsEnabled(SentryLevel level) => level >= _sentryOptions.DiagnosticLevel;
 
-        public UnityLogger(SentryOptions sentryOptions, IUnityLoggerInterceptor? interceptor = null)
+        public UnityLogger(SentryOptions sentryOptions) : this(sentryOptions, null)
+        { }
+
+        internal UnityLogger(SentryOptions sentryOptions, IUnityLoggerInterceptor? interceptor = null)
         {
             _sentryOptions = sentryOptions;
             _interceptor = interceptor;

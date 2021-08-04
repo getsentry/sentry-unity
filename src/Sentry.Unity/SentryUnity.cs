@@ -29,7 +29,7 @@ namespace Sentry.Unity
         /// </summary>
         /// <param name="unitySentryOptions">The options object.</param>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        internal static void Init(SentryUnityOptions unitySentryOptions)
+        public static void Init(SentryUnityOptions unitySentryOptions)
         {
             unitySentryOptions.DiagnosticLogger?.LogDebug(unitySentryOptions.ToString());
 

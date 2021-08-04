@@ -30,7 +30,6 @@ namespace Sentry.Unity
         [field: SerializeField] internal bool AutoSessionTracking { get; set; }
         [field: SerializeField] internal int AutoSessionTrackingInterval { get; set; }
 
-
         [field: SerializeField] internal string ReleaseOverride { get; set; } = string.Empty;
         [field: SerializeField] internal string EnvironmentOverride { get; set; } = string.Empty;
         [field: SerializeField] internal bool AttachStacktrace { get; set; }
@@ -52,7 +51,7 @@ namespace Sentry.Unity
         [field: SerializeField] internal bool DebugOnlyInEditor { get; set; }
         [field: SerializeField] internal SentryLevel DiagnosticLevel { get; set; }
 
-        internal static SentryUnityOptions? LoadSentryUnityOptions()
+        public static SentryUnityOptions? LoadSentryUnityOptions()
         {
             // TODO: Deprecated and to be removed once we update far enough.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");

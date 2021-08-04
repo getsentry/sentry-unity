@@ -15,7 +15,6 @@ namespace Sentry.Unity.Integrations
         string Version { get; }
         string PersistentDataPath { get; }
         RuntimePlatform Platform { get; }
-        ApplicationInstallMode InstallMode { get; }
     }
 
     internal sealed class ApplicationAdapter : IApplication
@@ -43,8 +42,6 @@ namespace Sentry.Unity.Integrations
         public string PersistentDataPath => Application.persistentDataPath;
 
         public RuntimePlatform Platform => Application.platform;
-
-        public ApplicationInstallMode InstallMode => Application.installMode;
 
         private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
             => LogMessageReceived?.Invoke(condition, stackTrace, type);
