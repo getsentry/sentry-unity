@@ -29,7 +29,7 @@ static NSDictionary* getSentryOptions()
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
-        @""send-default-pii"" : @{options.SendDefaultPii.ToObjCString()}
+        @""sendDefaultPii"" : @{options.SendDefaultPii.ToObjCString()}
     }};
 
     return options;
