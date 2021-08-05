@@ -10,9 +10,9 @@ namespace Sentry.Unity.Editor.iOS
     {
         private const string FrameworkName = "Sentry.framework";
 
-        private const string MainPath = "MainApp/main.mm";
-        private const string OptionsPath = "MainApp/SentryOptions.m";
-        private const string UnityPackageFrameworkRoot = "Frameworks/io.sentry.unity";
+        private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
+        private readonly string _optionsPath = Path.Combine("MainApp", "SentryOptions.m");
+        private readonly string _unityPackageFrameworkRoot = Path.Combine("Frameworks", "io.sentry.unity");
 
         private readonly string _projectRoot;
         private readonly SentryUnityOptions _options;
@@ -69,14 +69,14 @@ namespace Sentry.Unity.Editor.iOS
 
         internal void SetRelativeFrameworkPath()
         {
-            if (Directory.Exists(Path.Combine(_projectRoot, UnityPackageFrameworkRoot)))
+            if (Directory.Exists(Path.Combine(_projectRoot, _unityPackageFrameworkRoot)))
             {
-                RelativeFrameworkPath = Path.Combine(UnityPackageFrameworkRoot, "Plugins", "iOS");
+                RelativeFrameworkPath = Path.Combine(_unityPackageFrameworkRoot, "Plugins", "iOS");
                 return;
             }
 
             // For dev purposes - The framework path contains the package name
-            var relativeFrameworkPath = UnityPackageFrameworkRoot + ".dev";
+            var relativeFrameworkPath = _unityPackageFrameworkRoot + ".dev";
             if (Directory.Exists(Path.Combine(_projectRoot, relativeFrameworkPath)))
             {
                 RelativeFrameworkPath = Path.Combine(relativeFrameworkPath, "Plugins", "iOS");
@@ -107,12 +107,12 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddNativeOptions()
         {
-            _nativeOptions.CreateFile(Path.Combine(_projectRoot, OptionsPath), _options);
-            _project.AddFile(OptionsPath, OptionsPath);
+            _nativeOptions.CreateFile(Path.Combine(_projectRoot, _optionsPath), _options);
+            _project.AddFile(_optionsPath, _optionsPath);
         }
 
         public void AddSentryToMain() =>
-            _nativeMain.AddSentry(Path.Combine(_projectRoot, MainPath), _options.DiagnosticLogger);
+            _nativeMain.AddSentry(Path.Combine(_projectRoot, _mainPath), _options.DiagnosticLogger);
 
         internal string ProjectToString() => _project.WriteToString();
 
