@@ -1,8 +1,13 @@
 <Project InitialTargets="RestoreSubmodule">
   <!-- If sentry-dotnet is not found, restore git submodules -->
-  <Target Name="RestoreSubmodule"
+  <Target Name="RestoreDotNetSubmodule"
     Condition="!Exists('src/sentry-dotnet/src/Sentry/Sentry.csproj')">
     <Message Importance="High" Text="sentry-dotnet not found. Restoring git submodules."></Message>
+    <Exec Command="git submodule update --init --recursive"></Exec>
+  </Target>
+    <Target Name="RestoreCocoaSubmodule"
+    Condition="!Exists('src/sentry-cocoa/Sentry.xcodeproj')">
+    <Message Importance="High" Text="sentry-cocoa not found. Restoring git submodules."></Message>
     <Exec Command="git submodule update --init --recursive"></Exec>
   </Target>
 </Project>
