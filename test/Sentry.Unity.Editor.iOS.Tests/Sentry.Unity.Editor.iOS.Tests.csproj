@@ -4,13 +4,13 @@
     <OutDir>$(PackageEditorTestsPath)</OutDir>
   </PropertyGroup>
   
-    <Target Name="CopyTestFiles" AfterTargets="Build">
-      <ItemGroup>
-        <TestFiles Include="TestFiles/**/*"></TestFiles>
-      </ItemGroup>
-      <Copy
-      SourceFiles="@(TestFiles)"
-      DestinationFiles="@(TestFiles->'$(OutDir)\TestFiles\%(RecursiveDir)%(Filename)%(Extension)')">
+  <Target Name="CopyTestFiles" AfterTargets="Build">
+    <ItemGroup>
+      <TestFiles Include="TestFiles/**/*"></TestFiles>
+    </ItemGroup>
+    <Copy SourceFiles="@(TestFiles)"
+          DestinationFiles="@(TestFiles->'$(OutDir)\TestFiles\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true">
     </Copy>
   </Target>
   
