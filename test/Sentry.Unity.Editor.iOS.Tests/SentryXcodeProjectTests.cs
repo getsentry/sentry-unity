@@ -32,10 +32,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         private Fixture _fixture = new();
 
         [SetUp]
-        public void SetUp()
-        {
-            _fixture = new Fixture();
-        }
+        public void SetUp() => _fixture = new Fixture();
 
         [TearDown]
         public void DestroyFrameworkDirectories()

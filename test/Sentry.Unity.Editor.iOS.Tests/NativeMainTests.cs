@@ -47,24 +47,18 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var main = string.Empty;
             var nativeMain = new NativeMain();
 
-            var x = Assert.Throws<ArgumentException>(() => nativeMain.AddSentryToMain(main));
-            Assert.AreEqual("main", x.ParamName);
+            var assert = Assert.Throws<ArgumentException>(() => nativeMain.AddSentryToMain(main));
+            Assert.AreEqual("main", assert.ParamName);
         }
 
         [Test]
         public void AddSentry_MainDoesNotExist_ThrowsFileNotFoundException()
         {
-            var expectedMain = GetFileContents("main_expected.txt");
-            var workingMainPath = "temp.txt";
-            File.WriteAllText(workingMainPath, GetFileContents("main.txt"));
+            var pathToMain = "Path/That/Does/Not/Exist";
             var nativeMain = new NativeMain();
 
-            nativeMain.AddSentry(workingMainPath, null);
-            var actualMain = File.ReadAllText(workingMainPath);
-
-            Assert.AreEqual(expectedMain, actualMain);
-
-            File.Delete(workingMainPath);
+            var assert = Assert.Throws<FileNotFoundException>( () => nativeMain.AddSentry(pathToMain, null));
+            StringAssert.Contains("Could not find main.", assert.Message);
         }
 
         [Test]

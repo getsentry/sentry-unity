@@ -5,10 +5,7 @@ namespace Sentry.Unity
 {
     public static class SentryUnityOptionsExtensions
     {
-        public static bool ShouldInitializeSdk(this SentryUnityOptions? options)
-        {
-            return ShouldInitializeSdk(options, null);
-        }
+        public static bool ShouldInitializeSdk(this SentryUnityOptions? options) => ShouldInitializeSdk(options, null);
 
         internal static bool ShouldInitializeSdk(this SentryUnityOptions? options, IApplication? application = null)
         {

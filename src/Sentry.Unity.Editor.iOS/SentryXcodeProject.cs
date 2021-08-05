@@ -12,7 +12,7 @@ namespace Sentry.Unity.Editor.iOS
 
         private const string MainPath = "MainApp/main.mm";
         private const string OptionsPath = "MainApp/SentryOptions.m";
-        private string UnityPackageFrameworkRoot = Path.Combine("Frameworks", "io.sentry.unity");
+        private const string UnityPackageFrameworkRoot = "Frameworks/io.sentry.unity";
 
         private readonly string _projectRoot;
         private readonly SentryUnityOptions _options;
@@ -25,7 +25,7 @@ namespace Sentry.Unity.Editor.iOS
         private readonly INativeMain _nativeMain;
         private readonly INativeOptions _nativeOptions;
 
-        internal SentryXcodeProject(
+        public SentryXcodeProject(
             string projectRoot,
             SentryUnityOptions options)
             : this(projectRoot, options, new NativeMain(), new NativeOptions())
@@ -61,7 +61,7 @@ namespace Sentry.Unity.Editor.iOS
         {
             if (!File.Exists(_projectPath))
             {
-                throw new FileNotFoundException($"Could not locate generated Xcode project at {_projectPath}");
+                throw new FileNotFoundException("Could not locate generated Xcode project at", _projectPath);
             }
 
             _project.ReadFromString(File.ReadAllText(_projectPath));

@@ -23,7 +23,7 @@ namespace Sentry.Unity.Editor.iOS
         {
             if (!File.Exists(pathToMain))
             {
-                throw new FileNotFoundException($"Could not find '{pathToMain}'.");
+                throw new FileNotFoundException("Could not find main.", pathToMain);
             }
 
             var main = File.ReadAllText(pathToMain);

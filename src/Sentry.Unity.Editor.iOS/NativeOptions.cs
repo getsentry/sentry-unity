@@ -24,12 +24,12 @@ static NSDictionary* getSentryOptions()
 {{
     NSDictionary* options = @{{
         @""dsn"" : @""{options.Dsn}"",
-        @""debug"" : @{options.Debug.ToObjCString()},
-        @""diagnosticLevel"" : @{options.DiagnosticLevel.ToNativeDiagnosticLevel()},
+        @""debug"" : @{ToObjCString(options.Debug)},
+        @""diagnosticLevel"" : @{ToNativeDiagnosticLevel(options.DiagnosticLevel)},
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
-        @""sendDefaultPii"" : @{options.SendDefaultPii.ToObjCString()}
+        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)}
     }};
 
     return options;
@@ -37,11 +37,8 @@ static NSDictionary* getSentryOptions()
 
             return nativeOptions;
         }
-    }
 
-    internal static class NativeOptionsUtils
-    {
-        internal static string ToObjCString(this bool b) => b ? "YES" : "NO";
+        private static string ToObjCString(bool b) => b ? "YES" : "NO";
 
         // Native Diagnostic Level:
         // None = 0
@@ -50,6 +47,6 @@ static NSDictionary* getSentryOptions()
         // Warning = 3
         // Error = 4
         // Fatal = 5
-        internal static int ToNativeDiagnosticLevel(this SentryLevel diagnosticLevel) => (int)diagnosticLevel + 1;
+        private static int ToNativeDiagnosticLevel(SentryLevel diagnosticLevel) => (int)diagnosticLevel + 1;
     }
 }

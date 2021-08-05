@@ -36,7 +36,7 @@ namespace Sentry.Unity.Editor.iOS
             }
             catch (Exception e)
             {
-                options.DiagnosticLogger?.LogError(e.Message);
+                options.DiagnosticLogger?.LogError("Failed to add Sentry to the xcode project", e);
             }
         }
     }

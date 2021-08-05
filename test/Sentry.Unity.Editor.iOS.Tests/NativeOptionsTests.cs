@@ -12,7 +12,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             if (Environment.OSVersion.Platform != PlatformID.MacOSX)
             {
-                Assert.Inconclusive("Skipping: Non MacOSX");
+                Assert.Inconclusive("Skipping: Not on macOS");
             }
 
             const string testOptionsFileName = "testOptions.m";
@@ -33,7 +33,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             if (Environment.OSVersion.Platform != PlatformID.MacOSX)
             {
-                Assert.Inconclusive("Skipping: Non MacOSX");
+                Assert.Inconclusive("Skipping: Not on macOS");
             }
 
             const string testOptionsFileName = "testOptions.m";
