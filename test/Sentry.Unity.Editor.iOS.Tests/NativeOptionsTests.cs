@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.IO;
 using NUnit.Framework;
@@ -9,6 +10,11 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void GenerateOptions_NewSentryOptions_Compiles()
         {
+            if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+            {
+                Assert.Inconclusive("Skipping: Non MacOSX");
+            }
+
             const string testOptionsFileName = "testOptions.m";
             var nativeOptions = new NativeOptions();
             var nativeOptionsString = nativeOptions.Generate(new SentryOptions());
@@ -25,6 +31,11 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile()
         {
+            if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+            {
+                Assert.Inconclusive("Skipping: Non MacOSX");
+            }
+
             const string testOptionsFileName = "testOptions.m";
             var nativeOptions = new NativeOptions();
             var nativeOptionsString = nativeOptions.Generate(new SentryOptions());
