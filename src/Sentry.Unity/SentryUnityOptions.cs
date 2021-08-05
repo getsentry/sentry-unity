@@ -70,8 +70,6 @@ namespace Sentry.Unity
         /// </summary>
         public bool IOSNativeSupportEnabled { get; set; } = true;
 
-        private SentryMonoBehaviour? _sentryMonoBehaviour;
-        internal Func<SentryMonoBehaviour> SentryMonoBehaviourGenerator;
         private readonly SentryMonoBehaviour _sentryMonoBehaviour;
 
         public SentryUnityOptions()

@@ -12,7 +12,7 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options.ShouldInitializeSdk())
             {
-                SentryUnity.Init(options!);
+                SentryUnity.Init(options);
             }
         }
     }

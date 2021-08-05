@@ -29,7 +29,8 @@ namespace Sentry.Unity.Editor.iOS
             string projectRoot,
             SentryUnityOptions options)
             : this(projectRoot, options, new NativeMain(), new NativeOptions())
-        { }
+        {
+        }
 
         internal SentryXcodeProject(
             string projectRoot,
@@ -66,6 +67,25 @@ namespace Sentry.Unity.Editor.iOS
             _project.ReadFromString(File.ReadAllText(_projectPath));
         }
 
+        internal void SetRelativeFrameworkPath()
+        {
+            if (Directory.Exists(Path.Combine(_projectRoot, UnityPackageFrameworkRoot)))
+            {
+                RelativeFrameworkPath = Path.Combine(UnityPackageFrameworkRoot, "Plugins", "iOS");
+                return;
+            }
+
+            // For dev purposes - The framework path contains the package name
+            var relativeFrameworkPath = UnityPackageFrameworkRoot + ".dev";
+            if (Directory.Exists(Path.Combine(_projectRoot, relativeFrameworkPath)))
+            {
+                RelativeFrameworkPath = Path.Combine(relativeFrameworkPath, "Plugins", "iOS");
+                return;
+            }
+
+            throw new FileNotFoundException("Could not locate the Sentry package inside the 'Frameworks' directory");
+        }
+
         public void AddSentryFramework()
         {
             var targetGuid = _project.GetUnityMainTargetGuid();
@@ -74,8 +94,10 @@ namespace Sentry.Unity.Editor.iOS
 
             var unityLinkPhaseGuid = _project.GetFrameworksBuildPhaseByTarget(targetGuid);
 
-            _project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid, frameworkGuid); // Link framework in 'Build Phases > Link Binary with Libraries'
-            _project.AddFileToEmbedFrameworks(targetGuid, frameworkGuid); // Embedding the framework because it's dynamic and needed at runtime
+            _project.AddFileToBuildSection(targetGuid, unityLinkPhaseGuid,
+                frameworkGuid); // Link framework in 'Build Phases > Link Binary with Libraries'
+            _project.AddFileToEmbedFrameworks(targetGuid,
+                frameworkGuid); // Embedding the framework because it's dynamic and needed at runtime
 
             _project.SetBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
             _project.AddBuildProperty(targetGuid, "FRAMEWORK_SEARCH_PATHS", $"$(PROJECT_DIR)/{RelativeFrameworkPath}/");
@@ -89,26 +111,8 @@ namespace Sentry.Unity.Editor.iOS
             _project.AddFile(OptionsPath, OptionsPath);
         }
 
-        public void AddSentryToMain() => _nativeMain.AddSentry(Path.Combine(_projectRoot, MainPath), _options.DiagnosticLogger);
-
-        internal void SetRelativeFrameworkPath()
-        {
-            if (Directory.Exists(Path.Combine(_projectRoot, UnityPackageFrameworkRoot)))
-            {
-                RelativeFrameworkPath = Path.Combine(UnityPackageFrameworkRoot, "Plugins", "iOS");
-                return;
-            }
-
-            // For dev purposes - The framework path contains the package name
-            var relativeFrameworkPath = UnityPackageFrameworkRoot + ".dev";
-            if (Directory.Exists(Path.Combine(_projectRoot, relativeFrameworkPath)))
-            {
-                RelativeFrameworkPath =  Path.Combine(relativeFrameworkPath, "Plugins", "iOS");
-                return;
-            }
-
-            throw new FileNotFoundException("Could not locate the Sentry package inside the 'Frameworks' directory");
-        }
+        public void AddSentryToMain() =>
+            _nativeMain.AddSentry(Path.Combine(_projectRoot, MainPath), _options.DiagnosticLogger);
 
         internal string ProjectToString() => _project.WriteToString();
 

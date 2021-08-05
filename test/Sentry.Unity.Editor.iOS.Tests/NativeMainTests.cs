@@ -10,7 +10,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void ContainsSentry_SentryAlreadyAdded_ReturnsTrue()
         {
-            var main = GetFileContents("main_2019_4_expected.txt");
+            var main = GetFileContents("main_expected.txt");
             var nativeMain = new NativeMain();
 
             var containsSentry = nativeMain.ContainsSentry(main, null);
@@ -21,7 +21,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void ContainsSentry_SentryNotAdded_ReturnsFalse()
         {
-            var main = GetFileContents("main_2019_4.txt");
+            var main = GetFileContents("main.txt");
             var nativeMain = new NativeMain();
 
             var containsSentry = nativeMain.ContainsSentry(main, null);
@@ -30,10 +30,10 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void AddSentryToMain_SentryNotAddedTo_2019_4_MatchesExpectedOutput()
+        public void AddSentryToMain_SentryNotAddedTo_MatchesExpectedOutput()
         {
-            var main = GetFileContents("main_2019_4.txt");
-            var expectedMain = GetFileContents("main_2019_4_expected.txt");
+            var main = GetFileContents("main.txt");
+            var expectedMain = GetFileContents("main_expected.txt");
             var nativeMain = new NativeMain();
 
             var actualMain = nativeMain.AddSentryToMain(main);
@@ -54,9 +54,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void AddSentry_MainDoesNotExist_ThrowsFileNotFoundException()
         {
-            var expectedMain = GetFileContents("main_2019_4_expected.txt");
+            var expectedMain = GetFileContents("main_expected.txt");
             var workingMainPath = "temp.txt";
-            File.WriteAllText(workingMainPath, GetFileContents("main_2019_4.txt"));
+            File.WriteAllText(workingMainPath, GetFileContents("main.txt"));
             var nativeMain = new NativeMain();
 
             nativeMain.AddSentry(workingMainPath, null);
@@ -68,11 +68,11 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void AddSentry_CleanMain_2019_4_OutputMatchesExpected()
+        public void AddSentry_CleanMain_OutputMatchesExpected()
         {
-            var expectedMain = GetFileContents("main_2019_4_expected.txt");
+            var expectedMain = GetFileContents("main_expected.txt");
             var workingMainPath = "temp.txt";
-            File.WriteAllText(workingMainPath, GetFileContents("main_2019_4.txt"));
+            File.WriteAllText(workingMainPath, GetFileContents("main.txt"));
             var nativeMain = new NativeMain();
 
             nativeMain.AddSentry(workingMainPath, null);
@@ -86,7 +86,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         private string GetFileContents(string fileName)
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var mainPath = Path.Combine(assemblyPath, "TestFiles", fileName);
+            var mainPath = Path.Combine(assemblyPath, "TestFiles", "2019_4", fileName);
 
             return File.ReadAllText(mainPath);
         }

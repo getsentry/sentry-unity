@@ -21,7 +21,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         private class Fixture
         {
             public string ProjectRoot { get; set; } =
-                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles");
+                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles", "2019_4");
             public SentryUnityOptions Options { get; set; } = new();
             public INativeMain NativeMain { get; set; } = new NativeMainTest();
             public INativeOptions NativeOptions { get; set; } = new NativeOptionsTest();
@@ -29,12 +29,47 @@ namespace Sentry.Unity.Editor.iOS.Tests
             public SentryXcodeProject GetSut() => new(ProjectRoot, Options, NativeMain, NativeOptions);
         }
 
-        private readonly Fixture _fixture = new();
+        private Fixture _fixture = new();
+
+        [SetUp]
+        public void SetUp()
+        {
+            _fixture = new Fixture();
+        }
+
+        [TearDown]
+        public void DestroyFrameworkDirectories()
+        {
+            var frameworkPath = Path.Combine(_fixture.ProjectRoot, "Frameworks");
+            if (Directory.Exists(frameworkPath))
+            {
+                Directory.Delete(frameworkPath, true);
+            }
+        }
+
+        [Test]
+        public void ReadFromProjectFile_ProjectExists_ReadsProject()
+        {
+            var xcodeProject = _fixture.GetSut();
+
+            xcodeProject.ReadFromProjectFile();
+
+            Assert.IsNotEmpty(xcodeProject.ProjectToString());
+        }
+
+        [Test]
+        public void ReadFromProjectFile_ProjectDoesNotExist_ThrowsFileNotFoundException()
+        {
+            _fixture.ProjectRoot = "Path/That/Does/Not/Exist";
+            var xcodeProject = _fixture.GetSut();
+
+            Assert.Throws<FileNotFoundException>(() => xcodeProject.ReadFromProjectFile());
+        }
 
         [Test]
         public void SetRelativeFrameworkPath_PathExists_ReturnsFrameworkPath()
         {
-            CreateFrameworkFolder();
+            CreateFrameworkDirectories();
 
             var xcodeProject = _fixture.GetSut();
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
@@ -47,7 +82,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void SetRelativeFrameworkPath_DevPathExists_ReturnsDevFrameworkPath()
         {
-            CreateDevFrameworkFolder();
+            CreateDevFrameworkDirectories();
 
             var xcodeProject = _fixture.GetSut();
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
@@ -90,27 +125,16 @@ namespace Sentry.Unity.Editor.iOS.Tests
             StringAssert.Contains("SentryOptions.m", xcodeProject.ProjectToString());
         }
 
-
-        private void CreateFrameworkFolder()
+        private void CreateFrameworkDirectories()
         {
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
             Directory.CreateDirectory(Path.Combine(_fixture.ProjectRoot, expectedFrameworkPath));
         }
 
-        private void CreateDevFrameworkFolder()
+        private void CreateDevFrameworkDirectories()
         {
             var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
             Directory.CreateDirectory(Path.Combine(_fixture.ProjectRoot, expectedFrameworkPath));
-        }
-
-        [TearDown]
-        public void DestroyFolder()
-        {
-            var frameworkPath = Path.Combine(_fixture.ProjectRoot, "Frameworks");
-            if (Directory.Exists(frameworkPath))
-            {
-                Directory.Delete(frameworkPath, true);
-            }
         }
     }
 }

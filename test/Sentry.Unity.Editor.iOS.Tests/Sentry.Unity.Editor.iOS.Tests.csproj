@@ -3,16 +3,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>$(PackageEditorTestsPath)</OutDir>
   </PropertyGroup>
-  <ItemGroup>
-    <None Update="TestFiles/*.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="TestFiles/Unity-iPhone.xcodeproj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  
+    <Target Name="CopyTestFiles" AfterTargets="Build">
+      <ItemGroup>
+        <TestFiles Include="TestFiles/**/*"></TestFiles>
+      </ItemGroup>
+      <Copy
+      SourceFiles="@(TestFiles)"
+      DestinationFiles="@(TestFiles->'$(OutDir)\TestFiles\%(RecursiveDir)%(Filename)%(Extension)')">
+    </Copy>
+  </Target>
+  
   <ItemGroup>
     <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
