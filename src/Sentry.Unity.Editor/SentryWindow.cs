@@ -166,16 +166,11 @@ namespace Sentry.Unity.Editor
 
             GUILayout.Label("Transactions", EditorStyles.boldLabel);
 
-            var traceSampleRate = (float?) Options.TracesSampleRate;
             Options.TracesSampleRate = EditorGUILayout.Slider(
                 new GUIContent("Trace Sample Rate", "Indicates the percentage of the transactions that is " +
                                                     "collected. Setting this to 0 discards all trace data. " +
                                                     "Setting this to 1.0 collects all trace data."),
-                traceSampleRate ??= 0.0f, 0.0f, 1.0f);
-            if (traceSampleRate > 0.0f)
-            {
-                Options.TracesSampleRate = (double) traceSampleRate;
-            }
+                (float)Options.TracesSampleRate, 0.0f, 1.0f);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
