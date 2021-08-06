@@ -107,7 +107,14 @@ namespace Sentry.Unity.Editor
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            _currentTab = GUILayout.Toolbar(_currentTab, _tabs);
+            var selectedTab = GUILayout.Toolbar(_currentTab, _tabs);
+            if (selectedTab != _currentTab)
+            {
+                // Edge-case: Lose focus so currently selected fields don't "bleed" through like DSN -> Override Release
+                GUI.FocusControl(null);
+                _currentTab = selectedTab;
+            }
+
             EditorGUI.BeginDisabledGroup(!Options.Enabled);
             EditorGUILayout.Space();
 
