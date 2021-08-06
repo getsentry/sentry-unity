@@ -58,6 +58,12 @@ namespace Sentry.Unity.Editor
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
+            EditorGUILayout.Toggle("iOS Native Support", options.IOSNativeSupportEnabled);
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
             EditorGUILayout.LabelField("Debug", EditorStyles.boldLabel);
             EditorGUILayout.Toggle("Enable Debug Output", options.Debug);
             EditorGUILayout.Toggle("Only In Editor", options.DebugOnlyInEditor);

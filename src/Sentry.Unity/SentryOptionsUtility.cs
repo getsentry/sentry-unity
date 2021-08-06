@@ -56,6 +56,8 @@ namespace Sentry.Unity
 
             scriptableOptions.EnableOfflineCaching = true;
 
+            scriptableOptions.IOSNativeSupportEnabled = options.IOSNativeSupportEnabled;
+
             scriptableOptions.Debug = true;
             scriptableOptions.DebugOnlyInEditor = true;
             scriptableOptions.DiagnosticLevel = SentryLevel.Warning;

@@ -10,6 +10,9 @@
     <UnitySampleProjectUnityVersion>$(SolutionDir)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
+    <!-- Cocoa-->
+    <CocoaRoot>$(SolutionDir)src/sentry-cocoa/</CocoaRoot>
+    <CocoaFrameworkDestination>$(SolutionDir)package-dev/Plugins/iOS/Sentry.framework/</CocoaFrameworkDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -51,6 +54,31 @@
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
     <RemoveDir Directories="$(PlayerBuildPath)" />
     <RemoveDir Directories="$(UnityPackageProject)" />
+  </Target>
+
+  <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="Exists('$(CocoaFrameworkDestination)')">
+    <RemoveDir Directories="$(CocoaFrameworkPath)Sentry.framework" />
+  </Target>
+
+  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
+  <Target Name="BuildCocoaSDK" 
+          Condition="$([MSBuild]::IsOSPlatform('OSX')) 
+          And '$(MSBuildProjectName)' == 'Sentry.Unity'
+          And !Exists('$(CocoaFrameworkDestination)')" 
+          BeforeTargets="BeforeBuild">    
+    <Error Condition="!Exists('$(CocoaRoot)')" Text="Couldn't find the Cocoa root at $(CocoaRoot)."></Error>      
+    
+    <Exec WorkingDirectory="$(CocoaRoot)" Command="carthage build --use-xcframeworks --no-skip-current --platform iOS"></Exec>
+
+    <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
+    <ItemGroup>
+      <CocoaBuildPath Include="$(CocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework/**/*" />
+    </ItemGroup>    
+    <Copy SourceFiles="@(CocoaBuildPath)"
+          DestinationFiles="@(CocoaBuildPath->'$(CocoaFrameworkDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    </Copy>
+
+    <Error Condition="!Exists('$(CocoaFrameworkDestination)')" Text="Failed to build the Cocoa SDK."></Error>
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.

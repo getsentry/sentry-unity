@@ -77,6 +77,12 @@ jobs:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-modules: android
 
+      - name: Setup Unity Modules - iOS
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ env.UNITY_VERSION }}
+          unity-modules: ios
+
       # Need to write to $GITHUB_PATH to make the environment variable
       # available to other steps.
       - name: Add Unity on PATH

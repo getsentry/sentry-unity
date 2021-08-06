@@ -10,31 +10,10 @@ namespace Sentry.Unity
         public static void Init()
         {
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
-            if (options is null)
+            if (options.ShouldInitializeSdk())
             {
-                new UnityLogger(new SentryOptions()).LogWarning(
-                    "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
-                return;
+                SentryUnity.Init(options);
             }
-
-            if (!options.Enabled)
-            {
-                return;
-            }
-
-            if (!options.CaptureInEditor && Application.isEditor)
-            {
-                options.DiagnosticLogger?.LogInfo("Disabled while in the Editor.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(options.Dsn))
-            {
-                options.DiagnosticLogger?.LogWarning("No Sentry DSN configured. Sentry will be disabled.");
-                return;
-            }
-
-            SentryUnity.Init(options);
         }
     }
 }
