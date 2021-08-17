@@ -1,7 +1,7 @@
-using System;
 using System.Diagnostics;
 using System.IO;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
@@ -10,7 +10,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void GenerateOptions_NewSentryOptions_Compiles()
         {
-            if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+            if (Application.platform != RuntimePlatform.OSXEditor)
             {
                 Assert.Inconclusive("Skipping: Not on macOS");
             }
@@ -31,7 +31,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile()
         {
-            if (Environment.OSVersion.Platform != PlatformID.MacOSX)
+            if (Application.platform != RuntimePlatform.OSXEditor)
             {
                 Assert.Inconclusive("Skipping: Not on macOS");
             }
