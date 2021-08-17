@@ -167,9 +167,9 @@ namespace Sentry.Unity.Editor
             GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
 
             Options.TracesSampleRate = EditorGUILayout.Slider(
-                new GUIContent("Traces Sample Rate", "Indicates the percentage of the transactions that is " +
-                                                    "collected. Setting this to 0 discards all trace data. " +
-                                                    "Setting this to 1.0 collects all trace data."),
+                new GUIContent("Traces Sample Rate", "Indicates the percentage of transactions that are " +
+                                                     "captured. Setting this to 0 discards all trace data. " +
+                                                     "Setting this to 1.0 captures all."),
                 (float)Options.TracesSampleRate, 0.0f, 1.0f);
 
             EditorGUILayout.Space();

@@ -4,7 +4,6 @@
 
 ### Features
 
-- Config window improvements ([#276](https://github.com/getsentry/sentry-unity/pull/276))
 - iOS native support ([#254](https://github.com/getsentry/sentry-unity/pull/254))
 - Compile Initialization with the game ([#272](https://github.com/getsentry/sentry-unity/pull/272))
 - Native crash in sample ([#270](https://github.com/getsentry/sentry-unity/pull/270))
@@ -12,6 +11,8 @@
 
 ### Fixes
 
+- Fixed stuck traces sample rate slider ([#276](https://github.com/getsentry/sentry-unity/pull/276))
+- Fixed selected input field tab glitches ([#276](https://github.com/getsentry/sentry-unity/pull/276))
 - Bump Sentry .NET SDK 3.8.3 ([#269](https://github.com/getsentry/sentry-unity/pull/269))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#383)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.2...3.8.3)
