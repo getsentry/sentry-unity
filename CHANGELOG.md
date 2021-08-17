@@ -4,6 +4,7 @@
 
 ### Features
 
+- Config window improvements ([#276](https://github.com/getsentry/sentry-unity/pull/276))
 - iOS native support ([#254](https://github.com/getsentry/sentry-unity/pull/254))
 - Compile Initialization with the game ([#272](https://github.com/getsentry/sentry-unity/pull/272))
 - Native crash in sample ([#270](https://github.com/getsentry/sentry-unity/pull/270))
