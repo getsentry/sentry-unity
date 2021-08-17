@@ -107,7 +107,14 @@ namespace Sentry.Unity.Editor
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            _currentTab = GUILayout.Toolbar(_currentTab, _tabs);
+            var selectedTab = GUILayout.Toolbar(_currentTab, _tabs);
+            if (selectedTab != _currentTab)
+            {
+                // Edge-case: Lose focus so currently selected fields don't "bleed" through like DSN -> Override Release
+                GUI.FocusControl(null);
+                _currentTab = selectedTab;
+            }
+
             EditorGUI.BeginDisabledGroup(!Options.Enabled);
             EditorGUILayout.Space();
 
@@ -157,22 +164,19 @@ namespace Sentry.Unity.Editor
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            GUILayout.Label("Transactions", EditorStyles.boldLabel);
+            GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
 
-            var traceSampleRate = (float?) Options.TracesSampleRate;
             Options.TracesSampleRate = EditorGUILayout.Slider(
-                new GUIContent("Trace Sample Rate", "Indicates the percentage of the transactions that is " +
-                                                    "collected. Setting this to 0 discards all trace data. " +
-                                                    "Setting this to 1.0 collects all trace data."),
-                traceSampleRate ??= 0.0f, 0.0f, 1.0f);
-            if (traceSampleRate > 0.0f)
-            {
-                Options.TracesSampleRate = (double) traceSampleRate;
-            }
+                new GUIContent("Traces Sample Rate", "Indicates the percentage of transactions that are " +
+                                                     "captured. Setting this to 0 discards all trace data. " +
+                                                     "Setting this to 1.0 captures all."),
+                (float)Options.TracesSampleRate, 0.0f, 1.0f);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
+
+            GUILayout.Label("Native Support", EditorStyles.boldLabel);
 
             Options.IOSNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("iOS Native Support", "Whether to enable Native Support."),
