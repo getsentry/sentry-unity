@@ -108,16 +108,16 @@ jobs:
       # Need to write to $GITHUB_PATH to make the environment variable
       # available to other steps.
       - name: Add Unity on PATH
+        shell: pwsh
         run: |
-          pwsh
           Write-Output "${{ matrix.unity-root }}${{ env.UNITY_VERSION }}/${{ matrix.unity-directory }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate Unity license
         id: activate-license
+        shell: pwsh
         run: |
-          pwsh
           $attempts = 5
 
           while ($attempts -gt 0) {
@@ -173,8 +173,8 @@ jobs:
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
 
       - name: Prepare Sentry package for release
+        shell: pwsh
         run: |
-          pwsh
           New-Item "package-release" -ItemType Directory
 
           # Copy `package-dev` stuff
