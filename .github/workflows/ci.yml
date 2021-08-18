@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
+        os: [windows-latest, macos-latest]
         include:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
@@ -80,10 +80,18 @@ jobs:
       #     Get-Content -Raw -Path "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/modules.json" | ConvertFrom-Json
 
       - name: Setup Unity Modules - Windows IL2CPP
+        if: matrix.os == 'windows-latest'
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:
           unity-version: ${{ env.UNITY_VERSION }}
           unity-modules: windows-il2cpp
+
+      - name: Setup Unity Modules - MacOS IL2CPP
+        if: matrix.os == 'macos-latest'
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ env.UNITY_VERSION }}
+          unity-modules: macos-il2cpp
 
       - name: Setup Unity Modules - Android
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
