@@ -39,7 +39,7 @@ jobs:
           - os: macos-latest
             unity-installation-path: /Applications/Unity/
             unity-root: /Applications/Unity/Hub/Editor/
-            unity-directory: /Unity.app/
+            unity-directory: Unity.app/
 
     steps:
       - name: Checkout
