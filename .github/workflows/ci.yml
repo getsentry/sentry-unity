@@ -35,11 +35,11 @@ jobs:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
             unity-root: C:/Program Files/Unity/Hub/Editor/
-            unity-directory: Editor/
+            unity-path: Editor/
           - os: macos-latest
             unity-installation-path: /Applications/Unity/
             unity-root: /Applications/Unity/Hub/Editor/
-            unity-directory: Unity.app/
+            unity-path: Unity.app/Contents/MacOS
 
     steps:
       - name: Checkout
@@ -110,7 +110,7 @@ jobs:
       - name: Add Unity on PATH
         shell: pwsh
         run: |
-          Write-Output "${{ matrix.unity-root }}${{ env.UNITY_VERSION }}/${{ matrix.unity-directory }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "${{ matrix.unity-root }}${{ env.UNITY_VERSION }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       # License activation sometimes fails due to a problem connecting
       # to Unity's licensing backend. Retry a few times if it fails.
