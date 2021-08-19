@@ -30,12 +30,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [macos-latest]
         include:
-          - os: windows-latest
-            unity-installation-path: C:/Program Files/Unity/
-            unity-root: C:/Program Files/Unity/Hub/Editor/
-            unity-path: Editor/
+          # - os: windows-latest
+          #   unity-installation-path: C:/Program Files/Unity/
+          #   unity-root: C:/Program Files/Unity/Hub/Editor/
+          #   unity-path: Editor/
           - os: macos-latest
             unity-installation-path: /Applications/Unity/
             unity-root: /Applications/Unity/Hub/Editor/
