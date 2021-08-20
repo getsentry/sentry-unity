@@ -18,6 +18,10 @@ on:
     - '.gitmodules'
     - '.craft.yml'
 
+env:
+  UNITY_VERSION: 2019.4.21f1
+  UNITY_VERSION_CHANGESET: b76dac84db26
+
 jobs:
   build:
     name: ${{ matrix.os }}
@@ -27,7 +31,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest]
-        unity-version: [2019.4.21f1]
         include:
           # - os: windows-latest
           #   unity-installation-path: C:/Program Files/Unity/
@@ -37,8 +40,6 @@ jobs:
             unity-installation-path: /Applications/Unity/
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
-          - unity-version: 2019.4.21f1
-            changeset: b76dac84db26
 
     steps:
       - name: Checkout
