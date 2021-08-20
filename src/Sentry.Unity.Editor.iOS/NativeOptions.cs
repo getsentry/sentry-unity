@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 
 namespace Sentry.Unity.Editor.iOS
