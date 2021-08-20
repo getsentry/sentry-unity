@@ -121,7 +121,7 @@ jobs:
           $attempts = 5
 
           while ($attempts -gt 0) {
-            unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
+            unity -quit -batchmode -nographics -noUpm -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
 
             if ($LASTEXITCODE -eq 0) {
               break
