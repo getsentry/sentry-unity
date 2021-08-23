@@ -11,6 +11,7 @@
 
 ### Fixes
 
+- Added attribute to SentryInitialization to prevent codestripping of Init ([#285](https://github.com/getsentry/sentry-unity/pull/285))
 - Fixed passing Sentry diagnostic level to iOS native layer ([#281](https://github.com/getsentry/sentry-unity/pull/281))
 - Fixed stuck traces sample rate slider ([#276](https://github.com/getsentry/sentry-unity/pull/276))
 - Fixed selected input field tab glitches ([#276](https://github.com/getsentry/sentry-unity/pull/276))

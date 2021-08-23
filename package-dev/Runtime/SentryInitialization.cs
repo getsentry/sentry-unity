@@ -1,4 +1,7 @@
 using UnityEngine;
+using UnityEngine.Scripting;
+
+[assembly: AlwaysLinkAssembly]
 
 namespace Sentry.Unity
 {
