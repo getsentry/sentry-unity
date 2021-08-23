@@ -11,6 +11,7 @@
 
 ### Fixes
 
+- Included NativeExample.c in sample project ([#288](https://github.com/getsentry/sentry-unity/pull/288))
 - Added attribute to SentryInitialization to prevent codestripping of Init ([#285](https://github.com/getsentry/sentry-unity/pull/285))
 - Fixed passing Sentry diagnostic level to iOS native layer ([#281](https://github.com/getsentry/sentry-unity/pull/281))
 - Fixed stuck traces sample rate slider ([#276](https://github.com/getsentry/sentry-unity/pull/276))
