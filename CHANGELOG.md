@@ -11,6 +11,9 @@
 
 ### Fixes
 
+- Fixed passing Sentry diagnostic level to iOS native layer ([#281](https://github.com/getsentry/sentry-unity/pull/281))
+- Fixed stuck traces sample rate slider ([#276](https://github.com/getsentry/sentry-unity/pull/276))
+- Fixed selected input field tab glitches ([#276](https://github.com/getsentry/sentry-unity/pull/276))
 - Bump Sentry .NET SDK 3.8.3 ([#269](https://github.com/getsentry/sentry-unity/pull/269))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#383)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.2...3.8.3)
