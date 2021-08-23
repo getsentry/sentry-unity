@@ -18,14 +18,27 @@ on:
     - '.gitmodules'
     - '.craft.yml'
 
-env:
-  UNITY_VERSION: 2019.4.21f1
-  UNITY_VERSION_CHANGESET: b76dac84db26
-
 jobs:
-
   build:
-    runs-on: windows-latest
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+        unity-version: [2019.4.21f1]
+        include:
+          # - os: windows-latest
+          #   unity-installation-path: C:/Program Files/Unity/
+          #   unity-root: C:/Program Files/Unity/Hub/Editor/
+          #   unity-path: Editor/
+          - os: macos-latest
+            unity-installation-path: /Applications/Unity/
+            unity-root: /Applications/Unity/Hub/Editor/
+            unity-path: Unity.app/Contents/MacOS
+          - unity-version: 2019.4.21f1
+            unity-version-changeset: b76dac84db26
 
     steps:
       - name: Checkout
@@ -33,71 +46,73 @@ jobs:
 
       # Unity is about 3gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
-      # Note: if you change the installation step, remember to update the value
-      # at the end of the key.
       - name: Restore cached Unity installation
         id: cache-unity
         uses: actions/cache@v2
         with:
-          path: C:/Program Files/Unity
-          key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
+          path: ${{ matrix.unity-installation-path }}
+          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
        
       - name: Restore previous build
         uses: actions/cache@v2
         with:
           path: artifacts/build
-          key: ${{ env.UNITY_VERSION }}-${{ env.UNITY_VERSION_CHANGESET }}
+          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
         with:
           path: samples/unity-of-bugs/Library
-          key: ${{ runner.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          key: ${{ matrix.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         id: setup-unity
         with:
-          unity-version: ${{ env.UNITY_VERSION }}
-          unity-version-changeset:  ${{ env.UNITY_VERSION_CHANGESET }}
-
-      - name: Check Unity Modules
-        run: |
-          Get-Content -Raw -Path "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/modules.json" | ConvertFrom-Json
+          unity-version: ${{ matrix.unity-version }}
+          unity-version-changeset:  ${{ matrix.unity-version-changeset }}
 
       - name: Setup Unity Modules - Windows IL2CPP
+        if: matrix.os == 'windows-latest'
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:
-          unity-version: ${{ env.UNITY_VERSION }}
+          unity-version: ${{ matrix.unity-version }}
           unity-modules: windows-il2cpp
+
+      - name: Setup Unity Modules - MacOS IL2CPP
+        if: matrix.os == 'macos-latest'
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          unity-modules: mac-il2cpp
 
       - name: Setup Unity Modules - Android
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:
-          unity-version: ${{ env.UNITY_VERSION }}
+          unity-version: ${{ matrix.unity-version }}
           unity-modules: android
 
       - name: Setup Unity Modules - iOS
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:
-          unity-version: ${{ env.UNITY_VERSION }}
+          unity-version: ${{ matrix.unity-version }}
           unity-modules: ios
 
-      # Need to write to $GITHUB_PATH to make the environment variable
-      # available to other steps.
+      # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
       - name: Add Unity on PATH
+        shell: pwsh
         run: |
-          Write-Output "C:/Program Files/Unity/Hub/Editor/${{env.UNITY_VERSION}}/Editor" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # License activation sometimes fails due to a problem connecting
-      # to Unity's licensing backend. Retry a few times if it fails.
+      # License activation sometimes fails due to a problem connecting to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate Unity license
         id: activate-license
+        shell: pwsh
         run: |
           $attempts = 5
 
           while ($attempts -gt 0) {
-            unity -quit -batchmode -nographics -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
+            unity -quit -batchmode -nographics -noUpm -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
 
             if ($LASTEXITCODE -eq 0) {
               break
@@ -142,6 +157,10 @@ jobs:
           name: Android Build
           path: samples/artifacts/builds/Android
 
+      - name: Build iOS Player
+        if: matrix.os == 'macos-latest'
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release
+
       - name: Build Standalone Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
 
@@ -149,6 +168,7 @@ jobs:
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
 
       - name: Prepare Sentry package for release
+        shell: pwsh
         run: |
           New-Item "package-release" -ItemType Directory
 
@@ -193,5 +213,6 @@ jobs:
       # Professional licenses are per-seat so we should always try to return them
       - name: Return Unity license
         if: ${{ always() }}
+        shell: pwsh
         run: |
-          unity -quit -batchmode -nographics -logFile - -returnlicense | Out-Default
+          unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default

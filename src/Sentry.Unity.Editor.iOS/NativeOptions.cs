@@ -25,7 +25,7 @@ static NSDictionary* getSentryOptions()
     NSDictionary* options = @{{
         @""dsn"" : @""{options.Dsn}"",
         @""debug"" : @{ToObjCString(options.Debug)},
-        @""diagnosticLevel"" : @{ToNativeDiagnosticLevel(options.DiagnosticLevel)},
+        @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.DiagnosticLevel)}"",
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
@@ -40,13 +40,17 @@ static NSDictionary* getSentryOptions()
 
         private static string ToObjCString(bool b) => b ? "YES" : "NO";
 
-        // Native Diagnostic Level:
-        // None = 0
-        // Debug = 1
-        // Info = 2
-        // Warning = 3
-        // Error = 4
-        // Fatal = 5
-        private static int ToNativeDiagnosticLevel(SentryLevel diagnosticLevel) => (int)diagnosticLevel + 1;
+        private static string ToNativeDiagnosticLevel(SentryLevel sentryLevel)
+        {
+            return sentryLevel switch
+            {
+                SentryLevel.Debug => "debug",
+                SentryLevel.Info => "info",
+                SentryLevel.Warning => "warning",
+                SentryLevel.Error => "error",
+                SentryLevel.Fatal => "fatal",
+                _ => "none"
+            };
+        }
     }
 }
