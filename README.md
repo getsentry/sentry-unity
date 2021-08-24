@@ -13,7 +13,7 @@ Sentry SDK for Unity
 
 Install it via `UPM`:
 ```
-https://github.com/getsentry/unity.git#0.4.3
+https://github.com/getsentry/unity.git#0.5.0
 ```
 
 ## Documentation
