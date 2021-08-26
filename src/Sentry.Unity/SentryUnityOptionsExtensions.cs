@@ -9,6 +9,23 @@ namespace Sentry.Unity
 
         internal static bool ShouldInitializeSdk(this SentryUnityOptions? options, IApplication? application = null)
         {
+            if (!Validate(options))
+            {
+                return false;
+            }
+
+            application ??= ApplicationAdapter.Instance;
+            if (!options!.CaptureInEditor && application.IsEditor)
+            {
+                options.DiagnosticLogger?.LogInfo("Disabled while in the Editor.");
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static bool Validate(this SentryUnityOptions? options)
+        {
             if (options is null)
             {
                 new UnityLogger(new SentryOptions()).LogWarning(
@@ -18,13 +35,6 @@ namespace Sentry.Unity
 
             if (!options.Enabled)
             {
-                return false;
-            }
-
-            application ??= ApplicationAdapter.Instance;
-            if (!options.CaptureInEditor && application.IsEditor)
-            {
-                options.DiagnosticLogger?.LogInfo("Disabled while in the Editor.");
                 return false;
             }
 

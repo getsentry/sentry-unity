@@ -16,7 +16,7 @@ namespace Sentry.Unity.Editor.iOS
             }
 
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
-            if (!options.ShouldInitializeSdk())
+            if (!options.Validate())
             {
                 return;
             }
