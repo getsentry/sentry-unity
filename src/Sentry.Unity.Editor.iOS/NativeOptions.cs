@@ -18,7 +18,7 @@ namespace Sentry.Unity.Editor.iOS
 // IMPORTANT: Changes to this file will be lost!
 // This file is generated during the Xcode project creation.
 
-// TODO: make pretty with link to docs
+// To learn more please take a look at our docs at: https://docs.sentry.io/platforms/unity/configuration/ios-native/
 
 static NSDictionary* getSentryOptions()
 {{
