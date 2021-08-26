@@ -26,46 +26,35 @@ namespace Sentry.Unity.Tests
         public void SetUp() => _fixture = new Fixture();
 
         [Test]
-        public void ShouldInitializeSdk_OptionsIsNull_ReturnsFalse()
+        public void Validate_OptionsIsNull_ReturnsFalse()
         {
             SentryUnityOptions? options = null;
 
-            var shouldInitialize = options.ShouldInitializeSdk();
+            var isValid = options.Validate();
 
-            Assert.IsFalse(shouldInitialize);
+            Assert.IsFalse(isValid);
         }
 
         [Test]
-        public void ShouldInitializeSdk_OptionsDisabled_ReturnsFalse()
+        public void Validate_OptionsDisabled_ReturnsFalse()
         {
             _fixture.Enabled = false;
             var options = _fixture.GetSut();
 
-            var shouldInitialize = options.ShouldInitializeSdk();
+            var isValid = options.Validate();
 
-            Assert.IsFalse(shouldInitialize);
+            Assert.IsFalse(isValid);
         }
 
         [Test]
-        public void ShouldInitializeSdk_NotCaptureInEditorAndApplicationIsEditor_ReturnsFalse()
-        {
-            _fixture.CaptureInEditor = false;
-            var options = _fixture.GetSut();
-
-            var shouldInitialize = options.ShouldInitializeSdk(_fixture.TestApplication);
-
-            Assert.IsFalse(shouldInitialize);
-        }
-
-        [Test]
-        public void ShouldInitializeSdk_DsnEmpty_ReturnsFalse()
+        public void Validate_DsnEmpty_ReturnsFalse()
         {
             _fixture.Dsn = string.Empty;
             var options = _fixture.GetSut();
 
-            var shouldInitialize = options.ShouldInitializeSdk();
+            var isValid = options.Validate();
 
-            Assert.IsFalse(shouldInitialize);
+            Assert.IsFalse(isValid);
         }
 
         [Test]
@@ -87,6 +76,17 @@ namespace Sentry.Unity.Tests
             var shouldInitialize = options.ShouldInitializeSdk(_fixture.TestApplication);
 
             Assert.IsTrue(shouldInitialize);
+        }
+
+        [Test]
+        public void ShouldInitializeSdk_NotCaptureInEditorAndApplicationIsEditor_ReturnsFalse()
+        {
+            _fixture.CaptureInEditor = false;
+            var options = _fixture.GetSut();
+
+            var shouldInitialize = options.ShouldInitializeSdk(_fixture.TestApplication);
+
+            Assert.IsFalse(shouldInitialize);
         }
     }
 }
