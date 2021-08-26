@@ -35,6 +35,8 @@ namespace Sentry.Unity
 
             if (!options.Enabled)
             {
+                options.DiagnosticLogger?.LogDebug("Sentry SDK has been disabled." +
+                                                   "\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
                 return false;
             }
 
