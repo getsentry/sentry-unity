@@ -146,15 +146,10 @@ namespace Sentry.Unity.Editor
         {
             GUILayout.Label("Base Options", EditorStyles.boldLabel);
 
-            var dsn = Options.Dsn;
-            dsn = EditorGUILayout.TextField(
+            Options.Dsn = EditorGUILayout.TextField(
                 new GUIContent("DSN", "The URL to your Sentry project. " +
                                       "Get yours on sentry.io -> Project Settings."),
-                dsn);
-            if (!string.IsNullOrWhiteSpace(dsn))
-            {
-                Options.Dsn = dsn;
-            }
+                Options.Dsn);
 
             Options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
