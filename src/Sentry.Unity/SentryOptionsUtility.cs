@@ -14,7 +14,7 @@ namespace Sentry.Unity
             options.AutoSessionTracking = true;
             options.CaptureInEditor = true;
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
-            options.InitCacheFlushTimeout = System.TimeSpan.FromSeconds(2);
+            options.InitCacheFlushTimeout = System.TimeSpan.Zero;
 
             options.StackTraceMode = StackTraceMode.Original;
             options.IsEnvironmentUser = false;
