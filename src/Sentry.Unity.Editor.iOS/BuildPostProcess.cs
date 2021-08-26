@@ -1,5 +1,6 @@
 using System;
 using Sentry.Extensibility;
+using Sentry.Infrastructure;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
@@ -18,6 +19,8 @@ namespace Sentry.Unity.Editor.iOS
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (!options.Validate())
             {
+                new UnityLogger(new SentryOptions()).LogWarning(
+                    "Failed to validate Sentry Options. Xcode project will not be modified.");
                 return;
             }
 
