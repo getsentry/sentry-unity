@@ -23,7 +23,9 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void ToSentryUnityOptions_ValueMapping_AreEqual()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void ToSentryUnityOptions_ValueMapping_AreEqual(bool isBuilding)
         {
             var expectedOptions = new SentryUnityOptions
             {
@@ -73,13 +75,15 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = expectedOptions.DebugOnlyInEditor;
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-            var optionsActual = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions);
+            var optionsActual = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
 
             AssertOptions(expectedOptions, optionsActual);
         }
 
         [Test]
-        public void ToScriptableOptions_ConvertJsonOptions_AreEqual()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void ToScriptableOptions_ConvertJsonOptions_AreEqual(bool isBuilding)
         {
             var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
             var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
@@ -88,7 +92,7 @@ namespace Sentry.Unity.Tests
             SentryOptionsUtility.SetDefaults(scriptableOptions);
             JsonSentryUnityOptions.ToScriptableOptions(jsonTextAsset, scriptableOptions);
 
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions);
+            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
 
             AssertOptions(expectedOptions, actualOptions);
         }

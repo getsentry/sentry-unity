@@ -52,6 +52,17 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        public void SetDefaults_Environment_IsProductionWhenBuilding()
+        {
+            var options = new SentryUnityOptions();
+            var application = new TestApplication(isEditor: true);
+
+            SentryOptionsUtility.SetDefaults(options, application, isBuilding: true);
+
+            Assert.AreEqual("production", options.Environment);
+        }
+
+        [Test]
         public void SetDefaults_CacheDirectoryPath_IsPersistentDataPath()
         {
             var options = new SentryUnityOptions();
@@ -74,10 +85,12 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void SetDefaults_OptionsCreated_AreEqual()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SetDefaults_OptionsCreated_AreEqual(bool isBuilding)
         {
             var expectedOptions = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(expectedOptions);
+            SentryOptionsUtility.SetDefaults(expectedOptions, isBuilding: isBuilding);
 
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
             SentryOptionsUtility.SetDefaults(scriptableOptions);
@@ -87,7 +100,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = false;
             scriptableOptions.DiagnosticLevel = SentryLevel.Debug;
 
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions);
+            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
 
             SentryUnityOptionsTests.AssertOptions(expectedOptions, actualOptions);
         }
