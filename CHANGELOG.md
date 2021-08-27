@@ -5,6 +5,9 @@
 ### Features
 
 - Release & Environment now sync with native options ([#298](https://github.com/getsentry/sentry-unity/pull/298))
+- Bump Sentry .NET SDK 3.9.0 ([#269](https://github.com/getsentry/sentry-unity/pull/299))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.9.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.3...3.9.0)
 
 ## 0.5.1
 
