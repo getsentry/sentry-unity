@@ -50,7 +50,7 @@ void SentryNativeBridgeSetExtra(const char* key, const char* value) {
             [scope setExtraValue:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
         }
         else {
-            [scope setExtraValue:nil forKey:[NSString stringWithUTF8String:key]];
+            [scope removeExtraForKey:[NSString stringWithUTF8String:key]];            
         }
     }];
 }
