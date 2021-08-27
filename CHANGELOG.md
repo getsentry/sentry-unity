@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Release & Environment now sync with native options ([#298](https://github.com/getsentry/sentry-unity/pull/298))
+
 ## 0.5.1
 
 ### Fixes

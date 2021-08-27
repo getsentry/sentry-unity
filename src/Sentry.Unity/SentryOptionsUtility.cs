@@ -4,7 +4,8 @@ namespace Sentry.Unity
 {
     internal static class SentryOptionsUtility
     {
-        public static void SetDefaults(SentryUnityOptions options, IApplication? application = null)
+        public static void SetDefaults(SentryUnityOptions options, IApplication? application = null,
+            bool isBuilding = false)
         {
             application ??= ApplicationAdapter.Instance;
 
@@ -20,7 +21,7 @@ namespace Sentry.Unity
             options.IsEnvironmentUser = false;
 
             options.Release = Release(application);
-            options.Environment = Environment(application);
+            options.Environment = Environment(application, isBuilding);
 
             options.CacheDirectoryPath = application.PersistentDataPath;
         }
@@ -35,7 +36,7 @@ namespace Sentry.Unity
             scriptableOptions.Dsn = options.Dsn;
             scriptableOptions.CaptureInEditor = options.CaptureInEditor;
             scriptableOptions.TracesSampleRate = options.TracesSampleRate;
-            scriptableOptions.AutoSessionTrackingInterval = (int) options.AutoSessionTrackingInterval.TotalMilliseconds;
+            scriptableOptions.AutoSessionTrackingInterval = (int)options.AutoSessionTrackingInterval.TotalMilliseconds;
             scriptableOptions.AutoSessionTracking = options.AutoSessionTracking;
 
             scriptableOptions.AttachStacktrace = options.AttachStacktrace;
@@ -45,9 +46,9 @@ namespace Sentry.Unity
             scriptableOptions.IsEnvironmentUser = options.IsEnvironmentUser;
 
             scriptableOptions.MaxCacheItems = options.MaxCacheItems;
-            scriptableOptions.InitCacheFlushTimeout = (int) options.InitCacheFlushTimeout.TotalMilliseconds;
+            scriptableOptions.InitCacheFlushTimeout = (int)options.InitCacheFlushTimeout.TotalMilliseconds;
             scriptableOptions.SampleRate = options.SampleRate;
-            scriptableOptions.ShutdownTimeout = (int) options.ShutdownTimeout.TotalMilliseconds;
+            scriptableOptions.ShutdownTimeout = (int)options.ShutdownTimeout.TotalMilliseconds;
             scriptableOptions.MaxQueueItems = options.MaxQueueItems;
 
             // Config window specifics
@@ -69,7 +70,7 @@ namespace Sentry.Unity
                 ? $"{productName}@{application.Version}"
                 : $"{application.Version}";
 
-        private static string Environment(IApplication application) => application.IsEditor ? "editor" : "production";
+        private static string Environment(IApplication application, bool isBuilding) => (application.IsEditor && !isBuilding) ? "editor" : "production";
 
         public static void TryAttachLogger(SentryUnityOptions options, IApplication? application = null)
         {

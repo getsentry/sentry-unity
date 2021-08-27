@@ -16,7 +16,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             if (!options.Validate())
             {
                 new UnityLogger(new SentryOptions()).LogWarning(
