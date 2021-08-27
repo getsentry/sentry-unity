@@ -31,9 +31,12 @@ namespace Sentry.Unity
                         Id = "42",
                         Email = "unity@bridge.awesome"
                     };
+                    scope.SetExtra("test null extra", null);
+                    scope.SetExtra("test extra", "extra value");
                 });
 
                 SentrySdk.AddBreadcrumb(null, "Init Breadcrumb", null, "test", null, BreadcrumbLevel.Debug);
+
             }
         }
     }
