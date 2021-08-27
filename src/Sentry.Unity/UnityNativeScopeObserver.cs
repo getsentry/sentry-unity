@@ -6,7 +6,7 @@ namespace Sentry.Unity
     public class UnityNativeScopeObserver : IScopeObserver
     {
         [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeAddBreadcrumb(string timestamp, string message, string type, string category, int level);
+        private static extern void SentryNativeBridgeAddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
         [DllImport("__Internal")]
         private static extern void SentryNativeBridgeAddExtra(string key);
         [DllImport("__Internal")]
@@ -14,7 +14,7 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern void SentryNativeBridgeUnsetTag(string key);
         [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeSetUser(string email, string userId, string ipAddress, string username);
+        private static extern void SentryNativeBridgeSetUser(string? email, string? userId, string? ipAddress, string? username);
         [DllImport("__Internal")]
         private static extern void SentryNativeBridgeUnsetUser();
 
@@ -28,9 +28,6 @@ namespace Sentry.Unity
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
             var timestamp = breadcrumb.Timestamp.ToString("o");
-            var message = breadcrumb.Message ?? "";
-            var type = breadcrumb.Type ?? "";
-            var category = breadcrumb.Category ?? "";
             var level = breadcrumb.Level switch
             {
                 BreadcrumbLevel.Debug => 0,
@@ -41,7 +38,7 @@ namespace Sentry.Unity
                 _ => -1
             };
 
-            SentryNativeBridgeAddBreadcrumb(timestamp, message, type, category, level);
+            SentryNativeBridgeAddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level);
         }
 
         public void SetExtra(string key, object? value)
@@ -71,7 +68,7 @@ namespace Sentry.Unity
             else
             {
                 _options.DiagnosticLogger?.LogDebug("To native bridge: Setting User");
-                SentryNativeBridgeSetUser(user.Email ?? "", user.Id ?? "", user.IpAddress ?? "", user.Username?? "");
+                SentryNativeBridgeSetUser(user.Email, user.Id, user.IpAddress, user.Username);
             }
         }
     }
