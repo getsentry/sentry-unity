@@ -33,7 +33,7 @@ namespace Sentry.Unity
                     };
                 });
 
-                SentrySdk.AddBreadcrumb(null, "Init Breadcrumb", "Unity happiness", "test", null, BreadcrumbLevel.Debug);
+                SentrySdk.AddBreadcrumb(null, "Init Breadcrumb", null, "test", null, BreadcrumbLevel.Debug);
             }
         }
     }
