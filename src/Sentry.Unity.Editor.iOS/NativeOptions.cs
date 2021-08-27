@@ -1,4 +1,5 @@
 using System.IO;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -29,7 +30,9 @@ static NSDictionary* getSentryOptions()
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
-        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)}
+        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
+        @""release"" : @""{options.Release}"",
+        @""environment"" : @""{options.Environment}""
     }};
 
     return options;

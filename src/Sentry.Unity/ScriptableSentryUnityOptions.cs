@@ -51,7 +51,7 @@ namespace Sentry.Unity
         [field: SerializeField] internal bool DebugOnlyInEditor { get; set; }
         [field: SerializeField] internal SentryLevel DiagnosticLevel { get; set; }
 
-        public static SentryUnityOptions? LoadSentryUnityOptions()
+        public static SentryUnityOptions? LoadSentryUnityOptions(bool isBuilding = false)
         {
             // TODO: Deprecated and to be removed once we update far enough.
             var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
@@ -64,16 +64,16 @@ namespace Sentry.Unity
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
-                return ToSentryUnityOptions(scriptableOptions);
+                return ToSentryUnityOptions(scriptableOptions, isBuilding);
             }
 
             return null;
         }
 
-        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions)
+        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions, bool isBuilding)
         {
             var options = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(options);
+            SentryOptionsUtility.SetDefaults(options, isBuilding: isBuilding);
 
             options.Enabled = scriptableOptions.Enabled;
 
