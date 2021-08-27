@@ -8,7 +8,7 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern void SentryNativeBridgeAddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
         [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeAddExtra(string key);
+        private static extern void SentryNativeBridgeSetExtra(string key, string? value);
         [DllImport("__Internal")]
         private static extern void SentryNativeBridgeSetTag(string key, string value);
         [DllImport("__Internal")]
@@ -18,7 +18,7 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern void SentryNativeBridgeUnsetUser();
 
-        private SentryUnityOptions _options;
+        private readonly SentryUnityOptions _options;
 
         public UnityNativeScopeObserver(SentryUnityOptions options)
         {
@@ -43,7 +43,8 @@ namespace Sentry.Unity
 
         public void SetExtra(string key, object? value)
         {
-            SentryNativeBridgeAddExtra(key);
+            _options.DiagnosticLogger?.LogDebug("To native bridge: Setting Extra");
+            SentryNativeBridgeSetExtra(key, value is null ? null : System.Text.Json.JsonSerializer.Serialize(value));
         }
 
         public void SetTag(string key, string value)
