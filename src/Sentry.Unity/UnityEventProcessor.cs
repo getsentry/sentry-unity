@@ -79,8 +79,7 @@ namespace Sentry.Unity
 
         private void PopulateOperatingSystem(OperatingSystem operatingSystem)
         {
-            // TODO: Will move to raw_description once parsing is done in Sentry
-            operatingSystem.Name = _mainThreadData.OperatingSystem;
+            operatingSystem.RawDescription = _mainThreadData.OperatingSystem;
         }
 
         private void PopulateDevice(Device device)

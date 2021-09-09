@@ -4,6 +4,7 @@
 
 ### Features
 
+- Operating System reported as raw_description and parsed by Sentry ([#305](https://github.com/getsentry/sentry-unity/pull/305))
 - Release & Environment now sync with native options ([#298](https://github.com/getsentry/sentry-unity/pull/298))
 - Bump Sentry .NET SDK 3.9.0 ([#299](https://github.com/getsentry/sentry-unity/pull/299))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.9.0/CHANGELOG.md)
