@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
+
 ## 0.5.2
 
 ### Features
