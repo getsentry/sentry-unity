@@ -4,3 +4,6 @@
 [submodule "src/sentry-cocoa"]
 	path = src/sentry-cocoa
 	url = https://github.com/getsentry/sentry-cocoa
+[submodule "src/sentry-java"]
+	path = src/sentry-java
+	url = https://github.com/getsentry/sentry-java.git
