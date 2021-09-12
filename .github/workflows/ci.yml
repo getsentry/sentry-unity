@@ -55,7 +55,7 @@ jobs:
 
       - name: Restore previous build
         #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
-        if: ${{ !startsWith( github.ref, 'feat/ci-caching' ) }}
+        if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
           path: artifacts/build
@@ -69,7 +69,7 @@ jobs:
 
       - name: Restore sentry-cocoa build output
         #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
-        if: ${{ !startsWith( github.ref, 'feat/ci-caching' ) }}
+        if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
           path: src/sentry-cocoa/Carthage/Build
