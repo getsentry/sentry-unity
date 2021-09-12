@@ -48,7 +48,7 @@ namespace Sentry.Unity.Tests
         {
             public string LogMessage { get; private set; } = string.Empty;
 
-            public void Intercept(string logMessage) => LogMessage = logMessage;
+            public void Intercept(SentryLevel level, string logMessage) => LogMessage = logMessage;
         }
     }
 }

@@ -1,38 +1,49 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Xml;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Android;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
     // https://github.com/getsentry/sentry-java/blob/d3764bfc97eed22564a1e23ba96fa73ad2685498/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L83-L217
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
+        private readonly Func<SentryUnityOptions?> _getOptions;
+        private readonly IUnityLoggerInterceptor? _interceptor;
+
         // Lower levels are called first.
         public int callbackOrder => 1;
+
+        public AndroidManifestConfiguration()
+            : this(() => ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer))
+        {
+        }
+
+        // Testing
+        internal AndroidManifestConfiguration(
+            Func<SentryUnityOptions?> getOptions,
+            IUnityLoggerInterceptor? interceptor = null)
+        {
+            _getOptions = getOptions;
+            _interceptor = interceptor;
+        }
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
             var manifestPath = GetManifestPath(basePath);
             if (!File.Exists(manifestPath))
             {
-                var logger = new UnityLogger(new SentryOptions());
-                logger.LogError("Manifest not found at {0}. Can't configure native Android SDK nor set auto-init:false.",
-                    new FileNotFoundException(manifestPath),
-                    manifestPath);
-                return;
+                throw new FileNotFoundException("Can't configure native Android SDK nor set auto-init:false.", manifestPath);
             }
 
             var disableAutoInit = false;
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = _getOptions();
             if (options is null)
             {
-                var logger = new UnityLogger(new SentryOptions());
+                var logger = new UnityLogger(new SentryOptions(), _interceptor);
                 logger.LogWarning("Couldn't load SentryOptions. Can't configure native Android SDK.");
                 disableAutoInit = true;
             }
@@ -85,7 +96,7 @@ namespace Sentry.Unity.Editor.Android
 
             if (options.SampleRate.HasValue)
             {
-                options.DiagnosticLogger?.LogDebug("Setting SampleRate: {0}", options.DiagnosticLevel);
+                options.DiagnosticLogger?.LogDebug("Setting SampleRate: {0}", options.SampleRate);
                 androidManifest.SetSampleRate(options.SampleRate.Value);
             }
 
@@ -105,7 +116,7 @@ namespace Sentry.Unity.Editor.Android
             _ = androidManifest.Save();
         }
 
-        private static string GetManifestPath(string basePath) =>
+        internal static string GetManifestPath(string basePath) =>
             new StringBuilder(basePath)
                 .Append(Path.DirectorySeparatorChar)
                 .Append("src")
@@ -171,12 +182,12 @@ namespace Sentry.Unity.Editor.Android
         internal void SetLevel(SentryLevel level) =>
             SetMetaData("io.sentry.debug.level", level switch
             {
-                SentryLevel.Debug => "DEBUG",
-                SentryLevel.Error => "ERROR",
-                SentryLevel.Fatal => "FATAL",
-                SentryLevel.Info => "INFO",
-                SentryLevel.Warning => "WARNING",
-                _ => "DEBUG"
+                SentryLevel.Debug => "debug",
+                SentryLevel.Error => "error",
+                SentryLevel.Fatal => "fatal",
+                SentryLevel.Info => "info",
+                SentryLevel.Warning => "warning",
+                _ => "debug"
             });
 
         private void SetMetaData(string key, string value)
