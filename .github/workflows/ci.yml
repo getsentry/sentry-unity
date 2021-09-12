@@ -48,7 +48,7 @@ jobs:
         with:
           submodules: recursive
 
-      # Unity is about 3gb in size and takes 20 minutes to download and install.
+      # Unity is about 4gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
       - name: Restore cached Unity installation
         id: cache-unity
@@ -63,8 +63,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/heads/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
-          # 0Mb always?
-          path: artifacts/build
+          path: samples/artifacts/build
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
 
       - name: Restore Unity Packages
@@ -78,8 +77,9 @@ jobs:
           git submodule status > submodules-status
           cat submodules-status
 
-      - name: submodules build output
+      - name: Restore submodules build output
         #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
+        # We need to invalidate this on release branches
         if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
