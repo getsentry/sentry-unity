@@ -22,7 +22,9 @@ jobs:
   build:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
     strategy:
       fail-fast: false
       matrix:
@@ -54,8 +56,9 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
 
       - name: Restore previous build
+        # Build without cache on release branches
         #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
-        if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
+        if: ${{ !startsWith(github.ref, 'refs/heads/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
           path: artifacts/build
@@ -67,7 +70,11 @@ jobs:
           path: samples/unity-of-bugs/Library
           key: ${{ matrix.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - run: git submodule status > submodules-status
+      - name: Get submodule information
+        run: |
+          git submodule status > submodules-status
+          cat submodules-status
+
       - name: submodules build output
         #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
         if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
