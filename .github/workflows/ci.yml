@@ -67,21 +67,16 @@ jobs:
           path: samples/unity-of-bugs/Library
           key: ${{ matrix.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - name: Restore sentry-cocoa build output
+      - run: git submodule status > submodules-status
+      - name: submodules build output
         #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
         if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
-          path: src/sentry-cocoa/Carthage/Build
-          key: ${{ matrix.os }}-${{ hashFiles('.git/modules/src/sentry-cocoa/HEAD') }}
-
-      - name: Restore sentry-dotnet build output
-        #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
-        if: ${{ !startsWith( github.ref, 'feat/ci-caching' ) }}
-        uses: actions/cache@v2
-        with:
-          path: src/sentry-dotnet/**/bin/Release
-          key: ${{ matrix.os }}-${{ hashFiles('.git/modules/src/sentry-dotnet/HEAD') }}
+          path: |
+            src/sentry-cocoa/Carthage/Build
+            src/sentry-dotnet/**/bin/Release
+          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
