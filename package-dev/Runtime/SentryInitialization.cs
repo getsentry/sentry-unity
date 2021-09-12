@@ -18,6 +18,10 @@ namespace Sentry.Unity
 #if UNITY_IOS
                 options.ScopeObserver = new UnityNativeScopeObserver(options);
                 options.EnableScopeSync = true;
+#elif UNITY_ANDROID
+                Debug.Log("<color=red>EnableScopeSync=true + UnityJavaScopeObserver</color>");
+                options.ScopeObserver = new UnityJavaScopeObserver(options);
+                options.EnableScopeSync = true;
 #endif
 
                 SentryUnity.Init(options);
@@ -26,6 +30,8 @@ namespace Sentry.Unity
                 SentrySdk.ConfigureScope(scope =>
                 {
                     scope.SetTag("my fancy unity tag", "my value");
+                    scope.SetTag("a", "a");
+                    scope.UnsetTag("a");
                     scope.User = new User
                     {
                         Id = "42",
