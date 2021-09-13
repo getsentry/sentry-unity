@@ -63,7 +63,7 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/heads/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
-          path: samples/artifacts/build
+          path: samples/artifacts/builds
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
 
       - name: Restore Unity Packages
