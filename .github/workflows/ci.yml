@@ -58,13 +58,11 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
 
       - name: Restore previous build
-        # Build without cache on release branches
-        #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
-        if: ${{ !startsWith(github.ref, 'refs/heads/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
           path: samples/artifacts/builds
-          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
+          # using hash of package.json to bust cache on release builds which modify it
+          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('/package/package.json)' }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
@@ -78,15 +76,13 @@ jobs:
           cat submodules-status
 
       - name: Restore submodules build output
-        #        if: ${{ !startsWith( github.ref, 'refs/heads/release' ) }}
-        # We need to invalidate this on release branches
         if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
         uses: actions/cache@v2
         with:
           path: |
             src/sentry-cocoa/Carthage/Build
             src/sentry-dotnet/**/bin/Release
-          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}
+          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('/package/package.json)' }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
@@ -102,7 +98,7 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: windows-il2cpp
 
-      - name: Setup Unity Modules - MacOS IL2CPP
+      - name: Setup Unity Modules - macOS IL2CPP
         if: matrix.os == 'macos-latest'
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:
@@ -153,85 +149,85 @@ jobs:
       - name: Build Sentry.Unity Solution
         run: dotnet build -c Release
 
-#      - name: Run Unity tests (playmode)
-#        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
-#
-#      - name: Upload test artifacts (playmode)
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: Test results (playmode)
-#          path: artifacts/test/playmode
-#
-#      - name: Run Unity tests (editmode)
-#        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
-#
-#      - name: Upload test artifacts (editmode)
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: Test results (editmode)
-#          path: artifacts/test/editmode
-#
-#      - name: Build Android Player with IL2CPP
-#        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
-#
-#      - name: Upload Android Build
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: Android Build
-#          path: samples/artifacts/builds/Android
-#
-#      - name: Build iOS Player
-#        if: matrix.os == 'macos-latest'
-#        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release
-#
-#      - name: Build Standalone Player with IL2CPP
-#        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
-#
-#      - name: Run Smoke Tests
-#        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
-#
-#      - name: Prepare Sentry package for release
-#        shell: pwsh
-#        run: |
-#          New-Item "package-release" -ItemType Directory
-#
-#          # Copy `package-dev` stuff
-#          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
-#
-#          # Copy `package` stuff
-#          Copy-Item "package/package.json" -Destination "package-release/package.json"
-#          Copy-Item "package/README.md" -Destination "package-release/README.md"
-#          Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
-#          Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
-#          Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
-#          Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
-#          New-Item -Type dir "package-release/Editor/" -Force
-#          Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
-#          New-Item -Type dir "package-release/Runtime/" -Force
-#          Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
-#          # Destination directory need to exist if we're copying a file instead of a directory
-#          New-Item -Type dir "package-release/Documentation~/" -Force
-#          Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
-#
-#          # Copy samples
-#          Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
-#          Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
-#
-#          # Create zip
-#          Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
-#
-#      - name: Upload build artifacts if build failed
-#        if: ${{ failure() }}
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: Build output
-#          path: artifacts/build
-#
-#      - name: Upload release artifacts
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: ${{ github.sha }}
-#          path: package-release.zip
+      - name: Run Unity tests (playmode)
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+
+      - name: Upload test artifacts (playmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
+
+      - name: Run Unity tests (editmode)
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
+
+      - name: Upload test artifacts (editmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
+
+      - name: Build Android Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v1
+        with:
+          name: Android Build
+          path: samples/artifacts/builds/Android
+
+      - name: Build iOS Player
+        if: matrix.os == 'macos-latest'
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release
+
+      - name: Build Standalone Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
+
+      - name: Run Smoke Tests
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
+
+      - name: Prepare Sentry package for release
+        shell: pwsh
+        run: |
+          New-Item "package-release" -ItemType Directory
+
+          # Copy `package-dev` stuff
+          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
+
+          # Copy `package` stuff
+          Copy-Item "package/package.json" -Destination "package-release/package.json"
+          Copy-Item "package/README.md" -Destination "package-release/README.md"
+          Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
+          Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
+          Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
+          Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
+          New-Item -Type dir "package-release/Editor/" -Force
+          Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
+          New-Item -Type dir "package-release/Runtime/" -Force
+          Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
+          # Destination directory need to exist if we're copying a file instead of a directory
+          New-Item -Type dir "package-release/Documentation~/" -Force
+          Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
+
+          # Copy samples
+          Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
+          Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
+
+          # Create zip
+          Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
+
+      - name: Upload build artifacts if build failed
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build output
+          path: artifacts/build
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ github.sha }}
+          path: package-release.zip
 
       # Professional licenses are per-seat so we should always try to return them
       - name: Return Unity license
