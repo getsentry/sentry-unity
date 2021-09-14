@@ -389,7 +389,7 @@ namespace Sentry.Unity.Tests
             sut.Process(sentryEvent);
 
             // assert
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.OperatingSystem, sentryEvent.Contexts.OperatingSystem.Name);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.OperatingSystem, sentryEvent.Contexts.OperatingSystem.RawDescription);
         }
 
         [UnityTest]

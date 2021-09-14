@@ -1,4 +1,5 @@
 using System.IO;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -18,7 +19,7 @@ namespace Sentry.Unity.Editor.iOS
 // IMPORTANT: Changes to this file will be lost!
 // This file is generated during the Xcode project creation.
 
-// TODO: make pretty with link to docs
+// To learn more please take a look at our docs at: https://docs.sentry.io/platforms/unity/configuration/ios-native/
 
 static NSDictionary* getSentryOptions()
 {{
@@ -29,7 +30,9 @@ static NSDictionary* getSentryOptions()
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
-        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)}
+        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
+        @""release"" : @""{options.Release}"",
+        @""environment"" : @""{options.Environment}""
     }};
 
     return options;

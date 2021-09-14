@@ -22,7 +22,9 @@ jobs:
   build:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
     strategy:
       fail-fast: false
       matrix:
@@ -43,8 +45,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
+        with:
+          submodules: recursive
 
-      # Unity is about 3gb in size and takes 20 minutes to download and install.
+      # Unity is about 4gb in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
       - name: Restore cached Unity installation
         id: cache-unity
@@ -52,18 +56,33 @@ jobs:
         with:
           path: ${{ matrix.unity-installation-path }}
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
-       
+
       - name: Restore previous build
         uses: actions/cache@v2
         with:
-          path: artifacts/build
-          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
+          path: samples/artifacts/builds
+          # using hash of package.json to bust cache on release builds which modify it
+          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
         with:
           path: samples/unity-of-bugs/Library
           key: ${{ matrix.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+
+      - name: Get submodule information
+        run: |
+          git submodule status > submodules-status
+          cat submodules-status
+
+      - name: Restore submodules build output
+        if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
+        uses: actions/cache@v2
+        with:
+          path: |
+            src/sentry-cocoa/Carthage/Build
+            src/sentry-dotnet/**/bin/Release
+          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
@@ -79,7 +98,7 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: windows-il2cpp
 
-      - name: Setup Unity Modules - MacOS IL2CPP
+      - name: Setup Unity Modules - macOS IL2CPP
         if: matrix.os == 'macos-latest'
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
         with:

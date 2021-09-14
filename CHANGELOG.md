@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.2
+
+### Features
+
+- Operating System reported as raw_description and parsed by Sentry ([#305](https://github.com/getsentry/sentry-unity/pull/305))
+- Release & Environment now sync with native options ([#298](https://github.com/getsentry/sentry-unity/pull/298))
+- Bump Sentry .NET SDK 3.9.0 ([#299](https://github.com/getsentry/sentry-unity/pull/299))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.9.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.8.3...3.9.0)
+
+## 0.5.1
+
+### Fixes
+
+- Removed editor flag checks from options validation during build process ([#295](https://github.com/getsentry/sentry-unity/pull/295))
+- By default, don't block Sentry.Init up to 2 seconds to flush events ([#291](https://github.com/getsentry/sentry-unity/pull/291))
+
 ## 0.5.0
 
 ### Features

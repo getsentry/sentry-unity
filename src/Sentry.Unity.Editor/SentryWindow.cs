@@ -146,15 +146,10 @@ namespace Sentry.Unity.Editor
         {
             GUILayout.Label("Base Options", EditorStyles.boldLabel);
 
-            var dsn = Options.Dsn;
-            dsn = EditorGUILayout.TextField(
+            Options.Dsn = EditorGUILayout.TextField(
                 new GUIContent("DSN", "The URL to your Sentry project. " +
                                       "Get yours on sentry.io -> Project Settings."),
-                dsn);
-            if (!string.IsNullOrWhiteSpace(dsn))
-            {
-                Options.Dsn = dsn;
-            }
+                Options.Dsn);
 
             Options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
@@ -262,7 +257,8 @@ namespace Sentry.Unity.Editor
 
             Options.InitCacheFlushTimeout = EditorGUILayout.IntField(
                 new GUIContent("Init Flush Timeout [ms]", "The timeout that limits how long the SDK " +
-                                                          "will attempt to flush existing cache during initialization." +
+                                                          "will attempt to flush existing cache during initialization, " +
+                                                          "potentially slowing down app start up to the specified time." +
                                                           "\nThis features allows capturing errors that happen during " +
                                                           "game startup and would not be captured because the process " +
                                                           "would be killed before Sentry had a chance to capture the event."),
