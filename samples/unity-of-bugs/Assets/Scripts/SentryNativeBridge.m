@@ -1,10 +1,11 @@
 #import <Sentry/Sentry.h>
+#import <Sentry/SentryLog.h>
 
 void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char* type, const char* category, int* level) {
-    NSLog(@"Native Bridge: Adding breadcrumb.");
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Adding breadcrumb." andLevel:kSentryLevelDebug];
     
     if (timestamp == NULL && message == NULL && type == NULL && category == NULL && level == NULL) {
-        NSLog(@"Native Bridge: Breadcrumb empty. Dropping it.");
+        [SentryLog logWithMessage: @"Sentry Native Bridge: Breadcrumb empty. Can't add it." andLevel:kSentryLevelDebug];
         return;
     }
     
@@ -38,56 +39,60 @@ void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message,
 }
 
 void SentryNativeBridgeSetExtra(const char* key, const char* value) {
-    NSLog(@"Native Bridge: Adding extra.");
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Adding extra." andLevel:kSentryLevelDebug];
     
     if (key == NULL) {
-        NSLog(@"Native Bridge: Extra key empty. Dropping it.");
+        [SentryLog logWithMessage: @"Sentry Native Bridge: Extra key empty. Can't add it." andLevel:kSentryLevelDebug];
         return;
     }
     
     [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
         if (value != NULL) {
             [scope setExtraValue:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
-        }
-        else {
+        } else {
             [scope removeExtraForKey:[NSString stringWithUTF8String:key]];            
         }
     }];
 }
 
 void SentryNativeBridgeSetTag(const char* key, const char* value) {
-    NSLog(@"Native Bridge: Setting tag.");
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Adding tag." andLevel:kSentryLevelDebug];
     
     if (key == NULL) {
-        NSLog(@"Native Bridge: Tag key empty. Dropping it.");
+        [SentryLog logWithMessage: @"Sentry Native Bridge: Tag key empty. Can't add it." andLevel:kSentryLevelDebug];
         return;
     }
     
     [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
         if (value != NULL) {
             [scope setTagValue:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
-        }
-        else {
+        } else {
+            [SentryLog logWithMessage: @"Sentry Native Bridge: Tag value empty. Removing tag for key." andLevel:kSentryLevelDebug];
             [scope removeTagForKey:[NSString stringWithUTF8String:key]];
         }
     }];
 }
 
 void SentryNativeBridgeUnsetTag(const char* key) {
-    NSLog(@"Native Bridge: Unsetting tag.");
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Unsetting tag." andLevel:kSentryLevelDebug];
+    
+    if (key == NULL) {
+        [SentryLog logWithMessage: @"Sentry Native Bridge: Tag key empty. Can't unset it." andLevel:kSentryLevelDebug];
+        return;
+    }
+    
     [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
         [scope removeTagForKey:[NSString stringWithUTF8String:key]];
     }];
 }
 
 void SentryNativeBridgeSetUser(const char* email, const char* userId, const char* ipAddress, const char* username) {
-    NSLog(@"Native Bridge: Setting User.");
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Setting user." andLevel:kSentryLevelDebug];
     
     if (email == NULL && userId == NULL && ipAddress == NULL && username == NULL) {
-        NSLog(@"Native Bridge: User empty. Dropping it.");
+        [SentryLog logWithMessage: @"Sentry Native Bridge: User empty. Can't set it." andLevel:kSentryLevelDebug];
         return;
     }
-    
     
     [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
         SentryUser *user = [[SentryUser alloc] init];
@@ -112,9 +117,8 @@ void SentryNativeBridgeSetUser(const char* email, const char* userId, const char
     }];
 }
 
-void SentryNativeBridgeUnsetUser()
-{
-    NSLog(@"Native Bridge: Unsetting user.");
+void SentryNativeBridgeUnsetUser() {
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Unsetting user." andLevel:kSentryLevelDebug];
     [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
         [scope setUser:nil];
     }];
