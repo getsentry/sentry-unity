@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 
-namespace Sentry.Unity
+namespace Sentry.Unity.iOS
 {
     public class UnityNativeScopeObserver : IScopeObserver
     {

@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.Editor.iOS", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.Editor.iOS.Tests", "test\Sentry.Unity.Editor.iOS.Tests\Sentry.Unity.Editor.iOS.Tests.csproj", "{A43C866F-FA99-4B01-B480-6A7901569FAB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.iOS", "src\Sentry.Unity.iOS\Sentry.Unity.iOS.csproj", "{9E01A414-DD86-49BD-B10F-6DEF42BE9474}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,18 @@ Global
 		{A43C866F-FA99-4B01-B480-6A7901569FAB}.Release|x64.Build.0 = Release|Any CPU
 		{A43C866F-FA99-4B01-B480-6A7901569FAB}.Release|x86.ActiveCfg = Release|Any CPU
 		{A43C866F-FA99-4B01-B480-6A7901569FAB}.Release|x86.Build.0 = Release|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Debug|x64.Build.0 = Debug|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Debug|x86.Build.0 = Debug|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Release|x64.Build.0 = Release|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Release|x86.ActiveCfg = Release|Any CPU
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,5 +158,6 @@ Global
 		{583BBF7E-054D-414D-AAA8-47C400AB3914} = {36979A3D-4741-4D8A-82BF-4010474388E1}
 		{703A3ECC-048C-443A-B624-0D17DFC674AA} = {36979A3D-4741-4D8A-82BF-4010474388E1}
 		{A43C866F-FA99-4B01-B480-6A7901569FAB} = {6A85CE0A-6FE4-4190-ABEE-7E8BCFF9AF4D}
+		{9E01A414-DD86-49BD-B10F-6DEF42BE9474} = {36979A3D-4741-4D8A-82BF-4010474388E1}
 	EndGlobalSection
 EndGlobal

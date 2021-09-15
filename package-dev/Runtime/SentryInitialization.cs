@@ -1,7 +1,9 @@
-using System;
-using Sentry.Infrastructure;
 using UnityEngine;
 using UnityEngine.Scripting;
+
+#if UNITY_IOS && !UNITY_EDITOR
+using Sentry.Unity.iOS;
+#endif
 
 [assembly: AlwaysLinkAssembly]
 
