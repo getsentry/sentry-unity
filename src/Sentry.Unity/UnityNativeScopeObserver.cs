@@ -20,14 +20,16 @@ namespace Sentry.Unity
 
         private readonly SentryUnityOptions _options;
 
-        public UnityNativeScopeObserver(SentryUnityOptions options)
-        {
-            _options = options;
-        }
+        public UnityNativeScopeObserver(SentryUnityOptions options) => _options = options;
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
+            _options.DiagnosticLogger?.LogDebug("To native bridge: Adding breadcrumb.");
+
+            // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.
+            // https://docs.microsoft.com/en-gb/dotnet/standard/base-types/standard-date-and-time-format-strings#Roundtrip
             var timestamp = breadcrumb.Timestamp.ToString("o");
+
             var level = breadcrumb.Level switch
             {
                 BreadcrumbLevel.Debug => 0,
