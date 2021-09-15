@@ -15,7 +15,7 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options.ShouldInitializeSdk())
             {
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
                 options.ScopeObserver = new UnityNativeScopeObserver(options);
                 options.EnableScopeSync = true;
 #endif
@@ -36,7 +36,6 @@ namespace Sentry.Unity
                 });
 
                 SentrySdk.AddBreadcrumb(null, "Init Breadcrumb", null, "test", null, BreadcrumbLevel.Debug);
-
             }
         }
     }
