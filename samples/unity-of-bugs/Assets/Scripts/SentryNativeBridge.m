@@ -2,10 +2,10 @@
 #import <Sentry/SentryLog.h>
 
 void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char* type, const char* category, int* level) {
-    [SentryLog logWithMessage: @"Sentry Native Bridge: Adding breadcrumb." andLevel:kSentryLevelDebug];
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Adding breadcrumb" andLevel:kSentryLevelDebug];
     
     if (timestamp == NULL && message == NULL && type == NULL && category == NULL && level == NULL) {
-        [SentryLog logWithMessage: @"Sentry Native Bridge: Breadcrumb empty. Can't add it." andLevel:kSentryLevelDebug];
+        [SentryLog logWithMessage: @"Sentry Native Bridge: Breadcrumb empty. Can't add it" andLevel:kSentryLevelDebug];
         return;
     }
     
@@ -39,10 +39,10 @@ void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message,
 }
 
 void SentryNativeBridgeSetExtra(const char* key, const char* value) {
-    [SentryLog logWithMessage: @"Sentry Native Bridge: Adding extra." andLevel:kSentryLevelDebug];
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Adding extra" andLevel:kSentryLevelDebug];
     
     if (key == NULL) {
-        [SentryLog logWithMessage: @"Sentry Native Bridge: Extra key empty. Can't add it." andLevel:kSentryLevelDebug];
+        [SentryLog logWithMessage: @"Sentry Native Bridge: Extra key empty. Can't add it" andLevel:kSentryLevelDebug];
         return;
     }
     
@@ -74,10 +74,10 @@ void SentryNativeBridgeSetTag(const char* key, const char* value) {
 }
 
 void SentryNativeBridgeUnsetTag(const char* key) {
-    [SentryLog logWithMessage: @"Sentry Native Bridge: Unsetting tag." andLevel:kSentryLevelDebug];
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Unsetting tag" andLevel:kSentryLevelDebug];
     
     if (key == NULL) {
-        [SentryLog logWithMessage: @"Sentry Native Bridge: Tag key empty. Can't unset it." andLevel:kSentryLevelDebug];
+        [SentryLog logWithMessage: @"Sentry Native Bridge: Tag key empty. Can't unset it" andLevel:kSentryLevelDebug];
         return;
     }
     
@@ -87,10 +87,10 @@ void SentryNativeBridgeUnsetTag(const char* key) {
 }
 
 void SentryNativeBridgeSetUser(const char* email, const char* userId, const char* ipAddress, const char* username) {
-    [SentryLog logWithMessage: @"Sentry Native Bridge: Setting user." andLevel:kSentryLevelDebug];
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Setting user" andLevel:kSentryLevelDebug];
     
     if (email == NULL && userId == NULL && ipAddress == NULL && username == NULL) {
-        [SentryLog logWithMessage: @"Sentry Native Bridge: User empty. Can't set it." andLevel:kSentryLevelDebug];
+        [SentryLog logWithMessage: @"Sentry Native Bridge: User empty. Can't set it" andLevel:kSentryLevelDebug];
         return;
     }
     
@@ -118,7 +118,7 @@ void SentryNativeBridgeSetUser(const char* email, const char* userId, const char
 }
 
 void SentryNativeBridgeUnsetUser() {
-    [SentryLog logWithMessage: @"Sentry Native Bridge: Unsetting user." andLevel:kSentryLevelDebug];
+    [SentryLog logWithMessage: @"Sentry Native Bridge: Unsetting user" andLevel:kSentryLevelDebug];
     [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
         [scope setUser:nil];
     }];
