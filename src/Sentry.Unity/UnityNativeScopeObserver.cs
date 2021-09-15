@@ -24,12 +24,9 @@ namespace Sentry.Unity
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
-            _options.DiagnosticLogger?.LogDebug("To native bridge: Adding breadcrumb.");
-
             // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.
             // https://docs.microsoft.com/en-gb/dotnet/standard/base-types/standard-date-and-time-format-strings#Roundtrip
             var timestamp = breadcrumb.Timestamp.ToString("o");
-
             var level = breadcrumb.Level switch
             {
                 BreadcrumbLevel.Debug => 0,
@@ -40,24 +37,25 @@ namespace Sentry.Unity
                 _ => -1
             };
 
+            _options.DiagnosticLogger?.LogDebug("To native bridge: Adding breadcrumb m:\"{0}\" l:\"{1}\"", breadcrumb.Message, level);
             SentryNativeBridgeAddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level);
         }
 
         public void SetExtra(string key, object? value)
         {
-            _options.DiagnosticLogger?.LogDebug("To native bridge: Setting Extra");
+            _options.DiagnosticLogger?.LogDebug("To native bridge: Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
             SentryNativeBridgeSetExtra(key, value is null ? null : System.Text.Json.JsonSerializer.Serialize(value));
         }
 
         public void SetTag(string key, string value)
         {
-            _options.DiagnosticLogger?.LogDebug("To native bridge: Setting Tag");
+            _options.DiagnosticLogger?.LogDebug("To native bridge: Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
             SentryNativeBridgeSetTag(key, value);
         }
 
         public void UnsetTag(string key)
         {
-            _options.DiagnosticLogger?.LogDebug("To native bridge: Unsetting Tag");
+            _options.DiagnosticLogger?.LogDebug("To native bridge: Unsetting Tag k:\"{0}\"", key);
             SentryNativeBridgeUnsetTag(key);
         }
 
@@ -70,7 +68,7 @@ namespace Sentry.Unity
             }
             else
             {
-                _options.DiagnosticLogger?.LogDebug("To native bridge: Setting User");
+                _options.DiagnosticLogger?.LogDebug("To native bridge: Setting User i:\"{0}\" n:\"{1}\"", user.Id, user.Username);
                 SentryNativeBridgeSetUser(user.Email, user.Id, user.IpAddress, user.Username);
             }
         }
