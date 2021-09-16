@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
+
 ## 0.5.2
 
 ### Features
