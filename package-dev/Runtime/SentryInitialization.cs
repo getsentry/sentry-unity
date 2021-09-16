@@ -17,8 +17,9 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options.ShouldInitializeSdk())
             {
+
 #if UNITY_IOS && !UNITY_EDITOR
-                options.ScopeObserver = new UnityNativeScopeObserver(options);
+                options.ScopeObserver = new IosNativeScopeObserver(options);
                 options.EnableScopeSync = true;
 #endif
 
