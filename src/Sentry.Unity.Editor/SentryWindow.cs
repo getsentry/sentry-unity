@@ -173,9 +173,9 @@ namespace Sentry.Unity.Editor
 
             GUILayout.Label("Native Support", EditorStyles.boldLabel);
 
-            Options.IOSNativeSupportEnabled = EditorGUILayout.Toggle(
+            Options.IosNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("iOS Native Support", "Whether to enable Native Support."),
-                Options.IOSNativeSupportEnabled);
+                Options.IosNativeSupportEnabled);
         }
 
         private void DisplayEnrichment()
