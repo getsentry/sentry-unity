@@ -36,7 +36,7 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("InitCacheFlushTimeout", optionsAsString);
             StringAssert.Contains("ShutdownTimeout", optionsAsString);
             StringAssert.Contains("MaxQueueItems", optionsAsString);
-            StringAssert.Contains("IOSNativeSupportEnabled", optionsAsString);
+            StringAssert.Contains("IosNativeSupportEnabled", optionsAsString);
             StringAssert.Contains("Debug", optionsAsString);
             StringAssert.Contains("DebugOnlyInEditor", optionsAsString);
             StringAssert.Contains("DiagnosticLevel", optionsAsString);
