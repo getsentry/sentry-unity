@@ -12,12 +12,12 @@ jobs:
       - name: Install clang-format
         run: brew install clang-format
       - name: Format C, C++, Objective-C and header files
-        run: |
-          find . -type f
-            -name "*.h"
-            -o -name "*.c"
-            -o -name "*.cpp"
-            -o -name "*.m"
+        run: >
+          find . -type f      \
+            -name "*.h"       \
+            -o -name "*.c"    \
+            -o -name "*.cpp"  \
+            -o -name "*.m"    \
 		        | xargs clang-format -i -style=file
 
       - name: Install dotnet-format
