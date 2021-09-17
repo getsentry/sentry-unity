@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Import link.xml infinity loop fix ([#315](https://github.com/getsentry/sentry-unity/pull/315))
+### Fixes
+
+- Import link.xml caused an infinite loop ([#315](https://github.com/getsentry/sentry-unity/pull/315))
 
 ## 0.5.2
 
