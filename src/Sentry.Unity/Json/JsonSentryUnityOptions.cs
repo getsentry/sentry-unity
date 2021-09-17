@@ -20,47 +20,47 @@ namespace Sentry.Unity.Json
 
             var json = JsonDocument.Parse(sentryOptionsTextAsset.bytes).RootElement;
 
-            if (json.GetPropertyOrNull("enabled") is {} enabled)
+            if (json.GetPropertyOrNull("enabled") is { } enabled)
             {
                 options.Enabled = enabled.GetBoolean();
             }
-            if (json.GetPropertyOrNull("dsn") is {} dsn)
+            if (json.GetPropertyOrNull("dsn") is { } dsn)
             {
                 options.Dsn = string.Equals(dsn.GetString(), string.Empty) ? null : dsn.GetString();
             }
-            if (json.GetPropertyOrNull("captureInEditor") is {} captureInEditor)
+            if (json.GetPropertyOrNull("captureInEditor") is { } captureInEditor)
             {
                 options.CaptureInEditor = captureInEditor.GetBoolean();
             }
-            if (json.GetPropertyOrNull("debug") is {} debug)
+            if (json.GetPropertyOrNull("debug") is { } debug)
             {
                 options.Debug = debug.GetBoolean();
             }
-            if (json.GetPropertyOrNull("debugOnlyInEditor") is {} debugOnlyInEditor)
+            if (json.GetPropertyOrNull("debugOnlyInEditor") is { } debugOnlyInEditor)
             {
                 options.DebugOnlyInEditor = debugOnlyInEditor.GetBoolean();
             }
-            if (json.GetEnumOrNull<SentryLevel>("diagnosticLevel") is {} diagnosticLevel)
+            if (json.GetEnumOrNull<SentryLevel>("diagnosticLevel") is { } diagnosticLevel)
             {
                 options.DiagnosticLevel = diagnosticLevel;
             }
-            if (json.GetEnumOrNull<CompressionLevelWithAuto>("requestBodyCompressionLevel") is {} requestBodyCompressionLevel)
+            if (json.GetEnumOrNull<CompressionLevelWithAuto>("requestBodyCompressionLevel") is { } requestBodyCompressionLevel)
             {
                 options.RequestBodyCompressionLevel = requestBodyCompressionLevel;
             }
-            if (json.GetPropertyOrNull("attachStacktrace") is {} attachStacktrace)
+            if (json.GetPropertyOrNull("attachStacktrace") is { } attachStacktrace)
             {
                 options.AttachStacktrace = attachStacktrace.GetBoolean();
             }
-            if (json.GetPropertyOrNull("sampleRate") is {} sampleRate)
+            if (json.GetPropertyOrNull("sampleRate") is { } sampleRate)
             {
                 options.SampleRate = sampleRate.GetSingle() >= 1.0f ? null : sampleRate.GetSingle();
             }
-            if (json.GetPropertyOrNull("release") is {} release)
+            if (json.GetPropertyOrNull("release") is { } release)
             {
                 options.Release = release.GetString();
             }
-            if (json.GetPropertyOrNull("environment") is {} environment)
+            if (json.GetPropertyOrNull("environment") is { } environment)
             {
                 options.Environment = environment.GetString();
             }

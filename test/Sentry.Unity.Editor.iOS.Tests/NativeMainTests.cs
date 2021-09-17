@@ -57,7 +57,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var pathToMain = "Path/That/Does/Not/Exist";
             var nativeMain = new NativeMain();
 
-            var assert = Assert.Throws<FileNotFoundException>( () => nativeMain.AddSentry(pathToMain, null));
+            var assert = Assert.Throws<FileNotFoundException>(() => nativeMain.AddSentry(pathToMain, null));
             StringAssert.Contains("Could not find main.", assert.Message);
         }
 

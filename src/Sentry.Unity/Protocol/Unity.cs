@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using Sentry.Unity.Extensions;
@@ -82,7 +82,7 @@ namespace Sentry.Unity.Protocol
         }
 
         public static Unity FromJson(JsonElement json)
-            => new ()
+            => new()
             {
                 InstallMode = json.GetPropertyOrNull("install_mode")?.GetString(),
                 CopyTextureSupport = json.GetPropertyOrNull("copy_texture_support")?.GetString(),

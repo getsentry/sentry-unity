@@ -8,7 +8,7 @@ namespace Sentry.Unity.Editor
     {
         [field: SerializeField] public bool UploadSymbols { get; set; } = true;
         [field: SerializeField] public string? Auth { get; set; }
-        [field: SerializeField] public string? Organization  { get; set; }
+        [field: SerializeField] public string? Organization { get; set; }
         [field: SerializeField] public string? Project { get; set; }
     }
 }

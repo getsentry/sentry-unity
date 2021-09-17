@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using UnityEngine;
 
@@ -64,7 +64,7 @@ namespace Sentry.Unity
         public Lazy<string>? GraphicsDeviceVendorId => new(() => SystemInfo.graphicsDeviceVendorID.ToString());
         public string? GraphicsDeviceVendor => SystemInfo.graphicsDeviceVendor;
         public int? GraphicsMemorySize => SystemInfo.graphicsMemorySize;
-        public Lazy<bool>? GraphicsMultiThreaded => new (() => SystemInfo.graphicsMultiThreaded);
+        public Lazy<bool>? GraphicsMultiThreaded => new(() => SystemInfo.graphicsMultiThreaded);
         public string? NpotSupport => SystemInfo.npotSupport.ToString();
         public string? GraphicsDeviceVersion => SystemInfo.graphicsDeviceVersion;
         public string? GraphicsDeviceType => SystemInfo.graphicsDeviceType.ToString();
@@ -74,10 +74,10 @@ namespace Sentry.Unity
         public bool? SupportsComputeShaders => SystemInfo.supportsComputeShaders;
         public bool? SupportsGeometryShaders => SystemInfo.supportsGeometryShaders;
         public int? GraphicsShaderLevel => SystemInfo.graphicsShaderLevel;
-        public Lazy<bool> IsDebugBuild => new (() => Debug.isDebugBuild);
+        public Lazy<bool> IsDebugBuild => new(() => Debug.isDebugBuild);
         public string? InstallMode => Application.installMode.ToString();
-        public Lazy<string> TargetFrameRate => new (() => Application.targetFrameRate.ToString());
-        public Lazy<string> CopyTextureSupport => new (() => SystemInfo.copyTextureSupport.ToString());
-        public Lazy<string> RenderingThreadingMode => new (() => SystemInfo.renderingThreadingMode.ToString());
+        public Lazy<string> TargetFrameRate => new(() => Application.targetFrameRate.ToString());
+        public Lazy<string> CopyTextureSupport => new(() => SystemInfo.copyTextureSupport.ToString());
+        public Lazy<string> RenderingThreadingMode => new(() => SystemInfo.renderingThreadingMode.ToString());
     }
 }
