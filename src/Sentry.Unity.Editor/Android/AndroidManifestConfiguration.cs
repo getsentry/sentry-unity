@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -169,10 +169,10 @@ namespace Sentry.Unity.Editor.Android
             _ = Save();
         }
 
-        internal void SetDsn(string dsn)  => SetMetaData("io.sentry.dsn", dsn);
-        internal void SetSampleRate(float sampleRate)  => SetMetaData("io.sentry.sample-rate", sampleRate.ToString());
-        internal void SetRelease(string release)  => SetMetaData("io.sentry.release", release);
-        internal void SetEnvironment(string environment)  => SetMetaData("io.sentry.environment", environment);
+        internal void SetDsn(string dsn) => SetMetaData("io.sentry.dsn", dsn);
+        internal void SetSampleRate(float sampleRate) => SetMetaData("io.sentry.sample-rate", sampleRate.ToString());
+        internal void SetRelease(string release) => SetMetaData("io.sentry.release", release);
+        internal void SetEnvironment(string environment) => SetMetaData("io.sentry.environment", environment);
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
             => SetMetaData("io.sentry.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
 
