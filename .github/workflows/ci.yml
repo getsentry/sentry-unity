@@ -35,6 +35,12 @@ jobs:
             unity-version-changeset: b76dac84db26
 
     steps:
+      # Tag: 0.9.1
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
+        with:
+          access_token: ${{ github.token }}
+
       - name: Checkout
         uses: actions/checkout@v2.3.3
         with:
