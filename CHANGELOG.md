@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Removed unused .asmdefs ([#316](https://github.com/getsentry/sentry-unity/pull/316))
+
 ## 0.5.2
 
 ### Features
