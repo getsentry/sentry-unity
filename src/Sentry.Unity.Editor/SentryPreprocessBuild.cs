@@ -33,7 +33,7 @@ namespace Sentry.Unity.Editor
                     break;
                 default:
                     // nothing to do
-                break;
+                    break;
             }
             // file: summary.outputPath
             // guid: summary.guid

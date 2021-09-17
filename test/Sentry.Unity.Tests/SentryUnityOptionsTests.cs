@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using NUnit.Framework;
@@ -58,16 +58,16 @@ namespace Sentry.Unity.Tests
             scriptableOptions.CaptureInEditor = expectedOptions.CaptureInEditor;
             scriptableOptions.TracesSampleRate = expectedOptions.TracesSampleRate;
             scriptableOptions.AutoSessionTracking = expectedOptions.AutoSessionTracking;
-            scriptableOptions.AutoSessionTrackingInterval = (int) expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
+            scriptableOptions.AutoSessionTrackingInterval = (int)expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
             scriptableOptions.AttachStacktrace = expectedOptions.AttachStacktrace;
             scriptableOptions.MaxBreadcrumbs = expectedOptions.MaxBreadcrumbs;
             scriptableOptions.ReportAssembliesMode = expectedOptions.ReportAssembliesMode;
             scriptableOptions.SendDefaultPii = expectedOptions.SendDefaultPii;
             scriptableOptions.IsEnvironmentUser = expectedOptions.IsEnvironmentUser;
             scriptableOptions.MaxCacheItems = expectedOptions.MaxCacheItems;
-            scriptableOptions.InitCacheFlushTimeout = (int) expectedOptions.InitCacheFlushTimeout.TotalMilliseconds;
+            scriptableOptions.InitCacheFlushTimeout = (int)expectedOptions.InitCacheFlushTimeout.TotalMilliseconds;
             scriptableOptions.SampleRate = expectedOptions.SampleRate;
-            scriptableOptions.ShutdownTimeout = (int) expectedOptions.ShutdownTimeout.TotalMilliseconds;
+            scriptableOptions.ShutdownTimeout = (int)expectedOptions.ShutdownTimeout.TotalMilliseconds;
             scriptableOptions.MaxQueueItems = expectedOptions.MaxQueueItems;
             scriptableOptions.ReleaseOverride = expectedOptions.Release;
             scriptableOptions.EnvironmentOverride = expectedOptions.Environment;

@@ -1,14 +1,14 @@
-﻿using Sentry;
-using UnityEngine;
-using Sentry.Unity;
 using System;
+using Sentry;
 using Sentry.Protocol;
+using Sentry.Unity;
+using UnityEngine;
 
 public class SentryBehavior : MonoBehaviour
 {
     public void Disable()
     {
-  
+
     }
 
     // TODO: Flush events. See note on OnApplicationQuit

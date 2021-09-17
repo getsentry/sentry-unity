@@ -1,5 +1,5 @@
-﻿using Sentry.Extensibility;
 using System;
+using Sentry.Extensibility;
 using UnityEngine;
 using static System.String;
 

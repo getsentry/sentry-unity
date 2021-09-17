@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -169,7 +169,7 @@ namespace Sentry.Unity.Tests
             }
 
             static SentryEvent CreateSentryEvent()
-                => new ()
+                => new()
                 {
                     Message = new SentryMessage
                     {

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Sentry.Integrations;
 
 namespace Sentry.Unity.Integrations
@@ -13,7 +13,7 @@ namespace Sentry.Unity.Integrations
         public void Register(IHub hub, SentryOptions options)
         {
             var data = _application.ActiveSceneName is { } name
-                ? new Dictionary<string, string> {{"scene", name}}
+                ? new Dictionary<string, string> { { "scene", name } }
                 : null;
 
             hub.AddBreadcrumb(message: "BeforeSceneLoad", category: "scene.beforeload", data: data);

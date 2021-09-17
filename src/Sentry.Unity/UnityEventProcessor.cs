@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
