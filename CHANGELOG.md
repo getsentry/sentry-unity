@@ -3,6 +3,10 @@
 ## Unreleased
 
 - Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
+### Fixes
+
+- Import link.xml caused an infinite loop ([#315](https://github.com/getsentry/sentry-unity/pull/315))
+- Removed unused .asmdefs which clears a warning from console ([#316](https://github.com/getsentry/sentry-unity/pull/316))
 
 ## 0.5.2
 
