@@ -8,15 +8,7 @@ on:
 
   pull_request:
     paths:
-    - '.github/**/*.yml'
-    - 'src/**'
-    - 'test/**'
-    - 'samples/**'
-    - 'Directory.Build.props'
-    - '*sln*'
-    - '*NuGet*'
-    - '.gitmodules'
-    - '.craft.yml'
+    - '*'
 
 jobs:
   build:
