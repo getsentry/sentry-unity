@@ -12,7 +12,7 @@ jobs:
       - name: Install clang-format
         run: brew install clang-format
       - name: Format C, C++, Objective-C and header files
-        run: |
+        run: >
           find samples/. -type f
           -name "*.h"
           -o -name "*.c"
