@@ -10,6 +10,8 @@ Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
 Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
 Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
 Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
+New-Item -Type dir "package-release/Runtime/" -Force
+Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
 # Destination directory need to exist if we're copying a file instead of a directory
 New-Item -Type dir "package-release/Documentation~/" -Force
 Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
