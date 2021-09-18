@@ -23,7 +23,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            if (!options!.IOSNativeSupportEnabled)
+            if (!options!.IosNativeSupportEnabled)
             {
                 options.DiagnosticLogger?.LogDebug("iOS Native support disabled. Won't modify the xcode project");
                 return;

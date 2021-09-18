@@ -1,16 +1,15 @@
 #import <Sentry/Sentry.h>
 
-void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char* type, const char* category, int* level) {
-    NSLog(@"Native Bridge: Adding breadcrumb.");
-    
-    if (timestamp == NULL && message == NULL && type == NULL && category == NULL && level == NULL) {
-        NSLog(@"Native Bridge: Breadcrumb empty. Dropping it.");
+NS_ASSUME_NONNULL_BEGIN
+
+void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char* type, const char* category, int level) {
+    if (timestamp == NULL && message == NULL && type == NULL && category == NULL) {
         return;
     }
-    
-    [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
+
+    [SentrySDK configureScope:^(SentryScope * scope) {
         SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc] init];
-        
+
         if (timestamp != NULL) {
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
@@ -24,86 +23,75 @@ void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message,
         if (type != NULL) {
             breadcrumb.type = [NSString stringWithCString:type encoding:NSUTF8StringEncoding];
         }
-        
+
         if (category != NULL) {
             breadcrumb.category = [NSString stringWithCString:category encoding:NSUTF8StringEncoding];
         }
-        
-        if (level != NULL) {
-            breadcrumb.level = level;
-        }
-        
+
+        breadcrumb.level = level;
+
         [scope addBreadcrumb:breadcrumb];
     }];
 }
 
 void SentryNativeBridgeSetExtra(const char* key, const char* value) {
-    NSLog(@"Native Bridge: Adding extra.");
-    
     if (key == NULL) {
-        NSLog(@"Native Bridge: Extra key empty. Dropping it.");
         return;
     }
-    
-    [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
+
+    [SentrySDK configureScope:^(SentryScope * scope) {
         if (value != NULL) {
             [scope setExtraValue:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
-        }
-        else {
-            [scope removeExtraForKey:[NSString stringWithUTF8String:key]];            
+        } else {
+            [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
         }
     }];
 }
 
 void SentryNativeBridgeSetTag(const char* key, const char* value) {
-    NSLog(@"Native Bridge: Setting tag.");
-    
     if (key == NULL) {
-        NSLog(@"Native Bridge: Tag key empty. Dropping it.");
         return;
     }
-    
-    [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
+
+    [SentrySDK configureScope:^(SentryScope * scope) {
         if (value != NULL) {
             [scope setTagValue:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
-        }
-        else {
+        } else {
             [scope removeTagForKey:[NSString stringWithUTF8String:key]];
         }
     }];
 }
 
 void SentryNativeBridgeUnsetTag(const char* key) {
-    NSLog(@"Native Bridge: Unsetting tag.");
-    [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
+    if (key == NULL) {
+        return;
+    }
+
+    [SentrySDK configureScope:^(SentryScope * scope) {
         [scope removeTagForKey:[NSString stringWithUTF8String:key]];
     }];
 }
 
 void SentryNativeBridgeSetUser(const char* email, const char* userId, const char* ipAddress, const char* username) {
-    NSLog(@"Native Bridge: Setting User.");
-    
     if (email == NULL && userId == NULL && ipAddress == NULL && username == NULL) {
-        NSLog(@"Native Bridge: User empty. Dropping it.");
         return;
     }
-    
-    
-    [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
+
+    [SentrySDK configureScope:^(SentryScope * scope) {
         SentryUser *user = [[SentryUser alloc] init];
-        
+
         if (email != NULL) {
             user.email = [NSString stringWithCString:email encoding:NSUTF8StringEncoding];
         }
-        
+
         if (userId != NULL) {
             user.userId = [NSString stringWithCString:userId encoding:NSUTF8StringEncoding];
         }
-        
+
         if (ipAddress != NULL) {
             user.ipAddress = [NSString stringWithCString:ipAddress encoding:NSUTF8StringEncoding];
         }
-        
+
         if (username != NULL) {
             user.username = [NSString stringWithCString:username encoding:NSUTF8StringEncoding];
         }
@@ -112,10 +100,10 @@ void SentryNativeBridgeSetUser(const char* email, const char* userId, const char
     }];
 }
 
-void SentryNativeBridgeUnsetUser()
-{
-    NSLog(@"Native Bridge: Unsetting user.");
-    [SentrySDK configureScope:^(SentryScope * _Nonnull scope) {
+void SentryNativeBridgeUnsetUser() {
+    [SentrySDK configureScope:^(SentryScope * scope) {
         [scope setUser:nil];
     }];
 }
+
+NS_ASSUME_NONNULL_END

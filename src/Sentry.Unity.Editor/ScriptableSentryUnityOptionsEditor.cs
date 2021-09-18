@@ -58,7 +58,7 @@ namespace Sentry.Unity.Editor
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            EditorGUILayout.Toggle("iOS Native Support", options.IOSNativeSupportEnabled);
+            EditorGUILayout.Toggle("iOS Native Support", options.IosNativeSupportEnabled);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
