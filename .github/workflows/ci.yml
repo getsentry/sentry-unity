@@ -6,9 +6,9 @@ on:
       - main
       - release/*
 
-  pull_request:
-    paths:
-    - '*'
+    pull_request:
+      paths:
+      - '*'
 
 jobs:
   build:
