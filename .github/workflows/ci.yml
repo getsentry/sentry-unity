@@ -80,6 +80,8 @@ jobs:
           path: |
             src/sentry-cocoa/Carthage/Build
             src/sentry-dotnet/**/bin/Release
+            src/sentry-dotnet/**/obj/Release
+            src/sentry-java/**/build
           key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
