@@ -40,12 +40,6 @@ package-dev/Plugins/Android/Sentry/*
 !package-dev/Tests/Runtime/Sentry.Unity.Tests.dll.meta
 !package-dev/Tests/Runtime/Sentry.Unity.iOS.Tests.dll.meta
 
-!package-dev/Tests/**/*.asmdef
-!package-dev/Tests/**/*.asmdef.meta
-!package-dev/Runtime/Sentry.Unity.dll.meta
-!package-dev/Runtime/Sentry.Unity.iOS.dll.meta
-!package-dev/Tests/*.meta
-
 # required to be marked as iOS only
 !package-dev/**/*.framework.meta
 
