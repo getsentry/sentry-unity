@@ -1,4 +1,4 @@
-﻿namespace Sentry.Unity
+namespace Sentry.Unity
 {
     internal interface IEventCapture
     {

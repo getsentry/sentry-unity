@@ -15,7 +15,7 @@ namespace Sentry.Unity.Editor
         [MenuItem("Tools/Sentry")]
         public static SentryWindow OpenSentryWindow()
         {
-            var window = (SentryWindow) GetWindow(typeof(SentryWindow));
+            var window = (SentryWindow)GetWindow(typeof(SentryWindow));
             window.minSize = new Vector2(400, 350);
             return window;
         }
@@ -27,7 +27,7 @@ namespace Sentry.Unity.Editor
         public event Action<ValidationError> OnValidationError = _ => { };
 
         private int _currentTab = 0;
-        private string[] _tabs = new[] {"Core", "Enrichment", "Transport", "Sessions", "Debug"};
+        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Sessions", "Debug" };
 
         private void OnEnable()
         {
@@ -174,8 +174,14 @@ namespace Sentry.Unity.Editor
             GUILayout.Label("Native Support", EditorStyles.boldLabel);
 
             Options.IOSNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("iOS Native Support", "Whether to enable Native Support."),
+                new GUIContent("iOS Native Support", "Whether to enable Native iOS support to capture" +
+                                                     "errors written in languages such as Objective-C, Swift, C and C++."),
                 Options.IOSNativeSupportEnabled);
+
+            Options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
+                                                         "capture errors written in languages such as Java, Kotlin, C and C++."),
+                Options.AndroidNativeSupportEnabled);
         }
 
         private void DisplayEnrichment()
@@ -239,7 +245,7 @@ namespace Sentry.Unity.Editor
                                                   "\nDefault: 100"),
                 Options.MaxBreadcrumbs);
 
-            Options.ReportAssembliesMode = (ReportAssembliesMode) EditorGUILayout.EnumPopup(
+            Options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
                 new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
                                                          "Version or InformationalVersion in each event sent to sentry."),
                 Options.ReportAssembliesMode);
@@ -326,7 +332,7 @@ namespace Sentry.Unity.Editor
                                                  "builds of the player will not include Sentry's SDK diagnostics."),
                 Options.DebugOnlyInEditor);
 
-            Options.DiagnosticLevel = (SentryLevel) EditorGUILayout.EnumPopup(
+            Options.DiagnosticLevel = (SentryLevel)EditorGUILayout.EnumPopup(
                 new GUIContent("Verbosity Level", "The minimum level allowed to be printed to the console. " +
                                                   "Log messages with a level below this level are dropped."),
                 Options.DiagnosticLevel);
@@ -401,7 +407,7 @@ namespace Sentry.Unity.Editor
                     GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
                 resourceStream.CopyTo(fileStream);
 
-                AssetDatabase.Refresh();
+                AssetDatabase.ImportAsset(LinkXmlPath);
             }
         }
 

@@ -1,5 +1,5 @@
-﻿using Sentry.Extensibility;
 using System;
+using Sentry.Extensibility;
 using UnityEngine;
 using static System.String;
 
@@ -7,7 +7,7 @@ namespace Sentry.Unity
 {
     internal interface IUnityLoggerInterceptor
     {
-        void Intercept(string logMessage);
+        void Intercept(SentryLevel logLevel, string logMessage);
     }
 
     public class UnityLogger : IDiagnosticLogger
@@ -52,7 +52,7 @@ namespace Sentry.Unity
             string GetLog()
             {
                 var log = $"Sentry: ({logLevel}) {Format(message, args)} {exception}";
-                _interceptor?.Intercept(log);
+                _interceptor?.Intercept(logLevel, log);
                 return log;
             }
         }

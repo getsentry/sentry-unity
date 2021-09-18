@@ -21,6 +21,8 @@ samples/unity-of-bugs/Assets/InitTestScene*
 package-dev/**/*.dll
 package-dev/**/*.meta
 package-dev/**/*.framework
+# Android SDK files
+package-dev/Plugins/Android/Sentry/*
 # required to be makred as iOS only
 !package-dev/**/*.framework.meta
 !package-dev/Runtime/Sentry.Unity.dll.meta
