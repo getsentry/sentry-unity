@@ -7,8 +7,8 @@ on:
       - release/*
 
   pull_request:
-    paths:
-    - '*'
+    branches:
+      - '*'
 
 jobs:
   build:
@@ -80,6 +80,11 @@ jobs:
           path: |
             src/sentry-cocoa/Carthage/Build
             src/sentry-dotnet/**/bin/Release
+            src/sentry-dotnet/**/obj/Release
+            src/sentry-java/**/build
+            src/sentry-java/.gradle/caches
+            src/sentry-java/.gradle/wrapper
+          # hash of package/package.json for cache busting on release builds (version bump)
           key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
@@ -121,12 +126,19 @@ jobs:
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+      # Before we claim the license, lets build the SDKs which don't require Unity
+      - name: Build the sentry-cocoa SDK
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
+      - name: Build the sentry-java SDK
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
+
       # License activation sometimes fails due to a problem connecting to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate Unity license
         id: activate-license
         shell: pwsh
+        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
         run: |
-          $attempts = 5
+          $attempts = 40
 
           while ($attempts -gt 0) {
             unity -quit -batchmode -nographics -noUpm -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
@@ -150,29 +162,11 @@ jobs:
       - name: Run Unity tests (playmode)
         run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
 
-      - name: Upload test artifacts (playmode)
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (playmode)
-          path: artifacts/test/playmode
-
       - name: Run Unity tests (editmode)
         run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
-      - name: Upload test artifacts (editmode)
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (editmode)
-          path: artifacts/test/editmode
-
       - name: Build Android Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
-
-      - name: Upload Android Build
-        uses: actions/upload-artifact@v1
-        with:
-          name: Android Build
-          path: samples/artifacts/builds/Android
 
       - name: Build iOS Player
         if: matrix.os == 'macos-latest'
@@ -180,6 +174,15 @@ jobs:
 
       - name: Build Standalone Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
+
+      # Last step that requires running Unity should be above this
+
+      # Professional licenses are per-seat so we should always try to return them
+      - name: Return Unity license
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default
 
       - name: Run Smoke Tests
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
@@ -201,9 +204,20 @@ jobs:
           name: ${{ github.sha }}
           path: package-release.zip
 
-      # Professional licenses are per-seat so we should always try to return them
-      - name: Return Unity license
-        if: ${{ always() }}
-        shell: pwsh
-        run: |
-          unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v1
+        with:
+          name: Android Build
+          path: samples/artifacts/builds/Android
+
+      - name: Upload test artifacts (playmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
+
+      - name: Upload test artifacts (editmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
