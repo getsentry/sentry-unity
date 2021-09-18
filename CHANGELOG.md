@@ -2,9 +2,10 @@
 
 ## Unreleased
 
-### Feature
+### Features
 
 - Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
+- iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
 
 ### Fixes
 

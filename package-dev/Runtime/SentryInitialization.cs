@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.Scripting;
 
+#if UNITY_IOS && !UNITY_EDITOR
+using Sentry.Unity.iOS;
+#endif
+
 [assembly: AlwaysLinkAssembly]
 
 namespace Sentry.Unity
@@ -13,6 +17,12 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options.ShouldInitializeSdk())
             {
+
+#if UNITY_IOS && !UNITY_EDITOR
+                options.ScopeObserver = new IosNativeScopeObserver(options);
+                options.EnableScopeSync = true;
+#endif
+
                 SentryUnity.Init(options);
             }
         }
