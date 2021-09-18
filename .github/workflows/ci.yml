@@ -73,17 +73,14 @@ jobs:
           git submodule status > submodules-status
           cat submodules-status
 
-      - name: Restore submodules build output
-        if: ${{ !startsWith(github.ref, 'refs/feat/ci-caching') }}
+      - name: Restore native SDKs
         uses: actions/cache@v2
         with:
           path: |
-            src/sentry-cocoa/Carthage/Build
-            src/sentry-dotnet/**/bin/Release
-            src/sentry-dotnet/**/obj/Release
-            src/sentry-java/**/build
-            src/sentry-java/.gradle/caches
-            src/sentry-java/.gradle/wrapper
+            package-dev/Plugins/iOS
+            package-dev/Plugins/Android
+          # We only build the native SDKs if the respective 'package-dev/Plugins/' directories are empty
+          # Output changes only depending on the git sha of the submodules
           # hash of package/package.json for cache busting on release builds (version bump)
           key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
 
