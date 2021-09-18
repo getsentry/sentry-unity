@@ -1,0 +1,8 @@
+# Matches sentry-cocoa's format: https://github.com/getsentry/sentry-cocoa/blob/master/.clang-format
+BasedOnStyle: WebKit
+IndentWidth: 4
+IndentPPDirectives: AfterHash
+ColumnLimit: 100
+AlwaysBreakAfterDefinitionReturnType: All
+PointerAlignment: Right
+ForEachMacros: ['SENTRY_WITH_SCOPE', 'SENTRY_WITH_SCOPE_MUT']

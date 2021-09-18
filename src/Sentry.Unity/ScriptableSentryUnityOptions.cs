@@ -44,7 +44,6 @@ namespace Sentry.Unity
         [field: SerializeField] internal float? SampleRate { get; set; }
         [field: SerializeField] internal int ShutdownTimeout { get; set; }
         [field: SerializeField] internal int MaxQueueItems { get; set; }
-
         [field: SerializeField] internal bool IosNativeSupportEnabled { get; set; }
         [field: SerializeField] internal bool AndroidNativeSupportEnabled { get; set; }
 

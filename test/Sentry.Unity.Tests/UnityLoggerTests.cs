@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
@@ -11,7 +11,7 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
 
             var interceptor = new TestUnityLoggerInterceptor();
-            var logger = new UnityLogger(new SentryOptions() {DiagnosticLevel = sentryLevel}, interceptor);
+            var logger = new UnityLogger(new SentryOptions() { DiagnosticLevel = sentryLevel }, interceptor);
 
             const string expectedLog = "Some log";
             logger.Log(sentryLevel, expectedLog);
@@ -26,7 +26,7 @@ namespace Sentry.Unity.Tests
         public void Log_LowerLevelThanInitializationLevel_DisablesLogger(SentryLevel initializationLevel, SentryLevel lowerLevel)
         {
             var interceptor = new TestUnityLoggerInterceptor();
-            var logger = new UnityLogger(new SentryOptions() {DiagnosticLevel = initializationLevel}, interceptor);
+            var logger = new UnityLogger(new SentryOptions() { DiagnosticLevel = initializationLevel }, interceptor);
 
             const string expectedLog = "Some log";
 
