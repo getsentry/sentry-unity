@@ -7,16 +7,8 @@ on:
       - release/*
 
   pull_request:
-    paths:
-    - '.github/**/*.yml'
-    - 'src/**'
-    - 'test/**'
-    - 'samples/**'
-    - 'Directory.Build.props'
-    - '*sln*'
-    - '*NuGet*'
-    - '.gitmodules'
-    - '.craft.yml'
+    branches:
+      - '*'
 
 jobs:
   build:
@@ -43,6 +35,12 @@ jobs:
             unity-version-changeset: b76dac84db26
 
     steps:
+      # Tag: 0.9.1
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
+        with:
+          access_token: ${{ github.token }}
+
       - name: Checkout
         uses: actions/checkout@v2.3.3
         with:
@@ -82,6 +80,11 @@ jobs:
           path: |
             src/sentry-cocoa/Carthage/Build
             src/sentry-dotnet/**/bin/Release
+            src/sentry-dotnet/**/obj/Release
+            src/sentry-java/**/build
+            src/sentry-java/.gradle/caches
+            src/sentry-java/.gradle/wrapper
+          # hash of package/package.json for cache busting on release builds (version bump)
           key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
@@ -123,12 +126,19 @@ jobs:
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+      # Before we claim the license, lets build the SDKs which don't require Unity
+      - name: Build the sentry-cocoa SDK
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
+      - name: Build the sentry-java SDK
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
+
       # License activation sometimes fails due to a problem connecting to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate Unity license
         id: activate-license
         shell: pwsh
+        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
         run: |
-          $attempts = 5
+          $attempts = 40
 
           while ($attempts -gt 0) {
             unity -quit -batchmode -nographics -noUpm -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
@@ -152,29 +162,11 @@ jobs:
       - name: Run Unity tests (playmode)
         run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
 
-      - name: Upload test artifacts (playmode)
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (playmode)
-          path: artifacts/test/playmode
-
       - name: Run Unity tests (editmode)
         run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
-      - name: Upload test artifacts (editmode)
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (editmode)
-          path: artifacts/test/editmode
-
       - name: Build Android Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
-
-      - name: Upload Android Build
-        uses: actions/upload-artifact@v1
-        with:
-          name: Android Build
-          path: samples/artifacts/builds/Android
 
       - name: Build iOS Player
         if: matrix.os == 'macos-latest'
@@ -183,38 +175,21 @@ jobs:
       - name: Build Standalone Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
 
+      # Last step that requires running Unity should be above this
+
+      # Professional licenses are per-seat so we should always try to return them
+      - name: Return Unity license
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default
+
       - name: Run Smoke Tests
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
 
       - name: Prepare Sentry package for release
         shell: pwsh
-        run: |
-          New-Item "package-release" -ItemType Directory
-
-          # Copy `package-dev` stuff
-          Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
-
-          # Copy `package` stuff
-          Copy-Item "package/package.json" -Destination "package-release/package.json"
-          Copy-Item "package/README.md" -Destination "package-release/README.md"
-          Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
-          Copy-Item "package/CHANGELOG.md.meta" -Destination "package-release/CHANGELOG.md.meta"
-          Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
-          Copy-Item "package/LICENSE.md.meta" -Destination "package-release/LICENSE.md.meta"
-          New-Item -Type dir "package-release/Editor/" -Force
-          Get-ChildItem "package/Editor/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Editor/" }
-          New-Item -Type dir "package-release/Runtime/" -Force
-          Get-ChildItem "package/Runtime/" -Include "*.asmdef", "*.asmdef.meta" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Runtime/" }
-          # Destination directory need to exist if we're copying a file instead of a directory
-          New-Item -Type dir "package-release/Documentation~/" -Force
-          Get-ChildItem "package/Documentation~/" -Include "*.md" -Recurse | ForEach-Object { Copy-Item -Path $_.FullName -Destination "package-release/Documentation~/" }
-
-          # Copy samples
-          Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scenes" -Recurse
-          Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Assets/Scripts" -Recurse
-
-          # Create zip
-          Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
+        run: ./scripts/pack.ps1
 
       - name: Upload build artifacts if build failed
         if: ${{ failure() }}
@@ -229,9 +204,20 @@ jobs:
           name: ${{ github.sha }}
           path: package-release.zip
 
-      # Professional licenses are per-seat so we should always try to return them
-      - name: Return Unity license
-        if: ${{ always() }}
-        shell: pwsh
-        run: |
-          unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v1
+        with:
+          name: Android Build
+          path: samples/artifacts/builds/Android
+
+      - name: Upload test artifacts (playmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
+
+      - name: Upload test artifacts (editmode)
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode

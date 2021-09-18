@@ -1,6 +1,5 @@
 using System;
 using Sentry.Extensibility;
-using Sentry.Infrastructure;
 using UnityEditor;
 using UnityEditor.Callbacks;
 

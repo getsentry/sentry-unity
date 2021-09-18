@@ -12,7 +12,7 @@ namespace Sentry.Unity.Tests
             public string Dsn { get; set; } = "http://test.com";
             public bool CaptureInEditor { get; set; } = true;
 
-            public SentryUnityOptions GetSut() =>  new()
+            public SentryUnityOptions GetSut() => new()
             {
                 Enabled = Enabled,
                 Dsn = Dsn,

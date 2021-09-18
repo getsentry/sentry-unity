@@ -6,8 +6,8 @@
     <OutDir>$(PackageEditorPath)</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false"/>
-    <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false"/>
+    <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
+    <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\link.xml" />
