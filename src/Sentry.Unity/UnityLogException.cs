@@ -121,7 +121,7 @@ namespace Sentry.Unity
                     FileName = TryResolveFileNameForMono(filenameWithoutZeroes),
                     AbsolutePath = filenameWithoutZeroes,
                     Function = functionName,
-                    LineNumber = lineNo,
+                    LineNumber = lineNo == -1 ? null : lineNo,
                     InApp = functionName != null
                         && !functionName.StartsWith("UnityEngine", StringComparison.Ordinal)
                         && !functionName.StartsWith("System", StringComparison.Ordinal)
