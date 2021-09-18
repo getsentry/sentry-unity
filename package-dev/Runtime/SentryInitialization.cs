@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Scripting;
 
-#if UNITY_EDITOR
+#if !UNITY_EDITOR
 #if UNITY_IOS
 #define SENTRY_NATIVE_IOS
 #elif UNITY_ANDROID

@@ -27,7 +27,7 @@ package-dev/**/TestSentryOptions.json
 package-dev/Tests/Editor/TestFiles/
 
 !package-dev/Runtime/Sentry.Unity.dll.meta
-!package-dev/Runtime/Sentry.Unity.iOS.dll.meta
+!package-dev/Runtime/Sentry.Unity.iOS.dll.metas
 !package-dev/Tests/*.meta
 
 # required to be marked as iOS only
