@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using NUnit.Framework;
-using Sentry.Infrastructure;
 
 namespace Sentry.Unity.iOS.Tests
 {
@@ -26,7 +25,7 @@ namespace Sentry.Unity.iOS.Tests
         [Test]
         public void GetTimestamp_ReturnStringConformsToISO8601()
         {
-            var timestamp = SystemClock.Clock.GetUtcNow();
+            var timestamp = DateTimeOffset.UtcNow;
 
             var timestampString = IosNativeScopeObserver.GetTimestamp(timestamp);
             var actualTimestamp = DateTimeOffset.ParseExact(timestampString, "o", CultureInfo.InvariantCulture);
@@ -65,7 +64,7 @@ namespace Sentry.Unity.iOS.Tests
 
             var actualValue = sut.SerializeExtraValue(new SerializationTestClass());
 
-            Assert.AreEqual(null, actualValue);
+            Assert.IsNull(actualValue);
         }
     }
 }

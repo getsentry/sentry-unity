@@ -60,6 +60,10 @@ namespace Sentry.Unity.iOS
             if (value is not null)
             {
                 extraValue = SerializeExtraValue(value);
+                if (extraValue is null)
+                {
+                    return;
+                }
             }
 
             _options.DiagnosticLogger?.LogDebug("Native bridge - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);

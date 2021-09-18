@@ -16,14 +16,14 @@ namespace Sentry.Unity.Editor.iOS
             }
 
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
-            if (!options.Validate())
+            if (options?.Validate() != true)
             {
                 new UnityLogger(new SentryOptions()).LogWarning(
                     "Failed to validate Sentry Options. Xcode project will not be modified.");
                 return;
             }
 
-            if (!options!.IosNativeSupportEnabled)
+            if (!options.IosNativeSupportEnabled)
             {
                 options.DiagnosticLogger?.LogDebug("iOS Native support disabled. Won't modify the xcode project");
                 return;
