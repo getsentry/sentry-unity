@@ -119,6 +119,7 @@ UnityEngine.UI.Button.Press () (at /Applications/Unity/Hub/Editor/2019.4.21f1/Un
 UnityEngine.UI.Button.OnPointerClick (UnityEngine.EventSystems.PointerEventData eventData) (at /Applications/Unity/Hub/Editor/2019.4.21f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs:110)
 UnityEngine.EventSystems.ExecuteEvents.Execute (UnityEngine.EventSystems.IPointerClickHandler handler, UnityEngine.EventSystems.BaseEventData eventData) (at /Applications/Unity/Hub/Editor/2019.4.21f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:50)
 UnityEngine.EventSystems.ExecuteEvents.Execute[T] (UnityEngine.GameObject target, UnityEngine.EventSystems.BaseEventData eventData, UnityEngine.EventSystems.ExecuteEvents+EventFunction`1[T1] functor) (at /Applications/Unity/Hub/Editor/2019.4.21f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs:261)
+Class.Method () (at /Applications/Test/Fake.cs)
 UnityEngine.EventSystems.EventSystem:Update() (at /Applications/Unity/Hub/Editor/2019.4.21f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/EventSystem.cs:377)",
                 new SentryException
                 {
@@ -136,6 +137,15 @@ Expected: False == True",
                                 LineNumber = 377,
                                 FileName = "EventSystem.cs",
                                 InApp = false
+                            },
+                            new()
+                            {
+                                Function = "Class.Method ()",
+                                AbsolutePath = "/Applications/Test/Fake.cs",
+                                // Missing line number
+                                LineNumber = null,
+                                FileName = "Fake.cs",
+                                InApp = true
                             },
                             new()
                             {
