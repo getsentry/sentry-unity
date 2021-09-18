@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using UnityEditor.iOS.Xcode;
 using UnityEditor.iOS.Xcode.Extensions;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {

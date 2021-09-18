@@ -31,6 +31,7 @@ MonoBehaviour:
   <ShutdownTimeout>k__BackingField: 2000
   <MaxQueueItems>k__BackingField: 30
   <IOSNativeSupportEnabled>k__BackingField: 1
+  <AndroidNativeSupportEnabled>k__BackingField: 1
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 1
   <DiagnosticLevel>k__BackingField: 0

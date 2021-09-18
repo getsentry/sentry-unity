@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Feature
+
+- Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
+
 ### Fixes
 
 - Import link.xml caused an infinite loop ([#315](https://github.com/getsentry/sentry-unity/pull/315))

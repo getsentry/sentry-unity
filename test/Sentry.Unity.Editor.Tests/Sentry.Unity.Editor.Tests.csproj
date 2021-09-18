@@ -3,9 +3,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>$(PackageEditorTestsPath)</OutDir>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false"/>
-    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false"/>
-    <ProjectReference Include="../../src/Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false"/>
+    <None Include="TestFiles/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
+    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
+    <ProjectReference Include="../../src/Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
   </ItemGroup>
 </Project>

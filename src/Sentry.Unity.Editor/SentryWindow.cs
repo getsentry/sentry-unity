@@ -174,8 +174,14 @@ namespace Sentry.Unity.Editor
             GUILayout.Label("Native Support", EditorStyles.boldLabel);
 
             Options.IOSNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("iOS Native Support", "Whether to enable Native Support."),
+                new GUIContent("iOS Native Support", "Whether to enable Native iOS support to capture" +
+                                                     "errors written in languages such as Objective-C, Swift, C and C++."),
                 Options.IOSNativeSupportEnabled);
+
+            Options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
+                                                         "capture errors written in languages such as Java, Kotlin, C and C++."),
+                Options.AndroidNativeSupportEnabled);
         }
 
         private void DisplayEnrichment()
