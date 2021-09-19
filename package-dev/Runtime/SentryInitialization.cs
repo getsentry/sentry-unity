@@ -1,6 +1,3 @@
-using UnityEngine;
-using UnityEngine.Scripting;
-
 #if !UNITY_EDITOR
 #if UNITY_IOS
 #define SENTRY_NATIVE_IOS
@@ -9,7 +6,10 @@ using UnityEngine.Scripting;
 #endif
 #endif
 
-#if UNITY_IOS && !UNITY_EDITOR
+using UnityEngine;
+using UnityEngine.Scripting;
+
+#if SENTRY_NATIVE_IOS
 using Sentry.Unity.iOS;
 #endif
 
