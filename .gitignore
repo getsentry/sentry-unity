@@ -26,19 +26,14 @@ package-dev/**/*.xml
 package-dev/**/TestSentryOptions.json
 package-dev/Tests/Editor/TestFiles/
 
-!package-dev/Runtime/Sentry.Unity.dll.meta
-!package-dev/Runtime/Sentry.Unity.iOS.dll.meta
-!package-dev/Tests/*.meta
+# Adding .meta to control target platforms for all of our DLLs
+!package-dev/**/Sentry*.dll.meta
 
 # required to be marked as iOS only
 !package-dev/**/*.framework.meta
 
 # Android SDK files
 package-dev/Plugins/Android/Sentry/*
-
-# required to be marked as Editor only
-!package-dev/Tests/Runtime/Sentry.Unity.Tests.dll.meta
-!package-dev/Tests/Runtime/Sentry.Unity.iOS.Tests.dll.meta
 
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/

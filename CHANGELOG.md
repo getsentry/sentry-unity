@@ -10,6 +10,7 @@
 
 ### Fixes
 
+- Fixed iOS support related reference resolution issue for Windows ([#325](https://github.com/getsentry/sentry-unity/pull/325))
 - Import link.xml caused an infinite loop ([#315](https://github.com/getsentry/sentry-unity/pull/315))
 - Removed unused .asmdefs which clears a warning from console ([#316](https://github.com/getsentry/sentry-unity/pull/316))
 - Don't send negative line number ([#317](https://github.com/getsentry/sentry-unity/pull/317))
