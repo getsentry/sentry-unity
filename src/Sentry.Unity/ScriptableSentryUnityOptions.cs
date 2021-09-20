@@ -44,8 +44,7 @@ namespace Sentry.Unity
         [field: SerializeField] internal float? SampleRate { get; set; }
         [field: SerializeField] internal int ShutdownTimeout { get; set; }
         [field: SerializeField] internal int MaxQueueItems { get; set; }
-
-        [field: SerializeField] internal bool IOSNativeSupportEnabled { get; set; }
+        [field: SerializeField] internal bool IosNativeSupportEnabled { get; set; }
         [field: SerializeField] internal bool AndroidNativeSupportEnabled { get; set; }
 
         [field: SerializeField] internal bool Debug { get; set; }
@@ -111,7 +110,7 @@ namespace Sentry.Unity
                 options.CacheDirectoryPath = null;
             }
 
-            options.IOSNativeSupportEnabled = scriptableOptions.IOSNativeSupportEnabled;
+            options.IosNativeSupportEnabled = scriptableOptions.IosNativeSupportEnabled;
             options.AndroidNativeSupportEnabled = scriptableOptions.AndroidNativeSupportEnabled;
 
             options.Debug = scriptableOptions.Debug;

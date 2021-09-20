@@ -57,7 +57,7 @@ namespace Sentry.Unity
 
             scriptableOptions.EnableOfflineCaching = true;
 
-            scriptableOptions.IOSNativeSupportEnabled = options.IOSNativeSupportEnabled;
+            scriptableOptions.IosNativeSupportEnabled = options.IosNativeSupportEnabled;
             scriptableOptions.AndroidNativeSupportEnabled = options.AndroidNativeSupportEnabled;
 
             scriptableOptions.Debug = true;
