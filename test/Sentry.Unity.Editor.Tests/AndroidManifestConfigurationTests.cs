@@ -64,7 +64,7 @@ namespace Sentry.Unity.Editor.Tests
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                    "Expected 'auto-init' to be disabled");
+                "Expected 'auto-init' to be disabled");
         }
 
         [Test]
@@ -78,7 +78,7 @@ namespace Sentry.Unity.Editor.Tests
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                    "Expected 'auto-init' to be disabled");
+                "Expected 'auto-init' to be disabled");
         }
 
         [Test]
@@ -209,12 +209,6 @@ namespace Sentry.Unity.Editor.Tests
             new () { SentryLevel = SentryLevel.Warning, JavaLevel = "warning" }
         };
 
-        public struct SentryJavaLevel
-        {
-            public SentryLevel SentryLevel;
-            public string JavaLevel;
-        }
-
         [Test]
         public void OnPostGenerateGradleAndroidProject_DiagnosticLevel_TestCases(
             [ValueSource(nameof(SentryJavaLevels))] SentryJavaLevel levels)
@@ -278,6 +272,12 @@ namespace Sentry.Unity.Editor.Tests
             Directory.CreateDirectory(destination);
             File.Copy(newAndroidManifest, Path.Combine(destination, "AndroidManifest.xml"), false);
             return basePath;
+        }
+
+        public struct SentryJavaLevel
+        {
+            public SentryLevel SentryLevel;
+            public string JavaLevel;
         }
     }
 }
