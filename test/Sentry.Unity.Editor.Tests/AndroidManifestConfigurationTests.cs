@@ -1,9 +1,8 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Xml.Linq;
 using NUnit.Framework;
+using Sentry;
 using Sentry.Unity.Editor.Android;
 
 namespace Sentry.Unity.Editor.Tests
@@ -22,10 +21,7 @@ namespace Sentry.Unity.Editor.Tests
                 // Options configured to initialize the Android SDK, tests will change from there:
                 SentryUnityOptions = new()
                 {
-                    Enabled = true,
-                    Dsn = "https://k@h/p",
-                    AndroidNativeSupportEnabled = true,
-                    Debug = true
+                    Enabled = true, Dsn = "https://k@h/p", AndroidNativeSupportEnabled = true, Debug = true
                 };
                 SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, LoggerInterceptor);
 
@@ -37,6 +33,7 @@ namespace Sentry.Unity.Editor.Tests
 
         [SetUp]
         public void SetUp() => _fixture = new Fixture();
+
         private Fixture _fixture = null!;
 
         [Test]
@@ -76,7 +73,8 @@ namespace Sentry.Unity.Editor.Tests
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
 
-            AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
+            AssertLogContains(SentryLevel.Debug,
+                "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -87,7 +85,8 @@ namespace Sentry.Unity.Editor.Tests
         [TestCase(null)]
         [TestCase("")]
         [TestCase("  ")]
-        public void OnPostGenerateGradleAndroidProject_UnityOptions_EnabledWithoutDsn_LogWarningAndDisableInit(string? dsn)
+        public void OnPostGenerateGradleAndroidProject_UnityOptions_EnabledWithoutDsn_LogWarningAndDisableInit(
+            string? dsn)
         {
             _fixture.SentryUnityOptions!.Dsn = dsn;
             var sut = _fixture.GetSut();
@@ -101,7 +100,8 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDisableInit()
+        public void
+            OnPostGenerateGradleAndroidProject_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDisableInit()
         {
             _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
             var sut = _fixture.GetSut();
@@ -202,26 +202,37 @@ namespace Sentry.Unity.Editor.Tests
         // options.setDiagnosticLevel(SentryLevel.valueOf(level.toUpperCase(Locale.ROOT)));
         // src/sentry-java/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java
         // src/sentry-java/sentry/src/main/java/io/sentry/SentryLevel.java
-        [Test]
-        [TestCase(SentryLevel.Debug, "debug")]
-        [TestCase(SentryLevel.Error, "error")]
-        [TestCase(SentryLevel.Fatal, "fatal")]
-        [TestCase(SentryLevel.Info, "info")]
-        [TestCase(SentryLevel.Warning, "warning")]
-        public void OnPostGenerateGradleAndroidProject_DiagnosticLevel_TestCases(SentryLevel level, string javaLevel)
+        private static readonly SentryJavaLevel[] SentryJavaLevels =
         {
-            _fixture.SentryUnityOptions!.DiagnosticLevel = level;
+            new () { SentryLevel = SentryLevel.Debug, JavaLevel = "debug" },
+            new () { SentryLevel = SentryLevel.Error, JavaLevel = "error" },
+            new () { SentryLevel = SentryLevel.Fatal, JavaLevel = "fatal" },
+            new () { SentryLevel = SentryLevel.Info, JavaLevel = "info" },
+            new () { SentryLevel = SentryLevel.Warning, JavaLevel = "warning" }
+        };
+
+        public struct SentryJavaLevel
+        {
+            public SentryLevel SentryLevel;
+            public string JavaLevel;
+        }
+
+        [Test]
+        public void OnPostGenerateGradleAndroidProject_DiagnosticLevel_TestCases(
+            [ValueSource(nameof(SentryJavaLevels))] SentryJavaLevel levels)
+        {
+            _fixture.SentryUnityOptions!.DiagnosticLevel = levels.SentryLevel;
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
 
             // Debug message is only logged if level is Debug:
-            if (level == SentryLevel.Debug)
+            if (levels.SentryLevel == SentryLevel.Debug)
             {
-                AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {level}");
+                AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {levels.SentryLevel}");
             }
 
             Assert.True(manifest.Contains(
-                    $"<meta-data android:name=\"io.sentry.debug.level\" android:value=\"{javaLevel}\" />"),
+                    $"<meta-data android:name=\"io.sentry.debug.level\" android:value=\"{levels.JavaLevel}\" />"),
                 $"Expected 'io.sentry.debug.level' in Manifest:\n{manifest}");
         }
 
