@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Xml.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
 
@@ -202,26 +200,31 @@ namespace Sentry.Unity.Editor.Tests
         // options.setDiagnosticLevel(SentryLevel.valueOf(level.toUpperCase(Locale.ROOT)));
         // src/sentry-java/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java
         // src/sentry-java/sentry/src/main/java/io/sentry/SentryLevel.java
-        [Test]
-        [TestCase(SentryLevel.Debug, "debug")]
-        [TestCase(SentryLevel.Error, "error")]
-        [TestCase(SentryLevel.Fatal, "fatal")]
-        [TestCase(SentryLevel.Info, "info")]
-        [TestCase(SentryLevel.Warning, "warning")]
-        public void OnPostGenerateGradleAndroidProject_DiagnosticLevel_TestCases(SentryLevel level, string javaLevel)
+        private static readonly SentryJavaLevel[] SentryJavaLevels =
         {
-            _fixture.SentryUnityOptions!.DiagnosticLevel = level;
+            new () { SentryLevel = SentryLevel.Debug, JavaLevel = "debug" },
+            new () { SentryLevel = SentryLevel.Error, JavaLevel = "error" },
+            new () { SentryLevel = SentryLevel.Fatal, JavaLevel = "fatal" },
+            new () { SentryLevel = SentryLevel.Info, JavaLevel = "info" },
+            new () { SentryLevel = SentryLevel.Warning, JavaLevel = "warning" }
+        };
+
+        [Test]
+        public void OnPostGenerateGradleAndroidProject_DiagnosticLevel_TestCases(
+            [ValueSource(nameof(SentryJavaLevels))] SentryJavaLevel levels)
+        {
+            _fixture.SentryUnityOptions!.DiagnosticLevel = levels.SentryLevel;
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
 
             // Debug message is only logged if level is Debug:
-            if (level == SentryLevel.Debug)
+            if (levels.SentryLevel == SentryLevel.Debug)
             {
-                AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {level}");
+                AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {levels.SentryLevel}");
             }
 
             Assert.True(manifest.Contains(
-                    $"<meta-data android:name=\"io.sentry.debug.level\" android:value=\"{javaLevel}\" />"),
+                    $"<meta-data android:name=\"io.sentry.debug.level\" android:value=\"{levels.JavaLevel}\" />"),
                 $"Expected 'io.sentry.debug.level' in Manifest:\n{manifest}");
         }
 
@@ -269,6 +272,12 @@ namespace Sentry.Unity.Editor.Tests
             Directory.CreateDirectory(destination);
             File.Copy(newAndroidManifest, Path.Combine(destination, "AndroidManifest.xml"), false);
             return basePath;
+        }
+
+        public struct SentryJavaLevel
+        {
+            public SentryLevel SentryLevel;
+            public string JavaLevel;
         }
     }
 }
