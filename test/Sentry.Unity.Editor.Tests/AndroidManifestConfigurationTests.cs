@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using NUnit.Framework;
-using Sentry;
 using Sentry.Unity.Editor.Android;
 
 namespace Sentry.Unity.Editor.Tests
@@ -33,7 +32,6 @@ namespace Sentry.Unity.Editor.Tests
 
         [SetUp]
         public void SetUp() => _fixture = new Fixture();
-
         private Fixture _fixture = null!;
 
         [Test]
@@ -63,7 +61,7 @@ namespace Sentry.Unity.Editor.Tests
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                "Expected 'auto-init' to be disabled");
+                    "Expected 'auto-init' to be disabled");
         }
 
         [Test]
@@ -73,20 +71,18 @@ namespace Sentry.Unity.Editor.Tests
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
 
-            AssertLogContains(SentryLevel.Debug,
-                "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
+            AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                "Expected 'auto-init' to be disabled");
+                    "Expected 'auto-init' to be disabled");
         }
 
         [Test]
         [TestCase(null)]
         [TestCase("")]
         [TestCase("  ")]
-        public void OnPostGenerateGradleAndroidProject_UnityOptions_EnabledWithoutDsn_LogWarningAndDisableInit(
-            string? dsn)
+        public void OnPostGenerateGradleAndroidProject_UnityOptions_EnabledWithoutDsn_LogWarningAndDisableInit(string? dsn)
         {
             _fixture.SentryUnityOptions!.Dsn = dsn;
             var sut = _fixture.GetSut();
@@ -100,8 +96,7 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void
-            OnPostGenerateGradleAndroidProject_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDisableInit()
+        public void OnPostGenerateGradleAndroidProject_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDisableInit()
         {
             _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
             var sut = _fixture.GetSut();
