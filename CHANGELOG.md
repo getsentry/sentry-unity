@@ -14,6 +14,15 @@
 - Import link.xml caused an infinite loop ([#315](https://github.com/getsentry/sentry-unity/pull/315))
 - Removed unused .asmdefs which clears a warning from console ([#316](https://github.com/getsentry/sentry-unity/pull/316))
 - Don't send negative line number ([#317](https://github.com/getsentry/sentry-unity/pull/317))
+- Bump Sentry .NET SDK 3.9.3 ([#238](https://github.com/getsentry/sentry-unity/pull/238))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.9.3/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.9.0...3.9.3)
+- Bump Sentry Cocoa SDK 7.3.0 ([#238](https://github.com/getsentry/sentry-unity/pull/238))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.3.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.2.2...7.3.0)
+- Bump Sentry Android SDK to 5.2.0 ([#238](https://github.com/getsentry/sentry-unity/pull/238))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.0-beta.3...5.2.0)
 
 ## 0.5.2
 
