@@ -20,7 +20,10 @@ namespace Sentry.Unity.Editor.Tests
                 // Options configured to initialize the Android SDK, tests will change from there:
                 SentryUnityOptions = new()
                 {
-                    Enabled = true, Dsn = "https://k@h/p", AndroidNativeSupportEnabled = true, Debug = true
+                    Enabled = true,
+                    Dsn = "https://k@h/p",
+                    AndroidNativeSupportEnabled = true,
+                    Debug = true
                 };
                 SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, LoggerInterceptor);
 
