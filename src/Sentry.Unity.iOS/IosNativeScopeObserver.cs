@@ -7,6 +7,9 @@ namespace Sentry.Unity.iOS
     public class IosNativeScopeObserver : IScopeObserver
     {
         [DllImport("__Internal")]
+        private static extern bool CrashedLastRun();
+
+        [DllImport("__Internal")]
         private static extern void SentryNativeBridgeAddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
 
         [DllImport("__Internal")]
@@ -26,7 +29,11 @@ namespace Sentry.Unity.iOS
 
         private readonly SentryUnityOptions _options;
 
-        public IosNativeScopeObserver(SentryUnityOptions options) => _options = options;
+        public IosNativeScopeObserver(SentryUnityOptions options)
+        {
+            _options = options;
+            _options.CrashedLastRun = CrashedLastRun;
+        }
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
