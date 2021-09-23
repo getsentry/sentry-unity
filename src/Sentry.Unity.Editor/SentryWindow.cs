@@ -149,7 +149,7 @@ namespace Sentry.Unity.Editor
             Options.Dsn = EditorGUILayout.TextField(
                 new GUIContent("DSN", "The URL to your Sentry project. " +
                                       "Get yours on sentry.io -> Project Settings."),
-                Options.Dsn);
+                Options.Dsn).Trim();
 
             Options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
