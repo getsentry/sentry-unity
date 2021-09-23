@@ -16,29 +16,30 @@ namespace Sentry.Unity.Editor.iOS
             }
 
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
-            if (options?.Validate() != true)
-            {
-                new UnityLogger(new SentryOptions()).LogWarning(
-                    "Failed to validate Sentry Options. Xcode project will not be modified.");
-                return;
-            }
-
-            if (!options.IosNativeSupportEnabled)
-            {
-                options.DiagnosticLogger?.LogDebug("iOS Native support disabled. Won't modify the xcode project");
-                return;
-            }
 
             try
             {
-                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, options);
+                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
                 sentryXcodeProject.AddSentryFramework();
-                sentryXcodeProject.AddNativeOptions();
-                sentryXcodeProject.AddSentryToMain();
+
+                if (options?.Validate() != true)
+                {
+                    new UnityLogger(new SentryOptions()).LogWarning("Failed to validate Sentry Options. Native support disabled.");
+                    return;
+                }
+
+                if (!options.IosNativeSupportEnabled)
+                {
+                    options.DiagnosticLogger?.LogDebug("iOS Native support disabled through the options.");
+                    return;
+                }
+
+                sentryXcodeProject.AddNativeOptions(options);
+                sentryXcodeProject.AddSentryToMain(options);
             }
             catch (Exception e)
             {
-                options.DiagnosticLogger?.LogError("Failed to add Sentry to the xcode project", e);
+                options?.DiagnosticLogger?.LogError("Failed to add the Sentry framework to the generated Xcode project", e);
             }
         }
     }
