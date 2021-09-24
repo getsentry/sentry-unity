@@ -39,7 +39,7 @@ namespace Sentry.Unity
                 {
                     options.ScopeObserver = new UnityJavaScopeObserver(options);
                     options.EnableScopeSync = true;
-                    SentryNative.Reinstall();
+                    SentryNative.ReinstallBackend();
                 }
 #endif
 
