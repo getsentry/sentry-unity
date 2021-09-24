@@ -1,7 +1,6 @@
 using UnityEngine;
 
-// ReSharper disable once CheckNamespace
-namespace Sentry.Unity
+namespace Sentry.Unity.Android
 {
     // Added only via #ifdef so linker will drop it if not building for Android
 
@@ -10,11 +9,10 @@ namespace Sentry.Unity
     /// </summary>
     public class UnityJavaScopeObserver : IScopeObserver
     {
-        private readonly AndroidJavaClass _sentry = new AndroidJavaClass("io.sentry.Sentry");
+        private readonly AndroidJavaClass _sentry = new("io.sentry.Sentry");
 
         public UnityJavaScopeObserver(SentryOptions options)
         {
-
         }
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
