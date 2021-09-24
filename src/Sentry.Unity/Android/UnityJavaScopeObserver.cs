@@ -22,6 +22,7 @@ namespace Sentry.Unity
             using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
             javaBreadcrumb.Set("message", breadcrumb.Message);
             javaBreadcrumb.Set("type", breadcrumb.Type);
+            javaBreadcrumb.Set("level", breadcrumb.Level.ToJavaSentryLevel());
             javaBreadcrumb.Set("category", breadcrumb.Category);
             _sentry.CallStatic("addBreadcrumb", javaBreadcrumb, null);
         }
