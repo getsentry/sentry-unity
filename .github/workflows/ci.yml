@@ -81,9 +81,11 @@ jobs:
       - name: Restore native SDKs
         uses: actions/cache@v2
         with:
+          # The raw NDK symbols are needed to get bundled for the final craft artifact
           path: |
             package-dev/Plugins/iOS
             package-dev/Plugins/Android
+            src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           # We only build the native SDKs if the respective 'package-dev/Plugins/' directories are empty
           # Output changes only depending on the git sha of the submodules
           # hash of package/package.json for cache busting on release builds (version bump)
@@ -207,7 +209,7 @@ jobs:
           # Adding the native libraries so the symbol collector craft target can find/upload them
           path: | 
             package-release.zip
-            ./src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+            src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
       - name: Upload Android Build
         uses: actions/upload-artifact@v1
