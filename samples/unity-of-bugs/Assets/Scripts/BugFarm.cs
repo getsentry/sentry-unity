@@ -74,7 +74,7 @@ public class BugFarm : MonoBehaviour
                 Email = "ant@farm.bug",
                 Username = "ant",
                 Id = "ant-id"
-            }
+            };
         });
         Debug.Log("User set: ant");
     }
