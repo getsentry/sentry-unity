@@ -36,7 +36,7 @@ namespace Sentry.Unity.Tests.Json
         [TestCase(321)]
         [TestCase(-9870L)]
         [TestCase(234.12)]
-        [TestCase(123+144D)]
+        [TestCase(123 + 144D)]
         public void SerializeExtraValue_NumericValueType_ReturnsValueAsToString(object valueType)
         {
             var testLogger = new TestLogger();
