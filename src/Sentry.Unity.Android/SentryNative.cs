@@ -26,7 +26,7 @@ namespace Sentry.Unity.Android
         public static void ReinstallBackend() => sentry_reinstall_backend();
 
         // libsentry.io
-        [DllImport ("sentry")]
+        [DllImport("sentry")]
         private static extern void sentry_reinstall_backend();
     }
 }
