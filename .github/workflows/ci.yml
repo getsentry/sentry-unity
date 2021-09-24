@@ -207,7 +207,7 @@ jobs:
           # Adding the native libraries so the symbol collector craft target can find/upload them
           path: | 
             package-release.zip
-            ./src/sentry-android/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+            ./src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
       - name: Upload Android Build
         uses: actions/upload-artifact@v1
