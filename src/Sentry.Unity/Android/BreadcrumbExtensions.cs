@@ -21,13 +21,13 @@ namespace Sentry.Unity
         /// <returns>An Android Java object representing the SentryLevel.</returns>
         public static AndroidJavaObject ToJavaSentryLevel(this BreadcrumbLevel level)
             => level switch
-                {
-                    BreadcrumbLevel.Critical => JavaSentryLevelFatal,
-                    BreadcrumbLevel.Debug => JavaSentryLevelDebug,
-                    BreadcrumbLevel.Info => JavaSentryLevelInfo,
-                    BreadcrumbLevel.Warning => JavaSentryLevelWarning,
-                    BreadcrumbLevel.Error => JavaSentryLevelError,
-                    _ => JavaSentryLevelInfo
-                };
+            {
+                BreadcrumbLevel.Critical => JavaSentryLevelFatal,
+                BreadcrumbLevel.Debug => JavaSentryLevelDebug,
+                BreadcrumbLevel.Info => JavaSentryLevelInfo,
+                BreadcrumbLevel.Warning => JavaSentryLevelWarning,
+                BreadcrumbLevel.Error => JavaSentryLevelError,
+                _ => JavaSentryLevelInfo
+            };
     }
 }
