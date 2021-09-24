@@ -8,11 +8,11 @@ namespace Sentry.Unity
     public static class BreadcrumbExtensions
     {
         private static readonly AndroidJavaObject JavaSentryLevel = new AndroidJavaClass("io.sentry.SentryLevel");
-        private static AndroidJavaObject JavaSentryLevelFatal = JavaSentryLevel.GetStatic<AndroidJavaObject>("FATAL");
-        private static AndroidJavaObject JavaSentryLevelDebug = JavaSentryLevel.GetStatic<AndroidJavaObject>("DEBUG");
-        private static AndroidJavaObject JavaSentryLevelInfo = JavaSentryLevel.GetStatic<AndroidJavaObject>("INFO");
-        private static AndroidJavaObject JavaSentryLevelWarning = JavaSentryLevel.GetStatic<AndroidJavaObject>("WARNING");
-        private static AndroidJavaObject JavaSentryLevelError = JavaSentryLevel.GetStatic<AndroidJavaObject>("ERROR");
+        private static readonly AndroidJavaObject JavaSentryLevelFatal = JavaSentryLevel.GetStatic<AndroidJavaObject>("FATAL");
+        private static readonly AndroidJavaObject JavaSentryLevelDebug = JavaSentryLevel.GetStatic<AndroidJavaObject>("DEBUG");
+        private static readonly AndroidJavaObject JavaSentryLevelInfo = JavaSentryLevel.GetStatic<AndroidJavaObject>("INFO");
+        private static readonly AndroidJavaObject JavaSentryLevelWarning = JavaSentryLevel.GetStatic<AndroidJavaObject>("WARNING");
+        private static readonly AndroidJavaObject JavaSentryLevelError = JavaSentryLevel.GetStatic<AndroidJavaObject>("ERROR");
 
         /// <summary>
         /// To Java SentryLevel.
