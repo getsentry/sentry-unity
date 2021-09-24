@@ -5,8 +5,10 @@ namespace Sentry.Unity.iOS
     /// <summary>
     /// P/Invoke to SentryNativeBridge.m which communicates with the `sentry-cocoa` SDK.
     /// </summary>
+    /// <remarks>
+    /// Functions are declared in `SentryNativeBridge.m`
+    /// </remarks>
     /// <see href="https://github.com/getsentry/sentry-cocoa"/>
-    /// <see href="SentryNativeBridge.m"/>
     internal static class SentryCocoaBridgeProxy
     {
         [DllImport("__Internal")]

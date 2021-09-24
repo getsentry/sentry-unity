@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Unity.Json;
 
@@ -17,11 +16,60 @@ namespace Sentry.Unity.iOS
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
-            var timestamp = GetTimestamp(breadcrumb.Timestamp);
-            var level = GetBreadcrumbLevel(breadcrumb.Level);
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Adding breadcrumb m:\"{0}\" l:\"{1}\"",
+                breadcrumb.Message,
+                breadcrumb.Level);
 
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Adding breadcrumb m:\"{0}\" l:\"{1}\"", breadcrumb.Message, level);
+            var level = GetBreadcrumbLevel(breadcrumb.Level);
+            var timestamp = GetTimestamp(breadcrumb.Timestamp);
+
             SentryCocoaBridgeProxy.SentryNativeBridgeAddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level);
+        }
+
+        public void SetExtra(string key, object? value)
+        {
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
+
+            string? extraValue = null;
+            if (value is not null)
+            {
+                extraValue = SafeSerializer.SerializeSafely(value);
+                if (extraValue is null)
+                {
+                    return;
+                }
+            }
+
+            SentryCocoaBridgeProxy.SentryNativeBridgeSetExtra(key, extraValue);
+        }
+
+        public void SetTag(string key, string value)
+        {
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
+            SentryCocoaBridgeProxy.SentryNativeBridgeSetTag(key, value);
+        }
+
+        public void UnsetTag(string key)
+        {
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Unsetting Tag k:\"{0}\"", key);
+            SentryCocoaBridgeProxy.SentryNativeBridgeUnsetTag(key);
+        }
+
+        public void SetUser(User? user)
+        {
+            if (user is null)
+            {
+                _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Unsetting User");
+                SentryCocoaBridgeProxy.SentryNativeBridgeUnsetUser();
+            }
+            else
+            {
+                _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Setting User i:\"{0}\" n:\"{1}\"",
+                    user.Id,
+                    user.Username);
+
+                SentryCocoaBridgeProxy.SentryNativeBridgeSetUser(user.Email, user.Id, user.IpAddress, user.Username);
+            }
         }
 
         internal static string GetTimestamp(DateTimeOffset timestamp) =>
@@ -40,47 +88,5 @@ namespace Sentry.Unity.iOS
                 BreadcrumbLevel.Critical => 5,
                 _ => 0
             };
-
-        public void SetExtra(string key, object? value)
-        {
-            string? extraValue = null;
-            if (value is not null)
-            {
-                extraValue = SafeSerializer.SerializeSafely(value);
-                if (extraValue is null)
-                {
-                    return;
-                }
-            }
-
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
-            SentryCocoaBridgeProxy.SentryNativeBridgeSetExtra(key, extraValue);
-        }
-
-        public void SetTag(string key, string value)
-        {
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
-            SentryCocoaBridgeProxy.SentryNativeBridgeSetTag(key, value);
-        }
-
-        public void UnsetTag(string key)
-        {
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Unsetting Tag k:\"{0}\"", key);
-            SentryCocoaBridgeProxy.SentryNativeBridgeUnsetTag(key);
-        }
-
-        public void SetUser(User? user)
-        {
-            if (user is null)
-            {
-                _options.DiagnosticLogger?.LogDebug("Native bridge - Unsetting User");
-                SentryCocoaBridgeProxy.SentryNativeBridgeUnsetUser();
-            }
-            else
-            {
-                _options.DiagnosticLogger?.LogDebug("Native bridge - Setting User i:\"{0}\" n:\"{1}\"", user.Id, user.Username);
-                SentryCocoaBridgeProxy.SentryNativeBridgeSetUser(user.Email, user.Id, user.IpAddress, user.Username);
-            }
-        }
     }
 }

@@ -62,7 +62,7 @@ public class BugFarm : MonoBehaviour
 
     public void SendMessage()
     {
-        Debug.Log("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
+        SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
     }
 
     public void SetUser()

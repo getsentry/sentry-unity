@@ -29,18 +29,9 @@ namespace Sentry.Unity
             {
 
 #if SENTRY_NATIVE_IOS
-                if (options.IosNativeSupportEnabled)
-                {
-                    options.ScopeObserver = new IosNativeScopeObserver(options);
-                    options.EnableScopeSync = true;
-                }
+                SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                if (options.AndroidNativeSupportEnabled)
-                {
-                    options.ScopeObserver = new UnityJavaScopeObserver(options);
-                    options.EnableScopeSync = true;
-                    SentryNative.ReinstallBackend();
-                }
+                SentryNativeAndroid.Configure(options);
 #endif
 
                 SentryUnity.Init(options);
