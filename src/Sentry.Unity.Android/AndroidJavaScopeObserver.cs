@@ -1,19 +1,18 @@
+using Sentry.Unity.Json;
 using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
-    // Added only via #ifdef so linker will drop it if not building for Android
-
     /// <summary>
-    /// Scope Observer for Java (JNI).
+    /// Scope Observer for Android through Java (JNI).
     /// </summary>
-    public class UnityJavaScopeObserver : IScopeObserver
+    /// <see href="https://github.com/getsentry/sentry-java"/>
+    public class AndroidJavaScopeObserver : IScopeObserver
     {
+        private readonly SentryOptions _options;
         private readonly AndroidJavaClass _sentry = new("io.sentry.Sentry");
 
-        public UnityJavaScopeObserver(SentryOptions options)
-        {
-        }
+        public AndroidJavaScopeObserver(SentryOptions options) => _options = options;
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
@@ -26,15 +25,16 @@ namespace Sentry.Unity.Android
 
         public void SetExtra(string key, object? value)
         {
-            if (value is string)
+            string? extraValue = null;
+            if (value is not null)
             {
-                _sentry.CallStatic("setExtra", key, value);
+                extraValue = SafeSerializer.SerializeSafely(value);
+                if (extraValue is null)
+                {
+                    return;
+                }
             }
-            else
-            {
-                // TODO: JSON serialize before sending down?
-                _sentry.CallStatic("setExtra", key, value?.ToString());
-            }
+            _sentry.CallStatic("setExtra", key, extraValue);
         }
 
         public void SetTag(string key, string value)

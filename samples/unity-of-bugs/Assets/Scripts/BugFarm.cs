@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Sentry;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -64,18 +65,18 @@ public class BugFarm : MonoBehaviour
         Debug.Log("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
     }
 
-    public void ExceptionToString()
+    public void SetUser()
     {
-        Debug.Log("Throw/Catch, Debug.LogError: Exception.ToString!");
-
-        try
+        SentrySdk.ConfigureScope(s =>
         {
-            MethodB();
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"ExceptionToString:\n{e}");
-        }
+            s.User = new User
+            {
+                Email = "ant@farm.bug",
+                Username = "ant",
+                Id = "ant-id"
+            }
+        });
+        Debug.Log("User set: ant");
     }
 
     public void ThrowKotlin()

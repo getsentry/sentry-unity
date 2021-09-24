@@ -5,6 +5,12 @@ namespace Sentry.Unity.Android
     /// <summary>
     /// P/Invoke to `sentry-native` functions.
     /// </summary>
+    /// <remarks>
+    /// The `sentry-native` SDK on Android is brought in through the `sentry-android-ndk`
+    /// maven package.
+    /// </remarks>
+    /// <see href="https://github.com/getsentry/sentry-java"/>
+    /// <see href="https://github.com/getsentry/sentry-native"/>
     public static class SentryNative
     {
         /// <summary>
@@ -17,9 +23,9 @@ namespace Sentry.Unity.Android
         /// containing a tompstone, without any of the scope data such as tags set through
         /// Sentry SDKs C# -> Java -> C
         /// </summary>
-		public static void ReinstallBackend() => sentry_reinstall_backend();
+        public static void ReinstallBackend() => sentry_reinstall_backend();
 
-		// libsentry.io
+        // libsentry.io
         [DllImport ("sentry")]
         private static extern void sentry_reinstall_backend();
     }

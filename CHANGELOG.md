@@ -15,6 +15,7 @@
 - Import link.xml caused an infinite loop ([#315](https://github.com/getsentry/sentry-unity/pull/315))
 - Removed unused .asmdefs which clears a warning from console ([#316](https://github.com/getsentry/sentry-unity/pull/316))
 - Don't send negative line number ([#317](https://github.com/getsentry/sentry-unity/pull/317))
+- Android SDK: re-installation of native backend through C# ([#339](https://github.com/getsentry/sentry-unity/pull/339))
 - Bump Sentry .NET SDK 3.9.3 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.9.3/CHANGELOG.md)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.9.0...3.9.3)
