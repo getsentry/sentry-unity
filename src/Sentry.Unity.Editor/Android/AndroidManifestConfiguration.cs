@@ -110,6 +110,8 @@ namespace Sentry.Unity.Editor.Android
 
             // Disabling the native in favor of the C# layer for now
             androidManifest.SetAutoSessionTracking(false);
+            // TODO: We need an opt-out for this:
+            androidManifest.SetNdkScopeSync(true);
 
             // TODO: All SentryOptions and create specific Android options
 
@@ -175,7 +177,8 @@ namespace Sentry.Unity.Editor.Android
         internal void SetEnvironment(string environment) => SetMetaData("io.sentry.environment", environment);
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
             => SetMetaData("io.sentry.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
-
+        internal void SetNdkScopeSync(bool enableNdkScopeSync)
+            => SetMetaData("io.sentry.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
         internal void SetDebug(bool debug) => SetMetaData("io.sentry.debug", debug ? "true" : "false");
 
         // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9

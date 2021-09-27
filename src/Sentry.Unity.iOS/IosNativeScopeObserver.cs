@@ -1,47 +1,75 @@
 using System;
-using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using Sentry.Unity.Json;
 
 namespace Sentry.Unity.iOS
 {
     public class IosNativeScopeObserver : IScopeObserver
     {
-        [DllImport("__Internal")]
-        private static extern bool CrashedLastRun();
-
-        [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeAddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
-
-        [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeSetExtra(string key, string? value);
-
-        [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeSetTag(string key, string value);
-
-        [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeUnsetTag(string key);
-
-        [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeSetUser(string? email, string? userId, string? ipAddress, string? username);
-
-        [DllImport("__Internal")]
-        private static extern void SentryNativeBridgeUnsetUser();
-
         private readonly SentryUnityOptions _options;
 
         public IosNativeScopeObserver(SentryUnityOptions options)
         {
             _options = options;
-            _options.CrashedLastRun = CrashedLastRun;
+            _options.CrashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun;
         }
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
-            var timestamp = GetTimestamp(breadcrumb.Timestamp);
-            var level = GetBreadcrumbLevel(breadcrumb.Level);
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Adding breadcrumb m:\"{0}\" l:\"{1}\"",
+                breadcrumb.Message,
+                breadcrumb.Level);
 
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Adding breadcrumb m:\"{0}\" l:\"{1}\"", breadcrumb.Message, level);
-            SentryNativeBridgeAddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level);
+            var level = GetBreadcrumbLevel(breadcrumb.Level);
+            var timestamp = GetTimestamp(breadcrumb.Timestamp);
+
+            SentryCocoaBridgeProxy.SentryNativeBridgeAddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level);
+        }
+
+        public void SetExtra(string key, object? value)
+        {
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
+
+            string? extraValue = null;
+            if (value is not null)
+            {
+                extraValue = SafeSerializer.SerializeSafely(value);
+                if (extraValue is null)
+                {
+                    return;
+                }
+            }
+
+            SentryCocoaBridgeProxy.SentryNativeBridgeSetExtra(key, extraValue);
+        }
+
+        public void SetTag(string key, string value)
+        {
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
+            SentryCocoaBridgeProxy.SentryNativeBridgeSetTag(key, value);
+        }
+
+        public void UnsetTag(string key)
+        {
+            _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Unsetting Tag k:\"{0}\"", key);
+            SentryCocoaBridgeProxy.SentryNativeBridgeUnsetTag(key);
+        }
+
+        public void SetUser(User? user)
+        {
+            if (user is null)
+            {
+                _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Unsetting User");
+                SentryCocoaBridgeProxy.SentryNativeBridgeUnsetUser();
+            }
+            else
+            {
+                _options.DiagnosticLogger?.LogDebug("iOS Scope Sync - Setting User i:\"{0}\" n:\"{1}\"",
+                    user.Id,
+                    user.Username);
+
+                SentryCocoaBridgeProxy.SentryNativeBridgeSetUser(user.Email, user.Id, user.IpAddress, user.Username);
+            }
         }
 
         internal static string GetTimestamp(DateTimeOffset timestamp) =>
@@ -60,60 +88,5 @@ namespace Sentry.Unity.iOS
                 BreadcrumbLevel.Critical => 5,
                 _ => 0
             };
-
-        public void SetExtra(string key, object? value)
-        {
-            string? extraValue = null;
-            if (value is not null)
-            {
-                extraValue = SerializeExtraValue(value);
-                if (extraValue is null)
-                {
-                    return;
-                }
-            }
-
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
-            SentryNativeBridgeSetExtra(key, extraValue);
-        }
-
-        internal string? SerializeExtraValue(object value)
-        {
-            try
-            {
-                return System.Text.Json.JsonSerializer.Serialize(value);
-            }
-            catch (Exception e)
-            {
-                _options.DiagnosticLogger?.LogError("Native bridge - Failed to serialize extra value of type \"{0}\"", e, value.GetType());
-                return null;
-            }
-        }
-
-        public void SetTag(string key, string value)
-        {
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
-            SentryNativeBridgeSetTag(key, value);
-        }
-
-        public void UnsetTag(string key)
-        {
-            _options.DiagnosticLogger?.LogDebug("Native bridge - Unsetting Tag k:\"{0}\"", key);
-            SentryNativeBridgeUnsetTag(key);
-        }
-
-        public void SetUser(User? user)
-        {
-            if (user is null)
-            {
-                _options.DiagnosticLogger?.LogDebug("Native bridge - Unsetting User");
-                SentryNativeBridgeUnsetUser();
-            }
-            else
-            {
-                _options.DiagnosticLogger?.LogDebug("Native bridge - Setting User i:\"{0}\" n:\"{1}\"", user.Id, user.Username);
-                SentryNativeBridgeSetUser(user.Email, user.Id, user.IpAddress, user.Username);
-            }
-        }
     }
 }
