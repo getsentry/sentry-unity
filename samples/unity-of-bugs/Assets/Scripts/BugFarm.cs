@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
+#if !UNITY_EDITOR
 using System.Runtime.InteropServices;
+#endif
 using Sentry;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -99,19 +101,31 @@ public class BugFarm : MonoBehaviour
 #endif
     }
 
-    public void CrashNative()
+    public void CrashInCpp()
     {
 #if !UNITY_EDITOR
-        crash();
+        crash_in_cpp();
+#else
+        Debug.Log("Requires IL2CPP. Try this on a native player.");
+#endif
+    }
+
+    public void CrashInC()
+    {
+#if !UNITY_EDITOR
+        crash_in_c();
 #else
         Debug.Log("Requires IL2CPP. Try this on a native player.");
 #endif
     }
 
 #if !UNITY_EDITOR
-    // NativeExample.c
+    // CppPlugin.cpp
     [DllImport("__Internal")]
-    private static extern void crash();
+    private static extern void crash_in_cpp();
+    // CPlugin.c
+    [DllImport("__Internal")]
+    private static extern void crash_in_c();
 #endif
 
     [MethodImpl(MethodImplOptions.NoInlining)]

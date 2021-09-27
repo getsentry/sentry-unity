@@ -1220,7 +1220,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: CrashNative
+  m_Text: Crash In C
 --- !u!222 &589235007
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1580,7 +1580,7 @@ GameObject:
   - component: {fileID: 783282030}
   - component: {fileID: 783282029}
   m_Layer: 5
-  m_Name: CrashNative
+  m_Name: Crash In C
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1650,7 +1650,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 206653283}
-        m_MethodName: CrashNative
+        m_MethodName: CrashInC
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
