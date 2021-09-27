@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
-#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP || PLATFORM_IOS
 using System.Runtime.InteropServices;
 #endif
 using Sentry;
@@ -94,7 +94,7 @@ public class BugFarm : MonoBehaviour
             jo.CallStatic("throwOnBackgroundThread");
         }
 #else
-          Debug.LogWarning("Not running on Android.");
+        Debug.LogWarning("Not running on Android.");
 #endif
     }
 
@@ -135,6 +135,21 @@ public class BugFarm : MonoBehaviour
     // CPlugin.c
     [DllImport("__Internal")]
     private static extern void crash_in_c();
+#endif
+
+    public void ThrowObjectiveC()
+    {
+#if PLATFORM_IOS
+        throwObjectiveC();
+#else
+        Debug.Log("Requires IL2CPP. Try this on a native player.");
+#endif
+    }
+
+#if PLATFORM_IOS
+    // ObjectiveCPlugin.m
+    [DllImport("__Internal")]
+    private static extern void throwObjectiveC();
 #endif
 
     [MethodImpl(MethodImplOptions.NoInlining)]
