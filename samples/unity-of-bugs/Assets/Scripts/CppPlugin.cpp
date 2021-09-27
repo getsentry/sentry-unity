@@ -5,23 +5,20 @@
 extern "C" {
 	void crash_in_cpp()
 	{
-		int a = 5, b = 0, c = 0;
-		int *p = 0;
-		p = &a;
-		b = *p;
-		p = 0;
-		c = *p;
+        char *ptr = 0;
+        *ptr += 1;
 	}
 }
 
 extern "C" {
-	void throw_in_cpp()
+	void throw_cpp()
 	{
 	    try {
-            std::string("abc").substr(10); // throws std::length_error
+	        // throws std::length_error
+            std::string("1").substr(2);
         } catch(const std::exception& e) {
             std::cout << e.what() << '\n';
-            throw;   // rethrows the exception object of type std::length_error
+            throw;
         }
 	}
 }
