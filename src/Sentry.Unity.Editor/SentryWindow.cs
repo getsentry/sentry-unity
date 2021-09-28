@@ -27,7 +27,7 @@ namespace Sentry.Unity.Editor
         public event Action<ValidationError> OnValidationError = _ => { };
 
         private int _currentTab = 0;
-        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Sessions", "Debug" };
+        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Advanced" };
 
         private void OnEnable()
         {
@@ -130,9 +130,6 @@ namespace Sentry.Unity.Editor
                     DisplayTransport();
                     break;
                 case 3:
-                    DisplaySessions();
-                    break;
-                case 4:
                     DisplayDebug();
                     break;
                 default:
@@ -149,7 +146,7 @@ namespace Sentry.Unity.Editor
             Options.Dsn = EditorGUILayout.TextField(
                 new GUIContent("DSN", "The URL to your Sentry project. " +
                                       "Get yours on sentry.io -> Project Settings."),
-                Options.Dsn);
+                Options.Dsn).Trim();
 
             Options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
@@ -166,22 +163,6 @@ namespace Sentry.Unity.Editor
                                                      "captured. Setting this to 0 discards all trace data. " +
                                                      "Setting this to 1.0 captures all."),
                 (float)Options.TracesSampleRate, 0.0f, 1.0f);
-
-            EditorGUILayout.Space();
-            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-            EditorGUILayout.Space();
-
-            GUILayout.Label("Native Support", EditorStyles.boldLabel);
-
-            Options.IosNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("iOS Native Support", "Whether to enable Native iOS support to capture" +
-                                                     "errors written in languages such as Objective-C, Swift, C and C++."),
-                Options.IosNativeSupportEnabled);
-
-            Options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
-                                                         "capture errors written in languages such as Java, Kotlin, C and C++."),
-                Options.AndroidNativeSupportEnabled);
         }
 
         private void DisplayEnrichment()
@@ -303,23 +284,6 @@ namespace Sentry.Unity.Editor
             );
         }
 
-        private void DisplaySessions()
-        {
-            Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Auto Session Tracking", "Whether the SDK should start and end sessions " +
-                                                        "automatically. If the timeout is reached the old session will" +
-                                                        "be ended and a new one started."),
-                Options.AutoSessionTracking);
-
-            Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
-                new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
-                                                       "(i.e. the application has been put in the background) before " +
-                                                       "it is considered ended."),
-                Options.AutoSessionTrackingInterval);
-
-            EditorGUILayout.EndToggleGroup();
-        }
-
         private void DisplayDebug()
         {
             Options.Debug = EditorGUILayout.BeginToggleGroup(
@@ -338,6 +302,40 @@ namespace Sentry.Unity.Editor
                 Options.DiagnosticLevel);
 
             EditorGUILayout.EndToggleGroup();
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Session Tracking", "Whether the SDK should start and end sessions " +
+                                                        "automatically. If the timeout is reached the old session will" +
+                                                        "be ended and a new one started."),
+                Options.AutoSessionTracking);
+
+            Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
+                new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
+                                                       "(i.e. the application has been put in the background) before " +
+                                                       "it is considered ended."),
+                Options.AutoSessionTrackingInterval);
+
+            EditorGUILayout.EndToggleGroup();
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            GUILayout.Label("Native Support", EditorStyles.boldLabel);
+
+            Options.IosNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("iOS Native Support", "Whether to enable Native iOS support to capture" +
+                                                     "errors written in languages such as Objective-C, Swift, C and C++."),
+                Options.IosNativeSupportEnabled);
+
+            Options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
+                                                         "capture errors written in languages such as Java, Kotlin, C and C++."),
+                Options.AndroidNativeSupportEnabled);
         }
 
         private void OnLostFocus()

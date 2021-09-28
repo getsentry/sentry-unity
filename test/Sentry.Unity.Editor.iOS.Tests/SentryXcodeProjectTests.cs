@@ -26,7 +26,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             public INativeMain NativeMain { get; set; } = new NativeMainTest();
             public INativeOptions NativeOptions { get; set; } = new NativeOptionsTest();
 
-            public SentryXcodeProject GetSut() => new(ProjectRoot, Options, NativeMain, NativeOptions);
+            public SentryXcodeProject GetSut() => new(ProjectRoot, NativeMain, NativeOptions);
         }
 
         private Fixture _fixture = new();
@@ -117,7 +117,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             xcodeProject.ReadFromProjectFile();
             xcodeProject.RelativeFrameworkPath = "Frameworks/io.sentry.unity/Plugins/iOS/";
 
-            xcodeProject.AddNativeOptions();
+            xcodeProject.AddNativeOptions(_fixture.Options);
 
             StringAssert.Contains("SentryOptions.m", xcodeProject.ProjectToString());
         }

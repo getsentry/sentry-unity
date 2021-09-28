@@ -11,6 +11,8 @@ using UnityEngine.Scripting;
 
 #if SENTRY_NATIVE_IOS
 using Sentry.Unity.iOS;
+#elif UNITY_ANDROID
+using Sentry.Unity.Android;
 #endif
 
 [assembly: AlwaysLinkAssembly]
@@ -27,11 +29,9 @@ namespace Sentry.Unity
             {
 
 #if SENTRY_NATIVE_IOS
-                options.ScopeObserver = new IosNativeScopeObserver(options);
-                options.EnableScopeSync = true;
+                SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                options.ScopeObserver = new UnityJavaScopeObserver(options);
-                options.EnableScopeSync = true;
+                SentryNativeAndroid.Configure(options);
 #endif
 
                 SentryUnity.Init(options);

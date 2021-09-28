@@ -14,8 +14,6 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _unityPackageFrameworkRoot = Path.Combine("Frameworks", "io.sentry.unity");
 
         private readonly string _projectRoot;
-        private readonly SentryUnityOptions _options;
-
         private readonly PBXProject _project;
         private readonly string _projectPath;
 
@@ -24,22 +22,15 @@ namespace Sentry.Unity.Editor.iOS
         private readonly INativeMain _nativeMain;
         private readonly INativeOptions _nativeOptions;
 
-        public SentryXcodeProject(
-            string projectRoot,
-            SentryUnityOptions options)
-            : this(projectRoot, options, new NativeMain(), new NativeOptions())
-        {
-        }
+        public SentryXcodeProject(string projectRoot) : this(projectRoot, new NativeMain(), new NativeOptions())
+        { }
 
         internal SentryXcodeProject(
             string projectRoot,
-            SentryUnityOptions options,
             INativeMain mainModifier,
             INativeOptions sentryNativeOptions)
         {
             _projectRoot = projectRoot;
-            _options = options;
-
             _projectPath = PBXProject.GetPBXProjectPath(projectRoot);
             _project = new PBXProject();
 
@@ -47,9 +38,9 @@ namespace Sentry.Unity.Editor.iOS
             _nativeOptions = sentryNativeOptions;
         }
 
-        public static SentryXcodeProject Open(string path, SentryUnityOptions options)
+        public static SentryXcodeProject Open(string path)
         {
-            var xcodeProject = new SentryXcodeProject(path, options);
+            var xcodeProject = new SentryXcodeProject(path);
             xcodeProject.ReadFromProjectFile();
             xcodeProject.SetRelativeFrameworkPath();
 
@@ -104,14 +95,14 @@ namespace Sentry.Unity.Editor.iOS
             _project.AddBuildProperty(targetGuid, "OTHER_LDFLAGS", "-ObjC");
         }
 
-        public void AddNativeOptions()
+        public void AddNativeOptions(SentryUnityOptions options)
         {
-            _nativeOptions.CreateFile(Path.Combine(_projectRoot, _optionsPath), _options);
+            _nativeOptions.CreateFile(Path.Combine(_projectRoot, _optionsPath), options);
             _project.AddFile(_optionsPath, _optionsPath);
         }
 
-        public void AddSentryToMain() =>
-            _nativeMain.AddSentry(Path.Combine(_projectRoot, _mainPath), _options.DiagnosticLogger);
+        public void AddSentryToMain(SentryUnityOptions options) =>
+            _nativeMain.AddSentry(Path.Combine(_projectRoot, _mainPath), options.DiagnosticLogger);
 
         internal string ProjectToString() => _project.WriteToString();
 

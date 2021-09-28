@@ -44,7 +44,7 @@
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
       <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
-      <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>      
+      <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)MacOS/IL2CPP_Player.app</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)/Contents/MacOS/unity-of-bugs</StandaloneExecutablePath>
       <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
@@ -59,29 +59,31 @@
     <RemoveDir Directories="$(UnityPackageProject)" />
   </Target>
 
-  <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="Exists('$(SentryCocoaArtifactsDestination)')">
+  <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryCocoaArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <Target Name="CleanAndroidSDK" AfterTargets="Clean" Condition="Exists('$(SentryAndroidArtifactsDestination)')">
+  <Target Name="CleanAndroidSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <!-- The jar file is version appended and we copy by glob so to avoid duplicates: -->
+    <RemoveDir Directories="$(SentryAndroidRoot)sentry/build/libs/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
-  <Target Name="BuildCocoaSDK" 
-          Condition="$([MSBuild]::IsOSPlatform('OSX')) 
+  <Target Name="BuildCocoaSDK"
+          Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
           And !Exists('$(SentryCocoaArtifactsDestination)')"
-          BeforeTargets="BeforeBuild">    
+          BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
     <Message Importance="High" Text="Building Sentry iOS SDK."></Message>
-    
+
     <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --use-xcframeworks --no-skip-current --platform iOS"></Exec>
 
     <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
     <ItemGroup>
       <CocoaBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework/**/*" />
-    </ItemGroup>    
+    </ItemGroup>
     <Copy SourceFiles="@(CocoaBuildPath)"
           DestinationFiles="@(CocoaBuildPath->'$(SentryCocoaArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
