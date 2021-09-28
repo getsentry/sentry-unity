@@ -11,26 +11,33 @@ namespace Sentry.Unity.Android
     public class AndroidJavaScopeObserver : IScopeObserver
     {
         private readonly SentryOptions _options;
-        private readonly AndroidJavaClass _sentry = new("io.sentry.Sentry");
 
         public AndroidJavaScopeObserver(SentryOptions options) => _options = options;
 
+        private AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
+            AndroidJNI.AttachCurrentThread();
+
             _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Adding breadcrumb m:\"{0}\" l:\"{1}\"",
                 breadcrumb.Message,
                 breadcrumb.Level);
 
+            using var sentry = GetSentryJava();
             using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
             javaBreadcrumb.Set("message", breadcrumb.Message);
             javaBreadcrumb.Set("type", breadcrumb.Type);
             javaBreadcrumb.Set("category", breadcrumb.Category);
-            javaBreadcrumb.Set("level", breadcrumb.Level.ToJavaSentryLevel());
-            _sentry.CallStatic("addBreadcrumb", javaBreadcrumb, null);
+            using var javaLevel = breadcrumb.Level.ToJavaSentryLevel();
+            javaBreadcrumb.Set("level", javaLevel);
+            sentry.CallStatic("addBreadcrumb", javaBreadcrumb, null);
         }
 
         public void SetExtra(string key, object? value)
         {
+            AndroidJNI.AttachCurrentThread();
+
             _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
 
             string? extraValue = null;
@@ -43,23 +50,34 @@ namespace Sentry.Unity.Android
                 }
             }
 
-            _sentry.CallStatic("setExtra", key, extraValue);
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("setExtra", key, extraValue);
         }
 
         public void SetTag(string key, string value)
         {
+            AndroidJNI.AttachCurrentThread();
+
             _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
-            _sentry.CallStatic("setTag", key, value);
+
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("setTag", key, value);
         }
 
         public void UnsetTag(string key)
         {
+            AndroidJNI.AttachCurrentThread();
+
             _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Unsetting Tag k:\"{0}\"", key);
-            _sentry.CallStatic("removeTag", key);
+
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("removeTag", key);
         }
 
         public void SetUser(User? user)
         {
+            AndroidJNI.AttachCurrentThread();
+
             AndroidJavaObject? javaUser = null;
             try
             {
@@ -79,7 +97,8 @@ namespace Sentry.Unity.Android
                 {
                     _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Unsetting User");
                 }
-                _sentry.CallStatic("setUser", javaUser);
+                using var sentry = GetSentryJava();
+                sentry.CallStatic("setUser", javaUser);
             }
             finally
             {
