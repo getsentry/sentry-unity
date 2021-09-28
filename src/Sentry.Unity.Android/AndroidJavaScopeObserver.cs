@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Json;
 using UnityEngine;
@@ -13,7 +14,13 @@ namespace Sentry.Unity.Android
         private readonly SentryOptions _options;
         private readonly AndroidJavaClass _sentry = new("io.sentry.Sentry");
 
-        public AndroidJavaScopeObserver(SentryOptions options) => _options = options;
+        public AndroidJavaScopeObserver(SentryOptions options)
+        {
+            _options = options;
+
+            var crashedLastRun = _sentry.CallStatic<bool?>("isCrashedLastRun");
+            Debug.Log($"CrashedLastRun: {crashedLastRun}");
+        }
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
