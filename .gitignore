@@ -1,4 +1,5 @@
 .vs/
+.vsconfig
 *.user
 .idea/
 obj/
