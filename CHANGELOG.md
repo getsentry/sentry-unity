@@ -7,6 +7,7 @@
 - Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
 - iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
 - Android native bridge for scope sync ([#308](https://github.com/getsentry/sentry-unity/pull/308))
+- Sample: Throw exceptions in C++ and Objective-C. C++ segfault ([#342](https://github.com/getsentry/sentry-unity/pull/342))
 
 ### Fixes
 
