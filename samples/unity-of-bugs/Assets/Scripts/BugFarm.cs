@@ -22,10 +22,7 @@ public class BugFarm : MonoBehaviour
     public void AssertFalse() => Assert.AreEqual(true, false);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void ThrowNull()
-    {
-        throw null;
-    }
+    public void ThrowNull() => throw null;
 
     public void ThrowExceptionAndCatch()
     {
