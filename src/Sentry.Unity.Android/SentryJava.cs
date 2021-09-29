@@ -18,7 +18,8 @@ namespace Sentry.Unity.Android
         /// <remarks>
         /// This value is returned by the Android SDK and reports for both ART and NDK.
         /// </remarks>
-        /// <returns>True if the last run terminated in a crash. No otherwise.
+        /// <returns>
+        /// True if the last run terminated in a crash. No otherwise.
         /// If the SDK wasn't able to find this information, null is returned.
         /// </returns>
         public static bool? CrashedLastRun()
