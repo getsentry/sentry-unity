@@ -1,4 +1,5 @@
 using System;
+using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
 
@@ -75,12 +76,16 @@ namespace Sentry.Unity.Integrations
 
         private void OnQuitting()
         {
+            _sentryOptions?.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
             // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
             //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
             // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
             // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
             _application.LogMessageReceived -= OnLogMessageReceived;
-            _hub?.EndSession();
+            // 'OnQuitting' is invoked even when an uncaught exception happens in the ART. To make sure the .NET
+            // SDK checks with the native layer on restart if the previous run crashed (through the CrashedLastRun callback)
+            // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.
+            _hub?.PauseSession();
             _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
         }
 
