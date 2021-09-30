@@ -10,7 +10,7 @@
 
 Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
 
-### Setup building the Java SDK
+### Setup for building the Java SDK
 
 * Install Java 11 (we recommend [using SDKMAN!](https://sdkman.io/))
 * Install Android Studio
