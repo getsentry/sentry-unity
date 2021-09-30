@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest]
-        unity-version: [2019.4.21f1]
+        unity-version: [2019.4.30f1]
         include:
           # - os: windows-latest
           #   unity-installation-path: C:/Program Files/Unity/
@@ -31,7 +31,7 @@ jobs:
             unity-installation-path: /Applications/Unity/
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
-          - unity-version: 2019.4.21f1
+          - unity-version: 2019.4.30f1
             unity-version-changeset: b76dac84db26
 
     steps:
