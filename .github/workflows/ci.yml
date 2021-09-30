@@ -32,7 +32,7 @@ jobs:
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
           - unity-version: 2019.4.30f1
-            unity-version-changeset: b76dac84db26
+            unity-version-changeset: e8c891080a1f
 
     steps:
       # Tag: 0.9.1
