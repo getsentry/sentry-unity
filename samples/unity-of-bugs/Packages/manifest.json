@@ -1,7 +1,8 @@
 {
   "dependencies": {
-    "com.unity.ide.rider": "1.1.4",
-    "com.unity.test-framework": "1.1.24",
+    "com.unity.ide.rider": "1.2.1",
+    "com.unity.ide.visualstudio": "2.0.11",
+    "com.unity.test-framework": "1.1.27",
     "com.unity.toolchain.macos-x86_64-linux-x86_64": "0.1.22-preview",
     "com.unity.ugui": "1.0.0",
     "io.sentry.unity.dev": "file:../../../package-dev",
