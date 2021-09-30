@@ -9,13 +9,26 @@
 ## Get the code
 
 Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
-   
+
+### Setup building the Java SDK
+
+* Install Java 11 (we recommend [using SDKMAN!](https://sdkman.io/))
+* Install Android Studio
+  * Open Android Studio and go to Customize -> All settings...
+  * Search for "SDK" in the Seachbar
+  * Select System Settings -> Android SDK
+  * Swap tab to SDK Tools
+  * Check "Show Package Details"
+  * Unter Android SDK Build-Tools check "30.0.2"
+  * Apply
+* Add ANDROID_SDK_ROOT to your environment variables (i.e.`export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"` on macOS and zsh)
+
 ## Build the project
 
 `dotnet build`
 
 > Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
-> The submodule will be restored as a result of `dotnet build`. 
+> The submodule will be restored as a result of `dotnet build`.
 > The Unity editor is also loaded via the build if needed to restore any UPM package required by the project, like testing libraries.
 
 ### Run tests
@@ -87,10 +100,10 @@ Let's outline the needed steps for `UPM` package development flow
   * configure other settings for your needs
 * run the project in `Unity` via clicking `Play`
 * click `ThrowNull` or any other button and check errors in `Sentry` web UI
-  
+
 ## Tests
 
-The project has `PlayMode` and `EditMode` tests. They should be available (after you finished `Package` stage outlined above) when your open `samples/unity-of-bugs` project. 
+The project has `PlayMode` and `EditMode` tests. They should be available (after you finished `Package` stage outlined above) when your open `samples/unity-of-bugs` project.
 
 The tests project are inside `src/test` folder where
 
@@ -98,7 +111,7 @@ The tests project are inside `src/test` folder where
 * `Sentry.Unity.Tests` project for `Runtime` Unity tests
 * `Sentry.Unity.Editor.Tests` project for `Editor` Unity tests
 
-Build artifacts from the test projects will be placed inside `package-dev/Tests/Editor` and `package-dev/Tests/Runtime` folders. 
+Build artifacts from the test projects will be placed inside `package-dev/Tests/Editor` and `package-dev/Tests/Runtime` folders.
 
 In order to run the tests
 
