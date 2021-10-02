@@ -37,6 +37,16 @@
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
     </PropertyGroup>
 
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))"
+           Text="UnityRoot not found. Ensure Unity is installed.
+See the CONTRIBUTING.md.
+UnityVersion: $(UnityVersion)
+Resolved directory: $(UnityRoot)
+Expected to exist:
+ * C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll
+or
+ * C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll" />
+
     <!-- Unity paths on macOS -->
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
       <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
@@ -50,6 +60,17 @@
       <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
       <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     </PropertyGroup>
+
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('OSX'))"
+           Text="UnityRoot not found. Ensure Unity is installed.
+See the CONTRIBUTING.md.
+UnityVersion: $(UnityVersion)
+Resolved directory: $(UnityRoot)
+Expected to exist:
+ * /Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll
+or
+ * /Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll" />
+
   </Target>
 
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">
