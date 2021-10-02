@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Sentry.Integrations;
 using UnityEngine.SceneManagement;
 
