@@ -20,7 +20,15 @@ namespace Sentry.Unity.Editor.iOS
             try
             {
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
-                sentryXcodeProject.AddSentryFramework();
+
+                if (PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK)
+                {
+                    sentryXcodeProject.AddSentryDeviceFramework();
+                }
+                else
+                {
+                    sentryXcodeProject.AddSentrySimulatorFramework();
+                }
 
                 if (options?.Validate() != true)
                 {
