@@ -1,4 +1,3 @@
-using System;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 

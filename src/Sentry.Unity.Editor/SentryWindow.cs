@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Json;
