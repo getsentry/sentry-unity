@@ -23,7 +23,7 @@ namespace Sentry.Unity.Editor.iOS
 
             try
             {
-                CopyFramework(pathToProject);
+                CopyFrameworkToBuildDirectory(pathToProject, options?.DiagnosticLogger);
 
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
                 sentryXcodeProject.AddSentryFramework();
@@ -49,11 +49,14 @@ namespace Sentry.Unity.Editor.iOS
             }
         }
 
-        private static void CopyFramework(string pathToProject)
+        private static void CopyFrameworkToBuildDirectory(string pathToProject, IDiagnosticLogger? logger)
         {
             var targetPath = Path.Combine(pathToProject, "Frameworks", "Sentry.framework");
             if (Directory.Exists(targetPath))
             {
+                // If the target path already exists we can bail. Unity doesn't allow an appending builds when switching
+                // iOS SDK versions and this will make sure we always copy the correct version of the Sentry.framework
+                logger?.LogDebug("'Sentry.framework' has already copied to '{0}'", targetPath);
                 return;
             }
 
@@ -63,6 +66,8 @@ namespace Sentry.Unity.Editor.iOS
             var frameworkPath = Path.Combine("Packages", packageName, "Plugins", "iOS", frameworkDirectory, "Sentry.framework");
             if (Directory.Exists(frameworkPath))
             {
+                logger?.LogDebug("Copying Sentry.framework from '{0}' to '{1}'", frameworkPath, targetPath);
+
                 Directory.CreateDirectory(Path.Combine(pathToProject, "Frameworks"));
                 FileUtil.CopyFileOrDirectoryFollowSymlinks(frameworkPath, targetPath);
             }
