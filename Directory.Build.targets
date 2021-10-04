@@ -96,8 +96,9 @@
           DestinationFiles="@(CocoaSimulatorBuildPath->'$(SentryCocoaSimulatorArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
 
-    <Error Condition="(!Exists('$(SentryCocoaDeviceArtifactsDestination)')
-           OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))" Text="Failed to build the Cocoa SDK."></Error>
+    <Error Condition="(!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))"
+           Text="Failed to build the Cocoa SDK.">
+    </Error>
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK -->
