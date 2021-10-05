@@ -10,6 +10,7 @@
 - iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
 - Sample: Throw exceptions in C++ and Objective-C. C++ segfault ([#342](https://github.com/getsentry/sentry-unity/pull/342))
 - Update Unity from 2019.4.21f to 2019.4.30f ([#350](https://github.com/getsentry/sentry-unity/pull/350))
+- Merge Assemblies
 
 ### Fixes
 
