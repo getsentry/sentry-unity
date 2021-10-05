@@ -7,7 +7,6 @@
     <PropertyGroup>
       <Command>
 &quot;$(ILRepack)&quot;
-/internalize
 /lib:&quot;$(UnityManagedPath)&quot;
 /out:&quot;$(TargetPath)&quot;
 &quot;$(TargetPath)&quot;

@@ -4,8 +4,7 @@
     <OutDir>$(PackageRuntimeTestsPath)</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
-    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.iOS/Sentry.Unity.iOS.csproj" Private="false" />
   </ItemGroup>
+  <Import Project="..\FixRefsForMerge.targets" />
 </Project>
