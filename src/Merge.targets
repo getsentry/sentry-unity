@@ -25,7 +25,7 @@ System.Threading.Tasks.Extensions.dll
 /target:library
 /targetplatform:v4
       </Command>
-      <TrimmedCommand>$(Command.Replace('%0D%0A',' '))</TrimmedCommand>
+      <TrimmedCommand>$(Command.Replace('%0A',' ').Replace('%0D',' '))</TrimmedCommand>
     </PropertyGroup>
     <Message Text="$(TrimmedCommand)" />
     <Exec Command="$(TrimmedCommand)"
