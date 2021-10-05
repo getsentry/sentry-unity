@@ -25,9 +25,9 @@
 - Bump Sentry Cocoa SDK 7.3.0 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.3.0/CHANGELOG.md)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.2.2...7.3.0)
-- Bump Sentry Android SDK to 5.2.0 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.0/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.0-beta.3...5.2.0)
+- Bump Sentry Android SDK 5.2.1 ([#359](https://github.com/getsentry/sentry-unity/pull/359))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.1/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.0-beta.3...5.2.1)
 
 ## 0.5.2
 
