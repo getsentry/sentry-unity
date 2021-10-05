@@ -28,6 +28,8 @@ System.Threading.Tasks.Extensions.dll
       <TrimmedCommand>$(Command.Replace('%0D%0A',' '))</TrimmedCommand>
     </PropertyGroup>
     <Message Text="$(TrimmedCommand)" />
-    <Exec Command="$(TrimmedCommand)" WorkingDirectory="$(TargetDir)"/>
+    <Exec Command="$(TrimmedCommand)"
+          ConsoleToMSBuild="true"
+          WorkingDirectory="$(TargetDir)"/>
   </Target>
 </Project>
