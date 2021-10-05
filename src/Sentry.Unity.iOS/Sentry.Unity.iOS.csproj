@@ -5,36 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILRepack" Version="2.0.18" />
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
   </ItemGroup>
-  <Target Name="ILRepack" AfterTargets="PostBuildEvent">
-    <PropertyGroup>
-      <Command>
-&quot;$(ILRepack)&quot; 
-/internalize
-/lib:&quot;$(UnityManagedPath)&quot;
-/out:&quot;$(TargetPath)&quot;
-&quot;$(TargetPath)&quot;
-Sentry.dll
-Sentry.Unity.dll
-Microsoft.Bcl.AsyncInterfaces.dll
-System.Buffers.dll
-System.Collections.Immutable.dll
-System.Memory.dll
-System.Numerics.Vectors.dll
-System.Reflection.Metadata.dll
-System.Runtime.CompilerServices.Unsafe.dll
-System.Text.Encodings.Web.dll
-System.Text.Json.dll
-System.Threading.Tasks.Extensions.dll
-/target:library
-/targetplatform:v4
-      </Command>
-      <TrimmedCommand>$(Command.Replace('%0D%0A',' '))</TrimmedCommand>
-    </PropertyGroup>
-    <Message Text="$(TrimmedCommand)" />
-    <Exec Command="$(TrimmedCommand)" WorkingDirectory="$(TargetDir)"/>
-  </Target>
+  <Import Project="..\Merge.targets" />
 </Project>
