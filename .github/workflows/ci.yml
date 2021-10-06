@@ -143,7 +143,7 @@ jobs:
         # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
         run: |
           New-Item -Path '/Library/Application Support/Unity/config' - ItemType Directory
-          ${{ secrets.UNITY_LICENSE }} | out-file -filepath '/Library/Application Support/Unity/config/services-config.json'
+          Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -filepath '/Library/Application Support/Unity/config/services-config.json' -Encoding utf8
 
       - name: Build Sentry.Unity Solution
         run: dotnet build -c Release
