@@ -2,7 +2,6 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Extensibility;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
