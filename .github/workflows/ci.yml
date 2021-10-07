@@ -149,8 +149,14 @@ jobs:
           } else {
               "Path doesn't exist."
               New-Item -Path '/Library/Application Support/Unity/config' -ItemType Directory
-              Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -Filepath '/Library/Application Support/Unity/config/services-config.json' -Encoding utf8
+              Set-Content -Path '/Library/Application Support/Unity/config/services-config.json' -Value "${{ secrets.UNITY_LICENSE }}"
           }
+
+        - name: Reading config
+        shell: pwsh
+        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
+        run: |
+          Get-Content -Path '/Library/Application Support/Unity/config/services-config.json'
 
       - name: Build Sentry.Unity Solution
         run: dotnet build -c Release
