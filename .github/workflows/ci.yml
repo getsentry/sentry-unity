@@ -136,6 +136,18 @@ jobs:
       # - name: Build the sentry-java SDK
       #   run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
 
+      - name: Check for Unity directory
+        shell: pwsh
+        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
+        run: |
+          $Folder = '/Library/Application Support/Unity/'
+          "Test to see if folder [$Folder]  exists"
+          if (Test-Path -Path $Folder) {
+              "Path exists!"
+          } else {
+              "Path doesn't exist."
+          }
+
       # License activation sometimes fails due to a problem connecting to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate Unity license
         id: activate-license
