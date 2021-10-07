@@ -27,7 +27,7 @@ jobs:
             unity-installation-path: C:/Program Files/Unity/
             unity-root: C:/Program Files/Unity/Hub/Editor/
             unity-path: Editor/
-            unity-config-path: "C:/ProgramData/"
+            unity-config-path: C:/ProgramData/
           # - os: macos-latest
           #   unity-installation-path: /Applications/Unity/
           #   unity-root: /Applications/Unity/Hub/Editor/
