@@ -152,7 +152,7 @@ jobs:
               Set-Content -Path '/Library/Application Support/Unity/config/services-config.json' -Value "${{ secrets.UNITY_LICENSE }}"
           }
 
-        - name: Reading config
+      - name: Reading config
         shell: pwsh
         # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
         run: |
