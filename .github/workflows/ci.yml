@@ -60,12 +60,12 @@ jobs:
           path: ${{ matrix.unity-installation-path }}
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
 
-      # - name: Restore previous build
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: samples/artifacts/builds
-      #     # using hash of package.json to bust cache on release builds which modify it
-      #     key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
+      - name: Restore previous build
+        uses: actions/cache@v2
+        with:
+          path: samples/artifacts/builds
+          # using hash of package.json to bust cache on release builds which modify it
+          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
@@ -73,23 +73,23 @@ jobs:
           path: samples/unity-of-bugs/Library
           key: ${{ matrix.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      # - name: Get submodule information
-      #   run: |
-      #     git submodule status > submodules-status
-      #     cat submodules-status
+      - name: Get submodule information
+        run: |
+          git submodule status > submodules-status
+          cat submodules-status
 
-      # - name: Restore native SDKs
-      #   uses: actions/cache@v2
-      #   with:
-      #     # The raw NDK symbols are needed to get bundled for the final craft artifact
-      #     path: |
-      #       package-dev/Plugins/iOS
-      #       package-dev/Plugins/Android
-      #       src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-      #     # We only build the native SDKs if the respective 'package-dev/Plugins/' directories are empty
-      #     # Output changes only depending on the git sha of the submodules
-      #     # hash of package/package.json for cache busting on release builds (version bump)
-      #     key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
+      - name: Restore native SDKs
+        uses: actions/cache@v2
+        with:
+          # The raw NDK symbols are needed to get bundled for the final craft artifact
+          path: |
+            package-dev/Plugins/iOS
+            package-dev/Plugins/Android
+            src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+          # We only build the native SDKs if the respective 'package-dev/Plugins/' directories are empty
+          # Output changes only depending on the git sha of the submodules
+          # hash of package/package.json for cache busting on release builds (version bump)
+          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
@@ -98,12 +98,12 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-version-changeset:  ${{ matrix.unity-version-changeset }}
 
-      # - name: Setup Unity Modules - Windows IL2CPP
-      #   if: matrix.os == 'windows-latest'
-      #   uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
-      #   with:
-      #     unity-version: ${{ matrix.unity-version }}
-      #     unity-modules: windows-il2cpp
+      - name: Setup Unity Modules - Windows IL2CPP
+        if: matrix.os == 'windows-latest'
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          unity-modules: windows-il2cpp
 
       - name: Setup Unity Modules - macOS IL2CPP
         if: matrix.os == 'macos-latest'
@@ -112,41 +112,29 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: mac-il2cpp
 
-      # - name: Setup Unity Modules - Android
-      #   uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
-      #   with:
-      #     unity-version: ${{ matrix.unity-version }}
-      #     unity-modules: android
+      - name: Setup Unity Modules - Android
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          unity-modules: android
 
-      # - name: Setup Unity Modules - iOS
-      #   uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
-      #   with:
-      #     unity-version: ${{ matrix.unity-version }}
-      #     unity-modules: ios
+      - name: Setup Unity Modules - iOS
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          unity-modules: ios
 
-      # # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
-      # - name: Add Unity on PATH
-      #   shell: pwsh
-      #   run: |
-      #     Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      # # Before we claim the license, lets build the SDKs which don't require Unity
-      # - name: Build the sentry-cocoa SDK
-      #   run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
-      # - name: Build the sentry-java SDK
-      #   run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
-
-      - name: Check for Unity directory
+      # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
+      - name: Add Unity on PATH
         shell: pwsh
-        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
         run: |
-          $Folder = '/Library/Application Support/Unity/'
-          "Test to see if folder [$Folder]  exists"
-          if (Test-Path -Path $Folder) {
-              "Path exists!"
-          } else {
-              "Path doesn't exist."
-          }
+          Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # Before we claim the license, lets build the SDKs which don't require Unity
+      - name: Build the sentry-cocoa SDK
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
+      - name: Build the sentry-java SDK
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
 
       # License activation sometimes fails due to a problem connecting to Unity's licensing backend. Retry a few times if it fails.
       - name: Activate Unity license
@@ -164,32 +152,24 @@ jobs:
               Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -Filepath '/Library/Application Support/Unity/config/services-config.json' -Encoding utf8
           }
 
-          $Config = '/Library/Application Support/Unity/config/services-config.json'
-          "Test to see if file [$Config]  exists"
-          if (Test-Path -Path $Config) {
-              "Config exists!"
-          } else {
-              "Config doesn't exist. - u fucked up again -.-"
-          }
+      - name: Build Sentry.Unity Solution
+        run: dotnet build -c Release
 
-      # - name: Build Sentry.Unity Solution
-      #   run: dotnet build -c Release
+      - name: Run Unity tests (playmode)
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
 
-      # - name: Run Unity tests (playmode)
-      #   run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+      - name: Run Unity tests (editmode)
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
-      # - name: Run Unity tests (editmode)
-      #   run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
+      - name: Build Android Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
 
-      # - name: Build Android Player with IL2CPP
-      #   run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
+      - name: Build iOS Player
+        if: matrix.os == 'macos-latest'
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release
 
-      # - name: Build iOS Player
-      #   if: matrix.os == 'macos-latest'
-      #   run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release
-
-      # - name: Build Standalone Player with IL2CPP
-      #   run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
+      - name: Build Standalone Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
 
       # Last step that requires running Unity should be above this
 
@@ -200,43 +180,43 @@ jobs:
       #   run: |
       #     unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default
 
-      # - name: Run Smoke Tests
-      #   run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
+      - name: Run Smoke Tests
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
 
-      # - name: Prepare Sentry package for release
-      #   shell: pwsh
-      #   run: ./scripts/pack.ps1
+      - name: Prepare Sentry package for release
+        shell: pwsh
+        run: ./scripts/pack.ps1
 
-      # - name: Upload build artifacts if build failed
-      #   if: ${{ failure() }}
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Build output
-      #     path: artifacts/build
+      - name: Upload build artifacts if build failed
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Build output
+          path: artifacts/build
 
-      # - name: Upload release artifacts
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: ${{ github.sha }}
-      #     # Adding the native libraries so the symbol collector craft target can find/upload them
-      #     path: |
-      #       package-release.zip
-      #       src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.sha }}
+          # Adding the native libraries so the symbol collector craft target can find/upload them
+          path: |
+            package-release.zip
+            src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
-      # - name: Upload Android Build
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Android Build
-      #     path: samples/artifacts/builds/Android
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: Android Build
+          path: samples/artifacts/builds/Android
 
-      # - name: Upload test artifacts (playmode)
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Test results (playmode)
-      #     path: artifacts/test/playmode
+      - name: Upload test artifacts (playmode)
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
 
-      # - name: Upload test artifacts (editmode)
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: Test results (editmode)
-      #     path: artifacts/test/editmode
+      - name: Upload test artifacts (editmode)
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
