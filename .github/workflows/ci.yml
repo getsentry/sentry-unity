@@ -161,6 +161,7 @@ jobs:
               Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -Filepath '/Library/Application Support/Unity/config/services-config.json' -Encoding utf8
           } else {
               "Path doesn't exist."
+              New-Item -Path '/Library/Application Support/Unity/config' -ItemType Directory
           }
       # New-Item -Path "${{ github.home }}/Library/Application Support/Unity/config" -ItemType Directory
       # Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -Filepath "${{ github.home }}/Library/Application Support/Unity/config/services-config.json" -Encoding utf8
