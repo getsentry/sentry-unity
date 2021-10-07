@@ -27,10 +27,12 @@ jobs:
           #   unity-installation-path: C:/Program Files/Unity/
           #   unity-root: C:/Program Files/Unity/Hub/Editor/
           #   unity-path: Editor/
+          #   unity-config-path: %PROGRAMDATA%/Unity/config/
           - os: macos-latest
             unity-installation-path: /Applications/Unity/
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
+            unity-config-path: /Library/Application Support/Unity/config/
           - unity-version: 2019.4.30f1
             unity-version-changeset: e8c891080a1f
 
@@ -124,39 +126,22 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: ios
 
+      - name: Create Unity license config
+        shell: pwsh
+        run: |
+          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
+          Set-Content -Path '${{ matrix.unity-config-path }}/services-config.json' -Value '${{ secrets.UNITY_LICENSE }}'
+
       # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
       - name: Add Unity on PATH
         shell: pwsh
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # Before we claim the license, lets build the SDKs which don't require Unity
       - name: Build the sentry-cocoa SDK
         run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
       - name: Build the sentry-java SDK
         run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
-
-      # License activation sometimes fails due to a problem connecting to Unity's licensing backend. Retry a few times if it fails.
-      - name: Activate Unity license
-        id: activate-license
-        shell: pwsh
-        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
-        run: |
-          $Folder = '/Library/Application Support/Unity/config/'
-          "Test to see if folder [$Folder]  exists"
-          if (Test-Path -Path $Folder) {
-              "Path exists!"
-          } else {
-              "Path doesn't exist."
-              New-Item -Path '/Library/Application Support/Unity/config' -ItemType Directory
-              Set-Content -Path '/Library/Application Support/Unity/config/services-config.json' -Value '${{ secrets.UNITY_LICENSE }}'
-          }
-
-      - name: Reading config
-        shell: pwsh
-        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
-        run: |
-          Get-Content -Path '/Library/Application Support/Unity/config/services-config.json'
 
       - name: Build Sentry.Unity Solution
         run: dotnet build -c Release
@@ -176,15 +161,6 @@ jobs:
 
       - name: Build Standalone Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
-
-      # Last step that requires running Unity should be above this
-
-      # Professional licenses are per-seat so we should always try to return them
-      # - name: Return Unity license
-      #   if: ${{ always() }}
-      #   shell: pwsh
-      #   run: |
-      #     unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default
 
       - name: Run Smoke Tests
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
