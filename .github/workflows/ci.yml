@@ -158,13 +158,19 @@ jobs:
           "Test to see if folder [$Folder]  exists"
           if (Test-Path -Path $Folder) {
               "Path exists!"
-              Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -Filepath '/Library/Application Support/Unity/config/services-config.json' -Encoding utf8
           } else {
               "Path doesn't exist."
               New-Item -Path '/Library/Application Support/Unity/config' -ItemType Directory
+              Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -Filepath '/Library/Application Support/Unity/config/services-config.json' -Encoding utf8
           }
-      # New-Item -Path "${{ github.home }}/Library/Application Support/Unity/config" -ItemType Directory
-      # Write-Output "${{ secrets.UNITY_LICENSE }}" | Out-File -Filepath "${{ github.home }}/Library/Application Support/Unity/config/services-config.json" -Encoding utf8
+
+          $Config = '/Library/Application Support/Unity/config/services-config.json'
+          "Test to see if file [$Config]  exists"
+          if (Test-Path -Path $Config) {
+              "Config exists!"
+          } else {
+              "Config doesn't exist. - u fucked up again -.-"
+          }
 
       # - name: Build Sentry.Unity Solution
       #   run: dotnet build -c Release
