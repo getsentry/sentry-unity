@@ -142,7 +142,7 @@ jobs:
         shell: pwsh
         # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
         run: |
-          $Folder = '/Library/Application Support/'
+          $Folder = '/Library/Application Support/Unity'
           "Test to see if folder [$Folder]  exists"
           if (Test-Path -Path $Folder) {
               "Path exists!"
