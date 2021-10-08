@@ -138,10 +138,10 @@ jobs:
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # - name: Build the sentry-cocoa SDK
-      #   run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
-      # - name: Build the sentry-java SDK
-      #   run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
+      - name: Build the sentry-cocoa SDK
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
+      - name: Build the sentry-java SDK
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
 
       - name: Build Sentry.Unity Solution
         run: dotnet build -c Release
