@@ -28,11 +28,11 @@ jobs:
             unity-root: C:/Program Files/Unity/Hub/Editor/
             unity-path: Editor/
             unity-config-path: C:/ProgramData/Unity/config/
-          - os: macos-latest
-            unity-installation-path: /Applications/Unity/
-            unity-root: /Applications/Unity/Hub/Editor/
-            unity-path: Unity.app/Contents/MacOS/
-            unity-config-path: /Library/Application Support/Unity/config/
+          # - os: macos-latest
+          #   unity-installation-path: /Applications/Unity/
+          #   unity-root: /Applications/Unity/Hub/Editor/
+          #   unity-path: Unity.app/Contents/MacOS/
+          #   unity-config-path: /Library/Application Support/Unity/config/
           - unity-version: 2019.4.30f1
             unity-version-changeset: e8c891080a1f
 
@@ -114,11 +114,11 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: mac-il2cpp
 
-      # - name: Setup Unity Modules - Android
-      #   uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
-      #   with:
-      #     unity-version: ${{ matrix.unity-version }}
-      #     unity-modules: android
+      - name: Setup Unity Modules - Android
+        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          unity-modules: android
 
       - name: Setup Unity Modules - iOS
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
@@ -138,10 +138,10 @@ jobs:
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # - name: Build the sentry-cocoa SDK
-      #   run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
-      # - name: Build the sentry-java SDK
-      #   run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
+      - name: Build the sentry-cocoa SDK
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
+      - name: Build the sentry-java SDK
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
 
       - name: Build Sentry.Unity Solution
         run: dotnet build -c Release
