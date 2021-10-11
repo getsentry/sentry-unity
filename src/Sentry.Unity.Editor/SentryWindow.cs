@@ -224,6 +224,7 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Max Breadcrumbs", "Maximum number of breadcrumbs that get captured." +
                                                   "\nDefault: 100"),
                 Options.MaxBreadcrumbs);
+            Options.MaxBreadcrumbs = Mathf.Clamp(Options.MaxBreadcrumbs, 0, int.MaxValue);
 
             Options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
                 new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
@@ -236,10 +237,12 @@ namespace Sentry.Unity.Editor
             Options.EnableOfflineCaching = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Offline Caching", ""),
                 Options.EnableOfflineCaching);
+
             Options.MaxCacheItems = EditorGUILayout.IntField(
                 new GUIContent("Max Cache Items", "The maximum number of files to keep in the disk cache. " +
                                                   "The SDK deletes the oldest when the limit is reached.\nDefault: 30"),
                 Options.MaxCacheItems);
+            Options.MaxCacheItems = Mathf.Clamp(Options.MaxCacheItems, 0, int.MaxValue);
 
             Options.InitCacheFlushTimeout = EditorGUILayout.IntField(
                 new GUIContent("Init Flush Timeout [ms]", "The timeout that limits how long the SDK " +
@@ -249,6 +252,7 @@ namespace Sentry.Unity.Editor
                                                           "game startup and would not be captured because the process " +
                                                           "would be killed before Sentry had a chance to capture the event."),
                 Options.InitCacheFlushTimeout);
+            Options.InitCacheFlushTimeout = Mathf.Clamp(Options.InitCacheFlushTimeout, 0, int.MaxValue);
 
             EditorGUILayout.EndToggleGroup();
 
@@ -275,12 +279,14 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Shut Down Timeout [ms]", "How many seconds to wait before shutting down to " +
                                                          "give Sentry time to send events from the background queue."),
                 Options.ShutdownTimeout);
+            Options.ShutdownTimeout = Mathf.Clamp(Options.ShutdownTimeout, 0, int.MaxValue);
 
             Options.MaxQueueItems = EditorGUILayout.IntField(
                 new GUIContent("Max Queue Items", "The maximum number of events to keep in memory while " +
                                                   "the worker attempts to send them."),
                 Options.MaxQueueItems
             );
+            Options.MaxQueueItems = Mathf.Clamp(Options.MaxQueueItems, 0, int.MaxValue);
         }
 
         private void DisplayDebug()
@@ -317,6 +323,7 @@ namespace Sentry.Unity.Editor
                                                        "(i.e. the application has been put in the background) before " +
                                                        "it is considered ended."),
                 Options.AutoSessionTrackingInterval);
+            Options.AutoSessionTrackingInterval = Mathf.Clamp(Options.AutoSessionTrackingInterval, 0, int.MaxValue);
 
             EditorGUILayout.EndToggleGroup();
 
