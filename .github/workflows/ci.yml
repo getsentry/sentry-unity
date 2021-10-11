@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [macos-latest, windows-latest]
         unity-version: [2019.4.30f1]
         include:
           - os: windows-latest
