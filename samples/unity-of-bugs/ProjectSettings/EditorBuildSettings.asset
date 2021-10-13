@@ -6,10 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/1_BugfarmScene.unity
+    path: Assets/Scenes/2_NativeSupport.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/2_TransitionScene.unity
+    path: Assets/Scenes/3_TransitionScene.unity
     guid: e1f7138e265169147b8437fb0820f447
   - enabled: 1
     path: Assets/Scenes/3_EmptyScene.unity
