@@ -20,9 +20,9 @@ namespace Sentry.Unity
 
             sentryUnityOptionsConfigure.Invoke(sentryUnityOptions);
 
+            SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
             if (sentryUnityOptions.ShouldInitializeSdk())
             {
-                SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
                 Init(sentryUnityOptions);
             }
         }
