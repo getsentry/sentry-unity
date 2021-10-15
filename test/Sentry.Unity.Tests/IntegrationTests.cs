@@ -224,7 +224,7 @@ namespace Sentry.Unity.Tests
             SentryUnityOptions? actualOptions = null;
             using var _ = InitSentrySdk(o =>
             {
-                o.Dsn = null; // InitSentrySDK already sets a test dsn
+                o.Dsn = string.Empty; // InitSentrySDK already sets a test dsn
                 actualOptions = o;
             });
 
