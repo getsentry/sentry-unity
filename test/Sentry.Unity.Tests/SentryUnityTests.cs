@@ -22,7 +22,7 @@ namespace Sentry.Unity.Tests
                 return;
             }
 
-            Debug.Log("Sentry Options found: Disabling for the duration of the test.");
+            Debug.Log("Disabling local options for the duration of the test.");
             _optionsToRestore = options;
             _optionsToRestore.Enabled = false;
         }
