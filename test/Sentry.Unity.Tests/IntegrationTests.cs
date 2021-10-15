@@ -17,7 +17,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_ObjectCreatedWithExceptionLogicAndCalled_OneEventIsCreated()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             // arrange
             var testEventCapture = new TestEventCapture();
@@ -41,7 +41,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationProductNameAtVersionAsRelease()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             // arrange
             var testEventCapture = new TestEventCapture();
@@ -60,7 +60,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_EventCaptured_IncludesCustomRelease()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             // arrange
             var customRelease = "CustomRelease";
@@ -81,7 +81,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease_WhenProductNameWhitespace()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             // arrange
             var originalProductName = PlayerSettings.productName;
@@ -104,7 +104,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_EventCaptured_UserNameIsEnvironmentUserNameWithDefaultPii()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
@@ -124,7 +124,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease_WhenProductNameEmpty()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             // arrange
             var originalProductName = PlayerSettings.productName;
@@ -147,7 +147,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationInEditorOrProduction()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             // arrange
             var testEventCapture = new TestEventCapture();
@@ -169,7 +169,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_EventCaptured_UserNameIsNotEnvironmentUserNameByDefault()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
@@ -187,7 +187,7 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
         {
-            yield return SetupSceneCoroutine("1_BugFarmScene");
+            yield return SetupSceneCoroutine("1_BugFarm");
 
             var sourceEventCapture = new TestEventCapture();
             var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
