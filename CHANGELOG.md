@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- CaptureInEditor flag fixed for programmatic initialization ([#370](https://github.com/getsentry/sentry-unity/pull/370))
 - Preventing numeric options to be set negative in the editor window ([#364](https://github.com/getsentry/sentry-unity/pull/364))
 
 
