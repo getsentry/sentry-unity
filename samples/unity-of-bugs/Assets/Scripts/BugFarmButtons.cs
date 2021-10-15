@@ -73,28 +73,6 @@ public class BugFarmButtons : MonoBehaviour
         Debug.Log("User set: ant");
     }
 
-    public void RunOutOfMemory()
-    {
-        Debug.Log("Attempting to run out of memory");
-
-        StartCoroutine(ConsumeMemory());
-
-        // for (var i = 0; i < int.MaxValue; i++)
-        // {
-        //     memoryEaters[i] = new object();
-        // }
-    }
-
-    IEnumerator ConsumeMemory()
-    {
-        var memoryEaters = new List<object[]>();
-        while(true)
-        {
-            yield return new WaitForEndOfFrame();
-            memoryEaters.Add(new object[1000000]);
-        }
-    }
-
     public void LoadNativeSupportScene() => SceneManager.LoadScene("2_MobileNativeSupport");
     public void LoadTransitionScene() => SceneManager.LoadScene("3_Transition");
 

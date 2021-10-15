@@ -1,59 +1,41 @@
 {
     "m_SelectedDeviceId": "f3089761",
     "m_SelectedPackage": {
-        "deviceId": "",
-        "name": "",
-        "processId": 0,
+        "deviceId": "f3089761",
+        "name": "io.sentry.samples.unityofbugs",
+        "processId": 14244,
         "exited": false
     },
     "m_SelectedPriority": 0,
     "m_KnownPackagesForSerialization": [
         {
             "deviceId": "f3089761",
-            "name": "net.oneplus.launcher",
-            "processId": 19054,
-            "exited": false
-        },
-        {
-            "deviceId": "f3089761",
             "name": "io.sentry.samples.unityofbugs",
-            "processId": 6482,
+            "processId": 24560,
             "exited": true
         },
         {
             "deviceId": "f3089761",
             "name": "io.sentry.samples.unityofbugs",
-            "processId": 6483,
+            "processId": 14245,
             "exited": true
         },
         {
             "deviceId": "f3089761",
             "name": "io.sentry.samples.unityofbugs",
-            "processId": 6484,
+            "processId": 14246,
             "exited": true
         },
         {
             "deviceId": "f3089761",
             "name": "io.sentry.samples.unityofbugs",
-            "processId": 21989,
+            "processId": 14242,
             "exited": true
         },
         {
             "deviceId": "f3089761",
             "name": "io.sentry.samples.unityofbugs",
-            "processId": 21990,
-            "exited": true
-        },
-        {
-            "deviceId": "f40ffd9c",
-            "name": "io.sentry.samples.unityofbugs",
-            "processId": 19240,
-            "exited": false
-        },
-        {
-            "deviceId": "f40ffd9c",
-            "name": "io.sentry.samples.unityofbugs",
-            "processId": 20673,
+            "processId": 14244,
             "exited": false
         }
     ],

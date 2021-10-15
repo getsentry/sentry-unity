@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 #if ENABLE_IL2CPP || PLATFORM_IOS
 using System.Runtime.InteropServices;
@@ -32,6 +34,23 @@ public class NativeSupportButtons : MonoBehaviour
 #else
         Debug.LogWarning("Not running on Android.");
 #endif
+    }
+
+    public void RunOutOfMemory()
+    {
+        Debug.Log("Attempting to run out of memory");
+
+        StartCoroutine(ConsumeMemory());
+    }
+
+    IEnumerator ConsumeMemory()
+    {
+        var memoryEaters = new List<object[]>();
+        while(true)
+        {
+            yield return new WaitForEndOfFrame();
+            memoryEaters.Add(new object[1000000]);
+        }
     }
 
     public void ThrowCpp()
