@@ -21,10 +21,7 @@ namespace Sentry.Unity
             sentryUnityOptionsConfigure.Invoke(sentryUnityOptions);
 
             SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
-            if (sentryUnityOptions.ShouldInitializeSdk())
-            {
-                Init(sentryUnityOptions);
-            }
+            Init(sentryUnityOptions);
         }
 
         /// <summary>
@@ -34,9 +31,11 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions sentryUnityOptions)
         {
-            sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());
-
-            SentrySdk.Init(sentryUnityOptions);
+            if (sentryUnityOptions.ShouldInitializeSdk())
+            {
+                sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());
+                SentrySdk.Init(sentryUnityOptions);
+            }
         }
     }
 }
