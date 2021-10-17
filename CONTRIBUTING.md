@@ -12,8 +12,12 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
 
 ### Setup for building the Java SDK
 
-* Install Java 11 (we recommend [using SDKMAN!](https://sdkman.io/))
-* Install Android Studio
+* Install Java 11 
+  * [Using SDKMAN!](https://sdkman.io/)).
+  * [Download via Oracle](https://www.oracle.com/java/technologies/downloads/#java11).
+* Add JAVA_HOME to your environment variables 
+  * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
+* Install [Android Studio](https://developer.android.com/studio)
   * Open Android Studio and go to Customize -> All settings...
   * Search for "SDK" in the Seachbar
   * Select System Settings -> Android SDK
@@ -21,7 +25,9 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
   * Check "Show Package Details"
   * Unter Android SDK Build-Tools check "30.0.2"
   * Apply
-* Add ANDROID_SDK_ROOT to your environment variables (i.e.`export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"` on macOS and zsh)
+* Add ANDROID_SDK_ROOT to your environment variables 
+  * MacOS: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"` on macOS and zsh
+  * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"`
 
 ## Build the project
 
