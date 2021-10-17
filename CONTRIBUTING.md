@@ -26,7 +26,7 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
   * Unter Android SDK Build-Tools check "30.0.2"
   * Apply
 * Add ANDROID_SDK_ROOT to your environment variables 
-  * MacOS: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"` on macOS and zsh
+  * MacOS zsh: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"`
   * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"`
 
 ## Build the project
