@@ -15,6 +15,7 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
 * Install Java 11 
   * [Using SDKMAN!](https://sdkman.io/)).
   * [Download via Oracle](https://www.oracle.com/java/technologies/downloads/#java11).
+* Instal Git and ensure is accessible from the path
 * Add JAVA_HOME to your environment variables 
   * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
 * Install [Android Studio](https://developer.android.com/studio)
