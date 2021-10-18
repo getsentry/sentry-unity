@@ -4,7 +4,8 @@
 
 ### Fixes
 
-- CaptureInEditor flag fixed for programmatic initialization ([#370](https://github.com/getsentry/sentry-unity/pull/370))
+- Fixed missing context data when initializing SDK programmatically ([#376](https://github.com/getsentry/sentry-unity/pull/376))
+- Fixed CaptureInEditor flag when initializing SDK programmatically ([#370](https://github.com/getsentry/sentry-unity/pull/370))
 - Preventing numeric options to be set negative in the editor window ([#364](https://github.com/getsentry/sentry-unity/pull/364))
 
 
