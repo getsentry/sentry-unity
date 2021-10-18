@@ -27,7 +27,7 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
   * Apply
 * Add ANDROID_SDK_ROOT to your environment variables 
   * MacOS zsh: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"`
-  * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"`
+  * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"` for a machine wide install, `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
 
 ## Build the project
 
