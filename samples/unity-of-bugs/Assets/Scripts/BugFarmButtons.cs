@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 #if ENABLE_IL2CPP || PLATFORM_IOS
 using System.Runtime.InteropServices;
 #endif
@@ -71,6 +72,17 @@ public class BugFarmButtons : MonoBehaviour
             };
         });
         Debug.Log("User set: ant");
+    }
+
+    public void BackgroundBreadcrumb()
+    {
+        new Thread(() =>
+        {
+            SentrySdk.AddBreadcrumb("Breadcrumb from the background", "background task");
+        })
+        {
+            IsBackground = true
+        }.Start();
     }
 
     public void LoadNativeSupportScene() => SceneManager.LoadScene("2_MobileNativeSupport");
