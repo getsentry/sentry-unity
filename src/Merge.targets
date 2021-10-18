@@ -5,8 +5,10 @@
   </ItemGroup>
   <Target Name="ILRepack" AfterTargets="PostBuildEvent">
     <PropertyGroup>
+      <ILRepackStart Condition=" '$(OS)' != 'Windows_NT' ">mono &quot;$(ILRepack)&quot;</ILRepackStart>
+      <ILRepackStart Condition=" '$(OS)' == 'Windows_NT' ">&quot;$(ILRepack)&quot;</ILRepackStart>
       <Command>
-&quot;$(ILRepack)&quot;
+$(ILRepackStart)
 /lib:&quot;$(UnityManagedPath)&quot;
 /out:&quot;$(TargetPath)&quot;
 &quot;$(TargetPath)&quot;
