@@ -226,7 +226,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
 
-    <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found."></Error>
+    <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
