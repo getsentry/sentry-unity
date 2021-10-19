@@ -4,7 +4,8 @@
 
 ### Fixes
 
-- CaptureInEditor flag fixed for programmatic initialization ([#370](https://github.com/getsentry/sentry-unity/pull/370))
+- Fixed missing context data when initializing SDK programmatically ([#376](https://github.com/getsentry/sentry-unity/pull/376))
+- Fixed CaptureInEditor flag when initializing SDK programmatically ([#370](https://github.com/getsentry/sentry-unity/pull/370))
 - Preventing numeric options to be set negative in the editor window ([#364](https://github.com/getsentry/sentry-unity/pull/364))
 
 
@@ -12,6 +13,7 @@
 
 ### Features
 
+- Added iOS simulator support ([#358](https://github.com/getsentry/sentry-unity/pull/358))
 - Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
 - Android mark sessions as crashed ([#347](https://github.com/getsentry/sentry-unity/pull/347))
 - Android native bridge for scope sync ([#308](https://github.com/getsentry/sentry-unity/pull/308))
