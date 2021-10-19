@@ -8,22 +8,23 @@ namespace Sentry.Unity
     /// <summary>
     /// Singleton and DontDestroyOnLoad setup.
     /// </summary>
-    internal partial class SentryMonoBehaviour
+    [AddComponentMenu("")] // Hides it from being added as a component in the inspector
+    internal partial class SentryMonoBehaviour : MonoBehaviour
     {
-        private static SentryMonoBehaviour? Instance;
-
-        private void Awake()
+        private static SentryMonoBehaviour? _instance;
+        public static SentryMonoBehaviour Instance
         {
-            // Unity overrides `==` operator in MonoBehaviours
-            if (Instance == null)
+            get
             {
-                Instance = this;
-                // Don't destroy when changing scenes
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
-                Destroy(gameObject);
+                // Unity overrides `==` operator in MonoBehaviours
+                if (_instance == null)
+                {
+                    // HideAndDontSave excludes the gameObject from the scene meaning it does not get destroyed on loading/unloading
+                    var sentryGameObject = new GameObject("SentryMonoBehaviour") { hideFlags = HideFlags.HideAndDontSave };
+                    _instance = sentryGameObject.AddComponent<SentryMonoBehaviour>();
+                }
+
+                return _instance;
             }
         }
     }
@@ -31,8 +32,7 @@ namespace Sentry.Unity
     /// <summary>
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
-    [DefaultExecutionOrder(-900)]
-    internal partial class SentryMonoBehaviour : MonoBehaviour
+    internal partial class SentryMonoBehaviour
     {
         /// <summary>
         /// Hook to receive an event when the application gains focus.
