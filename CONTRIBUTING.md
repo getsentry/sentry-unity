@@ -13,7 +13,7 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
 ### Setup for building the Java SDK
 
 * Install Java 11 
-  * [Using SDKMAN!](https://sdkman.io/)).
+  * [Using sdkman](https://sdkman.io/)).
   * [Download via Oracle](https://www.oracle.com/java/technologies/downloads/#java11).
 * Instal Git and ensure is accessible from the path
 * Add JAVA_HOME to your environment variables 
