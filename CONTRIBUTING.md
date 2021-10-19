@@ -10,11 +10,15 @@
 
 Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
 
+### Install Unity
+
+We recommend using [Unity Hub](https://unity3d.com/get-unity/download). The specific version to download can be found [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1).
+
 ### Setup for building the Java SDK
 
 * Install Java 11 
-  * [Using sdkman](https://sdkman.io/)).
-  * [Download the OpenJDK](https://openjdk.java.net/install/).
+  * [Using sdkman](https://sdkman.io/) which manage versions for you.
+  * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
 * Instal Git and ensure is accessible from the path
 * Add JAVA_HOME to your environment variables (if not using sdkman):
   * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
@@ -31,6 +35,8 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
   * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"` for a machine wide install, `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
 
 ## Build the project
+
+On the root of the repository, write:
 
 `dotnet build`
 
