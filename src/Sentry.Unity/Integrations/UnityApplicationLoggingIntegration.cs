@@ -53,6 +53,12 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
+            if (stackTrace.StartsWith("Sentry", StringComparison.Ordinal))
+            {
+                _hub.AddBreadcrumb(message: condition, category: "sentry.internal", level: ToBreadcrumbLevel(type));
+                return;
+            }
+
             // TODO: to check against 'MinBreadcrumbLevel'
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
             {
