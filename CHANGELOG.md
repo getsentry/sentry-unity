@@ -12,6 +12,7 @@
 
 ### Features
 
+- Added iOS simulator support ([#358](https://github.com/getsentry/sentry-unity/pull/358))
 - Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
 - Android mark sessions as crashed ([#347](https://github.com/getsentry/sentry-unity/pull/347))
 - Android native bridge for scope sync ([#308](https://github.com/getsentry/sentry-unity/pull/308))
