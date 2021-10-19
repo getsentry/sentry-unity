@@ -14,7 +14,7 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
 
 * Install Java 11 
   * [Using sdkman](https://sdkman.io/)).
-  * [Download via Oracle](https://www.oracle.com/java/technologies/downloads/#java11).
+  * [Download the OpenJDK](https://openjdk.java.net/install/).
 * Instal Git and ensure is accessible from the path
 * Add JAVA_HOME to your environment variables (if not using sdkman):
   * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
