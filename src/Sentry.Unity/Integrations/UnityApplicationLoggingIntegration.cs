@@ -16,7 +16,7 @@ namespace Sentry.Unity.Integrations
         private readonly IApplication _application;
 
         private IHub? _hub;
-        private SentryOptions? _sentryOptions;
+        private SentryUnityOptions? _sentryOptions;
 
         public UnityApplicationLoggingIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
         {
@@ -27,7 +27,7 @@ namespace Sentry.Unity.Integrations
         public void Register(IHub hub, SentryOptions sentryOptions)
         {
             _hub = hub;
-            _sentryOptions = sentryOptions;
+            _sentryOptions = sentryOptions as SentryUnityOptions;
 
             _application.LogMessageReceived += OnLogMessageReceived;
             _application.Quitting += OnQuitting;
@@ -41,6 +41,12 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
+            if (_sentryOptions?.FilterSentryInternalEvents == true
+                && stackTrace.StartsWith(_sentryOptions?.InternalEventFilter, StringComparison.Ordinal))
+            {
+                return;
+            }
+
             var debounced = type switch
             {
                 LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
@@ -50,12 +56,6 @@ namespace Sentry.Unity.Integrations
             };
             if (!debounced)
             {
-                return;
-            }
-
-            if (stackTrace.StartsWith("Sentry", StringComparison.Ordinal))
-            {
-                _hub.AddBreadcrumb(message: condition, category: "sentry.internal", level: ToBreadcrumbLevel(type));
                 return;
             }
 

@@ -74,6 +74,13 @@ namespace Sentry.Unity
         /// </summary>
         public bool AndroidNativeSupportEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Whether the SDK should filter its internal events
+        /// </summary>
+        public bool FilterSentryInternalEvents { get; set; } = true;
+
+        internal string InternalEventFilter { get; set; } = "Sentry";
+
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime

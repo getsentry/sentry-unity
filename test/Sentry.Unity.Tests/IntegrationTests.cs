@@ -249,7 +249,7 @@ namespace Sentry.Unity.Tests
             SentryUnity.Init(options =>
             {
                 options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-
+                options.FilterSentryInternalEvents = false;
                 configure.Invoke(options);
             });
             return new SentryDisposable();

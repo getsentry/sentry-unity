@@ -21,14 +21,24 @@ namespace Sentry.Unity.Tests
 
         private Fixture _fixture = null!;
         private TestHub _hub = null!;
-        private SentryOptions _sentryOptions = null!;
+        private SentryUnityOptions _sentryOptions = null!;
 
         [SetUp]
         public void SetUp()
         {
             _fixture = new Fixture();
             _hub = new TestHub();
-            _sentryOptions = new SentryOptions();
+            _sentryOptions = new SentryUnityOptions();
+        }
+
+        [Test]
+        public void OnLogMessageReceived_StackTraceFromSentry_NotCaptured()
+        {
+            var sut = _fixture.GetSut(_hub, _sentryOptions);
+
+            sut.OnLogMessageReceived("condition", "Sentry.stacktrace", LogType.Error);
+
+            Assert.AreEqual(0, _hub.CapturedEvents.Count);
         }
 
         [Test]
