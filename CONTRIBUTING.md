@@ -14,6 +14,12 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
 
 We recommend using [Unity Hub](https://unity3d.com/get-unity/download). The specific version to download can be found [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1).
 
+You'll need the following modules to be added in order to use Sentry Unity:
+ * Android Build Support.
+ * iOS Build Support.
+ * Linux Build Support (ILCPP) for Linux.
+ * Windows Build Support (ILCPP) for Windows.
+
 ### Setup for building the Java SDK
 
 * Install Java 11 
@@ -109,7 +115,7 @@ Let's outline the needed steps for `UPM` package development flow
     * `Runtime` - `Sentry.Unity.Tests.dll`
 * open `samples/unity-of-bugs` project in `Unity`, then `Scenes/BugFarmScene` scene
 * configure `Sentry Unity (dev)` package
-  * open `Component -> Sentry` and insert your `DSN` or [Sentry SDK](https://sentry.io/settings/sentry-sdks/projects/sentry-unity/) one `https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417`
+  * on the tab `Tools`, select `Sentry` and insert your `DSN` or [Sentry SDK](https://sentry.io/settings/sentry-sdks/projects/sentry-unity/) one `https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417`
   * configure other settings for your needs
 * run the project in `Unity` via clicking `Play`
 * click `ThrowNull` or any other button and check errors in `Sentry` web UI
