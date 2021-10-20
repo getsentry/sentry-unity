@@ -1,13 +1,9 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 #if ENABLE_IL2CPP || PLATFORM_IOS
 using System.Runtime.InteropServices;
 #endif
-using Sentry;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
 
 public class NativeSupportButtons : MonoBehaviour

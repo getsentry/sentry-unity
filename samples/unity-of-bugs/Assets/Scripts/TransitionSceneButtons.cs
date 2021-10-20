@@ -1,16 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class TransitionSceneButtons : MonoBehaviour
 {
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void ThrowNull()
-    {
-        throw null;
-    }
+    public void ThrowNull() => throw null;
 
     public void LoadBugfarm() => SceneManager.LoadScene("1_Bugfarm");
 

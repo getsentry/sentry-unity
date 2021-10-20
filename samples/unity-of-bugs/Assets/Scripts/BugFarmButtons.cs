@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
+using System.Threading.Tasks;
 #if ENABLE_IL2CPP || PLATFORM_IOS
 using System.Runtime.InteropServices;
 #endif
@@ -22,10 +20,7 @@ public class BugFarmButtons : MonoBehaviour
     public void AssertFalse() => Assert.AreEqual(true, false);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void ThrowNull()
-    {
-        throw null;
-    }
+    public void ThrowNull() => throw null;
 
     public void ThrowExceptionAndCatch()
     {
@@ -55,10 +50,7 @@ public class BugFarmButtons : MonoBehaviour
         }
     }
 
-    public void CaptureMessage()
-    {
-        SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
-    }
+    public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
 
     public void SetUser()
     {
@@ -74,26 +66,18 @@ public class BugFarmButtons : MonoBehaviour
         Debug.Log("User set: ant");
     }
 
-    public void BackgroundBreadcrumb()
-    {
-        new Thread(() =>
-        {
-            SentrySdk.AddBreadcrumb("Breadcrumb from the background", "background task");
-        })
-        {
-            IsBackground = true
-        }.Start();
-    }
+    public void BackgroundBreadcrumb() =>
+        Task.Run(() => SentrySdk.AddBreadcrumb("Breadcrumb from the background", "background task"));
 
     public void LoadNativeSupportScene() => SceneManager.LoadScene("2_MobileNativeSupport");
     public void LoadTransitionScene() => SceneManager.LoadScene("3_Transition");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void MethodA() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
+    private void StackTraceExampleB() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
 
-    // IL2CPP inlines this anyway
+    // IL2CPP inlines this anyway :(
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void MethodB() => MethodA();
+    public void StackTraceExampleA() => StackTraceExampleB();
 }
 
 public class CustomException : System.Exception
