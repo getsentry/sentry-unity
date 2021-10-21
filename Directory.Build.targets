@@ -17,6 +17,10 @@
     <!-- Android -->
     <SentryAndroidRoot>$(SolutionDir)src/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(SolutionDir)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
+    <!-- Native -->
+    <SentryNativeRoot>$(SolutionDir)src/sentry-native/</SentryNativeRoot>
+    <!-- TODO: Do we need: x64, x86, arm64? What about Windows and Linux, can we cross compile? -->
+    <SentryNativeArtifactsDestination>$(SolutionDir)package-dev/Plugins/Windows/Sentry/</SentryNativeArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -92,6 +96,11 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
+  <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryNativeRoot)sentry/install/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeArtifactsDestination)" ContinueOnError="true" />
+  </Target>
+
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
@@ -145,6 +154,28 @@ or
     </Copy>
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
+  </Target>
+
+  <!-- Build the Sentry Native SDK: dotnet msbuild /t:BuildNativeSDK -->
+  <Target Name="BuildNativeSDK"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And !Exists('$(SentryNativeArtifactsDestination)')"
+          BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
+    <Message Importance="High" Text="Building Sentry Native SDK."></Message>
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake .."></Exec>
+
+    <ItemGroup>
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)sentry/build/libs/sentry*.jar" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NativeSdkArtifacts)"
+          DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    </Copy>
+
+    <Error Condition="!Exists('$(SentryNativeArtifactsDestination)')" Text="Failed to build the Native SDK."></Error>
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
