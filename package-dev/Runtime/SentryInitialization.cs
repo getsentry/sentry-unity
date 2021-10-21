@@ -3,6 +3,8 @@
 #define SENTRY_NATIVE_IOS
 #elif UNITY_ANDROID
 #define SENTRY_NATIVE_ANDROID
+#elif UNITY_STANDALONE_WIN && ENABLE_IL2CPP
+#define SENTRY_NATIVE_WINDOWS
 #endif
 #endif
 
@@ -32,6 +34,8 @@ namespace Sentry.Unity
                 SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
                 SentryNativeAndroid.Configure(options);
+#elif SENTRY_NATIVE_WINDOWS
+                SentryNative.Configure(options);
 #endif
 
                 SentryUnity.Init(options);
