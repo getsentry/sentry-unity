@@ -97,7 +97,8 @@ or
   </Target>
 
   <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <RemoveDir Directories="$(SentryNativeRoot)sentry/install/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
@@ -164,11 +165,23 @@ or
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
     <Message Importance="High" Text="Building Sentry Native SDK."></Message>
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake .."></Exec>
+    <!-- Using configuration Release becuse RelWithDebInfo fails to install due to:
+    
+  Install configuration: "Release"
+  CMake Error at build/crashpad_build/handler/cmake_install.cmake:39 (file):
+    file INSTALL cannot find
+    "C:/Users/bruno/git/sentry-unity/src/sentry-native/build/crashpad_build/handler/Release/crashpad_handler.exe":
+    File exists.
+  Call Stack (most recent call first):
+    build/crashpad_build/cmake_install.cmake:46 (include)
+    build/cmake_install.cmake:56 (include) -->
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad --config Release -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --config Release --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --install build --prefix install"></Exec>
 
     <ItemGroup>
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)sentry/build/libs/sentry*.jar" />
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/sentry.dll" />
     </ItemGroup>
 
     <Copy SourceFiles="@(NativeSdkArtifacts)"

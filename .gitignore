@@ -20,6 +20,7 @@ samples/unity-of-bugs/Assets/InitTestScene*
 
 # Ignore build and Unity artifacts
 package-dev/**/*.dll
+package-dev/**/*.exe
 package-dev/**/*.meta
 package-dev/**/*.framework
 package-dev/**/*.pdb
