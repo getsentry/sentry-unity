@@ -21,6 +21,7 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("Enabled", optionsAsString);
             StringAssert.Contains("Dsn", optionsAsString);
             StringAssert.Contains("CaptureInEditor", optionsAsString);
+            StringAssert.Contains("EnableLogDebouncing", optionsAsString);
             StringAssert.Contains("TracesSampleRate", optionsAsString);
             StringAssert.Contains("AutoSessionTracking", optionsAsString);
             StringAssert.Contains("AutoSessionTrackingInterval", optionsAsString);

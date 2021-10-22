@@ -33,6 +33,11 @@ namespace Sentry.Unity
         public bool CaptureInEditor { get; set; } = true;
 
         /// <summary>
+        /// Whether Sentry events should be debounced it too frequent.
+        /// </summary>
+        public bool EnableLogDebouncing { get; set; } = false;
+
+        /// <summary>
         /// Whether the SDK should be in <see cref="Debug"/> mode only while in the Unity Editor.
         /// </summary>
         public bool DebugOnlyInEditor { get; set; }
@@ -74,30 +79,19 @@ namespace Sentry.Unity
         /// </summary>
         public bool AndroidNativeSupportEnabled { get; set; } = true;
 
-        private readonly SentryMonoBehaviour _sentryMonoBehaviour;
-
         public SentryUnityOptions()
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
-            _sentryMonoBehaviour = CreateSentryMonoBehaviour();
-
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, _sentryMonoBehaviour));
+            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new SessionIntegration(_sentryMonoBehaviour));
-        }
-
-        private SentryMonoBehaviour CreateSentryMonoBehaviour()
-        {
-            // HideFlags.HideAndDontSave hides the GameObject in the hierarchy and prevents changing of scenes from destroying it
-            var rootGameObject = new GameObject("SentryMonoBehaviour") { hideFlags = HideFlags.HideAndDontSave };
-            return rootGameObject.AddComponent<SentryMonoBehaviour>();
+            this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));
         }
 
         public override string ToString()

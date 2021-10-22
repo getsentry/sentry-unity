@@ -63,46 +63,10 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void SetRelativeFrameworkPath_PathExists_ReturnsFrameworkPath()
-        {
-            CreateFrameworkDirectories();
-
-            var xcodeProject = _fixture.GetSut();
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
-
-            xcodeProject.SetRelativeFrameworkPath();
-
-            Assert.AreEqual(expectedFrameworkPath, xcodeProject.RelativeFrameworkPath);
-        }
-
-        [Test]
-        public void SetRelativeFrameworkPath_DevPathExists_ReturnsDevFrameworkPath()
-        {
-            CreateDevFrameworkDirectories();
-
-            var xcodeProject = _fixture.GetSut();
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
-
-            xcodeProject.SetRelativeFrameworkPath();
-
-            Assert.AreEqual(expectedFrameworkPath, xcodeProject.RelativeFrameworkPath);
-        }
-
-        [Test]
-        public void SetRelativeFrameworkPath_PathDoesNotExist_ThrowsFileNotFoundException()
-        {
-            _fixture.ProjectRoot = "Path/That/Does/Not/Exist";
-            var xcodeProject = _fixture.GetSut();
-
-            Assert.Throws<FileNotFoundException>(() => xcodeProject.SetRelativeFrameworkPath());
-        }
-
-        [Test]
         public void AddSentryFramework_CleanXcodeProject_SentryWasAdded()
         {
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
-            xcodeProject.RelativeFrameworkPath = "Frameworks/io.sentry.unity/Plugins/iOS/";
 
             xcodeProject.AddSentryFramework();
 
@@ -114,23 +78,10 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
-            xcodeProject.RelativeFrameworkPath = "Frameworks/io.sentry.unity/Plugins/iOS/";
 
             xcodeProject.AddNativeOptions(_fixture.Options);
 
             StringAssert.Contains("SentryOptions.m", xcodeProject.ProjectToString());
-        }
-
-        private void CreateFrameworkDirectories()
-        {
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
-            Directory.CreateDirectory(Path.Combine(_fixture.ProjectRoot, expectedFrameworkPath));
-        }
-
-        private void CreateDevFrameworkDirectories()
-        {
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
-            Directory.CreateDirectory(Path.Combine(_fixture.ProjectRoot, expectedFrameworkPath));
         }
     }
 }
