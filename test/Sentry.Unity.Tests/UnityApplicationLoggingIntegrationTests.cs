@@ -32,6 +32,19 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        [TestCase("condition", null)]
+        [TestCase(null, "stacktrace")]
+        [TestCase(null, null)]
+        public void OnLogMessageReceived_PassingParametersNull_DoesNotLog(string? condition, string? stacktrace)
+        {
+            var sut = _fixture.GetSut(_hub, _sentryOptions);
+
+            sut.OnLogMessageReceived(condition, stacktrace, LogType.Error);
+
+            Assert.AreEqual(0, _hub.CapturedEvents.Count);
+        }
+
+        [Test]
         public void OnLogMessageReceived_LogStartsWithUnityLoggerPrefix_NotCaptured()
         {
             var sut = _fixture.GetSut(_hub, _sentryOptions);
