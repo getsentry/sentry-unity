@@ -34,9 +34,9 @@ namespace Sentry.Unity.Integrations
         }
 
         // Internal for testability
-        internal void OnLogMessageReceived(string condition, string stackTrace, LogType type)
+        internal void OnLogMessageReceived(string? condition, string? stackTrace, LogType type)
         {
-            if (_hub is null || !_hub.IsEnabled)
+            if (condition is null || stackTrace is null || _hub?.IsEnabled != true)
             {
                 return;
             }
