@@ -33,6 +33,11 @@ namespace Sentry.Unity
         public bool CaptureInEditor { get; set; } = true;
 
         /// <summary>
+        /// Whether Sentry events should be debounced it too frequent.
+        /// </summary>
+        public bool EnableLogDebouncing { get; set; } = false;
+
+        /// <summary>
         /// Whether the SDK should be in <see cref="Debug"/> mode only while in the Unity Editor.
         /// </summary>
         public bool DebugOnlyInEditor { get; set; }

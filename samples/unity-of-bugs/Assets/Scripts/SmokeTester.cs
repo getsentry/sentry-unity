@@ -9,15 +9,10 @@ using Sentry;
 using Sentry.Infrastructure;
 using Sentry.Unity;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using static System.Environment;
 
-public class SceneLoader : MonoBehaviour
+public class SmokeTester : MonoBehaviour
 {
-    public void LoadBugFarmScene() => SceneManager.LoadScene("1_BugFarmScene");
-
-    public void LoadTransitionScene() => SceneManager.LoadScene("2_TransitionScene");
-
     public void Start()
     {
         var args = GetCommandLineArgs();

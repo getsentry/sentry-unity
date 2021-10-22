@@ -32,6 +32,7 @@ namespace Sentry.Unity.Tests
                 Enabled = false,
                 Dsn = "test",
                 CaptureInEditor = false,
+                EnableLogDebouncing = true,
                 TracesSampleRate = 1.0f,
                 AutoSessionTracking = false,
                 AutoSessionTrackingInterval = TimeSpan.FromSeconds(1),
@@ -56,6 +57,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.Enabled = expectedOptions.Enabled;
             scriptableOptions.Dsn = expectedOptions.Dsn;
             scriptableOptions.CaptureInEditor = expectedOptions.CaptureInEditor;
+            scriptableOptions.EnableLogDebouncing = expectedOptions.EnableLogDebouncing;
             scriptableOptions.TracesSampleRate = expectedOptions.TracesSampleRate;
             scriptableOptions.AutoSessionTracking = expectedOptions.AutoSessionTracking;
             scriptableOptions.AutoSessionTrackingInterval = (int)expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
@@ -111,6 +113,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.Enabled, actual.Enabled);
             Assert.AreEqual(expected.Dsn, actual.Dsn);
             Assert.AreEqual(expected.CaptureInEditor, actual.CaptureInEditor);
+            Assert.AreEqual(expected.EnableLogDebouncing, actual.EnableLogDebouncing);
             Assert.AreEqual(expected.TracesSampleRate, actual.TracesSampleRate);
             Assert.AreEqual(expected.AutoSessionTracking, actual.AutoSessionTracking);
             Assert.AreEqual(expected.AutoSessionTrackingInterval, actual.AutoSessionTrackingInterval);

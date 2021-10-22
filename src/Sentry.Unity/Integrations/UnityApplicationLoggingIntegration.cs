@@ -47,16 +47,20 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var debounced = type switch
+            if (_sentryOptions?.EnableLogDebouncing == true)
             {
-                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
-                LogType.Log => LogTimeDebounce.Debounced(),
-                LogType.Warning => WarningTimeDebounce.Debounced(),
-                _ => true
-            };
-            if (!debounced)
-            {
-                return;
+                var debounced = type switch
+                {
+                    LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
+                    LogType.Log => LogTimeDebounce.Debounced(),
+                    LogType.Warning => WarningTimeDebounce.Debounced(),
+                    _ => true
+                };
+
+                if (!debounced)
+                {
+                    return;
+                }
             }
 
             // TODO: to check against 'MinBreadcrumbLevel'
