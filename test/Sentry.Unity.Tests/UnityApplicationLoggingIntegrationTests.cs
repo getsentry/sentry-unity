@@ -32,11 +32,11 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void OnLogMessageReceived_StackTraceFromSentry_NotCaptured()
+        public void OnLogMessageReceived_LogStartsWithUnityLoggerPrefix_NotCaptured()
         {
             var sut = _fixture.GetSut(_hub, _sentryOptions);
 
-            sut.OnLogMessageReceived("condition", "Sentry.stacktrace", LogType.Error);
+            sut.OnLogMessageReceived($"{UnityLogger.LogPrefix}: condition", "stacktrace", LogType.Error);
 
             Assert.AreEqual(0, _hub.CapturedEvents.Count);
         }

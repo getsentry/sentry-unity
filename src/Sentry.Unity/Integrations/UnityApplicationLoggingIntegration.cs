@@ -41,8 +41,7 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            if (_sentryOptions?.FilterSentryInternalEvents == true
-                && stackTrace.StartsWith(_sentryOptions?.InternalEventFilter, StringComparison.Ordinal))
+            if (condition.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
             {
                 return;
             }

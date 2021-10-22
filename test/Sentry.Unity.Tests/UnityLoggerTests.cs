@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
@@ -34,6 +35,17 @@ namespace Sentry.Unity.Tests
 
             Assert.False(logger.IsEnabled(lowerLevel));
             Assert.False(interceptor.LogMessage.Contains(expectedLog));
+        }
+
+        [Test]
+        public void Log_StartsWithLogPrefix()
+        {
+            var interceptor = new TestUnityLoggerInterceptor();
+            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = SentryLevel.Debug }, interceptor);
+
+            logger.Log(SentryLevel.Debug, "TestLog");
+
+            StringAssert.StartsWith(UnityLogger.LogPrefix, interceptor.LogMessage);
         }
 
         private static object[] SentryLevels =
