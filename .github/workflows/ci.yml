@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
-        unity-version: [2019.4.31f1]
+        unity-version: [2019.4.31f1, 2021.1.26f1]
         include:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
@@ -33,6 +33,8 @@ jobs:
             unity-config-path: /Library/Application Support/Unity/config/
           - unity-version: 2019.4.31f1
             unity-version-changeset: bd5abf232a62
+          - unity-version: 2021.1.26f1
+            unity-version-changeset: 6f076387c01d
 
     steps:
       # Tag: 0.9.1
