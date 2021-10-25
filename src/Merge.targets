@@ -3,12 +3,10 @@
   <ItemGroup>
     <PackageReference Include="ilmerge" Version="3.0.41" />
   </ItemGroup>
-  <Target Name="ILMerge" AfterTargets="PostBuildEvent">
+  <Target Name="ILMerge" AfterTargets="PostBuildEvent" Condition=" '$(OS)' == 'Windows_NT' ">
     <PropertyGroup>
-      <ILMergeStart Condition=" '$(OS)' != 'Windows_NT' ">mono &quot;$(ILMergeConsolePath)&quot;</ILMergeStart>
-      <ILMergeStart Condition=" '$(OS)' == 'Windows_NT' ">&quot;$(ILMergeConsolePath)&quot;</ILMergeStart>
       <Command>
-$(ILMergeStart)
+&quot;$(ILMergeConsolePath)&quot;
 /lib:&quot;$(UnityManagedPath)&quot;
 /out:&quot;$(TargetPath)&quot;
 &quot;$(TargetPath)&quot;
