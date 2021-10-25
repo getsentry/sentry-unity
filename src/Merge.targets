@@ -3,12 +3,10 @@
   <ItemGroup>
     <PackageReference Include="ILRepack" Version="2.0.18" />
   </ItemGroup>
-  <Target Name="ILRepack" AfterTargets="PostBuildEvent">
+  <Target Name="ILRepack" AfterTargets="PostBuildEvent" Condition=" '$(OS)' == 'Windows_NT' ">
     <PropertyGroup>
-      <ILRepackStart Condition=" '$(OS)' != 'Windows_NT' ">mono &quot;$(ILRepack)&quot;</ILRepackStart>
-      <ILRepackStart Condition=" '$(OS)' == 'Windows_NT' ">&quot;$(ILRepack)&quot;</ILRepackStart>
       <Command>
-$(ILRepackStart)
+&quot;$(ILRepack)&quot;
 /lib:&quot;$(UnityManagedPath)&quot;
 /out:&quot;$(TargetPath)&quot;
 &quot;$(TargetPath)&quot;
