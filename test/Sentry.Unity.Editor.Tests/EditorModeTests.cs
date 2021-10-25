@@ -26,7 +26,7 @@ namespace Sentry.Unity.Editor.Tests
             }
 
             // assert
-            Assert.AreEqual(1, validationErrors.Count);
+            Assert.GreaterOrEqual(validationErrors.Count, 1, "Expected at least 1 error");
             Assert.NotNull(validationErrors.SingleOrDefault(e => e.PropertyName.Contains(nameof(SentryTestWindow.Options.Dsn))));
         }
 
