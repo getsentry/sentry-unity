@@ -15,6 +15,7 @@ jobs:
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
+      UNITY_VERSION: ${{ matrix.unity-version }}
     strategy:
       fail-fast: false
       matrix:
