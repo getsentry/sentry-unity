@@ -1,14 +1,14 @@
 <Project>
 
   <ItemGroup>
-    <PackageReference Include="ILRepack" Version="2.0.18" />
+    <PackageReference Include="ilmerge" Version="3.0.41" />
   </ItemGroup>
-  <Target Name="ILRepack" AfterTargets="PostBuildEvent">
+  <Target Name="ILMerge" AfterTargets="PostBuildEvent">
     <PropertyGroup>
-      <ILRepackStart Condition=" '$(OS)' != 'Windows_NT' ">mono &quot;$(ILRepack)&quot;</ILRepackStart>
-      <ILRepackStart Condition=" '$(OS)' == 'Windows_NT' ">&quot;$(ILRepack)&quot;</ILRepackStart>
+      <ILMergeStart Condition=" '$(OS)' != 'Windows_NT' ">mono &quot;$(ILMergeConsolePath)&quot;</ILMergeStart>
+      <ILMergeStart Condition=" '$(OS)' == 'Windows_NT' ">&quot;$(ILMergeConsolePath)&quot;</ILMergeStart>
       <Command>
-$(ILRepackStart)
+$(ILMergeStart)
 /lib:&quot;$(UnityManagedPath)&quot;
 /out:&quot;$(TargetPath)&quot;
 &quot;$(TargetPath)&quot;
@@ -28,7 +28,8 @@ System.Threading.Tasks.Extensions.dll
 /targetplatform:v4
       </Command>
       <TrimmedCommand>$(Command.Replace('%0A',' ').Replace('%0D',' '))</TrimmedCommand>
-    </PropertyGroup>
+    
+  </PropertyGroup>
     <Message Text="$(TrimmedCommand)" />
     <Exec Command="$(TrimmedCommand)"
           ConsoleToMSBuild="true"
