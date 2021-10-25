@@ -16,7 +16,7 @@ namespace Sentry.Unity.Integrations
         private readonly IApplication _application;
 
         private IHub? _hub;
-        private SentryOptions? _sentryOptions;
+        private SentryUnityOptions? _sentryOptions;
 
         public UnityApplicationLoggingIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
         {
@@ -27,7 +27,7 @@ namespace Sentry.Unity.Integrations
         public void Register(IHub hub, SentryOptions sentryOptions)
         {
             _hub = hub;
-            _sentryOptions = sentryOptions;
+            _sentryOptions = sentryOptions as SentryUnityOptions;
 
             _application.LogMessageReceived += OnLogMessageReceived;
             _application.Quitting += OnQuitting;
@@ -41,16 +41,20 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var debounced = type switch
+            if (_sentryOptions?.EnableLogDebouncing == true)
             {
-                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
-                LogType.Log => LogTimeDebounce.Debounced(),
-                LogType.Warning => WarningTimeDebounce.Debounced(),
-                _ => true
-            };
-            if (!debounced)
-            {
-                return;
+                var debounced = type switch
+                {
+                    LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
+                    LogType.Log => LogTimeDebounce.Debounced(),
+                    LogType.Warning => WarningTimeDebounce.Debounced(),
+                    _ => true
+                };
+
+                if (!debounced)
+                {
+                    return;
+                }
             }
 
             // TODO: to check against 'MinBreadcrumbLevel'

@@ -4,13 +4,24 @@
 
 ### Fixes
 
+- Fixed missing context data when initializing SDK programmatically ([#376](https://github.com/getsentry/sentry-unity/pull/376))
+- Fixed CaptureInEditor flag when initializing SDK programmatically ([#370](https://github.com/getsentry/sentry-unity/pull/370))
 - Preventing numeric options to be set negative in the editor window ([#364](https://github.com/getsentry/sentry-unity/pull/364))
-
+- Bump Sentry .NET SDK 3.10.0 ([#328](https://github.com/getsentry/sentry-unity/pull/383))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.10.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.9.3...3.10.0)
+- Bump Sentry Cocoa SDK 7.4.7 ([#328](https://github.com/getsentry/sentry-unity/pull/383))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.4.7/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.3.0...7.4.7)
+- Bump Sentry Android SDK 5.2.4 ([#359](https://github.com/getsentry/sentry-unity/pull/383))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.4/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.1...5.2.4)
 
 ## 0.6.0
 
 ### Features
 
+- Added iOS simulator support ([#358](https://github.com/getsentry/sentry-unity/pull/358))
 - Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
 - Android mark sessions as crashed ([#347](https://github.com/getsentry/sentry-unity/pull/347))
 - Android native bridge for scope sync ([#308](https://github.com/getsentry/sentry-unity/pull/308))

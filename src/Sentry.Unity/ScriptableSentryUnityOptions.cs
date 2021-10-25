@@ -26,6 +26,7 @@ namespace Sentry.Unity
 
         [field: SerializeField] internal string? Dsn { get; set; }
         [field: SerializeField] internal bool CaptureInEditor { get; set; }
+        [field: SerializeField] internal bool EnableLogDebouncing { get; set; }
         [field: SerializeField] internal double TracesSampleRate { get; set; }
         [field: SerializeField] internal bool AutoSessionTracking { get; set; }
         [field: SerializeField] internal int AutoSessionTrackingInterval { get; set; }
@@ -79,6 +80,7 @@ namespace Sentry.Unity
 
             options.Dsn = scriptableOptions.Dsn;
             options.CaptureInEditor = scriptableOptions.CaptureInEditor;
+            options.EnableLogDebouncing = scriptableOptions.EnableLogDebouncing;
             options.TracesSampleRate = scriptableOptions.TracesSampleRate;
             options.AutoSessionTracking = scriptableOptions.AutoSessionTracking;
             options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval);
