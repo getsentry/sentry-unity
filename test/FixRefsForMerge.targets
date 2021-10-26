@@ -1,4 +1,8 @@
 <Project>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false"  Condition=" '$(OS)' != 'Windows_NT' "/>
+    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false"  Condition=" '$(OS)' != 'Windows_NT' "/>
+  </ItemGroup>
   <Target Name="FixRefsForMerge" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences" Condition=" '$(OS)' == 'Windows_NT' ">
     <ItemGroup>
       <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'Sentry'" />
