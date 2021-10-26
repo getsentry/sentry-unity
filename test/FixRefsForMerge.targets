@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="FixRefsForMerge" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+  <Target Name="FixRefsForMerge" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences" Condition=" '$(OS)' == 'Windows_NT' ">
     <ItemGroup>
       <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'Sentry'" />
       <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'Sentry.Unity'" />
