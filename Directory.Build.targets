@@ -78,7 +78,7 @@ or
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
     <RemoveDir Directories="$(PlayerBuildPath)" />
-    <RemoveDir Directories="$(UnityPackageProject)" />
+    <RemoveDir Condition="Exists('$(UnityPackageProject)')" Directories="$(UnityPackageProject)" />
   </Target>
 
   <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
