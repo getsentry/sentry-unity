@@ -30,11 +30,11 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        [TestCase( "/n")]
-        [TestCase( "/t")]
-        [TestCase( "/n")]
-        [TestCase( "\\")]
-        [TestCase( "..")]
+        [TestCase("/n")]
+        [TestCase("/t")]
+        [TestCase("/n")]
+        [TestCase("\\")]
+        [TestCase("..")]
         public void SetDefaults_Release_DoesNotContainInvalidCharacters(string invalidString)
         {
             var options = new SentryUnityOptions();
