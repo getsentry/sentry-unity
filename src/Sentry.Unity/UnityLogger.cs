@@ -12,7 +12,7 @@ namespace Sentry.Unity
 
     public class UnityLogger : IDiagnosticLogger
     {
-        public const string LogPrefix = "Sentry";
+        public const string LogPrefix = "Sentry: ";
 
         private readonly SentryOptions _sentryOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
@@ -53,7 +53,7 @@ namespace Sentry.Unity
 
             string GetLog()
             {
-                var log = $"{LogPrefix}: ({logLevel}) {Format(message, args)} {exception}";
+                var log = $"{LogPrefix}({logLevel}) {Format(message, args)} {exception}";
                 _interceptor?.Intercept(logLevel, log);
                 return log;
             }

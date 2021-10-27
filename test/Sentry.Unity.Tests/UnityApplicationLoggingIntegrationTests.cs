@@ -49,7 +49,7 @@ namespace Sentry.Unity.Tests
         {
             var sut = _fixture.GetSut(_hub, _sentryOptions);
 
-            sut.OnLogMessageReceived($"{UnityLogger.LogPrefix}: condition", "stacktrace", LogType.Error);
+            sut.OnLogMessageReceived($"{UnityLogger.LogPrefix}condition", "stacktrace", LogType.Error);
 
             Assert.AreEqual(0, _hub.CapturedEvents.Count);
         }
