@@ -71,13 +71,20 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var sentryEvent = stackTrace == null
-                ? new SentryEvent { Message = condition }
-                : new SentryEvent(new UnityLogException(condition, stackTrace));
-            sentryEvent.Level = ToEventTagType(type);
+            if (stackTrace != null)
+            {
+                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+                {
+                    Level = ToEventTagType(type)
+                };
 
-            _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
-            _hub.CaptureEvent(sentryEvent);
+                _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
+                _hub.CaptureEvent(sentryEvent);
+            }
+            else
+            {
+                _hub.CaptureMessage(condition, ToEventTagType(type));
+            }
 
             // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
