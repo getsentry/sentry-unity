@@ -78,7 +78,7 @@ or
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
     <RemoveDir Directories="$(PlayerBuildPath)" />
-    <RemoveDir Directories="$(UnityPackageProject)" />
+    <RemoveDir Condition="Exists('$(UnityPackageProject)')" Directories="$(UnityPackageProject)" />
   </Target>
 
   <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -130,7 +130,7 @@ or
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)."></Error>
     <Message Importance="High" Text="Building Sentry Android SDK."></Message>
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar"></Exec>
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --stacktrace --warning-mode all"></Exec>
 
     <ItemGroup>
       <!-- building snapshot based on version, i.e: sentry-5.0.0-beta.3-SNAPSHOT.jar -->
@@ -214,6 +214,8 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
+    <Message Importance="High" Text="Running Unity Create Packages."></Message>
+
     <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
@@ -232,6 +234,8 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
+    <Message Importance="High" Text="Running Unity Restore Packages."></Message>
+
     <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
@@ -246,6 +250,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
+
     <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
