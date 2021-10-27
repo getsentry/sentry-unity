@@ -32,14 +32,11 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        [TestCase("condition", null)]
-        [TestCase(null, "stacktrace")]
-        [TestCase(null, null)]
-        public void OnLogMessageReceived_PassingParametersNull_DoesNotLog(string? condition, string? stacktrace)
+        public void OnLogMessageReceived_ConditionNull_DoesNotLog()
         {
             var sut = _fixture.GetSut(_hub, _sentryOptions);
 
-            sut.OnLogMessageReceived(condition, stacktrace, LogType.Error);
+            sut.OnLogMessageReceived(null, "stacktrace", LogType.Error);
 
             Assert.AreEqual(0, _hub.CapturedEvents.Count);
         }

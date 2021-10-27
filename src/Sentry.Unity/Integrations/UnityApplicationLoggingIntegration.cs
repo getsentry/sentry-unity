@@ -36,7 +36,7 @@ namespace Sentry.Unity.Integrations
         // Internal for testability
         internal void OnLogMessageReceived(string? condition, string? stackTrace, LogType type)
         {
-            if (condition is null || stackTrace is null || _hub?.IsEnabled != true)
+            if (condition is null || _hub?.IsEnabled != true)
             {
                 return;
             }
@@ -71,10 +71,10 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
-            {
-                Level = ToEventTagType(type)
-            };
+            var sentryEvent = stackTrace == null
+                ? new SentryEvent { Message = condition }
+                : new SentryEvent(new UnityLogException(condition, stackTrace));
+            sentryEvent.Level = ToEventTagType(type);
 
             _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
             _hub.CaptureEvent(sentryEvent);
