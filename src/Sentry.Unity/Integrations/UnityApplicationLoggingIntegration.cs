@@ -71,7 +71,7 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            if (stackTrace != null)
+            if (stackTrace is not null)
             {
                 var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
                 {
