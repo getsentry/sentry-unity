@@ -30,11 +30,12 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        [TestCase("/n")]
-        [TestCase("/t")]
-        [TestCase("/n")]
+        [TestCase("\n")]
+        [TestCase("\t")]
+        [TestCase("/")]
         [TestCase("\\")]
         [TestCase("..")]
+        [TestCase("@")]
         public void SetDefaults_Release_DoesNotContainInvalidCharacters(string invalidString)
         {
             var options = new SentryUnityOptions();
@@ -45,7 +46,6 @@ namespace Sentry.Unity.Tests
 
             SentryOptionsUtility.SetDefaults(options, application);
 
-            StringAssert.DoesNotContain(invalidString, options.Release);
             Assert.AreEqual($"{prefix}_{suffix}@{version}", options.Release);
         }
 
