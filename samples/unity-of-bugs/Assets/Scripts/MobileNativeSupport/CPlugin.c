@@ -1,3 +1,4 @@
+__attribute__((noinline))
 void
 crash_in_c()
 {
