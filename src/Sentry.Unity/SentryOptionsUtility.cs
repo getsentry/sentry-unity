@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
@@ -65,11 +67,18 @@ namespace Sentry.Unity
             scriptableOptions.DiagnosticLevel = SentryLevel.Warning;
         }
 
-        private static string Release(IApplication application) =>
-            application.ProductName is string productName
-            && !string.IsNullOrWhiteSpace(productName)
-                ? $"{productName}@{application.Version}"
-                : $"{application.Version}";
+        private static string Release(IApplication application)
+        {
+            if (application.ProductName is string productName
+                && !string.IsNullOrWhiteSpace(productName)
+                && productName.Any(c => c != '.')) // productName consisting solely of '.'
+            {
+                productName = Regex.Replace(productName, @"\n|\r|\t|\/|\\|\.{2}|@", "_");
+                return $"{productName}@{application.Version}";
+            }
+
+            return application.Version;
+        }
 
         private static string Environment(IApplication application, bool isBuilding) => (application.IsEditor && !isBuilding) ? "editor" : "production";
 
