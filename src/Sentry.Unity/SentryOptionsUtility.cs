@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 
@@ -70,7 +71,7 @@ namespace Sentry.Unity
         {
             if (application.ProductName is string productName
                 && !string.IsNullOrWhiteSpace(productName)
-                && !Regex.IsMatch(productName, "^[.]+$")) // ProductName does not consist solely of '.'
+                && productName.Any(c => c != '.')) // productName consisting solely of '.'
             {
                 productName = Regex.Replace(productName, @"\n|\r|\t|\/|\\|\.{2}|@", "_");
                 return $"{productName}@{application.Version}";
