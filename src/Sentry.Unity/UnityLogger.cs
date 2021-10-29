@@ -12,12 +12,14 @@ namespace Sentry.Unity
 
     public class UnityLogger : IDiagnosticLogger
     {
+        public const string LogPrefix = "Sentry: ";
+
         private readonly SentryOptions _sentryOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
 
         public bool IsEnabled(SentryLevel level) => level >= _sentryOptions.DiagnosticLevel;
 
-        public UnityLogger(SentryOptions sentryOptions) : this(sentryOptions, null)
+        public UnityLogger(SentryUnityOptions sentryUnityOptions) : this(sentryUnityOptions, null)
         { }
 
         internal UnityLogger(SentryOptions sentryOptions, IUnityLoggerInterceptor? interceptor = null)
@@ -51,7 +53,7 @@ namespace Sentry.Unity
 
             string GetLog()
             {
-                var log = $"Sentry: ({logLevel}) {Format(message, args)} {exception}";
+                var log = $"{LogPrefix}({logLevel}) {Format(message, args)} {exception}";
                 _interceptor?.Intercept(logLevel, log);
                 return log;
             }

@@ -34,9 +34,14 @@ namespace Sentry.Unity.Integrations
         }
 
         // Internal for testability
-        internal void OnLogMessageReceived(string condition, string stackTrace, LogType type)
+        internal void OnLogMessageReceived(string? condition, string? stackTrace, LogType type)
         {
-            if (_hub is null || !_hub.IsEnabled)
+            if (condition is null || _hub?.IsEnabled != true)
+            {
+                return;
+            }
+
+            if (condition.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
             {
                 return;
             }
@@ -66,13 +71,20 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+            if (stackTrace is not null)
             {
-                Level = ToEventTagType(type)
-            };
+                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+                {
+                    Level = ToEventTagType(type)
+                };
 
-            _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
-            _hub.CaptureEvent(sentryEvent);
+                _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
+                _hub.CaptureEvent(sentryEvent);
+            }
+            else
+            {
+                _hub.CaptureMessage(condition, ToEventTagType(type));
+            }
 
             // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
