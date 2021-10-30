@@ -38,8 +38,8 @@ jobs:
             unity-version-changeset: a38c86f6690f
           - unity-version: 2021.1.26f1
             unity-version-changeset: 6f076387c01d
-          - unity-version: 2022.1.0a12
-            unity-version-changeset: 816252c3efbb
+          # - unity-version: 2022.1.0a12
+          #   unity-version-changeset: 816252c3efbb
 
     steps:
       # Tag: 0.9.1
