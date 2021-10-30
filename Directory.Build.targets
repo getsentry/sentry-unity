@@ -1,5 +1,4 @@
 <Project InitialTargets="FindUnity">
-
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
@@ -288,6 +287,13 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       <Using Namespace="System.Linq" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
+if (Environment.GetEnvironmentVariable("CI") is not null
+      && Environment.GetEnvironmentVariable("UNITY_VERSION") is { } unityVersion)
+{
+    Log.LogMessage("Unity Version from environment variable: " + unityVersion);
+    UnityVersion = unityVersion;
+    return true;
+}
 
 if (!File.Exists(ProjectSettingsPath))
 {
@@ -301,9 +307,9 @@ if (version == null)
     Log.LogError("Unity version not found in file: " + ProjectSettingsPath);
     return false;
 }
-UnityVersion = version.Substring("m_EditorVersion: ".Length);;
+UnityVersion = version.Substring("m_EditorVersion: ".Length);
 
-Log.LogMessage("Unity Version:" + version);
+Log.LogMessage("Unity Version: " + version);
 ]]>
       </Code>
     </Task>
@@ -336,7 +342,7 @@ File.WriteAllLines(PackageManifestFile, lines);
     </Task>
   </UsingTask>
 
-    <!-- Parse test results -->
+  <!-- Parse test results -->
   <UsingTask
     TaskName="UnityTestResults"
     TaskFactory="RoslynCodeTaskFactory"

@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
     <DebugType>embedded</DebugType>
     <OutDir>$(PackageEditorPath)/iOS</OutDir>
