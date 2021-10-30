@@ -19,7 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
-        unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1] # 2022.1.0a12
+        # 2022.1.0a12 removed until S.T.J issues fixed
+        unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
         include:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
