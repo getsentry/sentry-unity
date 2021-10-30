@@ -21,7 +21,11 @@
       <IOSBuildTools>$(UnityRoot)/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll</IOSBuildTools>
     </PropertyGroup>
 
-    <Error Condition="!Exists('$(IOSBuildTools)')" Text="iOS build tools not found. Make sure to install the Unity iOS Module. Expected directory: $(IOSBuildTools)"></Error>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+      <IOSBuildTools>$(UnityRoot)/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll</IOSBuildTools>
+    </PropertyGroup>
+
+    <Error Condition="!Exists('$(IOSBuildTools)')" Text="iOS build tools not found. Make sure to install the Unity iOS Module. Expected directory: '$(IOSBuildTools)'"></Error>
 
     <ItemGroup>
       <Reference Include="UnityEditor">
