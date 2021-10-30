@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
-        unity-version: [2019.4.31f1, 2021.1.26f1]
+        unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1, 2022.1.0a12]
         include:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
@@ -33,8 +33,12 @@ jobs:
             unity-config-path: /Library/Application Support/Unity/config/
           - unity-version: 2019.4.31f1
             unity-version-changeset: bd5abf232a62
+          - unity-version: 2020.3.21f1
+            unity-version-changeset: a38c86f6690f
           - unity-version: 2021.1.26f1
             unity-version-changeset: 6f076387c01d
+          - unity-version: 2022.1.0a12
+            unity-version-changeset: 816252c3efbb
 
     steps:
       # Tag: 0.9.1
@@ -154,6 +158,9 @@ jobs:
         run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
 
       - name: Build Android Player with IL2CPP
+        # TODO: Remove condition once path too long issue resolved:
+        # PathTooLongException: Path is too long. Path: C:\Program Files\Unity\Hub\Editor\2021.1.26f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\tempToolsDir\lib\monitor-x86\p2\org.eclipse.equinox.p2.engine\profileRegistry\DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions
+        if: ${{ matrix.os != 'windows-latest' && unity-version != '2021.1.26f1' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
