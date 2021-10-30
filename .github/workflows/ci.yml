@@ -148,12 +148,15 @@ jobs:
         run: dotnet build -c Release
 
       - name: Run Unity tests (playmode)
+        # TODO: Run Play mode tests on 2022 once S.T.J loading issue resolved.
+       # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
+        if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
 
       - name: Run Unity tests (editmode)
-        # TODO: Run Editor tests on 2022 once S.T.J loading issue resolved.
+        # TODO: Run Edit mode tests on 2022 once S.T.J loading issue resolved.
         # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
