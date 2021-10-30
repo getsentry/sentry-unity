@@ -1,6 +1,13 @@
 <Project>
   <Import Project="../Directory.Build.props" />
 
+  <PropertyGroup Condition="$(UnityVersion.StartsWith('2022'))">
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="!$(UnityVersion.StartsWith('2022'))">
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PackageRuntimePath>../../$(DevPackageFolderName)/Runtime</PackageRuntimePath>
     <PackageEditorPath>../../$(DevPackageFolderName)/Editor</PackageEditorPath>
