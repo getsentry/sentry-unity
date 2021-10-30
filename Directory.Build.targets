@@ -40,8 +40,8 @@
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))"
            Text="UnityRoot not found. Ensure Unity is installed.
 See the CONTRIBUTING.md.
-UnityVersion: $(UnityVersion)
-Resolved directory: $(UnityRoot)
+UnityVersion: '$(UnityVersion)'
+Resolved directory: '$(UnityRoot)'
 Expected to exist:
  * C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll
 or
@@ -64,12 +64,30 @@ or
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('OSX'))"
            Text="UnityRoot not found. Ensure Unity is installed.
 See the CONTRIBUTING.md.
-UnityVersion: $(UnityVersion)
-Resolved directory: $(UnityRoot)
+UnityVersion: '$(UnityVersion)'
+Resolved directory: '$(UnityRoot)'
 Expected to exist:
  * /Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll
 or
  * /Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll" />
+
+    <!-- Unity paths on Linux -->
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+      <UnityRoot Condition="Exists('$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor/Data/Managed/UnityEngine.dll')">$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor</UnityRoot>
+      <UnityManagedPath>$(UnityRoot)/Data/Managed</UnityManagedPath>
+      <UnityExec>$(UnityRoot)/Unity</UnityExec>
+      <StandaloneBuildMethod>Builder.BuildLinuxIl2CPPPlayer</StandaloneBuildMethod>
+      <StandaloneBuildPath>$(PlayerBuildPath)Linux/IL2CPP_Player</StandaloneBuildPath>
+      <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
+    </PropertyGroup>
+
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Linux'))"
+           Text="UnityRoot not found. Ensure Unity is installed.
+See the CONTRIBUTING.md.
+UnityVersion: '$(UnityVersion)'
+Resolved directory: '$(UnityRoot)'
+Expected to exist:
+ * $(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor/Data/Managed/UnityEngine.dll" />
 
   </Target>
 
