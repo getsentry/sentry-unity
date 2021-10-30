@@ -32,6 +32,11 @@ jobs:
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
             unity-config-path: /Library/Application Support/Unity/config/
+          - os: ubuntu-latest
+            unity-installation-path: ~/Unity/
+            unity-root: ~/Unity/Editor
+            unity-path: Unity/
+            unity-config-path: ~/.unity/config/
           - unity-version: 2019.4.31f1
             unity-version-changeset: bd5abf232a62
           - unity-version: 2020.3.21f1
