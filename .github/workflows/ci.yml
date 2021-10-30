@@ -73,7 +73,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: samples/unity-of-bugs/Library
-          key: ${{ matrix.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Get submodule information
         run: |
@@ -91,7 +91,7 @@ jobs:
           # We only build the native SDKs if the respective 'package-dev/Plugins/' directories are empty
           # Output changes only depending on the git sha of the submodules
           # hash of package/package.json for cache busting on release builds (version bump)
-          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
+          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
