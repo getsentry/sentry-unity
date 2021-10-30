@@ -1,5 +1,4 @@
 <Project InitialTargets="FindUnity">
-
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
@@ -343,7 +342,7 @@ File.WriteAllLines(PackageManifestFile, lines);
     </Task>
   </UsingTask>
 
-    <!-- Parse test results -->
+  <!-- Parse test results -->
   <UsingTask
     TaskName="UnityTestResults"
     TaskFactory="RoslynCodeTaskFactory"
