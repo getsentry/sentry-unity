@@ -160,7 +160,7 @@ jobs:
       - name: Build Android Player with IL2CPP
         # TODO: Remove condition once path too long issue resolved:
         # PathTooLongException: Path is too long. Path: C:\Program Files\Unity\Hub\Editor\2021.1.26f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\tempToolsDir\lib\monitor-x86\p2\org.eclipse.equinox.p2.engine\profileRegistry\DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions
-        if: ${{ matrix.os != 'windows-latest' && unity-version != '2021.1.26f1' }}
+        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
