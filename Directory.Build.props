@@ -11,6 +11,13 @@
     <Features>strict</Features>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(UnityVersion.StartsWith('2022'))">
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="!$(UnityVersion.StartsWith('2022'))">
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
