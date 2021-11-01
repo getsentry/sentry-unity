@@ -9,7 +9,24 @@
     <DevPackageFolderName>package-dev</DevPackageFolderName>
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
+    <!-- Must be set here but will be overwritten below once the UnityVersion is resolved -->
+    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
+
+  <Target Name="ResetTargetFrameworks" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
+    <PropertyGroup Condition="$(UnityVersion.StartsWith('2022'))">
+      <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    </PropertyGroup>
+    <!-- Lowest version supported at this time is 2019 and up to 2021 ns2.0 is the only option. -->
+    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020')) or $(UnityVersion.StartsWith('2021'))">
+      <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    </PropertyGroup>
+    <!-- Being specific on which Unity version we support allows us to quickly ajust these settings when adding support to new editors.
+    Future 2022 or 2023 versions likely will target net6.0 so not rolling forward. Instead break the build here. -->
+    <Error Condition="$(TargetFrameworks.Contains(';'))" Text="Could not set single TFM for UnityVersion $(UnityVersion)."></Error>
+    <Message Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'" Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion)" Importance="High" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />
@@ -24,6 +41,8 @@
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnity" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll."></Error>
+    <Error Condition="!Exists('$(UnityManagedPath)/UnityEngine.dll')" Text="Couldn't find UnityEngine at $(UnityManagedPath)/UnityEngine.dll."></Error>
     <ItemGroup>
       <Reference Include="UnityEngine">
         <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
