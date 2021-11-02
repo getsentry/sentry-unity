@@ -25,7 +25,6 @@
     </PropertyGroup>
     <!-- Being specific on which Unity version we support allows us to quickly ajust these settings when adding support to new editors.
     Future 2022 or 2023 versions likely will target net6.0 so not rolling forward. Instead break the build here. -->
-    <Error Condition="$(TargetFrameworks.Contains(';'))" Text="Could not set single TFM for UnityVersion $(UnityVersion)."></Error>
     <Message Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'" Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion)" Importance="High" />
   </Target>
 
