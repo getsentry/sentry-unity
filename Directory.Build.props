@@ -9,8 +9,9 @@
     <DevPackageFolderName>package-dev</DevPackageFolderName>
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
-    <!-- Must be set here but will be overwritten below once the UnityVersion is resolved -->
-    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+    <!-- Must be set here but will be overwritten below once the UnityVersion is ±resolved -->
+    <!-- When using Unity 2022 the default will change to netstandard2.1 -->
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <Target Name="ResetTargetFrameworks" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
