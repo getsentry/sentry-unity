@@ -1,6 +1,9 @@
 New-Item "package-release" -ItemType Directory
 
 # Copy `package-dev` stuff
+dotnet tool install --global Alias --version 0.1.0-beta.4
+assemblyalias --target-directory "package-dev/Runtime"  --assemblies "Microsoft*;System*"
+
 Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
 
 # Copy `package` stuff
