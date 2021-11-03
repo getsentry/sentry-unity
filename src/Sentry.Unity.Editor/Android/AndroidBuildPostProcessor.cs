@@ -18,14 +18,33 @@ namespace Sentry.Unity.Editor.Android
         [MenuItem("Tools/SentryUploadSymbols")]
         public static void PostProcess() => UploadSymbols(pathToBuiltProject);
 
+        [MenuItem("Tools/Test")]
+        public static void Test()
+        {
+            Debug.Log(EditorUserBuildSettings.development);
+        }
+
         public static void UploadSymbols(string pathToBuiltProject)
         {
+            if (!EditorUserBuildSettings.androidCreateSymbolsZip)
+            {
+                Debug.Log("no symbols.zip created. skipping upload");
+                return;
+            }
+
             var sentryCliOptions = AssetDatabase.LoadAssetAtPath("Assets/Plugins/Sentry/SentryCliOptions.asset",
                 typeof(SentryCliOptions)) as SentryCliOptions;
             var sentryCliPath = GetSentryCliPath();
 
             if (sentryCliOptions is null || !sentryCliOptions.UploadSymbols || sentryCliPath is null)
             {
+                Debug.Log("sentry-cli options said no");
+                return;
+            }
+
+            if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)
+            {
+                Debug.Log("not uploading development symbols");
                 return;
             }
 
