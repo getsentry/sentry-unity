@@ -35,6 +35,15 @@ namespace Sentry.Unity.Editor
 
             CheckForAndConvertJsonConfig();
             Options = LoadOptions();
+
+            var sentryCliOptions = AssetDatabase.LoadAssetAtPath("Assets/Plugins/Sentry/SentryCliOptions.asset",
+                typeof(SentryCliOptions)) as SentryCliOptions;
+            if (sentryCliOptions is null)
+            {
+                var sentrySecrets = CreateInstance<SentryCliOptions>();
+                AssetDatabase.CreateAsset(sentrySecrets, "Assets/Plugins/Sentry/SentryCliOptions.asset");
+                AssetDatabase.SaveAssets();
+            }
         }
 
         private ScriptableSentryUnityOptions LoadOptions()
