@@ -91,7 +91,7 @@ namespace Sentry.Unity.Editor.Android
             var sentryCli = string.Empty;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                sentryCli = "sentry-cli-Darwin-x86_64";
+                sentryCli = "sentry-cli-Darwin-universal";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
