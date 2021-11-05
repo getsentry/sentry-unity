@@ -8,7 +8,8 @@ static class CommandRunner
     {
         return Parser.Default.ParseArguments<Options>(args)
             .MapResult(
-                options => {
+                options =>
+                {
                     var targetDirectory = FindTargetDirectory(options.TargetDirectory);
                     try
                     {

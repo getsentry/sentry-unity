@@ -18,7 +18,7 @@ public static class Program
                 Console.WriteLine($"KeyFile: {keyFile}");
 
                 Inner(targetDirectory, assemblyNamesToAliases.Split(';'), keyFile);
-            }, 
+            },
             args);
 #pragma warning restore IDE0058 // Expression value is never used
     }

@@ -17,7 +17,7 @@ public class AssemblyResolver : IAssemblyResolver
             ["netstandard"] = Path.Combine(directory, "netstandard.dll")
         };
     }
-    
+
     AssemblyDefinition GetAssembly(string file, ReaderParameters parameters)
     {
         if (_assemblyDefinitionCache.TryGetValue(file, out var assembly))

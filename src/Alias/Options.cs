@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 
 public class Options
 {
