@@ -39,3 +39,4 @@ package-dev/Plugins/Android/Sentry/*
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/
 sentry-unity/Assets/Editor/Sentry/
+package-dev/alias-references.txt
