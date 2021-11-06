@@ -1,8 +1,8 @@
 New-Item "package-release" -ItemType Directory
 
 # Copy `package-dev` stuff
-dotnet tool install --global Alias --version 0.1.0-beta.5
-assemblyalias --target-directory "package-dev/Runtime" --assemblies-to-alias "Microsoft*;System*" --key "src/sentry-dotnet/.assets/Sentry.snk"
+dotnet tool install --global Alias --version 0.1.0
+assemblyalias --target-directory "package-dev" --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*" --key "src/sentry-dotnet/.assets/Sentry.snk"
 
 Copy-Item "package-dev/*" -Destination "package-release/" -Exclude "README.md", "package.json", "Tests", "Tests.meta", "*.asmdef", "*.asmdef.meta", "SentryOptions.json*" -Recurse
 
