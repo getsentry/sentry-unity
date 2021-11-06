@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Alias": {
-      "commandName": "Project",
-      "commandLineArgs": "assemblyalias --target-directory \"package-dev/Runtime\" --assemblies-to-alias \"Microsoft*;System*\" --key \"src\\sentry-dotnet\\.assets\\Sentry.snk\""
-    }
-  }
-}
