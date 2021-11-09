@@ -5,6 +5,7 @@ using System.Xml;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Android;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
@@ -33,6 +34,45 @@ namespace Sentry.Unity.Editor.Android
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
+            var gradlePath = Directory.GetParent(basePath);
+            Debug.Log(gradlePath);
+
+            var projectPath = Directory.GetParent(Application.dataPath);
+            var symbolsPath = Path.Combine(projectPath.ToString(), "Temp", "StagingArea", "symbols");
+            if (Directory.Exists(symbolsPath))
+            {
+                Debug.Log("symbols path found");
+            }
+            else
+            {
+                Debug.Log("symbols path not found");
+            }
+
+            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", "io.sentry.unity.dev", "Editor", "sentry-cli"));
+            if (Directory.Exists(sentryCliPath))
+            {
+                Debug.Log("sentry-cli path found");
+            }
+            else
+            {
+                Debug.Log("sentry-cli path not found");
+            }
+
+            using (var streamWriter = File.AppendText(Path.Combine(gradlePath.ToString(), "build.gradle")))
+            {
+                streamWriter.Write($@"
+gradle.taskGraph.whenReady {{
+  gradle.taskGraph.allTasks[-1].doLast {{
+
+    println 'Uploading gradle project debug symbols'
+    exec {{
+                executable ""{sentryCliPath}""
+                args = --version
+            }}
+        }}
+    }}");
+            }
+
             var manifestPath = GetManifestPath(basePath);
             if (!File.Exists(manifestPath))
             {
