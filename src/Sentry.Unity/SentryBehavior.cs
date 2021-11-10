@@ -1,7 +1,3 @@
-using System;
-using Sentry;
-using Sentry.Protocol;
-using Sentry.Unity;
 using UnityEngine;
 
 public class SentryBehavior : MonoBehaviour

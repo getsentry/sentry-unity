@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
     <DebugType>embedded</DebugType>
     <OutDir>$(PackageEditorPath)/iOS</OutDir>
@@ -21,7 +20,7 @@
       <IOSBuildTools>$(UnityRoot)/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll</IOSBuildTools>
     </PropertyGroup>
 
-    <Error Condition="!Exists('$(IOSBuildTools)')" Text="iOS build tools not found. Make sure to install the Unity iOS Module."></Error>
+    <Error Condition="!Exists('$(IOSBuildTools)')" Text="iOS build tools not found. Make sure to install the Unity iOS Module. Expected directory: $(IOSBuildTools)"></Error>
 
     <ItemGroup>
       <Reference Include="UnityEditor">

@@ -2,12 +2,34 @@
 
 ## Unreleased
 
+### Fixes
+
+- Added missing release string validation ([#389](https://github.com/getsentry/sentry-unity/pull/389))
+- Sentry internal logs no longer show up as breadcrumbs ([#377](https://github.com/getsentry/sentry-unity/pull/377))
+- Fixed missing context data when initializing SDK programmatically ([#376](https://github.com/getsentry/sentry-unity/pull/376))
+- Fixed CaptureInEditor flag when initializing SDK programmatically ([#370](https://github.com/getsentry/sentry-unity/pull/370))
+- Preventing numeric options to be set negative in the editor window ([#364](https://github.com/getsentry/sentry-unity/pull/364))
+- Bump Sentry .NET SDK 3.11.1 ([#407](https://github.com/getsentry/sentry-unity/pull/407))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.11.1/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.9.3...3.11.1)
+- Bump Sentry Cocoa SDK 7.5.2 ([#407](https://github.com/getsentry/sentry-unity/pull/407))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.5.2/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.3.0...7.5.2)
+- Bump Sentry Android SDK 5.3.0 ([#407](https://github.com/getsentry/sentry-unity/pull/407))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.3.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.1...5.3.0)
+
+## 0.6.0
+
 ### Features
 
+- Added iOS simulator support ([#358](https://github.com/getsentry/sentry-unity/pull/358))
 - Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
-- iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
+- Android mark sessions as crashed ([#347](https://github.com/getsentry/sentry-unity/pull/347))
 - Android native bridge for scope sync ([#308](https://github.com/getsentry/sentry-unity/pull/308))
+- iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
 - Sample: Throw exceptions in C++ and Objective-C. C++ segfault ([#342](https://github.com/getsentry/sentry-unity/pull/342))
+- Update Unity from 2019.4.21f to 2019.4.30f ([#350](https://github.com/getsentry/sentry-unity/pull/350))
 
 ### Fixes
 
@@ -23,9 +45,9 @@
 - Bump Sentry Cocoa SDK 7.3.0 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.3.0/CHANGELOG.md)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.2.2...7.3.0)
-- Bump Sentry Android SDK to 5.2.0 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.0/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.0-beta.3...5.2.0)
+- Bump Sentry Android SDK 5.2.1 ([#359](https://github.com/getsentry/sentry-unity/pull/359))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.1/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.0-beta.3...5.2.1)
 
 ## 0.5.2
 

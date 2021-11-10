@@ -15,6 +15,7 @@ MonoBehaviour:
   <Enabled>k__BackingField: 1
   <Dsn>k__BackingField: https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
   <CaptureInEditor>k__BackingField: 1
+  <EnableLogDebouncing>k__BackingField: 0
   <TracesSampleRate>k__BackingField: 0
   <AutoSessionTracking>k__BackingField: 1
   <AutoSessionTrackingInterval>k__BackingField: 30000
@@ -34,4 +35,4 @@ MonoBehaviour:
   <AndroidNativeSupportEnabled>k__BackingField: 1
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0
-  <DiagnosticLevel>k__BackingField: 0
+  <DiagnosticLevel>k__BackingField: 2

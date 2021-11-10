@@ -9,13 +9,45 @@
 ## Get the code
 
 Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
-   
+
+### Install Unity
+
+We recommend using [Unity Hub](https://unity3d.com/get-unity/download). The specific version to download can be found [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1).
+
+You'll need the following modules to be added in order to use Sentry Unity:
+ * Android Build Support.
+ * iOS Build Support.
+ * Linux Build Support (ILCPP) for Linux.
+ * Windows Build Support (ILCPP) for Windows.
+
+### Setup for building the Java SDK
+
+* Install Java 11 
+  * [Using sdkman](https://sdkman.io/) which manage versions for you.
+  * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
+* Instal Git and ensure is accessible from the path
+* Add JAVA_HOME to your environment variables (if not using sdkman):
+  * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
+* Install [Android Studio](https://developer.android.com/studio)
+  * Open Android Studio and go to Customize -> All settings...
+  * Search for "SDK" in the Seachbar
+  * Select System Settings -> Android SDK
+  * Swap tab to SDK Tools
+  * Check "Show Package Details"
+  * Under Android SDK Build-Tools check "30.0.2"
+  * Apply
+* Add ANDROID_SDK_ROOT to your environment variables 
+  * macOS zsh: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"`
+  * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"` for a machine wide install, `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
+
 ## Build the project
+
+On the root of the repository, write:
 
 `dotnet build`
 
 > Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
-> The submodule will be restored as a result of `dotnet build`. 
+> The submodule will be restored as a result of `dotnet build`.
 > The Unity editor is also loaded via the build if needed to restore any UPM package required by the project, like testing libraries.
 
 ### Run tests
@@ -83,14 +115,14 @@ Let's outline the needed steps for `UPM` package development flow
     * `Runtime` - `Sentry.Unity.Tests.dll`
 * open `samples/unity-of-bugs` project in `Unity`, then `Scenes/BugFarmScene` scene
 * configure `Sentry Unity (dev)` package
-  * open `Component -> Sentry` and insert your `DSN` or [Sentry SDK](https://sentry.io/settings/sentry-sdks/projects/sentry-unity/) one `https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417`
+  * on the tab `Tools`, select `Sentry` and insert your `DSN` or [Sentry SDK](https://sentry.io/settings/sentry-sdks/projects/sentry-unity/) one `https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417`
   * configure other settings for your needs
 * run the project in `Unity` via clicking `Play`
 * click `ThrowNull` or any other button and check errors in `Sentry` web UI
-  
+
 ## Tests
 
-The project has `PlayMode` and `EditMode` tests. They should be available (after you finished `Package` stage outlined above) when your open `samples/unity-of-bugs` project. 
+The project has `PlayMode` and `EditMode` tests. They should be available (after you finished `Package` stage outlined above) when your open `samples/unity-of-bugs` project.
 
 The tests project are inside `src/test` folder where
 
@@ -98,7 +130,7 @@ The tests project are inside `src/test` folder where
 * `Sentry.Unity.Tests` project for `Runtime` Unity tests
 * `Sentry.Unity.Editor.Tests` project for `Editor` Unity tests
 
-Build artifacts from the test projects will be placed inside `package-dev/Tests/Editor` and `package-dev/Tests/Runtime` folders. 
+Build artifacts from the test projects will be placed inside `package-dev/Tests/Editor` and `package-dev/Tests/Runtime` folders.
 
 In order to run the tests
 

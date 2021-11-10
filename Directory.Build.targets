@@ -1,5 +1,4 @@
 <Project InitialTargets="FindUnity">
-
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
@@ -12,7 +11,8 @@
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <!-- Cocoa -->
     <SentryCocoaRoot>$(SolutionDir)src/sentry-cocoa/</SentryCocoaRoot>
-    <SentryCocoaArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Sentry.framework/</SentryCocoaArtifactsDestination>
+    <SentryCocoaDeviceArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryCocoaDeviceArtifactsDestination>
+    <SentryCocoaSimulatorArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryCocoaSimulatorArtifactsDestination>
     <!-- Android -->
     <SentryAndroidRoot>$(SolutionDir)src/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(SolutionDir)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
@@ -37,6 +37,16 @@
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
     </PropertyGroup>
 
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))"
+           Text="UnityRoot not found. Ensure Unity is installed.
+See the CONTRIBUTING.md.
+UnityVersion: $(UnityVersion)
+Resolved directory: $(UnityRoot)
+Expected to exist:
+ * C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll
+or
+ * C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll" />
+
     <!-- Unity paths on macOS -->
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
       <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
@@ -50,17 +60,29 @@
       <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
       <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     </PropertyGroup>
+
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('OSX'))"
+           Text="UnityRoot not found. Ensure Unity is installed.
+See the CONTRIBUTING.md.
+UnityVersion: $(UnityVersion)
+Resolved directory: $(UnityRoot)
+Expected to exist:
+ * /Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll
+or
+ * /Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll" />
+
   </Target>
 
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
     <RemoveDir Directories="$(PlayerBuildPath)" />
-    <RemoveDir Directories="$(UnityPackageProject)" />
+    <RemoveDir Condition="Exists('$(UnityPackageProject)')" Directories="$(UnityPackageProject)" />
   </Target>
 
   <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <RemoveDir Directories="$(SentryCocoaArtifactsDestination)" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryCocoaDeviceArtifactsDestination)" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryCocoaSimulatorArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanAndroidSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -73,7 +95,7 @@
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
-          And !Exists('$(SentryCocoaArtifactsDestination)')"
+          And (!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))"
           BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
     <Message Importance="High" Text="Building Sentry iOS SDK."></Message>
@@ -82,13 +104,21 @@
 
     <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
     <ItemGroup>
-      <CocoaBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework/**/*" />
+      <CocoaDeviceBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework/**/*" />
     </ItemGroup>
-    <Copy SourceFiles="@(CocoaBuildPath)"
-          DestinationFiles="@(CocoaBuildPath->'$(SentryCocoaArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(CocoaDeviceBuildPath)"
+          DestinationFiles="@(CocoaDeviceBuildPath->'$(SentryCocoaDeviceArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    </Copy>
+        <ItemGroup>
+      <CocoaSimulatorBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_i386_x86_64-simulator/Sentry.framework/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(CocoaSimulatorBuildPath)"
+          DestinationFiles="@(CocoaSimulatorBuildPath->'$(SentryCocoaSimulatorArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
 
-    <Error Condition="!Exists('$(SentryCocoaArtifactsDestination)')" Text="Failed to build the Cocoa SDK."></Error>
+    <Error Condition="(!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))"
+           Text="Failed to build the Cocoa SDK.">
+    </Error>
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK -->
@@ -99,7 +129,7 @@
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)."></Error>
     <Message Importance="High" Text="Building Sentry Android SDK."></Message>
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar"></Exec>
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode all"></Exec>
 
     <ItemGroup>
       <!-- building snapshot based on version, i.e: sentry-5.0.0-beta.3-SNAPSHOT.jar -->
@@ -183,6 +213,8 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
+    <Message Importance="High" Text="Running Unity Create Packages."></Message>
+
     <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
@@ -201,11 +233,13 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
+    <Message Importance="High" Text="Running Unity Restore Packages."></Message>
+
     <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) "
       IgnoreStandardErrorWarningFormat="true"
       IgnoreExitCode="true"></Exec>
 
-    <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found."></Error>
+    <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
@@ -215,6 +249,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
+
     <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true"></Exec>
@@ -252,6 +287,13 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       <Using Namespace="System.Linq" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
+if (Environment.GetEnvironmentVariable("CI") is not null
+      && Environment.GetEnvironmentVariable("UNITY_VERSION") is { } unityVersion)
+{
+    Log.LogMessage("Unity Version from environment variable: " + unityVersion);
+    UnityVersion = unityVersion;
+    return true;
+}
 
 if (!File.Exists(ProjectSettingsPath))
 {
@@ -265,9 +307,9 @@ if (version == null)
     Log.LogError("Unity version not found in file: " + ProjectSettingsPath);
     return false;
 }
-UnityVersion = version.Substring("m_EditorVersion: ".Length);;
+UnityVersion = version.Substring("m_EditorVersion: ".Length);
 
-Log.LogMessage("Unity Version:" + version);
+Log.LogMessage("Unity Version: " + version);
 ]]>
       </Code>
     </Task>
@@ -300,7 +342,7 @@ File.WriteAllLines(PackageManifestFile, lines);
     </Task>
   </UsingTask>
 
-    <!-- Parse test results -->
+  <!-- Parse test results -->
   <UsingTask
     TaskName="UnityTestResults"
     TaskFactory="RoslynCodeTaskFactory"

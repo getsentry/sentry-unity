@@ -30,6 +30,38 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        [TestCase("\n")]
+        [TestCase("\t")]
+        [TestCase("/")]
+        [TestCase("\\")]
+        [TestCase("..")]
+        [TestCase("@")]
+        public void SetDefaults_Release_DoesNotContainInvalidCharacters(string invalidString)
+        {
+            var options = new SentryUnityOptions();
+            var prefix = "test";
+            var suffix = "application";
+            var version = "0.1.0";
+            var application = new TestApplication(productName: $"{prefix}{invalidString}{suffix}", version: version);
+
+            SentryOptionsUtility.SetDefaults(options, application);
+
+            Assert.AreEqual($"{prefix}_{suffix}@{version}", options.Release);
+        }
+
+        [Test]
+        public void SetDefaults_Release_IgnoresDotOnlyProductNames()
+        {
+            var options = new SentryUnityOptions();
+            var version = "0.1.0";
+            var application = new TestApplication(productName: ".........", version: version);
+
+            SentryOptionsUtility.SetDefaults(options, application);
+
+            Assert.AreEqual($"{version}", options.Release);
+        }
+
+        [Test]
         public void SetDefaults_Environment_IsEditorInEditor()
         {
             var options = new SentryUnityOptions();

@@ -11,7 +11,7 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
 
             var interceptor = new TestUnityLoggerInterceptor();
-            var logger = new UnityLogger(new SentryOptions() { DiagnosticLevel = sentryLevel }, interceptor);
+            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = sentryLevel }, interceptor);
 
             const string expectedLog = "Some log";
             logger.Log(sentryLevel, expectedLog);
@@ -26,7 +26,7 @@ namespace Sentry.Unity.Tests
         public void Log_LowerLevelThanInitializationLevel_DisablesLogger(SentryLevel initializationLevel, SentryLevel lowerLevel)
         {
             var interceptor = new TestUnityLoggerInterceptor();
-            var logger = new UnityLogger(new SentryOptions() { DiagnosticLevel = initializationLevel }, interceptor);
+            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = initializationLevel }, interceptor);
 
             const string expectedLog = "Some log";
 
@@ -34,6 +34,17 @@ namespace Sentry.Unity.Tests
 
             Assert.False(logger.IsEnabled(lowerLevel));
             Assert.False(interceptor.LogMessage.Contains(expectedLog));
+        }
+
+        [Test]
+        public void Log_StartsWithLogPrefix()
+        {
+            var interceptor = new TestUnityLoggerInterceptor();
+            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = SentryLevel.Debug }, interceptor);
+
+            logger.Log(SentryLevel.Debug, "TestLog");
+
+            StringAssert.StartsWith(UnityLogger.LogPrefix, interceptor.LogMessage);
         }
 
         private static object[] SentryLevels =
