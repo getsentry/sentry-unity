@@ -48,10 +48,11 @@ namespace Sentry.Unity.Editor.Android
                 Debug.Log("symbols path not found");
             }
 
-            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", "io.sentry.unity.dev", "Editor", "sentry-cli"));
+            // TODO: pick platform specific executable
+            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", "io.sentry.unity.dev", "Editor", "sentry-cli", "sentry-cli-Darwin-universal"));
             if (Directory.Exists(sentryCliPath))
             {
-                Debug.Log("sentry-cli path found");
+                Debug.Log("sentry-cli found");
             }
             else
             {
@@ -66,8 +67,8 @@ gradle.taskGraph.whenReady {{
 
     println 'Uploading gradle project debug symbols'
     exec {{
-                executable ""{sentryCliPath}""
-                args = --version
+                executable = ""{sentryCliPath}""
+                args = [""--version""]
             }}
         }}
     }}");
