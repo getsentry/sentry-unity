@@ -38,7 +38,7 @@ namespace Sentry.Unity.Editor.Android
             Debug.Log(gradlePath);
 
             var projectPath = Directory.GetParent(Application.dataPath);
-            var symbolsPath = Path.Combine(projectPath.ToString(), "Temp", "StagingArea", "symbols");
+            var symbolsPath = Path.Combine(projectPath.FullName, "Temp", "StagingArea", "symbols");
             if (Directory.Exists(symbolsPath))
             {
                 Debug.Log("symbols path found");
