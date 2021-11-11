@@ -19,6 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
+        api-level: [21]
         # 2022.1.0a12 removed until S.T.J issues fixed
         unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
         include:
@@ -73,6 +74,15 @@ jobs:
           path: samples/artifacts/builds
           # using hash of package.json to bust cache on release builds which modify it
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
+
+      - name: AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
@@ -187,6 +197,21 @@ jobs:
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
+
+      - name: Setup Android Emulators
+        if: matrix.os == 'macos-latest'
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        with:
+          name: Run Smoke Tests (Android)
+          api-level: 29
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew connectedCheck
+          shell: pwsh
+          run: ./scripts/smoke-test-droid.ps1      
 
       - name: Prepare Sentry package for release
         shell: pwsh
