@@ -22,11 +22,12 @@ namespace Sentry.Unity.Editor
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
+        public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
         private int _currentTab = 0;
-        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Advanced" };
+        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Advanced", "Editor" };
 
         private void OnEnable()
         {
@@ -35,6 +36,7 @@ namespace Sentry.Unity.Editor
 
             CheckForAndConvertJsonConfig();
             Options = LoadOptions();
+            CliOptions = SentryCliOptions.LoadCliOptions();
         }
 
         private ScriptableSentryUnityOptions LoadOptions()
@@ -130,6 +132,9 @@ namespace Sentry.Unity.Editor
                     break;
                 case 3:
                     DisplayDebug();
+                    break;
+                case 4:
+                    DisplayEditor();
                     break;
                 default:
                     break;
@@ -346,6 +351,26 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
                                                          "capture errors written in languages such as Java, Kotlin, C and C++."),
                 Options.AndroidNativeSupportEnabled);
+        }
+
+        private void DisplayEditor()
+        {
+            CliOptions.UploadSymbols = EditorGUILayout.Toggle(
+                new GUIContent("Automatic Symbols Upload", "Whether the SDK should automatically" +
+                                                           "upload debug symbols."),
+                CliOptions.UploadSymbols);
+
+            CliOptions.Auth = EditorGUILayout.TextField(
+                new GUIContent("Auth Token"),
+                CliOptions.Auth);
+
+            CliOptions.Organization = EditorGUILayout.TextField(
+                new GUIContent("Org Slug"),
+                CliOptions.Organization);
+
+            CliOptions.Project = EditorGUILayout.TextField(
+                new GUIContent("Project Name"),
+                CliOptions.Project);
         }
 
         private void OnLostFocus()

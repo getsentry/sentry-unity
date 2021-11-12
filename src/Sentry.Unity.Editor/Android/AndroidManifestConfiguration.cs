@@ -34,46 +34,6 @@ namespace Sentry.Unity.Editor.Android
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
-            var gradlePath = Directory.GetParent(basePath);
-            Debug.Log(gradlePath);
-
-            var projectPath = Directory.GetParent(Application.dataPath);
-            var symbolsPath = Path.Combine(projectPath.FullName, "Temp", "StagingArea", "symbols");
-            if (Directory.Exists(symbolsPath))
-            {
-                Debug.Log("symbols path found");
-            }
-            else
-            {
-                Debug.Log("symbols path not found");
-            }
-
-            // TODO: pick platform specific executable
-            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", "io.sentry.unity.dev", "Editor", "sentry-cli", "sentry-cli-Darwin-universal"));
-            if (Directory.Exists(sentryCliPath))
-            {
-                Debug.Log("sentry-cli found");
-            }
-            else
-            {
-                Debug.Log("sentry-cli path not found");
-            }
-
-            using (var streamWriter = File.AppendText(Path.Combine(gradlePath.ToString(), "build.gradle")))
-            {
-                streamWriter.Write($@"
-gradle.taskGraph.whenReady {{
-  gradle.taskGraph.allTasks[-1].doLast {{
-
-    println 'Uploading gradle project debug symbols'
-    exec {{
-                executable = ""{sentryCliPath}""
-                args = [""--version""]
-            }}
-        }}
-    }}");
-            }
-
             var manifestPath = GetManifestPath(basePath);
             if (!File.Exists(manifestPath))
             {
@@ -157,6 +117,59 @@ gradle.taskGraph.whenReady {{
             // TODO: All SentryOptions and create specific Android options
 
             _ = androidManifest.Save();
+
+            AppendSymbolUploadToGradleProject(basePath, options);
+        }
+
+        internal void AppendSymbolUploadToGradleProject(string basePath, SentryUnityOptions options)
+        {
+            var cliOptions = SentryCliOptions.LoadCliOptions();
+            if (!cliOptions.UploadSymbols || EditorUserBuildSettings.development)
+            {
+                return;
+            }
+
+            var gradleProjectPath = Directory.GetParent(basePath);
+            var unityProjectPath = Directory.GetParent(Application.dataPath);
+            var symbolsPath = Path.Combine(unityProjectPath.FullName, "Temp", "StagingArea", "symbols");
+            // TODO: remove? - during the first build there are no symbols
+            if (!Directory.Exists(symbolsPath))
+            {
+                options.DiagnosticLogger?.LogWarning($"Could not find symbols at path: {symbolsPath}");
+            }
+
+            // TODO: Fix dev package pathing
+            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", "io.sentry.unity.dev", "Editor", "sentry-cli", GetSentryCli()));
+            if (!File.Exists(sentryCliPath))
+            {
+                options.DiagnosticLogger?.LogError($"Could not find sentry-cli at path: {sentryCliPath}");
+                return;
+            }
+
+            // TODO: set permission for sentry-cli
+
+            using var streamWriter = File.AppendText(Path.Combine(gradleProjectPath.FullName, "build.gradle"));
+            streamWriter.Write($@"
+gradle.taskGraph.whenReady {{
+    gradle.taskGraph.allTasks[-1].doLast {{
+        println 'Uploading symbols to Sentry'
+        exec {{
+            executable = ""{sentryCliPath}""
+            args = [""--auth-token"", ""{cliOptions.Auth}"", ""upload-dif"", ""--org"", ""{cliOptions.Organization}"", ""--project"", ""{cliOptions.Project}"", ""{symbolsPath}""]
+        }}
+    }}
+}}");
+        }
+
+        internal static string GetSentryCli()
+        {
+            return Application.platform switch
+            {
+                RuntimePlatform.WindowsEditor => "",
+                RuntimePlatform.OSXEditor => "sentry-cli-Darwin-universal",
+                RuntimePlatform.LinuxEditor => "",
+                _ => string.Empty
+            };
         }
 
         internal static string GetManifestPath(string basePath) =>
