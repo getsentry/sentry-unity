@@ -129,7 +129,7 @@ or
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)."></Error>
     <Message Importance="High" Text="Building Sentry Android SDK."></Message>
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode all"></Exec>
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none"></Exec>
 
     <ItemGroup>
       <!-- building snapshot based on version, i.e: sentry-5.0.0-beta.3-SNAPSHOT.jar -->
