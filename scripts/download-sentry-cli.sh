@@ -19,3 +19,5 @@ for plat in $PLATFORMS; do
   chmod +x "$fn"
   sha1sum ${TARGETDIR}/* > ${TARGETDIR}/checksums.sha || shasum ${TARGETDIR}/* > ${TARGETDIR}/checksums.sha
 done
+
+rm -f ${TARGETDIR}/checksums.sha
