@@ -16,7 +16,7 @@ for plat in $PLATFORMS; do
   fn="${TARGETDIR}/${plat}${suffix}"
   curl -SL --progress-bar "$download_url" -o "$fn"
   chmod +x "$fn"
-  sha1sum ${TARGETDIR}/* > ${TARGETDIR}/checksums.sha || shasum ${TARGETDIR}/* > ${TARGETDIR}/checksums.sha
+  sha1sum ${TARGETDIR}* > ${TARGETDIR}checksums.sha || shasum ${TARGETDIR}* > ${TARGETDIR}checksums.sha
 done
 
-rm -f ${TARGETDIR}/checksums.sha
+rm -f ${TARGETDIR}checksums.sha
