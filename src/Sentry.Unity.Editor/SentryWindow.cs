@@ -368,7 +368,7 @@ namespace Sentry.Unity.Editor
                 CliOptions.Organization);
 
             CliOptions.Project = EditorGUILayout.TextField(
-                new GUIContent("Project Name"),
+                new GUIContent("Project Name", "The project name in Sentry"),
                 CliOptions.Project);
         }
 
