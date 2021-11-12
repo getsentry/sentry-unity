@@ -3,7 +3,6 @@ cd $(dirname "$0")
 REPO=getsentry/sentry-cli
 VERSION=1.70.0
 PLATFORMS="Darwin-universal Linux-x86_64 Windows-x86_64"
-# Linux-x86_64 Windows-i686
 TARGETDIR="../package-dev/Editor/sentry-cli/"
 
 rm -f ${TARGETDIR}*
