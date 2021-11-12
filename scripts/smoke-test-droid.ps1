@@ -1,21 +1,17 @@
 # GITHUB_WORKSPACE is the root folder where the project is stored.
-Set-Variable -Name "ApkPath" -Value ($Env:GITHUB_WORKSPACE + "/samples/artifacts/builds/Android")
+Write-Output "#################################################"
+Write-Output "#   ANDROID                                     #"
+Write-Output "#            VALIDATOR                          #"
+Write-Output "#                       SCRIPT                  #"
+Write-Output "#################################################"
+
+Set-Variable -Name "ApkPath" -Value "/samples/artifacts/builds/Android"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
-
-# Check if APK was built.
-if (Test-Path -Path "$ApkPath/$ApkFileName" ) 
-{
-    Write-Output "Found $ApkPath/$ApkFileName"
-}
-else
-{
-    Write-Error "Expected APK on $ApkPath/$ApkFileName but it was not found."
-    exit(-1);
-}
-
+Set-Variable -Name "ActivityName" -Value "io.sentry.samples.unityofbugs"
+Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
 
 # Filter device List
-$RawAdbDeviceList = ".adb" devices
+$RawAdbDeviceList = adb devices
 $deviceList = @()
 foreach ($device in $RawAdbDeviceList)
 {
@@ -28,67 +24,99 @@ $deviceCount = $deviceList.Count
 
 if ($deviceCount -eq 0)
 {
-    Write-Error "It seems like no devices were found $RawAdbDeviceList"
-    exit(-1)
+    Throw "It seems like no devices were found $RawAdbDeviceList"
 }
 else
 {
-    Write-Output "Found $deviceCount devices, they are $deviceList"
+    Write-Output "Found $deviceCount devices: $deviceList"
+}
+
+# Check if APK was built.
+if (Test-Path -Path "$ApkPath/$ApkFileName" ) 
+{
+    Write-Output "Found $ApkPath/$ApkFileName"
+}
+else
+{
+    Throw "Expected APK on $ApkPath/$ApkFileName but it was not found."
 }
 
 # Test
 foreach ($device in $deviceList)
 {
-    Write-Output "Installing Apk on $device."
+    $deviceSdk = adb shell getprop ro.build.version.sdk 
+    $deviceApi = adb shell getprop ro.build.version.release 
+    Write-Output ""
+    Write-Output "Checking device $device with SDK $deviceSdk and API $deviceApi"
+    Write-Output ""
 
-    $stdout = ".adb" -s $device install -r $ApkPath/$ApkFileName
+    # Check Command Available for checking if App is running
+    # Works with Android 7.0 and Higher
+#    $IsRunningArg = "New"
+#    $stdout = adb -s $device shell pidof $ActivityName
+#    if ($stdout -like "*pidof*")
+#    {
+#        $IsRunningArg = "Old"
+#    }
+
+    $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
     if($stdout -notcontains "Success")
     {
-        Write-Error "Failed to Install APK: $stdout."
+        Throw "Failed to Install APK: $stdout."
         exit(-1)
     }
 
     Write-Output "Clearing logcat from $device."
 
-    ".adb" -s $device logcat -c
+    adb -s $device logcat -c
 
     Write-Output "Starting Test..."
 
-    ".adb" -s $device shell am start -n io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity -e test smoke
-
-    Start-Sleep -Seconds 2
+    adb -s $device shell am start -n $TestActivityName -e test smoke
 
     for ($i = 30; $i -gt 0; $i--) {
-        $smokeTestId = (& ".adb" '-s', $device, 'shell', 'pidof', 'io.sentry.samples.unityofbugs'  2>&1)
-        if ( $smokeTestId -eq $null)
+	
+#        if ($IsRunningArg -eq "New")
+#        {
+#            # Android 7 and Higher
+#            $smokeTestId = adb -s $device shell pidof $ActivityName
+#        }
+#        else
+#        {
+        $smokeTestId = (adb -s $device shell ps)
+	    $smokeTestId = $smokeTestId | select-string $ActivityName
+#        }
+
+        if ($smokeTestId -eq $null)
         {
-            $i = -2;
+            $i = -2
         }
         else
         {
-            Write-Output "Proccess $smokeTestId still running on $device, waiting $i seconds"
+            Write-Output "Process still running on $device, waiting $i seconds"
             Start-Sleep -Seconds 1
         }
     }
 
-    if ( $i -eq -2)
+    if ($i -eq 0)
     {
-        Write-Error "Test Timeout"
-        exit(-1)
+	Write-Output "Logcat info."
+        adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
+	Write-Output "PS info."
+        adb -s $device ps
+        Throw "Test Timeout"
     }
 
-    $stdout = ".adb"  -s $device logcat -d  | findstr SMOKE
-    if ( $stdout -ne $null)
+    $stdout = adb -s $device logcat -d  | select-string SMOKE
+    if ($stdout -ne $null)
     {
         Write-Output "$stdout"
     }
     else
     {
-        Write-Error "Smoke Test Failed, printing logcat..."
-        ".adb" -s $device logcat -d  | findstr "Unity unity sentry Sentry SMOKE"
-        exit(-1)
+        adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
+        Throw "Smoke Test Failed."
     }
 }
 
 Write-Output "Test completed."
-exit(0)
