@@ -5,7 +5,7 @@ Write-Output "#            VALIDATOR                          #"
 Write-Output "#                       SCRIPT                  #"
 Write-Output "#################################################"
 
-Set-Variable -Name "ApkPath" -Value "/samples/artifacts/builds/Android"
+Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
 Set-Variable -Name "ActivityName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
