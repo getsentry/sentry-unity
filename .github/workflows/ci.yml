@@ -207,7 +207,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
+          disable-animations: true
           script: pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Prepare Sentry package for release
