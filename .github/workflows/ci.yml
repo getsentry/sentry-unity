@@ -207,9 +207,7 @@ jobs:
           name: Run Smoke Tests (Android)
           api-level: ${{ matrix.api-level }}
           disable-animations: true
-          script: ./gradlew connectedCheck --stacktrace
-          shell: pwsh
-          run: ./scripts/smoke-test-droid.ps1      
+          script: pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Prepare Sentry package for release
         shell: pwsh
