@@ -364,7 +364,7 @@ namespace Sentry.Unity.Editor
                 CliOptions.Auth);
 
             CliOptions.Organization = EditorGUILayout.TextField(
-                new GUIContent("Org Slug"),
+                new GUIContent("Org Slug", "The organization slug in Sentry"),
                 CliOptions.Organization);
 
             CliOptions.Project = EditorGUILayout.TextField(
