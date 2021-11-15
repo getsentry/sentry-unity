@@ -50,24 +50,14 @@ foreach ($device in $deviceList)
     Write-Output "Checking device $device with SDK $deviceSdk and API $deviceApi"
     Write-Output ""
 
-    # Check Command Available for checking if App is running
-    # Works with Android 7.0 and Higher
-#    $IsRunningArg = "New"
-#    $stdout = adb -s $device shell pidof $ActivityName
-#    if ($stdout -like "*pidof*")
-#    {
-#        $IsRunningArg = "Old"
-#    }
-
     $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
     if($stdout -notcontains "Success")
     {
         Throw "Failed to Install APK: $stdout."
-        exit(-1)
     }
+    $checkStarted = 'False'
 
     Write-Output "Clearing logcat from $device."
-
     adb -s $device logcat -c
 
     Write-Output "Starting Test..."
@@ -76,24 +66,21 @@ foreach ($device in $deviceList)
 
     for ($i = 30; $i -gt 0; $i--) {
 	
-#        if ($IsRunningArg -eq "New")
-#        {
-#            # Android 7 and Higher
-#            $smokeTestId = adb -s $device shell pidof $ActivityName
-#        }
-#        else
-#        {
         $smokeTestId = (adb -s $device shell ps)
-	    $smokeTestId = $smokeTestId | select-string $ActivityName
-#        }
-
-        if ($smokeTestId -eq $null)
+        $smokeTestId = $smokeTestId | select-string $ActivityName
+        
+        If ($smokeTestId -eq $null -And $checkStarted -eq 'True')
         {
             $i = -2
         }
-        else
+        ElseIf($smokeTestId -ne $null -And $checkStarted -eq 'False')
         {
-            Write-Output "Process still running on $device, waiting $i seconds"
+            # Some devices might take a while to start the test, so we wait for the activity to run before checking if it was closed.
+            $checkStarted = 'True'
+        }
+        Else
+        {
+            Write-Output "Waiting Process on $device to complete, waiting $i seconds"
             Start-Sleep -Seconds 1
         }
     }
@@ -114,6 +101,8 @@ foreach ($device in $deviceList)
     }
     else
     {
+        Start-Sleep -Seconds 2
+        Write-Output "Process completed but Smoke test was not signaled."
         adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
         Throw "Smoke Test Failed."
     }
