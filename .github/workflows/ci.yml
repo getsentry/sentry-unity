@@ -19,7 +19,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest]
-        api-level: [21, 23, 29]
         # 2022.1.0a12 removed until S.T.J issues fixed
         unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
         include:
@@ -198,13 +197,61 @@ jobs:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
 
-      - name: Setup Android Emulators and Smoke test for Android
-        if: matrix.os == 'macos-latest'
+      - name: Smoke Test Android - 21
+        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
         uses: reactivecircus/android-emulator-runner@v2
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         with:
-          api-level: ${{ matrix.api-level }}
+          api-level: 21
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Smoke Test Android - 23
+        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        with:
+          api-level: 23
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Smoke Test Android - 25
+        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        with:
+          api-level: 25
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Smoke Test Android - 29
+        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        with:
+          api-level: 29
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Smoke Test Android - 30
+        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        with:
+          api-level: 30
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
