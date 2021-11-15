@@ -242,9 +242,11 @@ jobs:
            # 2021.1.26f1 is not being generated.
            unity-version: [2019.4.31f1, 2020.3.21f1]
       steps:
-         - uses: actions/checkout@v2
+         - name: Checkout
+           uses: actions/checkout@v2
          
-         - uses: actions/download-artifact@v2
+         - name: Download test app artifact
+           uses: actions/download-artifact@v2
            with:
               name: droid-testapp-${{ matrix.unity-version }}
               path: samples/artifacts/builds/Android
@@ -258,7 +260,8 @@ jobs:
                ~/.android/adb*
              key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}
                            
-         - uses: reactivecircus/android-emulator-runner@v2
+         - name: Smoke test
+           uses: reactivecircus/android-emulator-runner@v2
            with:
              api-level: ${{ matrix.api-level }}
              force-avd-creation: false
