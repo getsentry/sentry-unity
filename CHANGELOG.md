@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- fix release packaging ([#417](https://github.com/getsentry/sentry-unity/pull/417))
+
 ## 0.6.1
 
 ### Fixes
