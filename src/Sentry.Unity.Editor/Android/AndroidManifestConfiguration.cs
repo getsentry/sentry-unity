@@ -12,6 +12,9 @@ namespace Sentry.Unity.Editor.Android
     // https://github.com/getsentry/sentry-java/blob/d3764bfc97eed22564a1e23ba96fa73ad2685498/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L83-L217
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
+        private static string PackageName = "io.sentry.unity";
+        private static string PackageNameDev = "io.sentry.unity.dev";
+
         private readonly Func<SentryUnityOptions?> _getOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
 
@@ -138,8 +141,7 @@ namespace Sentry.Unity.Editor.Android
                 options.DiagnosticLogger?.LogWarning($"Could not find symbols at path: {symbolsPath}");
             }
 
-            // TODO: Fix dev package pathing
-            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", "io.sentry.unity.dev", "Editor", "sentry-cli", GetSentryCli()));
+            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", GetPackageName(), "Editor", "sentry-cli", GetSentryCli()));
             if (!File.Exists(sentryCliPath))
             {
                 options.DiagnosticLogger?.LogError($"Could not find sentry-cli at path: {sentryCliPath}");
@@ -159,6 +161,23 @@ gradle.taskGraph.whenReady {{
         }}
     }}
 }}");
+        }
+
+        private static string GetPackageName()
+        {
+            var packagePath = Path.Combine("Packages", PackageName);
+            if (Directory.Exists(Path.Combine(packagePath)))
+            {
+                return PackageName;
+            }
+
+            packagePath = Path.Combine("Packages", PackageNameDev);
+            if (Directory.Exists(Path.Combine(packagePath)))
+            {
+                return PackageNameDev;
+            }
+
+            throw new FileNotFoundException("Failed to locate the Sentry package");
         }
 
         internal static string GetSentryCli()
