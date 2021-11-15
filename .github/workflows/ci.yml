@@ -233,14 +233,14 @@ jobs:
           path: artifacts/test/editmode
 
   android-smoke-test:
-      needs: [build]
-      name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }} - Android ${{ matrix.api-level }} smoke tests 
-      runs-on: macos-latest
-      strategy:
-        matrix:
-           api-level: [15, 18, 21, 26, 29]
-           # 2021.1.26f1 is not being generated.
-           unity-version: [2019.4.31f1, 2020.3.21f1]
+    needs: [build]
+    name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }} - Android ${{ matrix.api-level }} smoke tests 
+    runs-on: macos-latest
+    strategy:
+      matrix:
+         api-level: [15, 18, 21, 26, 29]
+         # 2021.1.26f1 is not being generated.
+         unity-version: [2019.4.31f1, 2020.3.21f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
