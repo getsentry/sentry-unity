@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
 using Sentry.Extensibility;
@@ -12,9 +13,6 @@ namespace Sentry.Unity.Editor.Android
     // https://github.com/getsentry/sentry-java/blob/d3764bfc97eed22564a1e23ba96fa73ad2685498/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L83-L217
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
-        private static string PackageName = "io.sentry.unity";
-        private static string PackageNameDev = "io.sentry.unity.dev";
-
         private readonly Func<SentryUnityOptions?> _getOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
 
@@ -121,74 +119,7 @@ namespace Sentry.Unity.Editor.Android
 
             _ = androidManifest.Save();
 
-            AppendSymbolUploadToGradleProject(basePath, options);
-        }
-
-        internal void AppendSymbolUploadToGradleProject(string basePath, SentryUnityOptions options)
-        {
-            var cliOptions = SentryCliOptions.LoadCliOptions();
-            if (!cliOptions.UploadSymbols || EditorUserBuildSettings.development)
-            {
-                return;
-            }
-
-            var gradleProjectPath = Directory.GetParent(basePath);
-            var unityProjectPath = Directory.GetParent(Application.dataPath);
-            var symbolsPath = Path.Combine(unityProjectPath.FullName, "Temp", "StagingArea", "symbols");
-            // TODO: remove? - during the first build there are no symbols
-            if (!Directory.Exists(symbolsPath))
-            {
-                options.DiagnosticLogger?.LogWarning($"Could not find symbols at path: {symbolsPath}");
-            }
-
-            var sentryCliPath = Path.GetFullPath(Path.Combine("Packages", GetPackageName(), "Editor", "sentry-cli", GetSentryCli()));
-            if (!File.Exists(sentryCliPath))
-            {
-                options.DiagnosticLogger?.LogError($"Could not find sentry-cli at path: {sentryCliPath}");
-                return;
-            }
-
-            // TODO: set permission for sentry-cli
-
-            using var streamWriter = File.AppendText(Path.Combine(gradleProjectPath.FullName, "build.gradle"));
-            streamWriter.Write($@"
-gradle.taskGraph.whenReady {{
-    gradle.taskGraph.allTasks[-1].doLast {{
-        println 'Uploading symbols to Sentry'
-        exec {{
-            executable = ""{sentryCliPath}""
-            args = [""--auth-token"", ""{cliOptions.Auth}"", ""upload-dif"", ""--org"", ""{cliOptions.Organization}"", ""--project"", ""{cliOptions.Project}"", ""{symbolsPath}""]
-        }}
-    }}
-}}");
-        }
-
-        private static string GetPackageName()
-        {
-            var packagePath = Path.Combine("Packages", PackageName);
-            if (Directory.Exists(Path.Combine(packagePath)))
-            {
-                return PackageName;
-            }
-
-            packagePath = Path.Combine("Packages", PackageNameDev);
-            if (Directory.Exists(Path.Combine(packagePath)))
-            {
-                return PackageNameDev;
-            }
-
-            throw new FileNotFoundException("Failed to locate the Sentry package");
-        }
-
-        internal static string GetSentryCli()
-        {
-            return Application.platform switch
-            {
-                RuntimePlatform.WindowsEditor => "",
-                RuntimePlatform.OSXEditor => "sentry-cli-Darwin-universal",
-                RuntimePlatform.LinuxEditor => "",
-                _ => string.Empty
-            };
+            SymbolsUpload.AppendSymbolUploadToGradleProject(basePath, options);
         }
 
         internal static string GetManifestPath(string basePath) =>

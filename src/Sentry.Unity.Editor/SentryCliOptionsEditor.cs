@@ -15,6 +15,7 @@ namespace Sentry.Unity.Editor
             EditorGUI.BeginDisabledGroup(true);
 
             EditorGUILayout.Toggle("Enable Symbols Upload", cliOptions.UploadSymbols);
+            EditorGUILayout.Toggle("Enable Dev Symbols Upload", cliOptions.UploadDevelopmentSymbols);
             EditorGUILayout.TextField("Auth-Token", cliOptions.Auth);
             EditorGUILayout.TextField("Org-Slug", cliOptions.Organization);
             EditorGUILayout.TextField("Project Name", cliOptions.Project);
