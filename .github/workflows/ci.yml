@@ -201,6 +201,8 @@ jobs:
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
+        # Only on macOS which contain all native plugin needed
+        if: matrix.os == 'macos-latest'
         with:
           name: ${{ github.sha }}
           # Adding the native libraries so the symbol collector craft target can find/upload them
