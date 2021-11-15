@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }} - Android ${{  matrix.api-level }}
+    name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -73,15 +73,6 @@ jobs:
           path: samples/artifacts/builds
           # using hash of package.json to bust cache on release builds which modify it
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
-
-      - name: AVD cache
-        uses: actions/cache@v2
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}
 
       - name: Restore Unity Packages
         uses: actions/cache@v2
@@ -196,66 +187,12 @@ jobs:
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
-
-      - name: Smoke Test Android - 21
-        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          UNITY_VERSION: ${{ matrix.unity-version }}
+      
+      - name: Preparing test app for smoke test.
+      - uses: actions/upload-artifact@v2
         with:
-          api-level: 21
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: pwsh ./scripts/smoke-test-droid.ps1
-
-      - name: Smoke Test Android - 23
-        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          UNITY_VERSION: ${{ matrix.unity-version }}
-        with:
-          api-level: 23
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: pwsh ./scripts/smoke-test-droid.ps1
-
-      - name: Smoke Test Android - 25
-        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          UNITY_VERSION: ${{ matrix.unity-version }}
-        with:
-          api-level: 25
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: pwsh ./scripts/smoke-test-droid.ps1
-
-      - name: Smoke Test Android - 29
-        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          UNITY_VERSION: ${{ matrix.unity-version }}
-        with:
-          api-level: 29
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: pwsh ./scripts/smoke-test-droid.ps1
-
-      - name: Smoke Test Android - 30
-        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          UNITY_VERSION: ${{ matrix.unity-version }}
-        with:
-          api-level: 30
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: pwsh ./scripts/smoke-test-droid.ps1
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android/IL2CPP_Player.apk
 
       - name: Prepare Sentry package for release
         shell: pwsh
@@ -294,3 +231,38 @@ jobs:
         with:
           name: Test results (editmode)
           path: artifacts/test/editmode
+
+  android-smoke-test:
+      needs: [build]
+      name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }} - Android ${{ matrix.api-level }} smoke tests 
+      runs-on: macos-latest
+      strategy:
+        matrix:
+           api-level: [15, 18, 21, 26, 29]
+           # 2021.1.26f1 is not being generated.
+           unity-version: [2019.4.31f1, 2020.3.21f1]
+      steps:
+         - uses: actions/checkout@v2
+         
+         - uses: actions/download-artifact@v2
+           with:
+              name: droid-testapp-${{ matrix.unity-version }}
+              path: samples/artifacts/builds/Android
+              
+         - name: AVD cache
+           uses: actions/cache@v2
+           id: avd-cache
+           with:
+             path: |
+               ~/.android/avd/*
+               ~/.android/adb*
+             key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}
+                           
+         - uses: reactivecircus/android-emulator-runner@v2
+           with:
+             api-level: ${{ matrix.api-level }}
+             force-avd-creation: false
+             emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+             disable-animations: false
+             script: pwsh ./scripts/smoke-test-droid.ps1
+  
