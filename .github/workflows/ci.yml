@@ -238,7 +238,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-         api-level: [15, 18, 21, 26, 29]
+         api-level: [21, 26, 29]
          # 2021.1.26f1 is not being generated.
          unity-version: [2019.4.31f1, 2020.3.21f1]
     steps:
