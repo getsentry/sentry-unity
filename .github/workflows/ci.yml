@@ -251,14 +251,14 @@ jobs:
             name: droid-testapp-${{ matrix.unity-version }}
             path: samples/artifacts/builds/Android
 
-        - name: AVD cache
-          uses: actions/cache@v2
-          id: avd-cache
-          with:
-           path: |
-             ~/.android/avd/*
-             ~/.android/adb*
-           key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}
+#        - name: AVD cache
+#          uses: actions/cache@v2
+#          id: avd-cache
+#          with:
+#           path: |
+#             ~/.android/avd/*
+#             ~/.android/adb*
+#           key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}
 
         - name: Smoke test
           uses: reactivecircus/android-emulator-runner@v2
