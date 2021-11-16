@@ -119,7 +119,7 @@ namespace Sentry.Unity.Editor.Android
 
             _ = androidManifest.Save();
 
-            SymbolsUpload.AppendSymbolUploadToGradleProject(basePath, options);
+            GradleDebugSymbolUpload.AppendSymbolUploadToGradleProject(basePath, options);
         }
 
         internal static string GetManifestPath(string basePath) =>
