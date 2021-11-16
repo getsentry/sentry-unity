@@ -13,7 +13,7 @@ for plat in $PLATFORMS; do
   fi
   echo "${plat}"
   download_url=https://github.com/$REPO/releases/download/$VERSION/sentry-cli-${plat}${suffix}
-  fn="${TARGETDIR}/${plat}${suffix}"
+  fn="${TARGETDIR}/sentry-cli-${plat}${suffix}"
   curl -SL --progress-bar "$download_url" -o "$fn"
   chmod +x "$fn"
 done
