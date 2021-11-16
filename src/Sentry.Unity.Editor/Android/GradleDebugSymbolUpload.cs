@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
-    public static class SymbolsUpload
+    public static class GradleDebugSymbolUpload
     {
         internal static string PackageName = "io.sentry.unity";
         internal static string PackageNameDev = "io.sentry.unity.dev";
@@ -17,13 +17,6 @@ namespace Sentry.Unity.Editor.Android
 
         [DllImport("libc", SetLastError = true)]
         private static extern int access(string pathname, int mode);
-
-        [MenuItem("Tools/Testing")]
-        public static void Testing()
-        {
-            GetSymbolsPath(Path.Combine(Directory.GetParent(Application.dataPath).FullName),
-                Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Builds", "Export"));
-        }
 
         internal static void AppendSymbolUploadToGradleProject(string basePath, SentryUnityOptions options)
         {
@@ -44,6 +37,10 @@ namespace Sentry.Unity.Editor.Android
                 var symbolsPath = GetSymbolsPath(Directory.GetParent(Application.dataPath).FullName, gradleProjectPath.FullName);
                 var sentryCliPath = SetupSentryCli();
 
+                // There are two sets of symbols:
+                // 1. The one specific to gradle (i.e. launcher)
+                // 2. The ones Unity also provides via "Create Symbols.zip" that can be found in Temp/StagingArea/symbols/
+                // We either get the path to the temp directory or if the project gets exported we copy the symbols to the output directory
                 using var streamWriter = File.AppendText(Path.Combine(gradleProjectPath.FullName, "build.gradle"));
                 streamWriter.Write($@"
 gradle.taskGraph.whenReady {{
@@ -68,14 +65,14 @@ gradle.taskGraph.whenReady {{
 
         internal static string GetSymbolsPath(string unityProjectPath, string gradleProjectPath)
         {
-            // TODO: sanity checks
-
+            // The default location for symbols
             var symbolsPath = Path.Combine(unityProjectPath, "Temp", "StagingArea", "symbols");
 
             if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
             {
+                // When the gradle project gets exported we can no longer trust the Unity temp directory to exist so we
+                // opt to copy the symbols to the export directory so sentry-cli can pick it up from there
                 var targetPath = Path.Combine(gradleProjectPath, "unityLibrary", "src", "main", "symbols");
-                Debug.Log(targetPath);
                 CopySymbols(symbolsPath, targetPath);
 
                 return targetPath;
@@ -91,7 +88,7 @@ gradle.taskGraph.whenReady {{
                 Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
             }
 
-            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*",SearchOption.AllDirectories))
             {
                 File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
             }
@@ -135,9 +132,9 @@ gradle.taskGraph.whenReady {{
         {
             return Application.platform switch
             {
-                RuntimePlatform.WindowsEditor => "",
+                RuntimePlatform.WindowsEditor => "sentry-cli-Windows-x86_64.exe ",
                 RuntimePlatform.OSXEditor => "sentry-cli-Darwin-universal",
-                RuntimePlatform.LinuxEditor => "",
+                RuntimePlatform.LinuxEditor => "sentry-cli-Linux-x86_64 ",
                 _ => string.Empty
             };
         }

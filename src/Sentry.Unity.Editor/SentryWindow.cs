@@ -355,14 +355,17 @@ namespace Sentry.Unity.Editor
 
         private void DisplayEditor()
         {
-            CliOptions.UploadSymbols = EditorGUILayout.Toggle(
-                new GUIContent("Automatic Symbols Upload", "Whether debug symbols should be uploaded automatically on release builds"),
-                CliOptions.UploadSymbols);
+            CliOptions.UploadSymbols  = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Upload Symbols", "Whether debug symbols should be uploaded automatically " +
+                                                 "on release builds."),
+                CliOptions.UploadSymbols );
 
             CliOptions.UploadDevelopmentSymbols = EditorGUILayout.Toggle(
-                new GUIContent("Upload Dev Symbols", "Whether Development Build Symbols should automatically" +
-                                                           "be uploaded."),
+                new GUIContent("Upload Dev Symbols", "Whether debug symbols should be uploaded automatically " +
+                                                     "on development builds."),
                 CliOptions.UploadDevelopmentSymbols);
+
+            EditorGUILayout.EndToggleGroup();
 
             CliOptions.Auth = EditorGUILayout.TextField(
                 new GUIContent("Auth Token"),
