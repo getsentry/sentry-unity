@@ -6,6 +6,10 @@
 
 ## 0.6.1
 
+### Features
+
+- Added sentry-cli to Unity package ([#414](https://github.com/getsentry/sentry-unity/pull/414))
+
 ### Fixes
 
 - Added missing release string validation ([#389](https://github.com/getsentry/sentry-unity/pull/389))
