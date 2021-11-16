@@ -8,6 +8,9 @@
     "com.unity.ugui": "1.0.0",
     "io.sentry.unity.dev": "file:../../../package-dev",
     "com.unity.modules.androidjni": "1.0.0",
-    "com.unity.modules.ui": "1.0.0"
+    "com.unity.modules.assetbundle": "1.0.0",
+    "com.unity.modules.ui": "1.0.0",
+    "com.unity.modules.uielements": "1.0.0",
+    "com.unity.modules.unitywebrequest": "1.0.0"
   }
 }
