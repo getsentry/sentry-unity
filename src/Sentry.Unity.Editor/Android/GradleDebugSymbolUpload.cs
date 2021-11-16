@@ -88,7 +88,7 @@ gradle.taskGraph.whenReady {{
                 Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
             }
 
-            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*",SearchOption.AllDirectories))
+            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
             {
                 File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
             }
