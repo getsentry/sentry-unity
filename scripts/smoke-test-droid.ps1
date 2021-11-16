@@ -7,42 +7,42 @@ Write-Output "#################################################"
 
 Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
-Set-Variable -Name "ActivityName" -Value "io.sentry.samples.unityofbugs"
+Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
 
 # Filter device List
 $RawAdbDeviceList = adb devices
-$deviceList = @()
+$DeviceList = @()
 foreach ($device in $RawAdbDeviceList)
 {
-    if ($device.EndsWith("device"))
+    If ($device.EndsWith("device"))
     {
-        $deviceList += $device.Replace("device", '').Trim()
+        $DeviceList += $device.Replace("device", '').Trim()
     }
 }
-$deviceCount = $deviceList.Count
+$DeviceCount = $DeviceList.Count
 
-if ($deviceCount -eq 0)
+If ($DeviceCount -eq 0)
 {
     Throw "It seems like no devices were found $RawAdbDeviceList"
 }
-else
+Else
 {
-    Write-Output "Found $deviceCount devices: $deviceList"
+    Write-Output "Found $DeviceCount devices: $DeviceList"
 }
 
 # Check if APK was built.
-if (Test-Path -Path "$ApkPath/$ApkFileName" ) 
+If (Test-Path -Path "$ApkPath/$ApkFileName" ) 
 {
     Write-Output "Found $ApkPath/$ApkFileName"
 }
-else
+Else
 {
     Throw "Expected APK on $ApkPath/$ApkFileName but it was not found."
 }
 
 # Test
-foreach ($device in $deviceList)
+foreach ($device in $DeviceList)
 {
     $deviceSdk = adb shell getprop ro.build.version.sdk 
     $deviceApi = adb shell getprop ro.build.version.release 
@@ -50,13 +50,13 @@ foreach ($device in $deviceList)
     Write-Output "Checking device $device with SDK $deviceSdk and API $deviceApi"
     Write-Output ""
 
-    adb -s $device uninstall $ActivityName
+    adb -s $device uninstall $ProcessName
     $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
-    if($stdout -notcontains "Success")
+    If($stdout -notcontains "Success")
     {
         Throw "Failed to Install APK: $stdout."
     }
-    $checkStarted = 'False'
+    $AppStarted = 'False'
 
     Write-Output "Clearing logcat from $device."
     adb -s $device logcat -c
@@ -64,46 +64,48 @@ foreach ($device in $deviceList)
     Write-Output "Starting Test..."
 
     adb -s $device shell am start -n $TestActivityName -e test smoke
+    #despite calling start, the app might not be started yet.
 
-    for ($i = 30; $i -gt 0; $i--) {
-	
-        $smokeTestId = (adb -s $device shell ps)
-        $smokeTestId = $smokeTestId | select-string $ActivityName
+    $Timeout = 30
+    While ($Timeout -gt 0) 
+    {
+        #Get a list of active processes
+        $processIsRunning = (adb -s $device shell ps)
+        #And filter by ProcessName
+        $processIsRunning = $processIsRunning | select-string $ProcessName
         
-        If ($smokeTestId -eq $null -And $checkStarted -eq 'True')
+        If ($processIsRunning -eq $null -And $AppStarted -eq 'True')
         {
-            $i = -2
+            $Timeout = -2
+            break
         }
-        ElseIf($smokeTestId -ne $null -And $checkStarted -eq 'False')
+        ElseIf ($processIsRunning -ne $null -And $AppStarted -eq 'False')
         {
-            # Some devices might take a while to start the test, so we wait for the activity to run before checking if it was closed.
-            $checkStarted = 'True'
+            # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
+            $AppStarted = 'True'
         }
-        Else
-        {
-            Write-Output "Waiting Process on $device to complete, waiting $i seconds"
-            Start-Sleep -Seconds 1
-        }
+        Write-Output "Waiting Process on $device to complete, waiting $Timeout seconds"
+        Start-Sleep -Seconds 1
+        $Timeout--
     }
 
-    if ($i -eq 0)
+    If ($Timeout -eq 0)
     {
-	Write-Output "Logcat info."
+        Write-Warning "Test Timeout, see Logcat info for more information below."
         adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
-	Write-Output "PS info."
+        Write-Output "PS info."
         adb -s $device ps
         Throw "Test Timeout"
     }
 
     $stdout = adb -s $device logcat -d  | select-string SMOKE
-    if ($stdout -ne $null)
+    If ($stdout -ne $null)
     {
         Write-Output "$stdout"
     }
-    else
+    Else
     {
-        Start-Sleep -Seconds 2
-        Write-Output "Process completed but Smoke test was not signaled."
+        Write-Warning "Process completed but Smoke test was not signaled."
         adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
         Throw "Smoke Test Failed."
     }
