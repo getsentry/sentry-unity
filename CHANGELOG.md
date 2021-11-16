@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.6.2
+
+- fix release packaging ([#417](https://github.com/getsentry/sentry-unity/pull/417))
+
+## 0.6.1
+
+### Features
+
+- Added sentry-cli to Unity package ([#414](https://github.com/getsentry/sentry-unity/pull/414))
 
 ### Fixes
 
