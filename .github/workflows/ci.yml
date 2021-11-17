@@ -167,7 +167,7 @@ jobs:
       - name: Build Android Player with IL2CPP
         # TODO: Remove condition once path too long issue resolved:
         # PathTooLongException: Path is too long. Path: C:\Program Files\Unity\Hub\Editor\2021.1.26f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK\tempToolsDir\lib\monitor-x86\p2\org.eclipse.equinox.p2.engine\profileRegistry\DefaultProfile.profile\.data\org.eclipse.equinox.internal.p2.touchpoint.eclipse.actions
-        if: ${{ matrix.os != 'windows-latest' && matrix.unity-version != '2021.1.26f1' }}
+        if: ${{ matrix.os != 'windows-latest' || matrix.unity-version != '2021.1.26f1' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
@@ -234,13 +234,13 @@ jobs:
 
   android-smoke-test:
     needs: [build]
-    name: Unity ${{ matrix.unity-version }} - macos-latest - Android ${{ matrix.api-level }} smoke tests 
+    name: Smoke Test -Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }} 
     runs-on: macos-latest
     strategy:
       matrix:
-         api-level: [21, 26, 29]
-         # 2021.1.26f1 is not being generated.
-         unity-version: [2019.4.31f1, 2020.3.21f1]
+         api-level: [21, 22, 23, 24, 25, 26, 27, 28, 29]
+         #api-level 30 image is only available with google services.
+         unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -259,6 +259,43 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}
+
+      - name: Smoke test
+        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        with:
+         api-level: ${{ matrix.api-level }}
+         force-avd-creation: false
+         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+         disable-animations: false
+         script: pwsh ./scripts/smoke-test-droid.ps1
+
+  android-smoke-test-with-gservices:
+    needs: [build]
+    name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }} 
+    runs-on: macos-latest
+    strategy:
+      matrix:
+         api-level: [30]
+         #api-level 30 image is only available with google services.
+         unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+    
+      - name: Download test app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android
+
+      - name: AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}-gservices
 
       - name: Smoke test
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330

@@ -50,7 +50,9 @@ foreach ($device in $DeviceList)
     Write-Output "Checking device $device with SDK $deviceSdk and API $deviceApi"
     Write-Output ""
 
-    adb -s $device uninstall $ProcessName
+    Write-Output "Removing previous APP if found."
+    $stdout = adb -s $device uninstall $ProcessName
+    Write-Output "Installing test app..."
     $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
     If($stdout -notcontains "Success")
     {
