@@ -35,6 +35,12 @@ namespace Sentry.Unity.Editor.Android
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
+            ModifyManifest(basePath);
+            SetupSymbolsUpload(basePath);
+        }
+
+        internal void ModifyManifest(string basePath)
+        {
             var manifestPath = GetManifestPath(basePath);
             if (!File.Exists(manifestPath))
             {
@@ -121,27 +127,48 @@ namespace Sentry.Unity.Editor.Android
             // TODO: All SentryOptions and create specific Android options
 
             _ = androidManifest.Save();
+        }
+
+        internal void SetupSymbolsUpload(string basePath)
+        {
+            // TODO: Do we want to upload symbols if options are missing/invalid?
+            var options = _getOptions();
+
+            // if no cli option - bail
 
             var sentryCliOptions = SentryCliOptions.LoadCliOptions();
             if (!sentryCliOptions.UploadSymbols)
             {
-                options.DiagnosticLogger?.LogDebug("Automated symbols upload has been disabled.");
+                options?.DiagnosticLogger?.LogDebug("Automated symbols upload has been disabled.");
                 return;
             }
 
             if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)
             {
-                options.DiagnosticLogger?.LogDebug(
+                options?.DiagnosticLogger?.LogDebug(
                     "Automated symbols upload for development builds has been disabled.");
                 return;
             }
 
-            var symbolsUpload = new DebugSymbolUpload(
-                gradleProjectPath: Directory.GetParent(basePath).FullName,
-                unityProjectPath: Directory.GetParent(Application.dataPath).FullName,
-                sentryCliOptions);
+            try
+            {
+                var unityProjectPath = Directory.GetParent(Application.dataPath).FullName;
+                var gradleProjectPath = Directory.GetParent(basePath).FullName;
 
-            symbolsUpload.AppendToGradle(options.DiagnosticLogger);
+                var symbolsPath = DebugSymbolUpload.GetSymbolsPath(
+                    unityProjectPath,
+                    gradleProjectPath,
+                    EditorUserBuildSettings.exportAsGoogleAndroidProject);
+
+                var sentryCliPath = SentryCli.SetupSentryCli();
+                SentryCli.CreateSentryProperties(gradleProjectPath, sentryCliOptions);
+
+                DebugSymbolUpload.AppendUploadToGradleFile(sentryCliPath, gradleProjectPath, symbolsPath);
+            }
+            catch (Exception e)
+            {
+                options?.DiagnosticLogger?.LogError("Failed to add the automatic symbols upload to the gradle project", e);
+            }
         }
 
         internal static string GetManifestPath(string basePath) =>

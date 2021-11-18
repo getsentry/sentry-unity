@@ -38,11 +38,11 @@ namespace Sentry.Unity.Editor.Tests
         private Fixture _fixture = null!;
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_BrokenPath_ThrowsFileNotFound()
+        public void ModifyManifest_BrokenPath_ThrowsFileNotFound()
         {
             var sut = _fixture.GetSut();
             const string brokenBasePath = "broken-path";
-            var ex = Assert.Throws<FileNotFoundException>(() => sut.OnPostGenerateGradleAndroidProject(brokenBasePath));
+            var ex = Assert.Throws<FileNotFoundException>(() => sut.ModifyManifest(brokenBasePath));
 
             Assert.AreEqual(
                 Path.Combine(brokenBasePath, "src", "main", "AndroidManifest.xml"),
@@ -54,11 +54,11 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_LoadSentryUnityOptions_NullOptions_LogWarningAndDisableInit()
+        public void ModifyManifest_LoadSentryUnityOptions_NullOptions_LogWarningAndDisableInit()
         {
             _fixture.SentryUnityOptions = null;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Warning, "Couldn't load SentryOptions. Can't configure native Android SDK.");
 
@@ -68,11 +68,11 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_UnityOptions_EnabledFalse_LogDebugAndDisableInit()
+        public void ModifyManifest_UnityOptions_EnabledFalse_LogDebugAndDisableInit()
         {
             _fixture.SentryUnityOptions!.Enabled = false;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
 
@@ -85,11 +85,11 @@ namespace Sentry.Unity.Editor.Tests
         [TestCase(null)]
         [TestCase("")]
         [TestCase("  ")]
-        public void OnPostGenerateGradleAndroidProject_UnityOptions_EnabledWithoutDsn_LogWarningAndDisableInit(string? dsn)
+        public void ModifyManifest_UnityOptions_EnabledWithoutDsn_LogWarningAndDisableInit(string? dsn)
         {
             _fixture.SentryUnityOptions!.Dsn = dsn;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
 
@@ -99,11 +99,11 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDisableInit()
+        public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDisableInit()
         {
             _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Debug, $"Android Native support disabled via options.");
 
@@ -113,11 +113,11 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_ManifestHasDsn()
+        public void ModifyManifest_ManifestHasDsn()
         {
             var expected = _fixture.SentryUnityOptions!.Dsn;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Debug, $"Setting DSN: {expected}");
 
@@ -129,14 +129,14 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         [TestCase(false)]
         [TestCase(true)]
-        public void OnPostGenerateGradleAndroidProject_DebugOnlyInEditor_ControlsDebugMode(bool debugOnlyInEditor)
+        public void ModifyManifest_DebugOnlyInEditor_ControlsDebugMode(bool debugOnlyInEditor)
         {
             _fixture.SentryUnityOptions!.DebugOnlyInEditor = debugOnlyInEditor;
             // Debug Only In Editor means: Don't set debug=true in any player build
             var expectDebugFlag = !debugOnlyInEditor;
 
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             Assert.AreEqual(expectDebugFlag, manifest.Contains(
                     "<meta-data android:name=\"io.sentry.debug\""),
@@ -144,11 +144,11 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_ReleaseIsNull_ReleaseNotSet()
+        public void ModifyManifest_ReleaseIsNull_ReleaseNotSet()
         {
             _fixture.SentryUnityOptions!.Release = null;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             Assert.False(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.release\""),
@@ -156,12 +156,12 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_ReleaseIsNotNull_SetRelease()
+        public void ModifyManifest_ReleaseIsNotNull_SetRelease()
         {
             const string? expected = "expected release";
             _fixture.SentryUnityOptions!.Release = expected;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Debug, $"Setting Release: {expected}");
 
@@ -171,11 +171,11 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_EnvironmentIsNull_EnvironmentNotSet()
+        public void ModifyManifest_EnvironmentIsNull_EnvironmentNotSet()
         {
             _fixture.SentryUnityOptions!.Environment = null;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             Assert.False(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.environment\""),
@@ -183,12 +183,12 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_EnvironmentIsNotNull_SetEnvironment()
+        public void ModifyManifest_EnvironmentIsNotNull_SetEnvironment()
         {
             const string? expected = "expected env";
             _fixture.SentryUnityOptions!.Environment = expected;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Debug, $"Setting Environment: {expected}");
 
@@ -210,12 +210,12 @@ namespace Sentry.Unity.Editor.Tests
         };
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_DiagnosticLevel_TestCases(
+        public void ModifyManifest_DiagnosticLevel_TestCases(
             [ValueSource(nameof(SentryJavaLevels))] SentryJavaLevel levels)
         {
             _fixture.SentryUnityOptions!.DiagnosticLevel = levels.SentryLevel;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             // Debug message is only logged if level is Debug:
             if (levels.SentryLevel == SentryLevel.Debug)
@@ -229,12 +229,12 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void OnPostGenerateGradleAndroidProject_SampleRate_SetIfNotNull()
+        public void ModifyManifest_SampleRate_SetIfNotNull()
         {
             const float expected = 0.6f;
             _fixture.SentryUnityOptions!.SampleRate = expected;
             var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.OnPostGenerateGradleAndroidProject(basePath));
+            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
             AssertLogContains(SentryLevel.Debug, $"Setting SampleRate: {expected}");
 

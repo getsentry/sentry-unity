@@ -6,31 +6,30 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-    internal class SentryCli
+    internal static class SentryCli
     {
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string pathname, int mode);
 
-        private string _sentryCliPath;
+        public static void CreateSentryProperties(string path, SentryCliOptions sentryCliOptions)
+        {
+            // TODO: actually writing that property file.
+        }
 
-        public SentryCli(IApplication? application = null)
+        public static string SetupSentryCli()
+        {
+            var sentryCliPlatformName = GetSentryCliPlatformName();
+            var sentryCliPath = GetSentryCliPath(sentryCliPlatformName);
+            SetExecutePermission(sentryCliPath);
+
+            return sentryCliPath;
+        }
+
+        internal static string GetSentryCliPlatformName(IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            var sentryCliName = GetSentryCliPlatformName(application);
-            _sentryCliPath = Path.GetFullPath(
-                Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliName));
-
-            if (!File.Exists(_sentryCliPath))
-            {
-                throw new FileNotFoundException($"Could not find sentry-cli at path: {_sentryCliPath}");
-            }
-
-            SetExecutePermission(_sentryCliPath);
-        }
-
-        internal string GetSentryCliPlatformName(IApplication application) =>
-            application.Platform switch
+            return application.Platform switch
             {
                 RuntimePlatform.WindowsEditor => "sentry-cli-Windows-x86_64.exe ",
                 RuntimePlatform.OSXEditor => "sentry-cli-Darwin-universal",
@@ -38,8 +37,22 @@ namespace Sentry.Unity.Editor
                 _ => throw new InvalidOperationException(
                     $"Cannot get sentry-cli for the current platform: {Application.platform}")
             };
+        }
 
-        internal void SetExecutePermission(string filePath)
+        internal static string GetSentryCliPath(string sentryCliPlatformName)
+        {
+            var sentryCliPath = Path.GetFullPath(
+                Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName));
+
+            if (!File.Exists(sentryCliPath))
+            {
+                throw new FileNotFoundException($"Could not find sentry-cli at path: {sentryCliPath}");
+            }
+
+            return sentryCliPath;
+        }
+
+        internal static void SetExecutePermission(string? filePath = null)
         {
             // 493 is the integer value for permissions 755
             if (chmod(Path.GetFullPath(filePath), 493) != 0)
@@ -47,7 +60,5 @@ namespace Sentry.Unity.Editor
                 throw new UnauthorizedAccessException($"Failed to set permission to {filePath}");
             }
         }
-
-        internal string GetSentryCliPath() => _sentryCliPath;
     }
 }
