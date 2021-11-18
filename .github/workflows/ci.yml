@@ -131,11 +131,11 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: ios
 
-      - name: Create Unity license config 
-        shell: pwsh 
-        run: | 
-          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory 
-          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' 
+      - name: Create Unity license config
+        shell: pwsh
+        run: |
+          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
+          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
       - name: Add Unity on PATH
@@ -143,10 +143,10 @@ jobs:
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Make symbolic link for Unity (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
+      - name: Make symbolic link for Unity (Windows) 
+        if: matrix.os == 'windows-latest' 
+        shell: pwsh 
+        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}" 
 
       - name: Build Sentry.Unity Solution
         env:
