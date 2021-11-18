@@ -30,8 +30,8 @@
       <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
       <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
-      <!--Short version for Github Actions to avoid long path names errors--> 
-      <UnityRoot Condition="Exists('C:\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\$(UnityVersion)\Editor</UnityRoot> 
+      <!--Short version for Github Actions to avoid long path names errors-->
+      <UnityRoot Condition="Exists('C:\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\$(UnityVersion)\Editor</UnityRoot>
       <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
