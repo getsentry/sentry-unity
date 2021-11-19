@@ -18,6 +18,6 @@
 
   <ItemGroup>
     <Folder Include="TestFiles\SymbolsUploadProject\GradleProject\unityLibrary\src\main" />
-    <Folder Include="TestFiles\SymbolsUploadProject\UnityProject" />
+    <Folder Include="TestFiles\SymbolsUploadProject\UnityProject\Temp\StagingArea\symbols" />
   </ItemGroup>
 </Project>
