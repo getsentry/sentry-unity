@@ -69,7 +69,7 @@ namespace Sentry.Unity.Editor.Tests
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
 
-            Assert.Throws<FileNotFoundException>( () => DebugSymbolUpload.AppendUploadToGradleFile(string.Empty, _fixture.GradleProjectPath, symbolsDirectoryPath));
+            Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(string.Empty, _fixture.GradleProjectPath, symbolsDirectoryPath));
         }
 
         [Test]
@@ -77,13 +77,13 @@ namespace Sentry.Unity.Editor.Tests
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
 
-            Assert.Throws<FileNotFoundException>( () => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, string.Empty, symbolsDirectoryPath));
+            Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, string.Empty, symbolsDirectoryPath));
         }
 
         [Test]
         public void AppendUploadToGradleFile_SymbolsDirectoryDoesNotExist_ThrowsDirectoryNotFoundException()
         {
-            Assert.Throws<DirectoryNotFoundException>( () => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, String.Empty));
+            Assert.Throws<DirectoryNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, String.Empty));
         }
 
         [Test]
