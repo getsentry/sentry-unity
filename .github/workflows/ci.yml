@@ -148,12 +148,6 @@ jobs:
         shell: pwsh
         run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
-
-      - name: Make symbolic link for Unity (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
-
       - name: Build Sentry.Unity Solution
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
