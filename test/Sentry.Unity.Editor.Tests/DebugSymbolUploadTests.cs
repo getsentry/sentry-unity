@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -18,7 +19,7 @@ namespace Sentry.Unity.Editor.Tests
 
             public Fixture()
             {
-                FakeProjectPath = Path.GetRandomFileName();
+                FakeProjectPath = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
 
                 UnityProjectPath = Path.Combine(FakeProjectPath, "UnityProject");
                 GradleProjectPath = Path.Combine(FakeProjectPath, "GradleProject");
