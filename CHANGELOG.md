@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.6.2
+
+- fix release packaging ([#417](https://github.com/getsentry/sentry-unity/pull/417))
+
+## 0.6.1
+
+### Features
+
+- Added sentry-cli to Unity package ([#414](https://github.com/getsentry/sentry-unity/pull/414))
 
 ### Fixes
 
@@ -15,9 +23,9 @@
 - Bump Sentry Cocoa SDK 7.5.2 ([#407](https://github.com/getsentry/sentry-unity/pull/407))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.5.2/CHANGELOG.md)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.3.0...7.5.2)
-- Bump Sentry Android SDK 5.3.0 ([#407](https://github.com/getsentry/sentry-unity/pull/407))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/5.3.0/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.1...5.3.0)
+- Bump Sentry Android SDK 5.4.0 ([#411](https://github.com/getsentry/sentry-unity/pull/411))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.4.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.1...5.4.0)
 
 ## 0.6.0
 
