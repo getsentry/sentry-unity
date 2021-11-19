@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Added automated symbols upload support for Android ([#408](https://github.com/getsentry/sentry-unity/pull/408))
+
 ## 0.6.2
 
 - fix release packaging ([#417](https://github.com/getsentry/sentry-unity/pull/417))
