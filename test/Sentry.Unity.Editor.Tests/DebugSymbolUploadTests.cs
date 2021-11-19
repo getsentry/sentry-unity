@@ -116,7 +116,7 @@ gradle.taskGraph.whenReady {{
         public static void SetupFakeProject(string fakeProjectPath)
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var projectTemplatePath= Path.Combine(assemblyPath, "TestFiles", "SymbolsUploadProject");
+            var projectTemplatePath = Path.Combine(assemblyPath, "TestFiles", "SymbolsUploadProject");
 
             foreach (string dirPath in Directory.GetDirectories(projectTemplatePath, "*", SearchOption.AllDirectories))
             {

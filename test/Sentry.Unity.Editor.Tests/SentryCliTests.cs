@@ -38,7 +38,7 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void GetSentryCliPath_ValidFileName_ReturnsPath()
         {
-           var sentryCliPlatformName = SentryCli.GetSentryCliPlatformName(new TestApplication(platform: Application.platform));
+            var sentryCliPlatformName = SentryCli.GetSentryCliPlatformName(new TestApplication(platform: Application.platform));
             var expectedPath = Path.GetFullPath(
                 Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName));
 
