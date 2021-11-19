@@ -48,17 +48,31 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void SetExecutePermission_TODO()
+        public void SetExecutePermission_FileDoesNotExist_ThrowsUnauthorizedAccessException()
         {
-            // TODO
+            Assert.Throws<UnauthorizedAccessException>(() => SentryCli.SetExecutePermission("non-existent-file"));
         }
 
         [Test]
-        public void CreateSentryProperties_TODO()
+        public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions()
         {
-            // TODO
+            var propertiesDirectory = Path.GetRandomFileName();
+            Directory.CreateDirectory(propertiesDirectory);
+
+            var sentryCliTestOptions = new SentryCliOptions();
+            sentryCliTestOptions.Auth = "Test-Auth";
+            sentryCliTestOptions.Organization = "Test-Org";
+            sentryCliTestOptions.Project = "Test-Project";
+
+            SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions);
+
+            var properties = File.ReadAllText(Path.Combine(propertiesDirectory, "sentry.properties"));
+
+            StringAssert.Contains(sentryCliTestOptions.Auth, properties);
+            StringAssert.Contains(sentryCliTestOptions.Organization, properties);
+            StringAssert.Contains(sentryCliTestOptions.Project, properties);
+
+            Directory.Delete(propertiesDirectory, true);
         }
-
-
     }
 }

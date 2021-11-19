@@ -1,11 +1,10 @@
 using System.IO;
-using UnityEditor;
 
 namespace Sentry.Unity.Editor.Android
 {
     internal static class DebugSymbolUpload
     {
-        internal static readonly string _gradleExportedSymbolsPath = Path.Combine("unityLibrary", "src", "main", "symbols");
+        internal static readonly string GradleExportedSymbolsPath = Path.Combine("unityLibrary", "src", "main", "symbols");
 
         public static string GetSymbolsPath(string unityProjectPath, string gradleProjectPath, bool isProjectExporting)
         {
@@ -13,7 +12,7 @@ namespace Sentry.Unity.Editor.Android
             if (isProjectExporting)
             {
                 // We can no longer trust the Unity temp directory to exist so we copy the symbols to the export directory.
-                var copiedSymbolsPath = Path.Combine(gradleProjectPath, _gradleExportedSymbolsPath);
+                var copiedSymbolsPath = Path.Combine(gradleProjectPath, GradleExportedSymbolsPath);
                 CopySymbols(symbolsPath, copiedSymbolsPath);
 
                 return copiedSymbolsPath;
@@ -50,11 +49,13 @@ gradle.taskGraph.whenReady {{
     gradle.taskGraph.allTasks[-1].doLast {{
         println 'Uploading symbols to Sentry'
         exec {{
-            executable = ""{sentryCliPath}""
+            environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
+            executable ""{sentryCliPath}""
             args = [""upload-dif"", ""./unityLibrary/src/main/jniLibs/""]
         }}
         exec {{
-            executable = ""{sentryCliPath}""
+            environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
+            executable ""{sentryCliPath}""
             args = [""upload-dif"", ""{symbolsDirectoryPath}""]
         }}
     }}

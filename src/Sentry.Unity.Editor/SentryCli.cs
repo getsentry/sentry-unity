@@ -11,9 +11,12 @@ namespace Sentry.Unity.Editor
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string pathname, int mode);
 
-        public static void CreateSentryProperties(string path, SentryCliOptions sentryCliOptions)
+        public static void CreateSentryProperties(string propertiesPath, SentryCliOptions sentryCliOptions)
         {
-            // TODO: actually writing that property file.
+            using var properties = File.CreateText(Path.Combine(propertiesPath, "sentry.properties"));
+            properties.Write($@"defaults.org={sentryCliOptions.Organization}
+defaults.project={sentryCliOptions.Project}
+auth.token={sentryCliOptions.Auth}");
         }
 
         public static string SetupSentryCli()
