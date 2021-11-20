@@ -48,6 +48,11 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
+      - name: Assembly alias
+        run:
+          dotnet tool install --global Alias
+          assemblyalias --target-directory "package-dev/Runtime" --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+
       - name: Checkout
         uses: actions/checkout@v2.3.3
         with:
