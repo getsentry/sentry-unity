@@ -1,7 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutDir>$(PackageRuntimeTestsPath)</OutDir>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="DebouncerTests.cs" />
+  </ItemGroup>
   <ItemGroup>
     <None Update="TestSentryOptions.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
