@@ -20,7 +20,7 @@
     <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj" />
   </ItemGroup>
 
-  <Target Name="alias-references" AfterTargets="AfterBuild" >
+  <Target Name="alias-references" AfterTargets="Compile" >
     <WriteLinesToFile
       File="$(DevPackagePath)/alias-references.txt"
       Lines="$(UnityManagedPath)/UnityEngine.dll"
