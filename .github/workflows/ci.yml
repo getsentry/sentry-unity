@@ -48,11 +48,6 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-      - name: Assembly alias
-        run: |
-          dotnet tool install --global Alias --version 0.2.0
-          assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
-
       - name: Checkout
         uses: actions/checkout@v2.3.3
         with:
@@ -157,6 +152,11 @@ jobs:
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet build -c Release
+
+      - name: Assembly alias
+        run: |
+          dotnet tool install --global Alias --version 0.2.0
+          assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2022 once S.T.J loading issue resolved.
