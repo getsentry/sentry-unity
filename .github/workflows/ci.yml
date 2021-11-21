@@ -50,8 +50,8 @@ jobs:
 
       - name: Assembly alias
         run:
-          dotnet tool install --global Alias
-          assemblyalias --target-directory "package-dev/Runtime" --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+          dotnet tool install --global Alias --version 0.2.0
+          assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
       - name: Checkout
         uses: actions/checkout@v2.3.3

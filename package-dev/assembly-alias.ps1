@@ -1,1 +1,1 @@
-assemblyalias --target-directory "Runtime" --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+assemblyalias --target-directory "Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
