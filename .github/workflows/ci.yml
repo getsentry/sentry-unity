@@ -49,7 +49,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Assembly alias
-        run:
+        run: |
           dotnet tool install --global Alias --version 0.2.0
           assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
