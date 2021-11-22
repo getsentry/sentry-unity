@@ -50,19 +50,25 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void SetExecutePermission_FileDoesNotExist_ThrowsUnauthorizedAccessException()
         {
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                Assert.Inconclusive("Skipping chmod on Windows.");
+                return;
+            }
+
             Assert.Throws<UnauthorizedAccessException>(() => SentryCli.SetExecutePermission("non-existent-file"));
         }
 
         [Test]
         public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions()
         {
-            var propertiesDirectory = Path.GetRandomFileName();
+            var propertiesDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(propertiesDirectory);
 
             var sentryCliTestOptions = new SentryCliOptions();
-            sentryCliTestOptions.Auth = "Test-Auth";
-            sentryCliTestOptions.Organization = "Test-Org";
-            sentryCliTestOptions.Project = "Test-Project";
+            sentryCliTestOptions.Auth = Guid.NewGuid().ToString();
+            sentryCliTestOptions.Organization = Guid.NewGuid().ToString();
+            sentryCliTestOptions.Project = Guid.NewGuid().ToString();
 
             SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions);
 

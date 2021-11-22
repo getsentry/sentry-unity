@@ -18,7 +18,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             public Fixture()
             {
-                FakeProjectPath = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+                FakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
                 UnityProjectPath = Path.Combine(FakeProjectPath, "UnityProject");
                 GradleProjectPath = Path.Combine(FakeProjectPath, "GradleProject");
@@ -33,7 +33,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             SetupFakeProject(_fixture.FakeProjectPath);
         }
 
-        private Fixture _fixture = new();
+        private Fixture _fixture = null!; // created through SetUp
 
         [TearDown]
         public void TearDown() => Directory.Delete(Path.GetFullPath(_fixture.FakeProjectPath), true);
@@ -68,16 +68,20 @@ namespace Sentry.Unity.Editor.Tests.Android
         public void AppendUploadToGradleFile_SentryCliFileDoesNotExist_ThrowsFileNotFoundException()
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
+            var invalidSentryCliPath = Path.GetRandomFileName();
 
-            Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(string.Empty, _fixture.GradleProjectPath, symbolsDirectoryPath));
+            var ex = Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(invalidSentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath));
+            Assert.AreEqual(invalidSentryCliPath, ex.FileName);
         }
 
         [Test]
         public void AppendUploadToGradleFile_BuildGradleFileDoesNotExist_ThrowsFileNotFoundException()
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
+            var invalidGradlePath = Path.GetRandomFileName();
 
-            Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, string.Empty, symbolsDirectoryPath));
+            var ex = Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, invalidGradlePath, symbolsDirectoryPath));
+            Assert.AreEqual(invalidGradlePath, ex.FileName);
         }
 
         [Test]
@@ -90,32 +94,18 @@ namespace Sentry.Unity.Editor.Tests.Android
         public void AppendUploadToGradleFile_AllRequirementsMet_AppendsSentryCliToFile()
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
-            var expectedContent = $@"
-// Credentials and project settings information are stored in the sentry.properties file
-gradle.taskGraph.whenReady {{
-    gradle.taskGraph.allTasks[-1].doLast {{
-        println 'Uploading symbols to Sentry'
-        exec {{
-            environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
-            executable ""{_fixture.SentryCliPath}""
-            args = [""upload-dif"", ""./unityLibrary/src/main/jniLibs/""]
-        }}
-        exec {{
-            environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
-            executable ""{_fixture.SentryCliPath}""
-            args = [""upload-dif"", ""{symbolsDirectoryPath}""]
-        }}
-    }}
-}}";
 
             DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
-            var actualContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
+            var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
 
-            Assert.AreEqual(expectedContent, actualContent);
+            StringAssert.Contains(_fixture.SentryCliPath, actualFileContent);
+            StringAssert.Contains(symbolsDirectoryPath, actualFileContent);
         }
 
         public static void SetupFakeProject(string fakeProjectPath)
         {
+            Directory.CreateDirectory(fakeProjectPath);
+
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var projectTemplatePath = Path.Combine(assemblyPath, "TestFiles", "SymbolsUploadProject");
 

@@ -130,22 +130,26 @@ namespace Sentry.Unity.Editor.Android
 
         internal void SetupSymbolsUpload(string basePath)
         {
-            // TODO: Do we want to upload symbols if options are missing/invalid?
             var options = _getOptions();
-
-            // if no cli option - bail
+            var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             var sentryCliOptions = SentryCliOptions.LoadCliOptions();
             if (!sentryCliOptions.UploadSymbols)
             {
-                options?.DiagnosticLogger?.LogDebug("Automated symbols upload has been disabled.");
+                logger.LogDebug("Automated symbols upload has been disabled.");
                 return;
             }
 
             if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)
             {
-                options?.DiagnosticLogger?.LogDebug(
+                logger.LogDebug(
                     "Automated symbols upload for development builds has been disabled.");
+                return;
+            }
+
+            if (!sentryCliOptions.Validate(logger))
+            {
+                logger.LogWarning("Loading sentry-cli configuration failed. Symbols will not be uploaded");
                 return;
             }
 
@@ -166,7 +170,7 @@ namespace Sentry.Unity.Editor.Android
             }
             catch (Exception e)
             {
-                options?.DiagnosticLogger?.LogError("Failed to add the automatic symbols upload to the gradle project", e);
+                logger.LogError("Failed to add the automatic symbols upload to the gradle project", e);
             }
         }
 

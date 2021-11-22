@@ -14,9 +14,9 @@ namespace Sentry.Unity.Editor
         public static void CreateSentryProperties(string propertiesPath, SentryCliOptions sentryCliOptions)
         {
             using var properties = File.CreateText(Path.Combine(propertiesPath, "sentry.properties"));
-            properties.Write($@"defaults.org={sentryCliOptions.Organization}
-defaults.project={sentryCliOptions.Project}
-auth.token={sentryCliOptions.Auth}");
+            properties.WriteLine($"defaults.org={sentryCliOptions.Organization}");
+            properties.WriteLine($"defaults.project={sentryCliOptions.Project}");
+            properties.WriteLine($"auth.token={sentryCliOptions.Auth}");
         }
 
         public static string SetupSentryCli()
@@ -55,8 +55,14 @@ auth.token={sentryCliOptions.Auth}");
             return sentryCliPath;
         }
 
-        internal static void SetExecutePermission(string? filePath = null)
+        internal static void SetExecutePermission(string? filePath = null, IApplication? application = null)
         {
+            application ??= ApplicationAdapter.Instance;
+            if (application.Platform == RuntimePlatform.WindowsEditor)
+            {
+                return;
+            }
+
             // 493 is the integer value for permissions 755
             if (chmod(Path.GetFullPath(filePath), 493) != 0)
             {

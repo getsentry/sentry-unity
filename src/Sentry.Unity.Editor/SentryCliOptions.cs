@@ -1,4 +1,5 @@
 using System;
+using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
 
@@ -32,6 +33,30 @@ namespace Sentry.Unity.Editor
             }
 
             return cliOptions;
+        }
+
+        public bool Validate(IDiagnosticLogger? logger)
+        {
+            var validated = true;
+            if (string.IsNullOrWhiteSpace(Auth))
+            {
+                logger?.LogWarning("sentry-cli: Auth token missing. Please set it under Tools > Sentry > Editor");
+                validated = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Organization))
+            {
+                logger?.LogWarning("sentry-cli: Organization missing. Please set it under Tools > Sentry > Editor");
+                validated = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Project))
+            {
+                logger?.LogWarning("sentry-cli: Project missing. Please set under it Tools > Sentry > Editor");
+                validated = false;
+            }
+
+            return validated;
         }
 
         internal static SentryCliOptions CreateCliOptions(string? configName)

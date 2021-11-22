@@ -25,13 +25,13 @@ namespace Sentry.Unity.Editor.Android
         {
             if (!File.Exists(sentryCliPath))
             {
-                throw new FileNotFoundException($"Failed to find sentry-cli at {sentryCliPath}");
+                throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
             }
 
             var gradleFilePath = Path.Combine(gradleProjectPath, "build.gradle");
             if (!File.Exists(gradleFilePath))
             {
-                throw new FileNotFoundException($"Failed to find 'build.gradle' at: {gradleProjectPath}");
+                throw new FileNotFoundException("Failed to find 'build.gradle'", gradleProjectPath);
             }
 
             if (!Directory.Exists(symbolsDirectoryPath))

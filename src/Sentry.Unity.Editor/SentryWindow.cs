@@ -368,7 +368,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.EndToggleGroup();
 
             CliOptions.Auth = EditorGUILayout.TextField(
-                new GUIContent("Auth Token"),
+                new GUIContent("Auth Token", "The authorization token from your user settings in Sentry"),
                 CliOptions.Auth);
 
             CliOptions.Organization = EditorGUILayout.TextField(
