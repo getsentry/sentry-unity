@@ -4,7 +4,7 @@
 
 ### Features
 
-- Avoid DLL conflict with other Unity packages ([#300](https://github.com/getsentry/sentry-unity/issues/300))
+- Avoid DLL conflict with other Unity packages ([#425](https://github.com/getsentry/sentry-unity/issues/425))
 
 ## 0.6.2
 
