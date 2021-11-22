@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Avoid DLL conflict with other Unity packages ([#425](https://github.com/getsentry/sentry-unity/issues/425))
+
 ## 0.6.2
 
 - fix release packaging ([#417](https://github.com/getsentry/sentry-unity/pull/417))

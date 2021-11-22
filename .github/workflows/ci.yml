@@ -153,6 +153,11 @@ jobs:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet build -c Release
 
+      - name: Assembly alias
+        run: |
+          dotnet tool install --global Alias --version 0.2.0
+          assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2022 once S.T.J loading issue resolved.
        # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
