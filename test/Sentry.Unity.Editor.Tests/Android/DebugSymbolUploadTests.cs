@@ -91,9 +91,11 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void AppendUploadToGradleFile_AllRequirementsMet_AppendsSentryCliToFile()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void AppendUploadToGradleFile_AllRequirementsMet_AppendsSentryCliToFile(bool export)
         {
-            var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
+            var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, export);
 
             DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
             var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
