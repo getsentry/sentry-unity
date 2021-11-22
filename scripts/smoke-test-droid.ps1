@@ -100,7 +100,7 @@ foreach ($device in $DeviceList)
         Throw "Test Timeout"
     }
 
-    $stdout = adb -s $device logcat -d  | select-string SMOKE
+    $stdout = adb -s $device logcat -d  | select-string 'SMOKE TEST: PASS'
     If ($stdout -ne $null)
     {
         Write-Output "$stdout"
