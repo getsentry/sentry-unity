@@ -2,20 +2,15 @@
 .vsconfig
 *.user
 .idea/
+.DS_Store
 obj/
 bin/
-Logs/
-Library/
-Temp/
-Build/
-.gradle
 sentry-unity/build:*
-.DS_Store
 artifacts/
-temp/
 
-samples/**/*.csproj
-samples/**/*.sln
+# Temp folder used during ms build to restore selected packages
+/temp/
+
 samples/unity-of-bugs/Assets/InitTestScene*
 
 # Ignore build and Unity artifacts
