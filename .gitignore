@@ -8,7 +8,7 @@ bin/
 sentry-unity/build:*
 artifacts/
 
-# Temp folder used during ms build to restore selected packages
+# Temp folder used during dotnet build to restore selected packages
 /temp/
 
 samples/unity-of-bugs/Assets/InitTestScene*
