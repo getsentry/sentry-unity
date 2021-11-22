@@ -45,6 +45,7 @@ namespace Sentry.Unity.Editor.Android
             // We either get the path to the temp directory or if the project gets exported we copy the symbols to the output directory
             using var streamWriter = File.AppendText(gradleFilePath);
             streamWriter.Write($@"
+// Credentials and project settings information are stored in the sentry.properties file
 gradle.taskGraph.whenReady {{
     gradle.taskGraph.allTasks[-1].doLast {{
         println 'Uploading symbols to Sentry'

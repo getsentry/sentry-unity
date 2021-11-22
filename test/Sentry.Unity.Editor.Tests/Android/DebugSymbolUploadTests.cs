@@ -1,12 +1,11 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
 
-namespace Sentry.Unity.Editor.Tests
+namespace Sentry.Unity.Editor.Tests.Android
 {
     public class DebugSymbolUploadTests
     {
@@ -92,6 +91,7 @@ namespace Sentry.Unity.Editor.Tests
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
             var expectedContent = $@"
+// Credentials and project settings information are stored in the sentry.properties file
 gradle.taskGraph.whenReady {{
     gradle.taskGraph.allTasks[-1].doLast {{
         println 'Uploading symbols to Sentry'

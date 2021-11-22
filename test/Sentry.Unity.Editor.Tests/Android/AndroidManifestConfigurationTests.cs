@@ -4,7 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
 
-namespace Sentry.Unity.Editor.Tests
+namespace Sentry.Unity.Editor.Tests.Android
 {
     public class AndroidManifestTests
     {
