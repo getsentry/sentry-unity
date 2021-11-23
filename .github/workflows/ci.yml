@@ -164,7 +164,7 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other
 
       - name: Run Unity tests (editmode)
         # TODO: Run Edit mode tests on 2022 once S.T.J loading issue resolved.
@@ -172,28 +172,28 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other
 
       - name: Build Android Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other
 
       - name: Build iOS Player
         if: matrix.os == 'macos-latest'
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other
 
       - name: Build Standalone Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other
 
       - name: Run Smoke Tests
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other
 
       - name: Preparing test app for smoke test.
         uses: actions/upload-artifact@v2
