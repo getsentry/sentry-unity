@@ -1,3 +1,5 @@
+Get-ChildItem -Path "package-dev/Runtime/" -name
+
 New-Item "package-release" -ItemType Directory
 
 # Copy `package-dev` stuff

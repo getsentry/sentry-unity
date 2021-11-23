@@ -155,8 +155,10 @@ jobs:
 
       - name: Assembly alias
         run: |
+          Get-ChildItem -Path "package-dev/Runtime/" -name
           dotnet tool install --global Alias --version 0.2.0
           assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+          Get-ChildItem -Path "package-dev/Runtime/" -name
 
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2022 once S.T.J loading issue resolved.
