@@ -9,13 +9,26 @@ using Sentry;
 using Sentry.Infrastructure;
 using Sentry.Unity;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using static System.Environment;
 
 public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
-        var args = GetCommandLineArgs();
+#if UNITY_ANDROID
+        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+        using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
+        {
+            var text = intent.Call<String> ("getStringExtra", "test");
+            if (text == "smoke")
+            {
+                SmokeTest();
+            }
+        }
+#else
+        var args = Environment.GetCommandLineArgs();
         if (args.Length > 2 && args[1] == "--test")
         {
             if (args[2] == "smoke")
@@ -23,6 +36,7 @@ public class SmokeTester : MonoBehaviour
                 SmokeTest();
             }
         }
+#endif
     }
 
     public static void SmokeTest()
@@ -61,6 +75,9 @@ public class SmokeTester : MonoBehaviour
             // 2 event captured but guid not there.
             Application.Quit(2);
         }
+
+        // On Android we'll grep logcat for this string instead of relying on exit code:
+        Debug.Log("SMOKE TEST: PASS");
 
         // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
         Application.Quit(200);
