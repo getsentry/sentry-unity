@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Tests.Stubs
 {
-    internal sealed class TestApplication : IApplication
+    public sealed class TestApplication : IApplication
     {
         public TestApplication(
             bool isEditor = true,

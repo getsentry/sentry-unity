@@ -4,6 +4,7 @@
 
 ### Features
 
+- Added automated symbols upload support for Android ([#408](https://github.com/getsentry/sentry-unity/pull/408))
 - Avoid DLL conflict with other Unity packages ([#425](https://github.com/getsentry/sentry-unity/issues/425))
 
 ## 0.6.2
