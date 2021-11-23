@@ -11,6 +11,19 @@ using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static System.Environment;
+#if !UNITY_EDITOR
+#if UNITY_IOS
+#define SENTRY_NATIVE_IOS
+#elif UNITY_ANDROID
+#define SENTRY_NATIVE_ANDROID
+#endif
+#endif
+
+#if SENTRY_NATIVE_IOS
+using Sentry.Unity.iOS;
+#elif UNITY_ANDROID
+using Sentry.Unity.Android;
+#endif
 
 public class SmokeTester : MonoBehaviour
 {
@@ -49,6 +62,12 @@ public class SmokeTester : MonoBehaviour
             requests.Add(message.Content.ReadAsStringAsync().Result);
             evt.Set();
         }
+        
+#if SENTRY_NATIVE_IOS
+        SentryNativeIos.Configure(options);
+#elif SENTRY_NATIVE_ANDROID
+        SentryNativeAndroid.Configure(options);
+#endif
 
         SentryUnity.Init(o =>
         {
