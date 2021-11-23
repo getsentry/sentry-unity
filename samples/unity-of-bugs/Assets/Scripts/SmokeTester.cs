@@ -63,21 +63,21 @@ public class SmokeTester : MonoBehaviour
             evt.Set();
         }
         
+        var options = new SentryUnityOptions();
+        options.Dsn = "https://key@sentry/project";
+        options.Debug = true;
+        // TODO: Must be set explicitly for the time being.
+        options.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
+        options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
+        options.CreateHttpClientHandler = () => new TestHandler(Verify);
+
 #if SENTRY_NATIVE_IOS
         SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
         SentryNativeAndroid.Configure(options);
 #endif
 
-        SentryUnity.Init(o =>
-        {
-            o.Dsn = "https://key@sentry/project";
-            o.Debug = true;
-            // TODO: Must be set explicitly for the time being.
-            o.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
-            o.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
-            o.CreateHttpClientHandler = () => new TestHandler(Verify);
-        });
+        SentryUnity.Init(options);
 
         var guid = Guid.NewGuid().ToString();
         Debug.LogError(guid);
