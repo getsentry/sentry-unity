@@ -103,7 +103,7 @@ foreach ($device in $DeviceList)
         Else
         {
             Write-Warning "Test was flaky, retrying."
-            FlakyRetry--
+            $FlakyRetry--
             Start-Sleep -Seconds 3
         }
     }
