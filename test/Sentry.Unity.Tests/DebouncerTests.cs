@@ -14,7 +14,6 @@ namespace Sentry.Unity.Tests
         private readonly TimeSpan DefaultOffset = TimeSpan.FromMilliseconds(100);
 
         [UnityTest]
-
         public IEnumerator LogTimeDebounce()
         {
             Assert.Inconclusive("Flaky"); // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
