@@ -58,37 +58,54 @@ foreach ($device in $DeviceList)
     {
         Throw "Failed to Install APK: $stdout."
     }
-    $AppStarted = 'False'
 
-    Write-Output "Clearing logcat from $device."
-    adb -s $device logcat -c
-
-    Write-Output "Starting Test..."
-
-    adb -s $device shell am start -n $TestActivityName -e test smoke
-    #despite calling start, the app might not be started yet.
-
-    $Timeout = 30
-    While ($Timeout -gt 0) 
+    $FlakyRetry = 3
+    While ($FlakyRetry -gt 0)
     {
-        #Get a list of active processes
-        $processIsRunning = (adb -s $device shell ps)
-        #And filter by ProcessName
-        $processIsRunning = $processIsRunning | select-string $ProcessName
-        
-        If ($processIsRunning -eq $null -And $AppStarted -eq 'True')
+        $AppStarted = 'False'
+
+        Write-Output "Clearing logcat from $device."
+        adb -s $device logcat -c
+
+        Write-Output "Starting Test..."
+
+        adb -s $device shell am start -n $TestActivityName -e test smoke
+        #despite calling start, the app might not be started yet.
+
+        $Timeout = 30
+        While ($Timeout -gt 0) 
         {
-            $Timeout = -2
+            #Get a list of active processes
+            $processIsRunning = (adb -s $device shell ps)
+            #And filter by ProcessName
+            $processIsRunning = $processIsRunning | select-string $ProcessName
+            
+            If ($processIsRunning -eq $null -And $AppStarted -eq 'True')
+            {
+                $Timeout = -2
+                break
+            }
+            ElseIf ($processIsRunning -ne $null -And $AppStarted -eq 'False')
+            {
+                # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
+                $AppStarted = 'True'
+            }
+            Write-Output "Waiting Process on $device to complete, waiting $Timeout seconds"
+            Start-Sleep -Seconds 1
+            $Timeout--
+        }
+
+        $stdout = adb -s $device logcat -d  | select-string 'Unity   : Timeout while trying detaching'
+        If ($stdout -eq $null)
+        {
             break
         }
-        ElseIf ($processIsRunning -ne $null -And $AppStarted -eq 'False')
+        Else
         {
-            # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
-            $AppStarted = 'True'
+            Write-Warning "Test was flaky, retrying."
+            FlakyRetry--
+            Start-Sleep -Seconds 3
         }
-        Write-Output "Waiting Process on $device to complete, waiting $Timeout seconds"
-        Start-Sleep -Seconds 1
-        $Timeout--
     }
 
     If ($Timeout -eq 0)
@@ -111,6 +128,9 @@ foreach ($device in $DeviceList)
         adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
         Throw "Smoke Test Failed."
     }
+
+        adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
+
 }
 
 Write-Output "Test completed."
