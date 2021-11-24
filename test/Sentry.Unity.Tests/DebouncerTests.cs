@@ -14,23 +14,24 @@ namespace Sentry.Unity.Tests
         private readonly TimeSpan DefaultOffset = TimeSpan.FromMilliseconds(100);
 
         [UnityTest]
-        [Ignore("Ignored due to flakiness")] // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
+
         public IEnumerator LogTimeDebounce()
         {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
             yield return AssertDefaultDebounce(new LogTimeDebounce(DefaultOffset));
         }
 
         [UnityTest]
-        [Ignore("Ignored due to flakiness")] // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
         public IEnumerator ErrorTimeDebounce()
         {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
             yield return AssertDefaultDebounce(new ErrorTimeDebounce(DefaultOffset));
         }
 
         [UnityTest]
-        [Ignore("Ignored due to flakiness")] // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
         public IEnumerator WarningTimeDebounce()
         {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
             yield return AssertDefaultDebounce(new WarningTimeDebounce(DefaultOffset));
         }
 
