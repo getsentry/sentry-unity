@@ -128,9 +128,6 @@ foreach ($device in $DeviceList)
         adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
         Throw "Smoke Test Failed."
     }
-
-        adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
-
 }
 
 Write-Output "Test completed."
