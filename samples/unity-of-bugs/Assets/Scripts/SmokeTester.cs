@@ -1,17 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Sentry;
-using Sentry.Infrastructure;
-using Sentry.Unity;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using static System.Environment;
-#if !UNITY_EDITOR
+﻿#if !UNITY_EDITOR
 #if UNITY_IOS
 #define SENTRY_NATIVE_IOS
 #elif UNITY_ANDROID
@@ -25,11 +12,23 @@ using Sentry.Unity.iOS;
 using Sentry.Unity.Android;
 #endif
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Sentry;
+using Sentry.Infrastructure;
+using Sentry.Unity;
+using UnityEngine;
+
 public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
-#if UNITY_ANDROID
+#if SENTRY_NATIVE_ANDROID
         using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
         using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
@@ -62,7 +61,7 @@ public class SmokeTester : MonoBehaviour
             requests.Add(message.Content.ReadAsStringAsync().Result);
             evt.Set();
         }
-        
+
         var options = new SentryUnityOptions();
         options.Dsn = "https://key@sentry/project";
         options.Debug = true;
