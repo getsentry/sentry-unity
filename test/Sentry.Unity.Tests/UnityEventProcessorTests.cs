@@ -207,12 +207,11 @@ namespace Sentry.Unity.Tests
 
             // assert
             var logError = _testLogger.Logs
-                .SingleOrDefault(log => log.logLevel == SentryLevel.Error && log.exception is HttpRequestException);
+                .FirstOrDefault(log => log.logLevel == SentryLevel.Error
+                                 && log.exception is HttpRequestException
+                                 && (logError.exception?.InnerException as WebException)
+                                  ?.Message?.Contains("Error: NameResolutionFailure") == true);
             Assert.IsNotNull(logError);
-
-            var logErrorInnerException = logError.exception!.InnerException as WebException;
-            Assert.IsNotNull(logErrorInnerException);
-            Assert.IsTrue(logErrorInnerException!.Message.Contains("Error: NameResolutionFailure"));
         }
     }
 
