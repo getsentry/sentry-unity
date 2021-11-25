@@ -206,12 +206,12 @@ namespace Sentry.Unity.Tests
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
             // assert
-            var logError = _testLogger.Logs
-                .FirstOrDefault(log => log.logLevel == SentryLevel.Error
+            var matchingError = _testLogger.Logs
+                .Any(log => log.logLevel == SentryLevel.Error
                                  && log.exception is HttpRequestException
-                                 && (logError.exception?.InnerException as WebException)
+                                 && (log.exception?.InnerException as WebException)
                                   ?.Message?.Contains("Error: NameResolutionFailure") == true);
-            Assert.IsNotNull(logError);
+            Assert.IsTrue(matchingError);
         }
     }
 
