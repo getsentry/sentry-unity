@@ -91,7 +91,7 @@ foreach ($device in $DeviceList)
         #despite calling start, the app might not be started yet.
 
         Write-Output (DateTimeNow)
-        $Timeout = 35
+        $Timeout = 45
         While ($Timeout -gt 0) 
         {
             #Get a list of active processes
@@ -108,8 +108,6 @@ foreach ($device in $DeviceList)
             {
                 # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
                 $AppStarted = 'True'
-
-                adb -s $device -s $device shell screencap -p /sdcard/screen.png
             }
             Write-Output "Waiting Process on $device to complete, waiting $Timeout seconds"
             Start-Sleep -Seconds 1
