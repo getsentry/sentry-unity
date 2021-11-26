@@ -91,7 +91,7 @@ foreach ($device in $DeviceList)
         #despite calling start, the app might not be started yet.
 
         Write-Output (DateTimeNow)
-        $Timeout = 45
+        $Timeout = 1
         While ($Timeout -gt 0) 
         {
             #Get a list of active processes
