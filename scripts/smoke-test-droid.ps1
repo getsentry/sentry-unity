@@ -10,6 +10,24 @@ Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
 Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
 
+function TakeScreenshot {
+    param ( $deviceId )
+    adb -s $deviceId shell "screencap -p /storage/emulated/0/screen.png"
+    adb pull "/storage/emulated/0/screen.png" "$ApkPath"
+    adb shell "rm /storage/emulated/0/screen.png" 
+
+}
+
+function WriteDeviceLog {
+    param ( $deviceId ) 
+    adb -s $device logcat -d 
+    # | select-string "Unity|unity|sentry|Sentry|SMOKE"
+}
+
+function DateTimeNow {
+    return Get-Date -UFormat "%T %Z"
+}
+
 # Filter device List
 $RawAdbDeviceList = adb devices
 $DeviceList = @()
@@ -72,7 +90,8 @@ foreach ($device in $DeviceList)
         adb -s $device shell am start -n $TestActivityName -e test smoke
         #despite calling start, the app might not be started yet.
 
-        $Timeout = 30
+        Write-Output (DateTimeNow)
+        $Timeout = 35
         While ($Timeout -gt 0) 
         {
             #Get a list of active processes
@@ -89,11 +108,14 @@ foreach ($device in $DeviceList)
             {
                 # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
                 $AppStarted = 'True'
+
+                adb -s $device -s $device shell screencap -p /sdcard/screen.png
             }
             Write-Output "Waiting Process on $device to complete, waiting $Timeout seconds"
             Start-Sleep -Seconds 1
             $Timeout--
         }
+        Write-Output (DateTimeNow)
 
         $stdout = adb -s $device logcat -d  | select-string 'Unity   : Timeout while trying detaching'
         If ($stdout -eq $null)
@@ -111,9 +133,11 @@ foreach ($device in $DeviceList)
     If ($Timeout -eq 0)
     {
         Write-Warning "Test Timeout, see Logcat info for more information below."
-        adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
+        WriteDeviceLog($device)
         Write-Output "PS info."
-        adb -s $device ps
+        adb -s $device shell ps
+
+        TakeScreenshot($device)
         Throw "Test Timeout"
     }
 
@@ -125,7 +149,8 @@ foreach ($device in $DeviceList)
     Else
     {
         Write-Warning "Process completed but Smoke test was not signaled."
-        adb -s $device logcat -d  | select-string "Unity|unity|sentry|Sentry|SMOKE"
+        WriteDeviceLog($device)
+        TakeScreenshot($device)
         Throw "Smoke Test Failed."
     }
 }
