@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -546,7 +547,7 @@ namespace Sentry.Unity.Tests
 
     internal sealed class TestLogger : IDiagnosticLogger
     {
-        internal readonly List<(SentryLevel logLevel, string message, Exception? exception)> Logs = new();
+        internal readonly ConcurrentBag<(SentryLevel logLevel, string message, Exception? exception)> Logs = new();
 
         public bool IsEnabled(SentryLevel level) => true;
 
