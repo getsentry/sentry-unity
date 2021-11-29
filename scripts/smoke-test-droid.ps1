@@ -32,7 +32,6 @@ function DateTimeNow {
 # Filter device List
 $RawAdbDeviceList = adb devices
 
-Throw "Validate errored smoke test"
 $DeviceList = @()
 foreach ($device in $RawAdbDeviceList)
 {
