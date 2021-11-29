@@ -5,7 +5,8 @@ Write-Output "#            VALIDATOR                          #"
 Write-Output "#                       SCRIPT                  #"
 Write-Output "#################################################"
 
-Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
+ Set-Variable -Name "ApkPath" -Value "scripts" #Debug
+# Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
 Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
@@ -62,14 +63,19 @@ Else
 # Test
 foreach ($device in $DeviceList)
 {
-    $deviceSdk = adb shell getprop ro.build.version.sdk 
-    $deviceApi = adb shell getprop ro.build.version.release 
+    $deviceSdk = adb -s $device shell getprop ro.build.version.sdk 
+    $deviceApi = adb -s $device shell getprop ro.build.version.release 
     Write-Output ""
     Write-Output "Checking device $device with SDK $deviceSdk and API $deviceApi"
     Write-Output ""
 
     Write-Output "Removing previous APP if found."
     $stdout = adb -s $device uninstall $ProcessName
+
+    # Move device to home screen
+    $stdout = adb -s $device shell input keyevent KEYCODE_HOME
+
+
     Write-Output "Installing test app..."
     $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
     If($stdout -notcontains "Success")
