@@ -1,3 +1,4 @@
+Remove-Item "package-release" -Recurse
 New-Item "package-release" -ItemType Directory
 
 $exclude = @(
