@@ -30,26 +30,9 @@ function DateTimeNow {
 }
 
 # Filter device List
-$Timeout = 30
-#while ($RawAdbDeviceList -eq $null -And $Timeout -gt 0)
-while ($Timeout -gt 0)
-{
-    try
-    {
-        $Timeout = $Timeout - 1
-        $RawAdbDeviceList = adb devices
-    }
-    catch
-    {
-        Write-Warning "Failed to read adb devices, retrying."
-        Start-Sleep -Seconds 1
-    }
-}
-if ($RawAdbDeviceList -eq $null)
-{
-    Throw "Failed to read adb devices"
-}
+$RawAdbDeviceList = adb devices
 
+Throw "Validate errored smoke test"
 $DeviceList = @()
 foreach ($device in $RawAdbDeviceList)
 {
