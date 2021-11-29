@@ -31,7 +31,6 @@ function DateTimeNow {
 
 # Filter device List
 $RawAdbDeviceList = adb devices
-gci env:* | sort-object name
 
 Throw "Validate errored smoke test"
 $DeviceList = @()
