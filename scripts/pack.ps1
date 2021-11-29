@@ -1,4 +1,5 @@
-# Copy `package-dev` stuff
+New-Item "package-release" -ItemType Directory
+
 $exclude = @(
     "README.md",
     "package.json",
@@ -11,7 +12,6 @@ $exclude = @(
     "assembly-alias.*"
 )
 
-New-Item "package-release" -ItemType Directory
 Copy-Item "package-dev/*" "package-release/" -Exclude $exclude -Recurse
 
 # Override with package (e.g. custom .meta files)
