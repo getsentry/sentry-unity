@@ -258,6 +258,10 @@ jobs:
 
       - name: Verify package content against snapshot
         shell: pwsh
+        # If this step fails, you can accept the new file content by 
+        # running the following script locally with 'accept' as an argument
+        # and committing the new snapshot file to your branch. i.e:
+        # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
   android-smoke-test:
