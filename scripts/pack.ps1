@@ -15,7 +15,7 @@ New-Item "package-release" -ItemType Directory
 Copy-Item "package-dev/*" "package-release/" -Exclude $exclude -Recurse
 
 # Override with package (e.g. custom .meta files)
-Copy-Item "package/*"  -Destination "package-release/" -Recurse -Force
+Copy-Item "package/*" -Destination "package-release/" -Recurse -Force
 
 Copy-Item "CHANGELOG.md" -Destination "package-release/CHANGELOG.md"
 Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
