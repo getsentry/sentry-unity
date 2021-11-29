@@ -309,7 +309,7 @@ jobs:
          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
          script: |
-          echo ""::set-output name=smoke-started::true"
+          echo "::set-output name=smoke-started::true"
           echo ${{ steps.vars.outputs.smoke-started }}
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
