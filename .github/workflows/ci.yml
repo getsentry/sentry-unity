@@ -309,7 +309,9 @@ jobs:
          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
          script: |
+          echo ${{ steps.vars.outputs.smoke-started }}
           echo "::set-output name=smoke-started::true"
+          echo ${{ steps.vars.outputs.smoke-started }}
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Smoke test (Retry)
@@ -325,7 +327,10 @@ jobs:
          force-avd-creation: false
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
-         script: pwsh ./scripts/smoke-test-droid.ps1
+         script: |
+          echo ${{ steps.vars.outputs.smoke-started }}
+          sudo pwsh ./scripts/smoke-test-droid.ps1
+
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed
