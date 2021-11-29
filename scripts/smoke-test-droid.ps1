@@ -31,16 +31,17 @@ function DateTimeNow {
 
 # Filter device List
 $Timeout = 30
-while ($RawAdbDeviceList -eq $null -And $Timeout -gt 0)
+#while ($RawAdbDeviceList -eq $null -And $Timeout -gt 0)
+while ($Timeout -gt 0)
 {
     try
     {
+        $Timeout = $Timeout - 1
         $RawAdbDeviceList = adb devices
     }
     catch
     {
         Write-Warning "Failed to read adb devices, retrying."
-        $Timeout = $Timeout - 1
         Start-Sleep -Seconds 1
     }
 }

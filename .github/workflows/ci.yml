@@ -284,7 +284,7 @@ jobs:
          script: echo "Generated AVD snapshot."
       
       - name: Create AVD snapshot (Retry)
-        if: ${{ failure() }}
+        if: steps.Create-AVD-snapshot.outcome != 'success'
         timeout-minutes: 10
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
@@ -312,7 +312,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
-          path: samples/artifacts/builds/Android/screen.png
+          path: scripts/screen.png
+#          path: samples/artifacts/builds/Android/screen.png
 
   android-smoke-test-with-gservices:
 #    needs: [build]
@@ -358,7 +359,7 @@ jobs:
          script: echo "Generated AVD snapshot."
 
       - name: Create AVD snapshot (Retry)
-        if: ${{ failure() }}
+        if: steps.Create-AVD-snapshot.outcome != 'success'
         timeout-minutes: 10
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
@@ -388,4 +389,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
-          path: samples/artifacts/builds/Android/screen.png
+          path: scripts/screen.png
+#          path: samples/artifacts/builds/Android/screen.png
