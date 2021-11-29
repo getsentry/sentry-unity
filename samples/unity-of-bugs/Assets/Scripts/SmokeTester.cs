@@ -53,11 +53,15 @@ public class SmokeTester : MonoBehaviour
 
     public static void SmokeTest()
     {
+        try
+        {
+        Debug.Log("SMOKE TEST: START");
         var evt = new ManualResetEventSlim();
 
         var requests = new List<string>();
         void Verify(HttpRequestMessage message)
         {
+            Debug.Log("SMOKE TEST: Verify invoked.");
             requests.Add(message.Content.ReadAsStringAsync().Result);
             evt.Set();
         }
@@ -71,12 +75,17 @@ public class SmokeTester : MonoBehaviour
         options.CreateHttpClientHandler = () => new TestHandler(Verify);
 
 #if SENTRY_NATIVE_IOS
+        Debug.Log("SMOKE TEST: Configure Native iOS.");
         SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
+        Debug.Log("SMOKE TEST: Configure Native Android.");
         SentryNativeAndroid.Configure(options);
 #endif
 
+        Debug.Log("SMOKE TEST: Sentry Init.");
         SentryUnity.Init(options);
+
+        Debug.Log("SMOKE TEST: Sentry Init OK.");
 
         var guid = Guid.NewGuid().ToString();
         Debug.LogError(guid);
@@ -99,6 +108,14 @@ public class SmokeTester : MonoBehaviour
 
         // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
         Application.Quit(200);
+        
+        }
+        catch (Exception ex)
+        {
+            Debug.Log("SMOKE TEST: FAILED");
+            Debug.LogError(ex);
+            Application.Quit(-1);        
+        }
     }
 
     private class TestHandler : HttpClientHandler
