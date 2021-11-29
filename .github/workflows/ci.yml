@@ -333,7 +333,7 @@ jobs:
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed
-        if: (${{ steps.smoke-test.outcome != 'success' }} && ${{ steps.smoke-test.outputs.smoke-started == 'yes' }})
+        if: ${{ steps.smoke-test.outcome }} != 'success' && ${{ steps.smoke-test.outputs.smoke-started }} == 'yes'
         run: |
           echo "Value is ${{ steps.smoke-test.outcome }}"
           echo "Value is ${{ steps.smoke-test.outputs.smoke-started }}"
