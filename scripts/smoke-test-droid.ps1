@@ -30,7 +30,25 @@ function DateTimeNow {
 }
 
 # Filter device List
-$RawAdbDeviceList = adb devices
+$Timeout = 30
+while ($RawAdbDeviceList -eq $null -And $Timeout -gt 0)
+{
+    try
+    {
+        $RawAdbDeviceList = adb devices
+    }
+    catch
+    {
+        Write-Warning "Failed to read adb devices, retrying."
+        $Timeout = $Timeout - 1
+        Start-Sleep -Seconds 1
+    }
+}
+if ($RawAdbDeviceList -eq $null)
+{
+    Throw "Failed to read adb devices"
+}
+
 $DeviceList = @()
 foreach ($device in $RawAdbDeviceList)
 {
@@ -69,8 +87,12 @@ foreach ($device in $DeviceList)
     Write-Output "Checking device $device with SDK $deviceSdk and API $deviceApi"
     Write-Output ""
 
-    Write-Output "Removing previous APP if found."
-    $stdout = adb -s $device uninstall $ProcessName
+    $stdout = adb -s $device shell "pm list packages -f"
+    if (($stdout | select-string $ProcessName) -ne $null)
+    {
+        Write-Output "Removing previous APP."
+        $stdout = adb -s $device uninstall $ProcessName
+    }
 
     # Move device to home screen
     $stdout = adb -s $device shell input keyevent KEYCODE_HOME
