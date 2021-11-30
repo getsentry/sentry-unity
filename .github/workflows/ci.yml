@@ -313,6 +313,7 @@ jobs:
          api-level: ${{ matrix.api-level }}
          force-avd-creation: false
          ram-size: 2048M
+         arch: x86_64
          cores: 2
          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
@@ -322,8 +323,11 @@ jobs:
 
       - name: Clear emulator lock files if AVD snapshot failed
         if: ${{ steps.smoke-test.outputs.smoke-started != 'yes' }}
-        run: sudo rm $HOME/.android/avd/*.avd/*.lock
-
+        run: | 
+          sudo rm $HOME/.android/avd/*.avd/*.lock
+          adb emu kill
+          sleep 3
+          
       - name: Smoke test (Retry)
         timeout-minutes: 10
         # We only want to retry the tests if the previous fail happened on the emulator startup.
@@ -334,6 +338,7 @@ jobs:
          target: google_apis
          ram-size: 2048M
          cores: 2
+         arch: x86_64
          force-avd-creation: false
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
@@ -344,8 +349,6 @@ jobs:
         # We want to throw an error if the smoke test failed
         if: ${{ steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-started == 'yes' }}
         run: |
-          echo "Value is ${{ steps.smoke-test.outcome }}"
-          echo "Value is ${{ steps.smoke-test.outputs.smoke-started }}"
           exit -1
 
       - name: Upload screenshot if smoke test failed
@@ -427,6 +430,7 @@ jobs:
          target: google_apis
          ram-size: 2048M
          cores: 2
+         arch: x86_64
          force-avd-creation: false
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
@@ -448,6 +452,7 @@ jobs:
          target: google_apis
          ram-size: 2048M
          cores: 2
+         arch: x86_64
          force-avd-creation: false
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
