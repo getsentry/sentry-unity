@@ -143,10 +143,9 @@ foreach ($device in $DeviceList)
     $stdout = adb -s $device logcat -d  | select-string 'SMOKE TEST: PASS'
     If ($stdout -ne $null)
     {
-        Write-Output "$stdout"
-
         Write-Output "`n`n`n Final logcat"
         WriteDeviceLog($device)
+        Write-Output "`n`n`n $stdout"
     }
     ElseIf ($Timeout -eq 0)
     {
