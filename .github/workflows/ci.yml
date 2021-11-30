@@ -271,38 +271,38 @@ jobs:
             ~/.android/adb*
           key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}-wsnap
 
-      - name: Create AVD snapshot
-        id: avd-snapshot
-        continue-on-error: true
-        timeout-minutes: 10
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
-        with:
-         api-level: ${{ matrix.api-level }}
-         force-avd-creation: false
-         ram-size: 2048M
-         cores: 2
-         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: |
-          echo "::set-output name=generated::yes"
-          echo "Generated AVD snapshot."
+#      - name: Create AVD snapshot
+#        id: avd-snapshot
+#        continue-on-error: true
+#        timeout-minutes: 10
+#        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+#        with:
+#         api-level: ${{ matrix.api-level }}
+#         force-avd-creation: false
+#         ram-size: 2048M
+#         cores: 2
+#         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#         disable-animations: false
+#         script: |
+#          echo "::set-output name=generated::yes"
+#          echo "Generated AVD snapshot."
 
-      - name: Clear emulator lock files if AVD snapshot failed
-        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
-        run: sudo rm $HOME/.android/avd/*.avd/*.lock
+#      - name: Clear emulator lock files if AVD snapshot failed
+#        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
+#        run: sudo rm $HOME/.android/avd/*.avd/*.lock
           
-      - name: Create AVD snapshot (Retry)
-        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
-        timeout-minutes: 10
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
-        with:
-         api-level: ${{ matrix.api-level }}
-         force-avd-creation: false
-         ram-size: 2048M
-         cores: 2
-         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: echo "Generated AVD snapshot."
+#      - name: Create AVD snapshot (Retry)
+#        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
+#        timeout-minutes: 10
+#        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+#        with:
+#         api-level: ${{ matrix.api-level }}
+#         force-avd-creation: false
+#         ram-size: 2048M
+#         cores: 2
+#         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#         disable-animations: false
+#         script: echo "Generated AVD snapshot."
 
       - name: Smoke test
         id: smoke-test
@@ -319,6 +319,10 @@ jobs:
          script: |
           echo "::set-output name=smoke-started::yes"
           sudo pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Clear emulator lock files if AVD snapshot failed
+        if: ${{ steps.smoke-test.outputs.smoke-started != 'yes' }}
+        run: sudo rm $HOME/.android/avd/*.avd/*.lock
 
       - name: Smoke test (Retry)
         timeout-minutes: 10
@@ -382,36 +386,36 @@ jobs:
             ~/.android/adb*
           key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}-gservices-wsnap
 
-      - name: Create AVD snapshot
-        id: avd-snapshot
-        continue-on-error: true
-        timeout-minutes: 10
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
-        with:
-         api-level: ${{ matrix.api-level }}
-         target: google_apis
-         cores: 2
-         force-avd-creation: false
-         ram-size: 2048M
-         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: |
-          echo "::set-output name=generated::yes"
-          echo "Generated AVD snapshot."
+#      - name: Create AVD snapshot
+#        id: avd-snapshot
+#        continue-on-error: true
+#        timeout-minutes: 10
+#        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+#        with:
+#         api-level: ${{ matrix.api-level }}
+#         target: google_apis
+#         cores: 2
+#         force-avd-creation: false
+#         ram-size: 2048M
+#         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#         disable-animations: false
+#         script: |
+#          echo "::set-output name=generated::yes"
+#          echo "Generated AVD snapshot."
 
-      - name: Create AVD snapshot (Retry)
-        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
-        timeout-minutes: 10
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
-        with:
-         api-level: ${{ matrix.api-level }}
-         target: google_apis
-         cores: 2
-         force-avd-creation: false
-         ram-size: 2048M
-         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: echo "Generated AVD snapshot."
+#      - name: Create AVD snapshot (Retry)
+#        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
+#        timeout-minutes: 10
+#        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+#        with:
+#         api-level: ${{ matrix.api-level }}
+#         target: google_apis
+#         cores: 2
+#         force-avd-creation: false
+#         ram-size: 2048M
+#         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+#         disable-animations: false
+#         script: echo "Generated AVD snapshot."
          
       - name: Smoke test
         id: smoke-test
@@ -431,7 +435,7 @@ jobs:
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Clear emulator lock files if AVD snapshot failed
-        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
+        if: ${{ steps.smoke-test.outputs.smoke-started != 'yes' }}
         run: sudo rm $HOME/.android/avd/*.avd/*.lock
 
       - name: Smoke test (Retry)

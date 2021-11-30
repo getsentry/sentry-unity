@@ -104,7 +104,7 @@ foreach ($device in $DeviceList)
         Throw "Failed to Install APK: $stdout."
     }
 
-    $FlakyRetry = 3
+    $FlakyRetry = 1
     While ($FlakyRetry -gt 0)
     {
         $AppStarted = 'False'
