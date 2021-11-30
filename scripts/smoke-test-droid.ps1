@@ -25,8 +25,24 @@ function WriteDeviceLog {
     # | select-string "Unity|unity|sentry|Sentry|SMOKE"
 }
 
+function WriteDeviceUiLog {
+    param ( $deviceId ) 
+    Write-Output "`n`nUI XML Log"
+    adb -s $deviceId exec-out uiautomator dump /dev/tty 
+}
+
 function DateTimeNow {
     return Get-Date -UFormat "%T %Z"
+}
+
+function CheckAndCloseActiveSystemAlerts {
+    param ($deviceId)
+    $uiInfoXml = adb -s $deviceId exec-out uiautomator dump /dev/tty 
+    if (($uiInfoXml | select-string "android:id/alertTitle|has stopped|Close app") -ne $null)
+    {
+        Write-Warning "Active system alert found on $deviceId.  Closing it."
+        adb shell input keyevent 4
+    }
 }
 
 # Filter device List
@@ -123,6 +139,7 @@ foreach ($device in $DeviceList)
             Write-Output "Waiting Process on $device to complete, waiting $Timeout seconds"
             Start-Sleep -Seconds 1
             $Timeout--
+            CheckAndCloseActiveSystemAlerts($device)
         }
         Write-Output (DateTimeNow)
 
@@ -146,6 +163,7 @@ foreach ($device in $DeviceList)
         Write-Output "PS info."
         adb -s $device shell ps
 
+        WriteDeviceUiLog($device)
         TakeScreenshot($device)
         Throw "Test Timeout"
     }
@@ -159,6 +177,7 @@ foreach ($device in $DeviceList)
     {
         Write-Warning "Process completed but Smoke test was not signaled."
         WriteDeviceLog($device)
+        WriteDeviceUiLog($device)
         TakeScreenshot($device)
         Throw "Smoke Test Failed."
     }
