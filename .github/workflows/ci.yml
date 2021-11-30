@@ -247,7 +247,7 @@ jobs:
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
-      max-parallel: 2
+      max-parallel: 5
       fail-fast: false
       matrix:
          api-level: [21, 22, 23, 24, 25, 26, 27, 28, 29]
@@ -286,7 +286,11 @@ jobs:
          script: |
           echo "::set-output name=generated::yes"
           echo "Generated AVD snapshot."
-      
+
+      - name: Clear emulator lock files if AVD snapshot failed
+        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
+        run: sudo rm $HOME/.android/avd/*.avd/*.lock
+          
       - name: Create AVD snapshot (Retry)
         if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
         timeout-minutes: 10
@@ -425,6 +429,10 @@ jobs:
          script:  |
           echo "::set-output name=smoke-started::yes"
           sudo pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Clear emulator lock files if AVD snapshot failed
+        if: ${{ steps.avd-snapshot.outputs.generated != 'yes' }}
+        run: sudo rm $HOME/.android/avd/*.avd/*.lock
 
       - name: Smoke test (Retry)
         timeout-minutes: 10
