@@ -247,6 +247,7 @@ jobs:
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
+      max-parallel: 1
       fail-fast: false
       matrix:
          api-level: [21, 22, 23, 24, 25, 26, 27, 28, 29]
@@ -352,6 +353,7 @@ jobs:
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
+      max-parallel: 1
       fail-fast: false
       matrix:
          api-level: [30]
