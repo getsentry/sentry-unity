@@ -262,14 +262,14 @@ jobs:
 #          name: droid-testapp-${{ matrix.unity-version }}
 #          path: samples/artifacts/builds/Android
 
-      - name: AVD cache
-        uses: actions/cache@v2
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}-wsnap
+#      - name: AVD cache
+#        uses: actions/cache@v2
+#        id: avd-cache
+#        with:
+#          path: |
+#            ~/.android/avd/*
+#            ~/.android/adb*
+#          key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}-x64
 
 #      - name: Create AVD snapshot
 #        id: avd-snapshot
@@ -380,14 +380,14 @@ jobs:
 #          name: droid-testapp-${{ matrix.unity-version }}
 #          path: samples/artifacts/builds/Android
 
-      - name: AVD cache
-        uses: actions/cache@v2
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}-gservices-wsnap
+#      - name: AVD cache
+#        uses: actions/cache@v2
+#        id: avd-cache
+#        with:
+#          path: |
+#            ~/.android/avd/*
+#            ~/.android/adb*
+#          key: avd-${{ matrix.api-level }}-${{ matrix.unity-version }}-gservices-x64
 
 #      - name: Create AVD snapshot
 #        id: avd-snapshot
