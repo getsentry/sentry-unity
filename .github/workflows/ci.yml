@@ -270,7 +270,6 @@ jobs:
          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
          script: |
-          exit -1
           echo "::set-output name=smoke-started::yes"
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
@@ -299,7 +298,6 @@ jobs:
          disable-animations: false
          script:  |
           echo "::set-output name=smoke-started::yes"
-          exit -1
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
 
@@ -348,7 +346,6 @@ jobs:
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
          script:  |
-          exit -1
           echo "::set-output name=smoke-started::yes"
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
@@ -377,7 +374,6 @@ jobs:
          disable-animations: false
          script:  |
           echo "::set-output name=smoke-started::yes"
-          exit -1
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
 
