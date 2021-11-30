@@ -182,5 +182,6 @@ foreach ($device in $DeviceList)
         Throw "Smoke Test Failed."
     }
 }
+        WriteDeviceLog($device)
 
 Write-Output "Test completed."
