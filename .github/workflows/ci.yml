@@ -254,7 +254,8 @@ jobs:
       - name: Download UPM package
         uses: actions/download-artifact@v2
         with:
-          name: package-release.zip
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
 
       - name: Verify package content against snapshot
         shell: pwsh
