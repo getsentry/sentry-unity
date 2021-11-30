@@ -138,6 +138,15 @@ In order to run the tests
 * open `TestRunner` via `Windows -> General -> Test Runner`
 * run `PlayMode` or `EditMode` tests
 
+### Package validation
+
+In CI, a workflow validates that the content of the package doesn't change accidentally.
+If you intentially want to add or remove files in the final UPM package. You need to accept the diff:
+
+```
+pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
+```
+
 ## Release
 
 The release is done by pushing the artifact built in CI [to a new repo](https://github.com/getsentry/unity). The artifact is built by using the template files in the `package` directory. In order to make a release, the contents of `package-dev/Editor` and `package-dev/Runtime` folders should be copied into `package`.
