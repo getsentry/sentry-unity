@@ -250,7 +250,8 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-         api-level: [21, 22, 23, 24, 25, 26, 27, 28, 29]
+         api-level: [21, 27, 29]
+         avd-target: [default]
          unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
     steps:
       - name: Checkout
@@ -263,6 +264,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
          api-level: ${{ matrix.api-level }}
+         target: ${{ matrix.avd-target }}
          force-avd-creation: false
          ram-size: 2048M
          arch: x86
@@ -272,7 +274,7 @@ jobs:
          script: |
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
-      - name: Disable emulator if emulator setup failed.
+      - name: Kill emulator if AVD failed.
         continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         run: | 
@@ -288,22 +290,20 @@ jobs:
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
          api-level: ${{ matrix.api-level }}
-         target: google_apis
+         target: ${{ matrix.avd-target }}
          ram-size: 2048M
          cores: 2
          arch: x86
          force-avd-creation: false
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
-         script:  |
-          sudo pwsh ./scripts/smoke-test-droid.ps1
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
         # We will ignore flaky errors from the emulator setup.
         if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
-        run: |
-          exit -1
+        run: exit -1
 
       - name: Upload screenshot if smoke test failed
         if: ${{ failure() }}
@@ -322,6 +322,7 @@ jobs:
       fail-fast: false
       matrix:
          api-level: [30]
+         avd-target: [google_apis]
          #api-level 30 image is only available with google services.
          unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
     steps:
@@ -335,17 +336,16 @@ jobs:
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
          api-level: ${{ matrix.api-level }}
-         target: google_apis
-         ram-size: 2048M
-         cores: 2
-         arch: x86
+         target: ${{ matrix.avd-target }}
          force-avd-creation: false
+         ram-size: 2048M
+         arch: x86
+         cores: 2
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
-         script:  |
-          sudo pwsh ./scripts/smoke-test-droid.ps1
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
-      - name: Disable emulator if emulator setup failed.
+      - name: Kill emulator if AVD failed.
         continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         run: | 
@@ -361,7 +361,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
          api-level: ${{ matrix.api-level }}
-         target: google_apis
+         target: ${{ matrix.avd-target }}
          ram-size: 2048M
          cores: 2
          arch: x86
@@ -370,7 +370,6 @@ jobs:
          disable-animations: false
          script:  |          
           sudo pwsh ./scripts/smoke-test-droid.ps1
-
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.

@@ -5,24 +5,23 @@ Write-Output "#            VALIDATOR                          #"
 Write-Output "#                       SCRIPT                  #"
 Write-Output "#################################################"
 
- Set-Variable -Name "ApkPath" -Value "scripts" #Debug
+Set-Variable -Name "ApkPath" -Value "scripts" #Debug
 # Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
 Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
 $LogcatCache = $null
+
 function TakeScreenshot {
     param ( $deviceId )
     adb -s $deviceId shell "screencap -p /storage/emulated/0/screen.png"
     adb pull "/storage/emulated/0/screen.png" "$ApkPath"
     adb shell "rm /storage/emulated/0/screen.png" 
-
 }
 
 function WriteDeviceLog {
     param ( $deviceId ) 
     Write-Output $LogcatCache
-    # | select-string "Unity|unity|sentry|Sentry|SMOKE"
 }
 
 function WriteDeviceUiLog {
@@ -48,10 +47,7 @@ function CheckAndCloseActiveSystemAlerts {
 function SignalActionSmokeStatus {
     param ($smokeStatus)
     echo "::set-output name=smoke-status::$smokeStatus"
-
-
 }
-
 
 # Filter device List
 $RawAdbDeviceList = adb devices
@@ -68,6 +64,7 @@ $DeviceCount = $DeviceList.Count
 
 If ($DeviceCount -eq 0)
 {
+    SignalActionSmokeStatus("Completed")
     Throw "It seems like no devices were found $RawAdbDeviceList"
 }
 Else
@@ -82,6 +79,7 @@ If (Test-Path -Path "$ApkPath/$ApkFileName" )
 }
 Else
 {
+    SignalActionSmokeStatus("Completed")
     Throw "Expected APK on $ApkPath/$ApkFileName but it was not found."
 }
 
@@ -90,9 +88,7 @@ foreach ($device in $DeviceList)
 {
     $deviceSdk = adb -s $device shell getprop ro.build.version.sdk 
     $deviceApi = adb -s $device shell getprop ro.build.version.release 
-    Write-Output ""
-    Write-Output "Checking device $device with SDK $deviceSdk and API $deviceApi"
-    Write-Output ""
+    Write-Output "`nChecking device $device with SDK $deviceSdk and API $deviceApi`n"
 
     $stdout = adb -s $device shell "pm list packages -f"
     if (($stdout | select-string $ProcessName) -ne $null)
@@ -109,6 +105,7 @@ foreach ($device in $DeviceList)
     $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
     If($stdout -notcontains "Success")
     {
+        SignalActionSmokeStatus("Completed")
         Throw "Failed to Install APK: $stdout."
     }
 
@@ -146,6 +143,7 @@ foreach ($device in $DeviceList)
         $Timeout--
         CheckAndCloseActiveSystemAlerts($device)
     }
+
     Write-Output (DateTimeNow)
     SignalActionSmokeStatus("Completed")
     $LogcatCache = adb -s $device logcat -d
@@ -186,4 +184,4 @@ foreach ($device in $DeviceList)
     }
 }
 
-Write-Output "Test completed."
+Write-Output "`nTest completed."
