@@ -35,17 +35,9 @@
     </ItemGroup>
     <Delete Files="@(FilesToClean)" />
     <PropertyGroup>
-      <Command>dotnet assemblyalias
- --target-directory "$(PackageRuntimePath)"
- --internalize
- --prefix "SentryAlias."
- --assemblies-to-alias "Microsoft*;System*"
- --key "$(SolutionDir)src\sentry-dotnet\.assets\Sentry.snk"
-      </Command>
-      <TrimmedCommand>$(Command.Replace('%0D%0A',''))</TrimmedCommand>
+      <Command>dotnet assemblyalias --target-directory "$(PackageRuntimePath)" --internalize --prefix "SentryAlias." --assemblies-to-alias "Microsoft*;System*" --key "$(SolutionDir)src\sentry-dotnet\.assets\Sentry.snk"</Command>
     </PropertyGroup>
-    <Message Text="$(TrimmedCommand)" Importance="high" />
-    <Exec Command="$(TrimmedCommand)" ConsoleToMsBuild="true" />
+    <Exec Command="$(Command)" ConsoleToMsBuild="true" />
   </Target>
 
 </Project>
