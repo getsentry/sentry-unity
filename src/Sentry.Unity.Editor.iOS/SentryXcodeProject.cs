@@ -55,8 +55,8 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddSentryFramework()
         {
-            var frameworkPath = Path.Combine(_projectRoot, "Frameworks", FrameworkName);
-            var frameworkGuid = _project.AddFile(frameworkPath, frameworkPath);
+            var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
+            var frameworkGuid = _project.AddFile(Path.Combine(_projectRoot, relativeFrameworkPath), relativeFrameworkPath, PBXSourceTree.Sdk);
 
             var mainTargetGuid = _project.GetUnityMainTargetGuid();
             var unityFrameworkTargetGuid = _project.GetUnityFrameworkTargetGuid();
