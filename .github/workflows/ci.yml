@@ -148,15 +148,13 @@ jobs:
         shell: pwsh
         run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
+      - name: Restore tools
+        run: dotnet tool restore
+
       - name: Build Sentry.Unity Solution
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet build -c Release
-
-      - name: Assembly alias
-        run: |
-          dotnet tool install --global Alias --version 0.2.0
-          assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2022 once S.T.J loading issue resolved.

@@ -22,9 +22,30 @@
 
   <Target Name="alias-references" AfterTargets="AfterCompile" >
     <WriteLinesToFile
-      File="$(DevPackagePath)/alias-references.txt"
+      File="$(PackageRuntimePath)/alias-references.txt"
       Lines="$(UnityManagedPath)/UnityEngine.dll"
       Overwrite="true"/>
+  </Target>
+  <Target Name="AssemblyAlias"
+          AfterTargets="AfterBuild"
+          Condition="($(DesignTimeBuild) != true Or $(BuildingForLiveUnitTesting))">
+
+    <ItemGroup>
+      <FilesToClean Include="$(PackageRuntimePath)\SentryAlias.*"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToClean)" />
+    <PropertyGroup>
+      <Command>dotnet assemblyalias
+ --target-directory "$(PackageRuntimePath)"
+ --internalize
+ --prefix "SentryAlias."
+ --assemblies-to-alias "Microsoft*;System*"
+ --key "$(SolutionDir)src\sentry-dotnet\.assets\Sentry.snk"
+      </Command>
+      <TrimmedCommand>$(Command.Replace('%0D%0A',''))</TrimmedCommand>
+    </PropertyGroup>
+    <Message Text="$(TrimmedCommand)" Importance="high" />
+    <Exec Command="$(TrimmedCommand)" ConsoleToMsBuild="true" />
   </Target>
 
 </Project>

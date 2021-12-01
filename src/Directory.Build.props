@@ -2,7 +2,7 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <DevPackagePath>../../$(DevPackageFolderName)</DevPackagePath>
+    <DevPackagePath>$(MSBuildThisFileDirectory)../$(DevPackageFolderName)</DevPackagePath>
     <PackageRuntimePath>$(DevPackagePath)/Runtime</PackageRuntimePath>
     <PackageEditorPath>$(DevPackagePath)/Editor</PackageEditorPath>
   </PropertyGroup>

@@ -35,5 +35,5 @@ package-dev/Plugins/Android/Sentry/*
 sentry-unity/Assets/Plugins/Sentry/
 sentry-unity/Assets/Editor/Sentry/
 
-# ignore temp assemblia alias lookup file
-package-dev/alias-references.txt
+# ignore temp assembly alias lookup file
+package-dev/Runtime/alias-references.txt
