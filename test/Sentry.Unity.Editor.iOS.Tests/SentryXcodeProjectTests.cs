@@ -1,11 +1,9 @@
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {

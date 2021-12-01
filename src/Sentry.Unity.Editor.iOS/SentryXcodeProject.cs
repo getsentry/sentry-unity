@@ -16,7 +16,7 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _optionsPath = Path.Combine("MainApp", "SentryOptions.m");
 
         private readonly string _projectRoot;
-        internal readonly PBXProject _project;
+        private readonly PBXProject _project;
         private readonly string _projectPath;
 
         private readonly INativeMain _nativeMain;
