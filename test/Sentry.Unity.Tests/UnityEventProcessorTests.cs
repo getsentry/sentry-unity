@@ -1,13 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sentry.Extensibility;
+using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -542,19 +540,6 @@ namespace Sentry.Unity.Tests
             sut.Process(sentryEvent);
 
             Assert.IsNull(sentryEvent.Contexts.Gpu.GraphicsShaderLevel);
-        }
-    }
-
-    internal sealed class TestLogger : IDiagnosticLogger
-    {
-        internal readonly ConcurrentBag<(SentryLevel logLevel, string message, Exception? exception)> Logs = new();
-
-        public bool IsEnabled(SentryLevel level) => true;
-
-        public void Log(SentryLevel logLevel, string message, Exception? exception = null, params object?[] args)
-        {
-            var log = (logLevel, string.Format(message, args), exception);
-            Logs.Add(log);
         }
     }
 

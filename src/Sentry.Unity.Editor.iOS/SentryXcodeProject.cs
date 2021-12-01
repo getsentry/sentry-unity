@@ -10,12 +10,13 @@ namespace Sentry.Unity.Editor.iOS
     internal class SentryXcodeProject : IDisposable
     {
         private const string FrameworkName = "Sentry.framework";
+        internal const string SymbolUploadPhaseName = "SymbolUpload";
 
         private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", "SentryOptions.m");
 
         private readonly string _projectRoot;
-        private readonly PBXProject _project;
+        internal readonly PBXProject _project;
         private readonly string _projectPath;
 
         private readonly INativeMain _nativeMain;
@@ -57,8 +58,8 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddSentryFramework()
         {
-            var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
-            var frameworkGuid = _project.AddFile(Path.Combine(_projectRoot, relativeFrameworkPath), relativeFrameworkPath, PBXSourceTree.Sdk);
+            var frameworkPath = Path.Combine(_projectRoot, "Frameworks", FrameworkName);
+            var frameworkGuid = _project.AddFile(frameworkPath, frameworkPath);
 
             var mainTargetGuid = _project.GetUnityMainTargetGuid();
             var unityFrameworkTargetGuid = _project.GetUnityFrameworkTargetGuid();
@@ -82,21 +83,17 @@ namespace Sentry.Unity.Editor.iOS
             _project.AddBuildProperty(mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
         }
 
-        public void AddBuildPhaseSymbolUpload(SentryUnityOptions options)
+        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger)
         {
-            const string uploadPhaseName = "SymbolUpload";
-            var mainTargetGuid = _project.GetUnityMainTargetGuid();
-
-            // Making sure the symbols upload has not already been added
-            var allBuildPhases = _project.GetAllBuildPhasesForTarget(mainTargetGuid);
-            if (allBuildPhases.Any(buildPhase => _project.GetBuildPhaseName(buildPhase) == uploadPhaseName))
+            if (MainTargetContainsSymbolUploadBuildPhase())
             {
-                options.DiagnosticLogger?.LogDebug("Build phase '{0}' already added.", uploadPhaseName);
+                logger?.LogDebug("Build phase '{0}' already added.", SymbolUploadPhaseName);
                 return;
             }
 
+            var mainTargetGuid = _project.GetUnityMainTargetGuid();
             _project.AddShellScriptBuildPhase(mainTargetGuid,
-                uploadPhaseName,
+                SymbolUploadPhaseName,
                 "/bin/sh",
                 @"export SENTRY_PROPERTIES=sentry.properties
 if [[ ""$BITCODE_GENERATION_MODE"" == ""marker"" ]] ; then
@@ -116,6 +113,12 @@ fi"
 
         public void AddSentryToMain(SentryUnityOptions options) =>
             _nativeMain.AddSentry(Path.Combine(_projectRoot, _mainPath), options.DiagnosticLogger);
+
+        internal bool MainTargetContainsSymbolUploadBuildPhase()
+        {
+            var allBuildPhases = _project.GetAllBuildPhasesForTarget(_project.GetUnityMainTargetGuid());
+            return allBuildPhases.Any(buildPhase => _project.GetBuildPhaseName(buildPhase) == SymbolUploadPhaseName);
+        }
 
         internal string ProjectToString() => _project.WriteToString();
 

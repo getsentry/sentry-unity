@@ -79,6 +79,11 @@ namespace Sentry.Unity.Editor
             var executableSource = GetSentryCliPath(SentryCliMacOS);
             var executableDestination = Path.Combine(projectPath, SentryCliMacOS);
 
+            if (!Directory.Exists(projectPath))
+            {
+                throw new DirectoryNotFoundException($"Xcode project directory not found at {executableDestination}");
+            }
+
             File.Copy(executableSource, executableDestination);
             SetExecutePermission(executableDestination);
         }

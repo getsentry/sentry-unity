@@ -80,5 +80,24 @@ namespace Sentry.Unity.Editor.Tests
 
             Directory.Delete(propertiesDirectory, true);
         }
+
+        [Test]
+        public void AddExecutableToXcodeProject_ProjectPathDoesNotExist_ThrowsDirectoryNotFoundException()
+        {
+            Assert.Throws<DirectoryNotFoundException>(() => SentryCli.AddExecutableToXcodeProject("non-existent-path"));
+        }
+
+        [Test]
+        public void AddExecutableToXcodeProject_ProjectPathExists_CopiesSentryCliForMacOS()
+        {
+            var fakeXcodeProjectDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(fakeXcodeProjectDirectory);
+
+            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory);
+
+            Assert.IsTrue(File.Exists(Path.Combine(fakeXcodeProjectDirectory, SentryCli.SentryCliMacOS)));
+
+            Directory.Delete(fakeXcodeProjectDirectory, true);
+        }
     }
 }
