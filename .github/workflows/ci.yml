@@ -274,7 +274,7 @@ jobs:
 
       - name: Disable emulator if emulator setup failed.
         continue-on-error: true
-        if: ${{ steps.smoke-test.outputs.smoke-started != 'Completed' }}
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         run: | 
           adb emu kill
           sleep 7
@@ -284,7 +284,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 10
         # We only want to retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ steps.smoke-test.outputs.smoke-started != 'Completed' }}
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
          api-level: ${{ matrix.api-level }}
@@ -301,7 +301,7 @@ jobs:
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
         # We will ignore flaky errors from the emulator setup.
-        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-started == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-started == 'Completed') }}
+        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
         run: |
           exit -1
 
@@ -347,7 +347,7 @@ jobs:
 
       - name: Disable emulator if emulator setup failed.
         continue-on-error: true
-        if: ${{ steps.smoke-test.outputs.smoke-started != 'Completed' }}
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         run: | 
           adb emu kill
           sleep 7
@@ -357,7 +357,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 10
         # We only want to retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ steps.smoke-test.outputs.smoke-started != 'Completed' }}
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
          api-level: ${{ matrix.api-level }}
@@ -375,7 +375,7 @@ jobs:
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
         # We will ignore flaky errors from the emulator setup.
-        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-started == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-started == 'Completed') }}
+        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
         run: exit -1
 
       - name: Upload screenshot if smoke test failed
