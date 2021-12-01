@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-    needs: [android-smoke-test] #debug skip Unity.
     name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
@@ -243,7 +242,7 @@ jobs:
           path: artifacts/test/editmode
 
   android-smoke-test:
-#    needs: [build]
+    needs: [build]
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
@@ -271,8 +270,7 @@ jobs:
          cores: 2
          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
-         script: |
-          sudo pwsh ./scripts/smoke-test-droid.ps1
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Kill emulator if AVD failed.
         continue-on-error: true
@@ -310,11 +308,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
-          path: scripts/screen.png
-#          path: samples/artifacts/builds/Android/screen.png
+          path: samples/artifacts/builds/Android/screen.png
 
   android-smoke-test-with-gservices:
-#    needs: [build]
+    needs: [build]
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
@@ -368,8 +365,7 @@ jobs:
          force-avd-creation: false
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
-         script:  |          
-          sudo pwsh ./scripts/smoke-test-droid.ps1
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
@@ -382,5 +378,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
-          path: scripts/screen.png
-#          path: samples/artifacts/builds/Android/screen.png
+          path: samples/artifacts/builds/Android/screen.png
