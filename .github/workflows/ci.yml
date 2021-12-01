@@ -256,7 +256,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
-      - name: Smoke test
+      - name: Download test app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android
+
+      - name: Android emulator setup + Smoke test
         id: smoke-test
         continue-on-error: true
         timeout-minutes: 10
@@ -279,7 +285,7 @@ jobs:
           adb emu kill
           sleep 7
           
-      - name: Smoke test (Retry)
+      - name: Android emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
         timeout-minutes: 10
@@ -326,7 +332,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
-      - name: Smoke test
+      - name: Download test app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android
+
+      - name: Android emulator setup + Smoke test
         id: smoke-test
         continue-on-error: true
         timeout-minutes: 10
@@ -349,7 +361,7 @@ jobs:
           adb emu kill
           sleep 7
 
-      - name: Smoke test (Retry)
+      - name: Android emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
         timeout-minutes: 10
