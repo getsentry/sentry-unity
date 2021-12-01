@@ -60,7 +60,7 @@ namespace Sentry.Unity.Editor.iOS
             var packageName = SentryPackageInfo.GetName();
             var frameworkDirectory = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK ? "Device" : "Simulator";
 
-            var frameworkPath = Path.Combine("Packages", packageName, "Plugins", "iOS", frameworkDirectory, "Sentry.framework");
+            var frameworkPath = Path.GetFullPath(Path.Combine("Packages", packageName, "Plugins", "iOS", frameworkDirectory, "Sentry.framework"));
             if (Directory.Exists(frameworkPath))
             {
                 logger?.LogDebug("Copying Sentry.framework from '{0}' to '{1}'", frameworkPath, targetPath);
