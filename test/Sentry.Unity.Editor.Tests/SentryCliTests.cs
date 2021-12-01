@@ -17,9 +17,9 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        [TestCase(RuntimePlatform.WindowsEditor, "sentry-cli-Windows-x86_64.exe ")]
-        [TestCase(RuntimePlatform.OSXEditor, "sentry-cli-Darwin-universal")]
-        [TestCase(RuntimePlatform.LinuxEditor, "sentry-cli-Linux-x86_64 ")]
+        [TestCase(RuntimePlatform.WindowsEditor, SentryCli.SentryCliWindows)]
+        [TestCase(RuntimePlatform.OSXEditor, SentryCli.SentryCliMacOS)]
+        [TestCase(RuntimePlatform.LinuxEditor, SentryCli.SentryCliLinux)]
         public void GetSentryPlatformName_RecognizedPlatform_SetsSentryCliName(RuntimePlatform platform, string expectedName)
         {
             var application = new TestApplication(platform: platform);

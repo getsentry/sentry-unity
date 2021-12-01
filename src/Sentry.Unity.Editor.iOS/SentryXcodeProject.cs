@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Linq;
+using Sentry.Extensibility;
 using UnityEditor.iOS.Xcode;
 using UnityEditor.iOS.Xcode.Extensions;
 
@@ -55,8 +57,8 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddSentryFramework()
         {
-            var frameworkPath = Path.Combine(_projectRoot, "Frameworks", FrameworkName);
-            var frameworkGuid = _project.AddFile(frameworkPath, frameworkPath);
+            var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
+            var frameworkGuid = _project.AddFile(Path.Combine(_projectRoot, relativeFrameworkPath), relativeFrameworkPath, PBXSourceTree.Sdk);
 
             var mainTargetGuid = _project.GetUnityMainTargetGuid();
             var unityFrameworkTargetGuid = _project.GetUnityFrameworkTargetGuid();
@@ -71,7 +73,39 @@ namespace Sentry.Unity.Editor.iOS
             _project.SetBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
             _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
 
+            _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
+            _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
+
+            _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
+            _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
+
             _project.AddBuildProperty(mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
+        }
+
+        public void AddBuildPhaseSymbolUpload(SentryUnityOptions options)
+        {
+            const string uploadPhaseName = "SymbolUpload";
+            var mainTargetGuid = _project.GetUnityMainTargetGuid();
+
+            // Making sure the symbols upload has not already been added
+            var allBuildPhases = _project.GetAllBuildPhasesForTarget(mainTargetGuid);
+            if (allBuildPhases.Any(buildPhase => _project.GetBuildPhaseName(buildPhase) == uploadPhaseName))
+            {
+                options.DiagnosticLogger?.LogDebug("Build phase '{0}' already added.", uploadPhaseName);
+                return;
+            }
+
+            _project.AddShellScriptBuildPhase(mainTargetGuid,
+                uploadPhaseName,
+                "/bin/sh",
+                @"export SENTRY_PROPERTIES=sentry.properties
+if [[ ""$BITCODE_GENERATION_MODE"" == ""marker"" ]] ; then
+    ERROR=$(./sentry-cli-Darwin-universal upload-dif $BUILT_PRODUCTS_DIR > ./sentry-symbols-upload.log 2>&1 &)
+    if [ ! $? -eq 0 ] ; then
+        echo ""warning: sentry-cli - $ERROR""
+    fi
+fi"
+            );
         }
 
         public void AddNativeOptions(SentryUnityOptions options)

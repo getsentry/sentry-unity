@@ -149,7 +149,9 @@ namespace Sentry.Unity.Editor.Android
 
             if (!sentryCliOptions.Validate(logger))
             {
-                logger.LogWarning("Loading sentry-cli configuration failed. Symbols will not be uploaded");
+                logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
+                                   "\nYou can disable this warning by disabling the automated symbols upload under " +
+                                   "Tools -> Sentry -> Editor");
                 return;
             }
 
