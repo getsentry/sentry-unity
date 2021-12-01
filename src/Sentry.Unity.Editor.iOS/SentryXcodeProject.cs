@@ -77,8 +77,8 @@ namespace Sentry.Unity.Editor.iOS
             _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
             _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
 
-            _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
-            _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
+            _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
+            _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
 
             _project.AddBuildProperty(mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
         }
