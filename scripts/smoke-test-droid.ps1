@@ -99,7 +99,6 @@ foreach ($device in $DeviceList)
     # Move device to home screen
     $stdout = adb -s $device shell input keyevent KEYCODE_HOME
 
-
     Write-Output "Installing test app..."
     $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
     If($stdout -notcontains "Success")
