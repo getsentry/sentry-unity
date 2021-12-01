@@ -93,14 +93,14 @@ public class SmokeTester : MonoBehaviour
 
         if (!evt.Wait(TimeSpan.FromSeconds(3)))
         {
-                // 1 = timeout
-                Application.Quit(1);
+            // 1 = timeout
+            Application.Quit(1);
         }
 
         if (!requests.Any(r => r.Contains(guid)))
         {
-                // 2 event captured but guid not there.
-                Application.Quit(2);
+            // 2 event captured but guid not there.
+            Application.Quit(2);
         }
 
         // On Android we'll grep logcat for this string instead of relying on exit code:
