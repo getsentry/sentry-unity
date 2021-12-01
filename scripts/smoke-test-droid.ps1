@@ -10,7 +10,7 @@ Write-Output "#################################################"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
 Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
-
+$LogcatCache = $null
 function TakeScreenshot {
     param ( $deviceId )
     adb -s $deviceId shell "screencap -p /storage/emulated/0/screen.png"
@@ -21,7 +21,7 @@ function TakeScreenshot {
 
 function WriteDeviceLog {
     param ( $deviceId ) 
-    adb -s $device logcat -d 
+    Write-Output $LogcatCache
     # | select-string "Unity|unity|sentry|Sentry|SMOKE"
 }
 
@@ -45,8 +45,13 @@ function CheckAndCloseActiveSystemAlerts {
     }
 }
 
-echo "::set-output name=smoke-started::yes"
-Throw "Flaky test from pwsh"
+function SignalActionSmokeStatus {
+    param ($smokeStatus)
+    echo "::set-output name=smoke-status::$smokeStatus"
+
+
+}
+
 
 # Filter device List
 $RawAdbDeviceList = adb devices
@@ -142,8 +147,9 @@ foreach ($device in $DeviceList)
         CheckAndCloseActiveSystemAlerts($device)
     }
     Write-Output (DateTimeNow)
-
-    $stdout = adb -s $device logcat -d  | select-string 'SMOKE TEST: PASS'
+    SignalActionSmokeStatus("Completed")
+    $LogcatCache = adb -s $device logcat -d
+    $stdout = $LogcatCache  | select-string 'SMOKE TEST: PASS'
     If ($stdout -ne $null)
     {
         Write-Output "`n`n`n Final logcat"
@@ -160,6 +166,15 @@ foreach ($device in $DeviceList)
         WriteDeviceUiLog($device)
         TakeScreenshot($device)
         Throw "Test Timeout"
+    }
+    ElseIf (($LogcatCache | select-string 'Unity   : Timeout while trying detaching primary window.'))
+    {
+        SignalActionSmokeStatus("Flaky")
+        Write-Warning "Test was flaky, unity failed to initialize."
+        WriteDeviceLog($device)
+        WriteDeviceUiLog($device)
+        TakeScreenshot($device)
+        Throw "Test was flaky, unity failed to initialize."
     }
     Else
     {
