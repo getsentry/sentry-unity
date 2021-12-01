@@ -82,10 +82,10 @@ public class SmokeTester : MonoBehaviour
         SentryNativeAndroid.Configure(options);
 #endif
 
-        Debug.Log("SMOKE TEST: Sentry Init.");
+        Debug.Log("SMOKE TEST: SentryUnity Init.");
         SentryUnity.Init(options);
 
-        Debug.Log("SMOKE TEST: Sentry Init OK.");
+        Debug.Log("SMOKE TEST: SentryUnity Init OK.");
 
         var guid = Guid.NewGuid().ToString();
         Debug.LogError(guid);
@@ -93,14 +93,12 @@ public class SmokeTester : MonoBehaviour
 
         if (!evt.Wait(TimeSpan.FromSeconds(3)))
         {
-                Debug.Log("SMOKE TEST: PASS");
                 // 1 = timeout
                 Application.Quit(1);
         }
 
         if (!requests.Any(r => r.Contains(guid)))
         {
-                Debug.Log("SMOKE TEST: PASS");
                 // 2 event captured but guid not there.
                 Application.Quit(2);
         }
