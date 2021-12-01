@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: -668357930, guid: 43ec428a58422470fa764bdba9d9bc19, type: 3}
   m_Name: SentryOptions
   m_EditorClassIdentifier: 
-  <Enabled>k__BackingField: 1
+  <Enabled>k__BackingField: 0
   <Dsn>k__BackingField: https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
   <CaptureInEditor>k__BackingField: 1
   <EnableLogDebouncing>k__BackingField: 0

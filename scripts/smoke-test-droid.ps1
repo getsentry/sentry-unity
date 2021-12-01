@@ -45,6 +45,9 @@ function CheckAndCloseActiveSystemAlerts {
     }
 }
 
+echo "::set-output name=smoke-started::yes"
+Throw "Flaky test from pwsh"
+
 # Filter device List
 $RawAdbDeviceList = adb devices
 

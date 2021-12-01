@@ -270,7 +270,6 @@ jobs:
          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
          script: |
-          echo "::set-output name=smoke-started::yes"
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Disable emulator if emulator setup failed.
@@ -297,7 +296,6 @@ jobs:
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
          script:  |
-          echo "::set-output name=smoke-started::yes"
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
 
@@ -346,7 +344,6 @@ jobs:
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
          script:  |
-          echo "::set-output name=smoke-started::yes"
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Disable emulator if emulator setup failed.
@@ -372,8 +369,7 @@ jobs:
          force-avd-creation: false
          emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
          disable-animations: false
-         script:  |
-          echo "::set-output name=smoke-started::yes"
+         script:  |          
           sudo pwsh ./scripts/smoke-test-droid.ps1
 
 
