@@ -55,60 +55,60 @@ public class SmokeTester : MonoBehaviour
     {
         try
         {
-        Debug.Log("SMOKE TEST: START");
-        var evt = new ManualResetEventSlim();
+            Debug.Log("SMOKE TEST: Start");
+            var evt = new ManualResetEventSlim();
 
-        var requests = new List<string>();
-        void Verify(HttpRequestMessage message)
-        {
-            Debug.Log("SMOKE TEST: Verify invoked.");
-            requests.Add(message.Content.ReadAsStringAsync().Result);
-            evt.Set();
-        }
+            var requests = new List<string>();
+            void Verify(HttpRequestMessage message)
+            {
+                Debug.Log("SMOKE TEST: Verify invoked.");
+                requests.Add(message.Content.ReadAsStringAsync().Result);
+                evt.Set();
+            }
 
-        var options = new SentryUnityOptions();
-        options.Dsn = "https://key@sentry/project";
-        options.Debug = true;
-        // TODO: Must be set explicitly for the time being.
-        options.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
-        options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
-        options.CreateHttpClientHandler = () => new TestHandler(Verify);
+            var options = new SentryUnityOptions();
+            options.Dsn = "https://key@sentry/project";
+            options.Debug = true;
+            // TODO: Must be set explicitly for the time being.
+            options.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
+            options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
+            options.CreateHttpClientHandler = () => new TestHandler(Verify);
 
 #if SENTRY_NATIVE_IOS
-        Debug.Log("SMOKE TEST: Configure Native iOS.");
-        SentryNativeIos.Configure(options);
+            Debug.Log("SMOKE TEST: Configure Native iOS.");
+            SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-        Debug.Log("SMOKE TEST: Configure Native Android.");
-        SentryNativeAndroid.Configure(options);
+            Debug.Log("SMOKE TEST: Configure Native Android.");
+            SentryNativeAndroid.Configure(options);
 #endif
 
-        Debug.Log("SMOKE TEST: SentryUnity Init.");
-        SentryUnity.Init(options);
+            Debug.Log("SMOKE TEST: SentryUnity Init.");
+            SentryUnity.Init(options);
 
-        Debug.Log("SMOKE TEST: SentryUnity Init OK.");
+            Debug.Log("SMOKE TEST: SentryUnity Init OK.");
 
-        var guid = Guid.NewGuid().ToString();
-        Debug.LogError(guid);
-        SentrySdk.CaptureMessage(guid);
+            var guid = Guid.NewGuid().ToString();
+            Debug.LogError(guid);
+            SentrySdk.CaptureMessage(guid);
 
-        if (!evt.Wait(TimeSpan.FromSeconds(3)))
-        {
-            // 1 = timeout
-            Application.Quit(1);
-        }
+            if (!evt.Wait(TimeSpan.FromSeconds(3)))
+            {
+                // 1 = timeout
+                Application.Quit(1);
+            }
 
-        if (!requests.Any(r => r.Contains(guid)))
-        {
-            // 2 event captured but guid not there.
-            Application.Quit(2);
-        }
+            if (!requests.Any(r => r.Contains(guid)))
+            {
+                // 2 event captured but guid not there.
+                Application.Quit(2);
+            }
 
-        // On Android we'll grep logcat for this string instead of relying on exit code:
-        Debug.Log("SMOKE TEST: PASS");
+            // On Android we'll grep logcat for this string instead of relying on exit code:
+            Debug.Log("SMOKE TEST: PASS");
 
-        // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
-        Application.Quit(200);
-        
+            // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
+            Application.Quit(200);
+            
         }
         catch (Exception ex)
         {
