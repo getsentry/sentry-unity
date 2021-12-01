@@ -1,4 +1,4 @@
-﻿#if !UNITY_EDITOR
+#if !UNITY_EDITOR
 #if UNITY_IOS
 #define SENTRY_NATIVE_IOS
 #elif UNITY_ANDROID
@@ -93,14 +93,16 @@ public class SmokeTester : MonoBehaviour
 
         if (!evt.Wait(TimeSpan.FromSeconds(3)))
         {
-            // 1 = timeout
-            Application.Quit(1);
+                Debug.Log("SMOKE TEST: PASS");
+                // 1 = timeout
+                Application.Quit(1);
         }
 
         if (!requests.Any(r => r.Contains(guid)))
         {
-            // 2 event captured but guid not there.
-            Application.Quit(2);
+                Debug.Log("SMOKE TEST: PASS");
+                // 2 event captured but guid not there.
+                Application.Quit(2);
         }
 
         // On Android we'll grep logcat for this string instead of relying on exit code:
