@@ -74,9 +74,6 @@ namespace Sentry.Unity.Editor.iOS
             _project.SetBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
             _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
 
-            _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
-            _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
-
             _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
             _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
 
@@ -95,12 +92,15 @@ namespace Sentry.Unity.Editor.iOS
             _project.AddShellScriptBuildPhase(mainTargetGuid,
                 SymbolUploadPhaseName,
                 "/bin/sh",
-                @"export SENTRY_PROPERTIES=sentry.properties
-if [[ ""$BITCODE_GENERATION_MODE"" == ""marker"" ]] ; then
-    ERROR=$(./sentry-cli-Darwin-universal upload-dif $BUILT_PRODUCTS_DIR > ./sentry-symbols-upload.log 2>&1 &)
+                $@"export SENTRY_PROPERTIES=sentry.properties
+if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
+    echo ""Bitcode is disabled - Uploading symbols""
+    ERROR=$(./{SentryCli.SentryCliMacOS} upload-dif $BUILT_PRODUCTS_DIR > ./sentry-symbols-upload.log 2>&1 &)
     if [ ! $? -eq 0 ] ; then
         echo ""warning: sentry-cli - $ERROR""
     fi
+else
+    echo ""Bitcode is enabled - Skipping symbols upload""
 fi"
             );
         }
