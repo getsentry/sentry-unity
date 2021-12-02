@@ -241,6 +241,30 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
+  package-validation:
+    needs: [build]
+    name: UPM Package validation
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v2
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+
+      - name: Verify package content against snapshot
+        shell: pwsh
+        # If this step fails, you can accept the new file content by 
+        # running the following script locally with 'accept' as an argument
+        # and committing the new snapshot file to your branch. i.e:
+        # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
+        run: ./test/Scripts.Tests/test-pack-contents.ps1
+
   android-smoke-test:
     needs: [build]
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}

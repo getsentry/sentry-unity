@@ -58,8 +58,8 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddSentryFramework()
         {
-            var frameworkPath = Path.Combine(_projectRoot, "Frameworks", FrameworkName);
-            var frameworkGuid = _project.AddFile(frameworkPath, frameworkPath);
+            var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
+            var frameworkGuid = _project.AddFile(relativeFrameworkPath, relativeFrameworkPath);
 
             var mainTargetGuid = _project.GetUnityMainTargetGuid();
             var unityFrameworkTargetGuid = _project.GetUnityFrameworkTargetGuid();
@@ -74,8 +74,8 @@ namespace Sentry.Unity.Editor.iOS
             _project.SetBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
             _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
 
-            _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
-            _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT",  "dwarf-with-dsym");
+            _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
+            _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
 
             _project.AddBuildProperty(mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
         }
