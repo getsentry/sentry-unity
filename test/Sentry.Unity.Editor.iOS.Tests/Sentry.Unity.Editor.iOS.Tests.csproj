@@ -15,4 +15,11 @@
     <ProjectReference Include="../../src/Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Editor.iOS/Sentry.Unity.Editor.iOS.csproj" Private="false" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../SharedClasses/*.cs">
+      <Link>%(RecursiveDir)/%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+  
 </Project>

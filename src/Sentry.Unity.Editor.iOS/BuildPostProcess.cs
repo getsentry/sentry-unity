@@ -17,6 +17,7 @@ namespace Sentry.Unity.Editor.iOS
             }
 
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             try
             {
@@ -27,22 +28,48 @@ namespace Sentry.Unity.Editor.iOS
 
                 if (options?.Validate() != true)
                 {
-                    new UnityLogger(new SentryOptions()).LogWarning("Failed to validate Sentry Options. Native support disabled.");
+                    logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
                     return;
                 }
 
                 if (!options.IosNativeSupportEnabled)
                 {
-                    options.DiagnosticLogger?.LogDebug("iOS Native support disabled through the options.");
+                    logger.LogDebug("iOS Native support disabled through the options.");
                     return;
                 }
 
                 sentryXcodeProject.AddNativeOptions(options);
                 sentryXcodeProject.AddSentryToMain(options);
+
+                var sentryCliOptions = SentryCliOptions.LoadCliOptions();
+                if (!sentryCliOptions.UploadSymbols)
+                {
+                    logger.LogDebug("Automated symbols upload has been disabled.");
+                    return;
+                }
+
+                if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)
+                {
+                    logger.LogDebug("Automated symbols upload for development builds has been disabled.");
+                    return;
+                }
+
+                if (!sentryCliOptions.Validate(logger))
+                {
+                    logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
+                                       "\nYou can disable this warning by disabling the automated symbols upload under " +
+                                       "Tools -> Sentry -> Editor");
+                    return;
+                }
+
+                SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
+                SentryCli.AddExecutableToXcodeProject(pathToProject);
+
+                sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
             }
             catch (Exception e)
             {
-                options?.DiagnosticLogger?.LogError("Failed to add the Sentry framework to the generated Xcode project", e);
+                logger.LogError("Failed to add the Sentry framework to the generated Xcode project", e);
             }
         }
 

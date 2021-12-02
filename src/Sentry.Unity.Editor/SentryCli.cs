@@ -8,6 +8,10 @@ namespace Sentry.Unity.Editor
 {
     internal static class SentryCli
     {
+        internal const string SentryCliWindows = "sentry-cli-Windows-x86_64.exe";
+        internal const string SentryCliMacOS = "sentry-cli-Darwin-universal";
+        internal const string SentryCliLinux = "sentry-cli-Linux-x86_64";
+
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string pathname, int mode);
 
@@ -34,9 +38,9 @@ namespace Sentry.Unity.Editor
 
             return application.Platform switch
             {
-                RuntimePlatform.WindowsEditor => "sentry-cli-Windows-x86_64.exe ",
-                RuntimePlatform.OSXEditor => "sentry-cli-Darwin-universal",
-                RuntimePlatform.LinuxEditor => "sentry-cli-Linux-x86_64 ",
+                RuntimePlatform.WindowsEditor => SentryCliWindows,
+                RuntimePlatform.OSXEditor => SentryCliMacOS,
+                RuntimePlatform.LinuxEditor => SentryCliLinux,
                 _ => throw new InvalidOperationException(
                     $"Cannot get sentry-cli for the current platform: {Application.platform}")
             };
@@ -68,6 +72,20 @@ namespace Sentry.Unity.Editor
             {
                 throw new UnauthorizedAccessException($"Failed to set permission to {filePath}");
             }
+        }
+
+        internal static void AddExecutableToXcodeProject(string projectPath)
+        {
+            var executableSource = GetSentryCliPath(SentryCliMacOS);
+            var executableDestination = Path.Combine(projectPath, SentryCliMacOS);
+
+            if (!Directory.Exists(projectPath))
+            {
+                throw new DirectoryNotFoundException($"Xcode project directory not found at {executableDestination}");
+            }
+
+            File.Copy(executableSource, executableDestination);
+            SetExecutePermission(executableDestination);
         }
     }
 }

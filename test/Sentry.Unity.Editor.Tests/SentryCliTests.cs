@@ -17,9 +17,9 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        [TestCase(RuntimePlatform.WindowsEditor, "sentry-cli-Windows-x86_64.exe ")]
-        [TestCase(RuntimePlatform.OSXEditor, "sentry-cli-Darwin-universal")]
-        [TestCase(RuntimePlatform.LinuxEditor, "sentry-cli-Linux-x86_64 ")]
+        [TestCase(RuntimePlatform.WindowsEditor, SentryCli.SentryCliWindows)]
+        [TestCase(RuntimePlatform.OSXEditor, SentryCli.SentryCliMacOS)]
+        [TestCase(RuntimePlatform.LinuxEditor, SentryCli.SentryCliLinux)]
         public void GetSentryPlatformName_RecognizedPlatform_SetsSentryCliName(RuntimePlatform platform, string expectedName)
         {
             var application = new TestApplication(platform: platform);
@@ -79,6 +79,25 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains(sentryCliTestOptions.Project, properties);
 
             Directory.Delete(propertiesDirectory, true);
+        }
+
+        [Test]
+        public void AddExecutableToXcodeProject_ProjectPathDoesNotExist_ThrowsDirectoryNotFoundException()
+        {
+            Assert.Throws<DirectoryNotFoundException>(() => SentryCli.AddExecutableToXcodeProject("non-existent-path"));
+        }
+
+        [Test]
+        public void AddExecutableToXcodeProject_ProjectPathExists_CopiesSentryCliForMacOS()
+        {
+            var fakeXcodeProjectDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(fakeXcodeProjectDirectory);
+
+            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory);
+
+            Assert.IsTrue(File.Exists(Path.Combine(fakeXcodeProjectDirectory, SentryCli.SentryCliMacOS)));
+
+            Directory.Delete(fakeXcodeProjectDirectory, true);
         }
     }
 }
