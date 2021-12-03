@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Json;
+using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Tests.Json
 {

@@ -1,7 +1,9 @@
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Extensibility;
+using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
@@ -21,9 +23,21 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             public string ProjectRoot { get; set; } =
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles", "2019_4");
-            public SentryUnityOptions Options { get; set; } = new();
+            public SentryUnityOptions Options { get; set; }
+            public TestLogger TestLogger { get; set; }
             public INativeMain NativeMain { get; set; } = new NativeMainTest();
             public INativeOptions NativeOptions { get; set; } = new NativeOptionsTest();
+
+            public Fixture()
+            {
+                TestLogger = new TestLogger();
+                Options = new SentryUnityOptions
+                {
+                    Debug = true,
+                    DiagnosticLevel = SentryLevel.Debug,
+                    DiagnosticLogger = TestLogger
+                };
+            }
 
             public SentryXcodeProject GetSut() => new(ProjectRoot, NativeMain, NativeOptions);
         }
@@ -82,6 +96,37 @@ namespace Sentry.Unity.Editor.iOS.Tests
             xcodeProject.AddNativeOptions(_fixture.Options);
 
             StringAssert.Contains("SentryOptions.m", xcodeProject.ProjectToString());
+        }
+
+        [Test]
+        public void AddBuildPhaseSymbolUpload_CleanXcodeProject_BuildPhaseSymbolUploadAdded()
+        {
+            var xcodeProject = _fixture.GetSut();
+            xcodeProject.ReadFromProjectFile();
+
+            var didContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+            var doesContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
+
+            Assert.IsFalse(didContainUploadPhase);
+            Assert.IsTrue(doesContainUploadPhase);
+        }
+
+        [Test]
+        public void AddBuildPhaseSymbolUpload_PhaseAlreadyAdded_LogsAndDoesNotAddAgain()
+        {
+            const int expectedBuildPhaseOccurence = 1;
+            var xcodeProject = _fixture.GetSut();
+            xcodeProject.ReadFromProjectFile();
+
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+
+            var actualBuildPhaseOccurence = Regex.Matches(xcodeProject.ProjectToString(),
+                Regex.Escape(SentryXcodeProject.SymbolUploadPhaseName)).Count;
+
+            Assert.AreEqual(1, _fixture.TestLogger.Logs.Count);
+            Assert.AreEqual(expectedBuildPhaseOccurence, actualBuildPhaseOccurence);
         }
     }
 }

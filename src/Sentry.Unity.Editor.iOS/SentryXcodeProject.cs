@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Linq;
+using Sentry.Extensibility;
 using UnityEditor.iOS.Xcode;
 using UnityEditor.iOS.Xcode.Extensions;
 
@@ -8,6 +10,7 @@ namespace Sentry.Unity.Editor.iOS
     internal class SentryXcodeProject : IDisposable
     {
         private const string FrameworkName = "Sentry.framework";
+        internal const string SymbolUploadPhaseName = "SymbolUpload";
 
         private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", "SentryOptions.m");
@@ -55,8 +58,8 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddSentryFramework()
         {
-            var frameworkPath = Path.Combine(_projectRoot, "Frameworks", FrameworkName);
-            var frameworkGuid = _project.AddFile(frameworkPath, frameworkPath);
+            var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
+            var frameworkGuid = _project.AddFile(relativeFrameworkPath, relativeFrameworkPath);
 
             var mainTargetGuid = _project.GetUnityMainTargetGuid();
             var unityFrameworkTargetGuid = _project.GetUnityFrameworkTargetGuid();
@@ -71,7 +74,35 @@ namespace Sentry.Unity.Editor.iOS
             _project.SetBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
             _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
 
+            _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
+            _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
+
             _project.AddBuildProperty(mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
+        }
+
+        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger)
+        {
+            if (MainTargetContainsSymbolUploadBuildPhase())
+            {
+                logger?.LogDebug("Build phase '{0}' already added.", SymbolUploadPhaseName);
+                return;
+            }
+
+            var mainTargetGuid = _project.GetUnityMainTargetGuid();
+            _project.AddShellScriptBuildPhase(mainTargetGuid,
+                SymbolUploadPhaseName,
+                "/bin/sh",
+                $@"export SENTRY_PROPERTIES=sentry.properties
+if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
+    echo ""Bitcode is disabled - Uploading symbols""
+    ERROR=$(./{SentryCli.SentryCliMacOS} upload-dif $BUILT_PRODUCTS_DIR > ./sentry-symbols-upload.log 2>&1 &)
+    if [ ! $? -eq 0 ] ; then
+        echo ""warning: sentry-cli - $ERROR""
+    fi
+else
+    echo ""Bitcode is enabled - Skipping symbols upload""
+fi"
+            );
         }
 
         public void AddNativeOptions(SentryUnityOptions options)
@@ -82,6 +113,12 @@ namespace Sentry.Unity.Editor.iOS
 
         public void AddSentryToMain(SentryUnityOptions options) =>
             _nativeMain.AddSentry(Path.Combine(_projectRoot, _mainPath), options.DiagnosticLogger);
+
+        internal bool MainTargetContainsSymbolUploadBuildPhase()
+        {
+            var allBuildPhases = _project.GetAllBuildPhasesForTarget(_project.GetUnityMainTargetGuid());
+            return allBuildPhases.Any(buildPhase => _project.GetBuildPhaseName(buildPhase) == SymbolUploadPhaseName);
+        }
 
         internal string ProjectToString() => _project.WriteToString();
 
