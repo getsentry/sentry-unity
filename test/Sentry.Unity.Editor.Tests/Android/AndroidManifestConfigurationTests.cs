@@ -198,8 +198,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         // options.setDiagnosticLevel(SentryLevel.valueOf(level.toUpperCase(Locale.ROOT)));
-        // src/sentry-java/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java
-        // src/sentry-java/sentry/src/main/java/io/sentry/SentryLevel.java
+        // modules/sentry-java/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java
+        // modules/sentry-java/sentry/src/main/java/io/sentry/SentryLevel.java
         private static readonly SentryJavaLevel[] SentryJavaLevels =
         {
             new () { SentryLevel = SentryLevel.Debug, JavaLevel = "debug" },
