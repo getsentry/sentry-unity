@@ -16,7 +16,7 @@ namespace Sentry.Unity.Integrations
         private readonly IApplication _application;
 
         private IHub? _hub;
-        private SentryOptions? _sentryOptions;
+        private SentryUnityOptions? _sentryOptions;
 
         public UnityApplicationLoggingIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
         {
@@ -27,30 +27,39 @@ namespace Sentry.Unity.Integrations
         public void Register(IHub hub, SentryOptions sentryOptions)
         {
             _hub = hub;
-            _sentryOptions = sentryOptions;
+            _sentryOptions = sentryOptions as SentryUnityOptions;
 
             _application.LogMessageReceived += OnLogMessageReceived;
             _application.Quitting += OnQuitting;
         }
 
         // Internal for testability
-        internal void OnLogMessageReceived(string condition, string stackTrace, LogType type)
+        internal void OnLogMessageReceived(string? condition, string? stackTrace, LogType type)
         {
-            if (_hub is null || !_hub.IsEnabled)
+            if (condition is null || _hub?.IsEnabled != true)
             {
                 return;
             }
 
-            var debounced = type switch
-            {
-                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
-                LogType.Log => LogTimeDebounce.Debounced(),
-                LogType.Warning => WarningTimeDebounce.Debounced(),
-                _ => true
-            };
-            if (!debounced)
+            if (condition.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
             {
                 return;
+            }
+
+            if (_sentryOptions?.EnableLogDebouncing == true)
+            {
+                var debounced = type switch
+                {
+                    LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
+                    LogType.Log => LogTimeDebounce.Debounced(),
+                    LogType.Warning => WarningTimeDebounce.Debounced(),
+                    _ => true
+                };
+
+                if (!debounced)
+                {
+                    return;
+                }
             }
 
             // TODO: to check against 'MinBreadcrumbLevel'
@@ -62,13 +71,20 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+            if (stackTrace is not null)
             {
-                Level = ToEventTagType(type)
-            };
+                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+                {
+                    Level = ToEventTagType(type)
+                };
 
-            _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
-            _hub.CaptureEvent(sentryEvent);
+                _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
+                _hub.CaptureEvent(sentryEvent);
+            }
+            else
+            {
+                _hub.CaptureMessage(condition, ToEventTagType(type));
+            }
 
             // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));

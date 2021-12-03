@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -206,13 +207,12 @@ namespace Sentry.Unity.Tests
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
             // assert
-            var logError = _testLogger.Logs
-                .SingleOrDefault(log => log.logLevel == SentryLevel.Error && log.exception is HttpRequestException);
-            Assert.IsNotNull(logError);
-
-            var logErrorInnerException = logError.exception!.InnerException as WebException;
-            Assert.IsNotNull(logErrorInnerException);
-            Assert.IsTrue(logErrorInnerException!.Message.Contains("Error: NameResolutionFailure"));
+            var matchingError = _testLogger.Logs
+                .Any(log => log.logLevel == SentryLevel.Error
+                                 && log.exception is HttpRequestException
+                                 && (log.exception?.InnerException as WebException)
+                                  ?.Message?.Contains("Error: NameResolutionFailure") == true);
+            Assert.IsTrue(matchingError);
         }
     }
 
@@ -547,7 +547,7 @@ namespace Sentry.Unity.Tests
 
     internal sealed class TestLogger : IDiagnosticLogger
     {
-        internal readonly List<(SentryLevel logLevel, string message, Exception? exception)> Logs = new();
+        internal readonly ConcurrentBag<(SentryLevel logLevel, string message, Exception? exception)> Logs = new();
 
         public bool IsEnabled(SentryLevel level) => true;
 

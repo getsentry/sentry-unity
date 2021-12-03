@@ -2,20 +2,15 @@
 .vsconfig
 *.user
 .idea/
+.DS_Store
 obj/
 bin/
-Logs/
-Library/
-Temp/
-Build/
-.gradle
 sentry-unity/build:*
-.DS_Store
 artifacts/
-temp/
 
-samples/**/*.csproj
-samples/**/*.sln
+# Temp folder used during dotnet build to restore selected packages
+/temp/
+
 samples/unity-of-bugs/Assets/InitTestScene*
 
 # Ignore build and Unity artifacts
@@ -39,3 +34,6 @@ package-dev/Plugins/Android/Sentry/*
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/
 sentry-unity/Assets/Editor/Sentry/
+
+# ignore temp assemblia alias lookup file
+package-dev/alias-references.txt

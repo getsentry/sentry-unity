@@ -16,18 +16,21 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator LogTimeDebounce()
         {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
             yield return AssertDefaultDebounce(new LogTimeDebounce(DefaultOffset));
         }
 
         [UnityTest]
         public IEnumerator ErrorTimeDebounce()
         {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
             yield return AssertDefaultDebounce(new ErrorTimeDebounce(DefaultOffset));
         }
 
         [UnityTest]
         public IEnumerator WarningTimeDebounce()
         {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness: https://github.com/getsentry/sentry-unity/issues/335
             yield return AssertDefaultDebounce(new WarningTimeDebounce(DefaultOffset));
         }
 

@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>$(PackageRuntimePath)</OutDir>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
@@ -20,5 +19,12 @@
   <ItemGroup>
     <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj" />
   </ItemGroup>
-  
+
+  <Target Name="alias-references" AfterTargets="AfterCompile" >
+    <WriteLinesToFile
+      File="$(DevPackagePath)/alias-references.txt"
+      Lines="$(UnityManagedPath)/UnityEngine.dll"
+      Overwrite="true"/>
+  </Target>
+
 </Project>

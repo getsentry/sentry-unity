@@ -8,9 +8,6 @@ namespace Sentry.Unity.Editor.iOS
 {
     public static class BuildPostProcess
     {
-        private static string PackageName = "io.sentry.unity";
-        private static string PackageNameDev = "io.sentry.unity.dev";
-
         [PostProcessBuild(1)]
         public static void OnPostProcessBuild(BuildTarget target, string pathToProject)
         {
@@ -60,7 +57,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var packageName = GetPackageName();
+            var packageName = SentryPackageInfo.GetName();
             var frameworkDirectory = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK ? "Device" : "Simulator";
 
             var frameworkPath = Path.Combine("Packages", packageName, "Plugins", "iOS", frameworkDirectory, "Sentry.framework");
@@ -75,23 +72,6 @@ namespace Sentry.Unity.Editor.iOS
             {
                 throw new FileNotFoundException($"Failed to copy 'Sentry.framework' from '{frameworkPath}' to Xcode project");
             }
-        }
-
-        private static string GetPackageName()
-        {
-            var packagePath = Path.Combine("Packages", PackageName);
-            if (Directory.Exists(Path.Combine(packagePath)))
-            {
-                return PackageName;
-            }
-
-            packagePath = Path.Combine("Packages", PackageNameDev);
-            if (Directory.Exists(Path.Combine(packagePath)))
-            {
-                return PackageNameDev;
-            }
-
-            throw new FileNotFoundException("Failed to locate the Sentry package");
         }
     }
 }

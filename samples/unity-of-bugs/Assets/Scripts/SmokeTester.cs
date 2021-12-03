@@ -1,4 +1,18 @@
-﻿using System;
+﻿#if !UNITY_EDITOR
+#if UNITY_IOS
+#define SENTRY_NATIVE_IOS
+#elif UNITY_ANDROID
+#define SENTRY_NATIVE_ANDROID
+#endif
+#endif
+
+#if SENTRY_NATIVE_IOS
+using Sentry.Unity.iOS;
+#elif UNITY_ANDROID
+using Sentry.Unity.Android;
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -9,13 +23,24 @@ using Sentry;
 using Sentry.Infrastructure;
 using Sentry.Unity;
 using UnityEngine;
-using static System.Environment;
 
 public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
-        var args = GetCommandLineArgs();
+#if SENTRY_NATIVE_ANDROID
+        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+        using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
+        {
+            var text = intent.Call<String> ("getStringExtra", "test");
+            if (text == "smoke")
+            {
+                SmokeTest();
+            }
+        }
+#else
+        var args = Environment.GetCommandLineArgs();
         if (args.Length > 2 && args[1] == "--test")
         {
             if (args[2] == "smoke")
@@ -23,6 +48,7 @@ public class SmokeTester : MonoBehaviour
                 SmokeTest();
             }
         }
+#endif
     }
 
     public static void SmokeTest()
@@ -36,15 +62,21 @@ public class SmokeTester : MonoBehaviour
             evt.Set();
         }
 
-        SentryUnity.Init(o =>
-        {
-            o.Dsn = "https://key@sentry/project";
-            o.Debug = true;
-            // TODO: Must be set explicitly for the time being.
-            o.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
-            o.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
-            o.CreateHttpClientHandler = () => new TestHandler(Verify);
-        });
+        var options = new SentryUnityOptions();
+        options.Dsn = "https://key@sentry/project";
+        options.Debug = true;
+        // TODO: Must be set explicitly for the time being.
+        options.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
+        options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
+        options.CreateHttpClientHandler = () => new TestHandler(Verify);
+
+#if SENTRY_NATIVE_IOS
+        SentryNativeIos.Configure(options);
+#elif SENTRY_NATIVE_ANDROID
+        SentryNativeAndroid.Configure(options);
+#endif
+
+        SentryUnity.Init(options);
 
         var guid = Guid.NewGuid().ToString();
         Debug.LogError(guid);
@@ -61,6 +93,9 @@ public class SmokeTester : MonoBehaviour
             // 2 event captured but guid not there.
             Application.Quit(2);
         }
+
+        // On Android we'll grep logcat for this string instead of relying on exit code:
+        Debug.Log("SMOKE TEST: PASS");
 
         // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
         Application.Quit(200);
