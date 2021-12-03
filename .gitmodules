@@ -1,5 +1,5 @@
 [submodule "src/sentry-dotnet"]
-	path = modules/sentry-dotnet
+	path = src/sentry-dotnet
 	url = https://github.com/getsentry/sentry-dotnet.git
 [submodule "src/sentry-cocoa"]
 	path = modules/sentry-cocoa

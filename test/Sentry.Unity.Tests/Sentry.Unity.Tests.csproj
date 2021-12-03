@@ -8,8 +8,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
-    <ProjectReference Include="../../modules/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../SharedClasses/*.cs">

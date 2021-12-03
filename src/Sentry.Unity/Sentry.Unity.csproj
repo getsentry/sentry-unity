@@ -17,7 +17,7 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\modules\sentry-dotnet\src\Sentry\Sentry.csproj" />
+    <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
   </ItemGroup>
 
   <Target Name="alias-references" AfterTargets="AfterCompile" >

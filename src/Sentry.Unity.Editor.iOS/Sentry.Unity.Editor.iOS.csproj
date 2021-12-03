@@ -5,7 +5,7 @@
     <OutDir>$(PackageEditorPath)/iOS</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../modules/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
+    <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
   </ItemGroup>

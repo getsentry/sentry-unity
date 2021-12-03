@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
-    <ProjectReference Include="../../modules/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity.Tests/Sentry.Unity.Tests.csproj" Private="false" />
   </ItemGroup>
