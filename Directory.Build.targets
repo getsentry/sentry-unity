@@ -73,6 +73,15 @@ Expected to exist:
 or
  * /Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll" />
 
+    <!-- we need to remove this workaround and use a proper way to retrieve the unity path -->
+    <WriteLinesToFile
+        File="$(SolutionDir)/scripts/integration-test/UnityPath.txt"
+        Lines="$(UnityRoot)"
+        Overwrite="true"
+        WriteOnlyWhenDifferent="true"
+        ContinueOnError="WarnAndContinue"
+        Encoding="Unicode"/>
+
   </Target>
 
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">
@@ -273,7 +282,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
-
+  
   <!-- Read Unity Version -->
   <UsingTask
     TaskName="LocateUnityVersion"
