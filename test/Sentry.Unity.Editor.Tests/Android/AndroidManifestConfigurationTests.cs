@@ -266,7 +266,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             _fixture.ScriptingImplementation = ScriptingImplementation.Mono2x;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("fake_path");
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
 
             AssertLogContains(SentryLevel.Debug, "Automated symbols upload requires the IL2CPP scripting backend.");
         }
@@ -277,7 +277,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             _fixture.SentryCliOptions!.UploadSymbols = false;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("fake_path");
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
 
             AssertLogContains(SentryLevel.Debug, "Automated symbols upload has been disabled.");
         }
@@ -288,7 +288,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             _fixture.IsDevelopmentBuild = true;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("fake_path");
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
 
             AssertLogContains(SentryLevel.Debug, "Automated symbols upload for development builds has been disabled.");
         }
@@ -299,7 +299,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             _fixture.SentryCliOptions!.Auth = string.Empty;
             var sut = _fixture.GetSut();
 
-            AtTempProjectPath(basePath => sut.SetupSymbolsUpload(basePath));
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
 
             AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
                                                    "\nYou can disable this warning by disabling the automated symbols upload under " +
@@ -309,19 +309,19 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void SetupSymbolsUpload_ValidConfiguration_AppendsUploadTaskToGradleAndCreatesSentryProperties()
         {
-            AtTempProjectPath(gradleProjectRoot =>
-            {
-                var sut = _fixture.GetSut();
-                var basePath = Path.Combine(gradleProjectRoot, "UnityLibrary");
-                Directory.CreateDirectory(basePath);
-                var gradlePath = Path.Combine(gradleProjectRoot, "build.gradle");
-                File.Create(gradlePath).Dispose();
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
 
-                sut.SetupSymbolsUpload(basePath);
+            var sut = _fixture.GetSut();
+            var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
 
-                Assert.True(File.ReadAllText(gradlePath).Contains("println 'Uploading symbols to Sentry'"));
-                File.Exists(Path.Combine(gradleProjectRoot, "sentry.properties"));
-            });
+            sut.SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
+
+            Assert.True(File.ReadAllText(Path.Combine(gradleProjectPath, "build.gradle")).Contains("println 'Uploading symbols to Sentry'"));
+            Assert.True(File.Exists(Path.Combine(gradleProjectPath, "sentry.properties")));
+
+            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
 
         private void AssertLogContains(SentryLevel sentryLevel, string message)
@@ -336,21 +336,6 @@ namespace Sentry.Unity.Editor.Tests.Android
             {
                 callback(basePath);
                 return File.ReadAllText(androidManifest);
-            }
-            finally
-            {
-                Directory.Delete(basePath, true);
-            }
-        }
-
-        private void AtTempProjectPath(Action<string> callback)
-        {
-            var basePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(basePath);
-
-            try
-            {
-                callback(basePath);
             }
             finally
             {

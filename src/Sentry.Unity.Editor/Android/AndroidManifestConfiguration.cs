@@ -49,7 +49,10 @@ namespace Sentry.Unity.Editor.Android
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
             ModifyManifest(basePath);
-            SetupSymbolsUpload(basePath);
+
+            var unityProjectPath = Directory.GetParent(Application.dataPath).FullName;
+            var gradleProjectPath = Directory.GetParent(basePath).FullName;
+            SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
         }
 
         internal void ModifyManifest(string basePath)
@@ -142,7 +145,7 @@ namespace Sentry.Unity.Editor.Android
             _ = androidManifest.Save();
         }
 
-        internal void SetupSymbolsUpload(string basePath)
+        internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
         {
             var options = _getOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
@@ -176,9 +179,6 @@ namespace Sentry.Unity.Editor.Android
 
             try
             {
-                var unityProjectPath = Directory.GetParent(Application.dataPath).FullName;
-                var gradleProjectPath = Directory.GetParent(basePath).FullName;
-
                 var symbolsPath = DebugSymbolUpload.GetSymbolsPath(
                     unityProjectPath,
                     gradleProjectPath,
