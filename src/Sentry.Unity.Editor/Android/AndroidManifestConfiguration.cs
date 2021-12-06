@@ -13,23 +13,37 @@ namespace Sentry.Unity.Editor.Android
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
         private readonly Func<SentryUnityOptions?> _getOptions;
+        private readonly Func<SentryCliOptions?> _getSentryCliOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
+
+        private readonly bool _isDevelopmentBuild;
+        private readonly ScriptingImplementation _scriptingImplementation;
 
         // Lower levels are called first.
         public int callbackOrder => 1;
 
         public AndroidManifestConfiguration()
-            : this(() => ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer))
+            : this(() => ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer),
+                () => SentryCliOptions.LoadCliOptions(),
+                isDevelopmentBuild: EditorUserBuildSettings.development,
+                scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
         {
         }
 
         // Testing
         internal AndroidManifestConfiguration(
             Func<SentryUnityOptions?> getOptions,
-            IUnityLoggerInterceptor? interceptor = null)
+            Func<SentryCliOptions?> getSentryCliOptions,
+            IUnityLoggerInterceptor? interceptor = null,
+            bool isDevelopmentBuild = false,
+            ScriptingImplementation scriptingImplementation = ScriptingImplementation.IL2CPP)
         {
             _getOptions = getOptions;
+            _getSentryCliOptions = getSentryCliOptions;
             _interceptor = interceptor;
+
+            _isDevelopmentBuild = isDevelopmentBuild;
+            _scriptingImplementation = scriptingImplementation;
         }
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
@@ -133,17 +147,22 @@ namespace Sentry.Unity.Editor.Android
             var options = _getOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
-            var sentryCliOptions = SentryCliOptions.LoadCliOptions();
-            if (!sentryCliOptions.UploadSymbols)
+            if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
+            {
+                logger.LogDebug("Automated symbols upload requires the IL2CPP scripting backend.");
+                return;
+            }
+
+            var sentryCliOptions = _getSentryCliOptions();
+            if (sentryCliOptions is null || !sentryCliOptions.UploadSymbols)
             {
                 logger.LogDebug("Automated symbols upload has been disabled.");
                 return;
             }
 
-            if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)
+            if (_isDevelopmentBuild && !sentryCliOptions.UploadDevelopmentSymbols)
             {
-                logger.LogDebug(
-                    "Automated symbols upload for development builds has been disabled.");
+                logger.LogDebug("Automated symbols upload for development builds has been disabled.");
                 return;
             }
 
