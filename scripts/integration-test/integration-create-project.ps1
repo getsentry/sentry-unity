@@ -2,9 +2,6 @@
 
 . ./scripts/integration-test/IntegrationGlobals.ps1
 
-Write-Output "Create Project => $function:ProjectRoot"
-
-
 ShowIntroAndValidateRequiredPaths "True" "Create project" $path
     Write-Output "Unity path is $Global:UnityPath"
 
@@ -18,9 +15,6 @@ Else
     Throw "Expected Unity on $Global:UnityPath/$Unity but it was not found."
 }
 
-Write-Output "Create Project => $(ProjectRoot)"
-
-
 # ============= STEP 1 CREATE NEW PROJECT
 # Delete Previous Integration Project Folder if found
 If (Test-Path -Path "$NewProjectPath" ) 
@@ -29,7 +23,6 @@ If (Test-Path -Path "$NewProjectPath" )
     Remove-Item -LiteralPath "$NewProjectPath" -Force -Recurse -ErrorAction Stop
     Write-Output " OK"
 }
-Write-Output "Create Project => $(ProjectRoot)"
 
 # Delete Previous Log File if found
 ClearUnityLog

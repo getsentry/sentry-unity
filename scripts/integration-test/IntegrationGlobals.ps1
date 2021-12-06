@@ -1,5 +1,15 @@
 $Global:UnityPath = $null 
 
+function ProjectRoot {
+    if ($Global:NewProjectPathCache -ne $null)
+    {
+        return [string]$Global:NewProjectPathCache
+    }
+    $Global:NewProjectPathCache = (Get-Item .).FullName
+    return [string]$Global:NewProjectPathCache
+}
+
+
 $Unity = "Unity.exe"
 $NewProjectName = "IntegrationTest"
 $LogFile = "logfile.txt"
@@ -21,15 +31,6 @@ $NewProjectLogPath = "$(ProjectRoot)/samples"
 $IntegrationScriptsPath = "$(ProjectRoot)/scripts/integration-test"
 
 $Timeout = 30
-
-function ProjectRoot {
-    if ($Global:NewProjectPathCache -ne $null)
-    {
-        return [string]$Global:NewProjectPathCache
-    }
-    $Global:NewProjectPathCache = (Get-Item .).FullName
-    return [string]$Global:NewProjectPathCache
-}
 
 function ShowIntroAndValidateRequiredPaths {
     param ( $showIntro, $stepName, $path)
