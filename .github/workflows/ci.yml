@@ -166,6 +166,13 @@ jobs:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other
 
+      - name: Upload test artifacts (playmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
+
       - name: Run Unity tests (editmode)
         # TODO: Run Edit mode tests on 2022 once S.T.J loading issue resolved.
         # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
@@ -173,6 +180,13 @@ jobs:
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other
+
+      - name: Upload test artifacts (editmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
 
       - name: Build Android Player with IL2CPP
         env:
@@ -229,18 +243,6 @@ jobs:
           name: Android Build
           path: samples/artifacts/builds/Android
 
-      - name: Upload test artifacts (playmode)
-        uses: actions/upload-artifact@v2
-        with:
-          name: Test results (playmode)
-          path: artifacts/test/playmode
-
-      - name: Upload test artifacts (editmode)
-        uses: actions/upload-artifact@v2
-        with:
-          name: Test results (editmode)
-          path: artifacts/test/editmode
-
   package-validation:
     needs: [build]
     name: UPM Package validation
@@ -259,7 +261,7 @@ jobs:
 
       - name: Verify package content against snapshot
         shell: pwsh
-        # If this step fails, you can accept the new file content by 
+        # If this step fails, you can accept the new file content by
         # running the following script locally with 'accept' as an argument
         # and committing the new snapshot file to your branch. i.e:
         # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
@@ -305,10 +307,10 @@ jobs:
       - name: Kill emulator if AVD failed.
         continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
-        run: | 
+        run: |
           adb emu kill
           sleep 7
-          
+
       - name: Android emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
@@ -381,7 +383,7 @@ jobs:
       - name: Kill emulator if AVD failed.
         continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
-        run: | 
+        run: |
           adb emu kill
           sleep 7
 
