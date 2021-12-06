@@ -14,5 +14,5 @@ If ($testProcess.ExitCode -eq 200) {
 }
 Else 
 {
-    Write-Error "Test process failed with status code ($testProcess.ExitCode)"
+    Write-Error "Test process failed with status code $($testProcess.ExitCode)"
 }

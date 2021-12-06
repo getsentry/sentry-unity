@@ -70,7 +70,7 @@ Write-Output " OK"
 
 if ($UnityProcess.ExitCode -ne 0)
 {
-    Throw "Unity exited with code $UnityProcess.ExitCode"
+    Throw "Unity exited with code $($UnityProcess.ExitCode)"
 }
 else
 {

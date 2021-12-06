@@ -11,7 +11,7 @@ public static class Startup
     static ListRequest ListRequest;
 
     const string SentryPackageName = "io.sentry.unity";
-    const string SentryUPMUrl = "https://github.com/getsentry/unity.git#0.7.0";
+    const string SentryUPMUrl = "https://github.com/getsentry/unity.git";
 
     static void LogDebug(string message)
         => Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, $"Sentry setup: {message}");
