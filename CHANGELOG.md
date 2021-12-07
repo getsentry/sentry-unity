@@ -9,6 +9,7 @@
 
 ### Fixes
 
+- Config window now saves changes to sentry-cli options ([#454](https://github.com/getsentry/sentry-unity/pull/454))
 - Sentry no longer requires Xcode projects to be exported on macOS ([#442](https://github.com/getsentry/sentry-unity/pull/442))
 
 ## 0.7.0
