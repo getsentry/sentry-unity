@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 public class SmokeTester : MonoBehaviour
@@ -16,11 +15,14 @@ public class SmokeTester : MonoBehaviour
 
         // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
         // Create a file to write to.
-        using (StreamWriter sw = File.CreateText("test.txt"))
-        {
-            sw.WriteLine("200");
-        }
 
+        if (Application.platform == RuntimePlatform.OSXEditor)
+        {
+            using (StreamWriter sw = File.CreateText("test.txt"))
+            {
+                sw.WriteLine("200");
+            }
+        }
         // Quit does not work on MacOS so we flag with a new file
         Application.Quit(200);
     }

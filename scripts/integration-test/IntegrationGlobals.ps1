@@ -33,9 +33,24 @@ function GetTestAppName {
     }
 }
 
+function GetUnityName {
+    If ($IsMacOS)
+    {
+        return "Unity"
+    }
+    ElseIf($IsWindows)
+    {
+        return "Unity.exe"
+    }
+    Else
+    {
+        Throw "Unsupported build"
+    }
+}
+
 $LineBreak = $(GetLineBreakMode)
 
-$Unity = "Unity"
+$Unity = "$(GetUnityName)"
 $NewProjectName = "IntegrationTest"
 $LogFile = "logfile.txt"
 $SolutionFile = "IntegrationTest.sln"
