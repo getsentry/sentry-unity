@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+testing
+
 ### Features
 
 - ScriptableSentryUnityOptions is now public ([#419](https://github.com/getsentry/sentry-unity/pull/419))
