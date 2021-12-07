@@ -2,11 +2,15 @@ name: CI
 
 on:
   push:
+    paths-ignore:
+      - 'CHANGELOG.md'
     branches:
       - main
       - release/**
 
   pull_request:
+    paths-ignore:
+      - 'CHANGELOG.md'
 
 jobs:
   build:
