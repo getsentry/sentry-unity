@@ -393,6 +393,7 @@ namespace Sentry.Unity.Editor
             Validate();
 
             EditorUtility.SetDirty(Options);
+            EditorUtility.SetDirty(CliOptions);
             AssetDatabase.SaveAssets();
         }
 
