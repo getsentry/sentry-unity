@@ -9,8 +9,33 @@ function ProjectRoot {
     return [string]$Global:NewProjectPathCache
 }
 
+function GetLineBreakMode {
+    If ($IsWindows)
+    {
+        return "`r`n"
 
-$Unity = "Unity.exe"
+    }
+    return   "`n"
+}
+
+function GetTestAppName {
+    If ($IsMacOS)
+    {
+        return "test.app"
+    }
+    ElseIf($IsWindows)
+    {
+        return "test.exe"
+    }
+    Else
+    {
+        Throw "Unsupported build"
+    }
+}
+
+$LineBreak = $(GetLineBreakMode)
+
+$Unity = "Unity"
 $NewProjectName = "IntegrationTest"
 $LogFile = "logfile.txt"
 $SolutionFile = "IntegrationTest.sln"
@@ -18,15 +43,13 @@ $SolutionFile = "IntegrationTest.sln"
 #New Integration Project paths
 $Global:NewProjectPathCache = $null
 $NewProjectPath = "$(ProjectRoot)/samples/$NewProjectName"
-$NewProjectEditorBuildSettingsPath = "$NewProjectPath\ProjectSettings"
+$NewProjectEditorBuildSettingsPath = "$NewProjectPath/ProjectSettings"
 $NewProjectBuildPath = "$NewProjectPath/Build"
 $NewProjectAssetsPath = "$NewProjectPath/Assets"
 $NewProjectSettingsPath = "$NewProjectPath/ProjectSettings"
 
 $NewProjectLogPath = "$(ProjectRoot)/samples"
-
-#$SentryUPMDownloadDest = "$PSScriptRoot\$IntegrationTestPath\$IntegrationTestName\SentryUPM.zip"
-#$SentryUnityUPMUrl = "https://github.com/getsentry/unity/archive/refs/heads/main.zip"
+$Global:TestApp = "$(GetTestAppName)"
 
 $IntegrationScriptsPath = "$(ProjectRoot)/scripts/integration-test"
 
@@ -140,11 +163,11 @@ function TrackCacheUntilUnityClose() {
         Throw "Unity process not received"
     }
 
-    $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath\$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
+    $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath/$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
     If ($logFileStream) {}
     Else
     {
-        Throw "Failed to open logfile on $NewProjectLogPath\$LogFile"
+        Throw "Failed to open logfile on $NewProjectLogPath/$LogFile"
     }
     $logStreamReader = New-Object System.IO.StreamReader($LogFileStream) -ErrorAction Stop
 
@@ -160,7 +183,7 @@ function TrackCacheUntilUnityClose() {
             $lines = $logStreamReader.ReadToEnd()
             $dateNow = Get-Date -UFormat "%T %Z"
 
-            ForEach ($line in $($lines -split "`r`n"))
+            ForEach ($line in $($lines -split $LineBreak))
             {
                 $stdout = $line
                 If (($stdout | select-string "ERROR |Failed ") -ne $null)
@@ -195,7 +218,7 @@ function TrackCacheUntilUnityClose() {
                 
                 Start-Sleep -Milliseconds 1000
 
-                $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath\$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
+                $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath/$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
                 $logFileStream.Seek($currentPos, [System.IO.SeekOrigin]::Begin)
                 $logStreamReader = New-Object System.IO.StreamReader($LogFileStream) -ErrorAction Stop
 
@@ -224,5 +247,6 @@ function WaitProgramToClose {
     {
         Start-Sleep -Milliseconds 500
         Write-Host -NoNewline "."
+        $cacheHandle = $process.Handle
     }
 }

@@ -8,9 +8,23 @@ ShowIntroAndValidateRequiredPaths "True" "Build project" $path
 Write-Output "Removing Log"
 ClearUnityLog
 
+$buildTarget = $null
+If ($IsMacOS)
+{
+    $buildTarget = "-buildOSXUniversalPlayer"
+}
+ElseIf($IsWindows)
+{
+    $buildTarget = "-buildWindows64Player"
+}
+Else
+{
+    Throw "Unsupported build"
+}
+
 Write-Output "Checking if Project has no errors "
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath "$Global:UnityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", "-buildWindows64Player", "$NewProjectBuildPath/Test.exe", "-quit" -PassThru
+$UnityProcess = Start-Process -FilePath "$Global:UnityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", $buildTarget , "$NewProjectBuildPath/$Global:TestApp", "-quit" -PassThru
 Write-Output " OK"
 
 WaitLogFileToBeCreated 30

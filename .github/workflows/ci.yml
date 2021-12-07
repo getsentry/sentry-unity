@@ -213,32 +213,26 @@ jobs:
           path: artifacts/build
 
       - name: Integration Test - Create new Project
-        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: ./scripts/integration-test/integration-create-project.ps1
 
       - name: Integration Test - Build test
-        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: ./scripts/integration-test/integration-build-project.ps1
 
       - name: Integration Test - Run test
-        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: ./scripts/integration-test/integration-run-test.ps1
 
       - name: Integration Test - Add Sentry to test project
-        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: ./scripts/integration-test/integration-add-sentry.ps1
 
       - name: Integration Test - Build test
-        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: ./scripts/integration-test/integration-build-project.ps1
 
       - name: Integration Test - Run test
-        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: ./scripts/integration-test/integration-run-test.ps1
 
