@@ -272,6 +272,17 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
+        public void SetupSymbolsUpload_SentryCliOptionsNull_LogsWarningAndReturns()
+        {
+            _fixture.SentryCliOptions = null;
+            var sut = _fixture.GetSut();
+
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+
+            AssertLogContains(SentryLevel.Warning, "Failed to load sentry-cli options - Skipping symbols upload.");
+        }
+
+        [Test]
         public void SetupSymbolsUpload_SymbolsUploadDisabled_LogsAndReturns()
         {
             _fixture.SentryCliOptions!.UploadSymbols = false;

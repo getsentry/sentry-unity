@@ -157,7 +157,13 @@ namespace Sentry.Unity.Editor.Android
             }
 
             var sentryCliOptions = _getSentryCliOptions();
-            if (sentryCliOptions is null || !sentryCliOptions.UploadSymbols)
+            if (sentryCliOptions is null)
+            {
+                logger.LogWarning("Failed to load sentry-cli options - Skipping symbols upload.");
+                return;
+            }
+
+            if (!sentryCliOptions.UploadSymbols)
             {
                 logger.LogDebug("Automated symbols upload has been disabled.");
                 return;
