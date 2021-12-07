@@ -73,15 +73,6 @@ Expected to exist:
 or
  * /Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll" />
 
-    <!-- we need to remove this workaround and use a proper way to retrieve the unity path -->
-    <WriteLinesToFile
-        File="$(SolutionDir)/scripts/integration-test/UnityPath.txt"
-        Lines="$(UnityRoot)"
-        Overwrite="true"
-        WriteOnlyWhenDifferent="true"
-        ContinueOnError="WarnAndContinue"
-        Encoding="Unicode"/>
-
   </Target>
 
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">
@@ -100,6 +91,37 @@ or
     <!-- The jar file is version appended and we copy by glob so to avoid duplicates: -->
     <RemoveDir Directories="$(SentryAndroidRoot)sentry/build/libs/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
+  </Target>
+
+  <!-- Create a new test project. msbuild /t:IntegrationTestNewProject -->
+  <Target Name="IntegrationTestNewProject" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Exec WorkingDirectory="$(SolutionDir)"
+          Command="pwsh scripts/integration-test/integration-create-project.ps1 '$(UnityRoot)'" />
+  </Target>
+
+  <!-- Build the integration test project. msbuild /t:IntegrationTestBuildProject -->
+  <Target Name="IntegrationTestBuildProject" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Exec WorkingDirectory="$(SolutionDir)"
+          Command="pwsh scripts/integration-test/integration-build-project.ps1 '$(UnityRoot)'" />
+  </Target>
+
+  <!-- Runs the generated game and check if it is working. msbuild /t:IntegrationTestValidate -->
+  <Target Name="IntegrationTestValidate" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+   <Exec WorkingDirectory="$(SolutionDir)"
+         Command="pwsh scripts/integration-test/integration-run-test.ps1 '$(UnityRoot)'" />
+  </Target>
+
+  <!-- Adds the released Sentry. msbuild /t:IntegrationTestAddSentry -->
+  <Target Name="IntegrationTestAddSentry" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+          <Message Text="${InvokedTarget} will it blend?" Importance="high"/>
+<!--    <Exec WorkingDirectory="$(SolutionDir)"
+          Command="pwsh scripts/integration-test/integration-add-sentry.ps1 '$(UnityRoot)'" /> -->
+  </Target>
+
+  <!-- Execute all steps of Integration Test. msbuild /t:IntegrationTestAll -->
+  <Target Name="IntegrationTestAll" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Exec WorkingDirectory="$(SolutionDir)"
+          Command="pwsh scripts/integration-test/integration-test.ps1 '$(UnityRoot)'" />
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->

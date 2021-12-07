@@ -213,28 +213,22 @@ jobs:
           path: artifacts/build
 
       - name: Integration Test - Create new Project
-        shell: pwsh
-        run: ./scripts/integration-test/integration-create-project.ps1
+        run: dotnet msbuild /t:IntegrationTestNewProject /p:Configuration=Release
 
       - name: Integration Test - Build test
-        shell: pwsh
-        run: ./scripts/integration-test/integration-build-project.ps1
+        run: dotnet msbuild /t:IntegrationTestBuildProject /p:Configuration=Release
 
       - name: Integration Test - Run test
-        shell: pwsh
-        run: ./scripts/integration-test/integration-run-test.ps1
+        run: dotnet msbuild /t:IntegrationTestAddSentry /p:Configuration=Release
 
       - name: Integration Test - Add Sentry to test project
-        shell: pwsh
-        run: ./scripts/integration-test/integration-add-sentry.ps1
+        run: dotnet msbuild /t:IntegrationTestValidate /p:Configuration=Release
 
       - name: Integration Test - Build test
-        shell: pwsh
-        run: ./scripts/integration-test/integration-build-project.ps1
+        run: dotnet msbuild /t:IntegrationTestBuildProject /p:Configuration=Release
 
       - name: Integration Test - Run test
-        shell: pwsh
-        run: ./scripts/integration-test/integration-run-test.ps1
+        run: dotnet msbuild /t:IntegrationTestAddSentry /p:Configuration=Release
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
