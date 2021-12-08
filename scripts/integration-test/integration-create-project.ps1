@@ -3,7 +3,6 @@
 . ./scripts/integration-test/IntegrationGlobals.ps1
 
 ShowIntroAndValidateRequiredPaths "True" "Create project" $path
-    Write-Output "Unity path is $Global:UnityPath"
 
 # Check if Unity path is correct.
 If (Test-Path -Path "$Global:UnityPath/$Unity" ) 

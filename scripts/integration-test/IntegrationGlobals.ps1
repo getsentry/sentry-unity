@@ -90,11 +90,12 @@ function ShowIntroAndValidateRequiredPaths {
     }
     ElseIf ($path)
     {
-        $Global:UnityPath = $path.TrimEnd("/")
-    }
-    ElseIf (Test-Path -Path "scripts/integration-test/UnityPath.txt")
-    {
-        $Global:UnityPath = Get-Content -Path "$IntegrationScriptsPath/UnityPath.txt" -TotalCount 1
+        #Ajust path on MacOS
+        If ($path -match "Unity.app/$")
+        {
+            $path = $path + "Contents/MacOS"
+        }
+        $Global:UnityPath = $path
     }
     Else
     {
