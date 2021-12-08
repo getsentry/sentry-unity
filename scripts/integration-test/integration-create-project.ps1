@@ -54,7 +54,6 @@ Copy-Item "$IntegrationScriptsPath/SmokeTester.cs" -Destination "$NewProjectAsse
 Copy-Item "$IntegrationScriptsPath/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
 Write-Output " OK"
 
-
 Write-Host -NoNewline "Applying Scene to EditorBuildSettings: "
 $EditorBuildSettings = Get-Content -path "$NewProjectSettingsPath/EditorBuildSettings.asset" -ErrorAction Stop
 $EditorBuildSettings = $EditorBuildSettings.Replace("m_Scenes: []", "m_Scenes:`n  - enabled: 1`n    path: Assets/EmptyScene.unity")

@@ -13,7 +13,6 @@ function GetLineBreakMode {
     If ($IsWindows)
     {
         return "`r`n"
-
     }
     return   "`n"
 }
@@ -91,7 +90,7 @@ function ShowIntroAndValidateRequiredPaths {
     }
     ElseIf ($path)
     {
-        $Global:UnityPath = $path  
+        $Global:UnityPath = $path.TrimEnd("/")
     }
     ElseIf (Test-Path -Path "scripts/integration-test/UnityPath.txt")
     {
@@ -103,7 +102,6 @@ function ShowIntroAndValidateRequiredPaths {
     }
 
     Write-Output "Unity path is $Global:UnityPath"
-
 }
 
 function ClearUnityLog {
@@ -157,7 +155,6 @@ function WaitLogFileToBeCreated {
         }
     } while ($LogCreated -ne "True")
     Write-Output " OK"
-
 }
 
 function TrackCacheUntilUnityClose() {

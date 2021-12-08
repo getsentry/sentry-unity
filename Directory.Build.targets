@@ -303,7 +303,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
-  
+
   <!-- Read Unity Version -->
   <UsingTask
     TaskName="LocateUnityVersion"
