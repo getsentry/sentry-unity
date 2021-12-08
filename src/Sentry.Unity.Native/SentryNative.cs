@@ -13,7 +13,7 @@ namespace Sentry.Unity.Native
         /// <param name="options">The Sentry Unity options to use.</param>
         public static void Configure(SentryUnityOptions options)
         {
-            //if (options.AndroidNativeSupportEnabled)
+            //if (options.WindowsNativeSupportEnabled)
             {
                 SentryNativeBridge.Init(options.Dsn!, options.Release!);
                 options.ScopeObserver = new NativeScopeObserver(options);

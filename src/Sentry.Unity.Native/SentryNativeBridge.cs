@@ -30,7 +30,7 @@ namespace Sentry.Unity
             sentry_init(options);
         }
 
-        // libsentry.io
+        // libsentry.so
         [DllImport("sentry")]
         private static extern IntPtr sentry_options_new();
         [DllImport("sentry")]

@@ -43,7 +43,6 @@ namespace Sentry.Unity.Native
                 _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Setting User i:\"{0}\" n:\"{1}\"",
                     user.Id,
                     user.Username);
-
             }
             else
             {
