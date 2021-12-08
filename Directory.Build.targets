@@ -17,7 +17,7 @@
     <SentryAndroidRoot>$(SolutionDir)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(SolutionDir)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
-    <SentryNativeRoot>$(SolutionDir)src/sentry-native/</SentryNativeRoot>
+    <SentryNativeRoot>$(SolutionDir)modules/sentry-native/</SentryNativeRoot>
     <!-- TODO: Do we need: x64, x86, arm64? What about Windows and Linux, can we cross compile? -->
     <SentryNativeArtifactsDestination>$(SolutionDir)package-dev/Plugins/Windows/Sentry/</SentryNativeArtifactsDestination>
   </PropertyGroup>
