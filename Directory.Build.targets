@@ -18,7 +18,7 @@
     <SentryAndroidArtifactsDestination>$(SolutionDir)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(SolutionDir)modules/sentry-native/</SentryNativeRoot>
-    <!-- TODO: Do we need: x64, x86, arm64? What about Windows and Linux, can we cross compile? -->
+    <!-- TODO: Do we need: x64, x86, arm64? -->
     <SentryNativeWindowsArtifactsDestination>$(SolutionDir)package-dev/Plugins/Windows/Sentry/</SentryNativeWindowsArtifactsDestination>
   </PropertyGroup>
 
@@ -165,7 +165,7 @@ or
           DependsOnTargets="BuildNativeSDK"
           BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
-    <Message Importance="High" Text="Building Sentry Native SDK for Windows."></Message>
+    <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
 
     <ItemGroup>
       <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/crashpad_handler.exe" />
@@ -173,11 +173,8 @@ or
     </ItemGroup>
 
     <Copy SourceFiles="@(NativeSdkArtifacts)"
-          DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeArtifactsDestination)%(Filename)%(Extension)')">
+          DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeWindowsArtifactsDestination)%(Filename)%(Extension)')">
     </Copy>
-
-    <Error Condition="!Exists('$(SentryNativeArtifactsDestination)sentry.dll')" Text="Failed to build the Native SDK."></Error>
-    <Error Condition="!Exists('$(SentryNativeArtifactsDestination)crashpad_handler.exe')" Text="Failed to build the Native SDK."></Error>
   </Target>
 
   <Target Name="BuildNativeSDK">
