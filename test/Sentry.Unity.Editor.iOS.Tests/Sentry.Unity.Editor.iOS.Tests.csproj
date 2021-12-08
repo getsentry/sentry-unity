@@ -2,16 +2,16 @@
   <PropertyGroup>
     <OutDir>$(PackageEditorTestsPath)</OutDir>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Include="TestFiles/**/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
+    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Editor.iOS/Sentry.Unity.Editor.iOS.csproj" Private="false" />
   </ItemGroup>
@@ -21,5 +21,5 @@
       <Link>%(RecursiveDir)/%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>
-  
+
 </Project>

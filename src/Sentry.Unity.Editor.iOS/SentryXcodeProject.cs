@@ -92,15 +92,27 @@ namespace Sentry.Unity.Editor.iOS
             _project.AddShellScriptBuildPhase(mainTargetGuid,
                 SymbolUploadPhaseName,
                 "/bin/sh",
-                $@"export SENTRY_PROPERTIES=sentry.properties
-if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
-    echo ""Bitcode is disabled - Uploading symbols""
+                $@"process_upload_symbols()
+{{
     ERROR=$(./{SentryCli.SentryCliMacOS} upload-dif $BUILT_PRODUCTS_DIR > ./sentry-symbols-upload.log 2>&1 &)
     if [ ! $? -eq 0 ] ; then
         echo ""warning: sentry-cli - $ERROR""
     fi
+}}
+
+export SENTRY_PROPERTIES=sentry.properties
+if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
+    echo ""Bitcode is disabled""
+    echo ""Uploading symbols""
+    process_upload_symbols
 else
-    echo ""Bitcode is enabled - Skipping symbols upload""
+    echo ""Bitcode is enabled""
+    if [ ""$ACTION"" = ""install"" ] ; then
+        echo ""Uploading symbols and bcsymbolmaps""
+        process_upload_symbols
+    else
+        echo ""Skipping symbol upload on bitcode enabled and non-install builds""
+    fi
 fi"
             );
         }

@@ -15,9 +15,9 @@
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" ContinueOnError="true" />
   </Target>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\sentry-dotnet\src\Sentry\Sentry.csproj" />
+    <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" />
   </ItemGroup>
 
   <Target Name="alias-references" AfterTargets="AfterCompile" >

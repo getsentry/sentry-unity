@@ -10,11 +10,11 @@
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <!-- Cocoa -->
-    <SentryCocoaRoot>$(SolutionDir)src/sentry-cocoa/</SentryCocoaRoot>
+    <SentryCocoaRoot>$(SolutionDir)modules/sentry-cocoa/</SentryCocoaRoot>
     <SentryCocoaDeviceArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryCocoaDeviceArtifactsDestination>
     <SentryCocoaSimulatorArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryCocoaSimulatorArtifactsDestination>
     <!-- Android -->
-    <SentryAndroidRoot>$(SolutionDir)src/sentry-java/</SentryAndroidRoot>
+    <SentryAndroidRoot>$(SolutionDir)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(SolutionDir)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(SolutionDir)src/sentry-native/</SentryNativeRoot>

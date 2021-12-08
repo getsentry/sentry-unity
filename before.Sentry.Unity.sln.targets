@@ -1,10 +1,10 @@
 <Project InitialTargets="RestoreSubmodules">
   <!-- If files within submodules are not found, restore git submodules -->
   <Target Name="RestoreSubmodules"
-    Condition="!Exists('src/sentry-dotnet/src/Sentry/Sentry.csproj') 
-            OR !Exists('src/sentry-java/build.gradle.kts')
-            OR !Exists('src/sentry-native/CMakeLists.txt')
-            OR !Exists('src/sentry-cocoa/Sentry.xcodeproj')">
+    Condition="!Exists('src/sentry-dotnet/src/Sentry/Sentry.csproj')
+            OR !Exists('modules/sentry-native/CMakeLists.txt')
+            OR !Exists('modules/sentry-java/build.gradle.kts')
+            OR !Exists('modules/sentry-cocoa/Sentry.xcodeproj')">
     <Message Importance="High" Text="Restoring git submodules."></Message>
     <Exec Command="git submodule update --init --recursive"></Exec>
   </Target>
