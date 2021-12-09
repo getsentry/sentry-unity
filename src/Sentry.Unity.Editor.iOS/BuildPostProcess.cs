@@ -63,7 +63,7 @@ namespace Sentry.Unity.Editor.iOS
                 }
 
                 SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
-                SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
+                SentryCli.AddExecutableToXcodeProject(pathToProject);
 
                 sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
             }
