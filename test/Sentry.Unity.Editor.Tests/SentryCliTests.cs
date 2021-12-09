@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using NUnit.Framework;
+using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
-using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Editor.Tests
 {
