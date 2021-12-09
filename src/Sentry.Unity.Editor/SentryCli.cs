@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -74,7 +75,7 @@ namespace Sentry.Unity.Editor
             }
         }
 
-        internal static void AddExecutableToXcodeProject(string projectPath)
+        internal static void AddExecutableToXcodeProject(string projectPath, IDiagnosticLogger? logger)
         {
             var executableSource = GetSentryCliPath(SentryCliMacOS);
             var executableDestination = Path.Combine(projectPath, SentryCliMacOS);
@@ -82,6 +83,12 @@ namespace Sentry.Unity.Editor
             if (!Directory.Exists(projectPath))
             {
                 throw new DirectoryNotFoundException($"Xcode project directory not found at {executableDestination}");
+            }
+
+            if (File.Exists(executableDestination))
+            {
+                logger?.LogDebug("sentry-cli executable already found at {0}", executableDestination);
+                return;
             }
 
             File.Copy(executableSource, executableDestination);
