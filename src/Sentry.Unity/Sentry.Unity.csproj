@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutDir>$(PackageRuntimePath)</OutDir>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <Alias_Prefix>Sentry.</Alias_Prefix>
+    <Alias_Internalize>true</Alias_Internalize>
   </PropertyGroup>
 
   <Target Name="CleanDotnetSdkFiles" AfterTargets="Clean">
@@ -16,15 +18,22 @@
     <Delete Files="@(FilesToDelete)" ContinueOnError="true" />
   </Target>
 
+  <Target Name="ResolveAliasAssemblies" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <Alias_AssembliesToAlias
+        Include="@(ReferencePath)"
+        Condition="$([System.String]::new('%(ReferencePath.Filename)').StartsWith('Microsoft'))"/>
+      <Alias_AssembliesToAlias
+        Include="@(ReferencePath)"
+        Condition="$([System.String]::new('%(ReferencePath.Filename)').StartsWith('System'))"/>
+      <Alias_AssembliesToTarget
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.Filename)'=='Sentry'"/>
+    </ItemGroup>
+  </Target>
   <ItemGroup>
+    <PackageReference Include="Alias.MsBuild" Version="0.3.0" PrivateAssets="all"/>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" />
   </ItemGroup>
-
-  <Target Name="alias-references" AfterTargets="AfterCompile" >
-    <WriteLinesToFile
-      File="$(DevPackagePath)/alias-references.txt"
-      Lines="$(UnityManagedPath)/UnityEngine.dll"
-      Overwrite="true"/>
-  </Target>
 
 </Project>
