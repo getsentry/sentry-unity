@@ -37,7 +37,7 @@ jobs:
             unity-path: Unity.app/Contents/MacOS
             unity-config-path: /Library/Application Support/Unity/config/
           - unity-version: 2019.4.33f1
-            unity-version-changeset: bd5abf232a62
+            unity-version-changeset: c9b2b02eeeef
           - unity-version: 2020.3.21f1
             unity-version-changeset: a38c86f6690f
           - unity-version: 2021.1.26f1
