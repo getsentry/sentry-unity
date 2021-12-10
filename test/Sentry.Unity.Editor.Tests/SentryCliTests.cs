@@ -65,7 +65,7 @@ namespace Sentry.Unity.Editor.Tests
             var propertiesDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(propertiesDirectory);
 
-            var sentryCliTestOptions = new SentryCliOptions();
+            var sentryCliTestOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
             sentryCliTestOptions.Auth = Guid.NewGuid().ToString();
             sentryCliTestOptions.Organization = Guid.NewGuid().ToString();
             sentryCliTestOptions.Project = Guid.NewGuid().ToString();
