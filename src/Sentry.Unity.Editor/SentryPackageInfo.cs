@@ -2,12 +2,12 @@ using System.IO;
 
 namespace Sentry.Unity.Editor
 {
-    public static class SentryPackageInfo
+    internal static class SentryPackageInfo
     {
         internal static string PackageName = "io.sentry.unity";
         internal static string PackageNameDev = "io.sentry.unity.dev";
 
-        internal static string GetName()
+        public static string GetName()
         {
             var packagePath = Path.Combine("Packages", PackageName);
             if (Directory.Exists(Path.Combine(packagePath)))
