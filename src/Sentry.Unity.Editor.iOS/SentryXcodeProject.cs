@@ -74,8 +74,6 @@ namespace Sentry.Unity.Editor.iOS
 
             SetSearchPathBuildProperty("$(inherited)");
             SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
-            SetSearchPathBuildProperty("$(inherited)");
-            SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
 
             _project.SetBuildProperty(_mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
             _project.SetBuildProperty(_unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
