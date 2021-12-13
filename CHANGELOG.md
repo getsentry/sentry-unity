@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fixed overwriting Xcode build properties ([#466](https://github.com/getsentry/sentry-unity/pull/466))
+
 ## 0.8.0
 
 ### Features
