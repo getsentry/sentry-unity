@@ -18,7 +18,8 @@
 
   <ItemGroup>
     <Compile Include="../SharedClasses/*.cs">
-      <Link>%(RecursiveDir)/%(Filename)%(Extension)</Link>
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
 
