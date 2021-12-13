@@ -236,6 +236,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         with:
           name: ${{ github.sha }}
+          if-no-files-found: error
           # Adding the native libraries so the symbol collector craft target can find/upload them
           path: |
             package-release.zip
