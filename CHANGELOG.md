@@ -1,5 +1,7 @@
 # Changelog
 
+### Fixes
+
 ## Unreleased
 
 - Fixed overwriting Xcode build properties ([#466](https://github.com/getsentry/sentry-unity/pull/466))

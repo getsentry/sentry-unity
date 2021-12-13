@@ -88,6 +88,19 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
+        public void AddSentryFramework_FrameworkSearchPathAlreadySet_DoesNotGetOverwritten()
+        {
+            const string testPath = "path_that_should_not_get_overwritten";
+            var xcodeProject = _fixture.GetSut();
+            xcodeProject.ReadFromProjectFile();
+            xcodeProject.SetSearchPathBuildProperty(testPath);
+
+            xcodeProject.AddSentryFramework();
+
+            StringAssert.Contains(testPath, xcodeProject.ProjectToString());
+        }
+
+        [Test]
         public void CreateNativeOptions_CleanXcodeProject_NativeOptionsAdded()
         {
             var xcodeProject = _fixture.GetSut();
