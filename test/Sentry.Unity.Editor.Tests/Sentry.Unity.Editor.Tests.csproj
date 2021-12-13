@@ -20,4 +20,11 @@
     <Folder Include="TestFiles\SymbolsUploadProject\GradleProject\unityLibrary\src\main" />
     <Folder Include="TestFiles\SymbolsUploadProject\UnityProject\Temp\StagingArea\symbols" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../SharedClasses/*.cs">
+      <Link>%(RecursiveDir)/%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+  
 </Project>
