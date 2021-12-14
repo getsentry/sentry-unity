@@ -6,7 +6,7 @@
 
 - Fixed overwriting Xcode build properties ([#466](https://github.com/getsentry/sentry-unity/pull/466))
 - Xcode exports no longer break with sentry-cli already added ([#457](https://github.com/getsentry/sentry-unity/pull/457))
-- Explicitly set <SignAssembly>false</SignAssembly> ([#470](https://github.com/getsentry/sentry-unity/pull/470)). So that Sentry.dll is not string named when consumed inside Unity.
+- Explicitly set <SignAssembly>false</SignAssembly> ([#470](https://github.com/getsentry/sentry-unity/pull/470)). So that Sentry.dll is not strong named when consumed inside Unity.
 
 ## 0.8.0
 
