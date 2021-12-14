@@ -14,7 +14,6 @@ Else
     Throw "Expected Unity on $Global:UnityPath/$Unity but it was not found."
 }
 
-# ============= STEP 1 CREATE NEW PROJECT
 # Delete Previous Integration Project Folder if found
 If (Test-Path -Path "$NewProjectPath" ) 
 {

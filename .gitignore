@@ -46,4 +46,3 @@ Scripts/integration-test/UnityPath.txt
 # Ignore package release
 package-release/
 package-release.zip
-package-release.tgz

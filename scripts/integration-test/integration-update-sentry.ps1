@@ -1,19 +1,21 @@
-﻿param($path)
+param($path)
 
 . ./scripts/integration-test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths "True" "Add Sentry" $path
+ShowIntroAndValidateRequiredPaths "True" "Update Sentry" $path
+
+If (!Test-Path -Path "$NewProjectPath/package-release" ) 
+{
+    Throw "Path $NewProjectPath/package-release does not exist. Be sure to run ./scripts/pack.ps1 and extract it."
+}
 
 Write-Output "Removing Log"
 ClearUnityLog
 
-
 Write-Host -NoNewline "Injecting Editor script"
 $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/SentrySetup.cs"      -Destination "$NewProjectAssetsPath/Editor" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjectAssetsPath/Editor" -ErrorAction Stop
+Copy-Item "$IntegrationScriptsPath/SentryUpdateSetup.cs"      -Destination "$NewProjectAssetsPath/Editor" -ErrorAction Stop
 Write-Output " OK"
-
 
 Write-Host -NoNewline "Applying Sentry package to the project:"
 $UnityProcess = Start-Process -FilePath "$Global:UnityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile" -PassThru
@@ -35,8 +37,7 @@ If ($UnityProcess.ExitCode -ne 0)
 }
 ElseIf (($stdout | select-string "SUCCESS") -ne $null)
 {
-    Write-Output ""
-    Write-Output "Sentry added!!"
+    Write-Output "`nSentry added!!"
 }
 Else
 {

@@ -3,7 +3,6 @@
 . ./scripts/integration-test/IntegrationGlobals.ps1
 
 ShowIntroAndValidateRequiredPaths "True" "Run test" $path
-# ============= STEP 3/5 RUN PROJECT
 
 $testAppPath = "$NewProjectBuildPath/$Global:TestApp"
 

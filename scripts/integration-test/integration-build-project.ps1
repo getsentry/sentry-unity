@@ -3,7 +3,6 @@
 . ./scripts/integration-test/IntegrationGlobals.ps1
 
 ShowIntroAndValidateRequiredPaths "True" "Build project" $path
-# ============= STEP 2/4.1 BUILD PROJECT
 
 Write-Output "Removing Log"
 ClearUnityLog
