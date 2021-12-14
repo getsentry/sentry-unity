@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed overwriting Xcode build properties ([#466](https://github.com/getsentry/sentry-unity/pull/466))
 - Xcode exports no longer break with sentry-cli already added ([#457](https://github.com/getsentry/sentry-unity/pull/457))
 
 ## 0.8.0
