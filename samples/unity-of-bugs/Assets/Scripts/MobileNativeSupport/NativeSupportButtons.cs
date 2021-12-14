@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 #if ENABLE_IL2CPP || PLATFORM_IOS
@@ -8,6 +9,18 @@ using UnityEngine.SceneManagement;
 
 public class NativeSupportButtons : MonoBehaviour
 {
+    [SerializeField] private GameObject _outOfMemoryButton;
+
+    private void Start()
+    {
+#if !UNITY_IOS
+        if (_outOfMemoryButton != null)
+        {
+            Destroy(_outOfMemoryButton);
+        }
+#endif
+    }
+
     public void ThrowKotlin()
     {
 #if UNITY_ANDROID

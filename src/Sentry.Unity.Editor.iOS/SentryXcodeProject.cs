@@ -4,6 +4,7 @@ using System.Linq;
 using Sentry.Extensibility;
 using UnityEditor.iOS.Xcode;
 using UnityEditor.iOS.Xcode.Extensions;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -18,6 +19,9 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _projectRoot;
         private readonly PBXProject _project;
         private readonly string _projectPath;
+
+        private string _mainTargetGuid = null!;           // Gets set when opening the project
+        private string _unityFrameworkTargetGuid = null!; // Gets set when opening the project
 
         private readonly INativeMain _nativeMain;
         private readonly INativeOptions _nativeOptions;
@@ -54,6 +58,8 @@ namespace Sentry.Unity.Editor.iOS
             }
 
             _project.ReadFromString(File.ReadAllText(_projectPath));
+            _mainTargetGuid = _project.GetUnityMainTargetGuid();
+            _unityFrameworkTargetGuid = _project.GetUnityFrameworkTargetGuid();
         }
 
         public void AddSentryFramework()
@@ -61,23 +67,24 @@ namespace Sentry.Unity.Editor.iOS
             var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
             var frameworkGuid = _project.AddFile(relativeFrameworkPath, relativeFrameworkPath);
 
-            var mainTargetGuid = _project.GetUnityMainTargetGuid();
-            var unityFrameworkTargetGuid = _project.GetUnityFrameworkTargetGuid();
+            _project.AddFrameworkToProject(_mainTargetGuid, FrameworkName, false);
+            _project.AddFrameworkToProject(_unityFrameworkTargetGuid, FrameworkName, false);
 
-            _project.AddFrameworkToProject(mainTargetGuid, FrameworkName, false);
-            _project.AddFrameworkToProject(unityFrameworkTargetGuid, FrameworkName, false);
+            _project.AddFileToEmbedFrameworks(_mainTargetGuid, frameworkGuid); // Embedding the framework because it's dynamic and needed at runtime
 
-            _project.AddFileToEmbedFrameworks(mainTargetGuid, frameworkGuid); // Embedding the framework because it's dynamic and needed at runtime
+            SetSearchPathBuildProperty("$(inherited)");
+            SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
 
-            _project.SetBuildProperty(mainTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
-            _project.AddBuildProperty(mainTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
-            _project.SetBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(inherited)");
-            _project.AddBuildProperty(unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", "$(PROJECT_DIR)/Frameworks/");
+            _project.SetBuildProperty(_mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
+            _project.SetBuildProperty(_unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
 
-            _project.SetBuildProperty(mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
-            _project.SetBuildProperty(unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
+            _project.AddBuildProperty(_mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
+        }
 
-            _project.AddBuildProperty(mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
+        internal void SetSearchPathBuildProperty(string path)
+        {
+            _project.AddBuildProperty(_mainTargetGuid, "FRAMEWORK_SEARCH_PATHS", path);
+            _project.AddBuildProperty(_unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", path);
         }
 
         public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger)
@@ -88,8 +95,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var mainTargetGuid = _project.GetUnityMainTargetGuid();
-            _project.AddShellScriptBuildPhase(mainTargetGuid,
+            _project.AddShellScriptBuildPhase(_mainTargetGuid,
                 SymbolUploadPhaseName,
                 "/bin/sh",
                 $@"process_upload_symbols()

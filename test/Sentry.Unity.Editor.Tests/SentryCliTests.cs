@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using NUnit.Framework;
+using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 
@@ -84,7 +85,7 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void AddExecutableToXcodeProject_ProjectPathDoesNotExist_ThrowsDirectoryNotFoundException()
         {
-            Assert.Throws<DirectoryNotFoundException>(() => SentryCli.AddExecutableToXcodeProject("non-existent-path"));
+            Assert.Throws<DirectoryNotFoundException>(() => SentryCli.AddExecutableToXcodeProject("non-existent-path", new UnityLogger(new SentryUnityOptions())));
         }
 
         [Test]
@@ -93,9 +94,25 @@ namespace Sentry.Unity.Editor.Tests
             var fakeXcodeProjectDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(fakeXcodeProjectDirectory);
 
-            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory);
+            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory, new UnityLogger(new SentryUnityOptions()));
 
             Assert.IsTrue(File.Exists(Path.Combine(fakeXcodeProjectDirectory, SentryCli.SentryCliMacOS)));
+
+            Directory.Delete(fakeXcodeProjectDirectory, true);
+        }
+
+        [Test]
+        public void AddExecutableToXcodeProject_ExecutableAlreadyExists_LogsAndReturns()
+        {
+            var logger = new TestLogger();
+            var fakeXcodeProjectDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(fakeXcodeProjectDirectory);
+
+            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory, logger);
+            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory, logger);
+
+            Assert.IsTrue(File.Exists(Path.Combine(fakeXcodeProjectDirectory, SentryCli.SentryCliMacOS)));
+            Assert.AreEqual(1, logger.Logs.Count);
 
             Directory.Delete(fakeXcodeProjectDirectory, true);
         }
