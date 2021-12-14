@@ -1,4 +1,4 @@
-$Global:UnityPath = $null 
+$Global:UnityPath = $null
 
 function ProjectRoot {
     if ($Global:NewProjectPathCache -ne $null)
@@ -62,6 +62,8 @@ $NewProjectBuildPath = "$NewProjectPath/Build"
 $NewProjectAssetsPath = "$NewProjectPath/Assets"
 $NewProjectSettingsPath = "$NewProjectPath/ProjectSettings"
 
+$UnityOfBugsPath =  "$(ProjectRoot)/samples/unity-of-bugs"
+
 $NewProjectLogPath = "$(ProjectRoot)/samples"
 $Global:TestApp = "$(GetTestAppName)"
 
@@ -112,27 +114,6 @@ function ClearUnityLog {
         Remove-Item -Path "$NewProjectLogPath/$LogFile" -Force -Recurse -ErrorAction Stop
     }
     Write-Output " OK"
-}
-
-function ShowCheck {
-    Write-Output "                                                                                "
-    Write-Output "                                                     (((((((((                  "
-    Write-Output "                                                   (((((((((                    "
-    Write-Output "                                                 (((((((((                      "
-    Write-Output "                                               (((((((((                        "
-    Write-Output "                                             .((((((((*                         "
-    Write-Output "                                            (((((((((                           "
-    Write-Output "                                          .((((((((                             "
-    Write-Output "                                         (((((((((                              "
-    Write-Output "                                        ((((((((                                "
-    Write-Output "                   ((((((((/           ((((((((                                 "
-    Write-Output "                   /((((((((((       /(((((((                                   "
-    Write-Output "                      ((((((((((    ((((((((                                    "
-    Write-Output "                        (((((((((( ((((((((                                     "
-    Write-Output "                          .(((((((((((((((                                      "
-    Write-Output "                            .((((((((((((                                       "
-    Write-Output "                              (((((((((/                                        "
-    Write-Output "                                                                                "
 }
 
 function WaitLogFileToBeCreated {
@@ -201,11 +182,11 @@ function TrackCacheUntilUnityClose() {
                 $stdout = $line
                 If (($stdout | select-string "ERROR |Failed ") -ne $null)
                 {
-                    $Host.UI.WriteErrorLine("$dateNow - $stdout")
+                    Write-Host "$dateNow - $stdout" -ForegroundColor Red
                 }
                 ElseIf (($stdout | Select-String "WARNING | Line:") -ne $null)
                 {
-                    Write-Warning("$dateNow - $stdout")
+                    Write-Host "$dateNow - $stdout" -ForegroundColor Yellow
                 }
                 Else
                 {
@@ -253,13 +234,15 @@ function WaitProgramToClose {
     {
         Throw "Process not found."
     }
+    $Timeout = 60 * 2
     $processName = $process.Name
     Write-Host -NoNewline "Waiting for $processName"
 
-    While (!$process.HasExited) 
+    While (!$process.HasExited -and $processName -gt 0) 
     {
         Start-Sleep -Milliseconds 500
         Write-Host -NoNewline "."
         $cacheHandle = $process.Handle
+        $Timeout = $Timeout - 1
     }
 }

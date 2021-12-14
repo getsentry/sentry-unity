@@ -42,30 +42,28 @@ WaitLogFileToBeCreated 30
 Write-Output "Waiting for Unity to create the project."
 TrackCacheUntilUnityClose($UnityProcess)
 
-Write-Host -NoNewline  "Copying Test scene"
-Copy-Item "$IntegrationScriptsPath/EmptyScene.unity" -Destination "$NewProjectAssetsPath/EmptyScene.unity" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/EmptyScene.unity.meta" -Destination "$NewProjectAssetsPath/EmptyScene.unity.meta" -ErrorAction Stop
-Write-Output " OK"
-
-Write-Host -NoNewline  "Copying Scripts"
-$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/SmokeTester.cs" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
-Write-Output " OK"
-
-Write-Host -NoNewline "Applying Scene to EditorBuildSettings: "
-$EditorBuildSettings = Get-Content -path "$NewProjectSettingsPath/EditorBuildSettings.asset" -ErrorAction Stop
-$EditorBuildSettings = $EditorBuildSettings.Replace("m_Scenes: []", "m_Scenes:`n  - enabled: 1`n    path: Assets/EmptyScene.unity")
-$EditorBuildSettings | Set-Content -Path "$NewProjectSettingsPath/EditorBuildSettings.asset" -ErrorAction Stop
-Write-Output " OK"
-
-if ($UnityProcess.ExitCode -ne 0)
+If ($UnityProcess.ExitCode -ne 0)
 {
     Throw "Unity exited with code $($UnityProcess.ExitCode)"
 }
-else
+Else
 {
-    Write-Output ""
-    Write-Output "Project created!!"
-    ShowCheck
+    Write-Host -NoNewline  "Copying Test scene"
+    Copy-Item "$UnityOfBugsPath/Assets/Scenes/1_Bugfarm.unity" -Destination "$NewProjectAssetsPath/1_Bugfarm.unity" -ErrorAction Stop
+    Copy-Item "$UnityOfBugsPath/Assets/Scenes/1_Bugfarm.unity.meta" -Destination "$NewProjectAssetsPath/1_Bugfarm.unity.meta" -ErrorAction Stop
+    Write-Output " OK"
+    
+    Write-Host -NoNewline  "Copying Scripts"
+    $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory" -ErrorAction Stop
+    Copy-Item "$IntegrationScriptsPath/SmokeTester.cs" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
+    Copy-Item "$IntegrationScriptsPath/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
+    Write-Output " OK"
+    
+    Write-Host -NoNewline "Applying Scene to EditorBuildSettings: "
+    $EditorBuildSettings = Get-Content -path "$NewProjectSettingsPath/EditorBuildSettings.asset" -ErrorAction Stop
+    $EditorBuildSettings = $EditorBuildSettings.Replace("m_Scenes: []", "m_Scenes:`n  - enabled: 1`n    path: Assets/1_Bugfarm.unity")
+    $EditorBuildSettings | Set-Content -Path "$NewProjectSettingsPath/EditorBuildSettings.asset" -ErrorAction Stop
+    Write-Output " OK"
+
+    Write-Output "`nProject created!!"
 }

@@ -37,7 +37,5 @@ if ($UnityProcess.ExitCode -ne 0)
 }
 else
 {
-    Write-Output ""
-    Write-Output "Project Build!!"
-    ShowCheck
+    Write-Output "`nProject Built!!"
 }

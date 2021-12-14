@@ -42,3 +42,8 @@ package-dev/alias-references.txt
 Samples/IntegrationTest
 Samples/logfile.txt
 Scripts/integration-test/UnityPath.txt
+
+# Ignore package release
+package-release/
+package-release.zip
+package-release.tgz

@@ -6,7 +6,8 @@ ShowIntroAndValidateRequiredPaths "True" "Add Sentry" $path
 # ============= STEP 4.0 ADD SENTRY TO PROJECT
 Write-Output "Removing Log"
 ClearUnityLog
-
+
+
 Write-Host -NoNewline "Injecting Editor script"
 $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory" -ErrorAction Stop
 Copy-Item "$IntegrationScriptsPath/SentrySetup.cs"      -Destination "$NewProjectAssetsPath/Editor" -ErrorAction Stop
@@ -36,9 +37,15 @@ ElseIf (($stdout | select-string "SUCCESS") -ne $null)
 {
     Write-Output ""
     Write-Output "Sentry added!!"
-    ShowCheck
 }
 Else
 {
     Throw "Unity exited but failed to add Sentry package."
 }
+
+Write-Host -NoNewline "Updating test files "
+Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs" -Force
+Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta" -Force
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
+Write-Output " OK"

@@ -114,7 +114,7 @@ or
   <!-- Adds the released Sentry. msbuild /t:IntegrationTestAddSentry -->
   <Target Name="IntegrationTestAddSentry" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Exec WorkingDirectory="$(SolutionDir)"
-          Command="pwsh scripts/integration-test/integration-add-sentry.ps1 &quot;$(UnityRoot)&quot;" />
+          Command="pwsh scripts/integration-test/integration-update-sentry.ps1 &quot;$(UnityRoot)&quot;" />
   </Target>
 
   <!-- Execute all steps of Integration Test. msbuild /t:IntegrationTestAll -->

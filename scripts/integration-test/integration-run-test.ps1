@@ -9,18 +9,18 @@ $testAppPath = "$NewProjectBuildPath/$Global:TestApp"
 
 If ($IsMacOS)
 {
-    $testAppPath = $testAppPath  + "/Contents/MacOS/IntegrationTest"
+    $testAppPath = $testAppPath + "/Contents/MacOS/$NewProjectName"
 }
 
-$testProcess = Start-Process -FilePath "$testAppPath" -PassThru -ErrorAction Stop 
+$testProcess = Start-Process -FilePath "$testAppPath"  -ArgumentList "--test", "smoke" -PassThru -ErrorAction Stop 
 
 WaitProgramToClose $testProcess
 
-If ($testProcess.ExitCode -eq 200) {
-    Write-Output " PASSED"   
-    ShowCheck
+If ($testProcess.ExitCode -eq 200) 
+{
+    Write-Output "`nPASSED"   
 }
 Else 
 {
-    Throw "Test process failed with status code $($testProcess.ExitCode) $($testProcess.HasExited)"
+    Throw "Test process failed with status code $($testProcess.ExitCode)"
 }

@@ -218,9 +218,9 @@ jobs:
       - name: Integration Test - Build test
         run: dotnet msbuild /t:IntegrationTestBuildProject /p:Configuration=Release
 
-      - name: Integration Test - Run test
-        run: dotnet msbuild /t:IntegrationTestValidate /p:Configuration=Release
-
+#      - name: Integration Test - Run test
+#        run: dotnet msbuild /t:IntegrationTestValidate /p:Configuration=Release
+#
       - name: Integration Test - Add Sentry to test project
         run: dotnet msbuild /t:IntegrationTestAddSentry /p:Configuration=Release
 
