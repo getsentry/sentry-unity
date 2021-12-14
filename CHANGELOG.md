@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Initializing the SDK with an options object won't bypass default option values ([#469](https://github.com/getsentry/sentry-unity/pull/469))
 - Xcode exports no longer break with sentry-cli already added ([#457](https://github.com/getsentry/sentry-unity/pull/457))
 
 ## 0.8.0
