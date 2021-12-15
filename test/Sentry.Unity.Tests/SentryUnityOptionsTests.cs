@@ -12,7 +12,7 @@ namespace Sentry.Unity.Tests
     {
         class Fixture
         {
-            public TestApplication Application { get; set; } = new (
+            public TestApplication Application { get; set; } = new(
                 productName: "TestApplication",
                 version: "0.1.0",
                 persistentDataPath: "test/persistent/data/path");
