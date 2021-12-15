@@ -51,4 +51,12 @@
       </Reference>
     </ItemGroup>
   </Target>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Sentry'">
+    <Alias_Prefix>Sentry.</Alias_Prefix>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Sentry'">
+    <PackageReference Include="Alias.MsBuild" Version="0.4.1" PrivateAssets="all"/>
+  </ItemGroup>
 </Project>

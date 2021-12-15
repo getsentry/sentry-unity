@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <OutDir>$(PackageRuntimePath)</OutDir>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <Alias_Prefix>Sentry.</Alias_Prefix>
   </PropertyGroup>
 
   <Target Name="CleanDotnetSdkFiles" AfterTargets="Clean">
@@ -19,8 +17,6 @@
   </Target>
 
   <ItemGroup>
-    <Alias_AssembliesToSkipRename Include="Sentry" />
-    <PackageReference Include="Alias.MsBuild" Version="0.4.1" PrivateAssets="all"/>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" />
   </ItemGroup>
 
