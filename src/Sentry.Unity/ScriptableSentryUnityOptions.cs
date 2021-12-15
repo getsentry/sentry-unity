@@ -1,4 +1,5 @@
 using System;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Json;
 using UnityEngine;
 
@@ -29,6 +30,9 @@ namespace Sentry.Unity
         [field: SerializeField] public bool EnableLogDebouncing { get; set; }
         [field: SerializeField] public double TracesSampleRate { get; set; }
         [field: SerializeField] public bool AutoSessionTracking { get; set; }
+        /// <summary>
+        /// Interval in milliseconds a session terminates if put in the background.
+        /// </summary>
         [field: SerializeField] public int AutoSessionTrackingInterval { get; set; }
 
         [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
@@ -71,31 +75,30 @@ namespace Sentry.Unity
             return null;
         }
 
-        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions, bool isBuilding)
+        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions, bool isBuilding, IApplication? application = null)
         {
-            var options = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(options, isBuilding: isBuilding);
+            application ??= ApplicationAdapter.Instance;
 
-            options.Enabled = scriptableOptions.Enabled;
-
-            options.Dsn = scriptableOptions.Dsn;
-            options.CaptureInEditor = scriptableOptions.CaptureInEditor;
-            options.EnableLogDebouncing = scriptableOptions.EnableLogDebouncing;
-            options.TracesSampleRate = scriptableOptions.TracesSampleRate;
-            options.AutoSessionTracking = scriptableOptions.AutoSessionTracking;
-            options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval);
-
-            options.AttachStacktrace = scriptableOptions.AttachStacktrace;
-            options.MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs;
-            options.ReportAssembliesMode = scriptableOptions.ReportAssembliesMode;
-            options.SendDefaultPii = scriptableOptions.SendDefaultPii;
-            options.IsEnvironmentUser = scriptableOptions.IsEnvironmentUser;
-
-            options.MaxCacheItems = scriptableOptions.MaxCacheItems;
-            options.InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout);
-            options.SampleRate = scriptableOptions.SampleRate;
-            options.ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout);
-            options.MaxQueueItems = scriptableOptions.MaxQueueItems;
+            var options = new SentryUnityOptions(application, isBuilding)
+            {
+                Enabled = scriptableOptions.Enabled,
+                Dsn = scriptableOptions.Dsn,
+                CaptureInEditor = scriptableOptions.CaptureInEditor,
+                EnableLogDebouncing = scriptableOptions.EnableLogDebouncing,
+                TracesSampleRate = scriptableOptions.TracesSampleRate,
+                AutoSessionTracking = scriptableOptions.AutoSessionTracking,
+                AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval),
+                AttachStacktrace = scriptableOptions.AttachStacktrace,
+                MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs,
+                ReportAssembliesMode = scriptableOptions.ReportAssembliesMode,
+                SendDefaultPii = scriptableOptions.SendDefaultPii,
+                IsEnvironmentUser = scriptableOptions.IsEnvironmentUser,
+                MaxCacheItems = scriptableOptions.MaxCacheItems,
+                InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout),
+                SampleRate = scriptableOptions.SampleRate,
+                ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout),
+                MaxQueueItems = scriptableOptions.MaxQueueItems
+            };
 
             if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))
             {
