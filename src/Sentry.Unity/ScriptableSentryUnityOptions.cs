@@ -75,9 +75,11 @@ namespace Sentry.Unity
             return null;
         }
 
-        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions, bool isBuilding)
+        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions, bool isBuilding, IApplication? application = null)
         {
-            var options = new SentryUnityOptions(ApplicationAdapter.Instance, isBuilding)
+            application ??= ApplicationAdapter.Instance;
+
+            var options = new SentryUnityOptions(application, isBuilding)
             {
                 Enabled = scriptableOptions.Enabled,
                 Dsn = scriptableOptions.Dsn,

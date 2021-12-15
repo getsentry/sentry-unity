@@ -116,6 +116,10 @@ namespace Sentry.Unity
                 productName = Regex.Replace(productName, @"\n|\r|\t|\/|\\|\.{2}|@", "_");
                 Release = $"{productName}@{application.Version}";
             }
+            else
+            {
+                Release = application.Version;
+            }
 
             Environment = (application.IsEditor && !isBuilding)
                 ? "editor"
