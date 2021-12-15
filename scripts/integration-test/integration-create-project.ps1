@@ -14,6 +14,26 @@ Else
     Throw "Expected Unity on $Global:UnityPath/$Unity but it was not found."
 }
 
+# Check if SDK is packed.
+If (Test-Path -Path "$(ProjectRoot)/package-release.zip" ) 
+{
+    Write-Output "Found package-release.zip"
+}
+Else
+{
+    Throw "sentry-release.zip on $(ProjectRoot) but it was not found. Be sure you run ./scripts/pack.ps1"
+}
+
+# Clear previous extrated package
+Write-Host -NoNewline "clearing $PackageReleaseOutput and Extracting package-release.zip :"
+if (Test-Path -Path "$PackageReleaseOutput")
+{
+    Remove-Item -Path "$PackageReleaseOutput" -Force -Recurse -ErrorAction Stop
+}
+
+Expand-Archive -LiteralPath "$(ProjectRoot)/package-release.zip" -DestinationPath "$PackageReleaseOutput" -ErrorAction Stop
+Write-Output "OK"
+
 # Delete Previous Integration Project Folder if found
 If (Test-Path -Path "$NewProjectPath" ) 
 {

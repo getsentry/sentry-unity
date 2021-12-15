@@ -142,11 +142,14 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "unity_path=${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" >> $GITHUB_ENV
 
       - name: Make symbolic link for Unity (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
-        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
+        run: |
+          New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
+          echo "unity_path=C:\${{ matrix.unity-version }}" >> $GITHUB_ENV
 
       - name: Build Sentry.Unity Solution
         env:
@@ -213,22 +216,24 @@ jobs:
           path: artifacts/build
 
       - name: Integration Test - Create new Project
-        run: dotnet msbuild /t:IntegrationTestNewProject /p:Configuration=Release
+        shell: pwsh
+        run: ./scripts/integration-test/integration-create-project.ps1 "${{ env.unity_path }}"
 
       - name: Integration Test - Build test
-        run: dotnet msbuild /t:IntegrationTestBuildProject /p:Configuration=Release
+        shell: pwsh
+        run: ./scripts/integration-test/integration-build-project.ps1 "${{ env.unity_path }}"
 
-#      - name: Integration Test - Run test
-#        run: dotnet msbuild /t:IntegrationTestValidate /p:Configuration=Release
-#
       - name: Integration Test - Add Sentry to test project
-        run: dotnet msbuild /t:IntegrationTestAddSentry /p:Configuration=Release
+        shell: pwsh
+        run: ./scripts/integration-test/integration-update-sentry.ps1 "${{ env.unity_path }}"
 
       - name: Integration Test - Build test
-        run: dotnet msbuild /t:IntegrationTestBuildProject /p:Configuration=Release
+        shell: pwsh
+        run: ./scripts/integration-test/integration-build-project.ps1 "${{ env.unity_path }}"
 
       - name: Integration Test - Run test
-        run: dotnet msbuild /t:IntegrationTestValidate /p:Configuration=Release
+        shell: pwsh
+        run: ./scripts/integration-test/integration-run-test.ps1 "${{ env.unity_path }}"
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2

@@ -68,6 +68,7 @@ $NewProjectLogPath = "$(ProjectRoot)/samples"
 $Global:TestApp = "$(GetTestAppName)"
 
 $IntegrationScriptsPath = "$(ProjectRoot)/scripts/integration-test"
+$PackageReleaseOutput = "$(ProjectRoot)/package-release"
 
 $Timeout = 30
 

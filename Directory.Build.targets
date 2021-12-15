@@ -93,36 +93,6 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <!-- Create a new test project. msbuild /t:IntegrationTestNewProject -->
-  <Target Name="IntegrationTestNewProject" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Exec WorkingDirectory="$(SolutionDir)"
-          Command="pwsh scripts/integration-test/integration-create-project.ps1 &quot;$(UnityRoot)&quot;" />
-  </Target>
-
-  <!-- Build the integration test project. msbuild /t:IntegrationTestBuildProject -->
-  <Target Name="IntegrationTestBuildProject" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Exec WorkingDirectory="$(SolutionDir)"
-          Command="pwsh scripts/integration-test/integration-build-project.ps1 &quot;$(UnityRoot)&quot;" />
-  </Target>
-
-  <!-- Runs the generated game and check if it is working. msbuild /t:IntegrationTestValidate -->
-  <Target Name="IntegrationTestValidate" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Exec WorkingDirectory="$(SolutionDir)"
-          Command="pwsh scripts/integration-test/integration-run-test.ps1 &quot;$(UnityRoot)&quot;" />
-  </Target>
-
-  <!-- Adds the released Sentry. msbuild /t:IntegrationTestAddSentry -->
-  <Target Name="IntegrationTestAddSentry" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Exec WorkingDirectory="$(SolutionDir)"
-          Command="pwsh scripts/integration-test/integration-update-sentry.ps1 &quot;$(UnityRoot)&quot;" />
-  </Target>
-
-  <!-- Execute all steps of Integration Test. msbuild /t:IntegrationTestAll -->
-  <Target Name="IntegrationTestAll" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Exec WorkingDirectory="$(SolutionDir)"
-          Command="pwsh scripts/integration-test/integration-test.ps1 &quot;$(UnityRoot)&quot;" />
-  </Target>
-
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))

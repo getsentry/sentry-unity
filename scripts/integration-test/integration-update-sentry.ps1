@@ -4,9 +4,9 @@ param($path)
 
 ShowIntroAndValidateRequiredPaths "True" "Update Sentry" $path
 
-If (!Test-Path -Path "$NewProjectPath/package-release" ) 
+If (!Test-Path -Path "$PackageReleaseOutput" ) 
 {
-    Throw "Path $NewProjectPath/package-release does not exist. Be sure to run ./scripts/pack.ps1 and extract it."
+    Throw "Path $NewProjectPath/package-release does not exist. Be sure to run .scripts/integration-test/integration-create-project."
 }
 
 Write-Output "Removing Log"
