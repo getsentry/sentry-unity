@@ -82,8 +82,6 @@ namespace Sentry.Unity.Protocol
             writer.WriteEndObject();
         }
 
-        public void WriteTo(Utf8JsonWriter writer) => WriteTo(writer, null);
-
         public static Unity FromJson(JsonElement json)
             => new()
             {
