@@ -57,6 +57,13 @@ jobs:
         with:
           submodules: recursive
 
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Setup .NET SDK (v6.0)
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+
       - name: "Set up Java: 11"
         uses: actions/setup-java@v1
         with:
@@ -152,6 +159,21 @@ jobs:
         shell: pwsh
         run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
+      - name: Install Unity UPM Packages
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build Android SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build iOS SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Build Sentry.Unity Solution
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
@@ -168,7 +190,7 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
         if: ${{ failure() }}
@@ -183,7 +205,7 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
         if: ${{ failure() }}
@@ -195,23 +217,23 @@ jobs:
       - name: Build Android Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS Player
         if: matrix.os == 'macos-latest'
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Standalone Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Run Smoke Tests
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
 
       - name: Preparing test app for smoke test.
         uses: actions/upload-artifact@v2
