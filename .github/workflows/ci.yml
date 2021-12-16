@@ -57,6 +57,8 @@ jobs:
         with:
           submodules: recursive
 
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
       - name: Setup .NET SDK (v6.0)
         uses: actions/setup-dotnet@v1
         with:
