@@ -157,10 +157,20 @@ jobs:
         shell: pwsh
         run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
-      - name: Restore Unity Packages
+      - name: Install Unity UPM Packages
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build Android SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build iOS SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Sentry.Unity Solution
         env:
