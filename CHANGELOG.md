@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Sample scene with custom context and screenshot ([#472](https://github.com/getsentry/sentry-unity/pull/472))
+
 ### Fixes
 
 - Initializing the SDK with an options object won't bypass default option values ([#469](https://github.com/getsentry/sentry-unity/pull/469))
