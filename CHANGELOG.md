@@ -2,13 +2,34 @@
 
 ## Unreleased
 
+### Fixes
+
+- Initializing the SDK with an options object won't bypass default option values ([#469](https://github.com/getsentry/sentry-unity/pull/469))
+- Fixed overwriting Xcode build properties ([#466](https://github.com/getsentry/sentry-unity/pull/466))
+- Xcode exports no longer break with sentry-cli already added ([#457](https://github.com/getsentry/sentry-unity/pull/457))
+- Explicitly set <SignAssembly>false</SignAssembly> ([#470](https://github.com/getsentry/sentry-unity/pull/470)). So that Sentry.dll is not strong named when consumed inside Unity.
+- Bump Sentry .NET SDK 3.12.2 ([#474](https://github.com/getsentry/sentry-unity/pull/474))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.12.2/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.11.1...3.12.2)
+- Bump Sentry Cocoa SDK 7.6.1 ([#474](https://github.com/getsentry/sentry-unity/pull/474))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.6.1/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.5.2...7.6.1)
+- Bump Sentry Android SDK 5.5.0 ([#474](https://github.com/getsentry/sentry-unity/pull/474))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.5.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.4.0...5.5.0)
+
+## 0.8.0
+
 ### Features
 
+- ScriptableSentryUnityOptions is now public ([#419](https://github.com/getsentry/sentry-unity/pull/419))
 - Automated symbols upload for iOS builds when bitcode is enabled ([#444](https://github.com/getsentry/sentry-unity/pull/444))
 - Automated symbols upload for iOS builds when bitcode is disabled ([#443](https://github.com/getsentry/sentry-unity/pull/443))
 
 ### Fixes
 
+- Android: Automated symbol upload no longer breaks non IL2CPP builds ([#450](https://github.com/getsentry/sentry-unity/pull/450))
+- Config window now saves changes to sentry-cli options ([#454](https://github.com/getsentry/sentry-unity/pull/454))
 - Sentry no longer requires Xcode projects to be exported on macOS ([#442](https://github.com/getsentry/sentry-unity/pull/442))
 
 ## 0.7.0

@@ -255,8 +255,8 @@ Plugins/iOS/Device/Sentry.framework/Modules/module.modulemap.meta
 Plugins/Android/Sentry.meta
 Plugins/Android/Sentry/gson-2.8.5.jar
 Plugins/Android/Sentry/gson-2.8.5.jar.meta
-Plugins/Android/Sentry/sentry-5.4.0.jar
-Plugins/Android/Sentry/sentry-5.4.0.jar.meta
+Plugins/Android/Sentry/sentry-5.5.0.jar
+Plugins/Android/Sentry/sentry-5.5.0.jar.meta
 Plugins/Android/Sentry/sentry-android-core-release.aar
 Plugins/Android/Sentry/sentry-android-core-release.aar.meta
 Plugins/Android/Sentry/sentry-android-ndk-release.aar

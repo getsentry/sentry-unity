@@ -2,11 +2,15 @@ name: CI
 
 on:
   push:
+    paths-ignore:
+      - 'CHANGELOG.md'
     branches:
       - main
       - release/**
 
   pull_request:
+    paths-ignore:
+      - 'CHANGELOG.md'
 
 jobs:
   build:
@@ -20,7 +24,7 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
         # 2022.1.0a12 removed until S.T.J issues fixed
-        unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
+        unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
         include:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
@@ -32,8 +36,8 @@ jobs:
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
             unity-config-path: /Library/Application Support/Unity/config/
-          - unity-version: 2019.4.31f1
-            unity-version-changeset: bd5abf232a62
+          - unity-version: 2019.4.33f1
+            unity-version-changeset: c9b2b02eeeef
           - unity-version: 2020.3.21f1
             unity-version-changeset: a38c86f6690f
           - unity-version: 2021.1.26f1
@@ -52,6 +56,13 @@ jobs:
         uses: actions/checkout@v2.3.3
         with:
           submodules: recursive
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Setup .NET SDK (v6.0)
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
 
       - name: "Set up Java: 11"
         uses: actions/setup-java@v1
@@ -92,7 +103,7 @@ jobs:
           path: |
             package-dev/Plugins/iOS
             package-dev/Plugins/Android
-            src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           # We only build the native SDKs if the respective 'package-dev/Plugins/' directories are empty
           # Output changes only depending on the git sha of the submodules
           # hash of package/package.json for cache busting on release builds (version bump)
@@ -151,6 +162,21 @@ jobs:
           New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
           echo "unity_path=C:\${{ matrix.unity-version }}" >> $GITHUB_ENV
 
+      - name: Install Unity UPM Packages
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build Android SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build iOS SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Build Sentry.Unity Solution
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
@@ -167,7 +193,14 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
+
+      - name: Upload test artifacts (playmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
         # TODO: Run Edit mode tests on 2022 once S.T.J loading issue resolved.
@@ -175,28 +208,35 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
+
+      - name: Upload test artifacts (editmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
 
       - name: Build Android Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS Player
         if: matrix.os == 'macos-latest'
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Standalone Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Run Smoke Tests
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
 
       - name: Preparing test app for smoke test.
         uses: actions/upload-artifact@v2
@@ -241,28 +281,17 @@ jobs:
         if: matrix.os == 'macos-latest'
         with:
           name: ${{ github.sha }}
+          if-no-files-found: error
           # Adding the native libraries so the symbol collector craft target can find/upload them
           path: |
             package-release.zip
-            src/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
       - name: Upload Android Build
         uses: actions/upload-artifact@v2
         with:
           name: Android Build
           path: samples/artifacts/builds/Android
-
-      - name: Upload test artifacts (playmode)
-        uses: actions/upload-artifact@v2
-        with:
-          name: Test results (playmode)
-          path: artifacts/test/playmode
-
-      - name: Upload test artifacts (editmode)
-        uses: actions/upload-artifact@v2
-        with:
-          name: Test results (editmode)
-          path: artifacts/test/editmode
 
   package-validation:
     needs: [build]
@@ -282,7 +311,7 @@ jobs:
 
       - name: Verify package content against snapshot
         shell: pwsh
-        # If this step fails, you can accept the new file content by 
+        # If this step fails, you can accept the new file content by
         # running the following script locally with 'accept' as an argument
         # and committing the new snapshot file to your branch. i.e:
         # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
@@ -298,7 +327,7 @@ jobs:
       matrix:
          api-level: [21, 27, 29]
          avd-target: [default]
-         unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
+         unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -328,10 +357,10 @@ jobs:
       - name: Kill emulator if AVD failed.
         continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
-        run: | 
+        run: |
           adb emu kill
           sleep 7
-          
+
       - name: Android emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
@@ -374,7 +403,7 @@ jobs:
          api-level: [30]
          avd-target: [google_apis]
          #api-level 30 image is only available with google services.
-         unity-version: [2019.4.31f1, 2020.3.21f1, 2021.1.26f1]
+         unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -404,7 +433,7 @@ jobs:
       - name: Kill emulator if AVD failed.
         continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
-        run: | 
+        run: |
           adb emu kill
           sleep 7
 

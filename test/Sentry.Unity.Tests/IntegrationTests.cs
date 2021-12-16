@@ -217,9 +217,10 @@ namespace Sentry.Unity.Tests
         {
             yield return null;
 
-            var expectedOptions = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(expectedOptions);
-            expectedOptions.Dsn = string.Empty; // The SentrySDK tries to resolve the DSN from the environment when it's null
+            var expectedOptions = new SentryUnityOptions
+            {
+                Dsn = string.Empty // The SentrySDK tries to resolve the DSN from the environment when it's null
+            };
 
             SentryUnityOptions? actualOptions = null;
             using var _ = InitSentrySdk(o =>
@@ -229,7 +230,7 @@ namespace Sentry.Unity.Tests
             });
 
             Assert.NotNull(actualOptions);
-            SentryUnityOptionsTests.AssertOptions(expectedOptions, actualOptions!);
+            ScriptableSentryUnityOptionsTests.AssertOptions(expectedOptions, actualOptions!);
         }
 
         internal static IEnumerator SetupSceneCoroutine(string sceneName)

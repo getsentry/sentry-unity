@@ -3,6 +3,8 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
+using UnityEditor;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -11,8 +13,12 @@ namespace Sentry.Unity.Editor.Tests.Android
         private class Fixture
         {
             public SentryUnityOptions? SentryUnityOptions { get; set; }
-            public Func<SentryUnityOptions?> GetOptions { get; set; }
+            public Func<SentryUnityOptions?> GetSentryUnityOptions { get; set; }
+            public SentryCliOptions? SentryCliOptions { get; set; }
+            public Func<SentryCliOptions?> GetSentryCliOptions { get; set; }
             public TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
+            public bool IsDevelopmentBuild { get; set; }
+            public ScriptingImplementation ScriptingImplementation { get; set; } = ScriptingImplementation.IL2CPP;
 
             public Fixture()
             {
@@ -27,10 +33,21 @@ namespace Sentry.Unity.Editor.Tests.Android
                 };
                 SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, LoggerInterceptor);
 
-                GetOptions = () => SentryUnityOptions;
+                SentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+                SentryCliOptions.Auth = "test_auth_token";
+                SentryCliOptions.Organization = "test_organization";
+                SentryCliOptions.Project = "test_project";
+
+                GetSentryUnityOptions = () => SentryUnityOptions;
+                GetSentryCliOptions = () => SentryCliOptions;
             }
 
-            public AndroidManifestConfiguration GetSut() => new(GetOptions, LoggerInterceptor);
+            public AndroidManifestConfiguration GetSut() =>
+                new(GetSentryUnityOptions,
+                    GetSentryCliOptions,
+                    LoggerInterceptor,
+                    IsDevelopmentBuild,
+                    ScriptingImplementation);
         }
 
         [SetUp]
@@ -198,8 +215,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         // options.setDiagnosticLevel(SentryLevel.valueOf(level.toUpperCase(Locale.ROOT)));
-        // src/sentry-java/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java
-        // src/sentry-java/sentry/src/main/java/io/sentry/SentryLevel.java
+        // modules/sentry-java/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java
+        // modules/sentry-java/sentry/src/main/java/io/sentry/SentryLevel.java
         private static readonly SentryJavaLevel[] SentryJavaLevels =
         {
             new () { SentryLevel = SentryLevel.Debug, JavaLevel = "debug" },
@@ -243,9 +260,84 @@ namespace Sentry.Unity.Editor.Tests.Android
                 $"Expected 'io.sentry.sample-rate' in Manifest:\n{manifest}");
         }
 
+        [Test]
+        public void SetupSymbolsUpload_ScriptingBackendNotIL2CPP_LogsAndReturns()
+        {
+            _fixture.ScriptingImplementation = ScriptingImplementation.Mono2x;
+            var sut = _fixture.GetSut();
+
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+
+            AssertLogContains(SentryLevel.Debug, "Automated symbols upload requires the IL2CPP scripting backend.");
+        }
+
+        [Test]
+        public void SetupSymbolsUpload_SentryCliOptionsNull_LogsWarningAndReturns()
+        {
+            _fixture.SentryCliOptions = null;
+            var sut = _fixture.GetSut();
+
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+
+            AssertLogContains(SentryLevel.Warning, "Failed to load sentry-cli options - Skipping symbols upload.");
+        }
+
+        [Test]
+        public void SetupSymbolsUpload_SymbolsUploadDisabled_LogsAndReturns()
+        {
+            _fixture.SentryCliOptions!.UploadSymbols = false;
+            var sut = _fixture.GetSut();
+
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+
+            AssertLogContains(SentryLevel.Debug, "Automated symbols upload has been disabled.");
+        }
+
+        [Test]
+        public void SetupSymbolsUpload_DevelopmentBuildDevUploadDisabled_LogsAndReturns()
+        {
+            _fixture.IsDevelopmentBuild = true;
+            var sut = _fixture.GetSut();
+
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+
+            AssertLogContains(SentryLevel.Debug, "Automated symbols upload for development builds has been disabled.");
+        }
+
+        [Test]
+        public void SetupSymbolsUpload_SentryCliOptionsInvalid_LogsAndReturns()
+        {
+            _fixture.SentryCliOptions!.Auth = string.Empty;
+            var sut = _fixture.GetSut();
+
+            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+
+            AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
+                                                   "\nYou can disable this warning by disabling the automated symbols upload under " +
+                                                   "Tools -> Sentry -> Editor");
+        }
+
+        [Test]
+        public void SetupSymbolsUpload_ValidConfiguration_AppendsUploadTaskToGradleAndCreatesSentryProperties()
+        {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            var sut = _fixture.GetSut();
+            var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+
+            sut.SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
+
+            Assert.True(File.ReadAllText(Path.Combine(gradleProjectPath, "build.gradle")).Contains("println 'Uploading symbols to Sentry'"));
+            Assert.True(File.Exists(Path.Combine(gradleProjectPath, "sentry.properties")));
+
+            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
+        }
+
         private void AssertLogContains(SentryLevel sentryLevel, string message)
-            => Assert.Contains((sentryLevel, $"Sentry: ({sentryLevel.ToString()}) {message} "),
-                _fixture.LoggerInterceptor.Messages);
+            => CollectionAssert.Contains(_fixture.LoggerInterceptor.Messages,
+                (sentryLevel, $"Sentry: ({sentryLevel.ToString()}) {message} "));
 
         private string WithAndroidManifest(Action<string> callback)
         {
@@ -258,7 +350,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             }
             finally
             {
-                File.Delete(androidManifest);
+                Directory.Delete(basePath, true);
             }
         }
 

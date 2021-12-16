@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <Version>0.7.0</Version>
+    <Version>0.8.0</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -12,6 +12,7 @@
     <!-- Must be set here but will be overwritten below once the UnityVersion is ±resolved -->
     <!-- When using Unity 2022 the default will change to netstandard2.1 -->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <Target Name="ResetTargetFrameworks" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
@@ -34,10 +35,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.0" PrivateAssets="All" />
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <UnityPackageProject>$(SolutionDir)temp/unity-packages</UnityPackageProject>
-  </PropertyGroup>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnity" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
