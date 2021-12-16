@@ -173,7 +173,7 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
         if: ${{ failure() }}
@@ -188,7 +188,7 @@ jobs:
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
         if: ${{ failure() }}
@@ -200,23 +200,23 @@ jobs:
       - name: Build Android Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS Player
         if: matrix.os == 'macos-latest'
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Standalone Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Run Smoke Tests
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
 
       - name: Preparing test app for smoke test.
         uses: actions/upload-artifact@v2

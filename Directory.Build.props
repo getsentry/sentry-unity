@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <UnityPackageProject>$(SolutionDir)temp/unity-packages</UnityPackageProject>
+    <UnityPackageProject>$(RepoRoot)temp/unity-packages</UnityPackageProject>
   </PropertyGroup>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->

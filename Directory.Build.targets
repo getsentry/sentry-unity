@@ -6,16 +6,17 @@
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
     <AndroidBuildPath>$(PlayerBuildPath)Android/IL2CPP_Player.apk</AndroidBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
-    <UnitySampleProjectUnityVersion>$(SolutionDir)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
+    <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <!-- Cocoa -->
-    <SentryCocoaRoot>$(SolutionDir)modules/sentry-cocoa/</SentryCocoaRoot>
-    <SentryCocoaDeviceArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryCocoaDeviceArtifactsDestination>
-    <SentryCocoaSimulatorArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryCocoaSimulatorArtifactsDestination>
+    <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
+    <SentryCocoaDeviceArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryCocoaDeviceArtifactsDestination>
+    <SentryCocoaSimulatorArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryCocoaSimulatorArtifactsDestination>
     <!-- Android -->
-    <SentryAndroidRoot>$(SolutionDir)modules/sentry-java/</SentryAndroidRoot>
-    <SentryAndroidArtifactsDestination>$(SolutionDir)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
+    <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
+    <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -138,7 +139,7 @@ or
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry/build/libs/sentry*.jar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" />
-      <AndroidSdkArtifacts Include="$(SolutionDir)lib/gson-2.8.5.jar" />
+      <AndroidSdkArtifacts Include="$(RepoRoot)lib/gson-2.8.5.jar" />
     </ItemGroup>
 
     <Copy SourceFiles="@(AndroidSdkArtifacts)"
