@@ -176,42 +176,6 @@ namespace Sentry.Unity.Tests
                     }
                 };
         }
-
-        [Test]
-        public void SentrySdkCaptureEvent_WrongDsn_CorrectException()
-        {
-            // arrange
-            const string wrongDsn = "https://key@fake.domain.fail.to.resolve/5606182";
-            var options = new SentryUnityOptions
-            {
-                Dsn = wrongDsn,
-                Enabled = true,
-                AttachStacktrace = true,
-                Debug = true,
-                DiagnosticLogger = _testLogger
-            };
-            SentryUnity.Init(options);
-
-            var sentryEvent = new SentryEvent
-            {
-                Message = new SentryMessage
-                {
-                    Message = "Test message"
-                }
-            };
-
-            // act
-            SentrySdk.CaptureEvent(sentryEvent);
-            SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
-
-            // assert
-            var matchingError = _testLogger.Logs
-                .Any(log => log.logLevel == SentryLevel.Error
-                                 && log.exception is HttpRequestException
-                                 && (log.exception?.InnerException as WebException)
-                                  ?.Message?.Contains("Error: NameResolutionFailure") == true);
-            Assert.IsTrue(matchingError);
-        }
     }
 
     public sealed class UnityEventProcessorTests

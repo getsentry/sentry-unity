@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Sentry.Extensibility;
 using Sentry.Unity.Extensions;
 
 namespace Sentry.Unity.Protocol
@@ -52,7 +53,7 @@ namespace Sentry.Unity.Protocol
                 TargetFrameRate = TargetFrameRate
             };
 
-        public void WriteTo(Utf8JsonWriter writer)
+        public void WriteTo(Utf8JsonWriter writer, IDiagnosticLogger? logger)
         {
             writer.WriteStartObject();
 
@@ -90,12 +91,12 @@ namespace Sentry.Unity.Protocol
                 TargetFrameRate = json.GetPropertyOrNull("target_frame_rate")?.GetString()
             };
 
-        public string ToJsonString()
+        public string ToJsonString(IDiagnosticLogger? logger = null)
         {
             using var stream = new MemoryStream();
             using var writer = new Utf8JsonWriter(stream);
 
-            WriteTo(writer);
+            WriteTo(writer, logger);
             writer.Flush();
 
             return Encoding.UTF8.GetString(stream.ToArray());
