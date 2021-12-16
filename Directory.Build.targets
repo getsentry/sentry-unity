@@ -7,6 +7,8 @@
     <AndroidBuildPath>$(PlayerBuildPath)Android/IL2CPP_Player.apk</AndroidBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
+    <UnityPackageProject>$(RepoRoot)temp/unity-packages</UnityPackageProject>
+    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
     <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
@@ -73,7 +75,6 @@ Expected to exist:
  * /Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll
 or
  * /Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll" />
-
   </Target>
 
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">

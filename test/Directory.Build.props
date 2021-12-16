@@ -2,10 +2,6 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <PackageRuntimeTestsPath>../../$(DevPackageFolderName)/Tests/Runtime</PackageRuntimeTestsPath>
     <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
   </PropertyGroup>
@@ -26,6 +22,7 @@
         <Private>false</Private>
       </Reference>
     </ItemGroup>
+    <Error Condition="!Exists('$(UnityTestPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTestPath)/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
   <PropertyGroup>

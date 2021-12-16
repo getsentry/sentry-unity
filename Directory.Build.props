@@ -36,10 +36,6 @@
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <UnityPackageProject>$(RepoRoot)temp/unity-packages</UnityPackageProject>
-  </PropertyGroup>
-
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnity" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
     <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll."></Error>
