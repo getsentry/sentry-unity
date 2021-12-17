@@ -160,7 +160,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
-          echo "unity_editor_folder=C:\${{ matrix.unity-version }}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+          echo "unity_editor_folder=C:\${{ matrix.unity-version }}\Editor" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
 
       - name: Install Unity UPM Packages
         env:
