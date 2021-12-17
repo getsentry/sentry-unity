@@ -52,9 +52,8 @@ public class BugFarmButtons : MonoBehaviour
 
     public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
 
-    public void LoadNativeSupportScene() => SceneManager.LoadScene("2_MobileNativeSupport");
-    public void LoadAdditionalSamplesScene() => SceneManager.LoadScene("3_AdditionalSamples");
-    public void LoadUnityScene() => SceneManager.LoadScene("4_Unity");
+    public void LoadMobileNativeSupport() => SceneManager.LoadScene("2_MobileNativeSupport");
+    public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void StackTraceExampleB() => throw new InvalidOperationException("Exception from A lady beetle 🐞");

@@ -46,7 +46,7 @@ public class AdditionalButtons : MonoBehaviour
 
     public void BackgroundBreadcrumb() =>
         Task.Run(() => SentrySdk.AddBreadcrumb("Breadcrumb from the background", "background task"));
-    
+
     public void CaptureMessageWithScreenshot() => StartCoroutine(CaptureScreenshot());
 
     private IEnumerator CaptureScreenshot()
@@ -63,6 +63,5 @@ public class AdditionalButtons : MonoBehaviour
     }
 
     public void LoadBugfarm() => SceneManager.LoadScene("1_Bugfarm");
-
     public void LoadMobileNativeSupport() => SceneManager.LoadScene("2_MobileNativeSupport");
 }

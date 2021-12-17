@@ -119,5 +119,5 @@ public class NativeSupportButtons : MonoBehaviour
 #endif
 
     public void LoadBugfarm() => SceneManager.LoadScene("1_Bugfarm");
-    public void LoadTransitionScene() => SceneManager.LoadScene("3_Transition");
+    public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
 }
