@@ -257,23 +257,23 @@ jobs:
 
       - name: Integration Test - Create new Project
         shell: pwsh
-        run: ./scripts/integration-test/integration-create-project.ps1 "${{ env.unity_editor_folder }}"
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.unity_editor_folder }}"
 
       - name: Integration Test - Build test
         shell: pwsh
-        run: ./scripts/integration-test/integration-build-project.ps1 "${{ env.unity_editor_folder }}"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.unity_editor_folder }}"
 
       - name: Integration Test - Add Sentry to test project
         shell: pwsh
-        run: ./scripts/integration-test/integration-update-sentry.ps1 "${{ env.unity_editor_folder }}"
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.unity_editor_folder }}"
 
       - name: Integration Test - Build test
         shell: pwsh
-        run: ./scripts/integration-test/integration-build-project.ps1 "${{ env.unity_editor_folder }}"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.unity_editor_folder }}"
 
       - name: Integration Test - Run test
         shell: pwsh
-        run: ./scripts/integration-test/integration-run-test.ps1 "${{ env.unity_editor_folder }}"
+        run: ./test/Scripts.Integration.Test/integration-run-test.ps1 "${{ env.unity_editor_folder }}"
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2

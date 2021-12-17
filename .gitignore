@@ -44,5 +44,6 @@ Samples/logfile.txt
 Scripts/integration-test/UnityPath.txt
 
 # Ignore package release
+test-package-release/
 package-release/
 package-release.zip
