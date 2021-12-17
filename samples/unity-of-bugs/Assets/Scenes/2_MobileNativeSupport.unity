@@ -468,7 +468,7 @@ GameObject:
   - component: {fileID: 263985077}
   - component: {fileID: 263985076}
   m_Layer: 5
-  m_Name: Transition Scene
+  m_Name: Additional Samples
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -538,7 +538,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 253040317}
-        m_MethodName: LoadTransitionScene
+        m_MethodName: LoadAdditionalSamples
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2281,7 +2281,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Transition Scene
+  m_Text: Additional Samples
 --- !u!222 &1376081952
 CanvasRenderer:
   m_ObjectHideFlags: 0
