@@ -1,10 +1,10 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 #if ENABLE_IL2CPP || PLATFORM_IOS
 using System.Runtime.InteropServices;
 #endif
 using UnityEngine;
+using UnityEngine.Diagnostics;
 using UnityEngine.SceneManagement;
 
 public class NativeSupportButtons : MonoBehaviour
@@ -20,6 +20,8 @@ public class NativeSupportButtons : MonoBehaviour
         }
 #endif
     }
+
+    public void ForceCrash() => UnityEngine.Diagnostics.Utils.ForceCrash(ForcedCrashCategory.AccessViolation);
 
     public void ThrowKotlin()
     {
@@ -117,5 +119,5 @@ public class NativeSupportButtons : MonoBehaviour
 #endif
 
     public void LoadBugfarm() => SceneManager.LoadScene("1_Bugfarm");
-    public void LoadTransitionScene() => SceneManager.LoadScene("3_Transition");
+    public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
 }
