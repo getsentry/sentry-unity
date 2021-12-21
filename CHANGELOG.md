@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.9.1
+
+### Fixes
+
+- Suppress errors when adding attachments ([#485](https://github.com/getsentry/sentry-unity/pull/485))
+
+## 0.9.0
 
 ### Features
 
