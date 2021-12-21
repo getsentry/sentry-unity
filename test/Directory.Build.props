@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
-  <Target Name="ReferenceUnityEditor" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+  <Target Name="ReferenceUnityEditor" BeforeTargets="BeforeResolveReferences">
     <ItemGroup>
       <Reference Include="UnityEditor">
         <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
