@@ -1,3 +1,5 @@
+using Sentry.Extensibility;
+
 namespace Sentry.Unity.iOS
 {
     /// <summary>
@@ -15,6 +17,14 @@ namespace Sentry.Unity.iOS
             {
                 options.ScopeObserver = new IosNativeScopeObserver(options);
                 options.EnableScopeSync = true;
+                options.CrashedLastRun = () =>
+                {
+                    var crashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun();
+                    options.DiagnosticLogger?
+                        .LogDebug("Native iOS SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
+
+                    return crashedLastRun;
+                };
             }
         }
     }
