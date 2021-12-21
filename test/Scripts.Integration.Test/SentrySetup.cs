@@ -29,6 +29,7 @@ public static class Startup
     static Startup()
     {
         LogDebug("checking if Sentry is installed");
+        throw new System.Exception("I am an error :D ");
         CheckIfSentryIsInstalled();
     }
 
