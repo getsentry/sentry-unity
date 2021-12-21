@@ -32,6 +32,7 @@ public static class Startup
         LogDebug("Sentry package Path is " + sentryPackageLocal);
         SentryPackageLocalPath = sentryPackageLocal;
         LogDebug("checking if sentry is installed");
+        throw new System.Exception("I am an error :D ");
         RequestSentryInstall();
     }
 
