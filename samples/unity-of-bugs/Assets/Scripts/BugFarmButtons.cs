@@ -63,7 +63,7 @@ public class BugFarmButtons : MonoBehaviour
     public void StackTraceExampleA() => StackTraceExampleB();
 }
 
-public class CustomException : System.Exception
+public class CustomException : Exception
 {
     public CustomException(string message) : base(message)
     {
