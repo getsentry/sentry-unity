@@ -10,7 +10,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
     {
         public class Fixture
         {
-            public string TestDirectoryPath { get; set;}
+            public string TestDirectoryPath { get; set; }
             public string SentryFrameworkPath { get; set; }
             public string XcodeProjectPath { get; set; }
 
