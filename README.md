@@ -1,9 +1,13 @@
 <p align="center">
-  <a href="https://sentry.io" target="_blank" align="center">
+  <a href="https://sentry.io" target="_blank" align="left">
     <img src="https://sentry-brand.storage.googleapis.com/sentry-logo-black.png" width="280">
+  </a>
+  <a href="https://docs.sentry.io/platforms/unity/" target="_blank" align="right">
+    <img src="https://raw.githubusercontent.com/getsentry/sentry-unity/main/.github/unity-verified-logo.svg" width="280">
   </a>
   <br />
 </p>
+<p align="center">
 
 Sentry SDK for Unity
 ===========
