@@ -3,9 +3,15 @@ name: Assign to Project
 on:
   issues:
     types: [opened]
+    branches:
+      - main
   pull_request:
     types: [opened]
+    branches:
+      - main
   issue_comment:
+    branches:
+      - main
     types: [created]
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
