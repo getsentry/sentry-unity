@@ -335,6 +335,10 @@ namespace Sentry.Unity.Tests
             var deviceUniqueIdentifier = tags.SingleOrDefault(t => t.Key == "unity.device.unique_identifier");
             Assert.NotNull(deviceUniqueIdentifier);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier!.Value, deviceUniqueIdentifier.Value);
+
+            var isMainThread = tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
+            Assert.NotNull(isMainThread);
+            Assert.AreEqual(bool.FalseString, isMainThread.Value);
         }
 
         [UnityTest]
