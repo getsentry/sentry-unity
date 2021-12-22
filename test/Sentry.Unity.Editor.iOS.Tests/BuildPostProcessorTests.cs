@@ -63,7 +63,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             _fixture.SentryFrameworkPath = "non-existent-path";
 
-            Assert.Throws<IOException>(() =>
+            Assert.Throws<FileNotFoundException>(() =>
                 BuildPostProcess.CopyFrameworkToBuildDirectory(_fixture.XcodeProjectPath, _fixture.SentryFrameworkPath, new TestLogger()));
         }
     }
