@@ -95,9 +95,10 @@ namespace Sentry.Unity.Editor.iOS
                 Directory.CreateDirectory(Path.Combine(pathToProject, "Frameworks"));
                 FileUtil.CopyFileOrDirectoryFollowSymlinks(frameworkPath, targetPath);
             }
-            else
+
+            if (!Directory.Exists(targetPath))
             {
-                throw new FileNotFoundException($"Failed to copy 'Sentry.framework' from '{frameworkPath}' to Xcode project");
+                throw new FileNotFoundException($"Failed to copy 'Sentry.framework' from '{frameworkPath}' to Xcode project {targetPath}");
             }
         }
     }
