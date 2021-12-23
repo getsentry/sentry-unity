@@ -67,19 +67,19 @@ If ($UnityProcess.ExitCode -ne 0)
 Else
 {
     Write-Host -NoNewline  "Copying Test scene"
-    Copy-Item "$UnityOfBugsPath/Assets/Scenes/1_Bugfarm.unity" -Destination "$NewProjectAssetsPath/1_Bugfarm.unity"
-    Copy-Item "$UnityOfBugsPath/Assets/Scenes/1_Bugfarm.unity.meta" -Destination "$NewProjectAssetsPath/1_Bugfarm.unity.meta"
+    New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
+    Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
     Write-Output " OK"
     
     Write-Host -NoNewline  "Copying Scripts"
     $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
-    Copy-Item "$IntegrationScriptsPath/SmokeTester.cs" -Destination "$NewProjectAssetsPath/Scripts"
-    Copy-Item "$IntegrationScriptsPath/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
+    Copy-Item -Recurse "$IntegrationScriptsPath/SmokeTester.*" -Destination "$NewProjectAssetsPath/Scripts/"
+#    Copy-Item "$IntegrationScriptsPath/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
     Write-Output " OK"
     
     Write-Host -NoNewline "Applying Scene to EditorBuildSettings: "
     $EditorBuildSettings = Get-Content -path "$NewProjectSettingsPath/EditorBuildSettings.asset"
-    $EditorBuildSettings = $EditorBuildSettings.Replace("m_Scenes: []", "m_Scenes:`n  - enabled: 1`n    path: Assets/1_Bugfarm.unity")
+    $EditorBuildSettings = $EditorBuildSettings.Replace("m_Scenes: []", "m_Scenes:`n  - enabled: 1`n    path: Assets/Scenes/1_Bugfarm.unity")
     $EditorBuildSettings | Set-Content -Path "$NewProjectSettingsPath/EditorBuildSettings.asset"
     Write-Output " OK"
 

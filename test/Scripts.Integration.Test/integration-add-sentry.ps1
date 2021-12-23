@@ -4,7 +4,6 @@
 
 ShowIntroAndValidateRequiredPaths $true "Add Sentry" $path
 
-Write-Output "Removing Log"
 ClearUnityLog
 
 Write-Host -NoNewline "Injecting Editor script"
