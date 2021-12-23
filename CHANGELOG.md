@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Tag whether event was created in the UI thread ([#495](https://github.com/getsentry/sentry-unity/pull/495))
+
 ## 0.9.1
 
 ### Fixes

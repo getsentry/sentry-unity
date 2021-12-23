@@ -209,6 +209,8 @@ namespace Sentry.Unity
             {
                 @event.SetTag("unity.device.unique_identifier", _mainThreadData.DeviceUniqueIdentifier.Value);
             }
+
+            @event.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToString());
         }
 
         /// <summary>
