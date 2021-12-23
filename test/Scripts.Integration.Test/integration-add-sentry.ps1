@@ -1,8 +1,8 @@
-﻿param($path)
+﻿param($arg)
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths $true "Add Sentry" $path
+$unityPath = FormatUnityPath $arg
 
 ClearUnityLog
 
@@ -13,7 +13,7 @@ Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjec
 Write-Output " OK"
 
 Write-Host -NoNewline "Applying Sentry package to the project:"
-$UnityProcess = Start-Process -FilePath "$Global:UnityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile" -PassThru
+$UnityProcess = Start-Process -FilePath "$unityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile" -PassThru
 Write-Output " OK"
 
 WaitLogFileToBeCreated 30

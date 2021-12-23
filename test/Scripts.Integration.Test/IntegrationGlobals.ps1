@@ -1,7 +1,5 @@
 $ErrorActionPreference = "Stop"
 
-$Global:UnityPath = $null
-
 function ProjectRoot 
 {
     if ($null -ne $Global:NewProjectPathCache)
@@ -76,25 +74,26 @@ $Global:TestApp = "$(GetTestAppName)"
 $IntegrationScriptsPath = "$(ProjectRoot)/test/Scripts.Integration.Test"
 $PackageReleaseOutput = "$(ProjectRoot)/test-package-release"
 
-function ShowIntroAndValidateRequiredPaths
+function FormatUnityPath
 {
-    param ( $showIntro, $stepName, $path)
+    param ($path)
 
-    If (-not $Global:UnityPath -and $path)
+    If ($path)
     {
         #Ajust path on MacOS
         If ($path -match "Unity.app/$")
         {
             $path = $path + "Contents/MacOS"
         }
-        $Global:UnityPath = $path
+        $unityPath = $path
     }
     Else
     {
         Throw "Unity path is required."
     }
 
-    Write-Output "Unity path is $Global:UnityPath"
+    Write-Output "Unity path is $UnityPath"
+    return $unityPath
 }
 
 function ClearUnityLog

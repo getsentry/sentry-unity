@@ -1,8 +1,6 @@
-﻿param($path)
+﻿. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
-
-ShowIntroAndValidateRequiredPaths $true "Run test" $path
+# ShowIntroAndValidateRequiredPaths $true "Run test" $path
 
 $testAppPath = "$NewProjectBuildPath/$Global:TestApp"
 

@@ -1,8 +1,8 @@
-param($path)
-$path = "C:/2019.4.31f1/Editor"
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+param($arg)
 
-ShowIntroAndValidateRequiredPaths $true "Update Sentry" $path
+. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1 
+
+$unityPath = FormatUnityPath $arg
 
 If (-not(Test-Path -Path "$PackageReleaseOutput")) 
 {
@@ -18,7 +18,7 @@ Copy-Item "$IntegrationScriptsPath/SentryUpdateSetup.cs"      -Destination "$New
 Write-Output " OK"
 
 Write-Host -NoNewline "Applying Sentry package to the project:"
-$UnityProcess = Start-Process -FilePath "$Global:UnityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile" -PassThru
+$UnityProcess = Start-Process -FilePath "$unityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile" -PassThru
 Write-Output " OK"
 
 WaitLogFileToBeCreated 30

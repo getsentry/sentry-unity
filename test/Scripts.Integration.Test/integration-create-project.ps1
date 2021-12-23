@@ -1,17 +1,17 @@
-﻿param($path)
+﻿param($arg)
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths $true "Create project" $path
+$unityPath = FormatUnityPath $arg
 
 # Check if Unity path is correct.
-If (Test-Path -Path "$Global:UnityPath/$Unity" ) 
+If (Test-Path -Path "$unityPath/$Unity" ) 
 {
     Write-Output "Found Unity"
 }
 Else
 {
-    Throw "Expected Unity on $Global:UnityPath/$Unity but it was not found."
+    Throw "Expected Unity on $unityPath/$Unity but it was not found."
 }
 
 # Check if SDK is packed.
@@ -51,7 +51,7 @@ Write-Output " OK"
 
 # Create New Unity Project
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath "$Global:UnityPath/$Unity" -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", "-quit" -PassThru
+$UnityProcess = Start-Process -FilePath "$unityPath/$Unity" -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", "-quit" -PassThru
 Write-Output " OK"
 
 # Track log

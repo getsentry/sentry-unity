@@ -1,8 +1,8 @@
-﻿param($path)
+﻿param($arg)
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths $true "Build project" $path
+$unityPath = FormatUnityPath $arg
 
 ClearUnityLog
 
@@ -22,7 +22,7 @@ Else
 
 Write-Output "Checking if Project has no errors "
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath "$Global:UnityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", $buildTarget , "$NewProjectBuildPath/$Global:TestApp", "-quit" -PassThru
+$UnityProcess = Start-Process -FilePath "$unityPath/$Unity" -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", $buildTarget , "$NewProjectBuildPath/$Global:TestApp", "-quit" -PassThru
 Write-Output " OK"
 
 WaitLogFileToBeCreated 30
