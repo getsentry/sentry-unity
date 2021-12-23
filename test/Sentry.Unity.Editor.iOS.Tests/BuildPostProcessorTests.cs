@@ -8,41 +8,31 @@ namespace Sentry.Unity.Editor.iOS.Tests
 {
     public class BuildPostProcessorTests
     {
-        public class Fixture
-        {
-            public string TestDirectoryPath { get; set;}
-            public string SentryFrameworkPath { get; set; }
-            public string XcodeProjectPath { get; set; }
-
-            public Fixture()
-            {
-                TestDirectoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString().Substring(0, 4));
-                SentryFrameworkPath = Path.Combine(TestDirectoryPath, "Sentry.framework");
-                XcodeProjectPath = Path.Combine(TestDirectoryPath, "XcodeProject");
-            }
-        }
-
-        private Fixture _fixture = null!;
+        private string _testDirectoryPath = null!;
+        private string _sentryFrameworkPath = null!;
+        private string _xcodeProjectPath = null!;
 
         [SetUp]
         public void Setup()
         {
-            _fixture = new Fixture();
+            _testDirectoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString().Substring(0, 4));
+            _sentryFrameworkPath = Path.Combine(_testDirectoryPath, "Sentry.framework");
+            _xcodeProjectPath = Path.Combine(_testDirectoryPath, "XcodeProject");
 
-            Directory.CreateDirectory(_fixture.TestDirectoryPath);
-            Directory.CreateDirectory(_fixture.SentryFrameworkPath);
-            Directory.CreateDirectory(_fixture.XcodeProjectPath);
+            Directory.CreateDirectory(_testDirectoryPath);
+            Directory.CreateDirectory(_sentryFrameworkPath);
+            Directory.CreateDirectory(_xcodeProjectPath);
         }
 
         [TearDown]
-        public void TearDown() => Directory.Delete(_fixture.TestDirectoryPath, true);
+        public void TearDown() => Directory.Delete(_testDirectoryPath, true);
 
         [Test]
         public void CopyFrameworkToBuildDirectory_CopiesFramework()
         {
-            BuildPostProcess.CopyFrameworkToBuildDirectory(_fixture.XcodeProjectPath, _fixture.SentryFrameworkPath, new TestLogger());
+            BuildPostProcess.CopyFrameworkToBuildDirectory(_xcodeProjectPath, _sentryFrameworkPath, new TestLogger());
 
-            Assert.IsTrue(Directory.Exists(Path.Combine(_fixture.XcodeProjectPath, "Frameworks", "Sentry.framework")));
+            Assert.IsTrue(Directory.Exists(Path.Combine(_xcodeProjectPath, "Frameworks", "Sentry.framework")));
         }
 
         [Test]
@@ -50,8 +40,8 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var testLogger = new TestLogger();
 
-            BuildPostProcess.CopyFrameworkToBuildDirectory(_fixture.XcodeProjectPath, _fixture.SentryFrameworkPath, testLogger);
-            BuildPostProcess.CopyFrameworkToBuildDirectory(_fixture.XcodeProjectPath, _fixture.SentryFrameworkPath, testLogger);
+            BuildPostProcess.CopyFrameworkToBuildDirectory(_xcodeProjectPath, _sentryFrameworkPath, testLogger);
+            BuildPostProcess.CopyFrameworkToBuildDirectory(_xcodeProjectPath, _sentryFrameworkPath, testLogger);
 
             Assert.IsTrue(testLogger.Logs.Any(log =>
                 log.logLevel == SentryLevel.Debug &&
@@ -59,12 +49,8 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void CopyFrameworkToBuildDirectory_FailedToCopyFramework_ThrowsFileNotFoundException()
-        {
-            _fixture.SentryFrameworkPath = "non-existent-path";
-
+        public void CopyFrameworkToBuildDirectory_FailedToCopyFramework_ThrowsFileNotFoundException() =>
             Assert.Throws<FileNotFoundException>(() =>
-                BuildPostProcess.CopyFrameworkToBuildDirectory(_fixture.XcodeProjectPath, _fixture.SentryFrameworkPath, new TestLogger()));
-        }
+                BuildPostProcess.CopyFrameworkToBuildDirectory(_xcodeProjectPath, "non-existent-path", new TestLogger()));
     }
 }
