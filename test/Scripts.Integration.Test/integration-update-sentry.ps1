@@ -1,8 +1,8 @@
 param($path)
-
+$path = "C:/2019.4.31f1/Editor"
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths "True" "Update Sentry" $path
+ShowIntroAndValidateRequiredPaths $true "Update Sentry" $path
 
 If (-not(Test-Path -Path "$PackageReleaseOutput")) 
 {
@@ -13,8 +13,8 @@ Write-Output "Removing Log"
 ClearUnityLog
 
 Write-Host -NoNewline "Injecting Editor script"
-$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/SentryUpdateSetup.cs"      -Destination "$NewProjectAssetsPath/Editor" -ErrorAction Stop
+$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
+Copy-Item "$IntegrationScriptsPath/SentryUpdateSetup.cs"      -Destination "$NewProjectAssetsPath/Editor"
 Write-Output " OK"
 
 Write-Host -NoNewline "Applying Sentry package to the project:"
@@ -27,7 +27,7 @@ Write-Output "Waiting for Unity to add Sentry to  the project."
 $stdout = TrackCacheUntilUnityClose $UnityProcess "Sentry setup: SUCCESS" "Sentry setup: FAILED"
 
 Write-Output "Removing Editor script"
-Remove-Item -LiteralPath "$NewProjectAssetsPath/Editor" -Force -Recurse -ErrorAction Stop
+Remove-Item -LiteralPath "$NewProjectAssetsPath/Editor" -Recurse
 
 Write-Output $stdout
 If ($UnityProcess.ExitCode -ne 0)
@@ -35,7 +35,7 @@ If ($UnityProcess.ExitCode -ne 0)
     $exitCode = $UnityProcess.ExitCode
     Throw "Unity exited with code $exitCode"
 }
-ElseIf (($stdout | select-string "SUCCESS") -ne $null)
+ElseIf ($null -ne ($stdout | select-string "SUCCESS"))
 {
     Write-Output "`nSentry added!!"
 }
@@ -45,8 +45,8 @@ Else
 }
 
 Write-Host -NoNewline "Updating test files "
-Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs" -Force
-Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta" -Force
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
+Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
+Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
 Write-Output " OK"

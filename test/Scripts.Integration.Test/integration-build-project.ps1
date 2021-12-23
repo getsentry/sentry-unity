@@ -2,9 +2,8 @@
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths "True" "Build project" $path
+ShowIntroAndValidateRequiredPaths $true "Build project" $path
 
-Write-Output "Removing Log"
 ClearUnityLog
 
 $buildTarget = $null

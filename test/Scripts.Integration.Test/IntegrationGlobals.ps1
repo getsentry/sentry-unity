@@ -1,7 +1,10 @@
+$ErrorActionPreference = "Stop"
+
 $Global:UnityPath = $null
 
-function ProjectRoot {
-    if ($Global:NewProjectPathCache -ne $null)
+function ProjectRoot 
+{
+    if ($null -ne $Global:NewProjectPathCache)
     {
         return [string]$Global:NewProjectPathCache
     }
@@ -9,7 +12,8 @@ function ProjectRoot {
     return [string]$Global:NewProjectPathCache
 }
 
-function GetLineBreakMode {
+function GetLineBreakMode
+{
     If ($IsWindows)
     {
         return "`r`n"
@@ -17,7 +21,8 @@ function GetLineBreakMode {
     return   "`n"
 }
 
-function GetTestAppName {
+function GetTestAppName
+{
     If ($IsMacOS)
     {
         return "test.app"
@@ -28,11 +33,12 @@ function GetTestAppName {
     }
     Else
     {
-        Throw "Unsupported build"
+        Throw "Cannot find Test App name for the current operating system"
     }
 }
 
-function GetUnityName {
+function GetUnityName
+{
     If ($IsMacOS)
     {
         return "Unity"
@@ -43,7 +49,7 @@ function GetUnityName {
     }
     Else
     {
-        Throw "Unsupported build"
+        Throw "Cannot find Unity executable name for the current operating system"
     }
 }
 
@@ -70,28 +76,11 @@ $Global:TestApp = "$(GetTestAppName)"
 $IntegrationScriptsPath = "$(ProjectRoot)/test/Scripts.Integration.Test"
 $PackageReleaseOutput = "$(ProjectRoot)/test-package-release"
 
-$Timeout = 30
-
-function ShowIntroAndValidateRequiredPaths {
+function ShowIntroAndValidateRequiredPaths
+{
     param ( $showIntro, $stepName, $path)
 
-    if ($showIntro -eq "True") {
-        Write-Output "                                         "
-        Write-Output " #  # #   # # ####### #     #            "
-        Write-Output " #  # ##  # #    #     #   #  INTEGRATION"
-        Write-Output " #  # # # # #    #      ###  TEST        "
-        Write-Output " #  # #  ## #    #       #               "
-        Write-Output "  ##  #   # #    #       #               "
-        Write-Output "                                         "
-        Write-Output "  $stepName"
-        Write-Output " =====================================  "
-    }
-
-    If ($Global:UnityPath)
-    {
-        #Already set.
-    }
-    ElseIf ($path)
+    If (-not $Global:UnityPath -and $path)
     {
         #Ajust path on MacOS
         If ($path -match "Unity.app/$")
@@ -108,39 +97,40 @@ function ShowIntroAndValidateRequiredPaths {
     Write-Output "Unity path is $Global:UnityPath"
 }
 
-function ClearUnityLog {
+function ClearUnityLog
+{
     Write-Host -NoNewline "Removing Unity log:"
-    If (Test-Path -Path "$NewProjectLogPath/$LogFile" ) 
+    If (Test-Path -Path "$NewProjectLogPath/$LogFile") 
     {
-        Remove-Item -Path "$NewProjectLogPath/$LogFile" -Force -Recurse -ErrorAction Stop
+        #Force is required if it's opened by another process.
+        Remove-Item -Path "$NewProjectLogPath/$LogFile" -Force
     }
     Write-Output " OK"
 }
 
-function WaitLogFileToBeCreated {
-    param (
-        $Timeout
-    )
-    if ($Timeout -eq $null){
-        Write-Output "Timeout not set, using 30 seconds as default"
-        $Timeout = 30
-    }
+function WaitLogFileToBeCreated
+{
+    $timeout = 30
     Write-Host -NoNewline "Waiting for log file "
     do
     {
-        Start-Sleep -Seconds 1
         $LogCreated = Test-Path -Path "$NewProjectLogPath/$LogFile"
         Write-Host -NoNewline "."
-        $Timeout--
-        if ($Timeout -eq 0)
+        $timeout--
+        If ($timeout -eq 0)
         {
             Throw "Timeout"
         }
-    } while ($LogCreated -ne "True")
+        ElseIf (!$LogCreated) #validate
+        {
+            Start-Sleep -Seconds 1
+        }
+    } while ($LogCreated -ne $true)
     Write-Output " OK"
 }
 
-function TrackCacheUntilUnityClose() {
+function TrackCacheUntilUnityClose()
+{
     param (
         [Parameter(Mandatory=$true, Position=0)]
         [System.Diagnostics.Process]$UnityProcess,        
@@ -153,56 +143,52 @@ function TrackCacheUntilUnityClose() {
     $returnCondition = $null
     $unityClosed = $null
 
-    if ($UnityProcess -eq $null)
+    If ($UnityProcess -eq $null)
     {
         Throw "Unity process not received"
     }
 
-    $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath/$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
-    If ($logFileStream) {}
-    Else
+    $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath/$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    If (-not $logFileStream)
     {
         Throw "Failed to open logfile on $NewProjectLogPath/$LogFile"
     }
-    $logStreamReader = New-Object System.IO.StreamReader($LogFileStream) -ErrorAction Stop
+    $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
 
     do
     {  
 
-        if ($logFileStream.Length -eq $logFileStream.Position)
+        If ($logFileStream.Length -eq $logFileStream.Position)
         {
             Start-Sleep -Milliseconds 100
         }
-        else
+        Else
         {
-            $lines = $logStreamReader.ReadToEnd()
+            $line = $logStreamReader.ReadLine()
             $dateNow = Get-Date -UFormat "%T %Z"
 
-            ForEach ($line in $($lines -split $LineBreak))
+            #print line as normal/errored/warning
+            If ($null -ne ($line | select-string "ERROR | Failed "))
             {
-                $stdout = $line
-                If (($stdout | select-string "ERROR |Failed ") -ne $null)
-                {
-                    Write-Host "$dateNow - $stdout" -ForegroundColor Red
-                }
-                ElseIf (($stdout | Select-String "WARNING | Line:") -ne $null)
-                {
-                    Write-Host "$dateNow - $stdout" -ForegroundColor Yellow
-                }
-                Else
-                {
-                    $Host.UI.WriteLine("$dateNow - $stdout")
-                }
+                # line contains "ERROR " OR " Failed "
+                Write-Host "$dateNow - $line" -ForegroundColor Red
+            }
+            ElseIf ($null -ne ($line | Select-String "WARNING | Line:"))
+            {
+                Write-Host "$dateNow - $line" -ForegroundColor Yellow
+            }
+            Else
+            {
+                $Host.UI.WriteLine("$dateNow - $line")
+            }
 
-                #check for condition
-                If ($SuccessString -and ($stdout | Select-String $SuccessString))
-                {
-                    $returnCondition = $stdout
-                }
-                ElseIf($FailString -and ($stdout | Select-String $FailString))
-                {
-                    $returnCondition = $stdout
-                }
+            If ($SuccessString -and ($line | Select-String $SuccessString))
+            {
+                $returnCondition = $line
+            }
+            ElseIf($FailString -and ($line | Select-String $FailString))
+            {
+                $returnCondition = $line
             }
 
             If ($UnityProcess.HasExited -and !$unityClosed) 
@@ -217,33 +203,12 @@ function TrackCacheUntilUnityClose() {
                 $logFileStream.Seek($currentPos, [System.IO.SeekOrigin]::Begin)
                 $logStreamReader = New-Object System.IO.StreamReader($LogFileStream) -ErrorAction Stop
 
-                $unityClosed = "True"
-            }
-          
+                $unityClosed = $true
+            }          
         }
 
     } while (!$UnityProcess.HasExited -or $logFileStream.Length -ne $logFileStream.Position)
     $logStreamReader.Dispose()
     $logFileStream.Dispose()
     return $returnCondition
-}
-
-function WaitProgramToClose {
-    param ( $process )
-
-    If ($process -eq $null) 
-    {
-        Throw "Process not found."
-    }
-    $Timeout = 60 * 2
-    $processName = $process.Name
-    Write-Host -NoNewline "Waiting for $processName"
-
-    While (!$process.HasExited -and $processName -gt 0) 
-    {
-        Start-Sleep -Milliseconds 500
-        Write-Host -NoNewline "."
-        $cacheHandle = $process.Handle
-        $Timeout = $Timeout - 1
-    }
 }

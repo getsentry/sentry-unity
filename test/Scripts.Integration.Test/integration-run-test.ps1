@@ -2,7 +2,7 @@
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths "True" "Run test" $path
+ShowIntroAndValidateRequiredPaths $true "Run test" $path
 
 $testAppPath = "$NewProjectBuildPath/$Global:TestApp"
 
@@ -11,15 +11,29 @@ If ($IsMacOS)
     $testAppPath = $testAppPath + "/Contents/MacOS/$NewProjectName"
 }
 
-$testProcess = Start-Process -FilePath "$testAppPath"  -ArgumentList "--test", "smoke" -PassThru -ErrorAction Stop 
+$process = Start-Process -FilePath "$testAppPath"  -ArgumentList "--test", "smoke" -PassThru 
 
-WaitProgramToClose $testProcess
+If ($null -eq $process) 
+{
+    Throw "Process not found."
+}
 
-If ($testProcess.ExitCode -eq 200) 
+$timeout = 60 * 2
+$processName = $process.Name
+Write-Host -NoNewline "Waiting for $processName"
+
+While (!$process.HasExited -and $timeout -gt 0) 
+{
+    Start-Sleep -Milliseconds 500
+    Write-Host -NoNewline "."
+    $timeout-- #Validate
+}
+
+If ($process.ExitCode -eq 200) 
 {
     Write-Output "`nPASSED"   
 }
 Else 
 {
-    Throw "Test process failed with status code $($testProcess.ExitCode)"
+    Throw "Test process failed with status code $($process.ExitCode)"
 }

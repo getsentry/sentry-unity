@@ -37,7 +37,7 @@ public static class Startup
 
     static void RequestSentryInstall()
     {
-        AddRequest = Client.Add(SentryPackageLocalPath + "wrong-path");
+        AddRequest = Client.Add(SentryPackageLocalPath);
         EditorApplication.update += SentrySetupProgress;
     }
     static void SentrySetupProgress()

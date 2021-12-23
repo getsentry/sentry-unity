@@ -2,15 +2,15 @@
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-ShowIntroAndValidateRequiredPaths "True" "Add Sentry" $path
+ShowIntroAndValidateRequiredPaths $true "Add Sentry" $path
 
 Write-Output "Removing Log"
 ClearUnityLog
 
 Write-Host -NoNewline "Injecting Editor script"
-$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/SentrySetup.cs"      -Destination "$NewProjectAssetsPath/Editor" -ErrorAction Stop
-Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjectAssetsPath/Editor" -ErrorAction Stop
+$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
+Copy-Item "$IntegrationScriptsPath/SentrySetup.cs"      -Destination "$NewProjectAssetsPath/Editor"
+Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjectAssetsPath/Editor"
 Write-Output " OK"
 
 Write-Host -NoNewline "Applying Sentry package to the project:"
@@ -31,7 +31,7 @@ If ($UnityProcess.ExitCode -ne 0)
     $exitCode = $UnityProcess.ExitCode
     Throw "Unity exited with code $exitCode"
 }
-ElseIf (($stdout | select-string "SUCCESS") -ne $null)
+ElseIf ($null -ne ($stdout | select-string "SUCCESS"))
 {
     Write-Output ""
     Write-Output "Sentry added!!"
@@ -42,8 +42,8 @@ Else
 }
 
 Write-Host -NoNewline "Updating test files "
-Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs" -Force
-Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta" -Force
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts" -ErrorAction Stop
+Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
+Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
 Write-Output " OK"

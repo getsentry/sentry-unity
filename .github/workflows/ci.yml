@@ -259,7 +259,7 @@ jobs:
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.unity_editor_folder }}"
 
-      - name: Integration Test - Build test
+      - name: Integration Test - Build Standalone Player without Sentry SDK
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.unity_editor_folder }}"
 
@@ -267,11 +267,11 @@ jobs:
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.unity_editor_folder }}"
 
-      - name: Integration Test - Build test
+      - name: Integration Test - Build Standalone Player Sentry SDK
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.unity_editor_folder }}"
 
-      - name: Integration Test - Run test
+      - name: Integration Test - Run Player - Smoke Test
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-run-test.ps1 "${{ env.unity_editor_folder }}"
 
