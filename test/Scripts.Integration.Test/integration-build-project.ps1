@@ -22,7 +22,7 @@ Else
 
 Write-Output "Checking if Project has no errors "
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", $buildTarget , "$NewProjectBuildPath/$Global:TestApp", "-quit" -PassThru
+$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", $buildTarget , "$NewProjectBuildPath/$Global:TestApp", "-quit" -PassThru
 Write-Output " OK"
 
 WaitForLogFile 30

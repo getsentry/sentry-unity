@@ -37,7 +37,6 @@ function GetTestAppName
 
 
 $NewProjectName = "IntegrationTest"
-$LogFile = "logfile.txt"
 
 #New Integration Project paths
 $Global:NewProjectPathCache = $null
@@ -49,7 +48,7 @@ $NewProjectSettingsPath = "$NewProjectPath/ProjectSettings"
 
 $UnityOfBugsPath =  "$(ProjectRoot)/samples/unity-of-bugs"
 
-$NewProjectLogPath = "$(ProjectRoot)/samples"
+$NewProjectLogPath = "$(ProjectRoot)/samples/logfile.txt"
 $Global:TestApp = "$(GetTestAppName)"
 
 $IntegrationScriptsPath = "$(ProjectRoot)/test/Scripts.Integration.Test"
@@ -93,10 +92,10 @@ function FormatUnityPath
 function ClearUnityLog
 {
     Write-Host -NoNewline "Removing Unity log:"
-    If (Test-Path -Path "$NewProjectLogPath/$LogFile") 
+    If (Test-Path -Path "$NewProjectLogPath") 
     {
         #Force is required if it's opened by another process.
-        Remove-Item -Path "$NewProjectLogPath/$LogFile" -Force
+        Remove-Item -Path "$NewProjectLogPath" -Force
     }
     Write-Output " OK"
 }
@@ -107,7 +106,7 @@ function WaitForLogFile
     Write-Host -NoNewline "Waiting for log file "
     do
     {
-        $LogCreated = Test-Path -Path "$NewProjectLogPath/$LogFile"
+        $LogCreated = Test-Path -Path "$NewProjectLogPath"
         Write-Host -NoNewline "."
         $timeout--
         If ($timeout -eq 0)
@@ -141,10 +140,10 @@ function TrackCacheUntilUnityClose()
         Throw "Unity process not received"
     }
 
-    $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath/$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
     If (-not $logFileStream)
     {
-        Throw "Failed to open logfile on $NewProjectLogPath/$LogFile"
+        Throw "Failed to open logfile on $NewProjectLogPath"
     }
     $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
 
@@ -192,7 +191,7 @@ function TrackCacheUntilUnityClose()
                 
                 Start-Sleep -Milliseconds 1000
 
-                $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath/$LogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
+                $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
                 $logFileStream.Seek($currentPos, [System.IO.SeekOrigin]::Begin)
                 $logStreamReader = New-Object System.IO.StreamReader($LogFileStream) -ErrorAction Stop
 

@@ -51,7 +51,7 @@ Write-Output " OK"
 
 # Create New Unity Project
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", "-quit" -PassThru
+$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-quit" -PassThru
 Write-Output " OK"
 
 # Track log

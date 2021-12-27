@@ -13,7 +13,7 @@ Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjec
 Write-Output " OK"
 
 Write-Host -NoNewline "Applying Sentry package to the project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile" -PassThru
+$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath" -PassThru
 Write-Output " OK"
 
 WaitForLogFile 30
