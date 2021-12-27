@@ -6,14 +6,15 @@ $unityPath = FormatUnityPath $arg
 
 ClearUnityLog
 
-$buildTarget = $null
+$buildMethod = $null
 If ($IsMacOS)
 {
-    $buildTarget = "-buildOSXUniversalPlayer"
+    $buildMethod = "Builder.BuildMacIl2CPPPlayer"
+    $buildPath
 }
 ElseIf($IsWindows)
 {
-    $buildTarget = "-buildWindows64Player"
+    $buildMethod = "Builder.BuildWindowsIl2CPPPlayer"
 }
 Else
 {
@@ -22,7 +23,7 @@ Else
 
 Write-Output "Checking if Project has no errors "
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", $buildTarget , "$NewProjectBuildPath/$Global:TestApp", "-quit" -PassThru
+$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath",  "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName)", "-quit" -PassThru
 Write-Output " OK"
 
 WaitForLogFile 30

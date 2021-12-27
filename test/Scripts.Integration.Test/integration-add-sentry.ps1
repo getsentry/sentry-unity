@@ -7,7 +7,6 @@ $unityPath = FormatUnityPath $arg
 ClearUnityLog
 
 Write-Host -NoNewline "Injecting Editor script"
-$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
 Copy-Item "$IntegrationScriptsPath/SentrySetup.cs"      -Destination "$NewProjectAssetsPath/Editor"
 Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjectAssetsPath/Editor"
 Write-Output " OK"
@@ -21,8 +20,8 @@ WaitForLogFile 30
 Write-Output "Waiting for Unity to add Sentry to  the project."
 $stdout = SubscribeToUnityLogFile $UnityProcess "Sentry setup: SUCCESS" "Sentry setup: FAILED"
 
-Write-Output "Removing Editor script"
-Remove-Item -LiteralPath "$NewProjectAssetsPath/Editor" -Force -Recurse -ErrorAction Stop
+Write-Output "Removing Sentry Setup"
+Remove-Item -Path "$NewProjectAssetsPath/Editor/SentrySetup.*" -Force -Recurse
 
 Write-Output $stdout
 If ($UnityProcess.ExitCode -ne 0)

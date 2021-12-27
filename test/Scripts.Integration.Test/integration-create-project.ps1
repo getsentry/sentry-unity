@@ -73,14 +73,9 @@ Else
     
     Write-Host -NoNewline  "Copying Scripts"
     $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
+    $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
     Copy-Item -Recurse "$IntegrationScriptsPath/SmokeTester.*" -Destination "$NewProjectAssetsPath/Scripts/"
-#    Copy-Item "$IntegrationScriptsPath/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
-    Write-Output " OK"
-    
-    Write-Host -NoNewline "Applying Scene to EditorBuildSettings: "
-    $EditorBuildSettings = Get-Content -path "$NewProjectSettingsPath/EditorBuildSettings.asset"
-    $EditorBuildSettings = $EditorBuildSettings.Replace("m_Scenes: []", "m_Scenes:`n  - enabled: 1`n    path: Assets/Scenes/1_Bugfarm.unity")
-    $EditorBuildSettings | Set-Content -Path "$NewProjectSettingsPath/EditorBuildSettings.asset"
+    Copy-Item -Recurse "$UnityOfBugsPath/Assets/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
     Write-Output " OK"
 
     Write-Output "`nProject created!!"

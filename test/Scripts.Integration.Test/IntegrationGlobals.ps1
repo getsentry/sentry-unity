@@ -10,15 +10,6 @@ function ProjectRoot
     return [string]$Global:NewProjectPathCache
 }
 
-function GetLineBreakMode
-{
-    If ($IsWindows)
-    {
-        return "`r`n"
-    }
-    return   "`n"
-}
-
 function GetTestAppName
 {
     If ($IsMacOS)
@@ -44,12 +35,10 @@ $NewProjectPath = "$(ProjectRoot)/samples/$NewProjectName"
 $NewProjectEditorBuildSettingsPath = "$NewProjectPath/ProjectSettings"
 $NewProjectBuildPath = "$NewProjectPath/Build"
 $NewProjectAssetsPath = "$NewProjectPath/Assets"
-$NewProjectSettingsPath = "$NewProjectPath/ProjectSettings"
 
 $UnityOfBugsPath =  "$(ProjectRoot)/samples/unity-of-bugs"
 
 $NewProjectLogPath = "$(ProjectRoot)/samples/logfile.txt"
-$Global:TestApp = "$(GetTestAppName)"
 
 $IntegrationScriptsPath = "$(ProjectRoot)/test/Scripts.Integration.Test"
 $PackageReleaseOutput = "$(ProjectRoot)/test-package-release"

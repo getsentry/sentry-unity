@@ -1,8 +1,7 @@
 ﻿. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-# ShowIntroAndValidateRequiredPaths $true "Run test" $path
 
-$testAppPath = "$NewProjectBuildPath/$Global:TestApp"
+$testAppPath = "$NewProjectBuildPath/$(GetTestAppName)"
 
 If ($IsMacOS)
 {
@@ -24,7 +23,7 @@ While (!$process.HasExited -and $timeout -gt 0)
 {
     Start-Sleep -Milliseconds 500
     Write-Host -NoNewline "."
-    $timeout-- #Validate
+    $timeout--
 }
 
 If ($process.ExitCode -eq 200) 
