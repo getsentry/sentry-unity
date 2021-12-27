@@ -27,7 +27,7 @@ Write-Output " OK"
 
 WaitForLogFile 30
 Write-Output "Waiting for Unity to build the project."
-TrackCacheUntilUnityClose($UnityProcess)
+SubscribeToUnityLogFile $UnityProcess
 
 if ($UnityProcess.ExitCode -ne 0)
 {

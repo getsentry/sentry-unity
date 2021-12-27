@@ -121,7 +121,7 @@ function WaitForLogFile
     Write-Output " OK"
 }
 
-function TrackCacheUntilUnityClose()
+function SubscribeToUnityLogFile()
 {
     param (
         [Parameter(Mandatory=$true, Position=0)]

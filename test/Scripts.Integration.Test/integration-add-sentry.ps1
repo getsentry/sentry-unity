@@ -19,7 +19,7 @@ Write-Output " OK"
 WaitForLogFile 30
 
 Write-Output "Waiting for Unity to add Sentry to  the project."
-$stdout = TrackCacheUntilUnityClose $UnityProcess "Sentry setup: SUCCESS" "Sentry setup: FAILED"
+$stdout = SubscribeToUnityLogFile $UnityProcess "Sentry setup: SUCCESS" "Sentry setup: FAILED"
 
 Write-Output "Removing Editor script"
 Remove-Item -LiteralPath "$NewProjectAssetsPath/Editor" -Force -Recurse -ErrorAction Stop
