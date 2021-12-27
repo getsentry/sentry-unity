@@ -35,28 +35,9 @@ function GetTestAppName
     }
 }
 
-function GetUnityName
-{
-    If ($IsMacOS)
-    {
-        return "Unity"
-    }
-    ElseIf($IsWindows)
-    {
-        return "Unity.exe"
-    }
-    Else
-    {
-        Throw "Cannot find Unity executable name for the current operating system"
-    }
-}
 
-$LineBreak = $(GetLineBreakMode)
-
-$Unity = "$(GetUnityName)"
 $NewProjectName = "IntegrationTest"
 $LogFile = "logfile.txt"
-$SolutionFile = "IntegrationTest.sln"
 
 #New Integration Project paths
 $Global:NewProjectPathCache = $null
@@ -92,7 +73,20 @@ function FormatUnityPath
         Throw "Unity path is required."
     }
 
-    Write-Output "Unity path is $UnityPath"
+    If ($IsMacOS)
+    {
+        $unityPath = $unityPath + "/Unity"
+    }
+    ElseIf ($IsWindows)
+    {
+        $unityPath = $unityPath +  "/Unity.exe"
+    }
+    Else
+    {
+        Throw "Cannot find Unity executable name for the current operating system"
+    }
+
+    Write-Host "Unity path is $unityPath"
     return $unityPath
 }
 
@@ -107,7 +101,7 @@ function ClearUnityLog
     Write-Output " OK"
 }
 
-function WaitLogFileToBeCreated
+function WaitForLogFile
 {
     $timeout = 30
     Write-Host -NoNewline "Waiting for log file "

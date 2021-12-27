@@ -5,13 +5,13 @@
 $unityPath = FormatUnityPath $arg
 
 # Check if Unity path is correct.
-If (Test-Path -Path "$unityPath/$Unity" ) 
+If (Test-Path -Path "$unityPath")
 {
     Write-Output "Found Unity"
 }
 Else
 {
-    Throw "Expected Unity on $unityPath/$Unity but it was not found."
+    Throw "Expected Unity on $unityPath but it was not found."
 }
 
 # Check if SDK is packed.
@@ -51,11 +51,11 @@ Write-Output " OK"
 
 # Create New Unity Project
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath "$unityPath/$Unity" -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", "-quit" -PassThru
+$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath/$LogFile", "-quit" -PassThru
 Write-Output " OK"
 
 # Track log
-WaitLogFileToBeCreated 30
+WaitForLogFile 30
 
 Write-Output "Waiting for Unity to create the project."
 TrackCacheUntilUnityClose($UnityProcess)
