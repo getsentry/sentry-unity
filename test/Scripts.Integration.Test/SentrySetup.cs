@@ -18,10 +18,10 @@ public class SentrySetup
     };
 
     static void LogDebug(string message)
-        => Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Sentry setup: {0}", message);
+        => Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Sentry Package Installation: {0}", message);
 
     static void LogError(string message)
-        => Debug.LogFormat(LogType.Error, LogOption.NoStacktrace, null, "Sentry setup: {0}", message);
+        => Debug.LogFormat(LogType.Error, LogOption.NoStacktrace, null, "Sentry Package Installation: {0}", message);
     
     [InitializeOnLoadMethod]
     static void InstallSentry()

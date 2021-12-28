@@ -17,8 +17,9 @@ Write-Output " OK"
 
 WaitForLogFile 30
 
+$successMessage =  "Sentry Package Installation:"
 Write-Output "Waiting for Unity to add Sentry to  the project."
-$stdout = SubscribeToUnityLogFile $UnityProcess "Sentry setup: SUCCESS" "Sentry setup: FAILED"
+$stdout = SubscribeToUnityLogFile $UnityProcess $successMessage "Sentry setup: FAILED"
 
 Write-Output $stdout
 If ($UnityProcess.ExitCode -ne 0)
@@ -26,7 +27,7 @@ If ($UnityProcess.ExitCode -ne 0)
     $exitCode = $UnityProcess.ExitCode
     Throw "Unity exited with code $exitCode"
 }
-ElseIf ($null -ne ($stdout | select-string "SUCCESS"))
+ElseIf ($null -ne ($stdout | select-string $successMessage))
 {
     Write-Output ""
     Write-Output "Sentry added!!"
