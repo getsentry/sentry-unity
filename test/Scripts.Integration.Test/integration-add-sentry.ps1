@@ -11,7 +11,7 @@ Copy-Item "$IntegrationScriptsPath/SentrySetup.cs"      -Destination "$NewProjec
 Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjectAssetsPath/Editor"
 Write-Output " OK"
 
-Write-Host -NoNewline "Starting Unity proccess:"
+Write-Host -NoNewline "Starting Unity process:"
 $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Git" -PassThru
 Write-Output " OK"
 

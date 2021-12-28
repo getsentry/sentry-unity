@@ -9,10 +9,9 @@ If (-not(Test-Path -Path "$PackageReleaseOutput"))
     Throw "Path $PackageReleaseOutput does not exist. Be sure to run ./test/Scripts.Integration.Test/integration-create-project."
 }
 
-Write-Output "Removing Log"
 ClearUnityLog
 
-Write-Host -NoNewline "Starting Unity proccess:"
+Write-Host -NoNewline "Starting Unity process:"
 $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk" -PassThru
 Write-Output " OK"
 

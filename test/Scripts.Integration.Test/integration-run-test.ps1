@@ -30,7 +30,12 @@ If ($process.ExitCode -eq 200)
 {
     Write-Output "`nPASSED"
 }
+ElseIf ($timeout -eq 0)
+{
+    Throw "Test process timed out."
+
+}
 Else
 {
-    Throw "Test process failed with status code $($process.ExitCode)"
+    Throw "Test process failed with status code $($process.ExitCode)."
 }

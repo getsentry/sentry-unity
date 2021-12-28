@@ -28,7 +28,11 @@ public class SentrySetup
     {
         var installOrigin = GetInstallOriginFromEnvironment(Builder.ParseCommandLineArguments());
 
-        if (installOrigin != SentryInstallOrigin.None)
+        if (installOrigin == SentryInstallOrigin.None)
+        {
+            LogDebug("Sentry not requested to be installed.");
+        }
+        else
         {
             LogDebug("Checking if Sentry is installed");
 
@@ -69,10 +73,6 @@ public class SentrySetup
                 LogError(addRequest.Error?.message);
                 EditorApplication.Exit(-1);
             }
-        }
-        else
-        {
-            LogDebug("Sentry not requested to be installed.");
         }
     }
 

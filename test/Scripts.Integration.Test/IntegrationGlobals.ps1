@@ -26,7 +26,6 @@ function GetTestAppName
     }
 }
 
-
 $NewProjectName = "IntegrationTest"
 
 #New Integration Project paths
@@ -180,9 +179,9 @@ function SubscribeToUnityLogFile()
                 
                 Start-Sleep -Milliseconds 1000
 
-                $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite) -ErrorAction Stop
+                $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
                 $logFileStream.Seek($currentPos, [System.IO.SeekOrigin]::Begin)
-                $logStreamReader = New-Object System.IO.StreamReader($LogFileStream) -ErrorAction Stop
+                $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
 
                 $unityClosed = $true
             }          
