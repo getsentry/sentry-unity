@@ -31,7 +31,6 @@ $NewProjectName = "IntegrationTest"
 #New Integration Project paths
 $Global:NewProjectPathCache = $null
 $NewProjectPath = "$(ProjectRoot)/samples/$NewProjectName"
-$NewProjectEditorBuildSettingsPath = "$NewProjectPath/ProjectSettings"
 $NewProjectBuildPath = "$NewProjectPath/Build"
 $NewProjectAssetsPath = "$NewProjectPath/Assets"
 
@@ -121,7 +120,7 @@ function SubscribeToUnityLogFile()
     )
 
     $returnCondition = $null
-    $unityClosed = $null
+    $unityClosedDelay = 0
 
     If ($UnityProcess -eq $null)
     {
@@ -137,14 +136,15 @@ function SubscribeToUnityLogFile()
 
     do
     {  
+        $line = $logStreamReader.ReadLine()
 
-        If ($logFileStream.Length -eq $logFileStream.Position)
+
+        If ($line -eq $null)
         {
-            Start-Sleep -Milliseconds 100
+            Start-Sleep -Milliseconds 200
         }
         Else
         {
-            $line = $logStreamReader.ReadLine()
             $dateNow = Get-Date -UFormat "%T %Z"
 
             #print line as normal/errored/warning
@@ -169,25 +169,14 @@ function SubscribeToUnityLogFile()
             ElseIf($FailString -and ($line | Select-String $FailString))
             {
                 $returnCondition = $line
-            }
+            } 
 
-            If ($UnityProcess.HasExited -and !$unityClosed)
+            If ($UnityProcess.HasExited)
             {
-                $currentPos = $logFileStream.Position
-                $logStreamReader.Dispose()
-                $logFileStream.Dispose()
-                
-                Start-Sleep -Milliseconds 1000
-
-                $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
-                $logFileStream.Seek($currentPos, [System.IO.SeekOrigin]::Begin)
-                $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
-
-                $unityClosed = $true
-            }          
+                $unityClosedDelay++
+            }
         }
-
-    } while (!$UnityProcess.HasExited -or $logFileStream.Length -ne $logFileStream.Position)
+    } while ($unityClosedDelay -le 0  -or $line -ne $null)
     $logStreamReader.Dispose()
     $logFileStream.Dispose()
     return $returnCondition
