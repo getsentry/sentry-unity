@@ -11,17 +11,14 @@ Copy-Item "$IntegrationScriptsPath/SentrySetup.cs"      -Destination "$NewProjec
 Copy-Item "$IntegrationScriptsPath/SentrySetup.cs.meta" -Destination "$NewProjectAssetsPath/Editor"
 Write-Output " OK"
 
-Write-Host -NoNewline "Applying Sentry package to the project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath" -PassThru
+Write-Host -NoNewline "Starting Unity proccess:"
+$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Git" -PassThru
 Write-Output " OK"
 
 WaitForLogFile 30
 
 Write-Output "Waiting for Unity to add Sentry to  the project."
 $stdout = SubscribeToUnityLogFile $UnityProcess "Sentry setup: SUCCESS" "Sentry setup: FAILED"
-
-Write-Output "Removing Sentry Setup"
-Remove-Item -Path "$NewProjectAssetsPath/Editor/SentrySetup.*" -Force -Recurse
 
 Write-Output $stdout
 If ($UnityProcess.ExitCode -ne 0)

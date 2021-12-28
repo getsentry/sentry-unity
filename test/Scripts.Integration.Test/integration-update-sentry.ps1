@@ -12,21 +12,14 @@ If (-not(Test-Path -Path "$PackageReleaseOutput"))
 Write-Output "Removing Log"
 ClearUnityLog
 
-Write-Host -NoNewline "Injecting Editor script"
-Copy-Item "$IntegrationScriptsPath/SentryUpdateSetup.cs" -Destination "$NewProjectAssetsPath/Editor"
-Write-Output " OK"
-
-Write-Host -NoNewline "Applying Sentry package to the project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath" -PassThru
+Write-Host -NoNewline "Starting Unity proccess:"
+$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk" -PassThru
 Write-Output " OK"
 
 WaitForLogFile 30
 
 Write-Output "Waiting for Unity to add Sentry to  the project."
 $stdout = SubscribeToUnityLogFile $UnityProcess "Sentry setup: SUCCESS" "Sentry setup: FAILED"
-
-Write-Output "Removing Editor script"
-Remove-Item -LiteralPath "$NewProjectAssetsPath/Editor/SentryUpdateSetup.cs"
 
 Write-Output $stdout
 If ($UnityProcess.ExitCode -ne 0)

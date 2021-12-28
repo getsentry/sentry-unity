@@ -76,6 +76,7 @@ Else
     $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
     Copy-Item -Recurse "$IntegrationScriptsPath/SmokeTester.*" -Destination "$NewProjectAssetsPath/Scripts/"
     Copy-Item -Recurse "$UnityOfBugsPath/Assets/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
+    Copy-Item -Recurse "$IntegrationScriptsPath/SentrySetup.*" -Destination "$NewProjectAssetsPath/Editor/"
     Write-Output " OK"
 
     Write-Output "`nProject created!!"

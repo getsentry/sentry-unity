@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -57,7 +57,7 @@ public class Builder
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android);
     public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS);
 
-    private static Dictionary<string, string> ParseCommandLineArguments()
+    public static Dictionary<string, string> ParseCommandLineArguments()
     {
         var commandLineArguments = new Dictionary<string, string>();
         var args = Environment.GetCommandLineArgs();

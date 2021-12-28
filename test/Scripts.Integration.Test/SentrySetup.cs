@@ -2,88 +2,97 @@ using UnityEditor;
 using UnityEditor.PackageManager.Requests;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
-[InitializeOnLoad]
-public static class Startup
+public class SentrySetup
 {
-    static AddRequest AddRequest;
-    static ListRequest ListRequest;
-
-    const string SentryPackageName = "io.sentry.unity";
-    const string SentryUPMUrl = "https://github.com/getsentry/unity.git";
+    enum SentryInstallOrigin
+    {
+        None,
+        Git,
+        Disk
+    };
 
     static void LogDebug(string message)
-        => Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, $"Sentry setup: {message}");
+        => Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "Sentry setup: {0}", message);
 
     static void LogError(string message)
-        => Debug.LogFormat(LogType.Error, LogOption.NoStacktrace, null, $"Sentry setup: {message}");
-
-    static void ExitIfBatchMode(int code)
+        => Debug.LogFormat(LogType.Error, LogOption.NoStacktrace, null, "Sentry setup: {0}", message);
+    
+    [InitializeOnLoadMethod]
+    static void InstallSentry()
     {
-        if (Application.isBatchMode)
+        var installOrigin = GetInstallOriginFromEnvironment(Builder.ParseCommandLineArguments());
+
+        if (installOrigin != SentryInstallOrigin.None)
         {
-            EditorApplication.Exit(code);
-        }
-    }
-    static Startup()
-    {
-        LogDebug("checking if Sentry is installed");
-        CheckIfSentryIsInstalled();
-    }
+            LogDebug("Checking if Sentry is installed");
 
-    static void RequestSentryInstall()
-    {
-        AddRequest = Client.Add(SentryUPMUrl);
-        EditorApplication.update += SentrySetupProgress;
-    }
-
-    static void CheckIfSentryIsInstalled()
-    {
-        ListRequest = Client.List();
-        EditorApplication.update += SentryIsInstalledProgress;
-    }
-
-    static void SentrySetupProgress()
-    {
-        if (AddRequest.IsCompleted)
-        {
-            EditorApplication.update -= SentrySetupProgress;
-
-            if (AddRequest.Status == StatusCode.Success)
+            var listRequest = Client.List();
+            while (!listRequest.IsCompleted)
             {
-                LogDebug("SUCCESS");
-                ExitIfBatchMode(0);
+                Thread.Sleep(1000);
             }
-            else if (AddRequest.Status >= StatusCode.Failure)
+            if (listRequest.Status >= StatusCode.Failure)
             {
-                LogError("FAILED");
-                LogError(AddRequest.Error.message);
-                ExitIfBatchMode(-1);
+                LogError(listRequest.Error.message);
+                EditorApplication.Exit(-1);
             }
-        }
-    }
-
-    static void SentryIsInstalledProgress()
-    {
-        if (ListRequest.IsCompleted)
-        {
-            EditorApplication.update -= SentryIsInstalledProgress;
-
-            if (ListRequest.Status >= StatusCode.Failure)
+            else if (listRequest.Result.Any(p => p.name == "io.sentry.unity") == false)
             {
-                LogError(ListRequest.Error.message);
-            }
-            else if (ListRequest.Result.Any(p => p.name.Contains(SentryPackageName)) == false)
-            {
-                LogDebug("Sentry not found, installing.");
-                RequestSentryInstall();
+                LogDebug("Project does not contain Sentry.");
             }
             else
             {
-                LogDebug("already installed.");
-                ExitIfBatchMode(0);
+                LogDebug("Project contains Sentry.");
+            }        
+
+            LogDebug($"Installing Sentry from {installOrigin}");
+            var installCommand = GetInstallCommand(installOrigin);
+            var addRequest = Client.Add(installCommand);
+            while (!addRequest.IsCompleted)
+            {
+                Thread.Sleep(1000);
+            }
+            if (addRequest.Status == StatusCode.Success)
+            {
+                LogDebug("SUCCESS");
+                EditorApplication.Exit(0);
+            }
+            else
+            {
+                LogError("FAILED");
+                LogError(addRequest.Error?.message);
+                EditorApplication.Exit(-1);
             }
         }
+        else
+        {
+            LogDebug("Sentry not requested to be installed.");
+        }
+    }
+
+    static string GetInstallCommand(SentryInstallOrigin origin)
+    {
+        if (origin == SentryInstallOrigin.Disk)
+        {
+            var sentryPackageLocal = "file:" + Application.dataPath.Replace("samples/IntegrationTest/Assets", "test-package-release/");
+            LogDebug("Sentry package Path is " + sentryPackageLocal);
+            return sentryPackageLocal;
+        }
+        return "https://github.com/getsentry/unity.git";
+    }
+
+    static SentryInstallOrigin GetInstallOriginFromEnvironment(Dictionary<string, string> args)
+    {
+        if (args.ContainsKey("installSentry") && Enum.TryParse(args["installSentry"], out SentryInstallOrigin origin))
+        {
+            return origin;
+        }
+        return SentryInstallOrigin.None;
     }
 }
