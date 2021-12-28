@@ -8,9 +8,9 @@ If ($IsMacOS)
     $testAppPath = $testAppPath + "/Contents/MacOS/$NewProjectName"
 }
 
-$process = Start-Process -FilePath "$testAppPath"  -ArgumentList "--test", "smoke" -PassThru 
+$process = Start-Process -FilePath "$testAppPath"  -ArgumentList "--test", "smoke" -PassThru
 
-If ($null -eq $process) 
+If ($null -eq $process)
 {
     Throw "Process not found."
 }
@@ -19,18 +19,18 @@ $timeout = 60 * 2
 $processName = $process.Name
 Write-Host -NoNewline "Waiting for $processName"
 
-While (!$process.HasExited -and $timeout -gt 0) 
+While (!$process.HasExited -and $timeout -gt 0)
 {
     Start-Sleep -Milliseconds 500
     Write-Host -NoNewline "."
     $timeout--
 }
 
-If ($process.ExitCode -eq 200) 
+If ($process.ExitCode -eq 200)
 {
-    Write-Output "`nPASSED"   
+    Write-Output "`nPASSED"
 }
-Else 
+Else
 {
     Throw "Test process failed with status code $($process.ExitCode)"
 }

@@ -114,7 +114,7 @@ function SubscribeToUnityLogFile()
 {
     param (
         [Parameter(Mandatory=$true, Position=0)]
-        [System.Diagnostics.Process]$UnityProcess,        
+        [System.Diagnostics.Process]$UnityProcess,
         [Parameter(Mandatory=$false, Position=1)]
         [string] $SuccessString,
         [Parameter(Mandatory=$false, Position=2)]
@@ -172,7 +172,7 @@ function SubscribeToUnityLogFile()
                 $returnCondition = $line
             }
 
-            If ($UnityProcess.HasExited -and !$unityClosed) 
+            If ($UnityProcess.HasExited -and !$unityClosed)
             {
                 $currentPos = $logFileStream.Position
                 $logStreamReader.Dispose()

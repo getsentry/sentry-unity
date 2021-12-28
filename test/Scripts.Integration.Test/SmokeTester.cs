@@ -3,17 +3,11 @@ using UnityEngine;
 
 public class SmokeTester : MonoBehaviour
 {
-    public void Start()
-    {
-        SmokeTest();
-    }
+    public void Start() => PlayerTest();
 
-    public static void SmokeTest()
+    public static void PlayerTest()
     {
-        // On Android we'll grep logcat for this string instead of relying on exit code:
-        Debug.Log("SMOKE TEST: PASS");
-
-        // Quit does not work on MacOS so we flag with a new file
+        Debug.Log("PLAYER RUN");
         Application.Quit(200);
     }
 }
