@@ -112,7 +112,7 @@ function SubscribeToUnityLogFile()
 {
     param (
         [Parameter(Mandatory=$true, Position=0)]
-        [System.Diagnostics.Process]$UnityProcess,
+        [System.Diagnostics.Process]$unityProcess,
         [Parameter(Mandatory=$false, Position=1)]
         [string] $SuccessString,
         [Parameter(Mandatory=$false, Position=2)]
@@ -122,7 +122,7 @@ function SubscribeToUnityLogFile()
     $returnCondition = $null
     $unityClosedDelay = 0
 
-    If ($UnityProcess -eq $null)
+    If ($unityProcess -eq $null)
     {
         Throw "Unity process not received"
     }
@@ -133,27 +133,14 @@ function SubscribeToUnityLogFile()
         Throw "Failed to open logfile on $NewProjectLogPath"
     }
     $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
-    $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
-    $stopWatch.Start()
     do
     {  
         $line = $logStreamReader.ReadLine()
-
 
         If ($line -eq $null)
         {
             Start-Sleep -Milliseconds 400
             Write-Host -NoNewline "."
-            If ($stopWatch.ElapsedMilliseconds -gt 180000) # 3 Minutes.
-            {
-                Write-Host "Subscriber timeout reached." -ForegroundColor Red
-                Write-Host "Process Exited? $($UnityProcess.HasExited)." -ForegroundColor Red
-                Write-Host "Process Status code:  $($UnityProcess.ExitCode)." -ForegroundColor Red
-                Write-Host "Running Processes are:" -ForegroundColor Red
-                Get-Process
-                Write-Host "$unityClosedDelay -le 0 -or $line -ne $null" -ForegroundColor Red
-                break
-            }
         }
         Else
         {
@@ -182,14 +169,13 @@ function SubscribeToUnityLogFile()
             {
                 $returnCondition = $line
             } 
-
-            If ($UnityProcess.HasExited)
-            {
-                $unityClosedDelay++
-            }
         }
-    } while ($unityClosedDelay -le 0  -or $line -ne $null)
-    $stopWatch.Stop()
+
+        If ($UnityProcess.HasExited)
+        {
+            $unityClosedDelay++
+        }
+    } while ($unityClosedDelay -le 2  -or $line -ne $null)
     $logStreamReader.Dispose()
     $logFileStream.Dispose()
     return $returnCondition
