@@ -133,7 +133,8 @@ function SubscribeToUnityLogFile()
         Throw "Failed to open logfile on $NewProjectLogPath"
     }
     $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
-
+    $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
+    $stopWatch.Start()
     do
     {  
         $line = $logStreamReader.ReadLine()
@@ -141,7 +142,17 @@ function SubscribeToUnityLogFile()
 
         If ($line -eq $null)
         {
-            Start-Sleep -Milliseconds 200
+            Start-Sleep -Milliseconds 400
+            Write-Host -NoNewline "."
+            If ($stopWatch.ElapsedMilliseconds -gt 180000) # 3 Minutes.
+            {
+                Write-Host "Subscriber timeout reached." -ForegroundColor Red
+                Write-Host "Process Exited? $($UnityProcess.HasExited)." -ForegroundColor Red
+                Write-Host "Process Status code:  $($UnityProcess.ExitCode)." -ForegroundColor Red
+                Write-Host "Running Processes are:" -ForegroundColor Red
+                Get-Process
+                break
+            }
         }
         Else
         {
@@ -177,6 +188,7 @@ function SubscribeToUnityLogFile()
             }
         }
     } while ($unityClosedDelay -le 0  -or $line -ne $null)
+    $stopWatch.Stop()
     $logStreamReader.Dispose()
     $logFileStream.Dispose()
     return $returnCondition
