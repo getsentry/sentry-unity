@@ -151,6 +151,7 @@ function SubscribeToUnityLogFile()
                 Write-Host "Process Status code:  $($UnityProcess.ExitCode)." -ForegroundColor Red
                 Write-Host "Running Processes are:" -ForegroundColor Red
                 Get-Process
+                Write-Host "$unityClosedDelay -le 0 -or $line -ne $null" -ForegroundColor Red
                 break
             }
         }
