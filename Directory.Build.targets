@@ -40,6 +40,7 @@
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
+      <TestDsn>https://49141d0c8f8b42f1abc9008b1f062088@o447951.ingest.sentry.io/6070139</TestDsn>
     </PropertyGroup>
 
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))"
@@ -166,7 +167,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)"
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath) -sentryOptions.configure True -sentryOptions.Dsn $(TestDsn)"
           IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
@@ -192,7 +193,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)"
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)  -sentryOptions.configure True -sentryOptions.Dsn $(TestDsn)"
           IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
@@ -205,7 +206,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building iOS Xcode project."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)"
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)  -sentryOptions.configure True -sentryOptions.Dsn $(TestDsn)"
           IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <!-- <Error Condition="!Exists('$(IOSBuildPath)')" Text="iOS build not found. Did something go wrong?"></Error> -->

@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -11,6 +12,11 @@ public class Builder
     {
         var args = ParseCommandLineArguments();
         ValidateArguments(args);
+
+        if (args.ContainsKey("sentryOptions.configure"))
+        {
+            SetupSentryOptions(args);
+        }
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
@@ -56,6 +62,47 @@ public class Builder
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX);
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android);
     public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS);
+
+    private static void SetupSentryOptions(Dictionary<string, string> args)
+    {
+        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Invoking SentryOptions");
+
+        if (!EditorApplication.ExecuteMenuItem("Tools/Sentry"))
+        {
+            throw new Exception("SetupSentryOptions: Menu item Tools -> Sentry was not found.");
+        }
+
+        var sentryWindowType = AppDomain.CurrentDomain.GetAssemblies()
+            ?.FirstOrDefault(assembly => assembly.FullName.StartsWith("Sentry.Unity.Editor"))
+            ?.GetTypes()?.FirstOrDefault(type => type.FullName.StartsWith("Sentry.Unity.Editor.SentryWindow"));
+
+        if (sentryWindowType is null)
+        {
+            throw new EntryPointNotFoundException("SetupSentryOptions: Method SentryWindow not found");
+        }
+
+        var optionsWindow = EditorWindow.GetWindow(sentryWindowType);
+        var options = optionsWindow.GetType().GetProperty("Options").GetValue(optionsWindow);
+
+        if (options is null)
+        {
+            throw new EntryPointNotFoundException("SetupSentryOptions: Method SentryOptions not found");
+        }
+        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Found SentryOptions");
+
+        var dsn = args["sentryOptions.Dsn"];
+        if (dsn != null)
+        {
+            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null,
+                "SetupSentryOptions: Configuring Dsn to {0}", dsn);
+
+            var dnsPropertyInfo = options.GetType().GetProperty("Dsn");
+            dnsPropertyInfo.SetValue(options, dsn, null);
+        }
+
+        optionsWindow.Close();
+        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Sentry options Configured");
+    }
 
     private static Dictionary<string, string> ParseCommandLineArguments()
     {
