@@ -77,6 +77,13 @@ public class Builder
             ?.GetTypes()?.FirstOrDefault(type => type.FullName == "Sentry.Unity.Editor.SentryWindow");
         if (sentryWindowType is null)
         {
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(name => name.FullName.Contains("Sentry")))
+            {
+                foreach(var type in asm.GetTypes())
+                {
+                    Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Asm {0} Type {1}", asm.FullName, type.FullName);
+                }
+            }
             throw new EntryPointNotFoundException("SetupSentryOptions: Type SentryWindow not found");
         }
 
