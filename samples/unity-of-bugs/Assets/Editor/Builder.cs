@@ -73,7 +73,7 @@ public class Builder
         }
 
         var sentryWindowType = AppDomain.CurrentDomain.GetAssemblies()
-            ?.FirstOrDefault(assembly => assembly.FullName == "Sentry.Unity.Editor")
+            ?.FirstOrDefault(assembly => assembly.FullName.StartsWith("Sentry.Unity.Editor,"))
             ?.GetTypes()?.FirstOrDefault(type => type.FullName == "Sentry.Unity.Editor.SentryWindow");
         if (sentryWindowType is null)
         {
