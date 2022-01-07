@@ -73,29 +73,10 @@ public class Builder
         }
 
         var sentryWindowType = AppDomain.CurrentDomain.GetAssemblies()
-            ?.FirstOrDefault(assembly => assembly.FullName.StartsWith("Sentry.Unity.Editor"))
-            ?.GetTypes()?.FirstOrDefault(type => type.FullName.StartsWith("Sentry.Unity.Editor.SentryWindow"));
-        sentryWindowType = null;
+            ?.FirstOrDefault(assembly => assembly.FullName == "Sentry.Unity.Editor")
+            ?.GetTypes()?.FirstOrDefault(type => type.FullName == "Sentry.Unity.Editor.SentryWindow");
         if (sentryWindowType is null)
         {
-            var x =  AppDomain.CurrentDomain.GetAssemblies()
-            ?.FirstOrDefault(assembly => assembly.FullName.StartsWith("Sentry.Unity.Editor"));
-            if (x == null)
-            {
-                Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Sentry.Unity.Editor not found, types are:");
-                foreach( var typ in AppDomain.CurrentDomain.GetAssemblies())
-                {
-                    Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Type - {0}", typ.FullName);
-                }
-            }
-            else
-            {
-                Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Types Found:");
-                foreach( var typ in x.GetTypes())
-                {
-                    Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Type - {0}", typ.FullName);
-                }
-            }
             throw new EntryPointNotFoundException("SetupSentryOptions: Type SentryWindow not found");
         }
 
