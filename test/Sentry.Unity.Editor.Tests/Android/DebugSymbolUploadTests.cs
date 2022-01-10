@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -102,6 +103,24 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             StringAssert.Contains(_fixture.SentryCliPath, actualFileContent);
             StringAssert.Contains(symbolsDirectoryPath, actualFileContent);
+        }
+
+        [Test]
+        public void AppendUploadToGradleFile_SentryCliPathContainsBackslashes_AddsToGradleFileWithEscapedBackslashes()
+        {
+            if (Application.platform != RuntimePlatform.WindowsEditor)
+            {
+                Assert.Inconclusive("Skipping: Not on Windows Editor");
+            }
+
+            var pathWithBackslashes = _fixture.SentryCliPath.Replace("/", @"\");
+            _fixture.SentryCliPath = pathWithBackslashes;
+            var expectedEscapedPath = pathWithBackslashes.Replace(@"\", @"\\");
+
+            DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, "symbols/path");
+            var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
+
+            StringAssert.Contains(expectedEscapedPath, actualFileContent);
         }
 
         public static void SetupFakeProject(string fakeProjectPath)
