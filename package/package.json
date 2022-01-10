@@ -1,6 +1,6 @@
 {
   "name": "io.sentry.unity",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "displayName": "Sentry Unity",
   "description": "Sentry SDK for Unity",
   "unity": "2019.4",
