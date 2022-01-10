@@ -6,6 +6,10 @@
 
 - Tag whether event was created in the UI thread ([#495](https://github.com/getsentry/sentry-unity/pull/495))
 
+### Fixes
+
+- Fix missing Sentry/Sentry.h ([#504](https://github.com/getsentry/sentry-unity/pull/504))
+
 ## 0.9.1
 
 ### Fixes
