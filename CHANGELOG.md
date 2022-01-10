@@ -9,6 +9,7 @@
 ### Fixes
 
 - Fix missing Sentry/Sentry.h ([#504](https://github.com/getsentry/sentry-unity/pull/504))
+- Automated Android symbols upload now correctly escapes sentry-cli executable path ([#507](https://github.com/getsentry/sentry-unity/pull/507))
 
 ## 0.9.1
 
