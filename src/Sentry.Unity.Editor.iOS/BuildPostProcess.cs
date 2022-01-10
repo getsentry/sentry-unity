@@ -21,7 +21,10 @@ namespace Sentry.Unity.Editor.iOS
 
             try
             {
-                CopyFrameworkToBuildDirectory(pathToProject, options?.DiagnosticLogger);
+                var frameworkDirectory = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK ? "Device" : "Simulator";
+                var pathToFramework = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", frameworkDirectory, "Sentry.framework"));
+
+                CopyFrameworkToBuildDirectory(pathToProject, pathToFramework, options?.DiagnosticLogger);
 
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
                 sentryXcodeProject.AddSentryFramework();
@@ -73,9 +76,9 @@ namespace Sentry.Unity.Editor.iOS
             }
         }
 
-        private static void CopyFrameworkToBuildDirectory(string pathToProject, IDiagnosticLogger? logger)
+        internal static void CopyFrameworkToBuildDirectory(string pathToXcodeProject, string pathToSentryFramework, IDiagnosticLogger? logger)
         {
-            var targetPath = Path.Combine(pathToProject, "Frameworks", "Sentry.framework");
+            var targetPath = Path.Combine(pathToXcodeProject, "Frameworks", "Sentry.framework");
             if (Directory.Exists(targetPath))
             {
                 // If the target path already exists we can bail. Unity doesn't allow an appending builds when switching
@@ -84,20 +87,17 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var packageName = SentryPackageInfo.GetName();
-            var frameworkDirectory = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK ? "Device" : "Simulator";
-
-            var frameworkPath = Path.GetFullPath(Path.Combine("Packages", packageName, "Plugins", "iOS", frameworkDirectory, "Sentry.framework"));
-            if (Directory.Exists(frameworkPath))
+            if (Directory.Exists(pathToSentryFramework))
             {
-                logger?.LogDebug("Copying Sentry.framework from '{0}' to '{1}'", frameworkPath, targetPath);
+                logger?.LogDebug("Copying 'Sentry.framework' from '{0}' to '{1}'", pathToSentryFramework, targetPath);
 
-                Directory.CreateDirectory(Path.Combine(pathToProject, "Frameworks"));
-                FileUtil.CopyFileOrDirectoryFollowSymlinks(frameworkPath, targetPath);
+                Directory.CreateDirectory(Path.Combine(pathToXcodeProject, "Frameworks"));
+                FileUtil.CopyFileOrDirectory(pathToSentryFramework, targetPath);
             }
-            else
+
+            if (!Directory.Exists(targetPath))
             {
-                throw new FileNotFoundException($"Failed to copy 'Sentry.framework' from '{frameworkPath}' to Xcode project");
+                throw new FileNotFoundException($"Failed to copy 'Sentry.framework' from '{pathToSentryFramework}' to Xcode project {targetPath}");
             }
         }
     }
