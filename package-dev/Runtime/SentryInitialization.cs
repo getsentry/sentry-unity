@@ -6,7 +6,6 @@
 #endif
 #endif
 
-using System;
 using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.Scripting;
