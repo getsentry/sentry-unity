@@ -26,9 +26,12 @@ namespace Sentry.Unity.Editor.Android
         public static void AppendUploadToGradleFile(string sentryCliPath, string gradleProjectPath, string symbolsDirectoryPath, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
+
+            // On Windows the paths contains backslashes that need to be either escaped or replaced with slashes (opting for slash for consistency)
             if (application.Platform == RuntimePlatform.WindowsEditor)
             {
-                sentryCliPath = sentryCliPath.Replace(@"\", @"\\"); // On Windows the path contains backslashes that need to be escaped
+                sentryCliPath = sentryCliPath.Replace(@"\", "/");
+                symbolsDirectoryPath = symbolsDirectoryPath.Replace(@"\", "/");
             }
 
             if (!File.Exists(sentryCliPath))

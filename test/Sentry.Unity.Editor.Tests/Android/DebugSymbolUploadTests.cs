@@ -92,33 +92,25 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void AppendUploadToGradleFile_SentryCliExecutableExists_AddsPathToGradleFile()
-        {
-            var expectedSentryCliPath = _fixture.SentryCliPath;
-            if (Application.platform == RuntimePlatform.WindowsEditor)
-            {
-                expectedSentryCliPath = expectedSentryCliPath.Replace(@"\", @"\\");
-            }
-
-            var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
-
-            DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
-            var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
-
-            StringAssert.Contains(expectedSentryCliPath, actualFileContent);
-        }
-
-        [Test]
         [TestCase(true)]
         [TestCase(false)]
         public void AppendUploadToGradleFile_AllRequirementsMet_AppendsSentryCliToFile(bool export)
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, export);
+            var expectedSentryCliPath = _fixture.SentryCliPath;
+            var expectedSymbolsDirectoryPath = symbolsDirectoryPath;
+
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                expectedSentryCliPath = expectedSentryCliPath.Replace(@"\", "/");
+                expectedSymbolsDirectoryPath = symbolsDirectoryPath.Replace(@"\", "/");
+            }
 
             DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
             var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
 
-            StringAssert.Contains(symbolsDirectoryPath, actualFileContent);
+            StringAssert.Contains(expectedSentryCliPath, actualFileContent);
+            StringAssert.Contains(expectedSymbolsDirectoryPath, actualFileContent);
         }
 
         public static void SetupFakeProject(string fakeProjectPath)
