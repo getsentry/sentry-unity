@@ -9,6 +9,8 @@ namespace Sentry.Unity
     /// </summary>
     public static class SentryUnity
     {
+        public static SentryUnityOptions? DefaultOptions;
+
         /// <summary>
         /// Initializes Sentry Unity SDK while configuring the options.
         /// </summary>
@@ -30,6 +32,11 @@ namespace Sentry.Unity
             SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
             if (sentryUnityOptions.ShouldInitializeSdk())
             {
+                if (DefaultOptions is not null)
+                {
+
+                }
+
                 sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());
                 SentrySdk.Init(sentryUnityOptions);
             }

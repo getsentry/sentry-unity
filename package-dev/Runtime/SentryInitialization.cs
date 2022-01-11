@@ -6,6 +6,8 @@
 #endif
 #endif
 
+using System;
+using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -17,25 +19,23 @@ using Sentry.Unity.Android;
 
 [assembly: AlwaysLinkAssembly]
 
-namespace Sentry.Unity
+internal static partial class SentryInitialization
 {
-    public static class SentryInitialization
+    static partial void ConfigureOptions(SentryUnityOptions options);
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    public static void Init()
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        public static void Init()
+        var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
+        if (options.ShouldInitializeSdk())
         {
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
-            if (options.ShouldInitializeSdk())
-            {
-
 #if SENTRY_NATIVE_IOS
-                SentryNativeIos.Configure(options);
+            SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options);
 #endif
-
-                SentryUnity.Init(options);
-            }
+            ConfigureOptions(options);
+            SentryUnity.Init(options);
         }
     }
 }
