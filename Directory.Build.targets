@@ -40,7 +40,7 @@
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
-      <TestDsn>https://49141d0c8f8b42f1abc9008b1f062088@o447951.ingest.sentry.io/6070139</TestDsn>
+      <TestDsn>https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417</TestDsn>
     </PropertyGroup>
 
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))"
