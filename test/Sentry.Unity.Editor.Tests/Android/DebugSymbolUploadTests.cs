@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -91,6 +92,23 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
+        public void AppendUploadToGradleFile_SentryCliExecutableExists_AddsPathToGradleFile()
+        {
+            var expectedSentryCliPath = _fixture.SentryCliPath;
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                expectedSentryCliPath = expectedSentryCliPath.Replace(@"\", @"\\");
+            }
+
+            var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
+
+            DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
+            var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
+
+            StringAssert.Contains(expectedSentryCliPath, actualFileContent);
+        }
+
+        [Test]
         [TestCase(true)]
         [TestCase(false)]
         public void AppendUploadToGradleFile_AllRequirementsMet_AppendsSentryCliToFile(bool export)
@@ -100,7 +118,6 @@ namespace Sentry.Unity.Editor.Tests.Android
             DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
             var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
 
-            StringAssert.Contains(_fixture.SentryCliPath, actualFileContent);
             StringAssert.Contains(symbolsDirectoryPath, actualFileContent);
         }
 

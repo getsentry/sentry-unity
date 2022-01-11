@@ -8,11 +8,7 @@ namespace Sentry.Unity.iOS
     {
         private readonly SentryUnityOptions _options;
 
-        public IosNativeScopeObserver(SentryUnityOptions options)
-        {
-            _options = options;
-            _options.CrashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun;
-        }
+        public IosNativeScopeObserver(SentryUnityOptions options) => _options = options;
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {

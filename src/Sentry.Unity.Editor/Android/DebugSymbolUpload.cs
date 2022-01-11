@@ -1,4 +1,6 @@
 using System.IO;
+using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
@@ -21,8 +23,14 @@ namespace Sentry.Unity.Editor.Android
             return symbolsPath;
         }
 
-        public static void AppendUploadToGradleFile(string sentryCliPath, string gradleProjectPath, string symbolsDirectoryPath)
+        public static void AppendUploadToGradleFile(string sentryCliPath, string gradleProjectPath, string symbolsDirectoryPath, IApplication? application = null)
         {
+            application ??= ApplicationAdapter.Instance;
+            if (application.Platform == RuntimePlatform.WindowsEditor)
+            {
+                sentryCliPath = sentryCliPath.Replace(@"\", @"\\"); // On Windows the path contains backslashes that need to be escaped
+            }
+
             if (!File.Exists(sentryCliPath))
             {
                 throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
