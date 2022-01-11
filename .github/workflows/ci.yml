@@ -24,7 +24,7 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
         # 2022.1.0a12 removed until S.T.J issues fixed
-        unity-version: [2019.4.33f1, 2020.3.25f1, 2021.2.7f1]
+        unity-version: [2019.4.34f1, 2020.3.25f1, 2021.2.7f1]
         include:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
@@ -36,8 +36,8 @@ jobs:
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
             unity-config-path: /Library/Application Support/Unity/config/
-          - unity-version: 2019.4.33f1
-            unity-version-changeset: c9b2b02eeeef
+          - unity-version: 2019.4.34f1
+            unity-version-changeset: 6a9faed444f2
           - unity-version: 2020.3.25f1
             unity-version-changeset: 9b9180224418
           - unity-version: 2021.2.7f1
