@@ -110,17 +110,11 @@ jobs:
           key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
-        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        uses: bitsandfoxes/setup-unity
         id: setup-unity
         with:
           unity-version: ${{ matrix.unity-version }}
           unity-version-changeset:  ${{ matrix.unity-version-changeset }}
-
-      - name: Print setup output
-        run: |
-          echo unity-version: ${{ steps.setup-unity.outputs.unity-version }}
-          echo unity-path: ${{ steps.setup-unity.outputs.unity-path }}
-          echo env UNITY_PATH: ${{ env.UNITY_PATH }}
 
       - name: Setup Unity Modules - Windows IL2CPP
         if: matrix.os == 'windows-latest'
