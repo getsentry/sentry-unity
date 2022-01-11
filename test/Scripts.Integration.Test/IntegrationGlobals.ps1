@@ -40,6 +40,7 @@ $NewProjectLogPath = "$(ProjectRoot)/samples/logfile.txt"
 
 $IntegrationScriptsPath = "$(ProjectRoot)/test/Scripts.Integration.Test"
 $PackageReleaseOutput = "$(ProjectRoot)/test-package-release"
+$PackageReleaseAssetsPath = "$PackageReleaseOutput/Samples~/unity-of-bugs"
 
 function FormatUnityPath
 {

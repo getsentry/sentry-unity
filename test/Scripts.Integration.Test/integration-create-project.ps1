@@ -64,7 +64,7 @@ Else
 {
     Write-Host -NoNewline  "Copying Test scene"
     New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
-    Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
+    Copy-Item -Recurse "$PackageReleaseAssetsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
     Write-Host " OK"
     
     Write-Host -NoNewline  "Copying Scripts"

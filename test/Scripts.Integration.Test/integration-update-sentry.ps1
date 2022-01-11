@@ -41,6 +41,6 @@ Write-Host -NoNewline "Updating test files "
 # It was only required to not cause build errors due to missing Sentry Assemblies.
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
+Copy-Item "$PackageReleaseAssetsPath/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"
+Copy-Item "$PackageReleaseAssetsPath/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
 Write-Host " OK"
