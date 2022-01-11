@@ -27,7 +27,7 @@ namespace Sentry.Unity.Editor.Android
         {
             application ??= ApplicationAdapter.Instance;
 
-            // On Windows the paths contains backslashes that need to be either escaped or replaced with slashes (opting for slash for consistency)
+            // Gradle doesn't support backslahes on path (Windows) so converting to forward slashes
             if (application.Platform == RuntimePlatform.WindowsEditor)
             {
                 sentryCliPath = sentryCliPath.Replace(@"\", "/");
