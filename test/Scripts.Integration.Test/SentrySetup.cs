@@ -13,7 +13,6 @@ public class SentrySetup
     enum SentryInstallOrigin
     {
         None,
-        Git,
         Disk
     };
 
@@ -84,7 +83,11 @@ public class SentrySetup
             LogDebug("Sentry package Path is " + sentryPackageLocal);
             return sentryPackageLocal;
         }
-        return "https://github.com/getsentry/unity.git";
+        var errorMessage = $"Install command {origin} not supported";
+        LogError(errorMessage);
+        EditorApplication.Exit(-1);
+        // Throw since we will not return any value here.
+        throw new NotImplementedException(errorMessage);        
     }
 
     static SentryInstallOrigin GetInstallOriginFromEnvironment(Dictionary<string, string> args)

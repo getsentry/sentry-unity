@@ -1,4 +1,4 @@
-﻿param($arg)
+﻿param($arg, $setupSentry)
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
@@ -21,13 +21,19 @@ Else
     Throw "Unsupported build"
 }
 
-Write-Output "Checking if Project has no errors "
+Write-Host "Checking if Project has no errors "
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath",  "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName)", "-quit" -PassThru
-Write-Output " OK"
+If (-not $setupSentry)
+{
+    $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath",  "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName)", "-quit" -PassThru
+}
+Else {
+    $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath",  "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName)", "-sentryOptions.configure", $True, "-sentryOptions.Dsn", "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417", "-quit" -PassThru
+}
+Write-Host " OK"
 
 WaitForLogFile 30
-Write-Output "Waiting for Unity to build the project."
+Write-Host "Waiting for Unity to build the project."
 SubscribeToUnityLogFile $UnityProcess
 
 if ($UnityProcess.ExitCode -ne 0)
@@ -36,5 +42,5 @@ if ($UnityProcess.ExitCode -ne 0)
 }
 else
 {
-    Write-Output "`nProject Built!!"
+    Write-Host "`nProject Built!!"
 }

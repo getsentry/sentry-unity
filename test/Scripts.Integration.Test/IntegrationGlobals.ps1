@@ -84,7 +84,7 @@ function ClearUnityLog
         #Force is required if it's opened by another process.
         Remove-Item -Path "$NewProjectLogPath" -Force
     }
-    Write-Output " OK"
+    Write-Host " OK"
 }
 
 function WaitForLogFile
@@ -105,7 +105,7 @@ function WaitForLogFile
             Start-Sleep -Seconds 1
         }
     } while ($LogCreated -ne $true)
-    Write-Output " OK"
+    Write-Host " OK"
 }
 
 function SubscribeToUnityLogFile()
@@ -140,7 +140,6 @@ function SubscribeToUnityLogFile()
         If ($line -eq $null)
         {
             Start-Sleep -Milliseconds 400
-            Write-Host -NoNewline "."
         }
         Else
         {
@@ -170,7 +169,8 @@ function SubscribeToUnityLogFile()
                 $returnCondition = $line
             } 
         }
-
+        # Unity is closed but logfile wasn't updated in time.
+        # Adds additional delay to wait for the last lines.
         If ($UnityProcess.HasExited)
         {
             $unityClosedDelay++

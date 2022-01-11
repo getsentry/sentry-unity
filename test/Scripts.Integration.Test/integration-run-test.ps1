@@ -15,6 +15,7 @@ If ($null -eq $process)
     Throw "Process not found."
 }
 
+# Wait for 1 minute (sleeps for 500ms per iteration)
 $timeout = 60 * 2
 $processName = $process.Name
 Write-Host -NoNewline "Waiting for $processName"
@@ -26,9 +27,10 @@ While (!$process.HasExited -and $timeout -gt 0)
     $timeout--
 }
 
+# ExitCode 200 is the status code indicating success inside SmokeTest.cs
 If ($process.ExitCode -eq 200)
 {
-    Write-Output "`nPASSED"
+    Write-Host "`nPASSED"
 }
 ElseIf ($timeout -eq 0)
 {

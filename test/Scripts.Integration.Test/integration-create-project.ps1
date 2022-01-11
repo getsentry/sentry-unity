@@ -3,11 +3,11 @@
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
 $unityPath = FormatUnityPath $arg
-
+$packageReleaseZip = "package-release.zip"
 # Check if Unity path is correct.
 If (Test-Path -Path "$unityPath")
 {
-    Write-Output "Found Unity"
+    Write-Host "Found Unity"
 }
 Else
 {
@@ -17,47 +17,43 @@ Else
 # Check if SDK is packed.
 If (Test-Path -Path "$(ProjectRoot)/package-release.zip" ) 
 {
-    Write-Output "Found package-release.zip"
+    Write-Host "Found package-release.zip"
 }
 Else
 {
     Throw "sentry-release.zip on $(ProjectRoot) but it was not found. Be sure you run ./scripts/pack.ps1"
 }
 
-# Clear previous extrated package
-Write-Host -NoNewline "clearing $PackageReleaseOutput and Extracting package-release.zip :"
+Write-Host -NoNewline "clearing $PackageReleaseOutput and Extracting $packageReleaseZip :"
 if (Test-Path -Path "$PackageReleaseOutput")
 {
     Remove-Item -Path "$PackageReleaseOutput" -Recurse
 }
 
-Expand-Archive -LiteralPath "$(ProjectRoot)/package-release.zip" -DestinationPath "$PackageReleaseOutput"
-Write-Output "OK"
+Expand-Archive -LiteralPath "$(ProjectRoot)/$packageReleaseZip" -DestinationPath "$PackageReleaseOutput"
+Write-Host "OK"
 
 # Delete Previous Integration Project Folder if found
 If (Test-Path -Path "$NewProjectPath" ) 
 {
     Write-Host -NoNewline "Removing previous integration test:"
     Remove-Item -LiteralPath "$NewProjectPath" -Force -Recurse
-    Write-Output " OK"
+    Write-Host " OK"
 }
 
 ClearUnityLog
 
-# Create Integration Project Folder
 Write-Host -NoNewline "Creating directory for integration test:"
 New-Item -Path "$(ProjectRoot)/samples" -Name $NewProjectName -ItemType "directory"
-Write-Output " OK"
+Write-Host " OK"
 
-# Create New Unity Project
 Write-Host -NoNewline "Creating integration project:"
 $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-quit" -PassThru
-Write-Output " OK"
+Write-Host " OK"
 
-# Track log
 WaitForLogFile 30
 
-Write-Output "Waiting for Unity to create the project."
+Write-Host "Waiting for Unity to create the project."
 SubscribeToUnityLogFile $UnityProcess
 
 If ($UnityProcess.ExitCode -ne 0)
@@ -69,7 +65,7 @@ Else
     Write-Host -NoNewline  "Copying Test scene"
     New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
     Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
-    Write-Output " OK"
+    Write-Host " OK"
     
     Write-Host -NoNewline  "Copying Scripts"
     $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
@@ -77,7 +73,7 @@ Else
     Copy-Item -Recurse "$IntegrationScriptsPath/SmokeTester.*" -Destination "$NewProjectAssetsPath/Scripts/"
     Copy-Item -Recurse "$UnityOfBugsPath/Assets/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
     Copy-Item -Recurse "$IntegrationScriptsPath/SentrySetup.*" -Destination "$NewProjectAssetsPath/Editor/"
-    Write-Output " OK"
+    Write-Host " OK"
 
-    Write-Output "`nProject created!!"
+    Write-Host "`nProject created!!"
 }

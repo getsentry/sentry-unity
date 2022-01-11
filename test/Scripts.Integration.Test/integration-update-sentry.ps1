@@ -13,15 +13,15 @@ ClearUnityLog
 
 Write-Host -NoNewline "Starting Unity process:"
 $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk" -PassThru
-Write-Output " OK"
+Write-Host " OK"
 
 WaitForLogFile 30
 $successMessage =  "Sentry Package Installation:"
 
-Write-Output "Waiting for Unity to add Sentry to  the project."
+Write-Host "Waiting for Unity to add Sentry to the project."
 $stdout = SubscribeToUnityLogFile $UnityProcess $successMessage "Sentry setup: FAILED"
 
-Write-Output $stdout
+Write-Host $stdout
 If ($UnityProcess.ExitCode -ne 0)
 {
     $exitCode = $UnityProcess.ExitCode
@@ -29,16 +29,18 @@ If ($UnityProcess.ExitCode -ne 0)
 }
 ElseIf ($null -ne ($stdout | select-string $successMessage))
 {
-    Write-Output "`nSentry added!!"
+    Write-Host "`nSentry added!!"
 }
 Else
 {
-    Throw "Unity exited but failed to add Sentry package."
+    Throw "Unity exited but failed to add the Sentry package."
 }
 
 Write-Host -NoNewline "Updating test files "
+# We were previously using an empty SmokeTester to not generate Build errors.
+# It was only required to not cause build errors due to missing Sentry Assemblies.
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
 Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"
 Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
-Write-Output " OK"
+Write-Host " OK"
