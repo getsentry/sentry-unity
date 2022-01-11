@@ -110,7 +110,7 @@ jobs:
           key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
-        uses: bitsandfoxes/setup-unity
+        uses: bitsandfoxes/setup-unity@465111b8a4184a1ee4549e26cae0638b0df34f48
         id: setup-unity
         with:
           unity-version: ${{ matrix.unity-version }}
