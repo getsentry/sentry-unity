@@ -188,7 +188,7 @@ jobs:
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
-        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2021.2')) }}
+        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2022')) }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
@@ -203,7 +203,7 @@ jobs:
       - name: Run Unity tests (editmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
-        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2021.2')) }}
+        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2022')) }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
