@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Update sentry-dotnet module ([#503](https://github.com/getsentry/sentry-unity/pull/503))
+
 ## 0.9.3
 
 ### Fixes
