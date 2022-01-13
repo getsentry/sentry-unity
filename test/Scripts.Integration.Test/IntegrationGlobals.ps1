@@ -62,11 +62,17 @@ function FormatUnityPath
 
     If ($IsMacOS)
     {
-        $unityPath = $unityPath + "/Unity"
+        If ($unityPath.EndsWith("Contents/MacOS/Unity") -eq $false)
+        {
+            $unityPath = $unityPath + "/Unity"
+        }
     }
     ElseIf ($IsWindows)
     {
-        $unityPath = $unityPath +  "/Unity.exe"
+        If ($unityPath.EndsWith("Unity.exe") -eq $false)
+        {
+            $unityPath = $unityPath +  "/Unity.exe"
+        }
     }
     Else
     {
