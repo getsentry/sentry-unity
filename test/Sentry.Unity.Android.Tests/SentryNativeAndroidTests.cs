@@ -37,6 +37,14 @@ namespace Sentry.Unity.Android.Tests
         }
 
         [Test]
+        public void Configure_DefaultConfiguration_SetsCrashedLastRun()
+        {
+            var options = new SentryUnityOptions();
+            SentryNativeAndroid.Configure(options);
+            Assert.IsNotNull(options.CrashedLastRun);
+        }
+
+        [Test]
         public void Configure_NativeAndroidSupportDisabled_ObserverIsNull()
         {
             var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
