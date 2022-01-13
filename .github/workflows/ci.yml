@@ -272,7 +272,7 @@ jobs:
 
       - name: Integration Test - Run Player - Smoke Test
         shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-run-test.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
