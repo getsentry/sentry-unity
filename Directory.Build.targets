@@ -193,7 +193,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)  -sentryOptions.configure True -sentryOptions.Dsn $(TestDsn)"
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath) -sentryOptions.configure True -sentryOptions.Dsn $(TestDsn)"
           IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
@@ -206,7 +206,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building iOS Xcode project."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)  -sentryOptions.configure True -sentryOptions.Dsn $(TestDsn)"
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath) -sentryOptions.configure True -sentryOptions.Dsn $(TestDsn)"
           IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <!-- <Error Condition="!Exists('$(IOSBuildPath)')" Text="iOS build not found. Did something go wrong?"></Error> -->
