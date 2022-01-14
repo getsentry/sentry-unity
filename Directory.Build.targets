@@ -396,7 +396,7 @@ if (result == "Passed")
     return true;
 }
 
-var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 0 ? "s" : "")}.";
+var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
 Log.LogError(errorMessage);
 
 PrintFailedTests(testRun);
