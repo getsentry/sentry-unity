@@ -5,6 +5,7 @@ using System.Xml;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Android;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
@@ -12,31 +13,55 @@ namespace Sentry.Unity.Editor.Android
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
         private readonly Func<SentryUnityOptions?> _getOptions;
+        private readonly Func<SentryCliOptions?> _getSentryCliOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
+
+        private readonly bool _isDevelopmentBuild;
+        private readonly ScriptingImplementation _scriptingImplementation;
 
         // Lower levels are called first.
         public int callbackOrder => 1;
 
         public AndroidManifestConfiguration()
-            : this(() => ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer))
+            : this(() => ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer),
+                () => SentryCliOptions.LoadCliOptions(),
+                isDevelopmentBuild: EditorUserBuildSettings.development,
+                scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
         {
         }
 
         // Testing
         internal AndroidManifestConfiguration(
             Func<SentryUnityOptions?> getOptions,
-            IUnityLoggerInterceptor? interceptor = null)
+            Func<SentryCliOptions?> getSentryCliOptions,
+            IUnityLoggerInterceptor? interceptor = null,
+            bool isDevelopmentBuild = false,
+            ScriptingImplementation scriptingImplementation = ScriptingImplementation.IL2CPP)
         {
             _getOptions = getOptions;
+            _getSentryCliOptions = getSentryCliOptions;
             _interceptor = interceptor;
+
+            _isDevelopmentBuild = isDevelopmentBuild;
+            _scriptingImplementation = scriptingImplementation;
         }
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
+            ModifyManifest(basePath);
+
+            var unityProjectPath = Directory.GetParent(Application.dataPath).FullName;
+            var gradleProjectPath = Directory.GetParent(basePath).FullName;
+            SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
+        }
+
+        internal void ModifyManifest(string basePath)
+        {
             var manifestPath = GetManifestPath(basePath);
             if (!File.Exists(manifestPath))
             {
-                throw new FileNotFoundException("Can't configure native Android SDK nor set auto-init:false.", manifestPath);
+                throw new FileNotFoundException("Can't configure native Android SDK nor set auto-init:false.",
+                    manifestPath);
             }
 
             var disableAutoInit = false;
@@ -49,7 +74,8 @@ namespace Sentry.Unity.Editor.Android
             }
             else if (!options.Validate())
             {
-                options.DiagnosticLogger?.LogWarning("Failed to validate Sentry Options. Android native support will not be configured.");
+                options.DiagnosticLogger?.LogWarning(
+                    "Failed to validate Sentry Options. Android native support will not be configured.");
                 disableAutoInit = true;
             }
             else if (!options.AndroidNativeSupportEnabled)
@@ -85,6 +111,7 @@ namespace Sentry.Unity.Editor.Android
                 options.DiagnosticLogger?.LogDebug("Setting Release: {0}", options.Release);
                 androidManifest.SetRelease(options.Release);
             }
+
             if (options.Environment is not null)
             {
                 options.DiagnosticLogger?.LogDebug("Setting Environment: {0}", options.Environment);
@@ -110,10 +137,68 @@ namespace Sentry.Unity.Editor.Android
 
             // Disabling the native in favor of the C# layer for now
             androidManifest.SetAutoSessionTracking(false);
+            // TODO: We need an opt-out for this:
+            androidManifest.SetNdkScopeSync(true);
 
             // TODO: All SentryOptions and create specific Android options
 
             _ = androidManifest.Save();
+        }
+
+        internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
+        {
+            var options = _getOptions();
+            var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
+
+            if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
+            {
+                logger.LogDebug("Automated symbols upload requires the IL2CPP scripting backend.");
+                return;
+            }
+
+            var sentryCliOptions = _getSentryCliOptions();
+            if (sentryCliOptions is null)
+            {
+                logger.LogWarning("Failed to load sentry-cli options - Skipping symbols upload.");
+                return;
+            }
+
+            if (!sentryCliOptions.UploadSymbols)
+            {
+                logger.LogDebug("Automated symbols upload has been disabled.");
+                return;
+            }
+
+            if (_isDevelopmentBuild && !sentryCliOptions.UploadDevelopmentSymbols)
+            {
+                logger.LogDebug("Automated symbols upload for development builds has been disabled.");
+                return;
+            }
+
+            if (!sentryCliOptions.Validate(logger))
+            {
+                logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
+                                   "\nYou can disable this warning by disabling the automated symbols upload under " +
+                                   "Tools -> Sentry -> Editor");
+                return;
+            }
+
+            try
+            {
+                var symbolsPath = DebugSymbolUpload.GetSymbolsPath(
+                    unityProjectPath,
+                    gradleProjectPath,
+                    EditorUserBuildSettings.exportAsGoogleAndroidProject);
+
+                var sentryCliPath = SentryCli.SetupSentryCli();
+                SentryCli.CreateSentryProperties(gradleProjectPath, sentryCliOptions);
+
+                DebugSymbolUpload.AppendUploadToGradleFile(sentryCliPath, gradleProjectPath, symbolsPath);
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Failed to add the automatic symbols upload to the gradle project", e);
+            }
         }
 
         internal static string GetManifestPath(string basePath) =>
@@ -140,6 +225,7 @@ namespace Sentry.Unity.Editor.Android
                 _ = reader.Read();
                 Load(reader);
             }
+
             var nsManager = new XmlNamespaceManager(NameTable);
             nsManager.AddNamespace("android", AndroidXmlNamespace);
         }
@@ -173,8 +259,12 @@ namespace Sentry.Unity.Editor.Android
         internal void SetSampleRate(float sampleRate) => SetMetaData("io.sentry.sample-rate", sampleRate.ToString());
         internal void SetRelease(string release) => SetMetaData("io.sentry.release", release);
         internal void SetEnvironment(string environment) => SetMetaData("io.sentry.environment", environment);
+
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
             => SetMetaData("io.sentry.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
+
+        internal void SetNdkScopeSync(bool enableNdkScopeSync)
+            => SetMetaData("io.sentry.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
 
         internal void SetDebug(bool debug) => SetMetaData("io.sentry.debug", debug ? "true" : "false");
 

@@ -9,6 +9,7 @@ targets:
     releaseRepoOwner: getsentry
     releaseRepoName: unity
   - name: github
+    excludeNames: /^libsentry.*\.so$/
   - name: registry
     sdks:
       upm:sentry-unity:

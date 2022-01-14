@@ -1,35 +1,14 @@
+using System.Linq;
+using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
 {
     internal static class SentryOptionsUtility
     {
-        public static void SetDefaults(SentryUnityOptions options, IApplication? application = null,
-            bool isBuilding = false)
-        {
-            application ??= ApplicationAdapter.Instance;
-
-            options.Enabled = true;
-            options.IsGlobalModeEnabled = true;
-
-            options.AutoSessionTracking = true;
-            options.CaptureInEditor = true;
-            options.RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
-            options.InitCacheFlushTimeout = System.TimeSpan.Zero;
-
-            options.StackTraceMode = StackTraceMode.Original;
-            options.IsEnvironmentUser = false;
-
-            options.Release = Release(application);
-            options.Environment = Environment(application, isBuilding);
-
-            options.CacheDirectoryPath = application.PersistentDataPath;
-        }
-
         public static void SetDefaults(ScriptableSentryUnityOptions scriptableOptions)
         {
             var options = new SentryUnityOptions();
-            SetDefaults(options);
 
             scriptableOptions.Enabled = options.Enabled;
 
@@ -64,14 +43,6 @@ namespace Sentry.Unity
             scriptableOptions.DebugOnlyInEditor = true;
             scriptableOptions.DiagnosticLevel = SentryLevel.Warning;
         }
-
-        private static string Release(IApplication application) =>
-            application.ProductName is string productName
-            && !string.IsNullOrWhiteSpace(productName)
-                ? $"{productName}@{application.Version}"
-                : $"{application.Version}";
-
-        private static string Environment(IApplication application, bool isBuilding) => (application.IsEditor && !isBuilding) ? "editor" : "production";
 
         public static void TryAttachLogger(SentryUnityOptions options, IApplication? application = null)
         {

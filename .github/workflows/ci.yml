@@ -2,17 +2,19 @@ name: CI
 
 on:
   push:
+    paths-ignore:
+      - 'CHANGELOG.md'
     branches:
       - main
-      - release/*
+      - release/**
 
   pull_request:
-    branches:
-      - '*'
+    paths-ignore:
+      - 'CHANGELOG.md'
 
 jobs:
   build:
-    name: ${{ matrix.os }}
+    name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -20,19 +22,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
-        unity-version: [2019.4.21f1]
+        os: [macos-latest, windows-latest]
+        # 2022.1.0a12 removed until S.T.J issues fixed
+        unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
         include:
-          # - os: windows-latest
-          #   unity-installation-path: C:/Program Files/Unity/
-          #   unity-root: C:/Program Files/Unity/Hub/Editor/
-          #   unity-path: Editor/
+          - os: windows-latest
+            unity-installation-path: C:/Program Files/Unity/
+            unity-root: C:/Program Files/Unity/Hub/Editor/
+            unity-path: Editor/
+            unity-config-path: C:/ProgramData/Unity/config/
           - os: macos-latest
             unity-installation-path: /Applications/Unity/
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
-          - unity-version: 2019.4.21f1
-            unity-version-changeset: b76dac84db26
+            unity-config-path: /Library/Application Support/Unity/config/
+          - unity-version: 2019.4.33f1
+            unity-version-changeset: c9b2b02eeeef
+          - unity-version: 2020.3.21f1
+            unity-version-changeset: a38c86f6690f
+          - unity-version: 2021.1.26f1
+            unity-version-changeset: 6f076387c01d
+          # - unity-version: 2022.1.0a12
+          #   unity-version-changeset: 816252c3efbb
 
     steps:
       # Tag: 0.9.1
@@ -45,6 +56,13 @@ jobs:
         uses: actions/checkout@v2.3.3
         with:
           submodules: recursive
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Setup .NET SDK (v6.0)
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
 
       - name: "Set up Java: 11"
         uses: actions/setup-java@v1
@@ -71,7 +89,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: samples/unity-of-bugs/Library
-          key: ${{ matrix.os }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Get submodule information
         run: |
@@ -81,13 +99,15 @@ jobs:
       - name: Restore native SDKs
         uses: actions/cache@v2
         with:
+          # The raw NDK symbols are needed to get bundled for the final craft artifact
           path: |
             package-dev/Plugins/iOS
             package-dev/Plugins/Android
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           # We only build the native SDKs if the respective 'package-dev/Plugins/' directories are empty
           # Output changes only depending on the git sha of the submodules
           # hash of package/package.json for cache busting on release builds (version bump)
-          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
+          key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
         uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
@@ -122,72 +142,104 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: ios
 
+      - name: Create Unity license config
+        shell: pwsh
+        run: |
+          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
+          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+
       # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
       - name: Add Unity on PATH
         shell: pwsh
         run: |
           Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # Before we claim the license, lets build the SDKs which don't require Unity
-      - name: Build the sentry-cocoa SDK
-        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release
-      - name: Build the sentry-java SDK
-        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release
-
-      # License activation sometimes fails due to a problem connecting to Unity's licensing backend. Retry a few times if it fails.
-      - name: Activate Unity license
-        id: activate-license
+      - name: Make symbolic link for Unity (Windows)
+        if: matrix.os == 'windows-latest'
         shell: pwsh
-        # Builds take upwards of 30 min, so wait up to 10 for a license to be available before failing the build
-        run: |
-          $attempts = 40
+        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
-          while ($attempts -gt 0) {
-            unity -quit -batchmode -nographics -noUpm -logFile - -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_EMAIL }} -password ${{ secrets.UNITY_PASSWORD }} | Out-Default
+      - name: Install Unity UPM Packages
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-            if ($LASTEXITCODE -eq 0) {
-              break
-            }
+      - name: Build Android SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-            Write-Host "License activation failed. Retrying..."
-            Start-Sleep -Seconds 15
-            $attempts--
-          }
-
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "::error ::Failed to activate license after multiple attempts."
-          }
+      - name: Build iOS SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Sentry.Unity Solution
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet build -c Release
 
+      - name: Assembly alias
+        run: |
+          dotnet tool install --global Alias --version 0.2.0
+          assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+
       - name: Run Unity tests (playmode)
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+        # TODO: Run Play mode tests on 2022 once S.T.J loading issue resolved.
+       # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
+        if: ${{ matrix.unity-version != '2022.1.0a12' }}
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
+
+      - name: Upload test artifacts (playmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release
+        # TODO: Run Edit mode tests on 2022 once S.T.J loading issue resolved.
+        # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
+        if: ${{ matrix.unity-version != '2022.1.0a12' }}
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
+
+      - name: Upload test artifacts (editmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
 
       - name: Build Android Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS Player
         if: matrix.os == 'macos-latest'
-        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Standalone Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release
-
-      # Last step that requires running Unity should be above this
-
-      # Professional licenses are per-seat so we should always try to return them
-      - name: Return Unity license
-        if: ${{ always() }}
-        shell: pwsh
-        run: |
-          unity -quit -batchmode -nographics -noUpm -logFile - -returnlicense | Out-Default
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Run Smoke Tests
-        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
+
+      - name: Preparing test app for smoke test.
+        uses: actions/upload-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android/IL2CPP_Player.apk
 
       - name: Prepare Sentry package for release
         shell: pwsh
@@ -195,31 +247,200 @@ jobs:
 
       - name: Upload build artifacts if build failed
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: Build output
           path: artifacts/build
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
+        # Only on macOS which contain all native plugin needed
+        if: matrix.os == 'macos-latest'
         with:
           name: ${{ github.sha }}
-          path: package-release.zip
+          if-no-files-found: error
+          # Adding the native libraries so the symbol collector craft target can find/upload them
+          path: |
+            package-release.zip
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
       - name: Upload Android Build
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: Android Build
           path: samples/artifacts/builds/Android
 
-      - name: Upload test artifacts (playmode)
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (playmode)
-          path: artifacts/test/playmode
+  package-validation:
+    needs: [build]
+    name: UPM Package validation
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
 
-      - name: Upload test artifacts (editmode)
-        uses: actions/upload-artifact@v1
+      - name: Download UPM package
+        uses: actions/download-artifact@v2
         with:
-          name: Test results (editmode)
-          path: artifacts/test/editmode
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+
+      - name: Verify package content against snapshot
+        shell: pwsh
+        # If this step fails, you can accept the new file content by
+        # running the following script locally with 'accept' as an argument
+        # and committing the new snapshot file to your branch. i.e:
+        # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
+        run: ./test/Scripts.Tests/test-pack-contents.ps1
+
+  android-smoke-test:
+    needs: [build]
+    name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
+    runs-on: macos-latest
+    strategy:
+      max-parallel: 5
+      fail-fast: false
+      matrix:
+         api-level: [21, 27, 29]
+         avd-target: [default]
+         unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download test app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android
+
+      - name: Android emulator setup + Smoke test
+        id: smoke-test
+        continue-on-error: true
+        timeout-minutes: 10
+        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        with:
+         api-level: ${{ matrix.api-level }}
+         target: ${{ matrix.avd-target }}
+         force-avd-creation: false
+         ram-size: 2048M
+         arch: x86
+         cores: 2
+         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+         disable-animations: false
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Kill emulator if AVD failed.
+        continue-on-error: true
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        run: |
+          adb emu kill
+          sleep 7
+
+      - name: Android emulator setup + Smoke test (Retry)
+        id: smoke-test-retry
+        continue-on-error: true
+        timeout-minutes: 10
+        # We only want to retry the tests if the previous fail happened on the emulator startup.
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        with:
+         api-level: ${{ matrix.api-level }}
+         target: ${{ matrix.avd-target }}
+         ram-size: 2048M
+         cores: 2
+         arch: x86
+         force-avd-creation: false
+         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+         disable-animations: false
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Throw error if Smoke test failed
+        # We want to throw an error if the smoke test failed.
+        # We will ignore flaky errors from the emulator setup.
+        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
+        run: exit -1
+
+      - name: Upload screenshot if smoke test failed
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
+          path: samples/artifacts/builds/Android/screen.png
+
+  android-smoke-test-with-gservices:
+    needs: [build]
+    name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
+    runs-on: macos-latest
+    strategy:
+      max-parallel: 2
+      fail-fast: false
+      matrix:
+         api-level: [30]
+         avd-target: [google_apis]
+         #api-level 30 image is only available with google services.
+         unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download test app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android
+
+      - name: Android emulator setup + Smoke test
+        id: smoke-test
+        continue-on-error: true
+        timeout-minutes: 10
+        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        with:
+         api-level: ${{ matrix.api-level }}
+         target: ${{ matrix.avd-target }}
+         force-avd-creation: false
+         ram-size: 2048M
+         arch: x86
+         cores: 2
+         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+         disable-animations: false
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Kill emulator if AVD failed.
+        continue-on-error: true
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        run: |
+          adb emu kill
+          sleep 7
+
+      - name: Android emulator setup + Smoke test (Retry)
+        id: smoke-test-retry
+        continue-on-error: true
+        timeout-minutes: 10
+        # We only want to retry the tests if the previous fail happened on the emulator startup.
+        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        with:
+         api-level: ${{ matrix.api-level }}
+         target: ${{ matrix.avd-target }}
+         ram-size: 2048M
+         cores: 2
+         arch: x86
+         force-avd-creation: false
+         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+         disable-animations: false
+         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+
+      - name: Throw error if Smoke test failed
+        # We want to throw an error if the smoke test failed.
+        # We will ignore flaky errors from the emulator setup.
+        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
+        run: exit -1
+
+      - name: Upload screenshot if smoke test failed
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
+          path: samples/artifacts/builds/Android/screen.png

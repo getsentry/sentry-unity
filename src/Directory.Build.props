@@ -2,8 +2,9 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <PackageRuntimePath>../../$(DevPackageFolderName)/Runtime</PackageRuntimePath>
-    <PackageEditorPath>../../$(DevPackageFolderName)/Editor</PackageEditorPath>
+    <DevPackagePath>../../$(DevPackageFolderName)</DevPackagePath>
+    <PackageRuntimePath>$(DevPackagePath)/Runtime</PackageRuntimePath>
+    <PackageEditorPath>$(DevPackagePath)/Editor</PackageEditorPath>
   </PropertyGroup>
 
 </Project>

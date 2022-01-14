@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Json;
@@ -23,11 +22,12 @@ namespace Sentry.Unity.Editor
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
+        public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
         private int _currentTab = 0;
-        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Sessions", "Debug" };
+        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Advanced", "Editor" };
 
         private void OnEnable()
         {
@@ -36,6 +36,7 @@ namespace Sentry.Unity.Editor
 
             CheckForAndConvertJsonConfig();
             Options = LoadOptions();
+            CliOptions = SentryCliOptions.LoadCliOptions();
         }
 
         private ScriptableSentryUnityOptions LoadOptions()
@@ -130,10 +131,10 @@ namespace Sentry.Unity.Editor
                     DisplayTransport();
                     break;
                 case 3:
-                    DisplaySessions();
+                    DisplayDebug();
                     break;
                 case 4:
-                    DisplayDebug();
+                    DisplayEditor();
                     break;
                 default:
                     break;
@@ -149,11 +150,16 @@ namespace Sentry.Unity.Editor
             Options.Dsn = EditorGUILayout.TextField(
                 new GUIContent("DSN", "The URL to your Sentry project. " +
                                       "Get yours on sentry.io -> Project Settings."),
-                Options.Dsn);
+                Options.Dsn)?.Trim();
 
             Options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
                 Options.CaptureInEditor);
+
+            Options.EnableLogDebouncing = EditorGUILayout.Toggle(
+                new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the same type if " +
+                                                    "they are more frequent than once per second."),
+                Options.EnableLogDebouncing);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
@@ -166,22 +172,6 @@ namespace Sentry.Unity.Editor
                                                      "captured. Setting this to 0 discards all trace data. " +
                                                      "Setting this to 1.0 captures all."),
                 (float)Options.TracesSampleRate, 0.0f, 1.0f);
-
-            EditorGUILayout.Space();
-            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-            EditorGUILayout.Space();
-
-            GUILayout.Label("Native Support", EditorStyles.boldLabel);
-
-            Options.IosNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("iOS Native Support", "Whether to enable Native iOS support to capture" +
-                                                     "errors written in languages such as Objective-C, Swift, C and C++."),
-                Options.IosNativeSupportEnabled);
-
-            Options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
-                                                         "capture errors written in languages such as Java, Kotlin, C and C++."),
-                Options.AndroidNativeSupportEnabled);
         }
 
         private void DisplayEnrichment()
@@ -244,6 +234,7 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Max Breadcrumbs", "Maximum number of breadcrumbs that get captured." +
                                                   "\nDefault: 100"),
                 Options.MaxBreadcrumbs);
+            Options.MaxBreadcrumbs = Math.Max(0, Options.MaxBreadcrumbs);
 
             Options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
                 new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
@@ -256,10 +247,12 @@ namespace Sentry.Unity.Editor
             Options.EnableOfflineCaching = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Offline Caching", ""),
                 Options.EnableOfflineCaching);
+
             Options.MaxCacheItems = EditorGUILayout.IntField(
                 new GUIContent("Max Cache Items", "The maximum number of files to keep in the disk cache. " +
                                                   "The SDK deletes the oldest when the limit is reached.\nDefault: 30"),
                 Options.MaxCacheItems);
+            Options.MaxCacheItems = Math.Max(0, Options.MaxCacheItems);
 
             Options.InitCacheFlushTimeout = EditorGUILayout.IntField(
                 new GUIContent("Init Flush Timeout [ms]", "The timeout that limits how long the SDK " +
@@ -269,6 +262,7 @@ namespace Sentry.Unity.Editor
                                                           "game startup and would not be captured because the process " +
                                                           "would be killed before Sentry had a chance to capture the event."),
                 Options.InitCacheFlushTimeout);
+            Options.InitCacheFlushTimeout = Math.Max(0, Options.InitCacheFlushTimeout);
 
             EditorGUILayout.EndToggleGroup();
 
@@ -295,29 +289,14 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Shut Down Timeout [ms]", "How many seconds to wait before shutting down to " +
                                                          "give Sentry time to send events from the background queue."),
                 Options.ShutdownTimeout);
+            Options.ShutdownTimeout = Mathf.Clamp(Options.ShutdownTimeout, 0, int.MaxValue);
 
             Options.MaxQueueItems = EditorGUILayout.IntField(
                 new GUIContent("Max Queue Items", "The maximum number of events to keep in memory while " +
                                                   "the worker attempts to send them."),
                 Options.MaxQueueItems
             );
-        }
-
-        private void DisplaySessions()
-        {
-            Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Auto Session Tracking", "Whether the SDK should start and end sessions " +
-                                                        "automatically. If the timeout is reached the old session will" +
-                                                        "be ended and a new one started."),
-                Options.AutoSessionTracking);
-
-            Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
-                new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
-                                                       "(i.e. the application has been put in the background) before " +
-                                                       "it is considered ended."),
-                Options.AutoSessionTrackingInterval);
-
-            EditorGUILayout.EndToggleGroup();
+            Options.MaxQueueItems = Math.Max(0, Options.MaxQueueItems);
         }
 
         private void DisplayDebug()
@@ -338,6 +317,67 @@ namespace Sentry.Unity.Editor
                 Options.DiagnosticLevel);
 
             EditorGUILayout.EndToggleGroup();
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            Options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Session Tracking", "Whether the SDK should start and end sessions " +
+                                                        "automatically. If the timeout is reached the old session will" +
+                                                        "be ended and a new one started."),
+                Options.AutoSessionTracking);
+
+            Options.AutoSessionTrackingInterval = EditorGUILayout.IntField(
+                new GUIContent("Session Timeout [ms]", "The duration of time a session can stay paused " +
+                                                       "(i.e. the application has been put in the background) before " +
+                                                       "it is considered ended."),
+                Options.AutoSessionTrackingInterval);
+            Options.AutoSessionTrackingInterval = Mathf.Max(0, Options.AutoSessionTrackingInterval);
+            EditorGUILayout.EndToggleGroup();
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            GUILayout.Label("Native Support", EditorStyles.boldLabel);
+
+            Options.IosNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("iOS Native Support", "Whether to enable Native iOS support to capture" +
+                                                     "errors written in languages such as Objective-C, Swift, C and C++."),
+                Options.IosNativeSupportEnabled);
+
+            Options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
+                                                         "capture errors written in languages such as Java, Kotlin, C and C++."),
+                Options.AndroidNativeSupportEnabled);
+        }
+
+        private void DisplayEditor()
+        {
+            CliOptions.UploadSymbols = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Upload Symbols", "Whether debug symbols should be uploaded automatically " +
+                                                 "on release builds."),
+                CliOptions.UploadSymbols);
+
+            CliOptions.UploadDevelopmentSymbols = EditorGUILayout.Toggle(
+                new GUIContent("Upload Dev Symbols", "Whether debug symbols should be uploaded automatically " +
+                                                     "on development builds."),
+                CliOptions.UploadDevelopmentSymbols);
+
+            EditorGUILayout.EndToggleGroup();
+
+            CliOptions.Auth = EditorGUILayout.TextField(
+                new GUIContent("Auth Token", "The authorization token from your user settings in Sentry"),
+                CliOptions.Auth);
+
+            CliOptions.Organization = EditorGUILayout.TextField(
+                new GUIContent("Org Slug", "The organization slug in Sentry"),
+                CliOptions.Organization);
+
+            CliOptions.Project = EditorGUILayout.TextField(
+                new GUIContent("Project Name", "The project name in Sentry"),
+                CliOptions.Project);
         }
 
         private void OnLostFocus()
@@ -353,6 +393,7 @@ namespace Sentry.Unity.Editor
             Validate();
 
             EditorUtility.SetDirty(Options);
+            EditorUtility.SetDirty(CliOptions);
             AssetDatabase.SaveAssets();
         }
 

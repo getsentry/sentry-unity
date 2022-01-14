@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <!-- This assembly only stays in the Editor, so embed pdbs in the dll to help debugging -->
     <DebugType>embedded</DebugType>
     <OutDir>$(PackageEditorPath)/iOS</OutDir>
@@ -8,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
+    <ProjectReference Include="../Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
   </ItemGroup>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
@@ -21,7 +21,7 @@
       <IOSBuildTools>$(UnityRoot)/Data/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll</IOSBuildTools>
     </PropertyGroup>
 
-    <Error Condition="!Exists('$(IOSBuildTools)')" Text="iOS build tools not found. Make sure to install the Unity iOS Module."></Error>
+    <Error Condition="!Exists('$(IOSBuildTools)')" Text="iOS build tools not found. Make sure to install the Unity iOS Module. Expected directory: $(IOSBuildTools)"></Error>
 
     <ItemGroup>
       <Reference Include="UnityEditor">

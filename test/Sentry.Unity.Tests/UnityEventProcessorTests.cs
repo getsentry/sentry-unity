@@ -1,12 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Sentry.Extensibility;
+using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -176,43 +175,6 @@ namespace Sentry.Unity.Tests
                         Message = "Test message"
                     }
                 };
-        }
-
-        [Test]
-        public void SentrySdkCaptureEvent_WrongDsn_CorrectException()
-        {
-            // arrange
-            const string wrongDsn = "https://key@fake.domain.fail.to.resolve/5606182";
-            var options = new SentryUnityOptions
-            {
-                Dsn = wrongDsn,
-                Enabled = true,
-                AttachStacktrace = true,
-                Debug = true,
-                DiagnosticLogger = _testLogger
-            };
-            SentryUnity.Init(options);
-
-            var sentryEvent = new SentryEvent
-            {
-                Message = new SentryMessage
-                {
-                    Message = "Test message"
-                }
-            };
-
-            // act
-            SentrySdk.CaptureEvent(sentryEvent);
-            SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
-
-            // assert
-            var logError = _testLogger.Logs
-                .SingleOrDefault(log => log.logLevel == SentryLevel.Error && log.exception is HttpRequestException);
-            Assert.IsNotNull(logError);
-
-            var logErrorInnerException = logError.exception!.InnerException as WebException;
-            Assert.IsNotNull(logErrorInnerException);
-            Assert.IsTrue(logErrorInnerException!.Message.Contains("Error: NameResolutionFailure"));
         }
     }
 
@@ -542,19 +504,6 @@ namespace Sentry.Unity.Tests
             sut.Process(sentryEvent);
 
             Assert.IsNull(sentryEvent.Contexts.Gpu.GraphicsShaderLevel);
-        }
-    }
-
-    internal sealed class TestLogger : IDiagnosticLogger
-    {
-        internal readonly List<(SentryLevel logLevel, string message, Exception? exception)> Logs = new();
-
-        public bool IsEnabled(SentryLevel level) => true;
-
-        public void Log(SentryLevel logLevel, string message, Exception? exception = null, params object?[] args)
-        {
-            var log = (logLevel, string.Format(message, args), exception);
-            Logs.Add(log);
         }
     }
 

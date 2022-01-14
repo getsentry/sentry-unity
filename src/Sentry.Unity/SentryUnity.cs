@@ -12,28 +12,27 @@ namespace Sentry.Unity
         /// <summary>
         /// Initializes Sentry Unity SDK while configuring the options.
         /// </summary>
-        /// <param name="unitySentryOptionsConfigure">Callback to configure the options.</param>
-        public static void Init(Action<SentryUnityOptions> unitySentryOptionsConfigure)
+        /// <param name="sentryUnityOptionsConfigure">Callback to configure the options.</param>
+        public static void Init(Action<SentryUnityOptions> sentryUnityOptionsConfigure)
         {
-            var unitySentryOptions = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(unitySentryOptions);
-
-            unitySentryOptionsConfigure.Invoke(unitySentryOptions);
-
-            SentryOptionsUtility.TryAttachLogger(unitySentryOptions);
-            Init(unitySentryOptions);
+            var options = new SentryUnityOptions();
+            sentryUnityOptionsConfigure.Invoke(options);
+            Init(options);
         }
 
         /// <summary>
         /// Initializes Sentry Unity SDK while providing an options object.
         /// </summary>
-        /// <param name="unitySentryOptions">The options object.</param>
+        /// <param name="sentryUnityOptions">The options object.</param>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void Init(SentryUnityOptions unitySentryOptions)
+        public static void Init(SentryUnityOptions sentryUnityOptions)
         {
-            unitySentryOptions.DiagnosticLogger?.LogDebug(unitySentryOptions.ToString());
-
-            SentrySdk.Init(unitySentryOptions);
+            SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
+            if (sentryUnityOptions.ShouldInitializeSdk())
+            {
+                sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());
+                SentrySdk.Init(sentryUnityOptions);
+            }
         }
     }
 }

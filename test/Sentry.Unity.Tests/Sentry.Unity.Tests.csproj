@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <OutDir>$(PackageRuntimeTestsPath)</OutDir>
   </PropertyGroup>
   <ItemGroup>
@@ -9,7 +8,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false"/>
-    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false"/>
+    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
+    <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../SharedClasses/*.cs">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
   </ItemGroup>
 </Project>

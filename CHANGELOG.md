@@ -1,28 +1,110 @@
 # Changelog
 
-## Unreleased
-
-### Features
-
-- Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
-- iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
-- Android native bridge for scope sync ([#308](https://github.com/getsentry/sentry-unity/pull/308))
+## 0.9.1
 
 ### Fixes
 
+- Suppress errors when adding attachments ([#485](https://github.com/getsentry/sentry-unity/pull/485))
+
+## 0.9.0
+
+### Features
+
+- Sample scene with custom context and screenshot ([#472](https://github.com/getsentry/sentry-unity/pull/472))
+
+### Fixes
+
+- Initializing the SDK with an options object won't bypass default option values ([#469](https://github.com/getsentry/sentry-unity/pull/469))
+- Fixed overwriting Xcode build properties ([#466](https://github.com/getsentry/sentry-unity/pull/466))
+- Xcode exports no longer break with sentry-cli already added ([#457](https://github.com/getsentry/sentry-unity/pull/457))
+- Explicitly set <SignAssembly>false</SignAssembly> ([#470](https://github.com/getsentry/sentry-unity/pull/470)). So that Sentry.dll is not strong named when consumed inside Unity.
+- Bump Sentry .NET SDK 3.12.3 ([#484](https://github.com/getsentry/sentry-unity/pull/484))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.12.3/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.11.1...3.12.3)
+- Bump Sentry Cocoa SDK 7.7.0 ([#481](https://github.com/getsentry/sentry-unity/pull/481))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.7.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.5.2...7.7.0)
+- Bump Sentry Android SDK 5.5.0 ([#474](https://github.com/getsentry/sentry-unity/pull/474))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.5.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.4.0...5.5.0)
+
+## 0.8.0
+
+### Features
+
+- ScriptableSentryUnityOptions is now public ([#419](https://github.com/getsentry/sentry-unity/pull/419))
+- Automated symbols upload for iOS builds when bitcode is enabled ([#444](https://github.com/getsentry/sentry-unity/pull/444))
+- Automated symbols upload for iOS builds when bitcode is disabled ([#443](https://github.com/getsentry/sentry-unity/pull/443))
+
+### Fixes
+
+- Android: Automated symbol upload no longer breaks non IL2CPP builds ([#450](https://github.com/getsentry/sentry-unity/pull/450))
+- Config window now saves changes to sentry-cli options ([#454](https://github.com/getsentry/sentry-unity/pull/454))
+- Sentry no longer requires Xcode projects to be exported on macOS ([#442](https://github.com/getsentry/sentry-unity/pull/442))
+
+## 0.7.0
+
+### Features
+
+- Added automated symbols upload support for Android ([#408](https://github.com/getsentry/sentry-unity/pull/408))
+- Avoid DLL conflict with other Unity packages ([#425](https://github.com/getsentry/sentry-unity/issues/425))
+
+## 0.6.2
+
+- fix release packaging ([#417](https://github.com/getsentry/sentry-unity/pull/417))
+
+## 0.6.1
+
+### Features
+
+- Added sentry-cli to Unity package ([#414](https://github.com/getsentry/sentry-unity/pull/414))
+
+### Fixes
+
+- Added missing release string validation ([#389](https://github.com/getsentry/sentry-unity/pull/389))
+- Sentry internal logs no longer show up as breadcrumbs ([#377](https://github.com/getsentry/sentry-unity/pull/377))
+- Fixed missing context data when initializing SDK programmatically ([#376](https://github.com/getsentry/sentry-unity/pull/376))
+- Fixed CaptureInEditor flag when initializing SDK programmatically ([#370](https://github.com/getsentry/sentry-unity/pull/370))
+- Preventing numeric options to be set negative in the editor window ([#364](https://github.com/getsentry/sentry-unity/pull/364))
+- Bump Sentry .NET SDK 3.11.1 ([#407](https://github.com/getsentry/sentry-unity/pull/407))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.11.1/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.9.3...3.11.1)
+- Bump Sentry Cocoa SDK 7.5.2 ([#407](https://github.com/getsentry/sentry-unity/pull/407))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.5.2/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.3.0...7.5.2)
+- Bump Sentry Android SDK 5.4.0 ([#411](https://github.com/getsentry/sentry-unity/pull/411))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.4.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.1...5.4.0)
+
+## 0.6.0
+
+### Features
+
+- Added iOS simulator support ([#358](https://github.com/getsentry/sentry-unity/pull/358))
+- Android Native Support ([#307](https://github.com/getsentry/sentry-unity/pull/307))
+- Android mark sessions as crashed ([#347](https://github.com/getsentry/sentry-unity/pull/347))
+- Android native bridge for scope sync ([#308](https://github.com/getsentry/sentry-unity/pull/308))
+- iOS native bridge for scope sync ([#296](https://github.com/getsentry/sentry-unity/pull/296))
+- Sample: Throw exceptions in C++ and Objective-C. C++ segfault ([#342](https://github.com/getsentry/sentry-unity/pull/342))
+- Update Unity from 2019.4.21f to 2019.4.30f ([#350](https://github.com/getsentry/sentry-unity/pull/350))
+
+### Fixes
+
+- Fixed Xcode generation with invalid or disabled SentryOptions ([#330](https://github.com/getsentry/sentry-unity/pull/330))
 - Fixed iOS support related reference resolution issue for Windows ([#325](https://github.com/getsentry/sentry-unity/pull/325))
 - Import link.xml caused an infinite loop ([#315](https://github.com/getsentry/sentry-unity/pull/315))
 - Removed unused .asmdefs which clears a warning from console ([#316](https://github.com/getsentry/sentry-unity/pull/316))
 - Don't send negative line number ([#317](https://github.com/getsentry/sentry-unity/pull/317))
+- Android SDK: re-installation of native backend through C# ([#339](https://github.com/getsentry/sentry-unity/pull/339))
 - Bump Sentry .NET SDK 3.9.3 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.9.3/CHANGELOG.md)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.9.0...3.9.3)
 - Bump Sentry Cocoa SDK 7.3.0 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.3.0/CHANGELOG.md)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.2.2...7.3.0)
-- Bump Sentry Android SDK to 5.2.0 ([#328](https://github.com/getsentry/sentry-unity/pull/328))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.0/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.0-beta.3...5.2.0)
+- Bump Sentry Android SDK 5.2.1 ([#359](https://github.com/getsentry/sentry-unity/pull/359))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/5.2.1/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.2.0-beta.3...5.2.1)
 
 ## 0.5.2
 

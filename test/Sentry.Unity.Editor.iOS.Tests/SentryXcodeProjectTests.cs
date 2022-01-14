@@ -1,8 +1,9 @@
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Extensibility;
-using UnityEngine;
+using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
@@ -22,11 +23,23 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             public string ProjectRoot { get; set; } =
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles", "2019_4");
-            public SentryUnityOptions Options { get; set; } = new();
+            public SentryUnityOptions Options { get; set; }
+            public TestLogger TestLogger { get; set; }
             public INativeMain NativeMain { get; set; } = new NativeMainTest();
             public INativeOptions NativeOptions { get; set; } = new NativeOptionsTest();
 
-            public SentryXcodeProject GetSut() => new(ProjectRoot, Options, NativeMain, NativeOptions);
+            public Fixture()
+            {
+                TestLogger = new TestLogger();
+                Options = new SentryUnityOptions
+                {
+                    Debug = true,
+                    DiagnosticLevel = SentryLevel.Debug,
+                    DiagnosticLogger = TestLogger
+                };
+            }
+
+            public SentryXcodeProject GetSut() => new(ProjectRoot, NativeMain, NativeOptions);
         }
 
         private Fixture _fixture = new();
@@ -64,46 +77,10 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
-        public void SetRelativeFrameworkPath_PathExists_ReturnsFrameworkPath()
-        {
-            CreateFrameworkDirectories();
-
-            var xcodeProject = _fixture.GetSut();
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
-
-            xcodeProject.SetRelativeFrameworkPath();
-
-            Assert.AreEqual(expectedFrameworkPath, xcodeProject.RelativeFrameworkPath);
-        }
-
-        [Test]
-        public void SetRelativeFrameworkPath_DevPathExists_ReturnsDevFrameworkPath()
-        {
-            CreateDevFrameworkDirectories();
-
-            var xcodeProject = _fixture.GetSut();
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
-
-            xcodeProject.SetRelativeFrameworkPath();
-
-            Assert.AreEqual(expectedFrameworkPath, xcodeProject.RelativeFrameworkPath);
-        }
-
-        [Test]
-        public void SetRelativeFrameworkPath_PathDoesNotExist_ThrowsFileNotFoundException()
-        {
-            _fixture.ProjectRoot = "Path/That/Does/Not/Exist";
-            var xcodeProject = _fixture.GetSut();
-
-            Assert.Throws<FileNotFoundException>(() => xcodeProject.SetRelativeFrameworkPath());
-        }
-
-        [Test]
         public void AddSentryFramework_CleanXcodeProject_SentryWasAdded()
         {
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
-            xcodeProject.RelativeFrameworkPath = "Frameworks/io.sentry.unity/Plugins/iOS/";
 
             xcodeProject.AddSentryFramework();
 
@@ -111,27 +88,58 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
+        public void AddSentryFramework_FrameworkSearchPathAlreadySet_DoesNotGetOverwritten()
+        {
+            const string testPath = "path_that_should_not_get_overwritten";
+            var xcodeProject = _fixture.GetSut();
+            xcodeProject.ReadFromProjectFile();
+            xcodeProject.SetSearchPathBuildProperty(testPath);
+
+            xcodeProject.AddSentryFramework();
+
+            StringAssert.Contains(testPath, xcodeProject.ProjectToString());
+        }
+
+        [Test]
         public void CreateNativeOptions_CleanXcodeProject_NativeOptionsAdded()
         {
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
-            xcodeProject.RelativeFrameworkPath = "Frameworks/io.sentry.unity/Plugins/iOS/";
 
-            xcodeProject.AddNativeOptions();
+            xcodeProject.AddNativeOptions(_fixture.Options);
 
             StringAssert.Contains("SentryOptions.m", xcodeProject.ProjectToString());
         }
 
-        private void CreateFrameworkDirectories()
+        [Test]
+        public void AddBuildPhaseSymbolUpload_CleanXcodeProject_BuildPhaseSymbolUploadAdded()
         {
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity", "Plugins", "iOS");
-            Directory.CreateDirectory(Path.Combine(_fixture.ProjectRoot, expectedFrameworkPath));
+            var xcodeProject = _fixture.GetSut();
+            xcodeProject.ReadFromProjectFile();
+
+            var didContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+            var doesContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
+
+            Assert.IsFalse(didContainUploadPhase);
+            Assert.IsTrue(doesContainUploadPhase);
         }
 
-        private void CreateDevFrameworkDirectories()
+        [Test]
+        public void AddBuildPhaseSymbolUpload_PhaseAlreadyAdded_LogsAndDoesNotAddAgain()
         {
-            var expectedFrameworkPath = Path.Combine("Frameworks", "io.sentry.unity.dev", "Plugins", "iOS");
-            Directory.CreateDirectory(Path.Combine(_fixture.ProjectRoot, expectedFrameworkPath));
+            const int expectedBuildPhaseOccurence = 1;
+            var xcodeProject = _fixture.GetSut();
+            xcodeProject.ReadFromProjectFile();
+
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+
+            var actualBuildPhaseOccurence = Regex.Matches(xcodeProject.ProjectToString(),
+                Regex.Escape(SentryXcodeProject.SymbolUploadPhaseName)).Count;
+
+            Assert.AreEqual(1, _fixture.TestLogger.Logs.Count);
+            Assert.AreEqual(expectedBuildPhaseOccurence, actualBuildPhaseOccurence);
         }
     }
 }

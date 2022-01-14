@@ -3,140 +3,80 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Json;
+using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
     public sealed class SentryUnityOptionsTests
     {
-        private const string TestSentryOptionsFileName = "TestSentryOptions.json";
+        class Fixture
+        {
+            public TestApplication Application { get; set; } = new(
+                productName: "TestApplication",
+                version: "0.1.0",
+                persistentDataPath: "test/persistent/data/path");
+            public bool IsBuilding { get; set; }
+
+            public SentryUnityOptions GetSut() => new SentryUnityOptions(Application, IsBuilding);
+        }
+
+        [SetUp]
+        public void Setup() => _fixture = new Fixture();
+        private Fixture _fixture = null!;
 
         [Test]
-        public void Options_ReadFromJson_Success()
+        [TestCase(true, true, "production")]
+        [TestCase(true, false, "editor")]
+        [TestCase(false, false, "production")]
+        [TestCase(false, true, "production")]
+        public void Ctor_Environment_IsNull(bool isEditor, bool isBuilding, string expectedEnvironment)
         {
-            var optionsFilePath = GetTestOptionsFilePath();
-            Assert.IsTrue(File.Exists(optionsFilePath));
+            _fixture.Application = new TestApplication(isEditor: isEditor);
+            _fixture.IsBuilding = isBuilding;
 
-            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
+            var sut = _fixture.GetSut();
 
-            JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
+            StringAssert.IsMatch(expectedEnvironment, sut.Environment);
         }
 
         [Test]
-        [TestCase(true)]
-        [TestCase(false)]
-        public void ToSentryUnityOptions_ValueMapping_AreEqual(bool isBuilding)
+        public void Ctor_CacheDirectoryPath_IsApplicationPersistentDataPath() =>
+            StringAssert.IsMatch(_fixture.Application.PersistentDataPath, _fixture.GetSut().CacheDirectoryPath);
+
+        [Test]
+        public void Ctor_IsGlobalModeEnabled_IsTrue() => Assert.IsTrue(_fixture.GetSut().IsGlobalModeEnabled);
+
+        [Test]
+        public void Ctor_Release_IsProductNameAtVersion() =>
+            StringAssert.IsMatch($"{_fixture.Application.ProductName}@{_fixture.Application.Version}",
+                _fixture.GetSut().Release);
+
+        [Test]
+        [TestCase("\n")]
+        [TestCase("\t")]
+        [TestCase("/")]
+        [TestCase("\\")]
+        [TestCase("..")]
+        [TestCase("@")]
+        public void Ctor_Release_DoesNotContainInvalidCharacters(string invalidString)
         {
-            var expectedOptions = new SentryUnityOptions
-            {
-                Enabled = false,
-                Dsn = "test",
-                CaptureInEditor = false,
-                TracesSampleRate = 1.0f,
-                AutoSessionTracking = false,
-                AutoSessionTrackingInterval = TimeSpan.FromSeconds(1),
-                AttachStacktrace = true,
-                MaxBreadcrumbs = 1,
-                ReportAssembliesMode = ReportAssembliesMode.None,
-                SendDefaultPii = true,
-                IsEnvironmentUser = true,
-                MaxCacheItems = 1,
-                InitCacheFlushTimeout = TimeSpan.FromSeconds(1),
-                SampleRate = 0.5f,
-                ShutdownTimeout = TimeSpan.FromSeconds(1),
-                MaxQueueItems = 1,
-                Release = "testRelease",
-                Environment = "testEnvironment",
-                Debug = true,
-                DebugOnlyInEditor = true,
-                DiagnosticLevel = SentryLevel.Info,
-            };
+            var prefix = "test";
+            var suffix = "application";
+            var version = "0.1.0";
+            _fixture.Application = new TestApplication(productName: $"{prefix}{invalidString}{suffix}", version: version);
 
-            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            scriptableOptions.Enabled = expectedOptions.Enabled;
-            scriptableOptions.Dsn = expectedOptions.Dsn;
-            scriptableOptions.CaptureInEditor = expectedOptions.CaptureInEditor;
-            scriptableOptions.TracesSampleRate = expectedOptions.TracesSampleRate;
-            scriptableOptions.AutoSessionTracking = expectedOptions.AutoSessionTracking;
-            scriptableOptions.AutoSessionTrackingInterval = (int)expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
-            scriptableOptions.AttachStacktrace = expectedOptions.AttachStacktrace;
-            scriptableOptions.MaxBreadcrumbs = expectedOptions.MaxBreadcrumbs;
-            scriptableOptions.ReportAssembliesMode = expectedOptions.ReportAssembliesMode;
-            scriptableOptions.SendDefaultPii = expectedOptions.SendDefaultPii;
-            scriptableOptions.IsEnvironmentUser = expectedOptions.IsEnvironmentUser;
-            scriptableOptions.MaxCacheItems = expectedOptions.MaxCacheItems;
-            scriptableOptions.InitCacheFlushTimeout = (int)expectedOptions.InitCacheFlushTimeout.TotalMilliseconds;
-            scriptableOptions.SampleRate = expectedOptions.SampleRate;
-            scriptableOptions.ShutdownTimeout = (int)expectedOptions.ShutdownTimeout.TotalMilliseconds;
-            scriptableOptions.MaxQueueItems = expectedOptions.MaxQueueItems;
-            scriptableOptions.ReleaseOverride = expectedOptions.Release;
-            scriptableOptions.EnvironmentOverride = expectedOptions.Environment;
-            scriptableOptions.Debug = expectedOptions.Debug;
-            scriptableOptions.DebugOnlyInEditor = expectedOptions.DebugOnlyInEditor;
-            scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
-
-            var optionsActual = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
-
-            AssertOptions(expectedOptions, optionsActual);
+            Assert.AreEqual($"{prefix}_{suffix}@{version}", _fixture.GetSut().Release);
         }
 
         [Test]
-        [TestCase(true)]
-        [TestCase(false)]
-        public void ToScriptableOptions_ConvertJsonOptions_AreEqual(bool isBuilding)
+        public void Ctor_Release_IgnoresDotOnlyProductNames()
         {
-            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
-            var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
-
-            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
-            JsonSentryUnityOptions.ToScriptableOptions(jsonTextAsset, scriptableOptions);
-
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
-
-            AssertOptions(expectedOptions, actualOptions);
+            _fixture.Application = new TestApplication(productName: ".........", version: "0.1.0");
+            Assert.AreEqual($"{_fixture.Application.Version}", _fixture.GetSut().Release);
         }
 
         [Test]
-        public void Ctor_Release_IsNull() => Assert.IsNull(new SentryUnityOptions().Release);
-
-        [Test]
-        public void Ctor_Environment_IsNull() => Assert.IsNull(new SentryUnityOptions().Environment);
-
-        [Test]
-        public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(new SentryUnityOptions().CacheDirectoryPath);
-
-        public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
-        {
-            Assert.AreEqual(expected.Enabled, actual.Enabled);
-            Assert.AreEqual(expected.Dsn, actual.Dsn);
-            Assert.AreEqual(expected.CaptureInEditor, actual.CaptureInEditor);
-            Assert.AreEqual(expected.TracesSampleRate, actual.TracesSampleRate);
-            Assert.AreEqual(expected.AutoSessionTracking, actual.AutoSessionTracking);
-            Assert.AreEqual(expected.AutoSessionTrackingInterval, actual.AutoSessionTrackingInterval);
-            Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
-            Assert.AreEqual(expected.MaxBreadcrumbs, actual.MaxBreadcrumbs);
-            Assert.AreEqual(expected.ReportAssembliesMode, actual.ReportAssembliesMode);
-            Assert.AreEqual(expected.SendDefaultPii, actual.SendDefaultPii);
-            Assert.AreEqual(expected.IsEnvironmentUser, actual.IsEnvironmentUser);
-            Assert.AreEqual(expected.MaxCacheItems, actual.MaxCacheItems);
-            Assert.AreEqual(expected.InitCacheFlushTimeout, actual.InitCacheFlushTimeout);
-            Assert.AreEqual(expected.SampleRate, actual.SampleRate);
-            Assert.AreEqual(expected.ShutdownTimeout, actual.ShutdownTimeout);
-            Assert.AreEqual(expected.MaxQueueItems, actual.MaxQueueItems);
-            Assert.AreEqual(expected.Release, actual.Release);
-            Assert.AreEqual(expected.Environment, actual.Environment);
-            Assert.AreEqual(expected.CacheDirectoryPath, actual.CacheDirectoryPath);
-            Assert.AreEqual(expected.Debug, actual.Debug);
-            Assert.AreEqual(expected.DebugOnlyInEditor, actual.DebugOnlyInEditor);
-            Assert.AreEqual(expected.DiagnosticLevel, actual.DiagnosticLevel);
-        }
-
-        private static string GetTestOptionsFilePath()
-        {
-            var assemblyFolderPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            Assert.NotNull(assemblyFolderPath);
-            return Path.Combine(assemblyFolderPath!, TestSentryOptionsFileName);
-        }
+        public void Ctor_IsEnvironmentUser_IsFalse() => Assert.AreEqual(false, _fixture.GetSut().IsEnvironmentUser);
     }
 }

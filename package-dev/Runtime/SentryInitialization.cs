@@ -16,10 +16,11 @@ using UnityEngine.Scripting;
 
 #if SENTRY_NATIVE_IOS
 using Sentry.Unity.iOS;
+#elif UNITY_ANDROID
+using Sentry.Unity.Android;
+#elif SENTRY_WEBGL
+using Sentry.Unity.WebGL;
 #endif
-using Sentry.Extensibility;
-using Sentry.Internal;
-using Sentry.Protocol.Envelopes;
 
 [assembly: AlwaysLinkAssembly]
 
@@ -35,55 +36,15 @@ namespace Sentry.Unity
             {
 
 #if SENTRY_NATIVE_IOS
-                options.ScopeObserver = new IosNativeScopeObserver(options);
-                options.EnableScopeSync = true;
+                SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                options.ScopeObserver = new UnityJavaScopeObserver(options);
-                options.EnableScopeSync = true;
+                SentryNativeAndroid.Configure(options);
 #elif SENTRY_WEBGL
-                // Caching transport relies on a background thread
-                options.CacheDirectoryPath = null;
-                options.BackgroundWorker = new WebBackgroundWorker(options);
-
-                // Still cant' find out what's using Threads so:
-                options.AutoSessionTracking = false;
-                options.DetectStartupTime = StartupTimeDetectionMode.None;
-                options.DisableTaskUnobservedTaskExceptionCapture();
-                options.DisableAppDomainUnhandledExceptionCapture();
-                options.DisableAppDomainProcessExitFlush();
-                options.DisableDuplicateEventDetection();
-                options.ReportAssembliesMode = ReportAssembliesMode.None;
+                SentryWebGL.Configure(options);
 #endif
 
                 SentryUnity.Init(options);
             }
         }
-    }
-
-    internal class WebBackgroundWorker : IBackgroundWorker
-    {
-        private readonly SentryUnityOptions _options;
-        private readonly ITransport _transport;
-
-        public WebBackgroundWorker(SentryUnityOptions options)
-        {
-            _options = options;
-            var composer = new SdkComposer(options);
-            _transport = composer.CreateTransport();
-        }
-
-        public bool EnqueueEnvelope(Envelope envelope)
-        {
-            _transport.SendEnvelopeAsync(envelope, CancellationToken.None)
-                .ContinueWith(r => _options.DiagnosticLogger?.LogInfo("Result of envelope capture was: {0}", r.Status));
-            return true;
-        }
-
-        public Task FlushAsync(TimeSpan timeout)
-        {
-            return Task.CompletedTask;
-        }
-
-        public int QueuedItems { get; }
     }
 }

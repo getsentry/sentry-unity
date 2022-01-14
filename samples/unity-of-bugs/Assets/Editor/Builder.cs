@@ -14,7 +14,7 @@ public class Builder
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
-            scenes = new[] {"Assets/Scenes/1_BugfarmScene.unity"},
+            scenes = new[] {"Assets/Scenes/1_Bugfarm.unity"},
             locationPathName = args["buildPath"],
             target = buildTarget,
             options = BuildOptions.StrictMode,

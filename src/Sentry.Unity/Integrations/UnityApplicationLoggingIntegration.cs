@@ -1,4 +1,5 @@
 using System;
+using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ namespace Sentry.Unity.Integrations
         private readonly IApplication _application;
 
         private IHub? _hub;
-        private SentryOptions? _sentryOptions;
+        private SentryUnityOptions? _sentryOptions;
 
         public UnityApplicationLoggingIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
         {
@@ -26,30 +27,39 @@ namespace Sentry.Unity.Integrations
         public void Register(IHub hub, SentryOptions sentryOptions)
         {
             _hub = hub;
-            _sentryOptions = sentryOptions;
+            _sentryOptions = sentryOptions as SentryUnityOptions;
 
             _application.LogMessageReceived += OnLogMessageReceived;
             _application.Quitting += OnQuitting;
         }
 
         // Internal for testability
-        internal void OnLogMessageReceived(string condition, string stackTrace, LogType type)
+        internal void OnLogMessageReceived(string? condition, string? stackTrace, LogType type)
         {
-            if (_hub is null || !_hub.IsEnabled)
+            if (condition is null || _hub?.IsEnabled != true)
             {
                 return;
             }
 
-            var debounced = type switch
-            {
-                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
-                LogType.Log => LogTimeDebounce.Debounced(),
-                LogType.Warning => WarningTimeDebounce.Debounced(),
-                _ => true
-            };
-            if (!debounced)
+            if (condition.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
             {
                 return;
+            }
+
+            if (_sentryOptions?.EnableLogDebouncing == true)
+            {
+                var debounced = type switch
+                {
+                    LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
+                    LogType.Log => LogTimeDebounce.Debounced(),
+                    LogType.Warning => WarningTimeDebounce.Debounced(),
+                    _ => true
+                };
+
+                if (!debounced)
+                {
+                    return;
+                }
             }
 
             // TODO: to check against 'MinBreadcrumbLevel'
@@ -61,13 +71,20 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+            if (stackTrace is not null)
             {
-                Level = ToEventTagType(type)
-            };
+                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace))
+                {
+                    Level = ToEventTagType(type)
+                };
 
-            _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
-            _hub.CaptureEvent(sentryEvent);
+                _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
+                _hub.CaptureEvent(sentryEvent);
+            }
+            else
+            {
+                _hub.CaptureMessage(condition, ToEventTagType(type));
+            }
 
             // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
@@ -75,12 +92,16 @@ namespace Sentry.Unity.Integrations
 
         private void OnQuitting()
         {
+            _sentryOptions?.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
             // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
             //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
             // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
             // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
             _application.LogMessageReceived -= OnLogMessageReceived;
-            _hub?.EndSession();
+            // 'OnQuitting' is invoked even when an uncaught exception happens in the ART. To make sure the .NET
+            // SDK checks with the native layer on restart if the previous run crashed (through the CrashedLastRun callback)
+            // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.
+            _hub?.PauseSession();
             _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
         }
 

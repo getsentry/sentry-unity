@@ -16,7 +16,6 @@ namespace Sentry.Unity.Json
         internal static SentryUnityOptions LoadFromJson(TextAsset sentryOptionsTextAsset)
         {
             var options = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(options);
 
             var json = JsonDocument.Parse(sentryOptionsTextAsset.bytes).RootElement;
 
