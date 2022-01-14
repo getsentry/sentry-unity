@@ -41,7 +41,6 @@ package-dev/alias-references.txt
 # ignore integration test files
 Samples/IntegrationTest
 Samples/logfile.txt
-Scripts/integration-test/UnityPath.txt
 
 # Ignore package release
 test-package-release/

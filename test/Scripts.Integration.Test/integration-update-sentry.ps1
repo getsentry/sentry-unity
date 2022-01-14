@@ -38,7 +38,7 @@ Else
 
 Write-Host -NoNewline "Updating test files "
 # We were previously using an empty SmokeTester to not generate Build errors.
-# It was only required to not cause build errors due to missing Sentry Assemblies.
+# It was only required to not cause build errors since the new project did't have Sentry installed.
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
 Copy-Item "$PackageReleaseAssetsPath/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"

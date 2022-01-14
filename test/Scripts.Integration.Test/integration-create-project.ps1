@@ -15,13 +15,14 @@ Else
 }
 
 # Check if SDK is packed.
-If (Test-Path -Path "$(ProjectRoot)/package-release.zip" ) 
+$packageFile = "package-release.zip"
+If (Test-Path -Path "$(ProjectRoot)/$packageFile" ) 
 {
-    Write-Host "Found package-release.zip"
+    Write-Host "Found $packageFile"
 }
 Else
 {
-    Throw "sentry-release.zip on $(ProjectRoot) but it was not found. Be sure you run ./scripts/pack.ps1"
+    Throw "$packageFile on $(ProjectRoot) but it was not found. Be sure you run ./scripts/pack.ps1"
 }
 
 Write-Host -NoNewline "clearing $PackageReleaseOutput and Extracting $packageReleaseZip :"
