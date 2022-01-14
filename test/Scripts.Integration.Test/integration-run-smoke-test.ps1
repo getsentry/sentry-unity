@@ -35,7 +35,6 @@ If ($process.ExitCode -eq 200)
 ElseIf ($timeout -eq 0)
 {
     Throw "Test process timed out."
-
 }
 Else
 {
