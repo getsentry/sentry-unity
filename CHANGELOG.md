@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Update sentry-dotnet module ([#503](https://github.com/getsentry/sentry-unity/pull/503))
+- Bump Sentry .NET SDK 3.13.0 ([#503](https://github.com/getsentry/sentry-unity/pull/503))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.13.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.12.3...3.13.0)
 
 ## 0.9.3
 
