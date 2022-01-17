@@ -1,0 +1,68 @@
+name: 🐞 Bug Report
+description: Report a bug in this repo
+labels: ["Platform: Unity", "Type: Bug"]
+
+body:
+  - type: dropdown
+    id: sentry-usage
+    attributes:
+      label: Sentry
+      description: How do you use Sentry?
+      options:
+        - Sentry SaaS (sentry.io)
+        - Self-hosted/on-premise
+    validations:
+      required: true
+
+  - type: input
+    id: unity-version
+    attributes:
+      label: Unity-Version
+      description: Which version of Unity do you use?
+      placeholder: 2020.3.22f1 ← should look like this
+    validations:
+      required: true
+
+  - type: input
+    id: sentry-version
+    attributes:
+      label: Sentry-Version
+      description: Which version of the Sentry SDK do you use?
+      placeholder: 0.9.3 ← should look like this
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      description: How can we see what you're seeing?
+      placeholder: |-
+        1. foo
+        2. bar
+        3. baz
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Result
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Result
+      description: Logs? Screenshots?
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |-
+        ## Thanks!
+        Check our [board](https://github.com/orgs/getsentry/projects/19/views/24) for what to expect next.
+    validations:
+      required: false

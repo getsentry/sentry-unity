@@ -1,0 +1,21 @@
+name: ❓ Question
+description: You have got a question?
+labels: ["Platform: Unity", "Type: Question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: You have got a question?
+      placeholder: |-
+        What do you need help with/what do you want to know?
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |-
+        ## Thanks!
+        Check our [board](https://github.com/orgs/getsentry/projects/19/views/24) for what to expect next.
+    validations:
+      required: false
