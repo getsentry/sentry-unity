@@ -1,68 +1,33 @@
+---
 name: 🐞 Bug Report
-description: Report a bug in this repo
+about: Report a bug in this repo
 labels: ["Platform: Unity", "Type: Bug"]
+---
 
-body:
-  - type: dropdown
-    id: sentry-usage
-    attributes:
-      label: Sentry
-      description: How do you use Sentry?
-      options:
-        - Sentry SaaS (sentry.io)
-        - Self-hosted/on-premise
-    validations:
-      required: true
+### Environment
 
-  - type: input
-    id: unity-version
-    attributes:
-      label: Unity-Version
-      description: Which version of Unity do you use?
-      placeholder: 2020.3.22f1 ← should look like this
-    validations:
-      required: true
+How do you use Sentry?
+Sentry SaaS (sentry.io) or self-hosted/on-premise (which version?)
 
-  - type: input
-    id: sentry-version
-    attributes:
-      label: Sentry-Version
-      description: Which version of the Sentry SDK do you use?
-      placeholder: 0.9.3 ← should look like this
-    validations:
-      required: true
+Which version of the SDK?
 
-  - type: textarea
-    id: repro
-    attributes:
-      label: Steps to Reproduce
-      description: How can we see what you're seeing?
-      placeholder: |-
-        1. foo
-        2. bar
-        3. baz
-    validations:
-      required: true
+Which version of Unity?
 
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected Result
-    validations:
-      required: true
+Is this happening in Unity (editor) or on a player like Android, iOS, Windows?
 
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual Result
-      description: Logs? Screenshots?
-    validations:
-      required: true
+### Steps to Reproduce
 
-  - type: markdown
-    attributes:
-      value: |-
-        ## Thanks!
-        Check our [board](https://github.com/orgs/getsentry/projects/19/views/24) for what to expect next.
-    validations:
-      required: false
+1. What
+2. you
+3. did.
+
+### Expected Result
+
+What you thought would happen.
+
+### Actual Result
+
+What actually happened. Maybe a screenshot/recording? Maybe some logs?
+
+
+### Any logs or screenshots
