@@ -214,7 +214,7 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
-      - name: Setup Sentry Unity options
+      - name: Setup Unity Player - Sentry Options
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
