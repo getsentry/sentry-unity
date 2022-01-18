@@ -42,7 +42,9 @@ namespace Sentry.Unity.Editor
                     LogType.Log, 
                     LogOption.NoStacktrace,
                     null, 
-                    "{0}: Configuring DSN to {1}", functionName, dsn);
+                    "{0}: Configuring DSN to {1}", 
+                    functionName, 
+                    dsn);
 
                 options.Dsn = dsn;
             }
