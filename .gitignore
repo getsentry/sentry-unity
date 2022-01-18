@@ -37,3 +37,12 @@ sentry-unity/Assets/Editor/Sentry/
 
 # ignore temp assemblia alias lookup file
 package-dev/alias-references.txt
+
+# ignore integration test files
+Samples/IntegrationTest
+Samples/logfile.txt
+
+# Ignore package release
+test-package-release/
+package-release/
+package-release.zip
