@@ -214,6 +214,11 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
+      - name: Setup Sentry Unity options
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Build Android Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
