@@ -16,6 +16,7 @@ jobs:
   build:
     name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
