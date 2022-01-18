@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -96,12 +97,20 @@ namespace Sentry.Unity.Editor.Tests.Android
         public void AppendUploadToGradleFile_AllRequirementsMet_AppendsSentryCliToFile(bool export)
         {
             var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, export);
+            var expectedSentryCliPath = _fixture.SentryCliPath;
+            var expectedSymbolsDirectoryPath = symbolsDirectoryPath;
+
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                expectedSentryCliPath = expectedSentryCliPath.Replace(@"\", "/");
+                expectedSymbolsDirectoryPath = symbolsDirectoryPath.Replace(@"\", "/");
+            }
 
             DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
             var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
 
-            StringAssert.Contains(_fixture.SentryCliPath, actualFileContent);
-            StringAssert.Contains(symbolsDirectoryPath, actualFileContent);
+            StringAssert.Contains(expectedSentryCliPath, actualFileContent);
+            StringAssert.Contains(expectedSymbolsDirectoryPath, actualFileContent);
         }
 
         public static void SetupFakeProject(string fakeProjectPath)

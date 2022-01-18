@@ -96,7 +96,7 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
+  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
@@ -126,7 +126,7 @@ or
     </Error>
   </Target>
 
-  <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK -->
+  <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
   <Target Name="BuildAndroidSDK"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And !Exists('$(SentryAndroidArtifactsDestination)')"
@@ -171,8 +171,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
           IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
-
-  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP -->
+  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnityBuildStandalonePlayerIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -183,7 +182,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
           IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
-  <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP -->
+  <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnitySmokeTestStandalonePlayerIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -198,7 +197,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
   </Target>
 
-  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP -->
+  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerAndroidIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -211,7 +210,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
   </Target>
 
-  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS -->
+  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerIOS"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -260,7 +259,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
-  <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
+  <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityPlayModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
@@ -275,7 +274,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
-  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest. -->
+  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityEditModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
@@ -409,7 +408,7 @@ if (result == "Passed")
     return true;
 }
 
-var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 0 ? "s" : "")}.";
+var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
 Log.LogError(errorMessage);
 
 PrintFailedTests(testRun);

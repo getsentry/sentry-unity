@@ -110,7 +110,7 @@ jobs:
           key: ${{ matrix.os }}-${{ hashFiles('submodules-status') }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
 
       - name: Setup Unity
-        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         id: setup-unity
         with:
           unity-version: ${{ matrix.unity-version }}
@@ -118,26 +118,26 @@ jobs:
 
       - name: Setup Unity Modules - Windows IL2CPP
         if: matrix.os == 'windows-latest'
-        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: windows-il2cpp
 
       - name: Setup Unity Modules - macOS IL2CPP
         if: matrix.os == 'macos-latest'
-        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: mac-il2cpp
 
       - name: Setup Unity Modules - Android
-        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: android
 
       - name: Setup Unity Modules - iOS
-        uses: kuler90/setup-unity@f44e3f35ce3737316a15321ec3468161940e23e8
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: ios
