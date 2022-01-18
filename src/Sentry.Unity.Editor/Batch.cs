@@ -39,11 +39,11 @@ namespace Sentry.Unity.Editor
             if (dsn is { })
             {
                 Debug.LogFormat(
-                    LogType.Log, 
+                    LogType.Log,
                     LogOption.NoStacktrace,
-                    null, 
-                    "{0}: Configuring DSN to {1}", 
-                    functionName, 
+                    null,
+                    "{0}: Configuring DSN to {1}",
+                    functionName,
                     dsn);
 
                 options.Dsn = dsn;
