@@ -24,7 +24,7 @@ namespace Sentry.Unity.Editor
 
             var optionsWindow = EditorWindow.GetWindow<SentryWindow>();
             var options = optionsWindow.Options;
-            
+
             if (options is null)
             {
                 throw new InvalidOperationException("SentryOptions not found");
