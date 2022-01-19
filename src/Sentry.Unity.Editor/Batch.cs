@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor;
-using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-
     public static class Batch
     {
         /// <summary>
@@ -19,38 +15,31 @@ namespace Sentry.Unity.Editor
 
         private static void ConfigureOptions(Dictionary<string, string> args, [CallerMemberName] string functionName = "")
         {
-            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "{0}: Invoking SentryOptions", functionName);
+            Debug.LogFormat("{0}: Invoking SentryOptions", functionName);
 
             if (!EditorApplication.ExecuteMenuItem("Tools/Sentry"))
             {
-                throw new Exception("Menu item Tools -> Sentry was not found.");
+                throw new Exception("Menu item 'Tools -> Sentry' not found. Was the Sentry UPM package installed?");
             }
 
             var optionsWindow = EditorWindow.GetWindow<SentryWindow>();
             var options = optionsWindow.Options;
-
+            
             if (options is null)
             {
                 throw new InvalidOperationException("SentryOptions not found");
             }
-            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "{0}: Found SentryOptions", functionName);
+            Debug.LogFormat("{0}: Found SentryOptions", functionName);
 
             var dsn = args["sentryOptions.Dsn"];
             if (dsn is { })
             {
-                Debug.LogFormat(
-                    LogType.Log,
-                    LogOption.NoStacktrace,
-                    null,
-                    "{0}: Configuring DSN to {1}",
-                    functionName,
-                    dsn);
-
+                Debug.LogFormat("{0}: Configuring DSN to {1}", functionName, dsn);
                 options.Dsn = dsn;
             }
 
             optionsWindow.Close();
-            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "{0}: Sentry options Configured", functionName);
+            Debug.LogFormat("{0}: Sentry options Configured", functionName);
         }
 
         private static Dictionary<string, string> ParseCommandLineArguments()
