@@ -69,10 +69,18 @@ namespace Sentry.Unity.Android.Tests
         }
 
         [Test]
-        public void Configure_DefaultConfiguration_ReInitializesNativeBackend()
+        public void Configure_DefaultConfiguration_DoesNotReInitializesNativeBackend()
         {
             Assert.False(_reinstallCalled); // Sanity check
             SentryNativeAndroid.Configure(new());
+            Assert.False(_reinstallCalled);
+        }
+
+        [Test]
+        public void Configure_IsBuiltWithIl2CPP_ReInitializesNativeBackend()
+        {
+            Assert.False(_reinstallCalled); // Sanity check
+            SentryNativeAndroid.Configure(new(), true);
             Assert.True(_reinstallCalled);
         }
 

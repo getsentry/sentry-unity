@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
@@ -11,7 +12,7 @@ namespace Sentry.Unity.Android
         /// Configures the native Android support.
         /// </summary>
         /// <param name="options">The Sentry Unity options to use.</param>
-        public static void Configure(SentryUnityOptions options)
+        public static void Configure(SentryUnityOptions options, bool isIL2CPP = false)
         {
             if (options.AndroidNativeSupportEnabled)
             {
@@ -35,9 +36,13 @@ namespace Sentry.Unity.Android
 
                     return crashedLastRun.Value;
                 };
-                // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
-                // So we register our backend once more to make sure user-defined data is available in the crash report.
-                SentryNative.ReinstallBackend();
+
+                if (isIL2CPP)
+                {
+                    // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
+                    // So we register our backend once more to make sure user-defined data is available in the crash report.
+                    SentryNative.ReinstallBackend();
+                }
             }
         }
     }
