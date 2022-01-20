@@ -9,6 +9,7 @@ namespace Sentry.Unity.Android.Tests
         private bool _reinstallCalled;
         private Action? _originalReinstallSentryNativeBackendStrategy;
         private Action _fakeReinstallSentryNativeBackendStrategy;
+        private bool _il2cpp;
 
         public SentryNativeAndroidTests()
             => _fakeReinstallSentryNativeBackendStrategy = () => _reinstallCalled = true;
@@ -20,6 +21,7 @@ namespace Sentry.Unity.Android.Tests
                 Interlocked.Exchange(ref SentryNative.ReinstallSentryNativeBackendStrategy,
                     _fakeReinstallSentryNativeBackendStrategy);
             _reinstallCalled = false;
+            _il2cpp = false;
         }
 
         [TearDown]
@@ -32,7 +34,7 @@ namespace Sentry.Unity.Android.Tests
         public void Configure_DefaultConfiguration_SetsScopeObserver()
         {
             var options = new SentryUnityOptions();
-            SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options, _il2cpp);
             Assert.IsAssignableFrom<AndroidJavaScopeObserver>(options.ScopeObserver);
         }
 
@@ -40,7 +42,7 @@ namespace Sentry.Unity.Android.Tests
         public void Configure_DefaultConfiguration_SetsCrashedLastRun()
         {
             var options = new SentryUnityOptions();
-            SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options, _il2cpp);
             Assert.IsNotNull(options.CrashedLastRun);
         }
 
@@ -48,7 +50,7 @@ namespace Sentry.Unity.Android.Tests
         public void Configure_NativeAndroidSupportDisabled_ObserverIsNull()
         {
             var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
-            SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options, _il2cpp);
             Assert.Null(options.ScopeObserver);
         }
 
@@ -56,7 +58,7 @@ namespace Sentry.Unity.Android.Tests
         public void Configure_DefaultConfiguration_EnablesScopeSync()
         {
             var options = new SentryUnityOptions();
-            SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options, _il2cpp);
             Assert.True(options.EnableScopeSync);
         }
 
@@ -64,31 +66,28 @@ namespace Sentry.Unity.Android.Tests
         public void Configure_NativeAndroidSupportDisabled_DisabledScopeSync()
         {
             var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
-            SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options, _il2cpp);
             Assert.False(options.EnableScopeSync);
         }
 
         [Test]
-        public void Configure_DefaultConfiguration_DoesNotReInitializesNativeBackend()
+        [TestCase(true, true)]
+        [TestCase(false, false)]
+        public void Configure_IL2CPP_ReInitializesNativeBackendOnlyOnIL2CPP(bool il2cpp, bool expectedReinstall)
         {
+            _il2cpp = il2cpp;
             Assert.False(_reinstallCalled); // Sanity check
-            SentryNativeAndroid.Configure(new());
-            Assert.False(_reinstallCalled);
-        }
 
-        [Test]
-        public void Configure_IsBuiltWithIl2CPP_ReInitializesNativeBackend()
-        {
-            Assert.False(_reinstallCalled); // Sanity check
-            SentryNativeAndroid.Configure(new(), true);
-            Assert.True(_reinstallCalled);
+            SentryNativeAndroid.Configure(new(), _il2cpp);
+
+            Assert.AreEqual(expectedReinstall, _reinstallCalled);
         }
 
         [Test]
         public void Configure_NativeAndroidSupportDisabled_DoesNotReInitializeNativeBackend()
         {
             var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
-            SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options, _il2cpp);
             Assert.False(_reinstallCalled);
         }
     }
