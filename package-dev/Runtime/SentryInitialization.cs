@@ -19,6 +19,9 @@ using Sentry.Unity.Android;
 using Sentry.Unity.WebGL;
 #endif
 
+// Remove me 
+using Sentry.Unity.WebGL;
+
 [assembly: AlwaysLinkAssembly]
 
 namespace Sentry.Unity
@@ -31,6 +34,7 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options.ShouldInitializeSdk())
             {
+
 
 #if SENTRY_NATIVE_IOS
                 SentryNativeIos.Configure(options);

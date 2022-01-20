@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Sentry.Extensibility;
+using Sentry.Unity.WebGL;
 
 namespace Sentry.Unity
 {
@@ -30,6 +31,8 @@ namespace Sentry.Unity
             SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
             if (sentryUnityOptions.ShouldInitializeSdk())
             {
+                sentryUnityOptions.BackgroundWorker = new WebBackgroundWorker(sentryUnityOptions, SentryMonoBehaviour.Instance);
+
                 sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());
                 SentrySdk.Init(sentryUnityOptions);
             }
