@@ -21,7 +21,7 @@ namespace Sentry.Unity
         //   sentry_options_set_release(options, "my-project-name@2.3.12");
         //   sentry_init(options);
 
-        ///
+        //
         public static void Init(string dsn, string release)
         {
             var options = sentry_options_new();
