@@ -99,17 +99,13 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-<<<<<<< HEAD
   <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeWindowsArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
-=======
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
->>>>>>> main
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
