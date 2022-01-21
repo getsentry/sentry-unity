@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Android Native Support no longer crashes when built with Mono while trying to capture a crash ([#524](https://github.com/getsentry/sentry-unity/pull/524))
 - Bump Sentry CLI 1.72.0 ([#526](https://github.com/getsentry/sentry-unity/pull/526))
   - [changelog](https://github.com/getsentry/sentry-cli/releases/tag/1.72.0)
   - [diff](https://github.com/getsentry/sentry-cli/compare/1.71.0...1.72.0)

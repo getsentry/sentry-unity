@@ -79,7 +79,13 @@ public class SmokeTester : MonoBehaviour
             SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
             Debug.Log("SMOKE TEST: Configure Native Android.");
-            SentryNativeAndroid.Configure(options);
+            var il2cpp =
+#if ENABLE_IL2CPP
+            true;
+#else
+            false;
+#endif
+            SentryNativeAndroid.Configure(options, il2cpp);
 #endif
 
             Debug.Log("SMOKE TEST: SentryUnity Init.");
@@ -108,13 +114,13 @@ public class SmokeTester : MonoBehaviour
 
             // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
             Application.Quit(200);
-            
+
         }
         catch (Exception ex)
         {
             Debug.Log("SMOKE TEST: FAILED");
             Debug.LogError(ex);
-            Application.Quit(-1);        
+            Application.Quit(-1);
         }
     }
 
