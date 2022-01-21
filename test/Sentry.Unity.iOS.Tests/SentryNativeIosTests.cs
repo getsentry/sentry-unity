@@ -13,6 +13,14 @@ namespace Sentry.Unity.iOS.Tests
         }
 
         [Test]
+        public void Configure_DefaultConfiguration_SetsCrashedLastRun()
+        {
+            var options = new SentryUnityOptions();
+            SentryNativeIos.Configure(options);
+            Assert.IsNotNull(options.CrashedLastRun);
+        }
+
+        [Test]
         public void Configure_NativeIosSupportDisabled_ObserverIsNull()
         {
             var options = new SentryUnityOptions { IosNativeSupportEnabled = false };

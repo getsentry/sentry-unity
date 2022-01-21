@@ -15,13 +15,9 @@ namespace Sentry.Unity
         /// <param name="sentryUnityOptionsConfigure">Callback to configure the options.</param>
         public static void Init(Action<SentryUnityOptions> sentryUnityOptionsConfigure)
         {
-            var sentryUnityOptions = new SentryUnityOptions();
-            SentryOptionsUtility.SetDefaults(sentryUnityOptions);
-
-            sentryUnityOptionsConfigure.Invoke(sentryUnityOptions);
-
-            SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
-            Init(sentryUnityOptions);
+            var options = new SentryUnityOptions();
+            sentryUnityOptionsConfigure.Invoke(options);
+            Init(options);
         }
 
         /// <summary>
@@ -31,6 +27,7 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions sentryUnityOptions)
         {
+            SentryOptionsUtility.TryAttachLogger(sentryUnityOptions);
             if (sentryUnityOptions.ShouldInitializeSdk())
             {
                 sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());

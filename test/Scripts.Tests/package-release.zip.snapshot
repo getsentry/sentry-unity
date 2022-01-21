@@ -255,8 +255,8 @@ Plugins/iOS/Device/Sentry.framework/Modules/module.modulemap.meta
 Plugins/Android/Sentry.meta
 Plugins/Android/Sentry/gson-2.8.5.jar
 Plugins/Android/Sentry/gson-2.8.5.jar.meta
-Plugins/Android/Sentry/sentry-5.4.0.jar
-Plugins/Android/Sentry/sentry-5.4.0.jar.meta
+Plugins/Android/Sentry/sentry-5.5.0.jar
+Plugins/Android/Sentry/sentry-5.5.0.jar.meta
 Plugins/Android/Sentry/sentry-android-core-release.aar
 Plugins/Android/Sentry/sentry-android-core-release.aar.meta
 Plugins/Android/Sentry/sentry-android-ndk-release.aar
@@ -307,8 +307,10 @@ Samples~/unity-of-bugs/Scenes/1_Bugfarm.unity
 Samples~/unity-of-bugs/Scenes/1_Bugfarm.unity.meta
 Samples~/unity-of-bugs/Scenes/2_MobileNativeSupport.unity
 Samples~/unity-of-bugs/Scenes/2_MobileNativeSupport.unity.meta
-Samples~/unity-of-bugs/Scenes/3_Transition.unity
-Samples~/unity-of-bugs/Scenes/3_Transition.unity.meta
+Samples~/unity-of-bugs/Scenes/3_AdditionalSamples.unity
+Samples~/unity-of-bugs/Scenes/3_AdditionalSamples.unity.meta
+Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs
+Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/CloseGameButton.cs
@@ -316,8 +318,6 @@ Samples~/unity-of-bugs/Scripts/CloseGameButton.cs.meta
 Samples~/unity-of-bugs/Scripts/MobileNativeSupport.meta
 Samples~/unity-of-bugs/Scripts/SmokeTester.cs
 Samples~/unity-of-bugs/Scripts/SmokeTester.cs.meta
-Samples~/unity-of-bugs/Scripts/TransitionSceneButtons.cs
-Samples~/unity-of-bugs/Scripts/TransitionSceneButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/MobileNativeSupport/CPlugin.c
 Samples~/unity-of-bugs/Scripts/MobileNativeSupport/CPlugin.c.meta
 Samples~/unity-of-bugs/Scripts/MobileNativeSupport/CppPlugin.cpp

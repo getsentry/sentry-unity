@@ -2,16 +2,12 @@
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
-    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <PackageRuntimeTestsPath>../../$(DevPackageFolderName)/Tests/Runtime</PackageRuntimeTestsPath>
     <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
   </PropertyGroup>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
-  <Target Name="ReferenceUnityEditor" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+  <Target Name="ReferenceUnityEditor" BeforeTargets="BeforeResolveReferences">
     <ItemGroup>
       <Reference Include="UnityEditor">
         <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
@@ -26,6 +22,7 @@
         <Private>false</Private>
       </Reference>
     </ItemGroup>
+    <Error Condition="!Exists('$(UnityTestPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTestPath)/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
   <PropertyGroup>

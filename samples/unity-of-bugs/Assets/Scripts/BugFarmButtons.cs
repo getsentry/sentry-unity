@@ -52,25 +52,8 @@ public class BugFarmButtons : MonoBehaviour
 
     public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
 
-    public void SetUser()
-    {
-        SentrySdk.ConfigureScope(s =>
-        {
-            s.User = new User
-            {
-                Email = "ant@farm.bug",
-                Username = "ant",
-                Id = "ant-id"
-            };
-        });
-        Debug.Log("User set: ant");
-    }
-
-    public void BackgroundBreadcrumb() =>
-        Task.Run(() => SentrySdk.AddBreadcrumb("Breadcrumb from the background", "background task"));
-
-    public void LoadNativeSupportScene() => SceneManager.LoadScene("2_MobileNativeSupport");
-    public void LoadTransitionScene() => SceneManager.LoadScene("3_Transition");
+    public void LoadMobileNativeSupport() => SceneManager.LoadScene("2_MobileNativeSupport");
+    public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void StackTraceExampleB() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
@@ -80,7 +63,7 @@ public class BugFarmButtons : MonoBehaviour
     public void StackTraceExampleA() => StackTraceExampleB();
 }
 
-public class CustomException : System.Exception
+public class CustomException : Exception
 {
     public CustomException(string message) : base(message)
     {

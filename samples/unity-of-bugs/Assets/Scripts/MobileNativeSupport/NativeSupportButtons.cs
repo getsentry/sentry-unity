@@ -4,10 +4,25 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 #endif
 using UnityEngine;
+using UnityEngine.Diagnostics;
 using UnityEngine.SceneManagement;
 
 public class NativeSupportButtons : MonoBehaviour
 {
+    [SerializeField] private GameObject _outOfMemoryButton;
+
+    private void Start()
+    {
+#if !UNITY_IOS
+        if (_outOfMemoryButton != null)
+        {
+            Destroy(_outOfMemoryButton);
+        }
+#endif
+    }
+
+    public void ForceCrash() => UnityEngine.Diagnostics.Utils.ForceCrash(ForcedCrashCategory.AccessViolation);
+
     public void ThrowKotlin()
     {
 #if UNITY_ANDROID
@@ -104,5 +119,5 @@ public class NativeSupportButtons : MonoBehaviour
 #endif
 
     public void LoadBugfarm() => SceneManager.LoadScene("1_Bugfarm");
-    public void LoadTransitionScene() => SceneManager.LoadScene("3_Transition");
+    public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
 }

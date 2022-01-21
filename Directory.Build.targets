@@ -6,16 +6,19 @@
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
     <AndroidBuildPath>$(PlayerBuildPath)Android/IL2CPP_Player.apk</AndroidBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
-    <UnitySampleProjectUnityVersion>$(SolutionDir)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
+    <UnityPackageProject>$(RepoRoot)temp/unity-packages</UnityPackageProject>
+    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
+    <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <!-- Cocoa -->
-    <SentryCocoaRoot>$(SolutionDir)modules/sentry-cocoa/</SentryCocoaRoot>
-    <SentryCocoaDeviceArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryCocoaDeviceArtifactsDestination>
-    <SentryCocoaSimulatorArtifactsDestination>$(SolutionDir)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryCocoaSimulatorArtifactsDestination>
+    <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
+    <SentryCocoaDeviceArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryCocoaDeviceArtifactsDestination>
+    <SentryCocoaSimulatorArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryCocoaSimulatorArtifactsDestination>
     <!-- Android -->
-    <SentryAndroidRoot>$(SolutionDir)modules/sentry-java/</SentryAndroidRoot>
-    <SentryAndroidArtifactsDestination>$(SolutionDir)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
+    <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
+    <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(SolutionDir)modules/sentry-native/</SentryNativeRoot>
     <!-- TODO: Do we need: x64, x86, arm64? -->
@@ -76,7 +79,6 @@ Expected to exist:
  * /Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll
 or
  * /Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll" />
-
   </Target>
 
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">
@@ -97,6 +99,7 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
+<<<<<<< HEAD
   <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
@@ -104,6 +107,9 @@ or
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
+=======
+  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
+>>>>>>> main
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
@@ -133,7 +139,7 @@ or
     </Error>
   </Target>
 
-  <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK -->
+  <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
   <Target Name="BuildAndroidSDK"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And !Exists('$(SentryAndroidArtifactsDestination)')"
@@ -148,7 +154,7 @@ or
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry/build/libs/sentry*.jar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" />
-      <AndroidSdkArtifacts Include="$(SolutionDir)lib/gson-2.8.5.jar" />
+      <AndroidSdkArtifacts Include="$(RepoRoot)lib/gson-2.8.5.jar" />
     </ItemGroup>
 
     <Copy SourceFiles="@(AndroidSdkArtifacts)"
@@ -205,7 +211,7 @@ We need to run a unity build to restore the test packages and for that reason we
 For that reason, Exec tasks to unity all ignore error. That means that subsequent tasks must exist to validate the command (i.e: parse logs, etc).
 Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
 
-  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP -->
+  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnityBuildStandalonePlayerIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -216,7 +222,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
           IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
-  <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP -->
+  <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnitySmokeTestStandalonePlayerIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -231,7 +237,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
   </Target>
 
-  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP -->
+  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerAndroidIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -244,7 +250,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
   </Target>
 
-  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS -->
+  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerIOS"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -260,7 +266,8 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
   this solution without using the sample project which depends on the output of this build. -->
   <Target Name="UnityCreatePackages"
-    Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'">
+    Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'"
+    AfterTargets="FindUnity">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Create Packages."></Message>
@@ -292,7 +299,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
-  <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
+  <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityPlayModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
@@ -307,7 +314,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
-  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest. -->
+  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityEditModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
@@ -441,7 +448,7 @@ if (result == "Passed")
     return true;
 }
 
-var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 0 ? "s" : "")}.";
+var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
 Log.LogError(errorMessage);
 
 PrintFailedTests(testRun);

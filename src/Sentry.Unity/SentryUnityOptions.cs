@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -79,7 +81,11 @@ namespace Sentry.Unity
         /// </summary>
         public bool AndroidNativeSupportEnabled { get; set; } = true;
 
-        public SentryUnityOptions()
+        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
+        {
+        }
+
+        internal SentryUnityOptions(IApplication application, bool isBuilding)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
@@ -92,6 +98,34 @@ namespace Sentry.Unity
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
             this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));
+
+            IsGlobalModeEnabled = true;
+
+            AutoSessionTracking = true;
+            RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
+            InitCacheFlushTimeout = System.TimeSpan.Zero;
+
+            // Ben.Demystifer not compatible with IL2CPP
+            StackTraceMode = StackTraceMode.Original;
+            IsEnvironmentUser = false;
+
+            if (application.ProductName is string productName
+                && !string.IsNullOrWhiteSpace(productName)
+                && productName.Any(c => c != '.')) // productName consisting solely of '.'
+            {
+                productName = Regex.Replace(productName, @"\n|\r|\t|\/|\\|\.{2}|@", "_");
+                Release = $"{productName}@{application.Version}";
+            }
+            else
+            {
+                Release = application.Version;
+            }
+
+            Environment = (application.IsEditor && !isBuilding)
+                ? "editor"
+                : "production";
+
+            CacheDirectoryPath = application.PersistentDataPath;
         }
 
         public override string ToString()
