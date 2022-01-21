@@ -11,7 +11,7 @@ namespace Sentry.Unity.Editor
         /// <summary>
         /// Allows the configuration of Sentry Options using Unity Batch.
         /// </summary>
-        public static void ConfigureOptions() => ConfigureOptions(ParseCommandLineArguments());
+        public static void ConfigureOptions() => ConfigureOptions(UnityCommandLineArguments.Parse());
 
         private static void ConfigureOptions(Dictionary<string, string> args, [CallerMemberName] string functionName = "")
         {
@@ -40,27 +40,6 @@ namespace Sentry.Unity.Editor
 
             optionsWindow.Close();
             Debug.LogFormat("{0}: Sentry options Configured", functionName);
-        }
-
-        private static Dictionary<string, string> ParseCommandLineArguments()
-        {
-            var commandLineArguments = new Dictionary<string, string>();
-            var args = Environment.GetCommandLineArgs();
-
-            for (int current = 0, next = 1; current < args.Length; current++, next++)
-            {
-                if (!args[current].StartsWith("-"))
-                {
-                    continue;
-                }
-
-                var flag = args[current].TrimStart('-');
-                var flagHasValue = next < args.Length && !args[next].StartsWith("-");
-                var flagValue = flagHasValue ? args[next].TrimStart('-') : "";
-
-                commandLineArguments.Add(flag, flagValue);
-            }
-            return commandLineArguments;
         }
     }
 }
