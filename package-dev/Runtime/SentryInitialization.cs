@@ -31,7 +31,13 @@ namespace Sentry.Unity
 #if SENTRY_NATIVE_IOS
                 SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Configure(options);
+                var il2cpp =
+#if ENABLE_IL2CPP
+                true;
+#else
+                false;
+#endif
+                SentryNativeAndroid.Configure(options, il2cpp);
 #endif
 
                 SentryUnity.Init(options);
