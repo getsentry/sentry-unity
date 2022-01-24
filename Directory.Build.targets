@@ -419,36 +419,27 @@ void PrintFailedTests(XElement element)
         }
         else
         {
-            var sb = new StringBuilder();
+            var sb = new StringBuilder()
+              .Append("Test ")
+              .Append(descendant.Attribute("id")?.Value)
+              .Append(": ")
+              .AppendLine(descendant.Attribute("name")?.Value);
+
             var failure = descendant.Descendants("failure")
                 .Descendants("message")
                 .FirstOrDefault()
                 ?.Value;
 
-            sb.AppendLine(failure);
+            var stack = descendant.Descendants("failure")
+                .Descendants("stack-trace")
+                .FirstOrDefault()
+                ?.Value;
 
-            var lines = descendant.Attribute("name")?.Value.Split(new[] { "\\n" }, StringSplitOptions.None);
-            if (lines is null)
-            {
-                Log.LogError(sb.ToString());
-                continue;
-            }
+            sb.AppendLine(failure)
+              .Append("StackTrace: ")
+              .AppendLine(stack);
 
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (i == 0)
-                {
-                    sb.AppendLine();
-                    Console.WriteLine();
-                }
-                else
-                {
-                    sb.Append('\t');
-                }
-
-                sb.AppendLine(lines[i].Replace("\\r", ""));
-            }
-            Log.LogError(sb.ToString());
+            Console.Error.WriteLine(sb.ToString());
         }
     }
 }

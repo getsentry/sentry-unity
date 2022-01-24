@@ -64,7 +64,11 @@ namespace Sentry.Unity.Tests
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
             // assert
-            Assert.Zero(_testLogger.Logs.Count(log => log.logLevel >= SentryLevel.Warning));
+            var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning);
+            Assert.Zero(
+                logsFound.Count(),
+                "Error messages captured:\n{0}\n == END ==",
+                string.Join("\n", logsFound.Select(p => p.message)));
             // Sanity check: At least some logs must have been printed
             Assert.NotZero(_testLogger.Logs.Count(log => log.logLevel <= SentryLevel.Info));
         }
