@@ -68,7 +68,7 @@ namespace Sentry.Unity.Tests
             Assert.Zero(
                 logsFound.Count(),
                 "Error captured:\n{0}\n == END ==",
-                string.Join("\n", logsFound.Select(p => "Level: " + p.logLevel +  p.ToString() + "Message:" + p.message + " Exception: " + p.exception?.ToString())));
+                string.Join("\n", logsFound.Select(p => "Level: " + p.logLevel + p.ToString() + "Message:" + p.message + " Exception: " + p.exception?.ToString())));
             ;
             // Sanity check: At least some logs must have been printed
             Assert.NotZero(_testLogger.Logs.Count(log => log.logLevel <= SentryLevel.Info));
