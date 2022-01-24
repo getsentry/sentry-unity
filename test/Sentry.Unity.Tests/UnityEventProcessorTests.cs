@@ -45,7 +45,7 @@ namespace Sentry.Unity.Tests
                 Enabled = true,
                 AttachStacktrace = true,
                 Debug = true,
-                DiagnosticLogger = _testLogger
+                DiagnosticLogger = _testLogger,
             };
             SentryUnity.Init(options);
 
@@ -67,8 +67,9 @@ namespace Sentry.Unity.Tests
             var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning);
             Assert.Zero(
                 logsFound.Count(),
-                "Error messages captured:\n{0}\n == END ==",
-                string.Join("\n", logsFound.Select(p => p.message)));
+                "Error captured:\n{0}\n == END ==",
+                string.Join("\n", logsFound.Select(p => "Level: " + p.logLevel +  p.ToString() + "Message:" + p.message + " Exception: " + p.exception?.ToString())));
+            ;
             // Sanity check: At least some logs must have been printed
             Assert.NotZero(_testLogger.Logs.Count(log => log.logLevel <= SentryLevel.Info));
         }

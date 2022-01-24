@@ -396,10 +396,10 @@ if (result == "Passed")
     return true;
 }
 
+PrintFailedTests(testRun);
+
 var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
 Log.LogError(errorMessage);
-
-PrintFailedTests(testRun);
 
 Success = false;
 
@@ -439,7 +439,12 @@ void PrintFailedTests(XElement element)
               .Append("StackTrace: ")
               .AppendLine(stack);
 
-            Console.Error.WriteLine(sb.ToString());
+//  MSBuild is breaking each line as if it was an error per line and not a single error.
+//  So Log.LogError got replaced by Console.WriteLine for now.
+            var color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(sb.ToString());
+            Console.ForegroundColor = color;
         }
     }
 }

@@ -46,3 +46,6 @@ Samples/logfile.txt
 test-package-release/
 package-release/
 package-release.zip
+
+src/Sentry.Unity/other/**
+test/Sentry.Unity.Tests/other/**
