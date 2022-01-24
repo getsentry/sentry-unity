@@ -46,3 +46,8 @@ Samples/logfile.txt
 test-package-release/
 package-release/
 package-release.zip
+
+# Files created with additional SDKs installed
+samples/unity-of-bugs/*IL2CPPCache/
+samples/unity-of-bugs/*IL2CPPStats/
+*Player.link.log
