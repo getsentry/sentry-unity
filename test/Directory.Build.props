@@ -6,6 +6,11 @@
     <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
   </PropertyGroup>
 
+  <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
+  <PropertyGroup Condition="$(UnityVersion.StartsWith('2021.2')) or $(UnityVersion.StartsWith('2022'))">
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+  </PropertyGroup>
+
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnityEditor" BeforeTargets="BeforeResolveReferences">
     <ItemGroup>
