@@ -77,7 +77,7 @@ namespace Sentry.Unity.Tests
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
             // assert
-            var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning).ToList();
+            var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning && log.message != "Cache directory is empty.").ToList();
 
             Assert.Zero(logsFound.Count, FormatLogs(logsFound));
 
