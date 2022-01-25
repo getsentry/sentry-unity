@@ -12,7 +12,7 @@ namespace Sentry.Unity.Android
         /// Configures the native Android support.
         /// </summary>
         /// <param name="options">The Sentry Unity options to use.</param>
-        public static void Configure(SentryUnityOptions options, bool il2cpp)
+        public static void Configure(SentryUnityOptions options, ISentryUnityInfo unityInfo)
         {
             if (options.AndroidNativeSupportEnabled)
             {
@@ -39,7 +39,7 @@ namespace Sentry.Unity.Android
 
                 // When running on Mono, we shouldn't take over the signal handler because its used to propagate exceptions into the VM.
                 // If we take over, a C# null reference ends up crashing the app.
-                if (il2cpp)
+                if (unityInfo.IL2CPP)
                 {
                     // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
                     // So we register our backend once more to make sure user-defined data is available in the crash report.
