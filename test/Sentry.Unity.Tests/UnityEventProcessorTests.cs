@@ -46,7 +46,6 @@ namespace Sentry.Unity.Tests
                 counter++;
             }
             return sb.AppendLine(" === END ===").ToString();
-
         }
 
         [Test]
