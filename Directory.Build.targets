@@ -436,15 +436,12 @@ void PrintFailedTests(XElement element)
                 ?.Value;
 
             sb.AppendLine(failure)
-              .Append("StackTrace: ")
+              .Append("Test StackTrace: ")
               .AppendLine(stack);
 
 //  MSBuild is breaking each line as if it was an error per line and not a single error.
 //  So Log.LogError got replaced by Console.WriteLine for now.
-            var color = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(sb.ToString());
-            Console.ForegroundColor = color;
         }
     }
 }

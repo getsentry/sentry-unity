@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
@@ -45,7 +47,7 @@ namespace Sentry.Unity.Tests
                 Enabled = true,
                 AttachStacktrace = true,
                 Debug = true,
-                DiagnosticLogger = _testLogger,
+                DiagnosticLogger = _testLogger
             };
             SentryUnity.Init(options);
 
@@ -56,6 +58,7 @@ namespace Sentry.Unity.Tests
                     Message = "Test message"
                 }
             };
+            var flakyErrors = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning).ToList();
 
             // act
             Task.Run(() => SentrySdk.CaptureEvent(sentryEvent))
@@ -63,15 +66,34 @@ namespace Sentry.Unity.Tests
 
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
+            var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning).ToList();
+
             // assert
-            var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning);
-            Assert.Zero(
-                logsFound.Count(),
-                "Error captured:\n{0}\n == END ==",
-                string.Join("\n", logsFound.Select(p => "Level: " + p.logLevel +  p.ToString() + "Message:" + p.message + " Exception: " + p.exception?.ToString())));
-            ;
+
+            // Remove any warning/error that happened before the Act.
+            foreach (var log in flakyErrors)
+            {
+                _ = logsFound.Remove(log);
+            }
+
+            Assert.Zero(logsFound.Count, FormatLogs(logsFound));
+
             // Sanity check: At least some logs must have been printed
             Assert.NotZero(_testLogger.Logs.Count(log => log.logLevel <= SentryLevel.Info));
+        }
+
+        public string FormatLogs(List<(SentryLevel, string, Exception?)> logs)
+        {
+            var sb = new StringBuilder()
+                .AppendLine("Logs found:");
+            int counter = 1;
+            foreach (var log in logs)
+            {
+                sb = sb.AppendLine($"[{counter}] - Level: {log.Item1} - Message: {log.Item2} - Exception: {log.Item3}");
+                counter++;
+            }
+            return sb.AppendLine(" === END ===").ToString();
+
         }
 
         [UnityTest]
