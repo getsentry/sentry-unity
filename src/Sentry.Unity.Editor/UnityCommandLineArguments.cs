@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sentry.Unity.Editor
 {
-    internal static class UnityCommandLineArguments
+    internal static class CommandLineArgumentParser
     {
         internal static Dictionary<string, string> Parse()
         {

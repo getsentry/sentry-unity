@@ -6,12 +6,12 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-    public static class Batch
+    public static class SentryEditorWindowInstrumentation
     {
         /// <summary>
-        /// Allows the configuration of Sentry Options using Unity Batch.
+        /// Allows the configuration of Sentry Options using Unity Batch mode.
         /// </summary>
-        public static void ConfigureOptions() => ConfigureOptions(UnityCommandLineArguments.Parse());
+        public static void ConfigureOptions() => ConfigureOptions(CommandLineArgumentParser.Parse());
 
         private static void ConfigureOptions(Dictionary<string, string> args, [CallerMemberName] string functionName = "")
         {
