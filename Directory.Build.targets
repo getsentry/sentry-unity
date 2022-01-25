@@ -20,7 +20,7 @@
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
-    <SentryNativeRoot>$(SolutionDir)modules/sentry-native/</SentryNativeRoot>
+    <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <!-- TODO: Do we need: x64, x86, arm64? -->
     <SentryNativeWindowsArtifactsDestination>$(SolutionDir)package-dev/Plugins/Windows/Sentry/</SentryNativeWindowsArtifactsDestination>
   </PropertyGroup>
@@ -160,7 +160,7 @@ or
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
   </Target>
 
-  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildNativeWindowsSDK -->
+  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildNativeWindowsSDK src/Sentry.Unity -->
   <Target Name="BuildNativeWindowsSDK"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And !Exists('$(SentryNativeWindowsArtifactsDestination)')"
@@ -180,6 +180,7 @@ or
   </Target>
 
   <Target Name="BuildNativeSDK">
+    <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
     <!-- Using configuration Release becuse RelWithDebInfo fails to install due to:
