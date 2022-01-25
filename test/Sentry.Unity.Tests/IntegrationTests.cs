@@ -189,10 +189,15 @@ namespace Sentry.Unity.Tests
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
+            string? cacheDirectoryPath = null;
+            // Abbreviation of MultipleSentryInit
+            string GetCachePath(string? previousPath) => cacheDirectoryPath ?? previousPath + "_MSI";
+
             var sourceEventCapture = new TestEventCapture();
             var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
             using var firstDisposable = InitSentrySdk(o =>
             {
+                o.CacheDirectoryPath = GetCachePath(o.CacheDirectoryPath);
                 o.Dsn = sourceDsn;
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
             });
@@ -201,6 +206,7 @@ namespace Sentry.Unity.Tests
             var nextDsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250";
             using var secondDisposable = InitSentrySdk(o =>
             {
+                o.CacheDirectoryPath = GetCachePath(o.CacheDirectoryPath);
                 o.Dsn = nextDsn;
                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
             });
