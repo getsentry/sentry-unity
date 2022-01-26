@@ -167,7 +167,13 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Sentry.Unity.Editor.SentryEditorWindowInstrumentation.ConfigureOptions -sentryOptions.Dsn $(TestDsn)"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Sentry.Unity.Editor.SentryEditorWindowInstrumentation.ConfigureOptions -sentryOptions.Dsn $(TestDsn)"
+          IgnoreStandardErrorWarningFormat="true">
+              <Output TaskParameter="ExitCode" PropertyName="UnityConfigureSentryOptionsExitCode"/>
+    </Exec>
+
+    <!-- Unity will return -1 or 0 on success. 1 Otherwise. -->
+    <Error Text="Sentry options setup failed with code $(UnityConfigureSentryOptionsExitCode)" Condition=" '$(UnityConfigureSentryOptionsExitCode)' != '0' AND '$(BuildExitCode)' != '-1'"/>
   </Target>
 
   <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP src/Sentry.Unity -->
