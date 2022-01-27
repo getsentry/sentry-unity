@@ -196,11 +196,11 @@ namespace Sentry.Unity.Tests
 
             var sourceEventCapture = new TestEventCapture();
             var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
-           using var firstDisposable = InitSentrySdk(o =>
-            {
-                o.Dsn = sourceDsn;
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
-            });
+            using var firstDisposable = InitSentrySdk(o =>
+             {
+                 o.Dsn = sourceDsn;
+                 o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
+             });
 
             var nextEventCapture = new TestEventCapture();
             var nextDsn = options?.Dsn;
