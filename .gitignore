@@ -47,6 +47,10 @@ test-package-release/
 package-release/
 package-release.zip
 
+# Ignored DLLs generated during the test
+src/Sentry.Unity/other/**
+test/Sentry.Unity.Tests/other/**
+
 # Files created with additional SDKs installed
 samples/unity-of-bugs/*IL2CPPCache/
 samples/unity-of-bugs/*IL2CPPStats/
