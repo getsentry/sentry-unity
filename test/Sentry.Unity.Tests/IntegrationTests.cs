@@ -213,7 +213,6 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             Assert.NotNull(nextDsn);
-            Assert.AreNotEqual(sourceDsn, nextDsn);
             Assert.AreEqual(0, sourceEventCapture.Events.Count, sourceDsn);
             Assert.AreEqual(1, nextEventCapture.Events.Count);
         }
