@@ -29,11 +29,12 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options.ShouldInitializeSdk())
             {
+                var sentryUnityInfo = new SentryUnityInfo();
 
 #if SENTRY_NATIVE_IOS
                 SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Configure(options);
+                SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE_WINDOWS
                 SentryNative.Configure(options);
 #endif

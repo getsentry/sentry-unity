@@ -69,7 +69,7 @@ public class NativeSupportButtons : MonoBehaviour
 #if ENABLE_IL2CPP
         throw_cpp();
 #else
-        Debug.Log("Requires IL2CPP. Try this on a native player.");
+        Debug.Log("Requires IL2CPP. Try this on a native player that supports C++ native plugins.");
 #endif
     }
 
@@ -78,16 +78,20 @@ public class NativeSupportButtons : MonoBehaviour
 #if ENABLE_IL2CPP
         crash_in_cpp();
 #else
-        Debug.Log("Requires IL2CPP. Try this on a native player.");
+        Debug.Log("Requires IL2CPP. Try this on a native player that supports C++ native plugins.");
 #endif
     }
 
     public void CrashInC()
     {
 #if ENABLE_IL2CPP
+#if !UNITY_SWITCH
         crash_in_c();
 #else
-        Debug.Log("Requires IL2CPP. Try this on a native player.");
+        Debug.Log("Native C plugins are not supported on this platform.");
+#endif
+#else
+        Debug.Log("Requires IL2CPP. Try this on a native player that supports C native plugins.");
 #endif
     }
 
@@ -98,9 +102,11 @@ public class NativeSupportButtons : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void crash_in_cpp();
 
+#if !UNITY_SWITCH
     // CPlugin.c
     [DllImport("__Internal")]
     private static extern void crash_in_c();
+#endif
 #endif
 
     public void ThrowObjectiveC()
@@ -108,7 +114,7 @@ public class NativeSupportButtons : MonoBehaviour
 #if PLATFORM_IOS
         throwObjectiveC();
 #else
-        Debug.Log("Requires IL2CPP. Try this on a native player.");
+        Debug.Log("Requires IL2CPP. Try this on a native player that supports Objective-C native plugins.");
 #endif
     }
 

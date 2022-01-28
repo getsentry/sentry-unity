@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
@@ -11,7 +12,7 @@ namespace Sentry.Unity.Android
         /// Configures the native Android support.
         /// </summary>
         /// <param name="options">The Sentry Unity options to use.</param>
-        public static void Configure(SentryUnityOptions options)
+        public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
         {
             if (options.AndroidNativeSupportEnabled)
             {
@@ -35,9 +36,15 @@ namespace Sentry.Unity.Android
 
                     return crashedLastRun.Value;
                 };
-                // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
-                // So we register our backend once more to make sure user-defined data is available in the crash report.
-                SentryNative.ReinstallBackend();
+
+                // When running on Mono, we shouldn't take over the signal handler because its used to propagate exceptions into the VM.
+                // If we take over, a C# null reference ends up crashing the app.
+                if (sentryUnityInfo.IL2CPP)
+                {
+                    // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
+                    // So we register our backend once more to make sure user-defined data is available in the crash report.
+                    SentryNative.ReinstallBackend();
+                }
             }
         }
     }
