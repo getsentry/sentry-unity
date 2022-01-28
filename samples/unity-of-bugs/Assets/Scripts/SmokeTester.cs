@@ -74,18 +74,14 @@ public class SmokeTester : MonoBehaviour
             options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
             options.CreateHttpClientHandler = () => new TestHandler(Verify);
 
+            var sentryUnityInfo = new SentryUnityInfo();
+
 #if SENTRY_NATIVE_IOS
             Debug.Log("SMOKE TEST: Configure Native iOS.");
             SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
             Debug.Log("SMOKE TEST: Configure Native Android.");
-            var il2cpp =
-#if ENABLE_IL2CPP
-            true;
-#else
-            false;
-#endif
-            SentryNativeAndroid.Configure(options, il2cpp);
+            SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #endif
 
             Debug.Log("SMOKE TEST: SentryUnity Init.");

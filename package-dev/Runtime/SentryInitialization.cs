@@ -27,17 +27,12 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options.ShouldInitializeSdk())
             {
+                var sentryUnityInfo = new SentryUnityInfo();
 
 #if SENTRY_NATIVE_IOS
                 SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                var il2cpp =
-#if ENABLE_IL2CPP
-                true;
-#else
-                false;
-#endif
-                SentryNativeAndroid.Configure(options, il2cpp);
+                SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #endif
 
                 SentryUnity.Init(options);
