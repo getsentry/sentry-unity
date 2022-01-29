@@ -85,11 +85,7 @@ public class NativeSupportButtons : MonoBehaviour
     public void CrashInC()
     {
 #if ENABLE_IL2CPP
-#if !UNITY_SWITCH
         crash_in_c();
-#else
-        Debug.Log("Native C plugins are not supported on this platform.");
-#endif
 #else
         Debug.Log("Requires IL2CPP. Try this on a native player that supports C native plugins.");
 #endif
@@ -102,11 +98,9 @@ public class NativeSupportButtons : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void crash_in_cpp();
 
-#if !UNITY_SWITCH
     // CPlugin.c
     [DllImport("__Internal")]
     private static extern void crash_in_c();
-#endif
 #endif
 
     public void ThrowObjectiveC()
