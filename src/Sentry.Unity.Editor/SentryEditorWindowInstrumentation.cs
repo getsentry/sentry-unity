@@ -31,8 +31,7 @@ namespace Sentry.Unity.Editor
             }
             Debug.LogFormat("{0}: Found SentryOptions", functionName);
 
-            var dsn = args["sentryOptions.Dsn"];
-            if (dsn is { })
+            if (args["sentryOptions.Dsn"] is { } dsn)
             {
                 Debug.LogFormat("{0}: Configuring DSN to {1}", functionName, dsn);
                 options.Dsn = dsn;
