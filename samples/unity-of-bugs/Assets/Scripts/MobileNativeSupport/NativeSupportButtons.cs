@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-#if ENABLE_IL2CPP || PLATFORM_IOS
+#if ENABLE_IL2CPP || PLATFORM_IOS || PLATFORM_WEBGL
 using System.Runtime.InteropServices;
 #endif
 using UnityEngine;
@@ -31,7 +31,12 @@ public class NativeSupportButtons : MonoBehaviour
             jo.CallStatic("throw");
         }
 #else
+// TODO: Add this sample to its own button:
+#if PLATFORM_WEBGL
+        ThrowJavaScript();
+#else
         Debug.LogWarning("Not running on Android.");
+#endif
 #endif
     }
 
@@ -122,6 +127,21 @@ public class NativeSupportButtons : MonoBehaviour
     // ObjectiveCPlugin.m
     [DllImport("__Internal")]
     private static extern void throwObjectiveC();
+#endif
+
+    public void ThrowJavaScript()
+    {
+#if PLATFORM_WEBGL
+        throwJavaScript();
+#else
+        Debug.Log("JavaScript interop only works on WebGL players.");
+#endif
+    }
+
+#if PLATFORM_WEBGL
+    // JavaScriptPlugin.jslib
+    [DllImport("__Internal")]
+    private static extern void throwJavaScript();
 #endif
 
     public void LoadBugfarm() => SceneManager.LoadScene("1_Bugfarm");
