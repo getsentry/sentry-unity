@@ -217,6 +217,12 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
+      # Add Sentry DSN via the editor integration so native support is included in the final game
+      - name: Configure Sentry via the Editor Window
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Build Android Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
