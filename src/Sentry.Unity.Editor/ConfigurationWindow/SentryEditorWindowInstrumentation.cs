@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 
-namespace Sentry.Unity.Editor
+namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     public static class SentryEditorWindowInstrumentation
     {
