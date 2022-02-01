@@ -15,6 +15,8 @@ using UnityEngine.Scripting;
 using Sentry.Unity.iOS;
 #elif UNITY_ANDROID
 using Sentry.Unity.Android;
+#elif SENTRY_NATIVE_WINDOWS
+using Sentry.Unity.Native;
 #endif
 
 [assembly: AlwaysLinkAssembly]
