@@ -500,8 +500,11 @@ jobs:
           name: xcode-artifact-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode
 
-      - name: Build + Smoke test
-        id: smoke-test
-        timeout-minutes: 10
+      - name: Build iOS package
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1
+        run: ./Scripts/smoke-test-ios.ps1 Build
+
+      - name: Smoke test
+        timeout-minutes: 35
+        shell: pwsh
+        run: ./Scripts/smoke-test-ios.ps1 Test
