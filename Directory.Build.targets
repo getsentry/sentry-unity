@@ -22,7 +22,7 @@
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <!-- TODO: Do we need: x64, x86, arm64? -->
-    <SentryNativeWindowsArtifactsDestination>$(SolutionDir)package-dev/Plugins/Windows/Sentry/</SentryNativeWindowsArtifactsDestination>
+    <SentryNativeWindowsArtifactsDestination>$(RepoRoot)package-dev/Plugins/Windows/Sentry/</SentryNativeWindowsArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -180,7 +180,6 @@ or
   </Target>
 
   <Target Name="BuildNativeSDK">
-    <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
     <!-- Using configuration Release becuse RelWithDebInfo fails to install due to:
@@ -193,7 +192,7 @@ or
   Call Stack (most recent call first):
     build/crashpad_build/cmake_install.cmake:46 (include)
     build/cmake_install.cmake:56 (include) -->
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad --config Release -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -DCMAKE_BUILD_TYPE=Release -S ."></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --config Release --parallel"></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --install build --prefix install"></Exec>
 
