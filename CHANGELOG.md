@@ -5,6 +5,7 @@
 ### Features
 
 - Embedding the package via button at Advanced -> Embed package in the config window ([#540](https://github.com/getsentry/sentry-unity/pull/540))
+
 ### Fixes
 
 - Importing the link.xml when opening the config window no longer causes an infinite loop ([#539](https://github.com/getsentry/sentry-unity/pull/539))
