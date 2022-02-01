@@ -147,13 +147,12 @@ function Test
     }
     Write-Host "End of test."
 }
-$action = "Build"
 
-If ($action -eq $null -or $action -eq "Build")
+If ($action -eq $null -Or $action -eq "Build")
 {
     Build
 }
-If ($action -eq $null -or $action -eq "Test")
+If ($action -eq $null -Or $action -eq "Test")
 {
     Test
 }
