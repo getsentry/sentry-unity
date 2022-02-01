@@ -286,7 +286,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         with:
           name: xcode-artifact-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/XCode
+          path: samples/artifacts/builds/iOS/Xcode
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
@@ -498,7 +498,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: xcode-artifact-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/XCode
+          path: samples/artifacts/builds/iOS/Xcode
 
       - name: Build + Smoke test
         id: smoke-test

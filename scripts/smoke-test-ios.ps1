@@ -26,22 +26,27 @@ Class AppleDevice
     }
 }
 
-    Write-Host -NoNewline "Applying SmokeTest flag on info.plist: "
-    $smokeTestKey = "<key>RunSentrySmokeTest</key>"
-    $infoPlist = (Get-Content -path "$XcodeArtifactPath/Info.plist" -Raw)
-    If ($infoPlist -clike "*$smokeTestKey*")
-    {
-        Write-Host "SKIPPED" -ForegroundColor Gray
-    }
-    Else 
-    {        
-        $infoPlist.Replace("</dict>`n</plist>", "	$smokeTestKey`n	<string>True</string>`n</dict>`n</plist>") | Set-Content "$XcodeArtifactPath/Info.plist"
-        Write-Host "OK" -ForegroundColor Green
-    }
-
-    Write-Host "Building iOS project"
-    xcodebuild -project "$XcodeArtifactPath/$ProjectName.xcodeproj" -scheme Unity-iPhone -configuration Release -sdk iphonesimulator -derivedDataPath "$ArchievePath/$ProjectName"
+Write-Host -NoNewline "Applying SmokeTest flag on info.plist: "
+$smokeTestKey = "<key>RunSentrySmokeTest</key>"
+$infoPlist = (Get-Content -path "$XcodeArtifactPath/Info.plist" -Raw)
+If ($infoPlist -clike "*$smokeTestKey*")
+{
+    Write-Host "SKIPPED" -ForegroundColor Gray
+}
+Else 
+{        
+    $infoPlist.Replace("</dict>`n</plist>", "	$smokeTestKey`n	<string>True</string>`n</dict>`n</plist>") | Set-Content "$XcodeArtifactPath/Info.plist"
     Write-Host "OK" -ForegroundColor Green
+}
+
+Write-Host "Building iOS project"
+$xCodeBuild =  Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchievePath/$ProjectName" -PassThru
+$xCodeBuild.WaitForExit()
+If ($xCodeBuild.ExitCode -ne 0)
+{
+    Throw "Xcode build exited with code $($xCodeBuild.ExitCode)."
+}
+Write-Host "OK" -ForegroundColor Green
 
 Write-Host "Retrieving list of available simulators" -ForegroundColor Green
 # junk will contain the first item from the String that should be == Devices ==
