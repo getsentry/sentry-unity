@@ -57,6 +57,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
                                                          "capture errors written in languages such as Java, Kotlin, C and C++."),
                 options.AndroidNativeSupportEnabled);
+
+            if(GUILayout.Button("Embed"))
+            {
+                Debug.Log("trying to embed the package");
+            }
         }
     }
 }
