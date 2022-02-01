@@ -66,7 +66,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             GUILayout.Label("Embedding Sentry SDK into project", EditorStyles.boldLabel);
 
-            if(GUILayout.Button("Embed package"))
+            if (GUILayout.Button("Embed package"))
             {
                 Client.Embed(SentryPackageInfo.GetName());
             }
