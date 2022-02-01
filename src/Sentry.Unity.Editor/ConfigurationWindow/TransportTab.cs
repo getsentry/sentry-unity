@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
-    public static class TransportTab
+    internal static class TransportTab
     {
-        public static void Display(ScriptableSentryUnityOptions options)
+        internal static void Display(ScriptableSentryUnityOptions options)
         {
             options.EnableOfflineCaching = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Offline Caching", ""),

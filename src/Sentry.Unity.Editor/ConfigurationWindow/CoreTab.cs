@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
-    public static class CoreTab
+    internal static class CoreTab
     {
-        public static void Display(ScriptableSentryUnityOptions options)
+        internal static void Display(ScriptableSentryUnityOptions options)
         {
             GUILayout.Label("Base Options", EditorStyles.boldLabel);
 

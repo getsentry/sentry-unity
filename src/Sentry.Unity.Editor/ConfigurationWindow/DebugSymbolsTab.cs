@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
-    public static class DebugSymbolsTab
+    internal static class DebugSymbolsTab
     {
-        public static void Display(SentryCliOptions cliOptions)
+        internal static void Display(SentryCliOptions cliOptions)
         {
             cliOptions.UploadSymbols = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Upload Symbols", "Whether debug symbols should be uploaded automatically " +

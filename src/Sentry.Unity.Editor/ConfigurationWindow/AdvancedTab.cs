@@ -1,11 +1,13 @@
+using System.IO;
 using UnityEditor;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
-    public static class AdvancedTab
+    internal static class AdvancedTab
     {
-        public static void Display(ScriptableSentryUnityOptions options)
+        internal static void Display(ScriptableSentryUnityOptions options)
         {
             options.Debug = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Debug Output", "Whether the Sentry SDK should print its " +
@@ -57,11 +59,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
                                                          "capture errors written in languages such as Java, Kotlin, C and C++."),
                 options.AndroidNativeSupportEnabled);
-
-            if(GUILayout.Button("Embed"))
-            {
-                Debug.Log("trying to embed the package");
-            }
         }
     }
 }

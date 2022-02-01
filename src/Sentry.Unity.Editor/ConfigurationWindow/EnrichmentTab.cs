@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
-    public static class EnrichmentTab
+    internal static class EnrichmentTab
     {
-        public static void Display(ScriptableSentryUnityOptions options)
+        internal static void Display(ScriptableSentryUnityOptions options)
         {
             GUILayout.Label("Tag Overrides", EditorStyles.boldLabel);
 
