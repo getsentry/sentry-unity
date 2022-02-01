@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Embedding the package via button at Advanced -> Embed package in the config window ([#540](https://github.com/getsentry/sentry-unity/pull/540))
+
 ## 0.9.4
 
 ### Fixes
