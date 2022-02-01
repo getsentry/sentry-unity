@@ -19,21 +19,25 @@ namespace Sentry.Unity.Native
             _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Adding breadcrumb m:\"{0}\" l:\"{1}\"",
                 breadcrumb.Message,
                 breadcrumb.Level);
+            // TODO implement
         }
 
         public void SetExtra(string key, object? value)
         {
             _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
+            // TODO implement
         }
 
         public void SetTag(string key, string value)
         {
             _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
+            // TODO implement
         }
 
         public void UnsetTag(string key)
         {
             _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Unsetting Tag k:\"{0}\"", key);
+            // TODO implement
         }
 
         public void SetUser(User? user)
@@ -43,10 +47,12 @@ namespace Sentry.Unity.Native
                 _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Setting User i:\"{0}\" n:\"{1}\"",
                     user.Id,
                     user.Username);
+                // TODO implement
             }
             else
             {
                 _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Unsetting User");
+                // TODO implement
             }
         }
     }

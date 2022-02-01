@@ -33,10 +33,17 @@ namespace Sentry.Unity
         // libsentry.so
         [DllImport("sentry")]
         private static extern IntPtr sentry_options_new();
+
         [DllImport("sentry")]
         private static extern void sentry_options_set_dsn(IntPtr options, string dsn);
+
         [DllImport("sentry")]
         private static extern void sentry_options_set_release(IntPtr options, string release);
+
+        // TODO we could set a logger for sentry-native, forwarding the logs to `options.DiagnosticLogger?`
+        // [DllImport("sentry")]
+        // private static extern void sentry_options_set_logger(IntPtr options, IntPtr logger, IntPtr userData);
+
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);
 
