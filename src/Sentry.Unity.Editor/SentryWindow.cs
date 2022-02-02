@@ -351,6 +351,11 @@ namespace Sentry.Unity.Editor
                 new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
                                                          "capture errors written in languages such as Java, Kotlin, C and C++."),
                 Options.AndroidNativeSupportEnabled);
+
+            Options.WindowsNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Windows Native Support", "Whether to enable Native Windows support to " +
+                                                         "capture errors written in languages such as C#, C and C++."),
+                Options.WindowsNativeSupportEnabled);
         }
 
         private void DisplayEditor()

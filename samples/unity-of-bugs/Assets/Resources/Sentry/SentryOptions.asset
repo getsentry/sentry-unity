@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SentryOptions
   m_EditorClassIdentifier: 
   <Enabled>k__BackingField: 1
-  <Dsn>k__BackingField: https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417
+  <Dsn>k__BackingField: 
   <CaptureInEditor>k__BackingField: 1
   <EnableLogDebouncing>k__BackingField: 0
   <TracesSampleRate>k__BackingField: 0
@@ -28,11 +28,12 @@ MonoBehaviour:
   <IsEnvironmentUser>k__BackingField: 0
   <EnableOfflineCaching>k__BackingField: 1
   <MaxCacheItems>k__BackingField: 30
-  <InitCacheFlushTimeout>k__BackingField: 2000
+  <InitCacheFlushTimeout>k__BackingField: 0
   <ShutdownTimeout>k__BackingField: 2000
   <MaxQueueItems>k__BackingField: 30
   <IosNativeSupportEnabled>k__BackingField: 1
   <AndroidNativeSupportEnabled>k__BackingField: 1
+  <WindowsNativeSupportEnabled>k__BackingField: 1
   <Debug>k__BackingField: 1
-  <DebugOnlyInEditor>k__BackingField: 0
+  <DebugOnlyInEditor>k__BackingField: 1
   <DiagnosticLevel>k__BackingField: 2

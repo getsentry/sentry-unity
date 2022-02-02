@@ -51,6 +51,7 @@ namespace Sentry.Unity
         [field: SerializeField] public int MaxQueueItems { get; set; }
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
 
         [field: SerializeField] public bool Debug { get; set; }
         [field: SerializeField] public bool DebugOnlyInEditor { get; set; }
@@ -117,6 +118,7 @@ namespace Sentry.Unity
 
             options.IosNativeSupportEnabled = scriptableOptions.IosNativeSupportEnabled;
             options.AndroidNativeSupportEnabled = scriptableOptions.AndroidNativeSupportEnabled;
+            options.WindowsNativeSupportEnabled = scriptableOptions.WindowsNativeSupportEnabled;
 
             options.Debug = scriptableOptions.Debug;
             options.DebugOnlyInEditor = scriptableOptions.DebugOnlyInEditor;
