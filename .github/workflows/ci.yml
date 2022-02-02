@@ -530,14 +530,6 @@ jobs:
           name: xcode-${{ matrix.unity-version }}-ipa
           path: samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator
 
-      - name: Determine total of simulators per Group
-        uses: haya14busa/action-cond@v1
-        id: totalSimulatorsiOS
-        with:
-          cond: ${{ matrix.group-id == 6 }}
-          if_true: 0
-          if_false: 3
-
       - name: Smoke test
         id: smoke-test-ios
         timeout-minutes: 10
