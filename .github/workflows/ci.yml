@@ -541,6 +541,5 @@ jobs:
       - name: Smoke test
         id: smoke-test-ios
         timeout-minutes: 10
-        with:
-          shell: pwsh
-          run: ./Scripts/smoke-test-ios.ps1 Test Skip ${{ (matrix.group-id - 1) * 3 }} Run ${{ steps.totalSimulatorsiOS.outputs.value }}
+        shell: pwsh
+        run: ./Scripts/smoke-test-ios.ps1 Test Skip ${{ (matrix.group-id - 1) * 3 }} Run ${{ steps.totalSimulatorsiOS.outputs.value }}
