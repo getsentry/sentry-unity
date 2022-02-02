@@ -163,6 +163,7 @@ or
   <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildNativeWindowsSDK src/Sentry.Unity -->
   <Target Name="BuildNativeWindowsSDK"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And $([MSBuild]::IsOsPlatform('Windows'))
           And !Exists('$(SentryNativeWindowsArtifactsDestination)')"
           DependsOnTargets="BuildNativeSDK"
           BeforeTargets="BeforeBuild">
