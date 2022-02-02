@@ -165,7 +165,7 @@ or
   <Target Name="BuildNativeWindowsSDK"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
-          And !Exists('$(SentryNativeWindowsArtifactsDestination)')"
+          And !Exists('$(SentryNativeWindowsArtifactsDestination)/sentry.dll')"
           DependsOnTargets="BuildNativeSDK"
           BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
