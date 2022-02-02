@@ -507,8 +507,8 @@ jobs:
       - name: Preparing iOS test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
-          name: xcode-ipa-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode/samples/artifacts/builds/iOS/Xcode
+          name: xcode-${{ matrix.unity-version }}-ipa
+          path: samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
@@ -527,8 +527,8 @@ jobs:
       - name: Download ipa app artifact
         uses: actions/download-artifact@v2
         with:
-          name: xcode-ipa-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode/samples/artifacts/builds/iOS/Xcode
+          name: xcode-${{ matrix.unity-version }}-ipa
+          path: samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator
 
       - name: Determine total of simulators per Group
         uses: haya14busa/action-cond@v1
