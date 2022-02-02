@@ -24,7 +24,7 @@ namespace Sentry.Unity
             LogStackTrace = logStackTrace;
         }
 
-        private UnityLogException() : base()
+        internal UnityLogException() : base()
         {
             LogString = "";
             LogStackTrace = "";
