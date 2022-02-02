@@ -1,4 +1,11 @@
-param($action)
+param($action, $testArg1, $testArg1Count, $testArg2, $testArg2Count)
+# $action: 'Build' for build only
+#          'Test' for Smoke test only
+#          null for building and testing
+# $testArg1 and $testArg2: test parameter name
+#          'Skip' the amount of devices to be skipped the test
+#                 null for not skipping any device
+#          'Run'  the amount of devices to run the test
 $ErrorActionPreference = "Stop"
 
 $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
@@ -11,6 +18,7 @@ Class AppleDevice
     [String]$Name
     [String]$UUID
     [boolean]$TestPassed
+    [boolean]$TestSkipped
 
     Parse([String]$unparsedDevice)
     {
@@ -26,6 +34,32 @@ Class AppleDevice
         $this.UUID = $result.Groups["uuid"].Value
     }
 }
+
+function GetTestSkipCount
+{
+    If ($testArg1 -eq "Skip" -And $testArg1Count -match "^\d+$")
+    {
+        return $testArg1Count
+    }
+    If ($testArg2 -eq "Skip" -And $testArg2Count -match "^\d+$")
+    {
+        return $testArg2Count
+    }
+    return 0
+}
+function GetTestRunCount
+{
+    If ($testArg1 -eq "Run" -And $testArg1Count -match "^\d+$")
+    {
+        return $testArg1Count
+    }
+    If ($testArg2 -eq "Run" -And $testArg2Count -match "^\d+$")
+    {
+        return $testArg2Count
+    }
+    return 0
+}
+
 
 function Build()
 {
@@ -95,8 +129,30 @@ function Test
         Write-Host "$($device.Name) - $($device.UUID)"
     }
 
+    $skipCount = GetTestSkipCount
+    $skippedItems = 0
+    $runCount = GetTestRunCount
+    $devicesRan = 0
+    If (0 -eq $runCount)
+    {
+        $runCount = $deviceCount
+    }
     ForEach ($device in $deviceList)
     {
+        If ($skippedItems -lt $skipCount)
+        {
+            Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+            $device.TestSkipped = $true
+            $skippedItems++
+            continue
+        }
+        If ($devicesRan -ge $runCount)
+        {
+            Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+            $device.TestSkipped = $true
+            continue
+        }
+        $devicesRan++
         Write-Host "Starting Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
         xcrun simctl boot $($device.UUID)
         Write-Host -NoNewline "Installing Smoke Test on $($device.Name): "
@@ -107,7 +163,7 @@ function Test
         
         Write-Host -NoNewline "Smoke test STATUS: "
         $stdout = $consoleOut  | select-string 'SMOKE TEST: PASS'
-        If ($stdout -ne $null)
+        If ($null -ne $stdout)
         {
             Write-Host "PASSED" -ForegroundColor Green
             $device.TestPassed = $True
@@ -140,6 +196,10 @@ function Test
         {
             Write-Host "PASSED" -ForegroundColor Green
         }
+        ElseIf ($device.TestSkipped)
+        {
+            Write-Host "SKIPPED" -ForegroundColor Gray
+        }
         else 
         {        
             Write-Host "FAILED" -ForegroundColor Red
@@ -148,11 +208,13 @@ function Test
     Write-Host "End of test."
 }
 
-If ($action -eq $null -Or $action -eq "Build")
+
+# MAIN
+If ($null -eq $action -Or $action -eq "Build")
 {
     Build
 }
-If ($action -eq $null -Or $action -eq "Test")
+If ($null -eq $action -Or $action -eq "Test")
 {
     Test
 }

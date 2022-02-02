@@ -481,7 +481,7 @@ jobs:
           name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
           path: samples/artifacts/builds/Android/screen.png
 
-  ios-smoke-test:
+  ios-smoke-test-build:
     needs: [build]
     name: Smoke Test - iOS Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
@@ -503,6 +503,32 @@ jobs:
       - name: Build iOS package
         shell: pwsh
         run: ./Scripts/smoke-test-ios.ps1 Build
+
+      - name: Preparing iOS test app for smoke test.
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'macos-latest'
+        with:
+          name: xcode-artifact-${{ matrix.unity-version }}-ipa-file
+          path: samples/artifacts/builds/iOS/Xcode/samples/artifacts/builds/iOS/Xcode
+
+  ios-smoke-test-run:
+    needs: [ios-smoke-test-build]
+    name: Smoke Test - Test iOS Unity ${{ matrix.unity-version }}
+    runs-on: macos-latest
+    strategy:
+      max-parallel: 3
+      fail-fast: false
+      matrix:
+         unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download ipa app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: xcode-artifact-${{ matrix.unity-version }}-ipa-file
+          path: samples/artifacts/builds/iOS/Xcode/samples/artifacts/builds/iOS/Xcode
 
       - name: Smoke test
         timeout-minutes: 35
