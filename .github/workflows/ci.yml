@@ -170,18 +170,18 @@ jobs:
       - name: Build Android SDK
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:BuildAndroidSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: dotnet msbuild /v:d /t:BuildAndroidSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS SDK
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: dotnet msbuild /v:d /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Windows SDK
         if: matrix.os == 'windows-latest'
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: dotnet msbuild /t:BuildNativeWindowsSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: dotnet msbuild /v:d /t:BuildNativeWindowsSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Sentry.Unity Solution
         env:
