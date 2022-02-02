@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Editor.Tests

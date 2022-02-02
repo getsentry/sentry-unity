@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Sentry.Unity.Editor;
+using Sentry.Unity.Editor.ConfigurationWindow;
 
 namespace Sentry.Unity.Tests
 {
