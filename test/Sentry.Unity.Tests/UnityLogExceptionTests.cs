@@ -7,6 +7,14 @@ namespace Sentry.Unity.Tests
 {
     public class UnityLogExceptionTests
     {
+        [Test]
+        public void ToSentryException_MarkedAsUnhandled()t ad
+        {
+            var sentryException = new UnityLogException().ToSentryException();
+
+            Assert.IsFalse(sentryException.Mechanism?.Handled);
+        }
+
         [TestCaseSource(nameof(ParsingTestCases))]
         public void ToSentryException_ParsingTestCases(
             string logString,
