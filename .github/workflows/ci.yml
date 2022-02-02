@@ -506,20 +506,20 @@ jobs:
 
       - name: Preparing iOS test app for smoke test.
         uses: actions/upload-artifact@v2
-        if: matrix.os == 'macos-latest'
         with:
-          name: xcode-artifact-${{ matrix.unity-version }}-ipa-file
+          name: xcode-ipa-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode/samples/artifacts/builds/iOS/Xcode
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Smoke Test - Test iOS Unity ${{ matrix.unity-version }}
+    name: Smoke Test - Test iOS Group ${{ matrix.group-id }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       max-parallel: 3
       fail-fast: false
       matrix:
          unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
+         group-id: [1, 2, 3, 4, 5, 6]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -527,10 +527,20 @@ jobs:
       - name: Download ipa app artifact
         uses: actions/download-artifact@v2
         with:
-          name: xcode-artifact-${{ matrix.unity-version }}-ipa-file
+          name: xcode-ipa-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode/samples/artifacts/builds/iOS/Xcode
 
+      - name: Determine total of simulators per Group
+        uses: haya14busa/action-cond@v1
+        id: totalSimulatorsiOS
+        with:
+          cond: ${{ matrix.group-id == 6 }}
+          if_true: 0
+          if_false: 3
+
       - name: Smoke test
+        id: smoke-test-ios
         timeout-minutes: 35
+        with:
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Test
+        run: ./Scripts/smoke-test-ios.ps1 Test Skip ${{ (matrix.group-id - 1) * 3 }} Run ${{ steps.totalSimulatorsiOS.outputs.value }}
