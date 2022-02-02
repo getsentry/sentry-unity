@@ -8,7 +8,7 @@ namespace Sentry.Unity.Tests
     public class UnityLogExceptionTests
     {
         [Test]
-        public void ToSentryException_MarkedAsUnhandled()t ad
+        public void ToSentryException_MarkedAsUnhandled()
         {
             var sentryException = new UnityLogException().ToSentryException();
 
