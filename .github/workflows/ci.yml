@@ -542,4 +542,9 @@ jobs:
         id: smoke-test-ios
         timeout-minutes: 10
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Test Skip ${{ (matrix.group-id - 1) * 3 }} Run ${{ steps.totalSimulatorsiOS.outputs.value }}
+        run: |
+          # Odd that Github Actions does not support basic maths.
+          $skipCount = ( ${{ matrix.group-id }} - 1 ) * 3
+          # Zero will run all the remaining simulators (last group will run all remaining simulators)
+          $runCount = ${{ matrix.group-id }} -eq 6 ?  0 : 3
+          ./Scripts/smoke-test-ios.ps1 Test Skip $skipCount Run $runCount
