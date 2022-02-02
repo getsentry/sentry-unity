@@ -111,6 +111,11 @@ UnityEngine.EventSystems.EventSystem:Update() (at /Applications/Unity/Hub/Editor
                                 InApp = true
                             },
                         }
+                    },
+                    Mechanism = new Mechanism
+                    {
+                        Handled = false,
+                        Type = "unity.log"
                     }
                 } },
             new object[] {
@@ -244,6 +249,11 @@ Expected: False == True",
                                 InApp = false
                             },
                         }
+                    },
+                    Mechanism = new Mechanism
+                    {
+                        Handled = false,
+                        Type = "unity.log"
                     }
                 } },
             // TODO: Current parsing logic isn't able to parse this (editor only stack trace)
