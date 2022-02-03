@@ -62,7 +62,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             options.WindowsNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("Windows Native Support", "Whether to enable Native Windows support to " +
-                                                         "capture errors written in languages such as C#, C and C++."),
+                                                         "capture errors written in languages such as C and C++."),
                 options.WindowsNativeSupportEnabled);
         }
     }
