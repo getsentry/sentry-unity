@@ -32,6 +32,37 @@ namespace Sentry.Unity
             sentry_init(cOptions);
         }
 
+        public static void AddBreadcrumb(Breadcrumb breadcrumb)
+        {
+            // see https://develop.sentry.dev/sdk/event-payloads/breadcrumbs/
+            var crumb = sentry_value_new_breadcrumb(breadcrumb.Type, breadcrumb.Message);
+            sentry_value_set_by_key(crumb, "level", sentry_value_new_string(breadcrumb.Level.ToString().ToLower()));
+            sentry_value_set_by_key(crumb, "timestamp", sentry_value_new_string(GetTimestamp(breadcrumb.Timestamp)));
+            if (breadcrumb.Category is not null)
+            {
+                sentry_value_set_by_key(crumb, "category", sentry_value_new_string(breadcrumb.Category));
+            }
+            sentry_add_breadcrumb(crumb);
+        }
+
+        public static void SetExtra(string key, string? value)
+        {
+            // TODO
+        }
+
+        public static void SetTag(string key, string value) => sentry_set_tag(key, value);
+
+        public static void UnsetTag(string key) => sentry_remove_tag(key);
+
+        public static void SetUser(string? email, string? userId, string? ipAddress, string? username)
+        {
+            var user = sentry_value_new_object();
+            // TODO
+            sentry_set_user(user);
+        }
+
+        public static void UnsetUser() => sentry_remove_user();
+
         // libsentry.so
         [DllImport("sentry")]
         private static extern IntPtr sentry_options_new();
@@ -48,6 +79,30 @@ namespace Sentry.Unity
 
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);
+
+        [DllImport("sentry")]
+        private static extern SentryValueU sentry_value_new_object();
+
+        [DllImport("sentry")]
+        private static extern SentryValueU sentry_value_new_string(string value);
+
+        [DllImport("sentry")]
+        private static extern SentryValueU sentry_value_new_breadcrumb(string? type, string? message);
+
+        [DllImport("sentry")]
+        private static extern int sentry_value_set_by_key(SentryValueU value, string k, SentryValueU v);
+
+        [DllImport("sentry")]
+        private static extern void sentry_add_breadcrumb(SentryValueU breadcrumb);
+
+        [DllImport("sentry")]
+        private static extern void sentry_set_tag(string key, string value);
+
+        [DllImport("sentry")]
+        private static extern void sentry_remove_tag(string key);
+
+        [DllImport("sentry")]
+        private static extern void sentry_remove_user();
 
         /// <summary>
         /// Re-installs the sentry-native backend essentially retaking the signal handlers.
@@ -67,5 +122,20 @@ namespace Sentry.Unity
 
         // Testing
         internal static Action ReinstallSentryNativeBackendStrategy = sentry_reinstall_backend;
+
+        // native union sentry_value_u/t
+        [StructLayout(LayoutKind.Explicit)]
+        private struct SentryValueU
+        {
+            [FieldOffset(0)]
+            private ulong _bits;
+            [FieldOffset(0)]
+            private double _double;
+        }
+
+        private static string GetTimestamp(DateTimeOffset timestamp) =>
+            // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.
+            // https://docs.microsoft.com/en-gb/dotnet/standard/base-types/standard-date-and-time-format-strings#Roundtrip
+            timestamp.ToString("o");
     }
 }

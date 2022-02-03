@@ -19,7 +19,7 @@ namespace Sentry.Unity.Native
             _options.DiagnosticLogger?.LogDebug("Native Scope Sync - Adding breadcrumb m:\"{0}\" l:\"{1}\"",
                 breadcrumb.Message,
                 breadcrumb.Level);
-            // TODO implement
+            SentryNativeBridge.AddBreadcrumb(breadcrumb);
         }
 
         public void SetExtra(string key, object? value)
