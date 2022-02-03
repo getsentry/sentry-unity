@@ -19,6 +19,10 @@
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
+    <!-- Native -->
+    <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
+    <!-- TODO: Do we need: x64, x86, arm64? -->
+    <SentryNativeWindowsArtifactsDestination>$(RepoRoot)package-dev/Plugins/Windows/Sentry/</SentryNativeWindowsArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -96,6 +100,12 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
+  <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeWindowsArtifactsDestination)" ContinueOnError="true" />
+  </Target>
+
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
@@ -114,7 +124,7 @@ or
     <Copy SourceFiles="@(CocoaDeviceBuildPath)"
           DestinationFiles="@(CocoaDeviceBuildPath->'$(SentryCocoaDeviceArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
-        <ItemGroup>
+    <ItemGroup>
       <CocoaSimulatorBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_i386_x86_64-simulator/Sentry.framework/**/*" />
     </ItemGroup>
     <Copy SourceFiles="@(CocoaSimulatorBuildPath)"
@@ -149,6 +159,45 @@ or
     </Copy>
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
+  </Target>
+
+  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildNativeWindowsSDK src/Sentry.Unity -->
+  <Target Name="BuildNativeWindowsSDK"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And $([MSBuild]::IsOsPlatform('Windows'))
+          And !Exists('$(SentryNativeWindowsArtifactsDestination)/sentry.dll')"
+          DependsOnTargets="BuildNativeSDK"
+          BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
+    <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
+
+    <ItemGroup>
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/sentry.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NativeSdkArtifacts)"
+          DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeWindowsArtifactsDestination)%(Filename)%(Extension)')">
+    </Copy>
+  </Target>
+
+  <Target Name="BuildNativeSDK">
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
+
+    <!-- Using configuration Release because RelWithDebInfo fails to install due to:
+
+  Install configuration: "Release"
+  CMake Error at build/crashpad_build/handler/cmake_install.cmake:39 (file):
+    file INSTALL cannot find
+    "C:/Users/bruno/git/sentry-unity/src/sentry-native/build/crashpad_build/handler/Release/crashpad_handler.exe":
+    File exists.
+  Call Stack (most recent call first):
+    build/crashpad_build/cmake_install.cmake:46 (include)
+    build/cmake_install.cmake:56 (include) -->
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -DCMAKE_BUILD_TYPE=Release -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --config Release --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --install build --prefix install"></Exec>
+
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.

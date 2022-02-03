@@ -22,7 +22,7 @@ You'll need the following modules to be added in order to use Sentry Unity:
 
 ### Setup for building the Java SDK
 
-* Install Java 11 
+* Install Java 11
   * [Using sdkman](https://sdkman.io/) which manage versions for you.
   * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
 * Instal Git and ensure is accessible from the path
@@ -36,7 +36,7 @@ You'll need the following modules to be added in order to use Sentry Unity:
   * Check "Show Package Details"
   * Under Android SDK Build-Tools check "30.0.2"
   * Apply
-* Add ANDROID_SDK_ROOT to your environment variables 
+* Add ANDROID_SDK_ROOT to your environment variables
   * macOS zsh: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"`
   * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"` for a machine wide install, `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
 
@@ -53,13 +53,13 @@ On the root of the repository, write:
 ### Run tests
 
 ```sh
-dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release
+dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release test/Sentry.Unity.Tests
 ```
 
 ### Smoke test by building and running a player with IL2CPP:
 
 ```sh
- dotnet msbuild /t:"Build;UnityBuildStandalonePlayerIL2CPP;UnitySmokeTestStandalonePlayerIL2CPP"
+ dotnet msbuild /t:"Build;UnityBuildStandalonePlayerIL2CPP;UnitySmokeTestStandalonePlayerIL2CPP"  test/Sentry.Unity.Tests
 ```
 
 After this you can open your IDE (i.e: Visual Studio or Rider) and Unity Editor for development.
