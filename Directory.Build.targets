@@ -184,7 +184,7 @@ or
   <Target Name="BuildNativeSDK">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <!-- Using configuration Release becuse RelWithDebInfo fails to install due to:
+    <!-- Using configuration Release because RelWithDebInfo fails to install due to:
 
   Install configuration: "Release"
   CMake Error at build/crashpad_build/handler/cmake_install.cmake:39 (file):
