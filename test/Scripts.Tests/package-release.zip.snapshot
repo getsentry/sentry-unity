@@ -11,6 +11,9 @@ Editor/sentry-cli/sentry-cli-Linux-x86_64
 Editor/sentry-cli/sentry-cli-Linux-x86_64.meta
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe.meta
+Plugins/Windows.meta
+Plugins/Windows/Sentry/
+Plugins/Windows/Sentry.meta
 Plugins/Android.meta
 Plugins/iOS.meta
 Plugins/iOS/Device.meta
@@ -295,6 +298,10 @@ Runtime/Sentry.Unity.iOS.dll
 Runtime/Sentry.Unity.iOS.dll.meta
 Runtime/Sentry.Unity.iOS.pdb
 Runtime/Sentry.Unity.iOS.pdb.meta
+Runtime/Sentry.Unity.Native.dll
+Runtime/Sentry.Unity.Native.dll.meta
+Runtime/Sentry.Unity.Native.pdb
+Runtime/Sentry.Unity.Native.pdb.meta
 Runtime/Sentry.Unity.pdb
 Runtime/Sentry.Unity.pdb.meta
 Runtime/Sentry.xml
