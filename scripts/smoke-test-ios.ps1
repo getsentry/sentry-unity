@@ -47,6 +47,7 @@ function GetTestSkipCount
     }
     return 0
 }
+
 function GetTestRunCount
 {
     If ($testArg1 -eq "Run" -And $testArg1Count -match "^\d+$")
@@ -59,7 +60,6 @@ function GetTestRunCount
     }
     return 0
 }
-
 
 function Build()
 {
@@ -207,8 +207,13 @@ function Test
     }
     Write-Host "End of test."
 }
-
-
+If (-not $IsMacOS)
+{
+    Write-Host "This script should only be run on a MacOS." -ForegroundColor Yellow
+}
+$action = "Test"
+$testArg1 = "Run"
+$testArg1Count = "2"
 # MAIN
 If ($null -eq $action -Or $action -eq "Build")
 {

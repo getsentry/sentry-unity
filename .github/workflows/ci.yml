@@ -483,7 +483,7 @@ jobs:
 
   ios-smoke-test-build:
     needs: [build]
-    name: Smoke Test - iOS Unity ${{ matrix.unity-version }}
+    name: Build Smoke Test ipa - iOS Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       max-parallel: 3
@@ -512,7 +512,7 @@ jobs:
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Smoke Test - Test iOS Group ${{ matrix.group-id }} Unity ${{ matrix.unity-version }}
+    name: Run Smoke Test - iOS Group ${{ matrix.group-id }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
