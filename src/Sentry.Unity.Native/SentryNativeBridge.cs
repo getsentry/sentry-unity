@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Sentry.Extensibility;
 
 namespace Sentry.Unity
 {
@@ -15,19 +16,18 @@ namespace Sentry.Unity
     /// <see href="https://github.com/getsentry/sentry-native"/>
     public static class SentryNativeBridge
     {
-        // TODO:
-        //   sentry_options_t *options = sentry_options_new();
-        //   sentry_options_set_dsn(options, "https://examplePublicKey@o0.ingest.sentry.io/0");
-        //   sentry_options_set_release(options, "my-project-name@2.3.12");
-        //   sentry_init(options);
-
-        //
-        public static void Init(string dsn, string release)
+        public static void Init(SentryUnityOptions options)
         {
-            var options = sentry_options_new();
-            sentry_options_set_dsn(options, dsn);
-            sentry_options_set_release(options, release);
-            sentry_init(options);
+            var cOptions = sentry_options_new();
+            sentry_options_set_dsn(cOptions, options.Dsn!);
+
+            if (options.Release is not null)
+            {
+                options.DiagnosticLogger?.LogDebug("Setting Release: {0}", options.Release);
+                sentry_options_set_release(cOptions, options.Release);
+            }
+            
+            sentry_init(cOptions);
         }
 
         // libsentry.so
