@@ -1,4 +1,5 @@
 param($action, $testArg1, $testArg1Count, $testArg2, $testArg2Count)
+Write-Host "Debug action=$action, test=$testArg1, count=$testArg1Count, arg=$testArg2, count=$testArg2Count"
 # $action: 'Build' for build only
 #          'Test' for Smoke test only
 #          null for building and testing
@@ -188,6 +189,7 @@ function Test
         Write-Host "OK" -ForegroundColor Green
     }
 
+    $testFailed = $false
     Write-Host "Test result"
     foreach ($device in $deviceList)
     {
@@ -203,23 +205,29 @@ function Test
         else 
         {        
             Write-Host "FAILED" -ForegroundColor Red
+            $testFailed = $true
         }
     }
     Write-Host "End of test."
+
+    If ($testFailed -eq $true)
+    {
+        Throw "One or more tests failed."
+    }
 }
+
 If (-not $IsMacOS)
 {
     Write-Host "This script should only be run on a MacOS." -ForegroundColor Yellow
 }
-$action = "Test"
-$testArg1 = "Run"
-$testArg1Count = "2"
 # MAIN
 If ($null -eq $action -Or $action -eq "Build")
 {
-    Build
+    Write-Host "Lets build"
+#    Build
 }
 If ($null -eq $action -Or $action -eq "Test")
 {
-    Test
+    Write-Host "Lets Test"
+#    Test
 }
