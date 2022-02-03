@@ -30,7 +30,7 @@ namespace Sentry.Unity.Editor.Native
 
                 if (!options.WindowsNativeSupportEnabled)
                 {
-                    logger.LogDebug("iOS Native support disabled through the options.");
+                    logger.LogDebug("Windows Native support disabled through the options.");
                     return;
                 }
 
