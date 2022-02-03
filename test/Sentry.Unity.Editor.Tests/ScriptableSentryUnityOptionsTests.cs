@@ -39,6 +39,7 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("MaxQueueItems", optionsAsString);
             StringAssert.Contains("IosNativeSupportEnabled", optionsAsString);
             StringAssert.Contains("AndroidNativeSupportEnabled", optionsAsString);
+            StringAssert.Contains("WindowsNativeSupportEnabled", optionsAsString);
             StringAssert.Contains("Debug", optionsAsString);
             StringAssert.Contains("DebugOnlyInEditor", optionsAsString);
             StringAssert.Contains("DiagnosticLevel", optionsAsString);
