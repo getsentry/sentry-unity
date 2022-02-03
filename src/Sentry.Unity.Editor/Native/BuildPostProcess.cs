@@ -22,6 +22,12 @@ namespace Sentry.Unity.Editor.Native
 
             try
             {
+                if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) != ScriptingImplementation.IL2CPP)
+                {
+                    logger.LogWarning("Failed to enable Native support - only availabile with IL2CPP scripting backend.");
+                    return;
+                }
+
                 if (options?.Validate() != true)
                 {
                     logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
