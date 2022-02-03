@@ -19,6 +19,8 @@ namespace Sentry.Unity
         public static void Init(SentryUnityOptions options)
         {
             var cOptions = sentry_options_new();
+
+            // Note: DSN is not null because options.Validate() must have returned true for this to be called.
             sentry_options_set_dsn(cOptions, options.Dsn!);
 
             if (options.Release is not null)
@@ -26,7 +28,7 @@ namespace Sentry.Unity
                 options.DiagnosticLogger?.LogDebug("Setting Release: {0}", options.Release);
                 sentry_options_set_release(cOptions, options.Release);
             }
-            
+
             sentry_init(cOptions);
         }
 

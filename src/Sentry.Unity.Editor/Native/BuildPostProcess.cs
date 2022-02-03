@@ -28,7 +28,7 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
-                if (options?.Validate() != true)
+                if (options?.Validate() is not true)
                 {
                     logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
                     return;
@@ -42,7 +42,7 @@ namespace Sentry.Unity.Editor.Native
 
                 var crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins",
                     "Windows", "Sentry", "crashpad_handler.exe"));
-                var targetPath = Path.Combine(Path.GetDirectoryName(pathToProject)!, Path.GetFileName(crashpadPath));
+                var targetPath = Path.Combine(Path.GetDirectoryName(pathToProject), Path.GetFileName(crashpadPath));
                 File.Copy(crashpadPath, targetPath, true);
 
                 // TODO symbol upload
