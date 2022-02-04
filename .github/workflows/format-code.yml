@@ -21,7 +21,7 @@ jobs:
           | xargs clang-format -i -style=file
 
       - name: Format C# Code
-        run: dotnet format Sentry.sln
+        run: dotnet format Sentry.Unity.sln
       
       # actions/checkout fetches only a single commit in a detached HEAD state. Therefore
       # we need to pass the current branch, otherwise we can't commit the changes.
