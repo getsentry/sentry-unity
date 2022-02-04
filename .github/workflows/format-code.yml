@@ -20,10 +20,8 @@ jobs:
           -o -name "*.m"
           | xargs clang-format -i -style=file
 
-      - name: Install dotnet-format
-        run: dotnet tool install -g dotnet-format
       - name: Format C# Code
-        run: dotnet format
+        run: dotnet format Sentry.sln
       
       # actions/checkout fetches only a single commit in a detached HEAD state. Therefore
       # we need to pass the current branch, otherwise we can't commit the changes.
