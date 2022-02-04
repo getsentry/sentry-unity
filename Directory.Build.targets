@@ -89,7 +89,7 @@ or
     <RemoveDir Condition="Exists('$(UnityPackageProject)')" Directories="$(UnityPackageProject)" />
   </Target>
 
-  <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="CleaniOSSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryCocoaDeviceArtifactsDestination)" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryCocoaSimulatorArtifactsDestination)" ContinueOnError="true" />
   </Target>
@@ -100,14 +100,14 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeWindowsArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
-  <Target Name="BuildCocoaSDK"
+  <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
+  <Target Name="BuildiOSSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
           And (!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))"
@@ -161,8 +161,8 @@ or
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
   </Target>
 
-  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildNativeWindowsSDK src/Sentry.Unity -->
-  <Target Name="BuildNativeWindowsSDK"
+  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
+  <Target Name="BuildWindowsSDK"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
           And !Exists('$(SentryNativeWindowsArtifactsDestination)/sentry.dll')"
