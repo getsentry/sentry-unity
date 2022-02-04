@@ -1,5 +1,5 @@
 param($action, $testArg1, $testArg1Count, $testArg2, $testArg2Count)
-Write-Host "Debug action=$action, test=$testArg1, count=$testArg1Count, arg=$testArg2, count=$testArg2Count"
+Write-Host "Args received action=$action, testArg1=$testArg1, testArg1Count=$testArg1Count, testArg2=$testArg2, testArg2Count=$testArg2Count"
 # $action: 'Build' for build only
 #          'Test' for Smoke test only
 #          null for building and testing
@@ -223,11 +223,9 @@ If (-not $IsMacOS)
 # MAIN
 If ($null -eq $action -Or $action -eq "Build")
 {
-    Write-Host "Lets build"
-#    Build
+    Build
 }
 If ($null -eq $action -Or $action -eq "Test")
 {
-    Write-Host "Lets Test"
-#    Test
+    Test
 }
