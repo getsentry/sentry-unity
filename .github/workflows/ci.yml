@@ -12,9 +12,42 @@ on:
     paths-ignore:
       - 'CHANGELOG.md'
 
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
 jobs:
+  build-ios:
+    runs-on: macos-11
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      # Tag: 0.9.1
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          # TODO consider disabling - we only need submodules relevant for this platform
+          submodules: recursive
+
+      - name: Get submodule information
+        run: |
+          git submodule status > submodules-status
+          cat submodules-status
+
+      - name: Build iOS SDK
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
   build:
-    if: "false" # temporarily disable the main build job
+    if: 'false' # temporarily disable the main build job
     name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
