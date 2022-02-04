@@ -13,5 +13,8 @@ namespace Sentry.Unity.Tests.TestBehaviours
 
         public void DebugLogError()
             => Debug.LogError("error");
+
+        public void DebugLogException()
+            => Debug.LogException(new Exception("Unity log exception"));
     }
 }

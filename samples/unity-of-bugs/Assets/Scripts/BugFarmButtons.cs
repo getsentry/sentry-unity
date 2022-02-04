@@ -32,7 +32,7 @@ public class BugFarmButtons : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogException(e);
+            SentrySdk.CaptureException(e);
         }
     }
 
@@ -46,7 +46,7 @@ public class BugFarmButtons : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogException(e);
+            SentrySdk.CaptureException(e);
         }
     }
 
