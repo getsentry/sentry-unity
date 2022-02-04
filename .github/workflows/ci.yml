@@ -493,11 +493,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
-#      - name: Download XCode app artifact
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: xcode-artifact-${{ matrix.unity-version }}
-#          path: samples/artifacts/builds/iOS/Xcode
+      - name: Download XCode app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: xcode-artifact-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/iOS/Xcode
 
       - name: Build iOS package
         shell: pwsh
@@ -507,7 +507,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: xcode-${{ matrix.unity-version }}-ipa
-          path: samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator/unity-of-bugs.app
+          path: |
+            samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator/
+            !**/Release-iphonesimulator/*.dSYM
+            !**/Release-iphonesimulator/UnityFramework.framework/*
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
@@ -522,11 +525,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
- #     - name: Download ipa app artifact
- #       uses: actions/download-artifact@v2
- #       with:
- #         name: xcode-${{ matrix.unity-version }}-ipa
- #         path: samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator/unity-of-bugs.app
+      - name: Download ipa app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: xcode-${{ matrix.unity-version }}-ipa
+          path: samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator
 
       - name: Smoke test
         id: smoke-test-ios
