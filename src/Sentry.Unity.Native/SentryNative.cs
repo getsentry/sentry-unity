@@ -16,7 +16,7 @@ namespace Sentry.Unity.Native
             if (options.WindowsNativeSupportEnabled)
             {
                 SentryNativeBridge.Init(options);
-                options.ScopeObserver = new NativeScopeObserver(options);
+                options.ScopeObserver = new ScopeObserver("Native", options, new SentryNativeBridge());
                 options.EnableScopeSync = true;
                 // options.CrashedLastRun = () =>
                 // {

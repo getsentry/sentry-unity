@@ -15,7 +15,7 @@ namespace Sentry.Unity.iOS
         {
             if (options.IosNativeSupportEnabled)
             {
-                options.ScopeObserver = new IosNativeScopeObserver(options);
+                options.ScopeObserver = new ScopeObserver("iOS", options, new IosNativeScopeObserver());
                 options.EnableScopeSync = true;
                 options.CrashedLastRun = () =>
                 {

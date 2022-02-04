@@ -1,5 +1,4 @@
 using Sentry.Extensibility;
-using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
@@ -16,7 +15,7 @@ namespace Sentry.Unity.Android
         {
             if (options.AndroidNativeSupportEnabled)
             {
-                options.ScopeObserver = new AndroidJavaScopeObserver(options);
+                options.ScopeObserver = new ScopeObserver("Android", options, new AndroidJavaScopeObserver());
                 options.EnableScopeSync = true;
                 options.CrashedLastRun = () =>
                 {

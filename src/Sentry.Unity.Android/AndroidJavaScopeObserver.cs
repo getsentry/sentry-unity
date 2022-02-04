@@ -1,5 +1,3 @@
-using Sentry.Extensibility;
-using Sentry.Unity.Json;
 using UnityEngine;
 
 namespace Sentry.Unity.Android
@@ -10,20 +8,11 @@ namespace Sentry.Unity.Android
     /// <see href="https://github.com/getsentry/sentry-java"/>
     public class AndroidJavaScopeObserver : IScopeObserver
     {
-        private readonly SentryOptions _options;
-
-        public AndroidJavaScopeObserver(SentryOptions options) => _options = options;
-
         private AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
             AndroidJNI.AttachCurrentThread();
-
-            _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Adding breadcrumb m:\"{0}\" l:\"{1}\"",
-                breadcrumb.Message,
-                breadcrumb.Level);
-
             using var sentry = GetSentryJava();
             using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
             javaBreadcrumb.Set("message", breadcrumb.Message);
@@ -34,32 +23,21 @@ namespace Sentry.Unity.Android
             sentry.CallStatic("addBreadcrumb", javaBreadcrumb, null);
         }
 
-        public void SetExtra(string key, object? value)
+        public void SetExtra(string key, string value)
         {
             AndroidJNI.AttachCurrentThread();
+            GetSentryJava().CallStatic("setExtra", key, value);
+        }
 
-            _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Setting Extra k:\"{0}\" v:\"{1}\"", key, value);
-
-            string? extraValue = null;
-            if (value is not null)
-            {
-                extraValue = SafeSerializer.SerializeSafely(value);
-                if (extraValue is null)
-                {
-                    return;
-                }
-            }
-
-            using var sentry = GetSentryJava();
-            sentry.CallStatic("setExtra", key, extraValue);
+        public void UnsetExtra(string key)
+        {
+            AndroidJNI.AttachCurrentThread();
+            GetSentryJava().CallStatic("setExtra", key, null);
         }
 
         public void SetTag(string key, string value)
         {
             AndroidJNI.AttachCurrentThread();
-
-            _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Setting Tag k:\"{0}\" v:\"{1}\"", key, value);
-
             using var sentry = GetSentryJava();
             sentry.CallStatic("setTag", key, value);
         }
@@ -67,43 +45,34 @@ namespace Sentry.Unity.Android
         public void UnsetTag(string key)
         {
             AndroidJNI.AttachCurrentThread();
-
-            _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Unsetting Tag k:\"{0}\"", key);
-
             using var sentry = GetSentryJava();
             sentry.CallStatic("removeTag", key);
         }
 
-        public void SetUser(User? user)
+        public void SetUser(User user)
         {
             AndroidJNI.AttachCurrentThread();
 
             AndroidJavaObject? javaUser = null;
             try
             {
-                if (user is not null)
-                {
-                    _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Setting User i:\"{0}\" n:\"{1}\"",
-                        user.Id,
-                        user.Username);
-
-                    javaUser = new AndroidJavaObject("io.sentry.protocol.User");
-                    javaUser.Set("email", user.Email);
-                    javaUser.Set("id", user.Id);
-                    javaUser.Set("username", user.Username);
-                    javaUser.Set("ipAddress", user.IpAddress);
-                }
-                else
-                {
-                    _options.DiagnosticLogger?.LogDebug("Android Scope Sync - Unsetting User");
-                }
-                using var sentry = GetSentryJava();
-                sentry.CallStatic("setUser", javaUser);
+                javaUser = new AndroidJavaObject("io.sentry.protocol.User");
+                javaUser.Set("email", user.Email);
+                javaUser.Set("id", user.Id);
+                javaUser.Set("username", user.Username);
+                javaUser.Set("ipAddress", user.IpAddress);
+                GetSentryJava().CallStatic("setUser", javaUser);
             }
             finally
             {
                 javaUser?.Dispose();
             }
+        }
+
+        public void UnsetUser()
+        {
+            AndroidJNI.AttachCurrentThread();
+            GetSentryJava().CallStatic("setUser", null);
         }
     }
 }

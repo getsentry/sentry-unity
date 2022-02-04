@@ -14,7 +14,7 @@ namespace Sentry.Unity
     /// </remarks>
     /// <see href="https://github.com/getsentry/sentry-java"/>
     /// <see href="https://github.com/getsentry/sentry-native"/>
-    public static class SentryNativeBridge
+    public class SentryNativeBridge : IScopeObserver
     {
         public static void Init(SentryUnityOptions options)
         {
@@ -32,36 +32,36 @@ namespace Sentry.Unity
             sentry_init(cOptions);
         }
 
-        public static void AddBreadcrumb(Breadcrumb breadcrumb)
+        public void AddBreadcrumb(Breadcrumb breadcrumb)
         {
             // see https://develop.sentry.dev/sdk/event-payloads/breadcrumbs/
             var crumb = sentry_value_new_breadcrumb(breadcrumb.Type, breadcrumb.Message);
             sentry_value_set_by_key(crumb, "level", sentry_value_new_string(breadcrumb.Level.ToString().ToLower()));
             sentry_value_set_by_key(crumb, "timestamp", sentry_value_new_string(GetTimestamp(breadcrumb.Timestamp)));
-            if (breadcrumb.Category is not null)
-            {
-                sentry_value_set_by_key(crumb, "category", sentry_value_new_string(breadcrumb.Category));
-            }
+            nativeSetValueIfNotNull(crumb, "category", breadcrumb.Category);
             sentry_add_breadcrumb(crumb);
         }
 
-        public static void SetExtra(string key, string? value)
+        public void SetExtra(string key, string value) => sentry_set_extra(key, sentry_value_new_string(value));
+
+        public void UnsetExtra(string key) => sentry_remove_extra(key);
+
+        public void SetTag(string key, string value) => sentry_set_tag(key, value);
+
+        public void UnsetTag(string key) => sentry_remove_tag(key);
+
+        public void SetUser(User user)
         {
-            // TODO
+            // see https://develop.sentry.dev/sdk/event-payloads/user/
+            var cUser = sentry_value_new_object();
+            nativeSetValueIfNotNull(cUser, "id", user.Id);
+            nativeSetValueIfNotNull(cUser, "username", user.Username);
+            nativeSetValueIfNotNull(cUser, "email", user.Email);
+            nativeSetValueIfNotNull(cUser, "ip_address", user.IpAddress);
+            sentry_set_user(cUser);
         }
 
-        public static void SetTag(string key, string value) => sentry_set_tag(key, value);
-
-        public static void UnsetTag(string key) => sentry_remove_tag(key);
-
-        public static void SetUser(string? email, string? userId, string? ipAddress, string? username)
-        {
-            var user = sentry_value_new_object();
-            // TODO
-            sentry_set_user(user);
-        }
-
-        public static void UnsetUser() => sentry_remove_user();
+        public void UnsetUser() => sentry_remove_user();
 
         // libsentry.so
         [DllImport("sentry")]
@@ -92,6 +92,14 @@ namespace Sentry.Unity
         [DllImport("sentry")]
         private static extern int sentry_value_set_by_key(SentryValueU value, string k, SentryValueU v);
 
+        private static void nativeSetValueIfNotNull(SentryValueU obj, string key, string? value)
+        {
+            if (value is not null)
+            {
+                sentry_value_set_by_key(obj, key, sentry_value_new_string(value));
+            }
+        }
+
         [DllImport("sentry")]
         private static extern void sentry_add_breadcrumb(SentryValueU breadcrumb);
 
@@ -102,7 +110,16 @@ namespace Sentry.Unity
         private static extern void sentry_remove_tag(string key);
 
         [DllImport("sentry")]
+        private static extern void sentry_set_user(SentryValueU user);
+
+        [DllImport("sentry")]
         private static extern void sentry_remove_user();
+
+        [DllImport("sentry")]
+        private static extern void sentry_set_extra(string key, SentryValueU value);
+
+        [DllImport("sentry")]
+        private static extern void sentry_remove_extra(string key);
 
         /// <summary>
         /// Re-installs the sentry-native backend essentially retaking the signal handlers.
