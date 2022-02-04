@@ -65,7 +65,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: "Set up Java: 11"
+      - name: 'Set up Java: 11'
         uses: actions/setup-java@v1
         with:
           java-version: 11
@@ -115,7 +115,7 @@ jobs:
         id: setup-unity
         with:
           unity-version: ${{ matrix.unity-version }}
-          unity-version-changeset:  ${{ matrix.unity-version-changeset }}
+          unity-version-changeset: ${{ matrix.unity-version-changeset }}
 
       - name: Setup Unity Modules - Windows IL2CPP
         if: matrix.os == 'windows-latest'
@@ -195,7 +195,7 @@ jobs:
 
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2022 once S.T.J loading issue resolved.
-       # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
+        # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
         if: ${{ matrix.unity-version != '2022.1.0a12' }}
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
@@ -337,9 +337,9 @@ jobs:
       max-parallel: 5
       fail-fast: false
       matrix:
-         api-level: [21, 27, 29]
-         avd-target: [default]
-         unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
+        api-level: [21, 27, 29]
+        avd-target: [default]
+        unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -356,15 +356,15 @@ jobs:
         timeout-minutes: 10
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         force-avd-creation: false
-         ram-size: 2048M
-         arch: x86
-         cores: 2
-         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          force-avd-creation: false
+          ram-size: 2048M
+          arch: x86
+          cores: 2
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Kill emulator if AVD failed.
         continue-on-error: true
@@ -381,15 +381,15 @@ jobs:
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         ram-size: 2048M
-         cores: 2
-         arch: x86
-         force-avd-creation: false
-         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          ram-size: 2048M
+          cores: 2
+          arch: x86
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
@@ -412,10 +412,10 @@ jobs:
       max-parallel: 2
       fail-fast: false
       matrix:
-         api-level: [30]
-         avd-target: [google_apis]
-         #api-level 30 image is only available with google services.
-         unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
+        api-level: [30]
+        avd-target: [google_apis]
+        #api-level 30 image is only available with google services.
+        unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -432,15 +432,15 @@ jobs:
         timeout-minutes: 10
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         force-avd-creation: false
-         ram-size: 2048M
-         arch: x86
-         cores: 2
-         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          force-avd-creation: false
+          ram-size: 2048M
+          arch: x86
+          cores: 2
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Kill emulator if AVD failed.
         continue-on-error: true
@@ -457,15 +457,15 @@ jobs:
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         ram-size: 2048M
-         cores: 2
-         arch: x86
-         force-avd-creation: false
-         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          ram-size: 2048M
+          cores: 2
+          arch: x86
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
