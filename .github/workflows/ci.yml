@@ -32,12 +32,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2.4.0
-        with:
-          # TODO consider disabling - we only need submodules relevant for this platform
-          submodules: recursive
 
-      - name: Get submodule information
+      - name: Get submodules
         run: |
+          ./scripts/init-submodules.sh src/sentry-dotnet modules/sentry-cocoa
           git submodule status > submodules-status
           cat submodules-status
 

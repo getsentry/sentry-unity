@@ -1,12 +1,12 @@
 [submodule "src/sentry-dotnet"]
 	path = src/sentry-dotnet
 	url = https://github.com/getsentry/sentry-dotnet.git
-[submodule "src/sentry-cocoa"]
+[submodule "modules/sentry-cocoa"]
 	path = modules/sentry-cocoa
 	url = https://github.com/getsentry/sentry-cocoa
-[submodule "src/sentry-java"]
+[submodule "modules/sentry-java"]
 	path = modules/sentry-java
 	url = https://github.com/getsentry/sentry-java.git
-[submodule "src/sentry-native"]
+[submodule "modules/sentry-native"]
 	path = modules/sentry-native
 	url = git@github.com:getsentry/sentry-native.git
