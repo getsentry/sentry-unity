@@ -14,6 +14,7 @@ on:
 
 jobs:
   build:
+    if: "false" # temporarily disable the main build job
     name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
