@@ -14,7 +14,7 @@ namespace Sentry.Unity
     /// </remarks>
     /// <see href="https://github.com/getsentry/sentry-java"/>
     /// <see href="https://github.com/getsentry/sentry-native"/>
-    public class SentryNativeBridge : IScopeObserver
+    public static class SentryNativeBridge
     {
         public static void Init(SentryUnityOptions options)
         {
@@ -32,37 +32,6 @@ namespace Sentry.Unity
             sentry_init(cOptions);
         }
 
-        public void AddBreadcrumb(Breadcrumb breadcrumb)
-        {
-            // see https://develop.sentry.dev/sdk/event-payloads/breadcrumbs/
-            var crumb = sentry_value_new_breadcrumb(breadcrumb.Type, breadcrumb.Message);
-            sentry_value_set_by_key(crumb, "level", sentry_value_new_string(breadcrumb.Level.ToString().ToLower()));
-            sentry_value_set_by_key(crumb, "timestamp", sentry_value_new_string(GetTimestamp(breadcrumb.Timestamp)));
-            nativeSetValueIfNotNull(crumb, "category", breadcrumb.Category);
-            sentry_add_breadcrumb(crumb);
-        }
-
-        public void SetExtra(string key, string value) => sentry_set_extra(key, sentry_value_new_string(value));
-
-        public void UnsetExtra(string key) => sentry_remove_extra(key);
-
-        public void SetTag(string key, string value) => sentry_set_tag(key, value);
-
-        public void UnsetTag(string key) => sentry_remove_tag(key);
-
-        public void SetUser(User user)
-        {
-            // see https://develop.sentry.dev/sdk/event-payloads/user/
-            var cUser = sentry_value_new_object();
-            nativeSetValueIfNotNull(cUser, "id", user.Id);
-            nativeSetValueIfNotNull(cUser, "username", user.Username);
-            nativeSetValueIfNotNull(cUser, "email", user.Email);
-            nativeSetValueIfNotNull(cUser, "ip_address", user.IpAddress);
-            sentry_set_user(cUser);
-        }
-
-        public void UnsetUser() => sentry_remove_user();
-
         // libsentry.so
         [DllImport("sentry")]
         private static extern IntPtr sentry_options_new();
@@ -79,47 +48,6 @@ namespace Sentry.Unity
 
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);
-
-        [DllImport("sentry")]
-        private static extern SentryValueU sentry_value_new_object();
-
-        [DllImport("sentry")]
-        private static extern SentryValueU sentry_value_new_string(string value);
-
-        [DllImport("sentry")]
-        private static extern SentryValueU sentry_value_new_breadcrumb(string? type, string? message);
-
-        [DllImport("sentry")]
-        private static extern int sentry_value_set_by_key(SentryValueU value, string k, SentryValueU v);
-
-        private static void nativeSetValueIfNotNull(SentryValueU obj, string key, string? value)
-        {
-            if (value is not null)
-            {
-                sentry_value_set_by_key(obj, key, sentry_value_new_string(value));
-            }
-        }
-
-        [DllImport("sentry")]
-        private static extern void sentry_add_breadcrumb(SentryValueU breadcrumb);
-
-        [DllImport("sentry")]
-        private static extern void sentry_set_tag(string key, string value);
-
-        [DllImport("sentry")]
-        private static extern void sentry_remove_tag(string key);
-
-        [DllImport("sentry")]
-        private static extern void sentry_set_user(SentryValueU user);
-
-        [DllImport("sentry")]
-        private static extern void sentry_remove_user();
-
-        [DllImport("sentry")]
-        private static extern void sentry_set_extra(string key, SentryValueU value);
-
-        [DllImport("sentry")]
-        private static extern void sentry_remove_extra(string key);
 
         /// <summary>
         /// Re-installs the sentry-native backend essentially retaking the signal handlers.
@@ -139,20 +67,5 @@ namespace Sentry.Unity
 
         // Testing
         internal static Action ReinstallSentryNativeBackendStrategy = sentry_reinstall_backend;
-
-        // native union sentry_value_u/t
-        [StructLayout(LayoutKind.Explicit)]
-        private struct SentryValueU
-        {
-            [FieldOffset(0)]
-            private ulong _bits;
-            [FieldOffset(0)]
-            private double _double;
-        }
-
-        private static string GetTimestamp(DateTimeOffset timestamp) =>
-            // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.
-            // https://docs.microsoft.com/en-gb/dotnet/standard/base-types/standard-date-and-time-format-strings#Roundtrip
-            timestamp.ToString("o");
     }
 }

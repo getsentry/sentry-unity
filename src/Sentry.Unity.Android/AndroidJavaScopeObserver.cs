@@ -6,11 +6,14 @@ namespace Sentry.Unity.Android
     /// Scope Observer for Android through Java (JNI).
     /// </summary>
     /// <see href="https://github.com/getsentry/sentry-java"/>
-    public class AndroidJavaScopeObserver : IScopeObserver
+    public class AndroidJavaScopeObserver : ScopeObserver
     {
+        public AndroidJavaScopeObserver(SentryOptions options) : base("Android", options) { }
+
+        // TODO can we use a local var `AndroidJavaClass _sentryJava` initialized in a constructor instead?
         private AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-        public void AddBreadcrumb(Breadcrumb breadcrumb)
+        public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
         {
             AndroidJNI.AttachCurrentThread();
             using var sentry = GetSentryJava();
@@ -23,33 +26,26 @@ namespace Sentry.Unity.Android
             sentry.CallStatic("addBreadcrumb", javaBreadcrumb, null);
         }
 
-        public void SetExtra(string key, string value)
+        public override void SetExtraImpl(string key, string? value)
         {
             AndroidJNI.AttachCurrentThread();
             GetSentryJava().CallStatic("setExtra", key, value);
         }
-
-        public void UnsetExtra(string key)
-        {
-            AndroidJNI.AttachCurrentThread();
-            GetSentryJava().CallStatic("setExtra", key, null);
-        }
-
-        public void SetTag(string key, string value)
+        public override void SetTagImpl(string key, string value)
         {
             AndroidJNI.AttachCurrentThread();
             using var sentry = GetSentryJava();
             sentry.CallStatic("setTag", key, value);
         }
 
-        public void UnsetTag(string key)
+        public override void UnsetTagImpl(string key)
         {
             AndroidJNI.AttachCurrentThread();
             using var sentry = GetSentryJava();
             sentry.CallStatic("removeTag", key);
         }
 
-        public void SetUser(User user)
+        public override void SetUserImpl(User user)
         {
             AndroidJNI.AttachCurrentThread();
 
@@ -69,7 +65,7 @@ namespace Sentry.Unity.Android
             }
         }
 
-        public void UnsetUser()
+        public override void UnsetUserImpl()
         {
             AndroidJNI.AttachCurrentThread();
             GetSentryJava().CallStatic("setUser", null);

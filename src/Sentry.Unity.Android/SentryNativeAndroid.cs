@@ -15,7 +15,7 @@ namespace Sentry.Unity.Android
         {
             if (options.AndroidNativeSupportEnabled)
             {
-                options.ScopeObserver = new ScopeObserver("Android", options, new AndroidJavaScopeObserver());
+                options.ScopeObserver = new AndroidJavaScopeObserver(options);
                 options.EnableScopeSync = true;
                 options.CrashedLastRun = () =>
                 {
