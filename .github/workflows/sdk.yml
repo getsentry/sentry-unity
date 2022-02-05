@@ -1,0 +1,55 @@
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: ${{ inputs.target }} SDK
+    runs-on: ${{ inputs.runsOn }}
+    timeout-minutes: 30
+    env:
+      submodules: modules/sentry-java
+      sdk: Android
+    steps:
+      # Tag: 0.9.1
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v2
+      - name: Get submodules
+        run: |
+          if [[ "${{ inputs.target }}" == "Android" ]]; then
+            submodules="modules/sentry-java"
+          elif [[ "${{ inputs.target }}" == "iOS" ]]; then
+            submodules="modules/sentry-cocoa"
+          else
+            submodules="modules/sentry-native"
+          fi
+          ./scripts/init-submodules.sh src/sentry-dotnet $submodules
+          git submodule status > submodules-status
+          cat submodules-status
+      - name: Restore from cache
+        uses: actions/cache@v2
+        with:
+          # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
+          # Output changes only depending on the git sha of the submodules
+          # hash of package/package.json for cache busting on release builds (version bump)
+          path: |
+            package-dev/Plugins
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+          key: sdk=${{ inputs.target }}-modules=${{ hashFiles('submodules-status') }}-package=${{ hashFiles('package/package.json') }}
+      - name: Set up JDK 11
+        if: ${{ inputs.target }} == "Android"
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build
+        run: dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity

@@ -12,59 +12,24 @@ on:
     paths-ignore:
       - 'CHANGELOG.md'
 
-env:
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  DOTNET_NOLOGO: 1
-
 jobs:
-  build-sdk:
-    name: ${{ matrix.sdk }} SDK
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest]
-        sdk: [iOS, Android, Windows]
-        exclude:
-          - os: macos-latest
-            sdk: Windows
-          - os: windows-latest
-            sdk: iOS
-          - os: windows-latest
-            sdk: Android
-        include:
-          - sdk: iOS
-            submodules: modules/sentry-cocoa
-          - sdk: Android
-            submodules: modules/sentry-java
-          - sdk: Windows
-            submodules: modules/sentry-native
-    steps:
-      # Tag: 0.9.1
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
-        with:
-          access_token: ${{ github.token }}
-      - uses: actions/checkout@v2
-      - name: Get submodules
-        run: |
-          ./scripts/init-submodules.sh src/sentry-dotnet ${{ matrix.submodules }}
-          git submodule status > submodules-status
-          cat submodules-status
-      - name: Restore from cache
-        uses: actions/cache@v2
-        with:
-          # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
-          # Output changes only depending on the git sha of the submodules
-          # hash of package/package.json for cache busting on release builds (version bump)
-          path: |
-            package-dev/Plugins/iOS
-            package-dev/Plugins/Android
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          key: ${{ matrix.os }}-${{ matrix.sdk }}-${{ hashFiles('submodules-status') }}-${{ hashFiles('package/package.json') }}
-      - name: Build
-        run: dotnet msbuild /t:Build${{ matrix.sdk}}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+  android-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Android
+      runsOn: ubuntu-latest
+
+  ios-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: iOS
+      runsOn: ios-latest
+
+  windows-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Windows
+      runsOn: windows-latest
 
   build:
     if: 'false' # temporarily disable the main build job
