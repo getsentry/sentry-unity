@@ -26,7 +26,7 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: iOS
-      runsOn: ios-latest
+      runsOn: macos-latest
 
   windows-sdk:
     uses: ./.github/workflows/sdk.yml

@@ -9,4 +9,4 @@
 	url = https://github.com/getsentry/sentry-java.git
 [submodule "modules/sentry-native"]
 	path = modules/sentry-native
-	url = git@github.com:getsentry/sentry-native.git
+	url = https://github.com/getsentry/sentry-native.git

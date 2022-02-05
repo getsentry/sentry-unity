@@ -8,9 +8,12 @@ on:
         required: true
         type: string
 
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
 jobs:
   build:
-    name: ${{ inputs.target }} SDK
     runs-on: ${{ inputs.runsOn }}
     timeout-minutes: 30
     env:
@@ -24,6 +27,7 @@ jobs:
           access_token: ${{ github.token }}
       - uses: actions/checkout@v2
       - name: Get submodules
+        shell: bash
         run: |
           if [[ "${{ inputs.target }}" == "Android" ]]; then
             submodules="modules/sentry-java"
