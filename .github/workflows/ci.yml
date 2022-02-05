@@ -1,16 +1,19 @@
 name: CI
 
-on:
-  push:
-    paths-ignore:
-      - 'CHANGELOG.md'
-    branches:
-      - main
-      - release/**
+# fixme: temporary workaround for reusable-workflows issue in combination with `pull_request` trigger
+# see https://github.com/github/feedback/discussions/10679
+on: push
+# on:
+#   push:
+#     paths-ignore:
+#       - 'CHANGELOG.md'
+#     branches:
+#       - main
+#       - release/**
 
-  pull_request:
-    paths-ignore:
-      - 'CHANGELOG.md'
+#   pull_request:
+#     paths-ignore:
+#       - 'CHANGELOG.md'
 
 jobs:
   android-sdk:
