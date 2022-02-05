@@ -57,3 +57,9 @@ jobs:
           distribution: 'adopt'
       - name: Build
         run: dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.target }}-sdk
+          path: package-dev/Plugins/${{ inputs.target }}
+          retention-days: 1

@@ -15,6 +15,10 @@ on: push
 #     paths-ignore:
 #       - 'CHANGELOG.md'
 
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
 jobs:
   android-sdk:
     uses: ./.github/workflows/sdk.yml
