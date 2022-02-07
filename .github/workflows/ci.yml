@@ -43,6 +43,12 @@ jobs:
     container:
       image: dlugos/unity-editor:ubuntu-2019.4.33f1-ios-android
     steps:
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - name: Create Unity license config
+        run: |
+          unityConfigDir=/usr/share/unity3d/config/
+          mkdir -p $unityConfigDir
+          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' > $unityConfigDir/services-config.json
       - uses: actions/checkout@v2
         with:
           submodules: recursive
@@ -58,7 +64,7 @@ jobs:
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
-      - name: Build Sentry.Unity Solution
+      - name: Build all
         run: |
           dotnet build /t:UnityRestorePackages -c Release ./src/Sentry.Unity
           dotnet build -c Release
