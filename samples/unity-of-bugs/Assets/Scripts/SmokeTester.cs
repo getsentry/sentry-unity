@@ -74,12 +74,14 @@ public class SmokeTester : MonoBehaviour
             options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
             options.CreateHttpClientHandler = () => new TestHandler(Verify);
 
+            var sentryUnityInfo = new SentryUnityInfo();
+
 #if SENTRY_NATIVE_IOS
             Debug.Log("SMOKE TEST: Configure Native iOS.");
             SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
             Debug.Log("SMOKE TEST: Configure Native Android.");
-            SentryNativeAndroid.Configure(options);
+            SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #endif
 
             Debug.Log("SMOKE TEST: SentryUnity Init.");
@@ -108,13 +110,13 @@ public class SmokeTester : MonoBehaviour
 
             // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
             Application.Quit(200);
-            
+
         }
         catch (Exception ex)
         {
             Debug.Log("SMOKE TEST: FAILED");
             Debug.LogError(ex);
-            Application.Quit(-1);        
+            Application.Quit(-1);
         }
     }
 

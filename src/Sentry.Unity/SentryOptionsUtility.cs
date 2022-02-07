@@ -38,6 +38,7 @@ namespace Sentry.Unity
 
             scriptableOptions.IosNativeSupportEnabled = options.IosNativeSupportEnabled;
             scriptableOptions.AndroidNativeSupportEnabled = options.AndroidNativeSupportEnabled;
+            scriptableOptions.WindowsNativeSupportEnabled = options.WindowsNativeSupportEnabled;
 
             scriptableOptions.Debug = true;
             scriptableOptions.DebugOnlyInEditor = true;

@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
@@ -35,6 +35,19 @@ namespace Sentry.Unity.Tests
             Object.Destroy(_gameObject);
         }
 
+        public string FormatLogs(List<(SentryLevel, string, Exception?)> logs)
+        {
+            var sb = new StringBuilder()
+                .AppendLine("Logs found:");
+            int counter = 1;
+            foreach (var log in logs)
+            {
+                sb = sb.AppendLine($"[{counter}] - Level: {log.Item1} - Message: {log.Item2} - Exception: {log.Item3}");
+                counter++;
+            }
+            return sb.AppendLine(" === END ===").ToString();
+        }
+
         [Test]
         public void SentrySdkCaptureEvent_OnNotUIThread_Succeeds()
         {
@@ -64,7 +77,10 @@ namespace Sentry.Unity.Tests
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
             // assert
-            Assert.Zero(_testLogger.Logs.Count(log => log.logLevel >= SentryLevel.Warning));
+            var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning && log.message != "Cache directory is empty.").ToList();
+
+            Assert.Zero(logsFound.Count, FormatLogs(logsFound));
+
             // Sanity check: At least some logs must have been printed
             Assert.NotZero(_testLogger.Logs.Count(log => log.logLevel <= SentryLevel.Info));
         }

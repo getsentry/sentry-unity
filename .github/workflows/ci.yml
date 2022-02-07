@@ -16,6 +16,7 @@ jobs:
   build:
     name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
@@ -65,7 +66,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: "Set up Java: 11"
+      - name: 'Set up Java: 11'
         uses: actions/setup-java@v1
         with:
           java-version: 11
@@ -115,7 +116,7 @@ jobs:
         id: setup-unity
         with:
           unity-version: ${{ matrix.unity-version }}
-          unity-version-changeset:  ${{ matrix.unity-version-changeset }}
+          unity-version-changeset: ${{ matrix.unity-version-changeset }}
 
       - name: Setup Unity Modules - Windows IL2CPP
         if: matrix.os == 'windows-latest'
@@ -153,12 +154,14 @@ jobs:
       - name: Add Unity on PATH
         shell: pwsh
         run: |
-          Write-Output "${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output '${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+      # Step used to reduce the Unity path to avoid long path errors on Windows.
       - name: Make symbolic link for Unity (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
-        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
+        run: |
+          New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
       - name: Install Unity UPM Packages
         env:
@@ -174,6 +177,12 @@ jobs:
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
         run: dotnet msbuild /t:BuildCocoaSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build Windows SDK
+        if: matrix.os == 'windows-latest'
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:BuildNativeWindowsSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Sentry.Unity Solution
         env:
@@ -215,6 +224,12 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
+      # Add Sentry DSN via the editor integration so native support is included in the final game
+      - name: Configure Sentry via the Editor Window
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Build Android Player with IL2CPP
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
@@ -252,6 +267,26 @@ jobs:
         with:
           name: Build output
           path: artifacts/build
+
+      - name: Integration Test - Create new Project
+        shell: pwsh
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Build Standalone Player without Sentry SDK
+        shell: pwsh
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Add Sentry to test project
+        shell: pwsh
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Build Standalone Player Sentry SDK
+        shell: pwsh
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Run Player - Smoke Test
+        shell: pwsh
+        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
@@ -324,15 +359,15 @@ jobs:
         if: ${{ (matrix.unity-version == '2021.2.9f1') && matrix.api-level != '21' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         force-avd-creation: false
-         ram-size: 2048M
-         arch: x86
-         cores: 2
-         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          force-avd-creation: false
+          ram-size: 2048M
+          arch: x86
+          cores: 2
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Kill emulator if AVD failed.
         continue-on-error: true
@@ -349,15 +384,15 @@ jobs:
         if: ${{ (matrix.unity-version == '2021.2.9f1') && matrix.api-level != '21' && steps.smoke-test.outputs.smoke-status != 'Completed' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         ram-size: 2048M
-         cores: 2
-         arch: x86
-         force-avd-creation: false
-         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          ram-size: 2048M
+          cores: 2
+          arch: x86
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
@@ -400,15 +435,15 @@ jobs:
         timeout-minutes: 10
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         force-avd-creation: false
-         ram-size: 2048M
-         arch: x86
-         cores: 2
-         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          force-avd-creation: false
+          ram-size: 2048M
+          arch: x86
+          cores: 2
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Kill emulator if AVD failed.
         continue-on-error: true
@@ -425,15 +460,15 @@ jobs:
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
-         api-level: ${{ matrix.api-level }}
-         target: ${{ matrix.avd-target }}
-         ram-size: 2048M
-         cores: 2
-         arch: x86
-         force-avd-creation: false
-         emulator-options:  -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-         disable-animations: false
-         script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.avd-target }}
+          ram-size: 2048M
+          cores: 2
+          arch: x86
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.

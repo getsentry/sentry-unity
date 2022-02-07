@@ -19,6 +19,10 @@
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
+    <!-- Native -->
+    <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
+    <!-- TODO: Do we need: x64, x86, arm64? -->
+    <SentryNativeWindowsArtifactsDestination>$(RepoRoot)package-dev/Plugins/Windows/Sentry/</SentryNativeWindowsArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -40,6 +44,7 @@
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
+      <TestDsn>https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417</TestDsn>
     </PropertyGroup>
 
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))"
@@ -95,7 +100,13 @@ or
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK -->
+  <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeWindowsArtifactsDestination)" ContinueOnError="true" />
+  </Target>
+
+  <!-- Build the iOS SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
   <Target Name="BuildCocoaSDK"
           Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
@@ -113,7 +124,7 @@ or
     <Copy SourceFiles="@(CocoaDeviceBuildPath)"
           DestinationFiles="@(CocoaDeviceBuildPath->'$(SentryCocoaDeviceArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
-        <ItemGroup>
+    <ItemGroup>
       <CocoaSimulatorBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_i386_x86_64-simulator/Sentry.framework/**/*" />
     </ItemGroup>
     <Copy SourceFiles="@(CocoaSimulatorBuildPath)"
@@ -125,7 +136,7 @@ or
     </Error>
   </Target>
 
-  <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK -->
+  <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
   <Target Name="BuildAndroidSDK"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And !Exists('$(SentryAndroidArtifactsDestination)')"
@@ -150,6 +161,45 @@ or
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
   </Target>
 
+  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildNativeWindowsSDK src/Sentry.Unity -->
+  <Target Name="BuildNativeWindowsSDK"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And $([MSBuild]::IsOsPlatform('Windows'))
+          And !Exists('$(SentryNativeWindowsArtifactsDestination)/sentry.dll')"
+          DependsOnTargets="BuildNativeSDK"
+          BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
+    <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
+
+    <ItemGroup>
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/sentry.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NativeSdkArtifacts)"
+          DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeWindowsArtifactsDestination)%(Filename)%(Extension)')">
+    </Copy>
+  </Target>
+
+  <Target Name="BuildNativeSDK">
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
+
+    <!-- Using configuration Release because RelWithDebInfo fails to install due to:
+
+  Install configuration: "Release"
+  CMake Error at build/crashpad_build/handler/cmake_install.cmake:39 (file):
+    file INSTALL cannot find
+    "C:/Users/bruno/git/sentry-unity/src/sentry-native/build/crashpad_build/handler/Release/crashpad_handler.exe":
+    File exists.
+  Call Stack (most recent call first):
+    build/crashpad_build/cmake_install.cmake:46 (include)
+    build/cmake_install.cmake:56 (include) -->
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -DCMAKE_BUILD_TYPE=Release -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --config Release --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --install build --prefix install"></Exec>
+
+  </Target>
+
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
 We need to run a unity build to restore the test packages and for that reason we'll ignore errors here and assume a later step will validate the build is actually working:
   The offending error:
@@ -159,7 +209,22 @@ We need to run a unity build to restore the test packages and for that reason we
 For that reason, Exec tasks to unity all ignore error. That means that subsequent tasks must exist to validate the command (i.e: parse logs, etc).
 Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
 
-  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP -->
+  <!-- Setup Sentry options on Unity UI: dotnet msbuild /t:UnityConfigureSentryOptions src/Sentry.Unity -->
+  <Target Name="UnityConfigureSentryOptions"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Configuring Sentry options."></Message>
+
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions -sentryOptions.Dsn $(TestDsn)" IgnoreStandardErrorWarningFormat="true">
+      <Output TaskParameter="ExitCode" PropertyName="UnityConfigureSentryOptionsExitCode"/>
+    </Exec>
+
+    <!-- Unity will return -1 or 0 on success. 1 Otherwise. -->
+    <Error Text="Sentry options setup failed with code $(UnityConfigureSentryOptionsExitCode)" Condition=" '$(UnityConfigureSentryOptionsExitCode)' != '0' AND '$(BuildExitCode)' != '-1'"/>
+  </Target>
+
+  <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnityBuildStandalonePlayerIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -170,7 +235,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
           IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
-  <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP -->
+  <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnitySmokeTestStandalonePlayerIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -185,7 +250,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
   </Target>
 
-  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP -->
+  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerAndroidIL2CPP"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -198,7 +263,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
   </Target>
 
-  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS -->
+  <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerIOS"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
@@ -247,7 +312,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
-  <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest -->
+  <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityPlayModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
@@ -262,7 +327,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
-  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest. -->
+  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityEditModeTest"
           DependsOnTargets="Build"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
@@ -396,10 +461,10 @@ if (result == "Passed")
     return true;
 }
 
-var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 0 ? "s" : "")}.";
-Log.LogError(errorMessage);
-
 PrintFailedTests(testRun);
+
+var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
+Log.LogError(errorMessage);
 
 Success = false;
 
@@ -419,36 +484,29 @@ void PrintFailedTests(XElement element)
         }
         else
         {
-            var sb = new StringBuilder();
+            var sb = new StringBuilder()
+              .Append("Test ")
+              .Append(descendant.Attribute("id")?.Value)
+              .Append(": ")
+              .AppendLine(descendant.Attribute("name")?.Value);
+
             var failure = descendant.Descendants("failure")
                 .Descendants("message")
                 .FirstOrDefault()
                 ?.Value;
 
-            sb.AppendLine(failure);
+            var stack = descendant.Descendants("failure")
+                .Descendants("stack-trace")
+                .FirstOrDefault()
+                ?.Value;
 
-            var lines = descendant.Attribute("name")?.Value.Split(new[] { "\\n" }, StringSplitOptions.None);
-            if (lines is null)
-            {
-                Log.LogError(sb.ToString());
-                continue;
-            }
+            sb.AppendLine(failure)
+              .Append("Test StackTrace: ")
+              .AppendLine(stack);
 
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (i == 0)
-                {
-                    sb.AppendLine();
-                    Console.WriteLine();
-                }
-                else
-                {
-                    sb.Append('\t');
-                }
-
-                sb.AppendLine(lines[i].Replace("\\r", ""));
-            }
-            Log.LogError(sb.ToString());
+//  MSBuild is breaking each line as if it was an error per line and not a single error.
+//  So Log.LogError got replaced by Console.WriteLine for now.
+            Console.WriteLine(sb.ToString());
         }
     }
 }
