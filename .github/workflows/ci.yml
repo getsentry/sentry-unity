@@ -40,8 +40,12 @@ jobs:
 
   build-in-docker:
     runs-on: ubuntu-latest
+    container:
+      image: dlugos/unity-editor:ubuntu-2019.4.33f1-ios-android
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - uses: actions/download-artifact@v2
         with:
           name: Android-sdk
@@ -55,8 +59,9 @@ jobs:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
       - name: Build Sentry.Unity Solution
-        uses: docker://dlugos/unity-editor:ubuntu-2019.4.33f1-ios-android
-        run: dotnet build -c Release
+        run: |
+          dotnet build /t:UnityRestorePackages -c Release ./src/Sentry.Unity
+          dotnet build -c Release
 
   build:
     if: 'false' # temporarily disable the main build job
