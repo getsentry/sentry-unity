@@ -38,6 +38,26 @@ jobs:
       target: Windows
       runsOn: windows-latest
 
+  build-in-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: Android-sdk
+          path: package-dev/Plugins/Android
+      - uses: actions/download-artifact@v2
+        with:
+          name: iOS-sdk
+          path: package-dev/Plugins/iOS
+      - uses: actions/download-artifact@v2
+        with:
+          name: Windows-sdk
+          path: package-dev/Plugins/Windows
+      - name: Build Sentry.Unity Solution
+        uses: docker://dlugos/unity-editor:ubuntu-2019.4.33f1-ios-android
+        run: dotnet build -c Release
+
   build:
     if: 'false' # temporarily disable the main build job
     name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
