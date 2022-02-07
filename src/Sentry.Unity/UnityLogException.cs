@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Sentry.Internal;
 using Sentry.Protocol;
 using UnityEngine;
@@ -17,11 +19,16 @@ namespace Sentry.Unity
     {
         public string LogString { get; }
         public string LogStackTrace { get; }
+        public LogType LogType { get; }
+        public StackTraceLogType StackTraceLogType { get; }
 
-        public UnityLogException(string logString, string logStackTrace)
+        public UnityLogException(string logString, string logStackTrace, LogType logType, StackTraceLogType stackTraceLogType)
         {
             LogString = logString;
             LogStackTrace = logStackTrace;
+            LogType = logType;
+            StackTraceLogType = stackTraceLogType;
+            Data[Mechanism.MechanismKey] = "unity.log";
         }
 
         internal UnityLogException() : base()
@@ -43,6 +50,16 @@ namespace Sentry.Unity
         }
 
         public SentryException ToSentryException()
+        {
+            if (LogType == LogType.Exception || StackTraceLogType != StackTraceLogType.Full)
+            {
+                return ConvertStackTrace();
+            }
+
+            return ConvertFullStackTrace();
+        }
+
+        private SentryException ConvertStackTrace()
         {
             var frames = new List<SentryStackFrame>();
             var exc = LogString.Split(new char[] { ':' }, 2);
@@ -128,10 +145,8 @@ namespace Sentry.Unity
                 });
             }
 
-            frames.Reverse();
-
             var stacktrace = new SentryStackTrace();
-            foreach (var frame in frames)
+            foreach (var frame in Enumerable.Reverse(frames))
             {
                 stacktrace.Frames.Add(frame);
             }
@@ -147,6 +162,215 @@ namespace Sentry.Unity
                     Type = "unity.log"
                 }
             };
+        }
+
+        private SentryException ConvertFullStackTrace()
+        {
+            if (LogStackTrace.StartsWith("0x")
+                && LogStackTrace.Contains("(Unity) StackWalker::GetCurrentCallstack"))
+            {
+                return ConvertWindowsFullStackTraceImpl();
+            }
+
+            return ConvertFullStackTraceImpl();
+        }
+
+        private static readonly Regex WindowsStackFramePattern = new Regex(
+            @"(?<addr>0x[0-9a-fA-F]+)\s*" + // 0x12345678
+            @"\((?<module>.+?)\)\s*" + // (Unity), (Mono JIT Code), ...
+            @"(\((?<wrapper>.+?)\)\s*)?" + // (wrapper managed-to-native),
+            @"(\[(?<file>.+?):(?<line>\d+)\]\s*)?" + // [File.cs:123]
+            @"(?<function>.+)"); // StackWalker::GetCurrentCallstack, UnityEngine.Logger:Log (UnityEngine.LogType,UnityEngine.Object,string,object[]),
+
+        private SentryException ConvertWindowsFullStackTraceImpl()
+        {
+            var frames = new List<SentryStackFrame>();
+            var lines = LogStackTrace.Split('\n');
+            foreach (var traceLine in lines)
+            {
+                var item = traceLine.TrimEnd('\r');
+                if (string.IsNullOrWhiteSpace(item))
+                {
+                    continue;
+                }
+
+                var match = WindowsStackFramePattern.Match(item);
+                if (!match.Success)
+                {
+                    // we did something wrong, failed the check
+                    Debug.Log("failed parsing " + item);
+                    frames.Add(new SentryStackFrame
+                    {
+                        Function = item,
+                    });
+                }
+                else
+                {
+                    var addr = match.Groups["addr"].Value;
+                    var module = match.Groups["module"].Value;
+                    var function = match.Groups["function"].Value;
+
+                    string? wrapper = null;
+                    if (match.Groups["wrapper"].Success)
+                    {
+                        wrapper = match.Groups["wrapper"].Value;
+                    }
+
+                    string? file = null;
+                    if (match.Groups["file"].Success)
+                    {
+                        file = match.Groups["file"].Value;
+                    }
+
+                    int? line = null;
+                    if (match.Groups["line"].Success)
+                    {
+                        line = Convert.ToInt32(match.Groups["line"].Value);
+                    }
+
+                    frames.Add(new SentryStackFrame
+                    {
+                        InstructionAddress = addr,
+                        Module = module,
+                        Function = function,
+                        FileName = file,
+                        LineNumber = line,
+                        InApp = GuessInApp(module, function, wrapper, file),
+                    });
+                }
+            }
+
+            var stacktrace = new SentryStackTrace();
+            foreach (var frame in Enumerable.Reverse(frames))
+            {
+                stacktrace.Frames.Add(frame);
+            }
+
+            return new SentryException
+            {
+                Stacktrace = stacktrace,
+                Type = LogType.ToString(),
+                Value = LogString,
+                Mechanism = new Mechanism
+                {
+                    Handled = false,
+                    Type = "unity.log"
+                }
+            };
+        }
+
+        private static readonly Regex FullStackFramePattern = new Regex(
+            @"(?<index>#\d+)\s*" + // #0, #1, ...
+            @"(\((?<module>.+?)\)\s*)?" + // (Unity), (Mono JIT Code), ...
+            @"(\((?<wrapper>.+?)\)\s*)?" + // (wrapper managed-to-native),
+            @"(\[(?<file>.+?):(?<line>\d+)\]\s*)?" + // [File.cs:123]
+            @"(?<function>.+)"); // StackWalker::GetCurrentCallstack, UnityEngine.Logger:Log (UnityEngine.LogType,UnityEngine.Object,string,object[]),
+
+        private SentryException ConvertFullStackTraceImpl()
+        {
+            var frames = new List<SentryStackFrame>();
+            var lines = LogStackTrace.Split('\n');
+            foreach (var traceLine in lines)
+            {
+                var item = traceLine.TrimEnd('\r');
+                if (string.IsNullOrWhiteSpace(item))
+                {
+                    continue;
+                }
+
+                var match = FullStackFramePattern.Match(item);
+                if (!match.Success)
+                {
+                    // we did something wrong, failed the check
+                    Debug.Log("failed parsing " + item);
+                    frames.Add(new SentryStackFrame
+                    {
+                        Function = item,
+                    });
+                }
+                else
+                {
+                    var module = match.Groups["module"].Value;
+                    var function = match.Groups["function"].Value;
+
+                    string? wrapper = null;
+                    if (match.Groups["wrapper"].Success)
+                    {
+                        wrapper = match.Groups["wrapper"].Value;
+                    }
+
+                    string? file = null;
+                    if (match.Groups["file"].Success)
+                    {
+                        file = match.Groups["file"].Value;
+                    }
+
+                    int? line = null;
+                    if (match.Groups["line"].Success)
+                    {
+                        line = Convert.ToInt32(match.Groups["line"].Value);
+                    }
+
+                    frames.Add(new SentryStackFrame
+                    {
+                        Module = module,
+                        Function = function,
+                        FileName = file,
+                        LineNumber = line,
+                        InApp = GuessInApp(module, function, wrapper, file),
+                    });
+                }
+            }
+
+            frames.Reverse();
+            var stacktrace = new SentryStackTrace();
+            foreach (var frame in frames)
+            {
+                stacktrace.Frames.Add(frame);
+            }
+
+            return new SentryException
+            {
+                Stacktrace = stacktrace,
+                Type = LogType.ToString(),
+                Value = LogString,
+                Mechanism = new Mechanism
+                {
+                    Handled = false,
+                    Type = "unity.log"
+                }
+            };
+        }
+
+        private static bool? GuessInApp(string module, string function, string? wrapper, string? file)
+        {
+            if (module == "Unity" || module == "KERNEL32" || module == "ntdll" || module == "USER32" || module == "ole32")
+            {
+                return false;
+            }
+
+            if (function.StartsWith("UnityEngine", StringComparison.Ordinal)
+                || function.StartsWith("System", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(wrapper))
+            {
+                return false;
+            }
+
+            if (file != null && file.EndsWith(".c"))
+            {
+                return false;
+            }
+
+            if (module == "Mono JIT Code" && file != null && file.EndsWith(".cs"))
+            {
+                return true;
+            }
+
+            return null;
         }
 
         // https://github.com/getsentry/sentry-unity/issues/103
@@ -171,4 +395,3 @@ namespace Sentry.Unity
         }
     }
 }
-

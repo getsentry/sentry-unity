@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
@@ -12,7 +13,9 @@ namespace Sentry.Unity.Tests
             var unityEventProcessor = new UnityEventExceptionProcessor();
             var ill2CppUnityLogException = new UnityLogException(
                 "one: two",
-                "BugFarm.ThrowNull () (at <00000000000000000000000000000000>:0)");
+                "BugFarm.ThrowNull () (at <00000000000000000000000000000000>:0)",
+                LogType.Exception,
+                StackTraceLogType.ScriptOnly);
             var sentryEvent = new SentryEvent();
 
             // act
