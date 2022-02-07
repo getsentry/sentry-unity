@@ -1,9 +1,7 @@
 ﻿using System.Collections;
-using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class AdditionalButtons : MonoBehaviour
 {
@@ -61,7 +59,4 @@ public class AdditionalButtons : MonoBehaviour
         SentrySdk.CaptureMessage("Captured a message with a screenshot attachment");
         SentrySdk.ConfigureScope(scope => scope.ClearAttachments());
     }
-
-    public void LoadBugfarm() => SceneManager.LoadScene("1_Bugfarm");
-    public void LoadMobileNativeSupport() => SceneManager.LoadScene("2_MobileNativeSupport");
 }

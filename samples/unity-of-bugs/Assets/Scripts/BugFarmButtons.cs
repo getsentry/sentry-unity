@@ -1,13 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-#if ENABLE_IL2CPP || PLATFORM_IOS
-using System.Runtime.InteropServices;
-#endif
 using Sentry;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.SceneManagement;
 
 public class BugFarmButtons : MonoBehaviour
 {
@@ -51,9 +46,6 @@ public class BugFarmButtons : MonoBehaviour
     }
 
     public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
-
-    public void LoadMobileNativeSupport() => SceneManager.LoadScene("2_MobileNativeSupport");
-    public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void StackTraceExampleB() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
