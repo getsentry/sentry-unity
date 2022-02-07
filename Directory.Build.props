@@ -16,12 +16,13 @@
   </PropertyGroup>
 
   <Target Name="ResetTargetFrameworks" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+    <!-- Blocked by https://github.com/getsentry/sentry-unity/issues/513 -->
     <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
-    <PropertyGroup Condition="$(UnityVersion.StartsWith('2022'))">
+    <!-- <PropertyGroup Condition="$(UnityVersion.StartsWith('2021.2')) or $(UnityVersion.StartsWith('2022'))">
       <TargetFrameworks>netstandard2.1</TargetFrameworks>
-    </PropertyGroup>
+    </PropertyGroup> -->
     <!-- Lowest version supported at this time is 2019 and up to 2021 ns2.0 is the only option. -->
-    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020')) or $(UnityVersion.StartsWith('2021'))">
+    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020')) or $(UnityVersion.StartsWith('2021.1'))">
       <TargetFrameworks>netstandard2.0</TargetFrameworks>
     </PropertyGroup>
     <!-- Being specific on which Unity version we support allows us to quickly ajust these settings when adding support to new editors.
