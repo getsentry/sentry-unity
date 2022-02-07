@@ -10,7 +10,6 @@ namespace Sentry.Unity.Android
     {
         public AndroidJavaScopeObserver(SentryOptions options) : base("Android", options) { }
 
-        // TODO can we use a local var `AndroidJavaClass _sentryJava` initialized in a constructor instead?
         private AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
@@ -29,7 +28,8 @@ namespace Sentry.Unity.Android
         public override void SetExtraImpl(string key, string? value)
         {
             AndroidJNI.AttachCurrentThread();
-            GetSentryJava().CallStatic("setExtra", key, value);
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("setExtra", key, value);
         }
         public override void SetTagImpl(string key, string value)
         {
@@ -57,7 +57,8 @@ namespace Sentry.Unity.Android
                 javaUser.Set("id", user.Id);
                 javaUser.Set("username", user.Username);
                 javaUser.Set("ipAddress", user.IpAddress);
-                GetSentryJava().CallStatic("setUser", javaUser);
+                using var sentry = GetSentryJava();
+                sentry.CallStatic("setUser", javaUser);
             }
             finally
             {
@@ -68,7 +69,8 @@ namespace Sentry.Unity.Android
         public override void UnsetUserImpl()
         {
             AndroidJNI.AttachCurrentThread();
-            GetSentryJava().CallStatic("setUser", null);
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("setUser", null);
         }
     }
 }
