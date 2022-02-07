@@ -1,0 +1,26 @@
+# This file is appended by build.sh to the "upstream" Dockerfile it downloads
+
+# Install .NET dependencies for Ubuntu 18.04
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates \
+        libc6 \
+        libgcc1 \
+        libgssapi-krb5-2 \
+        libicu60 \
+        libssl1.1 \
+        libstdc++6 \
+        zlib1g \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# latest version from https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+RUN curl -fSL --output dotnet.tar.gz https://download.visualstudio.microsoft.com/download/pr/ede8a287-3d61-4988-a356-32ff9129079e/bdb47b6b510ed0c4f0b132f7f4ad9d5a/dotnet-sdk-6.0.101-linux-x64.tar.gz \
+    && echo "downloaded file SHA512: $(sha512sum dotnet.tar.gz)" \
+    && dotnet_sha512='ca21345400bcaceadad6327345f5364e858059cfcbc1759f05d7df7701fec26f1ead297b6928afa01e46db6f84e50770c673146a10b9ff71e4c7f7bc76fbf709' \
+    && echo "$dotnet_sha512 dotnet.tar.gz" | sha512sum -c - \
+    && mkdir -p /usr/share/dotnet \
+    && tar -zxf dotnet.tar.gz -C /usr/share/dotnet \
+    && rm dotnet.tar.gz \
+    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
