@@ -1,5 +1,4 @@
 using Sentry.Extensibility;
-using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
