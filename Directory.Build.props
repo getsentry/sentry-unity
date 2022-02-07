@@ -15,7 +15,7 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
-  <Target Name="ResetTargetFrameworks" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+  <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
     <!-- Blocked by https://github.com/getsentry/sentry-unity/issues/513 -->
     <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
     <!-- <PropertyGroup Condition="$(UnityVersion.StartsWith('2021.2')) or $(UnityVersion.StartsWith('2022'))">
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
-  <Target Name="ReferenceUnity" AfterTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+  <Target Name="ReferenceUnity" DependsOnTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
     <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll."></Error>
     <Error Condition="!Exists('$(UnityManagedPath)/UnityEngine.dll')" Text="Couldn't find UnityEngine at $(UnityManagedPath)/UnityEngine.dll."></Error>
     <ItemGroup>

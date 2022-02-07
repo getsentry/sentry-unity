@@ -84,6 +84,7 @@ or
     <!-- Unity paths on Linux -->
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
       <UnityRoot Condition="Exists('$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor/Data/Managed/UnityEngine.dll')">$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor</UnityRoot>
+      <UnityRoot Condition="$(UNITY_PATH) != ''">$(UNITY_PATH)/Editor</UnityRoot>
       <UnityManagedPath>$(UnityRoot)/Data/Managed</UnityManagedPath>
       <UnityExec>$(UnityRoot)/Unity</UnityExec>
       <StandaloneBuildMethod>Builder.BuildLinuxIl2CPPPlayer</StandaloneBuildMethod>
@@ -299,7 +300,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   this solution without using the sample project which depends on the output of this build. -->
   <Target Name="UnityCreatePackages"
     Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'"
-    AfterTargets="FindUnity">
+    DependsOnTargets="FindUnity">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Create Packages."></Message>
@@ -381,6 +382,13 @@ if (Environment.GetEnvironmentVariable("CI") is not null
 {
     Log.LogMessage("Unity Version from environment variable: " + unityVersion);
     UnityVersion = unityVersion;
+    return true;
+}
+
+if (Environment.GetEnvironmentVariable("UNITY_PATH") is { } unityPath)
+{
+    UnityVersion = File.ReadAllText(unityPath + "/version");
+    Log.LogMessage("Unity Version from path " + unityPath + " is: " + UnityVersion);
     return true;
 }
 
