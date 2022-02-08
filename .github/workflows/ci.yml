@@ -552,4 +552,10 @@ jobs:
         id: smoke-test-ios
         timeout-minutes: 10
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Test "iOS ${{ matrix.ios-runtime }}"
+        run: |
+          $runtime = ${{ matrix.ios-runtime }}
+          If ($runtime -ne "latest")
+          {
+            $runtime = "iOS " + $runtime
+          }
+          ./Scripts/smoke-test-ios.ps1 Test "$runtime"
