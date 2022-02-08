@@ -1,18 +1,19 @@
-param($action, $testArg1, $testArg1Count, $testArg2, $testArg2Count)
-Write-Host "Args received action=$action, testArg1=$testArg1, testArg1Count=$testArg1Count, testArg2=$testArg2, testArg2Count=$testArg2Count"
-# $action: 'Build' for build only
+param($Action, $SelectedRuntime, $DevicesToRun)
+Write-Host "Args received Ation=$Action, SelectedRuntime=$SelectedRuntime"
+# $Action: 'Build' for build only
 #          'Test' for Smoke test only
 #          null for building and testing
-# $testArg1 and $testArg2: test parameter name
-#          'Skip' the amount of devices to be skipped the test
-#                 null for not skipping any device
-#          'Run'  the amount of devices to run the test
+# $SelectedRuntime: the runtime to be run,
+#          'latest' for runing the test with the latest runtime
+#          'iOS <version>' to run on the specified runtime ex: iOS 12.4
+# $DevicesToRun: the amount of devices to run
+#          '0' or empty will run on 3 devices, otherwise on the specified amount.
 $ErrorActionPreference = "Stop"
 
 $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
-$ArchievePath = "$XcodeArtifactPath/archieve"
+$ArchivePath = "$XcodeArtifactPath/archive"
 $ProjectName = "Unity-iPhone"
-$AppPath = "$ArchievePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
+$AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
 
 Class AppleDevice
 {
@@ -29,7 +30,7 @@ Class AppleDevice
         $result = [regex]::Match($unparsedDevice, "(?<model>.+) \((?<uuid>[0-9A-Fa-f\-]{36})")
         if ($result.Success -eq $False)
         {
-            #error
+            Throw "$unparsedDevice is not a valid iOS device"
         }
         $this.Name = $result.Groups["model"].Value
         $this.UUID = $result.Groups["uuid"].Value
@@ -94,7 +95,7 @@ function Build()
     }
 
     Write-Host "Building iOS project"
-    $xCodeBuild =  Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchievePath/$ProjectName" -PassThru
+    $xCodeBuild =  Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchivePath/$ProjectName" -PassThru
     $xCodeBuild.WaitForExit()
     If ($xCodeBuild.ExitCode -ne 0)
     {
@@ -107,10 +108,18 @@ function Test
 {
     Write-Host "Retrieving list of available simulators" -ForegroundColor Green
     # junk will contain the first item from the String that should be == Devices ==
-    $deviceLabel , $iOSVersion, $deviceListRaw = xcrun simctl list devices
+    $deviceListRaw = xcrun simctl list devices
     [AppleDevice[]]$deviceList = @()
-    $iOSVersion = $iOSVersion.Trim("-")
-    foreach ($device in $deviceListRaw)
+    
+    # Find the index of the selected runtime
+    $runtimeIndex = ($deviceListRaw | Select-String "-- $SelectedRuntime --").LineNumber
+    If ($null -eq $runtimeIndex)
+    {
+        $deviceListRaw | Write-Host
+        throw " Runtime (-- $SelectedRuntime --) not found"
+    }
+
+    foreach ($device in $deviceListRaw[$runtimeIndex..$deviceListRaw.Count])
     {
         If ($device.StartsWith("--"))
         {
@@ -124,19 +133,17 @@ function Test
 
     $deviceCount = $DeviceList.Count
 
-    Write-Host "Found $deviceCount devices on version $iOSVersion" -ForegroundColor Green
+    Write-Host "Found $deviceCount devices on version $SelectedRuntime" -ForegroundColor Green
+
     ForEach ($device in $deviceList)
     {
         Write-Host "$($device.Name) - $($device.UUID)"
     }
 
-    $skipCount = GetTestSkipCount
-    $skippedItems = 0
-    $runCount = GetTestRunCount
     $devicesRan = 0
-    If (0 -eq $runCount)
+    If (0 -eq $DevicesToRun -Or $null -eq $DevicesToRun)
     {
-        $runCount = $deviceCount
+        $DevicesToRun = 3
     }
     ForEach ($device in $deviceList)
     {
@@ -147,7 +154,7 @@ function Test
             $skippedItems++
             continue
         }
-        If ($devicesRan -ge $runCount)
+        If ($devicesRan -ge $DevicesToRun)
         {
             Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
             $device.TestSkipped = $true
@@ -216,16 +223,34 @@ function Test
     }
 }
 
+function LatestRuntime
+{
+    $runtimes = xcrun simctl list runtimes iOS
+    $lastRuntime = $runtimes[$runtimesnewArray.Count – 1]
+    $result = [regex]::Match($lastRuntime, "(?<runtime>iOS [0-9.]+)")
+    if ($result.Success -eq $False)
+    {
+        Throw "Last runtime was not found, result: $result"
+    }
+    $lastRuntimeParsed = $result.Groups["runtime"].Value
+    Write-Host "Using $lastRuntimeParsed as latests runtime"
+    return $lastRuntimeParsed
+}
+
+# MAIN
 If (-not $IsMacOS)
 {
     Write-Host "This script should only be run on a MacOS." -ForegroundColor Yellow
 }
-# MAIN
 If ($null -eq $action -Or $action -eq "Build")
 {
     Build
 }
 If ($null -eq $action -Or $action -eq "Test")
 {
+    If ($SelectedRuntime -eq "latest" -Or $null -eq $SelectedRuntime)
+    {
+        $SelectedRuntime = LatestRuntime
+    }
     Test
 }

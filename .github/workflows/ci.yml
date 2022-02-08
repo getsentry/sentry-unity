@@ -275,13 +275,13 @@ jobs:
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
 
-      - name: Preparing Android test app for smoke test.
+      - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
           name: droid-testapp-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android/IL2CPP_Player.apk
 
-      - name: Preparing iOS test app for smoke test.
+      - name: Upload Xcode project for smoke test.
         uses: actions/upload-artifact@v2
         if: matrix.os == 'macos-latest'
         with:
@@ -483,7 +483,7 @@ jobs:
 
   ios-smoke-test-build:
     needs: [build]
-    name: Build Smoke Test Ipa - Unity ${{ matrix.unity-version }}
+    name: Build Smoke Test - Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -503,42 +503,53 @@ jobs:
         shell: pwsh
         run: ./Scripts/smoke-test-ios.ps1 Build
 
-      - name: Preparing iOS test app for smoke test.
+      - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
           name: xcode-${{ matrix.unity-version }}-ipa
           path: |
-            samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator/
+            samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
             !**/Release-iphonesimulator/*.dSYM
             !**/Release-iphonesimulator/UnityFramework.framework/*
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Run Smoke Test - iOS Group ${{ matrix.group-id }} Unity ${{ matrix.unity-version }}
+    name: Run Smoke Test - ${{ matrix.ios-runtime }}" Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
          unity-version: [2019.4.33f1, 2020.3.21f1, 2021.1.26f1]
-         group-id: [1, 2, 3, 4, 5, 6, 7, 8]
+         ios-runtime: [iOS 12.0, iOS 12.4, iOS 13.0, iOS 14.0, latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
-      - name: Download ipa app artifact
+      - name: Download app artifact
         uses: actions/download-artifact@v2
         with:
           name: xcode-${{ matrix.unity-version }}-ipa
-          path: samples/artifacts/builds/iOS/Xcode/archieve/Unity-iPhone/Build/Products/Release-iphonesimulator
+          path: samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
+
+      - name: Setup xcode-install.
+        # Github Virtual machine already sets the runtime and simulator for the latest release.
+        if: ${{ matrix.ios-runtime != 'latest'}}
+        shell: pwsh
+        run: gem install xcode-install
+
+      - name: Setup ${{matrix.ios-runtime}} runtime.
+        if: ${{ matrix.ios-runtime != 'latest'}}
+        shell: pwsh
+        run: xcversion simulators --install='${{matrix.ios-runtime}}'
+
+      - name: Setup ${{matrix.ios-runtime}} Simulatorƒ
+        if: ${{ matrix.ios-runtime != 'latest' }}
+        shell: pwsh
+        # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
+        run: xcrun simctl create InitialSimulator "iPhone 8" "${{ matrix.ios-runtime }}"
 
       - name: Smoke test
         id: smoke-test-ios
         timeout-minutes: 10
         shell: pwsh
-        run: |
-          # Every Job will run 3 simulators so we always skip the simulators that are going to be
-          # tested by other jobs.
-          $skipCount = ( ${{ matrix.group-id }} - 1 ) * 3
-          # Zero will run all the remaining simulators (last group will run all remaining simulators)
-          $runCount = ${{ matrix.group-id }} -eq 8 ?  0 : 3
-          ./Scripts/smoke-test-ios.ps1 Test Skip $skipCount Run $runCount
+        run: ./Scripts/smoke-test-ios.ps1 Test "${{ matrix.ios-runtime }}"
