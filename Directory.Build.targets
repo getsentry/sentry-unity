@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
-  <Target Name="FindUnity">
+  <Target Name="FindUnity" BeforeTargets="Build">
     <LocateUnityVersion ProjectSettingsPath="$(UnitySampleProjectUnityVersion)">
       <Output PropertyName="UnityVersion" TaskParameter="UnityVersion" />
     </LocateUnityVersion>
@@ -47,8 +47,7 @@
       <TestDsn>https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417</TestDsn>
     </PropertyGroup>
 
-    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))"
-           Text="UnityRoot not found. Ensure Unity is installed.
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))" Text="UnityRoot not found. Ensure Unity is installed.
 See the CONTRIBUTING.md.
 UnityVersion: '$(UnityVersion)'
 Resolved directory: '$(UnityRoot)'
@@ -71,8 +70,7 @@ or
       <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     </PropertyGroup>
 
-    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('OSX'))"
-           Text="UnityRoot not found. Ensure Unity is installed.
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('OSX'))" Text="UnityRoot not found. Ensure Unity is installed.
 See the CONTRIBUTING.md.
 UnityVersion: '$(UnityVersion)'
 Resolved directory: '$(UnityRoot)'
@@ -92,8 +90,7 @@ or
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
     </PropertyGroup>
 
-    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Linux'))"
-           Text="UnityRoot not found. Ensure Unity is installed.
+    <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Linux'))" Text="UnityRoot not found. Ensure Unity is installed.
 See the CONTRIBUTING.md.
 UnityVersion: '$(UnityVersion)'
 Resolved directory: '$(UnityRoot)'
@@ -127,11 +124,9 @@ Expected to exist:
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
-  <Target Name="BuildiOSSDK"
-          Condition="$([MSBuild]::IsOSPlatform('OSX'))
+  <Target Name="BuildiOSSDK" Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
-          And (!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))"
-          BeforeTargets="BeforeBuild">
+          And (!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
     <Message Importance="High" Text="Building Sentry iOS SDK."></Message>
 
@@ -141,26 +136,21 @@ Expected to exist:
     <ItemGroup>
       <CocoaDeviceBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework/**/*" />
     </ItemGroup>
-    <Copy SourceFiles="@(CocoaDeviceBuildPath)"
-          DestinationFiles="@(CocoaDeviceBuildPath->'$(SentryCocoaDeviceArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(CocoaDeviceBuildPath)" DestinationFiles="@(CocoaDeviceBuildPath->'$(SentryCocoaDeviceArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
     <ItemGroup>
       <CocoaSimulatorBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_i386_x86_64-simulator/Sentry.framework/**/*" />
     </ItemGroup>
-    <Copy SourceFiles="@(CocoaSimulatorBuildPath)"
-          DestinationFiles="@(CocoaSimulatorBuildPath->'$(SentryCocoaSimulatorArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(CocoaSimulatorBuildPath)" DestinationFiles="@(CocoaSimulatorBuildPath->'$(SentryCocoaSimulatorArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
 
-    <Error Condition="(!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))"
-           Text="Failed to build the Cocoa SDK.">
+    <Error Condition="(!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))" Text="Failed to build the Cocoa SDK.">
     </Error>
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
-  <Target Name="BuildAndroidSDK"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-          And !Exists('$(SentryAndroidArtifactsDestination)')"
-          BeforeTargets="BeforeBuild">
+  <Target Name="BuildAndroidSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And !Exists('$(SentryAndroidArtifactsDestination)')" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)."></Error>
     <Message Importance="High" Text="Building Sentry Android SDK."></Message>
 
@@ -174,20 +164,16 @@ Expected to exist:
       <AndroidSdkArtifacts Include="$(RepoRoot)lib/gson-2.8.5.jar" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(AndroidSdkArtifacts)"
-          DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
   </Target>
 
   <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
-  <Target Name="BuildWindowsSDK"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+  <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
-          And !Exists('$(SentryNativeWindowsArtifactsDestination)/sentry.dll')"
-          DependsOnTargets="BuildNativeSDK"
-          BeforeTargets="BeforeBuild">
+          And !Exists('$(SentryNativeWindowsArtifactsDestination)/sentry.dll')" DependsOnTargets="BuildNativeSDK" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
     <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
 
@@ -196,8 +182,7 @@ Expected to exist:
       <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/sentry.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(NativeSdkArtifacts)"
-          DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeWindowsArtifactsDestination)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeWindowsArtifactsDestination)%(Filename)%(Extension)')">
     </Copy>
   </Target>
 
@@ -230,8 +215,7 @@ For that reason, Exec tasks to unity all ignore error. That means that subsequen
 Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on-27.500387/  -->
 
   <!-- Setup Sentry options on Unity UI: dotnet msbuild /t:UnityConfigureSentryOptions src/Sentry.Unity -->
-  <Target Name="UnityConfigureSentryOptions"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="UnityConfigureSentryOptions" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
@@ -245,69 +229,57 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   </Target>
 
   <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP src/Sentry.Unity -->
-  <Target Name="UnityBuildStandalonePlayerIL2CPP"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="UnityBuildStandalonePlayerIL2CPP" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(StandaloneBuildMethod) == ''" Text="StandaloneBuildMethod build variable not defined. Did FindUnity target fail?"></Error>
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)"
-          IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
   <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP src/Sentry.Unity -->
-  <Target Name="UnitySmokeTestStandalonePlayerIL2CPP"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="UnitySmokeTestStandalonePlayerIL2CPP" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running smoke test on player."></Message>
 
-    <Exec Command="$(StandaloneExecutablePath) --test smoke"
-          IgnoreExitCode="true"
-          ContinueOnError="true">
+    <Exec Command="$(StandaloneExecutablePath) --test smoke" IgnoreExitCode="true" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="SmokeTestExitCode"/>
     </Exec>
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
   </Target>
 
   <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
-  <Target Name="UnityBuildPlayerAndroidIL2CPP"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="UnityBuildPlayerAndroidIL2CPP" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)"
-          IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
   </Target>
 
   <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS src/Sentry.Unity -->
-  <Target Name="UnityBuildPlayerIOS"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="UnityBuildPlayerIOS" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Building iOS Xcode project."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)"
-          IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <!-- <Error Condition="!Exists('$(IOSBuildPath)')" Text="iOS build not found. Did something go wrong?"></Error> -->
   </Target>
 
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
   this solution without using the sample project which depends on the output of this build. -->
-  <Target Name="UnityCreatePackages"
-    Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'"
-    DependsOnTargets="FindUnity">
+  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" DependsOnTargets="FindUnity">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Create Packages."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) "
-      IgnoreStandardErrorWarningFormat="true"
-      IgnoreExitCode="true"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
     <PropertyGroup>
       <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
       <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
@@ -317,56 +289,40 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   </Target>
 
   <!-- If Unity Libraries don't exist, load a Unity project to restore UPM packages -->
-  <Target Name="UnityRestorePackages"
-    DependsOnTargets="UnityCreatePackages"
-    Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll') AND '$(MSBuildProjectName)' == 'Sentry.Unity'"
-    BeforeTargets="BeforeBuild">
+  <Target Name="UnityRestorePackages" DependsOnTargets="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Restore Packages."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) "
-      IgnoreStandardErrorWarningFormat="true"
-      IgnoreExitCode="true"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
-  <Target Name="UnityPlayModeTest"
-          DependsOnTargets="Build"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
+  <Target Name="UnityPlayModeTest" DependsOnTargets="Build" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	"
-          IgnoreStandardErrorWarningFormat="true"
-          IgnoreExitCode="true"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
   <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
-  <Target Name="UnityEditModeTest"
-          DependsOnTargets="Build"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
+  <Target Name="UnityEditModeTest" DependsOnTargets="Build" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity EditMode tests."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	"
-          IgnoreStandardErrorWarningFormat="true"
-          IgnoreExitCode="true"></Exec>
+    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
 
   <!-- Read Unity Version -->
-  <UsingTask
-    TaskName="LocateUnityVersion"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+  <UsingTask TaskName="LocateUnityVersion" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <ProjectSettingsPath ParameterType="System.String" Required="true" />
       <UnityVersion ParameterType="System.String" Output="true" />
@@ -413,10 +369,7 @@ Log.LogMessage("Unity Version: " + version);
   </UsingTask>
 
   <!-- Exclude package from manifest -->
-  <UsingTask
-    TaskName="ExcludePackage"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+  <UsingTask TaskName="ExcludePackage" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <PackageManifestFile ParameterType="System.String" Required="true" />
       <PackageToRemove ParameterType="System.String" Required="true" />
@@ -440,10 +393,7 @@ File.WriteAllLines(PackageManifestFile, lines);
   </UsingTask>
 
   <!-- Parse test results -->
-  <UsingTask
-    TaskName="UnityTestResults"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+  <UsingTask TaskName="UnityTestResults" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <Path ParameterType="System.String" Required="true" />
     </ParameterGroup>
@@ -454,7 +404,7 @@ File.WriteAllLines(PackageManifestFile, lines);
       <Using Namespace="System.Linq" />
       <Using Namespace="System.Xml.Linq" />
       <Code Type="Fragment" Language="cs">
-<![CDATA[
+        <![CDATA[
 
 if (!File.Exists(Path))
 {
