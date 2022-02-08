@@ -520,7 +520,7 @@ jobs:
       fail-fast: false
       matrix:
          unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
-         ios-runtime: [iOS 12.0, iOS 12.4, iOS 13.0, iOS 14.0, latest]
+         ios-runtime: [12.0, 12.4, 13.0, 14.0, latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -540,16 +540,16 @@ jobs:
       - name: Setup ${{matrix.ios-runtime}} runtime.
         if: ${{ matrix.ios-runtime != 'latest'}}
         shell: pwsh
-        run: xcversion simulators --install='${{matrix.ios-runtime}}'
+        run: xcversion simulators --install='iOS ${{matrix.ios-runtime}}'
 
       - name: Setup ${{matrix.ios-runtime}} Simulatorƒ
         if: ${{ matrix.ios-runtime != 'latest' }}
         shell: pwsh
         # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
-        run: xcrun simctl create InitialSimulator "iPhone 8" "${{ matrix.ios-runtime }}"
+        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios-runtime }}"
 
       - name: Smoke test
         id: smoke-test-ios
         timeout-minutes: 10
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Test "${{ matrix.ios-runtime }}"
+        run: ./Scripts/smoke-test-ios.ps1 Test "iOS ${{ matrix.ios-runtime }}"
