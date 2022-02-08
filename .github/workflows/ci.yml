@@ -110,7 +110,7 @@ jobs:
       - name: Assembly alias
         run: |
           dotnet tool install --global Alias --version 0.2.0
-          assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+          ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
