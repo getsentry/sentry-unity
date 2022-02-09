@@ -1,5 +1,5 @@
 param($Action, $SelectedRuntime, $DevicesToRun)
-Write-Host "Args received Ation=$Action, SelectedRuntime=$SelectedRuntime"
+Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime"
 # $Action: 'Build' for build only
 #          'Test' for Smoke test only
 #          null for building and testing
@@ -35,32 +35,6 @@ Class AppleDevice
         $this.Name = $result.Groups["model"].Value
         $this.UUID = $result.Groups["uuid"].Value
     }
-}
-
-function GetTestSkipCount
-{
-    If ($testArg1 -eq "Skip" -And $testArg1Count -match "^\d+$")
-    {
-        return $testArg1Count
-    }
-    If ($testArg2 -eq "Skip" -And $testArg2Count -match "^\d+$")
-    {
-        return $testArg2Count
-    }
-    return 0
-}
-
-function GetTestRunCount
-{
-    If ($testArg1 -eq "Run" -And $testArg1Count -match "^\d+$")
-    {
-        return $testArg1Count
-    }
-    If ($testArg2 -eq "Run" -And $testArg2Count -match "^\d+$")
-    {
-        return $testArg2Count
-    }
-    return 0
 }
 
 function Build()
@@ -107,7 +81,6 @@ function Build()
 function Test
 {
     Write-Host "Retrieving list of available simulators" -ForegroundColor Green
-    # junk will contain the first item from the String that should be == Devices ==
     $deviceListRaw = xcrun simctl list devices
     [AppleDevice[]]$deviceList = @()
     
@@ -209,7 +182,7 @@ function Test
         {
             Write-Host "SKIPPED" -ForegroundColor Gray
         }
-        else 
+        Else 
         {        
             Write-Host "FAILED" -ForegroundColor Red
             $testFailed = $true

@@ -506,7 +506,8 @@ jobs:
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
-          name: xcode-${{ matrix.unity-version }}-ipa
+          name: xcode-${{ matrix.unity-version }}-app
+          # Ignore the files that are not required for the test.
           path: |
             samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
             !**/Release-iphonesimulator/*.dSYM
@@ -514,7 +515,7 @@ jobs:
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Run Smoke Test - ${{ matrix.ios-runtime }}" Unity ${{ matrix.unity-version }}
+    name: Smoke Test - iOS ${{ matrix.ios-runtime }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -529,21 +530,21 @@ jobs:
       - name: Download app artifact
         uses: actions/download-artifact@v2
         with:
-          name: xcode-${{ matrix.unity-version }}-ipa
+          name: xcode-${{ matrix.unity-version }}-app
           path: samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
 
-      - name: Setup xcode-install.
+      - name: Setup xcode-install
         # Github Virtual machine already sets the runtime and simulator for the latest release.
         if: ${{ matrix.ios-runtime != 'latest'}}
         shell: pwsh
         run: gem install xcode-install
 
-      - name: Setup ${{matrix.ios-runtime}} runtime.
+      - name: Setup ${{matrix.ios-runtime}} runtime
         if: ${{ matrix.ios-runtime != 'latest'}}
         shell: pwsh
         run: xcversion simulators --install='iOS ${{matrix.ios-runtime}}'
 
-      - name: Setup ${{matrix.ios-runtime}} Simulatorƒ
+      - name: Setup ${{matrix.ios-runtime}} Simulator
         if: ${{ matrix.ios-runtime != 'latest' }}
         shell: pwsh
         # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
