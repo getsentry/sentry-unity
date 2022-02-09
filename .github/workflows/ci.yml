@@ -41,10 +41,12 @@ jobs:
 
   build:
     name: Unity ${{ matrix.unity-version }}
-    # Semantically, we should have a dependency here. In practice we don't need it because SDK build jobs finish before
-    # the docker image download. Therefore, we just expect the SDK artifacts to be available at the step that checks them.
-    # If it starts to fail at some point, consider using https://github.com/marketplace/actions/wait-on
-    # needs: [android-sdk, ios-sdk, windows-sdk]
+    # TODO add a "wait" step just before the artifacts are really needed - waiting for the job to produce them to complete.
+    #      That way, we can start downloading the docker container while the native SDKs are being built.
+    #      There's no existing action to do that but a simple polling wait action could use the following API
+    #      https://docs.github.com/en/rest/reference/actions#list-jobs-for-a-workflow-run
+    #      https://api.github.com/repos/getsentry/sentry-unity/actions/runs/1816928507/jobs
+    needs: [android-sdk, ios-sdk, windows-sdk]
     runs-on: ubuntu-latest
     container:
       image: dlugos/unity-editor:ubuntu-${{ matrix.unity-version }}-main
