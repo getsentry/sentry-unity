@@ -289,7 +289,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   </Target>
 
   <!-- If Unity Libraries don't exist, load a Unity project to restore UPM packages -->
-  <Target Name="UnityRestorePackages" DependsOnTargets="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" BeforeTargets="BeforeBuild">
+  <Target Name="UnityRestorePackages" DependsOnTargets="FindUnity;UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" BeforeTargets="BeforeBuild">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Restore Packages."></Message>
