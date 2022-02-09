@@ -521,7 +521,7 @@ jobs:
       matrix:
          unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
          # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-         ios-runtime: ["12.0", "12.4", "13.0", "14.0", latest]
+         ios-runtime: ["12.0", "12.4", "13.0", "14.1", latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
