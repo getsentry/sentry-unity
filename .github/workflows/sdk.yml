@@ -16,16 +16,15 @@ jobs:
   build:
     runs-on: ${{ inputs.runsOn }}
     timeout-minutes: 30
-    env:
-      submodules: modules/sentry-java
-      sdk: Android
     steps:
       # Tag: 0.9.1
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
         with:
           access_token: ${{ github.token }}
+
       - uses: actions/checkout@v2
+
       - name: Get submodules
         shell: bash
         run: |
@@ -39,6 +38,7 @@ jobs:
           ./scripts/init-submodules.sh src/sentry-dotnet $submodules
           git submodule status > submodules-status
           cat submodules-status
+
       - name: Restore from cache
         uses: actions/cache@v2
         with:
@@ -49,14 +49,10 @@ jobs:
             package-dev/Plugins
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           key: sdk=${{ inputs.target }}-modules=${{ hashFiles('submodules-status') }}-package=${{ hashFiles('package/package.json') }}
-      - name: Set up JDK 11
-        if: ${{ inputs.target }} == "Android"
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
+
       - name: Build
         run: dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:

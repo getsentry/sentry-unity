@@ -87,15 +87,6 @@ jobs:
           submodules: recursive
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
-      - name: Setup .NET SDK (v6.0)
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
-
-      - name: 'Set up Java: 11'
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
 
       # Unity is about 4GB in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
@@ -105,6 +96,7 @@ jobs:
         with:
           path: ${{ matrix.unity-installation-path }}
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
+
       - name: Restore previous build
         uses: actions/cache@v2
         with:
@@ -118,19 +110,16 @@ jobs:
           path: samples/unity-of-bugs/Library
           key: samples/unity-of-bugs/Library|${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - name: Get submodule information
-        run: |
-          git submodule status > submodules-status
-          cat submodules-status
-
       - uses: actions/download-artifact@v2
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
+
       - uses: actions/download-artifact@v2
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
+
       - uses: actions/download-artifact@v2
         with:
           name: Windows-sdk
@@ -174,11 +163,13 @@ jobs:
         run: |
           New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
           Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+
       # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
       - name: Add Unity on PATH
         shell: pwsh
         run: |
           Write-Output '${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
       # Step used to reduce the Unity path to avoid long path errors on Windows.
       - name: Make symbolic link for Unity (Windows)
         if: matrix.os == 'windows-latest'
