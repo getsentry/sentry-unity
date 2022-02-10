@@ -15,7 +15,8 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
-  <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
+  <!-- Note: for ./tests directory, this target is overwritten -->
+  <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity" BeforeTargets="CollectPackageReferences">
     <!-- Blocked by https://github.com/getsentry/sentry-unity/issues/513 -->
     <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
     <!-- <PropertyGroup Condition="$(UnityVersion.StartsWith('2021.2')) or $(UnityVersion.StartsWith('2022'))">
@@ -27,7 +28,7 @@
     </PropertyGroup>
     <!-- Being specific on which Unity version we support allows us to quickly ajust these settings when adding support to new editors.
     Future 2022 or 2023 versions likely will target net6.0 so not rolling forward. Instead break the build here. -->
-    <Message Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'" Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion)" Importance="High" />
+    <Message Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
   </Target>
 
   <ItemGroup>
