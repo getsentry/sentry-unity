@@ -88,6 +88,11 @@ jobs:
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
+      - name: Setup .NET SDK (v6.0)
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+
       # Unity is about 4GB in size and takes 20 minutes to download and install.
       # Caching still takes some time, but brings it down to about 5 minutes.
       - name: Restore cached Unity installation

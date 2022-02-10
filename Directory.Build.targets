@@ -14,15 +14,15 @@
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <!-- Cocoa -->
     <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
-    <SentryCocoaDeviceArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryCocoaDeviceArtifactsDestination>
-    <SentryCocoaSimulatorArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryCocoaSimulatorArtifactsDestination>
+    <SentryiOSDeviceArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryiOSDeviceArtifactsDestination>
+    <SentryiOSSimulatorArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryiOSSimulatorArtifactsDestination>
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <!-- TODO: Do we need: x64, x86, arm64? -->
-    <SentryNativeWindowsArtifactsDestination>$(RepoRoot)package-dev/Plugins/Windows/Sentry/</SentryNativeWindowsArtifactsDestination>
+    <SentryWindowsArtifactsDestination>$(RepoRoot)package-dev/Plugins/Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -107,8 +107,8 @@ Expected to exist:
   </Target>
 
   <Target Name="CleaniOSSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <RemoveDir Directories="$(SentryCocoaDeviceArtifactsDestination)" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryCocoaSimulatorArtifactsDestination)" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryiOSDeviceArtifactsDestination)" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryiOSSimulatorArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanAndroidSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -120,13 +120,13 @@ Expected to exist:
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryNativeWindowsArtifactsDestination)" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryWindowsArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
   <Target Name="BuildiOSSDK" Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
-          And (!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))" BeforeTargets="BeforeBuild">
+          And (!Exists('$(SentryiOSDeviceArtifactsDestination)') OR !Exists('$(SentryiOSSimulatorArtifactsDestination)'))" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
     <Message Importance="High" Text="Building Sentry iOS SDK."></Message>
 
@@ -134,17 +134,17 @@ Expected to exist:
 
     <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
     <ItemGroup>
-      <CocoaDeviceBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework/**/*" />
+      <iOSDeviceBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_armv7/Sentry.framework/**/*" />
     </ItemGroup>
-    <Copy SourceFiles="@(CocoaDeviceBuildPath)" DestinationFiles="@(CocoaDeviceBuildPath->'$(SentryCocoaDeviceArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(iOSDeviceBuildPath)" DestinationFiles="@(iOSDeviceBuildPath->'$(SentryiOSDeviceArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
     <ItemGroup>
-      <CocoaSimulatorBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_i386_x86_64-simulator/Sentry.framework/**/*" />
+      <iOSSimulatorBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/ios-arm64_i386_x86_64-simulator/Sentry.framework/**/*" />
     </ItemGroup>
-    <Copy SourceFiles="@(CocoaSimulatorBuildPath)" DestinationFiles="@(CocoaSimulatorBuildPath->'$(SentryCocoaSimulatorArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(iOSSimulatorBuildPath)" DestinationFiles="@(iOSSimulatorBuildPath->'$(SentryiOSSimulatorArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
 
-    <Error Condition="(!Exists('$(SentryCocoaDeviceArtifactsDestination)') OR !Exists('$(SentryCocoaSimulatorArtifactsDestination)'))" Text="Failed to build the Cocoa SDK.">
+    <Error Condition="(!Exists('$(SentryiOSDeviceArtifactsDestination)') OR !Exists('$(SentryiOSSimulatorArtifactsDestination)'))" Text="Failed to build the Cocoa SDK.">
     </Error>
   </Target>
 
@@ -173,7 +173,7 @@ Expected to exist:
   <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
   <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
-          And !Exists('$(SentryNativeWindowsArtifactsDestination)/sentry.dll')" DependsOnTargets="BuildNativeSDK" BeforeTargets="BeforeBuild">
+          And !Exists('$(SentryWindowsArtifactsDestination)/sentry.dll')" DependsOnTargets="BuildNativeSDK" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
     <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
 
@@ -182,7 +182,7 @@ Expected to exist:
       <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/sentry.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryNativeWindowsArtifactsDestination)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')">
     </Copy>
   </Target>
 
