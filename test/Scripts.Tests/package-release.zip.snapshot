@@ -12,7 +12,10 @@ Editor/sentry-cli/sentry-cli-Linux-x86_64.meta
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe.meta
 Plugins/Windows.meta
-Plugins/Windows/Sentry/
+Plugins/Windows/Sentry/crashpad_handler.exe
+Plugins/Windows/Sentry/crashpad_handler.exe.meta
+Plugins/Windows/Sentry/sentry.dll
+Plugins/Windows/Sentry/sentry.dll.meta
 Plugins/Windows/Sentry.meta
 Plugins/Android.meta
 Plugins/iOS.meta
