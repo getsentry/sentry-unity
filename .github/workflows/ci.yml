@@ -122,6 +122,11 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
+          name: Android-libraries
+          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+
+      - uses: actions/download-artifact@v2
+        with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
 
