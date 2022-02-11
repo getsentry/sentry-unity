@@ -53,9 +53,15 @@ jobs:
       - name: Build
         run: dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v2
         with:
           name: ${{ inputs.target }}-sdk
           path: package-dev/Plugins/${{ inputs.target }}
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ inputs.target == 'Android' }}
+        with:
+          name: ${{ inputs.target }}-libraries
+          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
           retention-days: 1
