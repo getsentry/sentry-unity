@@ -343,7 +343,7 @@ if (Environment.GetEnvironmentVariable("CI") is not null
 
 if (Environment.GetEnvironmentVariable("UNITY_PATH") is { } unityPath)
 {
-    UnityVersion = File.ReadAllText(unityPath + "/version");
+    UnityVersion = File.ReadAllText(unityPath + "/version").Trim();
     Log.LogMessage("Unity Version from path " + unityPath + " is: " + UnityVersion);
     return true;
 }
