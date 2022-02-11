@@ -1,0 +1,12 @@
+/arm64-v8a
+/armeabi-v7a
+/x86
+/x86_64
+arm64-v8a/libsentry-android.so
+arm64-v8a/libsentry.so
+armeabi-v7a/libsentry-android.so
+armeabi-v7a/libsentry.so
+x86/libsentry-android.so
+x86/libsentry.so
+x86_64/libsentry-android.so
+x86_64/libsentry.so
