@@ -33,6 +33,7 @@ MonoBehaviour:
   <MaxQueueItems>k__BackingField: 30
   <IosNativeSupportEnabled>k__BackingField: 1
   <AndroidNativeSupportEnabled>k__BackingField: 1
+  <WindowsNativeSupportEnabled>k__BackingField: 1
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0
   <DiagnosticLevel>k__BackingField: 2

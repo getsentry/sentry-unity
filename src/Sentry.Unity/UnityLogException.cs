@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Sentry.Internal;
 using Sentry.Protocol;
 using UnityEngine;
 
@@ -21,10 +22,9 @@ namespace Sentry.Unity
         {
             LogString = logString;
             LogStackTrace = logStackTrace;
-            Data[Mechanism.MechanismKey] = "unity.log";
         }
 
-        private UnityLogException() : base()
+        internal UnityLogException() : base()
         {
             LogString = "";
             LogStackTrace = "";
@@ -140,7 +140,12 @@ namespace Sentry.Unity
             {
                 Stacktrace = stacktrace,
                 Type = excType,
-                Value = excValue
+                Value = excValue,
+                Mechanism = new Mechanism
+                {
+                    Handled = false,
+                    Type = "unity.log"
+                }
             };
         }
 

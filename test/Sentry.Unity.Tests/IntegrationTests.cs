@@ -218,6 +218,28 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator BugFarmScene_DebugLogException_IsMarkedUnhandled()
+        {
+            yield return SetupSceneCoroutine("1_BugFarm");
+
+            // arrange
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            // act
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException));
+
+            // assert
+            Assert.NotNull(testEventCapture.Events.SingleOrDefault(sentryEvent =>
+                sentryEvent.SentryExceptions.SingleOrDefault(exception =>
+                    exception.Mechanism?.Handled is false) is not null));
+        }
+
+        [UnityTest]
         public IEnumerator Init_OptionsAreDefaulted()
         {
             yield return null;

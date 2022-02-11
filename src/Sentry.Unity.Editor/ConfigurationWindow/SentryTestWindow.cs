@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using UnityEditor;
 
-namespace Sentry.Unity.Editor
+namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     public sealed class SentryTestWindow : SentryWindow, IDisposable
     {

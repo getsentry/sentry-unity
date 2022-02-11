@@ -81,6 +81,11 @@ namespace Sentry.Unity
         /// </summary>
         public bool AndroidNativeSupportEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Whether the SDK should add native support for Windows
+        /// </summary>
+        public bool WindowsNativeSupportEnabled { get; set; } = true;
+
         public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
         {
         }
