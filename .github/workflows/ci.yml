@@ -39,14 +39,153 @@ jobs:
       runsOn: windows-latest
 
   build:
-    name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Unity ${{ matrix.unity-version }}
+    runs-on: ubuntu-latest
+    container:
+      image: dlugos/unity-editor:ubuntu-${{ matrix.unity-version }}-main
     # TODO add a "wait" step just before the artifacts are really needed - waiting for the SDK job to complete.
     #      That way, we can start downloading the docker container while the native SDKs are being built.
     #      There's no existing action to do that but a simple polling wait action could use the following API
     #      https://docs.github.com/en/rest/reference/actions#list-jobs-for-a-workflow-run
     #      https://api.github.com/repos/getsentry/sentry-unity/actions/runs/1816928507/jobs
     needs: [android-sdk, ios-sdk, windows-sdk]
+    strategy:
+      fail-fast: false
+      matrix:
+        # 2022.1.0a12 removed until S.T.J issues fixed
+        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+    env:
+      UNITY_VERSION: ${{ matrix.unity-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+        with:
+          submodules: recursive
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Restore previous build
+        uses: actions/cache@v2
+        with:
+          path: samples/artifacts/builds
+          # using hash of package.json to bust cache on release builds which modify it
+          key: samples/artifacts/builds|${{ matrix.unity-version }}-${{ hashFiles('package/package.json') }}
+
+      - name: Restore Unity Packages
+        uses: actions/cache@v2
+        with:
+          path: samples/unity-of-bugs/Library
+          key: samples/unity-of-bugs/Library|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Android-sdk
+          path: package-dev/Plugins/Android
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Android-libraries
+          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: iOS-sdk
+          path: package-dev/Plugins/iOS
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: Windows-sdk
+          path: package-dev/Plugins/Windows
+
+      - name: Create Unity license config
+        run: |
+          unityConfigDir=/usr/share/unity3d/config/
+          mkdir -p $unityConfigDir
+          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' > $unityConfigDir/services-config.json
+
+      - name: Install Unity UPM Packages
+        run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build Sentry.Unity Solution
+        run: dotnet build -c Release
+
+      - name: Assembly alias
+        run: |
+          dotnet tool install --global Alias --version 0.2.0
+          ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+
+      - name: Run Unity tests (playmode)
+        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
+        # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
+        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2022')) }}
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
+
+      - name: Upload test artifacts (playmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (playmode)
+          path: artifacts/test/playmode
+
+      - name: Run Unity tests (editmode)
+        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
+        # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
+        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2022')) }}
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
+
+      - name: Upload test artifacts (editmode)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test results (editmode)
+          path: artifacts/test/editmode
+
+      - name: Prepare Sentry package for release
+        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        shell: pwsh
+        run: ./scripts/pack.ps1
+
+      - name: Upload build artifacts if build failed
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Build output
+          path: artifacts/build
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        with:
+          name: ${{ github.sha }}
+          if-no-files-found: error
+          # Adding the native libraries so the symbol collector craft target can find/upload them
+          path: |
+            package-release.zip
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+
+      - name: Upload Android test app for smoke test.
+        uses: actions/upload-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android/IL2CPP_Player.apk
+
+      - name: Upload Xcode project for smoke test.
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'macos-latest'
+        with:
+          name: testapp-ios-project-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/iOS/Xcode
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: Android Build
+          path: samples/artifacts/builds/Android
+
+  test:
+    name: Test ${{ matrix.unity-version }} - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: [build]
     strategy:
       fail-fast: false
       matrix:
@@ -75,12 +214,6 @@ jobs:
     env:
       UNITY_VERSION: ${{ matrix.unity-version }}
     steps:
-      # Tag: 0.9.1
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout
         uses: actions/checkout@v2.3.3
         with:
@@ -101,39 +234,6 @@ jobs:
         with:
           path: ${{ matrix.unity-installation-path }}
           key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
-
-      - name: Restore previous build
-        uses: actions/cache@v2
-        with:
-          path: samples/artifacts/builds
-          # using hash of package.json to bust cache on release builds which modify it
-          key: samples/artifacts/builds|${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
-
-      - name: Restore Unity Packages
-        uses: actions/cache@v2
-        with:
-          path: samples/unity-of-bugs/Library
-          key: samples/unity-of-bugs/Library|${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: Android-sdk
-          path: package-dev/Plugins/Android
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: Android-libraries
-          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: iOS-sdk
-          path: package-dev/Plugins/iOS
-
-      - uses: actions/download-artifact@v2
-        with:
-          name: Windows-sdk
-          path: package-dev/Plugins/Windows
 
       - name: Setup Unity
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
@@ -187,42 +287,11 @@ jobs:
         run: |
           New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
-      - name: Install Unity UPM Packages
-        run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Build Sentry.Unity Solution
-        run: dotnet build -c Release
-
-      - name: Assembly alias
-        run: |
-          dotnet tool install --global Alias --version 0.2.0
-          ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
-
-      - name: Run Unity tests (playmode)
-        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
-        # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
-        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2022')) }}
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
-
-      - name: Upload test artifacts (playmode)
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+      - name: Download UPM package
+        uses: actions/download-artifact@v2
         with:
-          name: Test results (playmode)
-          path: artifacts/test/playmode
-
-      - name: Run Unity tests (editmode)
-        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
-        # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
-        if: ${{ !(startsWith(matrix.unity-version, '2021.2')) && !(startsWith(matrix.unity-version, '2022')) }}
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
-
-      - name: Upload test artifacts (editmode)
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: Test results (editmode)
-          path: artifacts/test/editmode
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
 
       # Add Sentry DSN via the editor integration so native support is included in the final game
       - name: Configure Sentry via the Editor Window
@@ -240,17 +309,6 @@ jobs:
 
       - name: Run Smoke Tests
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
-
-      - name: Prepare Sentry package for release
-        shell: pwsh
-        run: ./scripts/pack.ps1
-
-      - name: Upload build artifacts if build failed
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: Build output
-          path: artifacts/build
 
       - name: Integration Test - Create new Project
         shell: pwsh
@@ -272,43 +330,10 @@ jobs:
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
 
-      - name: Upload Android test app for smoke test.
-        uses: actions/upload-artifact@v2
-        with:
-          name: droid-testapp-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/Android/IL2CPP_Player.apk
-
-      - name: Upload Xcode project for smoke test.
-        uses: actions/upload-artifact@v2
-        if: matrix.os == 'macos-latest'
-        with:
-          name: testapp-ios-project-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode
-
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v2
-        # Only on macOS which contain all native plugin needed
-        if: ${{ matrix.os == 'macos-latest' && matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
-        with:
-          name: ${{ github.sha }}
-          if-no-files-found: error
-          # Adding the native libraries so the symbol collector craft target can find/upload them
-          path: |
-            package-release.zip
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
-
-      - name: Upload Android Build
-        uses: actions/upload-artifact@v2
-        with:
-          name: Android Build
-          path: samples/artifacts/builds/Android
-
   package-validation:
     needs: [build]
     name: UPM Package validation
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
