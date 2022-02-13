@@ -325,7 +325,7 @@ jobs:
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
-      max-parallel: 5
+      max-parallel: 7
       fail-fast: false
       matrix:
         api-level: [21, 27, 29, 30]
@@ -343,6 +343,7 @@ jobs:
       - name: Select AVD target
         id: select-avd-target
         shell: pwsh
+        #api-level 30 image is only available with google services.
         run: |
           $avdTarget = "default"
           If (${{ matrix.api-level }} -eq 30)
