@@ -7,7 +7,6 @@
   </a>
   <br />
 </p>
-<p align="center">
 
 Sentry SDK for Unity
 ===========
