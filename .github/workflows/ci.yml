@@ -372,10 +372,11 @@ jobs:
           script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Kill emulator if AVD failed.
-        continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        shell: pwsh
         run: |
-          Start-Process -FilePath "adb" -ArgumentList "emu", "kill"
+          Write-Host "Smoke test failed with status (${{ steps.smoke-test.outputs.smoke-status }}), closing simulator."
+          adb emu kill
           sleep 7
 
       - name: Android emulator setup + Smoke test (Retry)
