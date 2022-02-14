@@ -106,5 +106,10 @@ namespace Sentry.Unity.Tests.Stubs
         {
             // TODO: test sessions
         }
+
+        public SentryId CaptureEvent(SentryEvent evt, Action<Scope> configureScope)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
