@@ -1,6 +1,10 @@
+using System.IO;
+using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
@@ -10,32 +14,39 @@ namespace Sentry.Unity.Editor
 
         public void OnPreprocessBuild(BuildReport report)
         {
-            // var options = AssetDatabase.LoadAssetAtPath<SentryCliOptions>(SentryWindows.SentryCliOptionsAssetPath);
-
             switch (report.summary.platform)
             {
-                case BuildTarget.StandaloneOSX:
-                case BuildTarget.StandaloneLinux64:
-                case BuildTarget.StandaloneWindows:
-                case BuildTarget.StandaloneWindows64:
-                case BuildTarget.tvOS:
                 case BuildTarget.iOS:
-                case BuildTarget.XboxOne: // pdbs?
-                    // platformGroup = Standalone
-                    // sentry-cli upload-dif
-                    break;
-                case BuildTarget.WebGL:
-                    // sentry-cli sourcemaps
-                    break;
-                case BuildTarget.Android:
-                    // sentry-cli proguard
+                    CheckIOSEditorImportSettingsOnWindows(Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "iOS",
+                        "Sentry.Unity.Editor.iOS", ".meta"));
                     break;
                 default:
                     // nothing to do
                     break;
             }
-            // file: summary.outputPath
-            // guid: summary.guid
+        }
+
+        internal void CheckIOSEditorImportSettingsOnWindows(string metaFilePath, IApplication? application = null)
+        {
+            application ??= ApplicationAdapter.Instance;
+            if (application.Platform != RuntimePlatform.WindowsEditor)
+            {
+                return;
+            }
+
+            if (!File.Exists(metaFilePath))
+            {
+                return;
+            }
+
+            var meta = File.ReadAllText(metaFilePath);
+            if (meta.Contains("OS: OSX"))
+            {
+                new UnityLogger(new SentryUnityOptions()).LogWarning("You're trying to build for iOS on " +
+                    "Windows but the import settings for 'Sentry.Unity.Editor.iOS' are set to OSX only. Sentry will " +
+                    "not be included in your Xcode project. To fix this you have to embed the Sentry package and set " +
+                    "the platform settings for 'Sentry/Editor/iOS/Sentry.Unity.Editor.iOS.dll' to 'Any OS'.");
+            }
         }
     }
 }
