@@ -384,7 +384,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 10
         # API 21 is no longer supported on Unity 2021.2.10f1 and we only want to retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ (matrix.unity-version != '2021.2.10f1' || matrix.api-level != '21') }}
+        if: ${{ (matrix.unity-version != '2021.2.10f1' || matrix.api-level != '21') && steps.smoke-test.outputs.smoke-status != 'Completed'  }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
           api-level: ${{ matrix.api-level }}
