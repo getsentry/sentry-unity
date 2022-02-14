@@ -277,7 +277,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: matrix.os == 'macos-latest'
         with:
-          name: xcode-artifact-${{ matrix.unity-version }}
+          name: testapp-ios-project-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode
 
       - name: Upload release artifacts
@@ -490,7 +490,7 @@ jobs:
       - name: Download XCode app artifact
         uses: actions/download-artifact@v2
         with:
-          name: xcode-artifact-${{ matrix.unity-version }}
+          name: testapp-ios-project-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode
 
       - name: Build iOS package
@@ -500,7 +500,7 @@ jobs:
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
-          name: xcode-${{ matrix.unity-version }}-app
+          name: testapp-ios-${{ matrix.unity-version }}
           # Ignore the files that are not required for the test.
           path: |
             samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
@@ -524,7 +524,7 @@ jobs:
       - name: Download app artifact
         uses: actions/download-artifact@v2
         with:
-          name: xcode-${{ matrix.unity-version }}-app
+          name: testapp-ios-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
 
       - name: Setup xcode-install
