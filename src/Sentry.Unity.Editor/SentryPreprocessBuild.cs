@@ -17,7 +17,7 @@ namespace Sentry.Unity.Editor
             switch (report.summary.platform)
             {
                 case BuildTarget.iOS:
-                    CheckIOSEditorImportSettingsOnWindows(Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "iOS",
+                    CheckIOSEditorImportSettings(Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "iOS",
                         "Sentry.Unity.Editor.iOS", ".meta"));
                     break;
                 default:
@@ -26,10 +26,10 @@ namespace Sentry.Unity.Editor
             }
         }
 
-        internal void CheckIOSEditorImportSettingsOnWindows(string metaFilePath, IApplication? application = null)
+        internal void CheckIOSEditorImportSettings(string metaFilePath, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
-            if (application.Platform != RuntimePlatform.WindowsEditor)
+            if (application.Platform == RuntimePlatform.OSXEditor)
             {
                 return;
             }
