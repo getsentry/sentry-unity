@@ -241,12 +241,6 @@ jobs:
       - name: Run Smoke Tests
         run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
 
-      - name: Preparing test app for smoke test.
-        uses: actions/upload-artifact@v2
-        with:
-          name: droid-testapp-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/Android/IL2CPP_Player.apk
-
       - name: Prepare Sentry package for release
         shell: pwsh
         run: ./scripts/pack.ps1
@@ -277,6 +271,19 @@ jobs:
       - name: Integration Test - Run Player - Smoke Test
         shell: pwsh
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
+
+      - name: Upload Android test app for smoke test.
+        uses: actions/upload-artifact@v2
+        with:
+          name: droid-testapp-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/Android/IL2CPP_Player.apk
+
+      - name: Upload Xcode project for smoke test.
+        uses: actions/upload-artifact@v2
+        if: matrix.os == 'macos-latest'
+        with:
+          name: testapp-ios-project-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/iOS/Xcode
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
@@ -408,3 +415,84 @@ jobs:
         with:
           name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
           path: samples/artifacts/builds/Android/screen.png
+
+  ios-smoke-test-build:
+    needs: [build]
+    name: Build Smoke Test - Unity ${{ matrix.unity-version }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download XCode app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: testapp-ios-project-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/iOS/Xcode
+
+      - name: Build iOS package
+        shell: pwsh
+        run: ./Scripts/smoke-test-ios.ps1 Build
+
+      - name: Upload iOS test app for smoke test.
+        uses: actions/upload-artifact@v2
+        with:
+          name: testapp-ios-${{ matrix.unity-version }}
+          # Ignore the files that are not required for the test.
+          path: |
+            samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
+            !**/Release-iphonesimulator/*.dSYM
+            !**/Release-iphonesimulator/UnityFramework.framework/*
+
+  ios-smoke-test-run:
+    needs: [ios-smoke-test-build]
+    name: Smoke Test - iOS ${{ matrix.ios-runtime }} Unity ${{ matrix.unity-version }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
+         ios-runtime: ["12.0", "12.4", "13.0", "14.1", latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: testapp-ios-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
+
+      - name: Setup xcode-install
+        # Github Virtual machine already sets the runtime and simulator for the latest release.
+        if: ${{ matrix.ios-runtime != 'latest'}}
+        shell: pwsh
+        run: gem install xcode-install
+
+      - name: Setup ${{matrix.ios-runtime}} runtime
+        if: ${{ matrix.ios-runtime != 'latest'}}
+        shell: pwsh
+        run: xcversion simulators --install='iOS ${{matrix.ios-runtime}}'
+
+      - name: Setup ${{matrix.ios-runtime}} Simulator
+        if: ${{ matrix.ios-runtime != 'latest' }}
+        shell: pwsh
+        # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
+        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios-runtime }}"
+
+      - name: Smoke test
+        id: smoke-test-ios
+        timeout-minutes: 10
+        shell: pwsh
+        run: |
+          $runtime = "${{ matrix.ios-runtime }}"
+          If ($runtime -ne "latest")
+          {
+            $runtime = "iOS " + $runtime
+          }
+          ./Scripts/smoke-test-ios.ps1 Test "$runtime"
