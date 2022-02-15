@@ -15,7 +15,7 @@ on:
   #     - 'CHANGELOG.md'
 
 env:
-  LOWEST_SUPPORTED_UNITY_VERSION: 2019.4.34f1
+  LOWEST_SUPPORTED_UNITY_VERSION: 2019.4.35f1
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
 
@@ -52,7 +52,7 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
         # 2022.1.0a12 removed until S.T.J issues fixed
-        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        unity-version: [2019.4.35f1, 2020.3.27f1, 2021.2.10f1]
         include:
           - os: windows-latest
             unity-installation-path: C:/Program Files/Unity/
@@ -64,8 +64,8 @@ jobs:
             unity-root: /Applications/Unity/Hub/Editor/
             unity-path: Unity.app/Contents/MacOS
             unity-config-path: /Library/Application Support/Unity/config/
-          - unity-version: 2019.4.34f1
-            unity-version-changeset: 6a9faed444f2
+          - unity-version: 2019.4.35f1
+            unity-version-changeset: 0462406dff2e
           - unity-version: 2020.3.27f1
             unity-version-changeset: e759542391ea
           - unity-version: 2021.2.10f1
@@ -337,7 +337,7 @@ jobs:
       matrix:
         api-level: [21, 27, 29]
         avd-target: [default]
-        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        unity-version: [2019.4.35f1, 2020.3.27f1, 2021.2.10f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -415,7 +415,7 @@ jobs:
         api-level: [30]
         avd-target: [google_apis]
         #api-level 30 image is only available with google services.
-        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        unity-version: [2019.4.35f1, 2020.3.27f1, 2021.2.10f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -487,7 +487,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+         unity-version: [2019.4.35f1, 2020.3.27f1, 2021.2.10f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -519,7 +519,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+         unity-version: [2019.4.35f1, 2020.3.27f1, 2021.2.10f1]
          # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
          ios-runtime: ["12.0", "12.4", "13.0", "14.1", latest]
     steps:
