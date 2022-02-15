@@ -39,7 +39,7 @@ jobs:
       runsOn: windows-latest
 
   build:
-    name: Unity ${{ matrix.unity-version }}
+    name: Build - ${{ matrix.unity-version }}
     runs-on: ubuntu-latest
     container:
       image: dlugos/unity-editor:ubuntu-${{ matrix.unity-version }}-main
@@ -163,27 +163,40 @@ jobs:
             package-release.zip
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
+      # Add Sentry DSN via the editor integration so native support is included in the final game
+      - name: Configure Sentry via the Editor Window
+        run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build Android Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build iOS Player
+        if: matrix.os == 'macos-latest'
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
           name: droid-testapp-${{ matrix.unity-version }}
+          if-no-files-found: error
           path: samples/artifacts/builds/Android/IL2CPP_Player.apk
 
       - name: Upload Xcode project for smoke test.
         uses: actions/upload-artifact@v2
-        if: matrix.os == 'macos-latest'
         with:
           name: testapp-ios-project-${{ matrix.unity-version }}
+          if-no-files-found: error
           path: samples/artifacts/builds/iOS/Xcode
 
       - name: Upload Android Build
         uses: actions/upload-artifact@v2
         with:
           name: Android Build
+          if-no-files-found: error
           path: samples/artifacts/builds/Android
 
   test:
-    name: Test ${{ matrix.unity-version }} - ${{ matrix.os }}
+    name: Test - ${{ matrix.unity-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: [build]
     strategy:
@@ -256,11 +269,11 @@ jobs:
           unity-version: ${{ matrix.unity-version }}
           unity-modules: mac-il2cpp
 
-      - name: Setup Unity Modules - Android
-        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
-        with:
-          unity-version: ${{ matrix.unity-version }}
-          unity-modules: android
+      # - name: Setup Unity Modules - Android
+      #   uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
+      #   with:
+      #     unity-version: ${{ matrix.unity-version }}
+      #     unity-modules: android
 
       - name: Setup Unity Modules - iOS
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
@@ -296,13 +309,6 @@ jobs:
       # Add Sentry DSN via the editor integration so native support is included in the final game
       - name: Configure Sentry via the Editor Window
         run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Build Android Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Build iOS Player
-        if: matrix.os == 'macos-latest'
-        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Standalone Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
@@ -512,7 +518,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -544,9 +550,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
-         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-         ios-runtime: ["12.0", "12.4", "13.0", "14.1", latest]
+        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
+        ios-runtime: ['12.0', '12.4', '13.0', '14.1', latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
