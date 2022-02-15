@@ -275,7 +275,7 @@ jobs:
       - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
-          name: droid-testapp-${{ matrix.unity-version }}
+          name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android/IL2CPP_Player.apk
 
       - name: Upload Xcode project for smoke test.
@@ -343,7 +343,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v2
         with:
-          name: droid-testapp-${{ matrix.unity-version }}
+          name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android
 
       - name: Select AVD target
