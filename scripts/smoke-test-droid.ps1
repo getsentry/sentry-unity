@@ -26,7 +26,7 @@ function WriteDeviceLog {
 function WriteDeviceUiLog {
     param ( $deviceId ) 
     Write-Output "`n`nUI XML Log"
-    adb -s $deviceId exec-out uiautomator dump /dev/tty 
+    adb -s $deviceId exec-out uiautomator dump /dev/tty
 }
 
 function DateTimeNow {
@@ -152,6 +152,15 @@ foreach ($device in $DeviceList)
         WriteDeviceLog($device)
         Write-Output "`n`n`n $stdout"
     }
+    ElseIf (($LogcatCache | select-string 'Unity   : Timeout while trying detaching primary window.|because ULR inactive'))
+    {
+        SignalActionSmokeStatus("Flaky")
+        Write-Warning "Test was flaky, unity failed to initialize."
+        WriteDeviceLog($device)
+        WriteDeviceUiLog($device)
+        TakeScreenshot($device)
+        Throw "Test was flaky, unity failed to initialize."
+    }
     ElseIf ($Timeout -eq 0)
     {
         Write-Warning "Test Timeout, see Logcat info for more information below."
@@ -162,15 +171,6 @@ foreach ($device in $DeviceList)
         WriteDeviceUiLog($device)
         TakeScreenshot($device)
         Throw "Test Timeout"
-    }
-    ElseIf (($LogcatCache | select-string 'Unity   : Timeout while trying detaching primary window.'))
-    {
-        SignalActionSmokeStatus("Flaky")
-        Write-Warning "Test was flaky, unity failed to initialize."
-        WriteDeviceLog($device)
-        WriteDeviceUiLog($device)
-        TakeScreenshot($device)
-        Throw "Test was flaky, unity failed to initialize."
     }
     Else
     {

@@ -275,7 +275,7 @@ jobs:
       - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
-          name: droid-testapp-${{ matrix.unity-version }}
+          name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android/IL2CPP_Player.apk
 
       - name: Upload Xcode project for smoke test.
@@ -332,11 +332,9 @@ jobs:
     name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
-      max-parallel: 5
       fail-fast: false
       matrix:
-        api-level: [21, 27, 29]
-        avd-target: [default]
+        api-level: [21, 27, 29, 30]
         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
     steps:
       - name: Checkout
@@ -345,95 +343,32 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v2
         with:
-          name: droid-testapp-${{ matrix.unity-version }}
+          name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android
 
-      - name: Android emulator setup + Smoke test
-        id: smoke-test
-        continue-on-error: true
-        timeout-minutes: 10
-        # API 21 is no longer supported on Unity 2022
-        if: ${{ (matrix.unity-version == '2021.2.10f1') && matrix.api-level != '21' }}
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.avd-target }}
-          force-avd-creation: false
-          ram-size: 2048M
-          arch: x86
-          cores: 2
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1
-
-      - name: Kill emulator if AVD failed.
-        continue-on-error: true
-        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
-        run: |
-          adb emu kill
-          sleep 7
-
-      - name: Android emulator setup + Smoke test (Retry)
-        id: smoke-test-retry
-        continue-on-error: true
-        timeout-minutes: 10
-        # API 21 is no longer supported on Unity 2022 and we only want to retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ (matrix.unity-version == '2021.2.10f1') && matrix.api-level != '21' && steps.smoke-test.outputs.smoke-status != 'Completed' }}
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.avd-target }}
-          ram-size: 2048M
-          cores: 2
-          arch: x86
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1
-
-      - name: Throw error if Smoke test failed
-        # We want to throw an error if the smoke test failed.
-        # We will ignore flaky errors from the emulator setup.
-        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
-        run: exit -1
-
-      - name: Upload screenshot if smoke test failed
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
-          path: samples/artifacts/builds/Android/screen.png
-
-  android-smoke-test-with-gservices:
-    needs: [build]
-    name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
-    runs-on: macos-latest
-    strategy:
-      max-parallel: 2
-      fail-fast: false
-      matrix:
-        api-level: [30]
-        avd-target: [google_apis]
+      - name: Select AVD target
+        id: select-avd-target
+        shell: pwsh
         #api-level 30 image is only available with google services.
-        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.3
-
-      - name: Download test app artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: droid-testapp-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/Android
+        run: |
+          $avdTarget = "default"
+          If (${{ matrix.api-level }} -eq 30)
+          {
+            $avdTarget = "google_apis"
+          }
+          Write-Host "steps.select-avd-target.outputs.target is $avdTarget" 
+          echo "::set-output name=target::$avdTarget"
 
       - name: Android emulator setup + Smoke test
         id: smoke-test
         continue-on-error: true
         timeout-minutes: 10
+        # API 21 is no longer supported on Unity 2021.2.10f1
+        if: ${{ (matrix.unity-version != '2021.2.10f1' || matrix.api-level != '21') }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.avd-target }}
+          target: ${{ steps.select-avd-target.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86
@@ -443,9 +378,10 @@ jobs:
           script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Kill emulator if AVD failed.
-        continue-on-error: true
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        shell: pwsh
         run: |
+          Write-Host "Smoke test failed with status (${{ steps.smoke-test.outputs.smoke-status }}), closing simulator."
           adb emu kill
           sleep 7
 
@@ -453,12 +389,12 @@ jobs:
         id: smoke-test-retry
         continue-on-error: true
         timeout-minutes: 10
-        # We only want to retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        # API 21 is no longer supported on Unity 2021.2.10f1 and we only want to retry the tests if the previous fail happened on the emulator startup.
+        if: ${{ (matrix.unity-version != '2021.2.10f1' || matrix.api-level != '21') && steps.smoke-test.outputs.smoke-status != 'Completed'  }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.avd-target }}
+          target: ${{ steps.select-avd-target.outputs.target }}
           ram-size: 2048M
           cores: 2
           arch: x86
