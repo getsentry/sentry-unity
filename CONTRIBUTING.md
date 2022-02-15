@@ -40,6 +40,13 @@ You'll need the following modules to be added in order to use Sentry Unity:
   * macOS zsh: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"`
   * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"` for a machine wide install, `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
 
+### Setup for building Sentry Native
+
+Sentry Native is a sub module from Sentry Unity and for building it, currently requires the following tools:
+
+* Install [CMake](https://cmake.org/download/).
+* A supported C/C++ compiler.
+
 ## Build the project
 
 On the root of the repository, write:
