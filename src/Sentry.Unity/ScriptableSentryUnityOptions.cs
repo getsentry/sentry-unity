@@ -85,24 +85,25 @@ namespace Sentry.Unity
         {
             application ??= ApplicationAdapter.Instance;
 
-            var options = new SentryUnityOptions(application, isBuilding);
-            options.Enabled = scriptableOptions.Enabled;
-            options.Dsn = scriptableOptions.Dsn;
-            options.CaptureInEditor = scriptableOptions.CaptureInEditor;
-            options.EnableLogDebouncing = scriptableOptions.EnableLogDebouncing;
-            options.TracesSampleRate = scriptableOptions.TracesSampleRate;
-            options.AutoSessionTracking = scriptableOptions.AutoSessionTracking;
-            options.AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval);
-            options.AttachStacktrace = scriptableOptions.AttachStacktrace;
-            options.MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs;
-            options.ReportAssembliesMode = scriptableOptions.ReportAssembliesMode;
-            options.SendDefaultPii = scriptableOptions.SendDefaultPii;
-            options.IsEnvironmentUser = scriptableOptions.IsEnvironmentUser;
-            options.MaxCacheItems = scriptableOptions.MaxCacheItems;
-            options.InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout);
-            options.SampleRate = scriptableOptions.SampleRate;
-            options.ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout);
-            options.MaxQueueItems = scriptableOptions.MaxQueueItems;
+            var options = new SentryUnityOptions(application, isBuilding)
+            {
+                Enabled = scriptableOptions.Enabled, Dsn = scriptableOptions.Dsn,
+                CaptureInEditor = scriptableOptions.CaptureInEditor,
+                EnableLogDebouncing = scriptableOptions.EnableLogDebouncing,
+                TracesSampleRate = scriptableOptions.TracesSampleRate,
+                AutoSessionTracking = scriptableOptions.AutoSessionTracking,
+                AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval),
+                AttachStacktrace = scriptableOptions.AttachStacktrace,
+                MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs,
+                ReportAssembliesMode = scriptableOptions.ReportAssembliesMode,
+                SendDefaultPii = scriptableOptions.SendDefaultPii,
+                IsEnvironmentUser = scriptableOptions.IsEnvironmentUser,
+                MaxCacheItems = scriptableOptions.MaxCacheItems,
+                InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout),
+                SampleRate = scriptableOptions.SampleRate,
+                ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout),
+                MaxQueueItems = scriptableOptions.MaxQueueItems
+            };
 
             if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))
             {
