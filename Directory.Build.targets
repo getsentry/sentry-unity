@@ -5,6 +5,8 @@
     <PlayerBuildPath>$(UnitySampleProjectPath)../artifacts/builds/</PlayerBuildPath>
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
     <AndroidBuildPath>$(PlayerBuildPath)Android/IL2CPP_Player.apk</AndroidBuildPath>
+    <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
+    <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
     <UnityPackageProject>$(RepoRoot)temp/unity-packages</UnityPackageProject>
@@ -66,8 +68,6 @@ or
       <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)MacOS/IL2CPP_Player.app</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)/Contents/MacOS/unity-of-bugs</StandaloneExecutablePath>
-      <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
-      <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     </PropertyGroup>
 
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('OSX'))" Text="UnityRoot not found. Ensure Unity is installed.
