@@ -44,14 +44,11 @@ namespace Sentry.Unity
         [field: SerializeField] public bool IsEnvironmentUser { get; set; }
 
         [field: SerializeField] public bool EnableOfflineCaching { get; set; }
-
-        // At least 1 item must be allowed in the cache.
-        [field: SerializeField] public int MaxCacheItems { get; set; } = 1;
+        [field: SerializeField] public int MaxCacheItems { get; set; } = 30;
         [field: SerializeField] public int InitCacheFlushTimeout { get; set; }
         [field: SerializeField] public float? SampleRate { get; set; }
         [field: SerializeField] public int ShutdownTimeout { get; set; }
-        // At least 1 item must be allowed in the queue.
-        [field: SerializeField] public int MaxQueueItems { get; set; } = 1;
+        [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
