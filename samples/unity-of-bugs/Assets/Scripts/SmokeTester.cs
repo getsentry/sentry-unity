@@ -12,6 +12,12 @@ using Sentry.Unity.iOS;
 using Sentry.Unity.Android;
 #endif
 
+#if UNITY_IOS
+using System.IO;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +43,22 @@ public class SmokeTester : MonoBehaviour
             if (text == "smoke")
             {
                 SmokeTest();
+            }
+        }
+#elif UNITY_IOS
+        string pListPath = Path.Combine(Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/')), "Info.plist");
+        using (var streamReader = new StreamReader(pListPath, true))
+        {
+            var rawPlist = streamReader.ReadToEnd();
+            var key = "RunSentrySmokeTest";
+            if (rawPlist.Contains(key))
+            {
+                Debug.Log("Key " + key + " found on Info.plistm starting Smoke test.");
+                SmokeTest();
+            }
+            else
+            {
+                Debug.Log("To run Smoke Test, please add key " + key + " into Info.plist");
             }
         }
 #else
