@@ -25,10 +25,7 @@ namespace Sentry.Unity.Tests
         class TestOptionsConfiguration : ScriptableOptionsConfiguration
         {
             public bool GotCalled;
-            public override void Configure(SentryUnityOptions options)
-            {
-                GotCalled = true;
-            }
+            public override void Configure(SentryUnityOptions options) => GotCalled = true;
         }
 
         [SetUp]
