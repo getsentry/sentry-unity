@@ -1,11 +1,12 @@
 ﻿. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-
-$testAppPath = "$NewProjectBuildPath/$(GetTestAppName)"
-
 If ($IsMacOS)
 {
     $testAppPath = $testAppPath + "/Contents/MacOS/$NewProjectName"
+}
+else
+{
+    $testAppPath = $testAppPath + "/Contents/MacOS/test.exe"
 }
 
 $process = Start-Process -FilePath "$testAppPath"  -ArgumentList "--test", "smoke" -PassThru

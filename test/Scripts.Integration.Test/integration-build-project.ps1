@@ -1,4 +1,4 @@
-﻿param($arg, $setupSentry)
+﻿param($arg, $setupSentry, $buildMethod)
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
@@ -6,29 +6,30 @@ $unityPath = FormatUnityPath $arg
 
 ClearUnityLog
 
-$buildMethod = $null
-If ($IsMacOS)
+if ($null -eq $buildMethod)
 {
-    $buildMethod = "Builder.BuildMacIl2CPPPlayer"
-    $buildPath
-}
-ElseIf($IsWindows)
-{
-    $buildMethod = "Builder.BuildWindowsIl2CPPPlayer"
-}
-Else
-{
-    Throw "Unsupported build"
+    If ($IsMacOS)
+    {
+        $buildMethod = "Builder.BuildMacIl2CPPPlayer"
+    }
+    ElseIf ($IsWindows)
+    {
+        $buildMethod = "Builder.BuildWindowsIl2CPPPlayer"
+    }
+    Else
+    {
+        Throw "Unsupported build"
+    }
 }
 
 Write-Host "Checking if Project has no errors "
 Write-Host -NoNewline "Creating integration project:"
 If (-not $setupSentry)
 {
-    $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath",  "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName)", "-quit" -PassThru
+    $UnityProcess = RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName $buildMethod)", "-quit")
 }
 Else {
-    $UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath",  "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName)", "-sentryOptions.configure", $True, "-sentryOptions.Dsn", "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417", "-quit" -PassThru
+    $UnityProcess = RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-executeMethod", $buildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName $buildMethod)", "-sentryOptions.configure", $True, "-sentryOptions.Dsn", "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417", "-quit")
 }
 Write-Host " OK"
 
