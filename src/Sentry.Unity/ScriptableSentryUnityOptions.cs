@@ -87,7 +87,8 @@ namespace Sentry.Unity
 
             var options = new SentryUnityOptions(application, isBuilding)
             {
-                Enabled = scriptableOptions.Enabled, Dsn = scriptableOptions.Dsn,
+                Enabled = scriptableOptions.Enabled,
+                Dsn = scriptableOptions.Dsn,
                 CaptureInEditor = scriptableOptions.CaptureInEditor,
                 EnableLogDebouncing = scriptableOptions.EnableLogDebouncing,
                 TracesSampleRate = scriptableOptions.TracesSampleRate,
