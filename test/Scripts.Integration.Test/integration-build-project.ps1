@@ -20,6 +20,9 @@ if ("$BuildMethod" -eq "")
     {
         $BuildMethod = "Builder.BuildWindowsIl2CPPPlayer"
     }
+    ElseIf ($IsLinux) {
+        $BuildMethod = "Builder.BuildLinuxIl2CPPPlayer"
+    }
     Else
     {
         Throw "Unsupported build"

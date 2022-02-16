@@ -1,12 +1,22 @@
 ﻿. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
+
 If ($IsMacOS)
 {
-    $testAppPath = $testAppPath + "/Contents/MacOS/$NewProjectName"
+    $testAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/$NewProjectName"
 }
-else
+ElseIf ($IsWindows)
 {
-    $testAppPath = $testAppPath + "/Contents/MacOS/test.exe"
+    $testAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/test.exe"
+}
+ElseIf ($IsLinux) {
+    $testAppPath = "$NewProjectBuildPath/test"
+    ls -alh $testAppPath
+    # $testAppPath = $testAppPath + "/Contents/MacOS/test.exe"
+}
+Else
+{
+    Throw "Unsupported build"
 }
 
 $process = Start-Process -FilePath "$testAppPath"  -ArgumentList "--test", "smoke" -PassThru

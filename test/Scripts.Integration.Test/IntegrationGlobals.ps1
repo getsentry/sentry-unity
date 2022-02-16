@@ -22,9 +22,12 @@ function GetTestAppName
     {
         return "test.exe"
     }
+    ElseIf ($buildMethod.contains("Linux")) {
+        return "test"
+    }
     Else
     {
-        Throw "Cannot find Test App name for the current operating system"
+        Throw "Cannot find Test App name for the given buildMethod: '$buildMethod'"
     }
 }
 
