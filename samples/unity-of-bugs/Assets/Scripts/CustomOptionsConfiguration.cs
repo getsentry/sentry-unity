@@ -14,6 +14,7 @@ public class CustomOptionsConfiguration : ScriptableOptionsConfiguration
         {
             if (sentryEvent.Tags.ContainsKey("SomeTag"))
             {
+                // Don't send events with a tag SomeTag to Sentry
                 return null;
             }
 
