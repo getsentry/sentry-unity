@@ -80,14 +80,15 @@ jobs:
       - name: Restore Unity Packages (samples)
         uses: actions/cache@v2
         with:
-          path: samples/unity-of-bugs/Library
-          key: samples/unity-of-bugs/Library|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          path: samples/unity-of-bugs/Library/Packages
+          key: samples/unity-of-bugs/Library/Packages|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - name: Restore Unity Packages (for target UnityCreatePackages)
+      # avoids the need to run target UnityCreatePackages
+      - name: Restore TestRunner library
         uses: actions/cache@v2
         with:
-          path: temp/unity-packages
-          key: temp/unity-packages|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          path: temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
+          key: TestRunner.dll|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - uses: actions/download-artifact@v2
         with:
