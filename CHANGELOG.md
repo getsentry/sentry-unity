@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Support for programmatic options configuration ([#564](https://github.com/getsentry/sentry-unity/pull/564))
+
 ## 0.10.0
 
 ### Features

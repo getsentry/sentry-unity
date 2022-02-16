@@ -44,14 +44,16 @@ namespace Sentry.Unity
         [field: SerializeField] public bool IsEnvironmentUser { get; set; }
 
         [field: SerializeField] public bool EnableOfflineCaching { get; set; }
-        [field: SerializeField] public int MaxCacheItems { get; set; }
+        [field: SerializeField] public int MaxCacheItems { get; set; } = 30;
         [field: SerializeField] public int InitCacheFlushTimeout { get; set; }
         [field: SerializeField] public float? SampleRate { get; set; }
         [field: SerializeField] public int ShutdownTimeout { get; set; }
-        [field: SerializeField] public int MaxQueueItems { get; set; }
+        [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
+
+        [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; }
         [field: SerializeField] public bool DebugOnlyInEditor { get; set; }
@@ -125,6 +127,9 @@ namespace Sentry.Unity
             options.DiagnosticLevel = scriptableOptions.DiagnosticLevel;
 
             SentryOptionsUtility.TryAttachLogger(options);
+
+            scriptableOptions.OptionsConfiguration?.Configure(options);
+
             return options;
         }
     }

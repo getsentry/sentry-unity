@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using NUnit.Framework;
+using Sentry.Extensibility;
 using Sentry.Unity.Json;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
@@ -19,6 +20,12 @@ namespace Sentry.Unity.Tests
                 productName: "TestApplication",
                 version: "0.1.0",
                 persistentDataPath: "test/persistent/data/path");
+        }
+
+        class TestOptionsConfiguration : ScriptableOptionsConfiguration
+        {
+            public bool GotCalled;
+            public override void Configure(SentryUnityOptions options) => GotCalled = true;
         }
 
         [SetUp]
@@ -116,6 +123,20 @@ namespace Sentry.Unity.Tests
             var optionsActual = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding, _fixture.Application);
 
             AssertOptions(expectedOptions, optionsActual);
+        }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void ToSentryUnityOptions_HasOptionsConfiguration_GetsCalled(bool isBuilding)
+        {
+            var optionsConfiguration = ScriptableObject.CreateInstance<TestOptionsConfiguration>();
+            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+            scriptableOptions.OptionsConfiguration = optionsConfiguration;
+
+            ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
+
+            Assert.IsTrue(optionsConfiguration.GotCalled);
         }
 
         [Test]
