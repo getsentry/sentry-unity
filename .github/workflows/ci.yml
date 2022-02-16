@@ -77,11 +77,17 @@ jobs:
           # using hash of package.json to bust cache on release builds which modify it
           key: samples/artifacts/builds|${{ matrix.unity-version }}-${{ hashFiles('package/package.json') }}
 
-      - name: Restore Unity Packages
+      - name: Restore Unity Packages (samples)
         uses: actions/cache@v2
         with:
           path: samples/unity-of-bugs/Library
           key: samples/unity-of-bugs/Library|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+
+      - name: Restore Unity Packages (for target UnityCreatePackages)
+        uses: actions/cache@v2
+        with:
+          path: temp/unity-packages
+          key: temp/unity-packages|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - uses: actions/download-artifact@v2
         with:
