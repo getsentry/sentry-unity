@@ -15,7 +15,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         public static SentryWindow OpenSentryWindow()
         {
             var window = (SentryWindow)GetWindow(typeof(SentryWindow));
-            window.minSize = new Vector2(1800, 350);
+            window.minSize = new Vector2(600, 350);
             return window;
         }
 
