@@ -157,12 +157,11 @@ jobs:
       - name: Configure Sentry via the Editor Window
         run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-      # FIXME temporarily disabled to get the following steps executed faster
-      # - name: Build Android Player with IL2CPP
-      #   run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-      #
-      # - name: Build iOS Player
-      #   run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+      - name: Build Android Player with IL2CPP
+        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Build iOS Player
+        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       # TODO: build for all supported desktop platforms: currently only Windows IL2CPP - we need to run that on Windows
       # - name: Build Standalone Player with IL2CPP
@@ -183,25 +182,26 @@ jobs:
           name: Build output
           path: artifacts/build
 
-      - name: Integration Test - Create new Project
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "$env:UNITY_PATH"
+      # TODO must be run on windows/macos - linux currently always fails with: "Test process timed out."
+      # - name: Integration Test - Create new Project
+      #   shell: pwsh
+      #   run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "$env:UNITY_PATH"
 
-      - name: Integration Test - Build Standalone Player without Sentry SDK
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
+      # - name: Integration Test - Build Standalone Player without Sentry SDK
+      #   shell: pwsh
+      #   run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
 
-      - name: Integration Test - Add Sentry to test project
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "$env:UNITY_PATH"
+      # - name: Integration Test - Add Sentry to test project
+      #   shell: pwsh
+      #   run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "$env:UNITY_PATH"
 
-      - name: Integration Test - Build Standalone Player Sentry SDK
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
+      # - name: Integration Test - Build Standalone Player Sentry SDK
+      #   shell: pwsh
+      #   run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
 
-      - name: Integration Test - Run Player - Smoke Test
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
+      # - name: Integration Test - Run Player - Smoke Test
+      #   shell: pwsh
+      #   run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
 
       - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
