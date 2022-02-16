@@ -165,27 +165,6 @@ jobs:
           name: Build output
           path: artifacts/build
 
-      # TODO must be run on windows/macos - linux currently always fails with: "Test process timed out."
-      # - name: Integration Test - Create new Project
-      #   shell: pwsh
-      #   run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "$env:UNITY_PATH"
-
-      # - name: Integration Test - Build Standalone Player without Sentry SDK
-      #   shell: pwsh
-      #   run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
-
-      # - name: Integration Test - Add Sentry to test project
-      #   shell: pwsh
-      #   run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "$env:UNITY_PATH"
-
-      # - name: Integration Test - Build Standalone Player Sentry SDK
-      #   shell: pwsh
-      #   run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
-
-      # - name: Integration Test - Run Player - Smoke Test
-      #   shell: pwsh
-      #   run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
-
       - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
@@ -244,13 +223,20 @@ jobs:
   windows-smoke-test:
     needs: [build]
     runs-on: windows-latest
-    container:
-      image: unityci/editor:windows-${{ matrix.unity-version }}-windows-il2cpp-0.17.0
     strategy:
       fail-fast: false
       matrix:
         # 2022.1.0a12 removed until S.T.J issues fixed
         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        include:
+          - os: windows-latest
+            unity-config-path: C:/ProgramData/Unity/config/
+          - unity-version: 2019.4.34f1
+            unity-version-changeset: 6a9faed444f2
+          - unity-version: 2020.3.27f1
+            unity-version-changeset: e759542391ea
+          - unity-version: 2021.2.10f1
+            unity-version-changeset: ee872746220e
     defaults:
       run:
         shell: pwsh
@@ -264,24 +250,39 @@ jobs:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
 
+      - name: Setup Unity
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          unity-version-changeset: ${{ matrix.unity-version-changeset }}
+          unity-modules: windows-il2cpp
+
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Create Unity license config
         run: |
-          New-Item -Path 'C:/ProgramData/Unity/config/' -ItemType Directory
-          Set-Content -Path 'C:/ProgramData/Unity/config/services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
+          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+
+      # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
+      - name: Add Unity on PATH
+        run: Write-Output '${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # Step used to reduce the Unity path to avoid long path errors on Windows.
+      - name: Make symbolic link for Unity (Windows)
+        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
 
       - name: Integration Test - Create new Project
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "$env:UNITY_PATH"
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
 
       - name: Integration Test - Build Standalone Player without Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
 
       - name: Integration Test - Add Sentry to test project
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "$env:UNITY_PATH"
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
 
       - name: Integration Test - Build Standalone Player Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
 
       - name: Integration Test - Run Player - Smoke Test
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1

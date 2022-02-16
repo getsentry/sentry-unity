@@ -7,12 +7,11 @@ If ($IsMacOS)
 }
 ElseIf ($IsWindows)
 {
-    $testAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/test.exe"
+    $testAppPath = "$NewProjectBuildPath/test.exe"
 }
-ElseIf ($IsLinux) {
+ElseIf ($IsLinux)
+{
     $testAppPath = "$NewProjectBuildPath/test"
-    ls -alh $testAppPath
-    # $testAppPath = $testAppPath + "/Contents/MacOS/test.exe"
 }
 Else
 {
