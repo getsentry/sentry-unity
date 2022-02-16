@@ -42,7 +42,7 @@ jobs:
     name: Build - ${{ matrix.unity-version }}
     runs-on: ubuntu-latest
     container:
-      image: dlugos/unity-editor:ubuntu-${{ matrix.unity-version }}-main
+      image: ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ matrix.unity-version }}-main
     # TODO add a "wait" step just before the artifacts are really needed - waiting for the SDK job to complete.
     #      That way, we can start downloading the docker container while the native SDKs are being built.
     #      There's no existing action to do that but a simple polling wait action could use the following API
@@ -158,7 +158,8 @@ jobs:
       - name: Configure Sentry via the Editor Window
         run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-      # TODO: can we make unity only prepare the project, without compiling? Same as what it does for iOS.
+      # TODO: can we make unity only prepare the project, without compiling it, to unlock the unity license faster? iOS is already built like that.
+      #       This option should do it: https://docs.unity3d.com/ScriptReference/BuildOptions.AcceptExternalModificationsToPlayer.html
       - name: Build Android Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
