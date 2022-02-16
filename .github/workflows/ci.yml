@@ -183,7 +183,7 @@ jobs:
 
       - name: Integration Test - Build Standalone Player without Sentry SDK
         shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH" false Builder.BuildWindowsIl2CPPPlayer
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH" Builder.BuildWindowsIl2CPPPlayer
 
       - name: Integration Test - Add Sentry to test project
         shell: pwsh
@@ -191,7 +191,7 @@ jobs:
 
       - name: Integration Test - Build Standalone Player Sentry SDK
         shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH" false Builder.BuildWindowsIl2CPPPlayer
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH" Builder.BuildWindowsIl2CPPPlayer
 
       - name: Integration Test - Run Player - Smoke Test
         shell: pwsh
