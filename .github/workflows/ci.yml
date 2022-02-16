@@ -157,19 +157,12 @@ jobs:
       - name: Configure Sentry via the Editor Window
         run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
+      # TODO: can we make unity only prepare the project, without compiling? Same as what it does for iOS.
       - name: Build Android Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS Player
         run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      # TODO: build for all supported desktop platforms: currently only Windows IL2CPP - we need to run that on Windows
-      # - name: Build Standalone Player with IL2CPP
-      #   run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      # TODO create a separate test job for the supported desktop platforms (a.k.a. Windows)
-      # - name: Run Smoke Tests
-      #   run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
 
       - name: Prepare Sentry package for release
         shell: pwsh
@@ -212,7 +205,6 @@ jobs:
 
       - name: Upload Xcode project for smoke test.
         uses: actions/upload-artifact@v2
-        if: matrix.os == 'macos-latest'
         with:
           name: testapp-ios-project-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode
@@ -221,7 +213,7 @@ jobs:
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
         # Only on macOS which contain all native plugin needed
-        if: ${{ matrix.os == 'macos-latest' && matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         with:
           name: ${{ github.sha }}
           if-no-files-found: error
@@ -288,7 +280,7 @@ jobs:
           {
             $avdTarget = "google_apis"
           }
-          Write-Host "steps.select-avd-target.outputs.target is $avdTarget" 
+          Write-Host "steps.select-avd-target.outputs.target is $avdTarget"
           echo "::set-output name=target::$avdTarget"
 
       - name: Android emulator setup + Smoke test
@@ -345,7 +337,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
+          name: testapp-android-screenshot-${{ matrix.api-level }}-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android/screen.png
 
   ios-smoke-test-build:
