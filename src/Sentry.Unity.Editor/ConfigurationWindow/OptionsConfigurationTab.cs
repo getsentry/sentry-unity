@@ -38,7 +38,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal static void CreateOptionsConfigurationScript()
         {
             var scriptPath = EditorUtility.SaveFilePanel("Sentry Options Configuration", "Assets", "SentryOptionsConfiguration", "cs");
-            if(String.IsNullOrEmpty(scriptPath))
+            if (String.IsNullOrEmpty(scriptPath))
             {
                 return;
             }
