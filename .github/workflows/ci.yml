@@ -70,25 +70,13 @@ jobs:
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
-      - name: Restore previous build
+      - name: Restore Unity Packages
         uses: actions/cache@v2
         with:
-          path: samples/artifacts/builds
-          # using hash of package.json to bust cache on release builds which modify it
-          key: samples/artifacts/builds|${{ matrix.unity-version }}-${{ hashFiles('package/package.json') }}
-
-      - name: Restore Unity Packages (samples)
-        uses: actions/cache@v2
-        with:
-          path: samples/unity-of-bugs/Library/Packages
-          key: samples/unity-of-bugs/Library/Packages|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
-
-      # avoids the need to run target UnityCreatePackages
-      - name: Restore TestRunner library
-        uses: actions/cache@v2
-        with:
-          path: temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
-          key: TestRunner.dll|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          path: |
+            samples/unity-of-bugs/Library/Packages
+            temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
+          key: samples/unity-of-bugs|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - uses: actions/download-artifact@v2
         with:
@@ -252,6 +240,51 @@ jobs:
         # and committing the new snapshot file to your branch. i.e:
         # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
         run: ./test/Scripts.Tests/test-pack-contents.ps1
+
+  windows-smoke-test:
+    needs: [build]
+    runs-on: windows-latest
+    container:
+      image: unityci/editor:windows-${{ matrix.unity-version }}-windows-il2cpp-0.17.0
+    strategy:
+      fail-fast: false
+      matrix:
+        # 2022.1.0a12 removed until S.T.J issues fixed
+        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v2
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Create Unity license config
+        run: |
+          New-Item -Path 'C:/ProgramData/Unity/config/' -ItemType Directory
+          Set-Content -Path 'C:/ProgramData/Unity/config/services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+
+      - name: Integration Test - Create new Project
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "$env:UNITY_PATH"
+
+      - name: Integration Test - Build Standalone Player without Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
+
+      - name: Integration Test - Add Sentry to test project
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "$env:UNITY_PATH"
+
+      - name: Integration Test - Build Standalone Player Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "$env:UNITY_PATH"
+
+      - name: Integration Test - Run Player - Smoke Test
+        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
 
   android-smoke-test:
     needs: [build]
