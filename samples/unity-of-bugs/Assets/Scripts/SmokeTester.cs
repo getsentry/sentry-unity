@@ -75,17 +75,60 @@ public class SmokeTester : MonoBehaviour
 
     public static void SmokeTest()
     {
+        var exitCode = 0;
+        void Exit(int code)
+        {
+            if (exitCode != 0)
+            {
+                Debug.Log($"Ignoring spurious Exit({code}). Application is already exiting with code {exitCode}");
+            }
+            else
+            {
+                exitCode = code;
+                Application.Quit(code);
+                // Application.Quit doesn't actually terminate immediately so exit the context at least...
+                throw new Exception($"Quitting with exit code {code}");
+            }
+        }
+
         try
         {
             Debug.Log("SMOKE TEST: Start");
-            var evt = new ManualResetEventSlim();
+            var evt = new AutoResetEvent(false);
 
             var requests = new List<string>();
             void Verify(HttpRequestMessage message)
             {
-                Debug.Log("SMOKE TEST: Verify invoked.");
-                requests.Add(message.Content.ReadAsStringAsync().Result);
+                var msgText = message.Content.ReadAsStringAsync().Result;
+                Debug.Log($"SMOKE TEST: Intercepted HTTP Request #{requests.Count} = {msgText}");
+                requests.Add(msgText);
                 evt.Set();
+            }
+
+            var testNumber = 0;
+            void Expect(String message, bool result)
+            {
+                testNumber++;
+                Debug.Log($"SMOKE TEST | {testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
+                if (!result)
+                {
+                    Debug.Log($"SMOKE TEST: Quitting due to a failed test case #{testNumber}");
+                    Exit(testNumber);
+                }
+            }
+
+            void ExpectMessage(int index, String substring)
+            {
+                Debug.Log($"SMOKE TEST: Checking if the HTTP request #{index} contains: '{substring}'.");
+                while (requests.Count < index + 1)
+                {
+                    if (!evt.WaitOne(TimeSpan.FromSeconds(3)))
+                    {
+                        Debug.Log($"SMOKE TEST: Failed while waiting for an HTTP request #{index} to come in.");
+                        Exit(testNumber);
+                    }
+                }
+                Expect($"HTTP Request #{index} contains '{substring}'.", requests[index].Contains(substring));
             }
 
             var options = new SentryUnityOptions();
@@ -111,34 +154,36 @@ public class SmokeTester : MonoBehaviour
 
             Debug.Log("SMOKE TEST: SentryUnity Init OK.");
 
+            ExpectMessage(0, "\"type\":\"session\"");
+            ExpectMessage(0, "\"init\":false");
+
+            ExpectMessage(1, "\"type\":\"session\"");
+            ExpectMessage(1, "\"init\":true");
+
             var guid = Guid.NewGuid().ToString();
             Debug.LogError(guid);
+            ExpectMessage(2, "\"type\":\"event\"");
+            ExpectMessage(2, guid);
+
             SentrySdk.CaptureMessage(guid);
-
-            if (!evt.Wait(TimeSpan.FromSeconds(3)))
-            {
-                // 1 = timeout
-                Application.Quit(1);
-            }
-
-            if (!requests.Any(r => r.Contains(guid)))
-            {
-                // 2 event captured but guid not there.
-                Application.Quit(2);
-            }
+            ExpectMessage(3, "\"type\":\"event\"");
+            ExpectMessage(3, guid);
 
             // On Android we'll grep logcat for this string instead of relying on exit code:
             Debug.Log("SMOKE TEST: PASS");
 
             // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
-            Application.Quit(200);
+            Exit(200);
 
         }
         catch (Exception ex)
         {
             Debug.Log("SMOKE TEST: FAILED");
-            Debug.LogError(ex);
-            Application.Quit(-1);
+            if (exitCode == 0)
+            {
+                Debug.LogError(ex);
+                Exit(-1);
+            }
         }
     }
 

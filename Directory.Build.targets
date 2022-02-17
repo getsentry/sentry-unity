@@ -47,6 +47,7 @@
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
+      <StandaloneDataPath>%USERPROFILE%\AppData\LocalLow\DefaultCompany\unity-of-bugs\</StandaloneDataPath>
       <TestDsn>https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417</TestDsn>
     </PropertyGroup>
 
@@ -248,7 +249,12 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec Command="$(StandaloneExecutablePath) --test smoke" IgnoreExitCode="true" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="SmokeTestExitCode"/>
     </Exec>
+
+    <Message Condition="'$(StandaloneDataPath)' != ''" Importance="High" Text="Runtime data is found in $(StandaloneDataPath)" />
+    <Exec Condition="$(StandaloneDataPath) != ''" Command="type &quot;$(StandaloneDataPath)/Player.log&quot;"/>
+
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
+    <Message Importance="High" Text="Smoke test PASSED" Condition="'$(SmokeTestExitCode)' == '200'" />
   </Target>
 
   <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
