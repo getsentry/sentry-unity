@@ -181,7 +181,6 @@ jobs:
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
-        # Only on macOS which contain all native plugin needed
         if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         with:
           name: ${{ github.sha }}

@@ -305,7 +305,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
 
-    <Exec Command="$(UnityExec) -batchmode -nographics -playerGraphicsAPI Null -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="$(UnityExec) -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
