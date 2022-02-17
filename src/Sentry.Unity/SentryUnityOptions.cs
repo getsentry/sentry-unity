@@ -98,7 +98,7 @@ namespace Sentry.Unity
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
-            this.AddExceptionProcessor(new UnityEventExceptionProcessor());
+            this.AddExceptionProcessor(new UnityEventExceptionProcessor(this));
             this.AddIntegration(new UnityApplicationLoggingIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());

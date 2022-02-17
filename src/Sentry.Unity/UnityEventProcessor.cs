@@ -277,9 +277,9 @@ namespace Sentry.Unity
     {
         private readonly UnityLogExceptionConverter _exceptionConverter;
 
-        public UnityEventExceptionProcessor()
+        public UnityEventExceptionProcessor(SentryOptions options)
         {
-            _exceptionConverter = new UnityLogExceptionConverter();
+            _exceptionConverter = new UnityLogExceptionConverter(options);
         }
 
         public void Process(Exception exception, SentryEvent sentryEvent)

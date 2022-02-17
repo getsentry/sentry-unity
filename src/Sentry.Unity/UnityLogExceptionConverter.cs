@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Sentry.Extensibility;
 using Sentry.Protocol;
 using UnityEngine;
 
@@ -10,6 +11,13 @@ namespace Sentry.Unity
 {
     internal sealed class UnityLogExceptionConverter
     {
+        private readonly SentryOptions _sentryOptions;
+
+        public UnityLogExceptionConverter(SentryOptions options)
+        {
+            _sentryOptions = options;
+        }
+
         public SentryException ToSentryException(UnityLogException ule)
         {
             if (ule.LogType == LogType.Exception || ule.StackTraceLogType != StackTraceLogType.Full)
@@ -59,8 +67,8 @@ namespace Sentry.Unity
                         functionName = item.Substring(0, closingParen + 1);
                         if (item.Substring(closingParen + 1, 5) != " (at ")
                         {
+                            _sentryOptions.DiagnosticLogger?.LogInfo("Failed to parsing {0}", item);
                             // we did something wrong, failed the check
-                            Debug.Log("failed parsing " + item);
                             functionName = item;
                             lineNo = -1;
                             filename = string.Empty;
@@ -161,7 +169,7 @@ namespace Sentry.Unity
                 if (!match.Success)
                 {
                     // we did something wrong, failed the check
-                    Debug.Log("failed parsing " + item);
+                    _sentryOptions.DiagnosticLogger?.LogInfo("Failed to parsing {0}", item);
                     frames.Add(new SentryStackFrame
                     {
                         Function = item,
@@ -248,7 +256,7 @@ namespace Sentry.Unity
                 if (!match.Success)
                 {
                     // we did something wrong, failed the check
-                    Debug.Log("failed parsing " + item);
+                    _sentryOptions.DiagnosticLogger?.LogInfo("Failed to parsing {0}", item);
                     frames.Add(new SentryStackFrame
                     {
                         Function = item,

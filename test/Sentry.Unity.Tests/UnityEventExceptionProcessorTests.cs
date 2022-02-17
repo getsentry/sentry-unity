@@ -10,7 +10,7 @@ namespace Sentry.Unity.Tests
         public void Process_IL2CPPStackTraceFilenameWithZeroes_ShouldReturnEmptyString()
         {
             // arrange
-            var unityEventProcessor = new UnityEventExceptionProcessor();
+            var unityEventProcessor = new UnityEventExceptionProcessor(new SentryOptions());
             var ill2CppUnityLogException = new UnityLogException(
                 "one: two",
                 "BugFarm.ThrowNull () (at <00000000000000000000000000000000>:0)",
