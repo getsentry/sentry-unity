@@ -39,8 +39,10 @@ jobs:
       runsOn: windows-latest
 
   build:
-    name: Unity ${{ matrix.unity-version }} - ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build - ${{ matrix.unity-version }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ matrix.unity-version }}-main
     # TODO add a "wait" step just before the artifacts are really needed - waiting for the SDK job to complete.
     #      That way, we can start downloading the docker container while the native SDKs are being built.
     #      There's no existing action to do that but a simple polling wait action could use the following API
@@ -50,28 +52,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
         # 2022.1.0a12 removed until S.T.J issues fixed
         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
-        include:
-          - os: windows-latest
-            unity-installation-path: C:/Program Files/Unity/
-            unity-root: C:/Program Files/Unity/Hub/Editor/
-            unity-path: Editor/
-            unity-config-path: C:/ProgramData/Unity/config/
-          - os: macos-latest
-            unity-installation-path: /Applications/Unity/
-            unity-root: /Applications/Unity/Hub/Editor/
-            unity-path: Unity.app/Contents/MacOS
-            unity-config-path: /Library/Application Support/Unity/config/
-          - unity-version: 2019.4.34f1
-            unity-version-changeset: 6a9faed444f2
-          - unity-version: 2020.3.27f1
-            unity-version-changeset: e759542391ea
-          - unity-version: 2021.2.10f1
-            unity-version-changeset: ee872746220e
-          # - unity-version: 2022.1.0a12
-          #   unity-version-changeset: 816252c3efbb
     env:
       UNITY_VERSION: ${{ matrix.unity-version }}
     steps:
@@ -88,32 +70,13 @@ jobs:
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
-      - name: Setup .NET SDK (v6.0)
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
-
-      # Unity is about 4GB in size and takes 20 minutes to download and install.
-      # Caching still takes some time, but brings it down to about 5 minutes.
-      - name: Restore cached Unity installation
-        id: cache-unity
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.unity-installation-path }}
-          key: ${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}
-
-      - name: Restore previous build
-        uses: actions/cache@v2
-        with:
-          path: samples/artifacts/builds
-          # using hash of package.json to bust cache on release builds which modify it
-          key: samples/artifacts/builds|${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('package/package.json') }}
-
       - name: Restore Unity Packages
         uses: actions/cache@v2
         with:
-          path: samples/unity-of-bugs/Library
-          key: samples/unity-of-bugs/Library|${{ matrix.os }}-${{ matrix.unity-version }}-${{ matrix.unity-version-changeset }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          path: |
+            samples/unity-of-bugs/Library/Packages
+            temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
+          key: samples/unity-of-bugs|${{ matrix.unity-version }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - uses: actions/download-artifact@v2
         with:
@@ -135,57 +98,12 @@ jobs:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
 
-      - name: Setup Unity
-        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
-        id: setup-unity
-        with:
-          unity-version: ${{ matrix.unity-version }}
-          unity-version-changeset: ${{ matrix.unity-version-changeset }}
-
-      - name: Setup Unity Modules - Windows IL2CPP
-        if: matrix.os == 'windows-latest'
-        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
-        with:
-          unity-version: ${{ matrix.unity-version }}
-          unity-modules: windows-il2cpp
-
-      - name: Setup Unity Modules - macOS IL2CPP
-        if: matrix.os == 'macos-latest'
-        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
-        with:
-          unity-version: ${{ matrix.unity-version }}
-          unity-modules: mac-il2cpp
-
-      - name: Setup Unity Modules - Android
-        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
-        with:
-          unity-version: ${{ matrix.unity-version }}
-          unity-modules: android
-
-      - name: Setup Unity Modules - iOS
-        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
-        with:
-          unity-version: ${{ matrix.unity-version }}
-          unity-modules: ios
-
       - name: Create Unity license config
         shell: pwsh
         run: |
-          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
-          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
-
-      # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
-      - name: Add Unity on PATH
-        shell: pwsh
-        run: |
-          Write-Output '${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      # Step used to reduce the Unity path to avoid long path errors on Windows.
-      - name: Make symbolic link for Unity (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
+          $unityConfigDir = "/usr/share/unity3d/config/"
+          New-Item -Path $unityConfigDir -ItemType Directory
+          Set-Content -Path "$unityConfigDir/services-config.json" -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Install Unity UPM Packages
         run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
@@ -228,18 +146,13 @@ jobs:
       - name: Configure Sentry via the Editor Window
         run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
+      # TODO: can we make unity only prepare the project, without compiling it, to unlock the unity license faster? iOS is already built like that.
+      #       This option should do it: https://docs.unity3d.com/ScriptReference/BuildOptions.AcceptExternalModificationsToPlayer.html
       - name: Build Android Player with IL2CPP
         run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS Player
-        if: matrix.os == 'macos-latest'
         run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Build Standalone Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Run Smoke Tests
-        run: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP /p:OutDir=other src/Sentry.Unity
 
       - name: Prepare Sentry package for release
         shell: pwsh
@@ -252,43 +165,23 @@ jobs:
           name: Build output
           path: artifacts/build
 
-      - name: Integration Test - Create new Project
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
-
-      - name: Integration Test - Build Standalone Player without Sentry SDK
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
-
-      - name: Integration Test - Add Sentry to test project
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
-
-      - name: Integration Test - Build Standalone Player Sentry SDK
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
-
-      - name: Integration Test - Run Player - Smoke Test
-        shell: pwsh
-        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
-
       - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
           name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android/IL2CPP_Player.apk
+          if-no-files-found: error
 
       - name: Upload Xcode project for smoke test.
         uses: actions/upload-artifact@v2
-        if: matrix.os == 'macos-latest'
         with:
           name: testapp-ios-project-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode
+          if-no-files-found: error
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v2
-        # Only on macOS which contain all native plugin needed
-        if: ${{ matrix.os == 'macos-latest' && matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         with:
           name: ${{ github.sha }}
           if-no-files-found: error
@@ -302,13 +195,12 @@ jobs:
         with:
           name: Android Build
           path: samples/artifacts/builds/Android
+          if-no-files-found: error
 
   package-validation:
     needs: [build]
     name: UPM Package validation
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -326,6 +218,73 @@ jobs:
         # and committing the new snapshot file to your branch. i.e:
         # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
         run: ./test/Scripts.Tests/test-pack-contents.ps1
+
+  windows-smoke-test:
+    needs: [build]
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 2022.1.0a12 removed until S.T.J issues fixed
+        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        include:
+          - os: windows-latest
+            unity-config-path: C:/ProgramData/Unity/config/
+          - unity-version: 2019.4.34f1
+            unity-version-changeset: 6a9faed444f2
+          - unity-version: 2020.3.27f1
+            unity-version-changeset: e759542391ea
+          - unity-version: 2021.2.10f1
+            unity-version-changeset: ee872746220e
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v2
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+
+      - name: Setup Unity
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
+        with:
+          unity-version: ${{ matrix.unity-version }}
+          unity-version-changeset: ${{ matrix.unity-version-changeset }}
+          unity-modules: windows-il2cpp
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Create Unity license config
+        run: |
+          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
+          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+
+      # Need to write to $GITHUB_PATH to make the environment variable available to other steps.
+      - name: Add Unity on PATH
+        run: Write-Output '${{ matrix.unity-root }}${{ matrix.unity-version }}/${{ matrix.unity-path }}' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # Step used to reduce the Unity path to avoid long path errors on Windows.
+      - name: Make symbolic link for Unity (Windows)
+        run: New-Item -ItemType SymbolicLink -Path "C:\${{ matrix.unity-version }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ matrix.unity-version }}"
+
+      - name: Integration Test - Create new Project
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Build Standalone Player without Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Add Sentry to test project
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Build Standalone Player Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Integration Test - Run Player - Smoke Test
+        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
 
   android-smoke-test:
     needs: [build]
@@ -356,7 +315,7 @@ jobs:
           {
             $avdTarget = "google_apis"
           }
-          Write-Host "steps.select-avd-target.outputs.target is $avdTarget" 
+          Write-Host "steps.select-avd-target.outputs.target is $avdTarget"
           echo "::set-output name=target::$avdTarget"
 
       - name: Android emulator setup + Smoke test
@@ -413,7 +372,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: droid-${{ matrix.api-level }}-testapp${{ matrix.unity-version }}-screenshot
+          name: testapp-android-screenshot-${{ matrix.api-level }}-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android/screen.png
 
   ios-smoke-test-build:
@@ -423,7 +382,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -455,9 +414,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
-         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-         ios-runtime: ["12.0", "12.4", "13.0", "14.1", latest]
+        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
+        ios-runtime: ['12.0', '12.4', '13.0', '14.1', latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3

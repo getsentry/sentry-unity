@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-function ProjectRoot 
+function ProjectRoot
 {
     if ($null -ne $Global:NewProjectPathCache)
     {
@@ -12,17 +12,22 @@ function ProjectRoot
 
 function GetTestAppName
 {
-    If ($IsMacOS)
+    param ($buildMethod)
+
+    If ($buildMethod.contains("Mac"))
     {
         return "test.app"
     }
-    ElseIf($IsWindows)
+    ElseIf ($buildMethod.contains("Windows"))
     {
         return "test.exe"
     }
+    ElseIf ($buildMethod.contains("Linux")) {
+        return "test"
+    }
     Else
     {
-        Throw "Cannot find Test App name for the current operating system"
+        Throw "Cannot find Test App name for the given buildMethod: '$buildMethod'"
     }
 }
 
@@ -74,6 +79,13 @@ function FormatUnityPath
             $unityPath = $unityPath +  "/Unity.exe"
         }
     }
+    ElseIf ($IsLinux)
+    {
+        If (((Get-Item $unityPath) -is [System.IO.DirectoryInfo]) -and $unityPath.EndsWith("unity"))
+        {
+            $unityPath = $unityPath + "/Editor/Unity"
+        }
+    }
     Else
     {
         Throw "Cannot find Unity executable name for the current operating system"
@@ -83,10 +95,20 @@ function FormatUnityPath
     return $unityPath
 }
 
+function RunUnity([string] $unityPath, [string[]] $arguments)
+{
+    If ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "")
+    {
+        $arguments = @("-ae", "/dev/stdout", "$unityPath") + $arguments
+        $unityPath = "xvfb-run"
+    }
+    return Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+}
+
 function ClearUnityLog
 {
     Write-Host -NoNewline "Removing Unity log:"
-    If (Test-Path -Path "$NewProjectLogPath") 
+    If (Test-Path -Path "$NewProjectLogPath")
     {
         #Force is required if it's opened by another process.
         Remove-Item -Path "$NewProjectLogPath" -Force
@@ -141,7 +163,7 @@ function SubscribeToUnityLogFile()
     }
     $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
     do
-    {  
+    {
         $line = $logStreamReader.ReadLine()
 
         If ($line -eq $null)
@@ -174,7 +196,7 @@ function SubscribeToUnityLogFile()
             ElseIf($FailString -and ($line | Select-String $FailString))
             {
                 $returnCondition = $line
-            } 
+            }
         }
         # Unity is closed but logfile wasn't updated in time.
         # Adds additional delay to wait for the last lines.

@@ -20,7 +20,7 @@ public class Builder
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
-            scenes = new[] {"Assets/Scenes/1_Bugfarm.unity"},
+            scenes = new[] { "Assets/Scenes/1_Bugfarm.unity" },
             locationPathName = args["buildPath"],
             target = buildTarget,
             options = BuildOptions.StrictMode,
@@ -60,6 +60,7 @@ public class Builder
 
     public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64);
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX);
+    public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64);
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android);
     public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS);
 
@@ -79,7 +80,7 @@ public class Builder
         {
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(name => name.FullName.Contains("Sentry")))
             {
-                foreach(var type in asm.GetTypes())
+                foreach (var type in asm.GetTypes())
                 {
                     Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Asm {0} Type {1}", asm.FullName, type.FullName);
                 }
