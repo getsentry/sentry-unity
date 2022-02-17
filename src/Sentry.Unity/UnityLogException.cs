@@ -180,7 +180,9 @@ namespace Sentry.Unity
             @"\((?<module>.+?)\)\s*" + // (Unity), (Mono JIT Code), ...
             @"(\((?<wrapper>.+?)\)\s*)?" + // (wrapper managed-to-native),
             @"(\[(?<file>.+?):(?<line>\d+)\]\s*)?" + // [File.cs:123]
-            @"(?<function>.+)"); // StackWalker::GetCurrentCallstack, UnityEngine.Logger:Log (UnityEngine.LogType,UnityEngine.Object,string,object[]),
+            @"(?<function>.+)", // StackWalker::GetCurrentCallstack, UnityEngine.Logger:Log (UnityEngine.LogType,UnityEngine.Object,string,object[]),
+            RegexOptions.None,
+            TimeSpan.FromSeconds(1));
 
         private SentryException ConvertWindowsFullStackTraceImpl()
         {
@@ -264,7 +266,10 @@ namespace Sentry.Unity
             @"(\((?<module>.+?)\)\s*)?" + // (Unity), (Mono JIT Code), ...
             @"(\((?<wrapper>.+?)\)\s*)?" + // (wrapper managed-to-native),
             @"(\[(?<file>.+?):(?<line>\d+)\]\s*)?" + // [File.cs:123]
-            @"(?<function>.+)"); // StackWalker::GetCurrentCallstack, UnityEngine.Logger:Log (UnityEngine.LogType,UnityEngine.Object,string,object[]),
+            @"(?<function>.+)", // StackWalker::GetCurrentCallstack, UnityEngine.Logger:Log (UnityEngine.LogType,UnityEngine.Object,string,object[]),
+            RegexOptions.None,
+            TimeSpan.FromSeconds(1)
+        );
 
         private SentryException ConvertFullStackTraceImpl()
         {
