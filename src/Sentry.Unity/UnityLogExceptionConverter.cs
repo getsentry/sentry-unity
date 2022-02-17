@@ -114,23 +114,7 @@ namespace Sentry.Unity
                 });
             }
 
-            var stacktrace = new SentryStackTrace();
-            foreach (var frame in Enumerable.Reverse(frames))
-            {
-                stacktrace.Frames.Add(frame);
-            }
-
-            return new SentryException
-            {
-                Stacktrace = stacktrace,
-                Type = excType,
-                Value = excValue,
-                Mechanism = new Mechanism
-                {
-                    Handled = false,
-                    Type = "unity.log"
-                }
-            };
+            return IntoSentryException(excType, excValue, frames);
         }
 
         private SentryException ConvertFullStackTrace(UnityLogException ule)
@@ -211,23 +195,7 @@ namespace Sentry.Unity
                 }
             }
 
-            var stacktrace = new SentryStackTrace();
-            foreach (var frame in Enumerable.Reverse(frames))
-            {
-                stacktrace.Frames.Add(frame);
-            }
-
-            return new SentryException
-            {
-                Stacktrace = stacktrace,
-                Type = ule.LogType.ToString(),
-                Value = ule.LogString,
-                Mechanism = new Mechanism
-                {
-                    Handled = false,
-                    Type = "unity.log"
-                }
-            };
+            return IntoSentryException(ule.LogType.ToString(), ule.LogString, frames);
         }
 
         private static readonly Regex FullStackFramePattern = new Regex(
@@ -296,9 +264,13 @@ namespace Sentry.Unity
                 }
             }
 
-            frames.Reverse();
+            return IntoSentryException(ule.LogType.ToString(), ule.LogString, frames);
+        }
+
+        private static SentryException IntoSentryException(string type, string value, List<SentryStackFrame> frames)
+        {
             var stacktrace = new SentryStackTrace();
-            foreach (var frame in frames)
+            foreach (var frame in Enumerable.Reverse(frames))
             {
                 stacktrace.Frames.Add(frame);
             }
@@ -306,8 +278,8 @@ namespace Sentry.Unity
             return new SentryException
             {
                 Stacktrace = stacktrace,
-                Type = ule.LogType.ToString(),
-                Value = ule.LogString,
+                Type = type,
+                Value = value,
                 Mechanism = new Mechanism
                 {
                     Handled = false,
