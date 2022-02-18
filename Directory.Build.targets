@@ -14,17 +14,18 @@
     <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
+    <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
     <!-- Cocoa -->
     <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
-    <SentryiOSDeviceArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryiOSDeviceArtifactsDestination>
-    <SentryiOSSimulatorArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryiOSSimulatorArtifactsDestination>
+    <SentryiOSDeviceArtifactsDestination>$(SentryArtifactsDestination)/iOS/Device/Sentry.framework/</SentryiOSDeviceArtifactsDestination>
+    <SentryiOSSimulatorArtifactsDestination>$(SentryArtifactsDestination)/iOS/Simulator/Sentry.framework/</SentryiOSSimulatorArtifactsDestination>
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
-    <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
+    <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <!-- TODO: Do we need: x64, x86, arm64? -->
-    <SentryWindowsArtifactsDestination>$(RepoRoot)package-dev/Plugins/Windows/Sentry/</SentryWindowsArtifactsDestination>
+    <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -492,4 +493,24 @@ void PrintFailedTests(XElement element)
     </Task>
   </UsingTask>
 
+  <!--  Downloads native SDKs from the latest successful GitHub Actions workflow run.
+        This is meant for developers - so that they don't have to compile the native SDK after each clean checkout (or git clean).
+        Depends on your a GH CLI installation - https://cli.github.com/
+        dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity -->
+  <Target Name="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Message Importance="High" Text="Downloading pre-compiled native SDKs from GitHub Actions artifacts." />
+    <Exec ConsoleToMSBuild="true" Command="gh run list --branch main --workflow CI --json &quot;conclusion,databaseId&quot; --jq &quot;first(.[] | select(.conclusion == \&quot;success\&quot;) | .databaseId)&quot;">
+      <Output TaskParameter="ConsoleOutput" PropertyName="LastSuccessfulRunId" />
+    </Exec>
+    <Error Condition="!('$(LastSuccessfulRunId)' > 0)" Text="Failed to find a successful run" />
+
+    <ItemGroup>
+      <SDK Include="Windows"/>
+      <SDK Include="iOS"/>
+      <SDK Include="Android"/>
+    </ItemGroup>
+    <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)/%(SDK.Identity)" />
+    <RemoveDir Directories="$(SentryArtifactsDestination)/%(SDK.Identity)" />
+    <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;%(SDK.Identity)-sdk&quot; -D &quot;$(SentryArtifactsDestination)/%(SDK.Identity)&quot;" />
+  </Target>
 </Project>

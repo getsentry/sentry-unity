@@ -49,7 +49,11 @@ Sentry Native is a sub module from Sentry Unity and for building it, currently r
 
 ## Build the project
 
-On the root of the repository, write:
+[Optional] You can save some time on the initial build by downloading the prebuild Native SDK artifacts from the last successful build of the `main` branch (requires [GH CLI](https://cli.github.com/) to be installed locally).
+
+`dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity`
+
+To build the whole project (including native SDKs if you've skipped the previous step), run:
 
 `dotnet build`
 
