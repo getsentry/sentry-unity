@@ -16,7 +16,7 @@ public class Builder
         // Make sure the configuration is right.
         if (PlayerSettings.GetScriptingBackend(group) != ScriptingImplementation.IL2CPP)
         {
-            throw new Exception($"Player settings mismatch: expected IL2CPP to be enabled");
+            throw new InvalidOperationException("Player settings mismatch: expected IL2CPP to be enabled");
         }
 
         if (args.ContainsKey("sentryOptions.configure"))

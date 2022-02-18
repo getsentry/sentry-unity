@@ -100,9 +100,12 @@ public class SmokeTester : MonoBehaviour
             void Verify(HttpRequestMessage message)
             {
                 var msgText = message.Content.ReadAsStringAsync().Result;
-                Debug.Log($"SMOKE TEST: Intercepted HTTP Request #{requests.Count} = {msgText}");
-                requests.Add(msgText);
-                evt.Set();
+                lock (requests)
+                {
+                    Debug.Log($"SMOKE TEST: Intercepted HTTP Request #{requests.Count} = {msgText}");
+                    requests.Add(msgText);
+                    evt.Set();
+                }
             }
 
             var testNumber = 0;
@@ -120,15 +123,25 @@ public class SmokeTester : MonoBehaviour
             void ExpectMessage(int index, String substring)
             {
                 Debug.Log($"SMOKE TEST: Checking if the HTTP request #{index} contains: '{substring}'.");
-                while (requests.Count < index + 1)
+                while (true)
                 {
+                    lock (requests)
+                    {
+                        if (requests.Count > index)
+                            break;
+                    }
                     if (!evt.WaitOne(TimeSpan.FromSeconds(3)))
                     {
                         Debug.Log($"SMOKE TEST: Failed while waiting for an HTTP request #{index} to come in.");
                         Exit(testNumber);
                     }
                 }
-                Expect($"HTTP Request #{index} contains '{substring}'.", requests[index].Contains(substring));
+                string request;
+                lock (requests)
+                {
+                    request = requests[index];
+                }
+                Expect($"HTTP Request #{index} contains '{substring}'.", request.Contains(substring));
             }
 
             var options = new SentryUnityOptions();
@@ -178,11 +191,14 @@ public class SmokeTester : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.Log("SMOKE TEST: FAILED");
             if (exitCode == 0)
             {
-                Debug.LogError(ex);
+                Debug.Log($"SMOKE TEST: FAILED with exception {ex}");
                 Exit(-1);
+            }
+            else
+            {
+                Debug.Log("SMOKE TEST: FAILED");
             }
         }
     }
