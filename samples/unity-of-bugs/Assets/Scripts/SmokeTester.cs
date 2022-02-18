@@ -149,11 +149,13 @@ public class SmokeTester : MonoBehaviour
 
     private class TestHandler : HttpClientHandler
     {
-        private List<string> requests = new List<string>();
+        private List<string> _requests = new List<string>();
 
-        private AutoResetEvent evt = new AutoResetEvent(false);
+        private AutoResetEvent _requestReceived = new AutoResetEvent(false);
 
-        private int testNumber = 0;
+        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
+
+        private int _testNumber = 0;
 
         public int exitCode = 0;
 
@@ -166,11 +168,11 @@ public class SmokeTester : MonoBehaviour
         private void Receive(HttpRequestMessage message)
         {
             var msgText = message.Content.ReadAsStringAsync().Result;
-            lock (requests)
+            lock (_requests)
             {
-                Debug.Log($"SMOKE TEST: Intercepted HTTP Request #{requests.Count} = {msgText}");
-                requests.Add(msgText);
-                evt.Set();
+                Debug.Log($"SMOKE TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+                _requests.Add(msgText);
+                _requestReceived.Set();
             }
         }
 
@@ -191,12 +193,12 @@ public class SmokeTester : MonoBehaviour
 
         public void Expect(String message, bool result)
         {
-            testNumber++;
-            Debug.Log($"SMOKE TEST | {testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
+            _testNumber++;
+            Debug.Log($"SMOKE TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"SMOKE TEST: Quitting due to a failed test case #{testNumber}");
-                Exit(testNumber);
+                Debug.Log($"SMOKE TEST: Quitting due to a failed test case #{_testNumber}");
+                Exit(_testNumber);
             }
         }
 
@@ -204,20 +206,20 @@ public class SmokeTester : MonoBehaviour
         {
             while (true)
             {
-                lock (requests)
+                lock (_requests)
                 {
-                    if (requests.Count > index)
+                    if (_requests.Count > index)
                         break;
                 }
-                if (!evt.WaitOne(TimeSpan.FromSeconds(3)))
+                if (!_requestReceived.WaitOne(_receiveTimeout))
                 {
                     Debug.Log($"SMOKE TEST: Failed while waiting for an HTTP request #{index} to come in.");
-                    Exit(testNumber);
+                    Exit(_testNumber);
                 }
             }
-            lock (requests)
+            lock (_requests)
             {
-                return requests[index];
+                return _requests[index];
             }
         }
 
