@@ -3,6 +3,8 @@
 #define SENTRY_NATIVE_IOS
 #elif UNITY_ANDROID
 #define SENTRY_NATIVE_ANDROID
+#elif UNITY_STANDALONE_WIN && ENABLE_IL2CPP
+#define SENTRY_NATIVE_WINDOWS
 #endif
 #endif
 
@@ -10,6 +12,8 @@
 using Sentry.Unity.iOS;
 #elif UNITY_ANDROID
 using Sentry.Unity.Android;
+#elif SENTRY_NATIVE_WINDOWS
+using Sentry.Unity.Native;
 #endif
 
 #if UNITY_IOS
@@ -23,6 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
@@ -34,16 +39,13 @@ public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
+        string arg = null;
 #if SENTRY_NATIVE_ANDROID
         using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
         using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
         {
-            var text = intent.Call<String> ("getStringExtra", "test");
-            if (text == "smoke")
-            {
-                SmokeTest();
-            }
+            arg = intent.Call<String> ("getStringExtra", "test");
         }
 #elif UNITY_IOS
         string pListPath = Path.Combine(Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/')), "Info.plist");
@@ -53,8 +55,8 @@ public class SmokeTester : MonoBehaviour
             var key = "RunSentrySmokeTest";
             if (rawPlist.Contains(key))
             {
-                Debug.Log("Key " + key + " found on Info.plistm starting Smoke test.");
-                SmokeTest();
+                arg = "smoke";
+                Debug.Log("Key " + key + " found on Info.plist starting Smoke test.");
             }
             else
             {
@@ -65,12 +67,51 @@ public class SmokeTester : MonoBehaviour
         var args = Environment.GetCommandLineArgs();
         if (args.Length > 2 && args[1] == "--test")
         {
-            if (args[2] == "smoke")
-            {
-                SmokeTest();
-            }
+            arg = args[2];
         }
 #endif
+        if (arg == null)
+        {
+            Debug.Log($"SmokeTest not executed - no argument given");
+        }
+        else if (arg == "smoke")
+        {
+            SmokeTest();
+        }
+        else if (arg == "smoke-crash")
+        {
+            SmokeTestCrash();
+        }
+        else
+        {
+            Debug.Log($"Unknown command line argument: {arg}");
+        }
+    }
+
+    public static void InitSentry(SentryUnityOptions options, bool requireNative = true)
+    {
+#if SENTRY_NATIVE_IOS
+        Debug.Log("SMOKE TEST: Configure Native iOS.");
+        options.IosNativeSupportEnabled = true;
+        SentryNativeIos.Configure(options);
+#elif SENTRY_NATIVE_ANDROID
+        Debug.Log("SMOKE TEST: Configure Native Android.");
+        options.AndroidNativeSupportEnabled = true;
+        SentryNativeAndroid.Configure(options, new SentryUnityInfo());
+#elif SENTRY_NATIVE_WINDOWS
+        Debug.Log("SMOKE TEST: Configure Native support.");
+        options.WindowsNativeSupportEnabled = true;
+        SentryNative.Configure(options);
+#else
+        if (requireNative) {
+            throw new Exception("Given platform is not supported");
+        }
+#endif
+
+        Debug.Log("SMOKE TEST: SentryUnity Init.");
+        SentryUnity.Init(options);
+        Debug.Log("SMOKE TEST: SentryUnity Init OK.");
+
     }
 
     public static void SmokeTest()
@@ -88,23 +129,7 @@ public class SmokeTester : MonoBehaviour
             options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
             options.CreateHttpClientHandler = () => t;
 
-            var sentryUnityInfo = new SentryUnityInfo();
-
-#if SENTRY_NATIVE_IOS
-            Debug.Log("SMOKE TEST: Configure Native iOS.");
-            SentryNativeIos.Configure(options);
-#elif SENTRY_NATIVE_ANDROID
-            Debug.Log("SMOKE TEST: Configure Native Android.");
-            SentryNativeAndroid.Configure(options, sentryUnityInfo);
-#elif SENTRY_NATIVE_WINDOWS
-            Debug.Log("SMOKE TEST: Configure Native Windows.");
-            SentryNative.Configure(options);
-#endif
-
-            Debug.Log("SMOKE TEST: SentryUnity Init.");
-            SentryUnity.Init(options);
-
-            Debug.Log("SMOKE TEST: SentryUnity Init OK.");
+            InitSentry(options, false);
 
             var currentMessage = 0;
             t.ExpectMessage(currentMessage, "'type':'session'");
@@ -165,6 +190,45 @@ public class SmokeTester : MonoBehaviour
             }
         }
     }
+
+    public static void SmokeTestCrash()
+    {
+        Debug.Log("SMOKE TEST: Start");
+
+        InitSentry(new SentryUnityOptions()
+        {
+            Dsn = "http://key@localhost:8000/project",
+            Debug = true,
+            DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug)
+        });
+
+        SentrySdk.AddBreadcrumb("crumb", "bread", "error", new Dictionary<string, string>() { { "foo", "bar" } }, BreadcrumbLevel.Critical);
+        SentrySdk.ConfigureScope((Scope scope) =>
+        {
+            scope.SetExtra("extra-key", 42);
+            scope.AddBreadcrumb("scope-crumb");
+            scope.SetTag("tag-key", "tag-value");
+            scope.User = new User()
+            {
+                Username = "username",
+                Email = "email@example.com",
+                IpAddress = "::1",
+                Id = "user-id",
+                Other = new Dictionary<string, string>() { { "role", "admin" } }
+            };
+        });
+
+        Debug.Log("SMOKE TEST: Issuing a native crash (c++ unhandled exception)");
+        throw_cpp();
+
+        // shouldn't execute because the previous call should have failed
+        Debug.Log("SMOKE TEST: FAIL - unexpected code executed...");
+        Application.Quit(-1);
+    }
+
+    // CppPlugin.cpp
+    [DllImport("__Internal")]
+    private static extern void throw_cpp();
 
     private class TestHandler : HttpClientHandler
     {
