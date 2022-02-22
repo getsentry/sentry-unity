@@ -221,6 +221,7 @@ jobs:
 
   windows-smoke-test:
     needs: [build]
+    name: Run Windows ${{ matrix.api-level }} Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -288,7 +289,7 @@ jobs:
 
   android-smoke-test:
     needs: [build]
-    name: Smoke Test - Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }}
+    name: Run Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -377,7 +378,7 @@ jobs:
 
   ios-smoke-test-build:
     needs: [build]
-    name: Build Smoke Test - Unity ${{ matrix.unity-version }}
+    name: Build iOS - Unity ${{ matrix.unity-version }} - Smoke Test
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -409,7 +410,7 @@ jobs:
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Smoke Test - iOS ${{ matrix.ios-runtime }} Unity ${{ matrix.unity-version }}
+    name: Run iOS ${{ matrix.ios-runtime }} Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: macos-latest
     strategy:
       fail-fast: false
