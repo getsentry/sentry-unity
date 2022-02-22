@@ -8,10 +8,13 @@ using UnityEngine;
 
 public class Builder
 {
-    public static void BuildIl2CPPPlayer(BuildTarget buildTarget)
+    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group)
     {
         var args = ParseCommandLineArguments();
         ValidateArguments(args);
+
+        // Make sure the configuration is right.
+        PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
 
         if (args.ContainsKey("sentryOptions.configure"))
         {
@@ -22,7 +25,8 @@ public class Builder
         {
             scenes = new[] { "Assets/Scenes/1_Bugfarm.unity" },
             locationPathName = args["buildPath"],
-            target = buildTarget,
+            target = target,
+            targetGroup = group,
             options = BuildOptions.StrictMode,
         };
 
@@ -58,11 +62,11 @@ public class Builder
         }
     }
 
-    public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64);
-    public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX);
-    public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64);
-    public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android);
-    public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS);
+    public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone);
+    public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
+    public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
+    public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
+    public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
 
     private static void SetupSentryOptions(Dictionary<string, string> args)
     {

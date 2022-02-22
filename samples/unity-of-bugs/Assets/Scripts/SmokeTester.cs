@@ -75,18 +75,10 @@ public class SmokeTester : MonoBehaviour
 
     public static void SmokeTest()
     {
+        var t = new TestHandler();
         try
         {
             Debug.Log("SMOKE TEST: Start");
-            var evt = new ManualResetEventSlim();
-
-            var requests = new List<string>();
-            void Verify(HttpRequestMessage message)
-            {
-                Debug.Log("SMOKE TEST: Verify invoked.");
-                requests.Add(message.Content.ReadAsStringAsync().Result);
-                evt.Set();
-            }
 
             var options = new SentryUnityOptions();
             options.Dsn = "https://key@sentry/project";
@@ -94,7 +86,7 @@ public class SmokeTester : MonoBehaviour
             // TODO: Must be set explicitly for the time being.
             options.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
             options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
-            options.CreateHttpClientHandler = () => new TestHandler(Verify);
+            options.CreateHttpClientHandler = () => t;
 
             var sentryUnityInfo = new SentryUnityInfo();
 
@@ -104,6 +96,9 @@ public class SmokeTester : MonoBehaviour
 #elif SENTRY_NATIVE_ANDROID
             Debug.Log("SMOKE TEST: Configure Native Android.");
             SentryNativeAndroid.Configure(options, sentryUnityInfo);
+#elif SENTRY_NATIVE_WINDOWS
+            Debug.Log("SMOKE TEST: Configure Native Windows.");
+            SentryNative.Configure(options);
 #endif
 
             Debug.Log("SMOKE TEST: SentryUnity Init.");
@@ -111,47 +106,160 @@ public class SmokeTester : MonoBehaviour
 
             Debug.Log("SMOKE TEST: SentryUnity Init OK.");
 
+            var currentMessage = 0;
+            t.ExpectMessage(currentMessage, "'type':'session'");
+            t.ExpectMessage(currentMessage, "'init':");
+
+            // if first message was init:false, wait for another one with init:true (this happens on windows...)
+            if (t.GetMessage(currentMessage).Contains("\"init\":false"))
+            {
+                t.ExpectMessage(++currentMessage, "'type':'session'");
+                t.ExpectMessage(currentMessage, "'init':true");
+            }
+
             var guid = Guid.NewGuid().ToString();
             Debug.LogError(guid);
+            t.ExpectMessage(++currentMessage, "'type':'event'");
+            t.ExpectMessage(currentMessage, guid);
+
             SentrySdk.CaptureMessage(guid);
+            t.ExpectMessage(++currentMessage, "'type':'event'");
+            t.ExpectMessage(currentMessage, guid);
 
-            if (!evt.Wait(TimeSpan.FromSeconds(3)))
+            var ex = new Exception("Exception & context test");
+            SentrySdk.AddBreadcrumb("crumb", "bread", "error", new Dictionary<string, string>() { { "foo", "bar" } }, BreadcrumbLevel.Critical);
+            SentrySdk.ConfigureScope((Scope scope) =>
             {
-                // 1 = timeout
-                Application.Quit(1);
-            }
+                scope.SetExtra("extra-key", 42);
+                scope.AddBreadcrumb("scope-crumb");
+                scope.SetTag("tag-key", "tag-value");
+                scope.User = new User()
+                {
+                    Username = "username",
+                    Email = "email@example.com",
+                    IpAddress = "::1",
+                    Id = "user-id",
+                    Other = new Dictionary<string, string>() { { "role", "admin" } }
+                };
+            });
+            SentrySdk.CaptureException(ex);
+            t.ExpectMessage(++currentMessage, "'type':'event'");
+            t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
+            t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
+            t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
+            t.ExpectMessage(currentMessage, "'tags':{'tag-key':'tag-value'");
+            t.ExpectMessage(currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}");
 
-            if (!requests.Any(r => r.Contains(guid)))
-            {
-                // 2 event captured but guid not there.
-                Application.Quit(2);
-            }
-
-            // On Android we'll grep logcat for this string instead of relying on exit code:
-            Debug.Log("SMOKE TEST: PASS");
-
-            // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
-            Application.Quit(200);
-
+            t.Pass();
         }
         catch (Exception ex)
         {
-            Debug.Log("SMOKE TEST: FAILED");
-            Debug.LogError(ex);
-            Application.Quit(-1);
+            if (t.exitCode == 0)
+            {
+                Debug.Log($"SMOKE TEST: FAILED with exception {ex}");
+                t.Exit(-1);
+            }
+            else
+            {
+                Debug.Log("SMOKE TEST: FAILED");
+            }
         }
     }
 
     private class TestHandler : HttpClientHandler
     {
-        private readonly Action<HttpRequestMessage> _messageCallback;
+        private List<string> _requests = new List<string>();
 
-        public TestHandler(Action<HttpRequestMessage> messageCallback) => _messageCallback = messageCallback;
+        private AutoResetEvent _requestReceived = new AutoResetEvent(false);
+
+        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
+
+        private int _testNumber = 0;
+
+        public int exitCode = 0;
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            _messageCallback(request);
+            Receive(request);
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        }
+
+        private void Receive(HttpRequestMessage message)
+        {
+            var msgText = message.Content.ReadAsStringAsync().Result;
+            lock (_requests)
+            {
+                Debug.Log($"SMOKE TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+                _requests.Add(msgText);
+                _requestReceived.Set();
+            }
+        }
+
+        public void Exit(int code)
+        {
+            if (exitCode != 0)
+            {
+                Debug.Log($"Ignoring spurious Exit({code}). Application is already exiting with code {exitCode}");
+            }
+            else
+            {
+                exitCode = code;
+                Application.Quit(code);
+                // Application.Quit doesn't actually terminate immediately so exit the context at least...
+                throw new Exception($"Quitting with exit code {code}");
+            }
+        }
+
+        public void Pass()
+        {
+            if (exitCode == 0)
+            {
+                // On Android we'll grep logcat for this string instead of relying on exit code:
+                Debug.Log("SMOKE TEST: PASS");
+
+                // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
+                exitCode = 200;
+                Application.Quit(exitCode);
+            }
+        }
+
+        public void Expect(String message, bool result)
+        {
+            _testNumber++;
+            Debug.Log($"SMOKE TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
+            if (!result)
+            {
+                Debug.Log($"SMOKE TEST: Quitting due to a failed test case #{_testNumber} {message}");
+                Exit(_testNumber);
+            }
+        }
+
+        public string GetMessage(int index)
+        {
+            while (true)
+            {
+                lock (_requests)
+                {
+                    if (_requests.Count > index)
+                        break;
+                }
+                if (!_requestReceived.WaitOne(_receiveTimeout))
+                {
+                    Debug.Log($"SMOKE TEST: Failed while waiting for an HTTP request #{index} to come in.");
+                    Exit(_testNumber);
+                }
+            }
+            lock (_requests)
+            {
+                return _requests[index];
+            }
+        }
+
+        public void ExpectMessage(int index, String substring)
+        {
+            var message = GetMessage(index);
+            Expect($"HTTP Request #{index} contains \"{substring}\".",
+               message.Contains(substring) || message.Contains(substring.Replace("'", "\"")));
         }
     }
 }
