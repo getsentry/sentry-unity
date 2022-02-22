@@ -29,6 +29,21 @@ namespace Sentry.Unity
                 sentry_options_set_release(cOptions, options.Release);
             }
 
+            if (options.Environment is not null)
+            {
+                sentry_options_set_environment(cOptions, options.Environment);
+            }
+
+            sentry_options_set_debug(cOptions, options.Debug ? 1 : 0);
+
+            if (options.SampleRate.HasValue)
+            {
+                sentry_options_set_sample_rate(cOptions, options.SampleRate.Value);
+            }
+
+            // Disabling the native in favor of the C# layer for now
+            sentry_options_set_auto_session_tracking(cOptions, 0);
+
             sentry_init(cOptions);
         }
 
@@ -41,6 +56,18 @@ namespace Sentry.Unity
 
         [DllImport("sentry")]
         private static extern void sentry_options_set_release(IntPtr options, string release);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_debug(IntPtr options, int debug);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_environment(IntPtr options, string environment);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
         // TODO we could set a logger for sentry-native, forwarding the logs to `options.DiagnosticLogger?`
         // [DllImport("sentry")]
