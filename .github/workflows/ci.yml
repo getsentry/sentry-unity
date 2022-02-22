@@ -221,7 +221,7 @@ jobs:
 
   windows-smoke-test:
     needs: [build]
-    name: Run Windows ${{ matrix.api-level }} Unity ${{ matrix.unity-version }} Smoke Test
+    name: Run Windows Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: windows-latest
     strategy:
       fail-fast: false
