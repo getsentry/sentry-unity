@@ -378,7 +378,7 @@ jobs:
 
   ios-smoke-test-build:
     needs: [build]
-    name: Build iOS - Unity ${{ matrix.unity-version }} - Smoke Test
+    name: Build iOS Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: macos-latest
     strategy:
       fail-fast: false
