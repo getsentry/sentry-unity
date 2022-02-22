@@ -107,31 +107,50 @@ public class SmokeTester : MonoBehaviour
             Debug.Log("SMOKE TEST: SentryUnity Init OK.");
 
             var currentMessage = 0;
-            t.ExpectMessage(currentMessage, "\"type\":\"session\"");
-            t.ExpectMessage(currentMessage, "\"init\":");
+            t.ExpectMessage(currentMessage, "'type':'session'");
+            t.ExpectMessage(currentMessage, "'init':");
 
             // if first message was init:false, wait for another one with init:true (this happens on windows...)
             if (t.GetMessage(currentMessage).Contains("\"init\":false"))
             {
-                t.ExpectMessage(++currentMessage, "\"type\":\"session\"");
-                t.ExpectMessage(currentMessage, "\"init\":true");
+                t.ExpectMessage(++currentMessage, "'type':'session'");
+                t.ExpectMessage(currentMessage, "'init':true");
             }
 
             var guid = Guid.NewGuid().ToString();
             Debug.LogError(guid);
-            t.ExpectMessage(++currentMessage, "\"type\":\"event\"");
+            t.ExpectMessage(++currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, guid);
 
             SentrySdk.CaptureMessage(guid);
-            t.ExpectMessage(++currentMessage, "\"type\":\"event\"");
+            t.ExpectMessage(++currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, guid);
 
-            // On Android we'll grep logcat for this string instead of relying on exit code:
-            Debug.Log("SMOKE TEST: PASS");
+            var ex = new Exception("Exception & context test");
+            SentrySdk.AddBreadcrumb("crumb", "bread", "error", new Dictionary<string, string>() { { "foo", "bar" } }, BreadcrumbLevel.Critical);
+            SentrySdk.ConfigureScope((Scope scope) =>
+            {
+                scope.SetExtra("extra-key", 42);
+                scope.AddBreadcrumb("scope-crumb");
+                scope.SetTag("tag-key", "tag-value");
+                scope.User = new User()
+                {
+                    Username = "username",
+                    Email = "email@example.com",
+                    IpAddress = "::1",
+                    Id = "user-id",
+                    Other = new Dictionary<string, string>() { { "role", "admin" } }
+                };
+            });
+            SentrySdk.CaptureException(ex);
+            t.ExpectMessage(++currentMessage, "'type':'event'");
+            t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
+            t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
+            t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
+            t.ExpectMessage(currentMessage, "'tags':{'tag-key':'tag-value'");
+            t.ExpectMessage(currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}");
 
-            // Test passed: Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
-            t.Exit(200);
-
+            t.Pass();
         }
         catch (Exception ex)
         {
@@ -191,13 +210,26 @@ public class SmokeTester : MonoBehaviour
             }
         }
 
+        public void Pass()
+        {
+            if (exitCode == 0)
+            {
+                // On Android we'll grep logcat for this string instead of relying on exit code:
+                Debug.Log("SMOKE TEST: PASS");
+
+                // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
+                exitCode = 200;
+                Application.Quit(exitCode);
+            }
+        }
+
         public void Expect(String message, bool result)
         {
             _testNumber++;
             Debug.Log($"SMOKE TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"SMOKE TEST: Quitting due to a failed test case #{_testNumber}");
+                Debug.Log($"SMOKE TEST: Quitting due to a failed test case #{_testNumber} {message}");
                 Exit(_testNumber);
             }
         }
@@ -225,7 +257,9 @@ public class SmokeTester : MonoBehaviour
 
         public void ExpectMessage(int index, String substring)
         {
-            Expect($"HTTP Request #{index} contains '{substring}'.", GetMessage(index).Contains(substring));
+            var message = GetMessage(index);
+            Expect($"HTTP Request #{index} contains \"{substring}\".",
+               message.Contains(substring) || message.Contains(substring.Replace("'", "\"")));
         }
     }
 }
