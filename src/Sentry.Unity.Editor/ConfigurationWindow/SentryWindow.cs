@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
-using Sentry.Unity.Editor.ConfigurationWindow;
 using Sentry.Unity.Json;
 using UnityEditor;
 using UnityEngine;
@@ -20,6 +19,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             return window;
         }
 
+        public static SentryWindow Instance => GetWindow<SentryWindow>();
+
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
@@ -28,7 +29,15 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         public event Action<ValidationError> OnValidationError = _ => { };
 
         private int _currentTab = 0;
-        private string[] _tabs = new[] { "Core", "Enrichment", "Transport", "Advanced", "Debug Symbols" };
+        private readonly string[] _tabs =
+        {
+            "Core",
+            "Enrichment",
+            "Transport",
+            "Advanced",
+            "Options Config",
+            "Debug Symbols"
+        };
 
         private void Awake()
         {
@@ -135,6 +144,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     AdvancedTab.Display(Options);
                     break;
                 case 4:
+                    OptionsConfigurationTab.Display(Options);
+                    break;
+                case 5:
                     DebugSymbolsTab.Display(CliOptions);
                     break;
                 default:

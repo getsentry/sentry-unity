@@ -1,6 +1,4 @@
-using System.IO;
 using UnityEditor;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
@@ -64,19 +62,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 new GUIContent("Windows Native Support", "Whether to enable Native Windows support to " +
                                                          "capture errors written in languages such as C and C++."),
                 options.WindowsNativeSupportEnabled);
-
-            EditorGUILayout.Space();
-            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-            EditorGUILayout.Space();
-
-            GUILayout.Label("Programmatic Options Configuration", EditorStyles.boldLabel);
-
-            options.OptionsConfiguration = EditorGUILayout.ObjectField(
-                new GUIContent("Options Configuration", "A scriptable object that inherits from " +
-                                                        "'ScriptableOptionsConfiguration' that allows you to " +
-                                                        "programmatically modify Sentry options i.e. implement the " +
-                                                        "'BeforeSend' callback."),
-                    options.OptionsConfiguration, typeof(ScriptableOptionsConfiguration), false) as ScriptableOptionsConfiguration;
         }
+
+
     }
 }
