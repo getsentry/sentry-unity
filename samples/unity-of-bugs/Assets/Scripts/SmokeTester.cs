@@ -85,11 +85,18 @@ public class SmokeTester : MonoBehaviour
         else
         {
             Debug.Log($"Unknown command line argument: {arg}");
+            Application.Quit(-1);
         }
     }
 
     public static void InitSentry(SentryUnityOptions options, bool requireNative = true)
     {
+        options.Dsn = "http://publickey@localhost:8000/12345";
+        options.Debug = true;
+        options.DebugOnlyInEditor = false;
+        options.DiagnosticLevel = SentryLevel.Debug;
+        options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
+
 #if SENTRY_NATIVE_IOS
         Debug.Log("SMOKE TEST: Configure Native iOS.");
         options.IosNativeSupportEnabled = true;
@@ -99,11 +106,13 @@ public class SmokeTester : MonoBehaviour
         options.AndroidNativeSupportEnabled = true;
         SentryNativeAndroid.Configure(options, new SentryUnityInfo());
 #elif SENTRY_NATIVE_WINDOWS
-        Debug.Log("SMOKE TEST: Configure Native support.");
+        Debug.Log("SMOKE TEST: Configure Native Windows.");
         options.WindowsNativeSupportEnabled = true;
         SentryNative.Configure(options);
 #else
-        if (requireNative) {
+        if (requireNative)
+        {
+            Debug.Log("SMOKE TEST: Given platform is not supported for native sentry configuration");
             throw new Exception("Given platform is not supported");
         }
 #endif
@@ -111,7 +120,6 @@ public class SmokeTester : MonoBehaviour
         Debug.Log("SMOKE TEST: SentryUnity Init.");
         SentryUnity.Init(options);
         Debug.Log("SMOKE TEST: SentryUnity Init OK.");
-
     }
 
     public static void SmokeTest()
@@ -121,15 +129,7 @@ public class SmokeTester : MonoBehaviour
         {
             Debug.Log("SMOKE TEST: Start");
 
-            var options = new SentryUnityOptions();
-            options.Dsn = "https://key@sentry/project";
-            options.Debug = true;
-            // TODO: Must be set explicitly for the time being.
-            options.RequestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
-            options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
-            options.CreateHttpClientHandler = () => t;
-
-            InitSentry(options, false);
+            InitSentry(new SentryUnityOptions() { CreateHttpClientHandler = () => t }, false);
 
             var currentMessage = 0;
             t.ExpectMessage(currentMessage, "'type':'session'");
@@ -152,21 +152,7 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, guid);
 
             var ex = new Exception("Exception & context test");
-            SentrySdk.AddBreadcrumb("crumb", "bread", "error", new Dictionary<string, string>() { { "foo", "bar" } }, BreadcrumbLevel.Critical);
-            SentrySdk.ConfigureScope((Scope scope) =>
-            {
-                scope.SetExtra("extra-key", 42);
-                scope.AddBreadcrumb("scope-crumb");
-                scope.SetTag("tag-key", "tag-value");
-                scope.User = new User()
-                {
-                    Username = "username",
-                    Email = "email@example.com",
-                    IpAddress = "::1",
-                    Id = "user-id",
-                    Other = new Dictionary<string, string>() { { "role", "admin" } }
-                };
-            });
+            AddContext();
             SentrySdk.CaptureException(ex);
             t.ExpectMessage(++currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
@@ -195,13 +181,20 @@ public class SmokeTester : MonoBehaviour
     {
         Debug.Log("SMOKE TEST: Start");
 
-        InitSentry(new SentryUnityOptions()
-        {
-            Dsn = "http://key@localhost:8000/project",
-            Debug = true,
-            DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug)
-        });
+        InitSentry(new SentryUnityOptions());
 
+        AddContext();
+
+        Debug.Log("SMOKE TEST: Issuing a native crash (c++ unhandled exception)");
+        throw_cpp();
+
+        // shouldn't execute because the previous call should have failed
+        Debug.Log("SMOKE TEST: FAIL - unexpected code executed...");
+        Application.Quit(-1);
+    }
+
+    private static void AddContext()
+    {
         SentrySdk.AddBreadcrumb("crumb", "bread", "error", new Dictionary<string, string>() { { "foo", "bar" } }, BreadcrumbLevel.Critical);
         SentrySdk.ConfigureScope((Scope scope) =>
         {
@@ -217,13 +210,6 @@ public class SmokeTester : MonoBehaviour
                 Other = new Dictionary<string, string>() { { "role", "admin" } }
             };
         });
-
-        Debug.Log("SMOKE TEST: Issuing a native crash (c++ unhandled exception)");
-        throw_cpp();
-
-        // shouldn't execute because the previous call should have failed
-        Debug.Log("SMOKE TEST: FAIL - unexpected code executed...");
-        Application.Quit(-1);
     }
 
     // CppPlugin.cpp

@@ -21,6 +21,11 @@ try {
         write-Host "$($context.Request.HttpMethod) $($context.Request.Url)"
         if ($context.Request.HttpMethod -eq 'POST') {
             $payload = [System.IO.StreamReader]::new($context.Request.InputStream).ReadToEnd()
+            if ($context.Request.Url.ToString().Contains("minidump")) {
+                $payload = "minidump payload length: $($payload.Length)`n"
+            }
+            else {
+            }
             Write-Host -NoNewline $payload
         }
         Write-Host $separator

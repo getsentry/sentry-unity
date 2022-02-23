@@ -47,7 +47,7 @@
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
-      <StandaloneDataPath>%USERPROFILE%\AppData\LocalLow\DefaultCompany\unity-of-bugs\</StandaloneDataPath>
+      <StandaloneDataPath>$(USERPROFILE)\AppData\LocalLow\DefaultCompany\unity-of-bugs\</StandaloneDataPath>
       <TestDsn>https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417</TestDsn>
     </PropertyGroup>
 
@@ -255,6 +255,19 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
     <Message Importance="High" Text="Smoke test PASSED" Condition="'$(SmokeTestExitCode)' == '200'" />
+
+    <!-- WIP
+    <Message Importance="High" Text="Running smoke test on player."></Message>
+    <PropertyGroup>
+      <PowerShell># 2>nul || type %~df0|find /v "setlocal"|find /v "errorlevel"|powershell.exe -noninteractive -&amp; exit %errorlevel% || #</PowerShell>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <myscript>$(PowerShell)
+          &amp; { $(RepoRoot)/test/Scripts.Integration.Test/integration-run-smoke-test.ps1 $(StandaloneExecutablePath) -AppDataDir "$(StandaloneDataPath)" }
+      </myscript>
+    </PropertyGroup>
+    <Exec Command="$(myscript)" EchoOff="true" /> -->
   </Target>
 
   <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
