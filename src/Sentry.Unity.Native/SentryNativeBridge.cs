@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 
@@ -31,18 +32,37 @@ namespace Sentry.Unity
 
             if (options.Environment is not null)
             {
+                options.DiagnosticLogger?.LogDebug("Setting Environment: {0}", options.Environment);
                 sentry_options_set_environment(cOptions, options.Environment);
             }
 
+            options.DiagnosticLogger?.LogDebug("Setting Debug: {0}", options.Debug);
             sentry_options_set_debug(cOptions, options.Debug ? 1 : 0);
 
             if (options.SampleRate.HasValue)
             {
+                options.DiagnosticLogger?.LogDebug("Setting Sample Rate: {0}", options.SampleRate.Value);
                 sentry_options_set_sample_rate(cOptions, options.SampleRate.Value);
             }
 
             // Disabling the native in favor of the C# layer for now
+            options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
             sentry_options_set_auto_session_tracking(cOptions, 0);
+
+            if (options.CacheDirectoryPath is not null)
+            {
+                var dir = Path.Combine(options.CacheDirectoryPath, "SentryNative");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
+                    sentry_options_set_database_pathw(cOptions, dir);
+                }
+                else
+                {
+                    options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
+                    sentry_options_set_database_path(cOptions, dir);
+                }
+            }
 
             sentry_init(cOptions);
         }
@@ -65,6 +85,14 @@ namespace Sentry.Unity
 
         [DllImport("sentry")]
         private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
+
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_database_path(IntPtr options, string path);
+
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
 
         [DllImport("sentry")]
         private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
