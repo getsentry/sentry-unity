@@ -232,11 +232,8 @@ jobs:
           - os: windows-latest
             unity-config-path: C:/ProgramData/Unity/config/
           - unity-version: 2019.4.34f1
-            unity-version-changeset: 6a9faed444f2
           - unity-version: 2020.3.27f1
-            unity-version-changeset: e759542391ea
           - unity-version: 2021.2.10f1
-            unity-version-changeset: ee872746220e
     defaults:
       run:
         shell: pwsh
@@ -254,7 +251,6 @@ jobs:
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
           unity-version: ${{ matrix.unity-version }}
-          unity-version-changeset: ${{ matrix.unity-version-changeset }}
           unity-modules: windows-il2cpp
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
