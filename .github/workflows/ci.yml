@@ -67,7 +67,7 @@ jobs:
       - name: Load env
         id: env
         shell: pwsh
-        run: echo "UNITY_VERSION=$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")" | tee -a $GITHUB_ENV
+        run: echo "::set-output name=unityVersion::$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -77,7 +77,7 @@ jobs:
           path: |
             samples/unity-of-bugs/Library/Packages
             temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
-          key: samples/unity-of-bugs|${{ env.UNITY_VERSION }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - uses: actions/download-artifact@v2
         with:
@@ -100,7 +100,7 @@ jobs:
           path: package-dev/Plugins/Windows
 
       - name: Prepare the docker container
-        run: docker run --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ env.UNITY_VERSION }}-main
+        run: docker run --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
 
       - name: Create Unity license config
         run: |
@@ -121,7 +121,7 @@ jobs:
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
-        if: ${{ !(startsWith(env.UNITY_VERSION, '2021.2')) && !(startsWith(env.UNITY_VERSION, '2022')) }}
+        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021.2')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
@@ -134,7 +134,7 @@ jobs:
       - name: Run Unity tests (editmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
-        if: ${{ !(startsWith(env.UNITY_VERSION, '2021.2')) && !(startsWith(env.UNITY_VERSION, '2022')) }}
+        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021.2')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
@@ -240,7 +240,7 @@ jobs:
         uses: actions/checkout@v2.3.3
 
       - name: Load env
-        run: echo "UNITY_VERSION=$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")" | tee -a $GITHUB_ENV
+        run: echo "::set-output name=unityVersion::$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
       - name: Download UPM package
         uses: actions/download-artifact@v2
@@ -251,7 +251,7 @@ jobs:
       - name: Setup Unity
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
-          unity-version: ${{ env.UNITY_VERSION }}
+          unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: windows-il2cpp
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
@@ -263,7 +263,7 @@ jobs:
 
       # Step used to reduce the Unity path to avoid long path errors on Windows.
       - name: Make symbolic link for Unity (Windows)
-        run: New-Item -ItemType SymbolicLink -Path "C:\${{ env.UNITY_VERSION }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ env.UNITY_VERSION }}"
+        run: New-Item -ItemType SymbolicLink -Path "C:\${{ steps.env.outputs.unityVersion }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ steps.env.outputs.unityVersion }}"
 
       - name: Integration Test - Create new Project
         run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
