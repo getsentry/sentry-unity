@@ -136,10 +136,10 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'init':");
 
             // if first message was init:false, wait for another one with init:true (this happens on windows...)
-            if (t.GetMessage(currentMessage).Contains("\"init\":false"))
+            int waitToInitLimit = 10;
+            while (t.GetMessage(currentMessage).Contains("\"init\":false") && waitToInitLimit-- > 0)
             {
                 t.ExpectMessage(++currentMessage, "'type':'session'");
-                t.ExpectMessage(currentMessage, "'init':true");
             }
 
             var guid = Guid.NewGuid().ToString();

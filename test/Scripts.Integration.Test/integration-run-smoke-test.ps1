@@ -58,6 +58,9 @@ function RunTest([string] $type) {
     Else {
         $info = "Test process finished with status code $($process.ExitCode)."
         If ($type -ne "smoke-crash") {
+            if ("$AppDataDir" -ne "") {
+                Get-Content "$AppDataDir/Player.log"
+            }
             throw $info
         }
         Write-Host $info
@@ -75,7 +78,7 @@ function RunApiServer() {
     # The process shouldn't finish by itself, if it did, there was an error, so let's check that
     Start-Sleep -Second 1
     if ($result.process.HasExited) {
-        Write-Error "Couldn't start the HTTP server"
+        Write-Host "Couldn't start the HTTP server" -ForegroundColor Red
         Write-Host "Standard Output:" -ForegroundColor Yellow
         Get-Content $result.outFile
         Write-Host "Standard Error:" -ForegroundColor Yellow
@@ -94,7 +97,7 @@ RunTest "smoke"
 # Native crash test
 $httpServer = RunApiServer
 RunTest "smoke-crash"
-$httpServer.process | Stop-Process
+$httpServer.process | Stop-Process -Force
 $output = Get-Content $httpServer.outFile -Raw
 Remove-Item $httpServer.outFile
 Write-Host "Standard Output:" -ForegroundColor Yellow
@@ -104,6 +107,5 @@ if ($output.Contains("POST http://localhost:8000/api/12345/minidump/")) {
     Write-Host "smoke-crash test: PASSED" -ForegroundColor Green
 }
 else {
-    Write-Host "smoke-crash test: FAILED" -ForegroundColor Red
-    exit 1
+    Write-Error "smoke-crash test: FAILED"
 }
