@@ -108,7 +108,7 @@ $httpServer = RunApiServer
 RunTest "smoke-crash"
 $httpServer.process | Stop-Process -Force
 $output = Get-Content $httpServer.outFile -Raw
-Remove-Item $httpServer.outFile
+Remove-Item $httpServer.outFile -ErrorAction Continue
 Write-Host "Standard Output:" -ForegroundColor Yellow
 $output
 
