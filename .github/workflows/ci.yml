@@ -41,8 +41,6 @@ jobs:
   build:
     name: Build - ${{ matrix.unity-version }}
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ matrix.unity-version }}-main
     # TODO add a "wait" step just before the artifacts are really needed - waiting for the SDK job to complete.
     #      That way, we can start downloading the docker container while the native SDKs are being built.
     #      There's no existing action to do that but a simple polling wait action could use the following API
@@ -67,6 +65,7 @@ jobs:
           submodules: recursive
 
       - name: Load env
+        id: env
         shell: pwsh
         run: echo "UNITY_VERSION=$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")" | tee -a $GITHUB_ENV
 
@@ -100,29 +99,30 @@ jobs:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
 
+      - name: Prepare the docker container
+        run: docker run --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ env.UNITY_VERSION }}-main
+
       - name: Create Unity license config
-        shell: pwsh
         run: |
-          $unityConfigDir = "/usr/share/unity3d/config/"
-          New-Item -Path $unityConfigDir -ItemType Directory
-          Set-Content -Path "$unityConfigDir/services-config.json" -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+          docker exec unity mkdir -p /usr/share/unity3d/config/
+          docker exec unity pwsh -c "Set-Content -Path /usr/share/unity3d/config/services-config.json -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'"
 
       - name: Install Unity UPM Packages
-        run: dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: docker exec unity dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build Sentry.Unity Solution
-        run: dotnet build -c Release
+        run: docker exec unity dotnet build -c Release
 
       - name: Assembly alias
         run: |
-          dotnet tool install --global Alias --version 0.2.0
-          ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+          docker exec unity bash -c 'dotnet tool install --global Alias --version 0.2.0 && \
+          ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
         if: ${{ !(startsWith(env.UNITY_VERSION, '2021.2')) && !(startsWith(env.UNITY_VERSION, '2022')) }}
-        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
+        run: docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
         if: ${{ failure() }}
@@ -135,7 +135,7 @@ jobs:
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
         if: ${{ !(startsWith(env.UNITY_VERSION, '2021.2')) && !(startsWith(env.UNITY_VERSION, '2022')) }}
-        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
+        run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
         if: ${{ failure() }}
@@ -146,15 +146,15 @@ jobs:
 
       # Add Sentry DSN via the editor integration so native support is included in the final game
       - name: Configure Sentry via the Editor Window
-        run: dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       # TODO: can we make unity only prepare the project, without compiling it, to unlock the unity license faster? iOS is already built like that.
       #       This option should do it: https://docs.unity3d.com/ScriptReference/BuildOptions.AcceptExternalModificationsToPlayer.html
       - name: Build Android Player with IL2CPP
-        run: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: docker exec unity dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Build iOS Player
-        run: dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: docker exec unity dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Prepare Sentry package for release
         shell: pwsh
@@ -228,8 +228,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 2022.1.0a12 removed until S.T.J issues fixed
-        unity-version: [2019.4.34f1, 2020.3.27f1, 2021.2.10f1]
+        unity-version: ['2019', '2020', '2021']
         include:
           - os: windows-latest
             unity-config-path: C:/ProgramData/Unity/config/
