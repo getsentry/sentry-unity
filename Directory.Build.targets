@@ -5,6 +5,8 @@
     <PlayerBuildPath>$(UnitySampleProjectPath)../artifacts/builds/</PlayerBuildPath>
     <AndroidBuildMethod>Builder.BuildAndroidIl2CPPPlayer</AndroidBuildMethod>
     <AndroidBuildPath>$(PlayerBuildPath)Android/IL2CPP_Player.apk</AndroidBuildPath>
+    <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
+    <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
     <UnityPackageProject>$(RepoRoot)temp/unity-packages</UnityPackageProject>
@@ -12,17 +14,18 @@
     <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
+    <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
     <!-- Cocoa -->
     <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
-    <SentryiOSDeviceArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Device/Sentry.framework/</SentryiOSDeviceArtifactsDestination>
-    <SentryiOSSimulatorArtifactsDestination>$(RepoRoot)package-dev/Plugins/iOS/Simulator/Sentry.framework/</SentryiOSSimulatorArtifactsDestination>
+    <SentryiOSDeviceArtifactsDestination>$(SentryArtifactsDestination)/iOS/Device/Sentry.framework/</SentryiOSDeviceArtifactsDestination>
+    <SentryiOSSimulatorArtifactsDestination>$(SentryArtifactsDestination)/iOS/Simulator/Sentry.framework/</SentryiOSSimulatorArtifactsDestination>
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
-    <SentryAndroidArtifactsDestination>$(RepoRoot)package-dev/Plugins/Android/Sentry/</SentryAndroidArtifactsDestination>
+    <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <!-- TODO: Do we need: x64, x86, arm64? -->
-    <SentryWindowsArtifactsDestination>$(RepoRoot)package-dev/Plugins/Windows/Sentry/</SentryWindowsArtifactsDestination>
+    <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -40,10 +43,11 @@
       <!--Short version for GitHub Actions to avoid long path names errors on Windows-->
       <UnityRoot Condition="Exists('C:\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\$(UnityVersion)\Editor</UnityRoot>
       <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
-      <UnityExec>$(UnityRoot)\Unity.exe</UnityExec>
+      <UnityExec>&quot;$(UnityRoot)\Unity.exe&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
+      <StandaloneDataPath>%USERPROFILE%\AppData\LocalLow\DefaultCompany\unity-of-bugs\</StandaloneDataPath>
       <TestDsn>https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417</TestDsn>
     </PropertyGroup>
 
@@ -62,12 +66,10 @@ or
       <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
       <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
-      <UnityExec>$(UnityRoot)/Contents/MacOS/Unity</UnityExec>
+      <UnityExec>&quot;$(UnityRoot)/Contents/MacOS/Unity&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)MacOS/IL2CPP_Player.app</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)/Contents/MacOS/unity-of-bugs</StandaloneExecutablePath>
-      <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
-      <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     </PropertyGroup>
 
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('OSX'))" Text="UnityRoot not found. Ensure Unity is installed.
@@ -84,7 +86,7 @@ or
       <UnityRoot Condition="Exists('$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor/Data/Managed/UnityEngine.dll')">$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor</UnityRoot>
       <UnityRoot Condition="$(UNITY_PATH) != ''">$(UNITY_PATH)/Editor</UnityRoot>
       <UnityManagedPath>$(UnityRoot)/Data/Managed</UnityManagedPath>
-      <UnityExec>$(UnityRoot)/Unity</UnityExec>
+      <UnityExec>xvfb-run -ae /dev/stdout &quot;$(UnityRoot)/Unity&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildLinuxIl2CPPPlayer</StandaloneBuildMethod>
       <StandaloneBuildPath>$(PlayerBuildPath)Linux/IL2CPP_Player</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
@@ -220,7 +222,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions -sentryOptions.Dsn $(TestDsn)" IgnoreStandardErrorWarningFormat="true">
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions -sentryOptions.Dsn $(TestDsn)" IgnoreStandardErrorWarningFormat="true">
       <Output TaskParameter="ExitCode" PropertyName="UnityConfigureSentryOptionsExitCode"/>
     </Exec>
 
@@ -235,7 +237,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
   <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP src/Sentry.Unity -->
@@ -247,7 +249,12 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec Command="$(StandaloneExecutablePath) --test smoke" IgnoreExitCode="true" ContinueOnError="true">
       <Output TaskParameter="ExitCode" PropertyName="SmokeTestExitCode"/>
     </Exec>
+
+    <Message Condition="'$(StandaloneDataPath)' != ''" Importance="High" Text="Runtime data is found in $(StandaloneDataPath)" />
+    <Exec Condition="$(StandaloneDataPath) != ''" Command="type &quot;$(StandaloneDataPath)/Player.log&quot;"/>
+
     <Error Text="Smoke test failed with code $(SmokeTestExitCode)" Condition="'$(SmokeTestExitCode)' != '200'" />
+    <Message Importance="High" Text="Smoke test PASSED" Condition="'$(SmokeTestExitCode)' == '200'" />
   </Target>
 
   <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
@@ -256,7 +263,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
   </Target>
@@ -267,19 +274,19 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building iOS Xcode project."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <!-- <Error Condition="!Exists('$(IOSBuildPath)')" Text="iOS build not found. Did something go wrong?"></Error> -->
   </Target>
 
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
   this solution without using the sample project which depends on the output of this build. -->
-  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" DependsOnTargets="FindUnity">
+  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" AfterTargets="FindUnity">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Create Packages."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
     <PropertyGroup>
       <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
       <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
@@ -294,7 +301,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity Restore Packages."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
@@ -305,7 +312,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="$(UnityExec) -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
@@ -316,7 +323,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity EditMode tests."></Message>
 
-    <Exec Command="&quot;$(UnityExec)&quot; -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="$(UnityExec) -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
@@ -343,7 +350,7 @@ if (Environment.GetEnvironmentVariable("CI") is not null
 
 if (Environment.GetEnvironmentVariable("UNITY_PATH") is { } unityPath)
 {
-    UnityVersion = File.ReadAllText(unityPath + "/version");
+    UnityVersion = File.ReadAllText(unityPath + "/version").Trim();
     Log.LogMessage("Unity Version from path " + unityPath + " is: " + UnityVersion);
     return true;
 }
@@ -492,4 +499,24 @@ void PrintFailedTests(XElement element)
     </Task>
   </UsingTask>
 
+  <!--  Downloads native SDKs from the latest successful GitHub Actions workflow run.
+        This is meant for developers - so that they don't have to compile the native SDK after each clean checkout (or git clean).
+        Depends on your a GH CLI installation - https://cli.github.com/
+        dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity -->
+  <Target Name="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Message Importance="High" Text="Downloading pre-compiled native SDKs from GitHub Actions artifacts." />
+    <Exec ConsoleToMSBuild="true" Command="gh run list --branch main --workflow CI --json &quot;conclusion,databaseId&quot; --jq &quot;first(.[] | select(.conclusion == \&quot;success\&quot;) | .databaseId)&quot;">
+      <Output TaskParameter="ConsoleOutput" PropertyName="LastSuccessfulRunId" />
+    </Exec>
+    <Error Condition="!('$(LastSuccessfulRunId)' > 0)" Text="Failed to find a successful run" />
+
+    <ItemGroup>
+      <SDK Include="Windows"/>
+      <SDK Include="iOS"/>
+      <SDK Include="Android"/>
+    </ItemGroup>
+    <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)/%(SDK.Identity)" />
+    <RemoveDir Directories="$(SentryArtifactsDestination)/%(SDK.Identity)" />
+    <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;%(SDK.Identity)-sdk&quot; -D &quot;$(SentryArtifactsDestination)/%(SDK.Identity)&quot;" />
+  </Target>
 </Project>

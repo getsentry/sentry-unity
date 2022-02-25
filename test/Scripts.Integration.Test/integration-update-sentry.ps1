@@ -1,10 +1,10 @@
 param($arg)
 
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1 
+. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
 $unityPath = FormatUnityPath $arg
 
-If (-not(Test-Path -Path "$PackageReleaseOutput")) 
+If (-not(Test-Path -Path "$PackageReleaseOutput"))
 {
     Throw "Path $PackageReleaseOutput does not exist. Be sure to run ./test/Scripts.Integration.Test/integration-create-project."
 }
@@ -12,7 +12,7 @@ If (-not(Test-Path -Path "$PackageReleaseOutput"))
 ClearUnityLog
 
 Write-Host -NoNewline "Starting Unity process:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk" -PassThru
+$UnityProcess = RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk")
 Write-Host " OK"
 
 WaitForLogFile 30

@@ -16,7 +16,7 @@ Else
 
 # Check if SDK is packed.
 $packageFile = "package-release.zip"
-If (Test-Path -Path "$(ProjectRoot)/$packageFile" ) 
+If (Test-Path -Path "$(ProjectRoot)/$packageFile" )
 {
     Write-Host "Found $packageFile"
 }
@@ -35,7 +35,7 @@ Expand-Archive -LiteralPath "$(ProjectRoot)/$packageReleaseZip" -DestinationPath
 Write-Host "OK"
 
 # Delete Previous Integration Project Folder if found
-If (Test-Path -Path "$NewProjectPath" ) 
+If (Test-Path -Path "$NewProjectPath" )
 {
     Write-Host -NoNewline "Removing previous integration test:"
     Remove-Item -LiteralPath "$NewProjectPath" -Force -Recurse
@@ -49,7 +49,7 @@ New-Item -Path "$(ProjectRoot)/samples" -Name $NewProjectName -ItemType "directo
 Write-Host " OK"
 
 Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = Start-Process -FilePath $unityPath -ArgumentList "-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-quit" -PassThru
+$UnityProcess = RunUnity $unityPath @("-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-quit")
 Write-Host " OK"
 
 WaitForLogFile 30
@@ -67,7 +67,7 @@ Else
     New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
     Copy-Item -Recurse "$PackageReleaseAssetsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
     Write-Host " OK"
-    
+
     Write-Host -NoNewline  "Copying Scripts"
     $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
     $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"

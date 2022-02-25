@@ -1,10 +1,23 @@
 # Changelog
 
-## Unreleased
+## 0.11.0
 
 ### Features
 
+- Config window support for programmatic options configuration ([#569](https://github.com/getsentry/sentry-unity/pull/569))
+
+## 0.10.1
+
+### Features
+
+- Samples include programmatic options configuration snippet ([#568](https://github.com/getsentry/sentry-unity/pull/568))
 - Support for programmatic options configuration ([#564](https://github.com/getsentry/sentry-unity/pull/564))
+
+### Fixes
+
+- Bump Sentry .NET SDK 3.14.1 ([#573](https://github.com/getsentry/sentry-unity/pull/573))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.14.1/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.14.0...3.14.1)
 
 ## 0.10.0
 
