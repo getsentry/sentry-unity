@@ -99,7 +99,7 @@ jobs:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
 
-      - name: Prepare the docker container
+      - name: Start the Unity the docker container
         run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
 
       - name: Create Unity license config
@@ -240,6 +240,7 @@ jobs:
         uses: actions/checkout@v2.3.3
 
       - name: Load env
+        id: env
         run: echo "::set-output name=unityVersion::$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
       - name: Download UPM package
