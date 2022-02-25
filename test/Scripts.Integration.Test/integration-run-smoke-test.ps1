@@ -7,6 +7,24 @@
 )
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
+if ("$TestAppPath" -eq "") {
+    If ($IsMacOS) {
+        $TestAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/$NewProjectName"
+    }
+    ElseIf ($IsWindows) {
+        $TestAppPath = "$NewProjectBuildPath/test.exe"
+        if ("$AppDataDir" -eq "") {
+            $AppDataDir = "$env:UserProfile\AppData\LocalLow\DefaultCompany\$NewProjectName\"
+        }
+    }
+    ElseIf ($IsLinux) {
+        $TestAppPath = "$NewProjectBuildPath/test"
+    }
+    Else {
+        Throw "Unsupported build"
+    }
+}
+
 if ("$AppDataDir" -ne "") {
     Write-Warning "Removing AppDataDir '$AppDataDir'"
     Remove-Item  -Recurse $AppDataDir
@@ -15,22 +33,6 @@ else {
     Write-Warning "No AppDataDir param given - if you're running this after a previous smoke-crash test, the smoke test will fail."
     Write-Warning "You can provide AppDataDir and it will be deleted before running the test."
     Write-Warning 'On windows, this would normally be: -AppDataDir "$env:UserProfile\AppData\LocalLow\DefaultCompany\unity-of-bugs\"'
-}
-
-
-if ("$TestAppPath" -eq "") {
-    If ($IsMacOS) {
-        $TestAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/$NewProjectName"
-    }
-    ElseIf ($IsWindows) {
-        $TestAppPath = "$NewProjectBuildPath/test.exe"
-    }
-    ElseIf ($IsLinux) {
-        $TestAppPath = "$NewProjectBuildPath/test"
-    }
-    Else {
-        Throw "Unsupported build"
-    }
 }
 
 Set-Strictmode -Version latest
@@ -46,6 +48,13 @@ function RunTest([string] $type) {
     # Wait for the test to finish
     $timedOut = $null # reset any previously set timeout
     $process | Wait-Process -Timeout 60  -ErrorAction SilentlyContinue -ErrorVariable timedOut
+
+    if ("$AppDataDir" -ne "") {
+        Write-Host "$type test: Player.log contents:" -ForegroundColor Yellow
+        Get-Content "$AppDataDir/Player.log"
+        Write-Host "================================================================================" -ForegroundColor Yellow
+        Write-Host "$type test: Player.log contents END" -ForegroundColor Yellow
+    }
 
     # ExitCode 200 is the status code indicating success inside SmokeTest.cs
     If ($process.ExitCode -eq 200) {
