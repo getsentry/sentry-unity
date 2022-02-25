@@ -3,6 +3,7 @@ using System.IO;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -21,10 +22,13 @@ namespace Sentry.Unity.Editor.iOS
 
             try
             {
+                // Unity doesn't allow an appending builds when switching iOS SDK versions and this will make sure we always copy the correct version of the Sentry.framework
                 var frameworkDirectory = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK ? "Device" : "Simulator";
-                var pathToFramework = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", frameworkDirectory, "Sentry.framework"));
+                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", frameworkDirectory, "Sentry.framework"));
+                CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", "Sentry.framework"), options?.DiagnosticLogger);
 
-                CopyFrameworkToBuildDirectory(pathToProject, pathToFramework, options?.DiagnosticLogger);
+                var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "SentryNativeBridge.m"));
+                CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), "SentryNativeBridge.m"), options?.DiagnosticLogger);
 
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
                 sentryXcodeProject.AddSentryFramework();
@@ -76,28 +80,47 @@ namespace Sentry.Unity.Editor.iOS
             }
         }
 
-        internal static void CopyFrameworkToBuildDirectory(string pathToXcodeProject, string pathToSentryFramework, IDiagnosticLogger? logger)
+        internal static void CopyFramework(string sourcePath, string targetPath, IDiagnosticLogger? logger)
         {
-            var targetPath = Path.Combine(pathToXcodeProject, "Frameworks", "Sentry.framework");
             if (Directory.Exists(targetPath))
             {
-                // If the target path already exists we can bail. Unity doesn't allow an appending builds when switching
-                // iOS SDK versions and this will make sure we always copy the correct version of the Sentry.framework
-                logger?.LogDebug("'Sentry.framework' has already copied to '{0}'", targetPath);
+                logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
                 return;
             }
 
-            if (Directory.Exists(pathToSentryFramework))
+            if (Directory.Exists(sourcePath))
             {
-                logger?.LogDebug("Copying 'Sentry.framework' from '{0}' to '{1}'", pathToSentryFramework, targetPath);
+                logger?.LogDebug("Copying from: '{0}' to '{1}'", sourcePath, targetPath);
 
-                Directory.CreateDirectory(Path.Combine(pathToXcodeProject, "Frameworks"));
-                FileUtil.CopyFileOrDirectory(pathToSentryFramework, targetPath);
+                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
+                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
             }
 
             if (!Directory.Exists(targetPath))
             {
-                throw new FileNotFoundException($"Failed to copy 'Sentry.framework' from '{pathToSentryFramework}' to Xcode project {targetPath}");
+                throw new DirectoryNotFoundException($"Failed to copy '{sourcePath}' to '{targetPath}'");
+            }
+        }
+
+        internal static void CopyFile(string sourcePath, string targetPath, IDiagnosticLogger? logger)
+        {
+            if (File.Exists(targetPath))
+            {
+                logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
+                return;
+            }
+
+            if (File.Exists(sourcePath))
+            {
+                logger?.LogDebug("Copying from: '{0}' to '{1}'", sourcePath, targetPath);
+
+                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
+                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
+            }
+
+            if (!File.Exists(targetPath))
+            {
+                throw new FileNotFoundException($"Failed to copy '{sourcePath}' to '{targetPath}'");
             }
         }
     }
