@@ -278,20 +278,23 @@ jobs:
       - name: Make symbolic link for Unity (Windows)
         run: New-Item -ItemType SymbolicLink -Path "C:\${{ steps.env.outputs.unityVersion }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ steps.env.outputs.unityVersion }}"
 
-      - name: Integration Test - Create new Project
+      - name: Create new Project
         run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
 
-      - name: Integration Test - Build Standalone Player without Sentry SDK
+      - name: Build Standalone Player without Sentry SDK
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
 
-      - name: Integration Test - Add Sentry to test project
+      - name: Add Sentry to test project
         run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
 
-      - name: Integration Test - Build Standalone Player Sentry SDK
+      - name: Build Standalone Player Sentry SDK
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
 
-      - name: Integration Test - Run Player - Smoke Test
-        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1
+      - name: Run Player - Smoke Test
+        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
+
+      - name: Run Player - Crash Test
+        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Crash
 
   android-smoke-test:
     needs: [build]

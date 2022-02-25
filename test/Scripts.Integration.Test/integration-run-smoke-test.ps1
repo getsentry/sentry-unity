@@ -3,9 +3,19 @@
     [string] $TestAppPath = "",
 
     [Parameter()]
-    [string] $AppDataDir = ""
+    [string] $AppDataDir = "",
+
+    [Parameter()]
+    [switch] $Smoke,
+
+    [Parameter()]
+    [switch] $Crash
 )
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+
+If (!$Smoke -and !$Crash) {
+    Write-Error "Select one of the following tests (or both): -Smoke or -Crash"
+}
 
 if ("$TestAppPath" -eq "") {
     If ($IsMacOS) {
@@ -21,13 +31,15 @@ if ("$TestAppPath" -eq "") {
         $TestAppPath = "$NewProjectBuildPath/test"
     }
     Else {
-        Throw "Unsupported build"
+        Write-Error "Unsupported build"
     }
 }
 
 if ("$AppDataDir" -ne "") {
-    Write-Warning "Removing AppDataDir '$AppDataDir'"
-    Remove-Item  -Recurse $AppDataDir
+    if (Test-Path $AppDataDir) {
+        Write-Warning "Removing AppDataDir '$AppDataDir'"
+        Remove-Item  -Recurse $AppDataDir
+    }
 }
 else {
     Write-Warning "No AppDataDir param given - if you're running this after a previous smoke-crash test, the smoke test will fail."
@@ -101,20 +113,37 @@ function RunApiServer() {
 }
 
 # Simple smoke test
-RunTest "smoke"
+if ($Smoke) {
+    RunTest "smoke"
+}
 
 # Native crash test
-$httpServer = RunApiServer
-RunTest "smoke-crash"
-$httpServer.process | Stop-Process -Force
-$output = Get-Content $httpServer.outFile -Raw
-Remove-Item $httpServer.outFile -ErrorAction Continue
-Write-Host "Standard Output:" -ForegroundColor Yellow
-$output
+if ($Crash) {
+    $httpServer = RunApiServer
+    RunTest "smoke-crash"
 
-if ($output.Contains("POST http://localhost:8000/api/12345/minidump/")) {
-    Write-Host "smoke-crash test: PASSED" -ForegroundColor Green
-}
-else {
-    Write-Error "smoke-crash test: FAILED"
+    $successMessage = "POST http://localhost:8000/api/12345/minidump/"
+
+    for ($i = 0; $i -lt 100; $i++) {
+        $output = Get-Content $httpServer.outFile -Raw
+
+        if ($output.Contains($successMessage)) {
+            break
+        }
+        Start-Sleep -Milliseconds 100
+    }
+
+    $httpServer.process | Stop-Process -ErrorAction SilentlyContinue
+    $httpServer.process | Stop-Process -ErrorAction SilentlyContinue -Force
+    Remove-Item $httpServer.outFile -ErrorAction Continue
+
+    Write-Host "Standard Output:" -ForegroundColor Yellow
+    $output
+
+    if ($output.Contains($successMessage)) {
+        Write-Host "smoke-crash test: PASSED" -ForegroundColor Green
+    }
+    else {
+        Write-Error "smoke-crash test: FAILED"
+    }
 }
