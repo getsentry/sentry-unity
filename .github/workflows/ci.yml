@@ -100,12 +100,12 @@ jobs:
           path: package-dev/Plugins/Windows
 
       - name: Prepare the docker container
-        run: docker run --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
+        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
 
       - name: Create Unity license config
         run: |
           docker exec unity mkdir -p /usr/share/unity3d/config/
-          docker exec unity pwsh -c "Set-Content -Path /usr/share/unity3d/config/services-config.json -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'"
+          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Install Unity UPM Packages
         run: docker exec unity dotnet msbuild /t:UnityRestorePackages /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
