@@ -133,18 +133,23 @@ public class SmokeTester : MonoBehaviour
 
             var currentMessage = 0;
             t.ExpectMessage(currentMessage, "'type':'session'");
-            t.ExpectMessage(currentMessage, "'init':");
-
-            // if first message was init:false, wait for another one with init:true (this happens on windows...)
-            int waitToInitLimit = 10;
-            while (t.GetMessage(currentMessage).Contains("\"init\":false") && waitToInitLimit-- > 0)
-            {
-                t.ExpectMessage(++currentMessage, "'type':'session'");
-            }
 
             var guid = Guid.NewGuid().ToString();
             Debug.LogError(guid);
-            t.ExpectMessage(++currentMessage, "'type':'event'");
+
+            // Skip the session init requests (there may be multiple of othem). We can't skip them by a "positive"
+            // because they're also repeated with standard events (in an envelope).
+            Debug.Log("Skipping all non-event requests");
+            for (; currentMessage < 10; currentMessage++)
+            {
+                if (t.CheckMessage(currentMessage, "'type':'event'"))
+                {
+                    break;
+                }
+            }
+            Debug.Log($"Done skipping non-event requests. Last one was: #{currentMessage}");
+
+            t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, guid);
 
             SentrySdk.CaptureMessage(guid);
@@ -305,11 +310,13 @@ public class SmokeTester : MonoBehaviour
             }
         }
 
-        public void ExpectMessage(int index, String substring)
+        public bool CheckMessage(int index, String substring)
         {
             var message = GetMessage(index);
-            Expect($"HTTP Request #{index} contains \"{substring}\".",
-               message.Contains(substring) || message.Contains(substring.Replace("'", "\"")));
+            return message.Contains(substring) || message.Contains(substring.Replace("'", "\""));
         }
+
+        public void ExpectMessage(int index, String substring) =>
+            Expect($"HTTP Request #{index} contains \"{substring}\".", CheckMessage(index, substring));
     }
 }
