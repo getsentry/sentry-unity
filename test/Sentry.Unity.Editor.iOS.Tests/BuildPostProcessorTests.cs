@@ -35,7 +35,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework");
 
-            BuildPostProcess.CopyFramework( _testFrameworkPath, targetPath, new TestLogger());
+            BuildPostProcess.CopyFramework(_testFrameworkPath, targetPath, new TestLogger());
 
             Assert.IsTrue(Directory.Exists(targetPath));
         }
@@ -66,7 +66,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.m");
 
-            BuildPostProcess.CopyFile( _testFilePath, targetPath, new TestLogger());
+            BuildPostProcess.CopyFile(_testFilePath, targetPath, new TestLogger());
 
             Assert.IsTrue(File.Exists(targetPath));
         }
