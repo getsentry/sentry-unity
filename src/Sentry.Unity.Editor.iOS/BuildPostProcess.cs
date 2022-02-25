@@ -32,6 +32,7 @@ namespace Sentry.Unity.Editor.iOS
 
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
                 sentryXcodeProject.AddSentryFramework();
+                sentryXcodeProject.AddSentryNativeBridge();
 
                 if (options?.Validate() != true)
                 {

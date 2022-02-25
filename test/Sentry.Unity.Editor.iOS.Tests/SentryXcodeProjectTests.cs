@@ -84,7 +84,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
             xcodeProject.AddSentryFramework();
 
-            StringAssert.Contains(@"OTHER_LDFLAGS = ""-ObjC"";", xcodeProject.ProjectToString());
+            StringAssert.Contains(SentryXcodeProject.FrameworkName, xcodeProject.ProjectToString());
         }
 
         [Test]
@@ -101,6 +101,17 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
+        public void AddSentryNativeBridges_FrameworkSearchPathAlreadySet_DoesNotGetOverwritten()
+        {
+            var xcodeProject = _fixture.GetSut();
+            xcodeProject.ReadFromProjectFile();
+
+            xcodeProject.AddSentryNativeBridge();
+
+            StringAssert.Contains(SentryXcodeProject.BridgeName, xcodeProject.ProjectToString());
+        }
+
+        [Test]
         public void CreateNativeOptions_CleanXcodeProject_NativeOptionsAdded()
         {
             var xcodeProject = _fixture.GetSut();
@@ -108,7 +119,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
             xcodeProject.AddNativeOptions(_fixture.Options);
 
-            StringAssert.Contains("SentryOptions.m", xcodeProject.ProjectToString());
+            StringAssert.Contains(SentryXcodeProject.OptionsName, xcodeProject.ProjectToString());
         }
 
         [Test]
