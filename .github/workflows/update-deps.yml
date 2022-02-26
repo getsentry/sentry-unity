@@ -2,7 +2,7 @@ name: Update Dependencies
 
 on:
   schedule:
-    - cron:  '0 3 * * *'
+    - cron: '0 3 * * *'
 
 jobs:
   update-dep:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Update ci-env.ps1
         run: |
-          $file = ".github\workflows\ci-env.ps1"
+          $file = "scripts/ci-env.ps1"
           $regexVersion = '${{ matrix.unity-prefix }}'.Replace(".", "\.") + "[0-9.a-z]+"
           echo "Regex: $regexVersion"
           (Get-Content $file) -replace $regexVersion, '${{ steps.version-select.outputs.version }}' | Out-File $file
@@ -51,7 +51,7 @@ jobs:
           branch: chore/unity-${{ steps.version-select.outputs.version }}
           commit-message: 'chore: update to Unity ${{ steps.version-select.outputs.version }}'
           title: 'Update to Unity ${{ steps.version-select.outputs.version }}'
-          # base: main
+          base: main
           body: |
             #skip-changelog
 
