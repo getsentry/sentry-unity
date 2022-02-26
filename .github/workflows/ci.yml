@@ -67,7 +67,7 @@ jobs:
       - name: Load env
         id: env
         shell: pwsh
-        run: echo "::set-output name=unityVersion::$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -241,7 +241,7 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "::set-output name=unityVersion::$(./.github/workflows/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
       - name: Download UPM package
         uses: actions/download-artifact@v2
