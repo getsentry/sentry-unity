@@ -119,31 +119,44 @@ if ($Smoke) {
 
 # Native crash test
 if ($Crash) {
-    $httpServer = RunApiServer
-    RunTest "smoke-crash"
+    $runs = 1   # You can increase this to run the crash test multiple times in a loop (until it fails)
+    for ($run = 1; $run -le $runs; $run++) {
+        $httpServer = RunApiServer
+        RunTest "smoke-crash"
 
-    $successMessage = "POST http://localhost:8000/api/12345/minidump/"
+        $httpServerUri = "http://localhost:8000"
+        $successMessage = "POST $httpServerUri/api/12345/minidump/"
 
-    for ($i = 0; $i -lt 100; $i++) {
+        # Wait for 1 minute (600 * 100 milliseconds) until the expected message comes in
+        for ($i = 0; $i -lt 600; $i++) {
+            $output = Get-Content $httpServer.outFile -Raw
+
+            if ($output.Contains($successMessage)) {
+                break
+            }
+            Start-Sleep -Milliseconds 100
+        }
+
+        # Stop the HTTP server
+        Write-Host "Stopping the dummy API server ..." -NoNewline
+        try {
+            (Invoke-WebRequest -URI "$httpServerUri/STOP").StatusDescription
+        }
+        catch {
+            $httpServer.process | Stop-Process -Force -ErrorAction SilentlyContinue
+        }
+        Start-Sleep -Milliseconds 500
         $output = Get-Content $httpServer.outFile -Raw
+        Remove-Item $httpServer.outFile -ErrorAction Continue
+
+        Write-Host "Standard Output:" -ForegroundColor Yellow
+        $output
 
         if ($output.Contains($successMessage)) {
-            break
+            Write-Host "smoke-crash test $run/$runs : PASSED" -ForegroundColor Green
         }
-        Start-Sleep -Milliseconds 100
-    }
-
-    $httpServer.process | Stop-Process -ErrorAction SilentlyContinue
-    $httpServer.process | Stop-Process -ErrorAction SilentlyContinue -Force
-    Remove-Item $httpServer.outFile -ErrorAction Continue
-
-    Write-Host "Standard Output:" -ForegroundColor Yellow
-    $output
-
-    if ($output.Contains($successMessage)) {
-        Write-Host "smoke-crash test: PASSED" -ForegroundColor Green
-    }
-    else {
-        Write-Error "smoke-crash test: FAILED"
+        else {
+            Write-Error "smoke-crash test $run/$runs : FAILED"
+        }
     }
 }

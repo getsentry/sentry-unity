@@ -33,10 +33,14 @@ try {
         # send an empty response
         $context.Response.ContentLength64 = 0
         $context.Response.OutputStream.Close()
+        if ($context.Request.Url.PathAndQuery -eq "/STOP") {
+            break
+        }
     }
 }
 finally {
-    # This is always called when ctrl+c is used
+    # This is always called when ctrl+c is used - note, this doesn't seem to be 100 % working...
+    # instead, you can send a GET request to http://localhost:8000/STOP
     write-Host "HTTP server stopping!"
     $httpServer.Stop()
 }
