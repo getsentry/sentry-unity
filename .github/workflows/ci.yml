@@ -251,6 +251,15 @@ jobs:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
 
+      # Caching the whole Unity installation would overflow the 10 GiB limit repositories have but we can cache the Hub
+      # to achieve some speedup here at a low size cost.
+      # See https://github.com/kuler90/setup-unity/blob/797ebd0cc9d0e0ca5bcd6cc280ec1a6e685fbf83/src/setup.js#L36
+      - name: Cache Unity Hub
+        uses: actions/cache@v2
+        with:
+          path: 'C:/Program Files/Unity Hub'
+          key: unity-hub|windows
+
       - name: Setup Unity
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
