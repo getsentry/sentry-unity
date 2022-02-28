@@ -88,7 +88,7 @@ fi";
             _project.GetType().GetMethod("ReadFromString", BindingFlags.Public | BindingFlags.Instance).Invoke(_project, new[] { File.ReadAllText(_projectPath) });
             _mainTargetGuid = (string)_project.GetType().GetMethod("GetUnityMainTargetGuid", BindingFlags.Public | BindingFlags.Instance).Invoke(_project, null);
             _unityFrameworkTargetGuid = (string)_project.GetType().GetMethod("GetUnityFrameworkTargetGuid", BindingFlags.Public | BindingFlags.Instance).Invoke(_project, null);
-            }
+        }
 
         public void AddSentryFramework()
         {
@@ -99,15 +99,15 @@ fi";
 
             var addFrameworkToProjectMethod = _project.GetType()
                 .GetMethod("AddFrameworkToProject", BindingFlags.Public | BindingFlags.Instance);
-            addFrameworkToProjectMethod.Invoke(_project, new object[] { _mainTargetGuid, FrameworkName, false});
-            addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, FrameworkName, false});
+            addFrameworkToProjectMethod.Invoke(_project, new object[] { _mainTargetGuid, FrameworkName, false });
+            addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, FrameworkName, false });
 
             // Embedding the framework because it's dynamic and needed at runtime
             // _project.AddFileToEmbedFrameworks(_mainTargetGuid, frameworkGuid);
             var xcodeAssembly = Assembly.Load("UnityEditor.iOS.Extensions.Xcode");
             var pbxProjectExtensionClass = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.Extensions.PBXProjectExtensions");
             var addFileToEmbedFrameworksMethod = pbxProjectExtensionClass.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static);
-            addFileToEmbedFrameworksMethod.Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null});
+            addFileToEmbedFrameworksMethod.Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
 
             SetSearchPathBuildProperty("$(inherited)");
             SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
@@ -145,8 +145,8 @@ fi";
             // _project.AddBuildProperty(_mainTargetGuid, "FRAMEWORK_SEARCH_PATHS", path);
             // _project.AddBuildProperty(_unityFrameworkTargetGuid, "FRAMEWORK_SEARCH_PATHS", path);
             _project.GetType()
-                .GetMethod("AddBuildProperty", new []{typeof(string[]), typeof(string), typeof(string)})
-                .Invoke(_project, new object[] { new [] {_mainTargetGuid, _unityFrameworkTargetGuid}, "FRAMEWORK_SEARCH_PATHS", path });
+                .GetMethod("AddBuildProperty", new[] { typeof(string[]), typeof(string), typeof(string) })
+                .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
         public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger)
@@ -158,7 +158,7 @@ fi";
             }
 
             // _project.AddShellScriptBuildPhase(_mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript);
-            _project.GetType().GetMethod("AddShellScriptBuildPhase", new []{typeof(string), typeof(string), typeof(string), typeof(string)})
+            _project.GetType().GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
         }
 
