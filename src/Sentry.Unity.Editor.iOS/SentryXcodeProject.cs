@@ -10,11 +10,13 @@ namespace Sentry.Unity.Editor.iOS
 {
     internal class SentryXcodeProject : IDisposable
     {
-        private const string FrameworkName = "Sentry.framework";
+        internal const string FrameworkName = "Sentry.framework";
+        internal const string BridgeName = "SentryNativeBridge.m";
+        internal const string OptionsName = "SentryOptions.m";
         internal const string SymbolUploadPhaseName = "SymbolUpload";
 
         private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
-        private readonly string _optionsPath = Path.Combine("MainApp", "SentryOptions.m");
+        private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
 
         private readonly string _projectRoot;
         private readonly PBXProject _project;
@@ -79,6 +81,13 @@ namespace Sentry.Unity.Editor.iOS
             _project.SetBuildProperty(_unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym");
 
             _project.AddBuildProperty(_mainTargetGuid, "OTHER_LDFLAGS", "-ObjC");
+        }
+
+        public void AddSentryNativeBridge()
+        {
+            var relativeBridgePath = Path.Combine("Libraries", SentryPackageInfo.GetName(), BridgeName);
+            var bridgeGuid = _project.AddFile(relativeBridgePath, relativeBridgePath);
+            _project.AddFileToBuild(_unityFrameworkTargetGuid, bridgeGuid);
         }
 
         internal void SetSearchPathBuildProperty(string path)
