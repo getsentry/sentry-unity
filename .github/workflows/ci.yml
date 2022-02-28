@@ -20,6 +20,14 @@ env:
   DOTNET_NOLOGO: 1
 
 jobs:
+  cancel-previous-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b # Tag: 0.9.1
+        with:
+          access_token: ${{ github.token }}
+
   android-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
@@ -53,12 +61,6 @@ jobs:
         # 2022.1.0a12 removed until S.T.J issues fixed
         unity-version: ['2019', '2020', '2021']
     steps:
-      # Tag: 0.9.1
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b
-        with:
-          access_token: ${{ github.token }}
-
       - name: Checkout
         uses: actions/checkout@v2.3.3
         with:
