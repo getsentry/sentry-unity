@@ -29,6 +29,8 @@ jobs:
           echo "Latest version: $version ($changeset)"
 
       - uses: actions/checkout@v2
+        with:
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Update sample ProjectVersion.txt
         if: ${{ matrix.unity-prefix == '2019.' }}
