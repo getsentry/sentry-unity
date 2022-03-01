@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using AOT;
 using System.Threading;
+using System.Text;
 
 namespace Sentry.Unity
 {
@@ -141,7 +142,7 @@ namespace Sentry.Unity
 
         // This method is called from the C library
         [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
-        private static void nativeLog(int cLevel, string message, IntPtr argsAddress, IntPtr userData)
+        private static void nativeLog(int cLevel, string message, IntPtr args, IntPtr userData)
         {
             var logger = _getLogger();
             if (logger is null)
@@ -158,10 +159,24 @@ namespace Sentry.Unity
                 _ => SentryLevel.Info,
             };
 
-            // TODO args
+            if (!logger.IsEnabled(level))
+                return;
+
+            if (message.Contains("%"))
+            {
+                var formattedLength = vsnprintf(null, UIntPtr.Zero, message, args);
+                var buffer = new StringBuilder(formattedLength + 1);
+                vsprintf(buffer, message, args);
+                message = buffer.ToString();
+            }
             logger.Log(level, $"Native: {message}");
         }
 
+        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int vsprintf(StringBuilder buffer, string format, IntPtr args);
+
+        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int vsnprintf(string? buffer, UIntPtr bufferSize, string format, IntPtr args);
 
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);
