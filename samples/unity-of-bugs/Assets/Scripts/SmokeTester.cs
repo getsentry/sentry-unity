@@ -94,6 +94,9 @@ public class SmokeTester : MonoBehaviour
         options.Dsn = "http://publickey@localhost:8000/12345";
         options.Debug = true;
         options.DebugOnlyInEditor = false;
+        // Need to set the logger explicitly so it's available already for the native .Configure() methods.
+        // SentryUnity.Init() would set it to the same value, but too late for us.
+        options.DiagnosticLogger = new UnityLogger(options);
 
 #if SENTRY_NATIVE_IOS
         Debug.Log("SMOKE TEST: Configure Native iOS.");

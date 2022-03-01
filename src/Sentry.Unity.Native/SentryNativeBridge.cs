@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using AOT;
+using System.Threading;
 
 namespace Sentry.Unity
 {
@@ -64,6 +66,22 @@ namespace Sentry.Unity
                 }
             }
 
+            var prevLogger = _getLogger();
+            if (options.DiagnosticLogger is null)
+            {
+                if (prevLogger is not null)
+                {
+                    prevLogger.LogDebug("Unsetting the current native logger");
+                }
+                _setLogger(null);
+            }
+            else
+            {
+                options.DiagnosticLogger.LogDebug($"{(prevLogger is null ? "Setting a" : "Replacing the")} native logger");
+                _setLogger(options.DiagnosticLogger);
+                sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+            }
+
             sentry_init(cOptions);
         }
 
@@ -97,9 +115,53 @@ namespace Sentry.Unity
         [DllImport("sentry")]
         private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
-        // TODO we could set a logger for sentry-native, forwarding the logs to `options.DiagnosticLogger?`
-        // [DllImport("sentry")]
-        // private static extern void sentry_options_set_logger(IntPtr options, IntPtr logger, IntPtr userData);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
+        private delegate void sentry_logger_function_t(int level, string message, IntPtr argsAddress, IntPtr userData);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
+
+        // The logger we should forward native messages to.
+        private static IDiagnosticLogger? _logger;
+        private static Mutex _loggerMutex = new Mutex();
+
+        private static IDiagnosticLogger? _getLogger()
+        {
+            _loggerMutex.WaitOne();
+            var result = _logger;
+            _loggerMutex.ReleaseMutex();
+            return result;
+        }
+        private static void _setLogger(IDiagnosticLogger? logger)
+        {
+            _loggerMutex.WaitOne();
+            _logger = logger;
+            _loggerMutex.ReleaseMutex();
+        }
+
+        // This method is called from the C library
+        [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
+        private static void nativeLog(int cLevel, string message, IntPtr argsAddress, IntPtr userData)
+        {
+            var logger = _getLogger();
+            if (logger is null)
+                return;
+
+            // see sentry.h: sentry_level_e
+            var level = cLevel switch
+            {
+                -1 => SentryLevel.Debug,
+                0 => SentryLevel.Info,
+                1 => SentryLevel.Warning,
+                2 => SentryLevel.Error,
+                3 => SentryLevel.Fatal,
+                _ => SentryLevel.Info,
+            };
+
+            // TODO args
+            logger.Log(level, $"Native: {message}");
+        }
+
 
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);
