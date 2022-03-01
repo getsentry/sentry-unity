@@ -103,7 +103,7 @@ fi";
                 .Invoke(_project, null);
             _unityFrameworkTargetGuid = (string)PBXProjectType.GetMethod("GetUnityFrameworkTargetGuid", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, null);
-            }
+        }
 
         public void AddSentryFramework()
         {
@@ -112,12 +112,12 @@ fi";
                 .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
 
             var addFrameworkToProjectMethod = PBXProjectType.GetMethod("AddFrameworkToProject", BindingFlags.Public | BindingFlags.Instance);
-            addFrameworkToProjectMethod.Invoke(_project,  new object[] { _mainTargetGuid, FrameworkName, false});
-            addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, FrameworkName, false});
+            addFrameworkToProjectMethod.Invoke(_project, new object[] { _mainTargetGuid, FrameworkName, false });
+            addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, FrameworkName, false });
 
             // Embedding the framework because it's dynamic and needed at runtime
             PBXProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
-                .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null});
+                .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
 
             SetSearchPathBuildProperty("$(inherited)");
             SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
@@ -143,8 +143,8 @@ fi";
         // Used for testing
         internal void SetSearchPathBuildProperty(string path)
         {
-            PBXProjectType.GetMethod("AddBuildProperty", new []{typeof(string[]), typeof(string), typeof(string)})
-                .Invoke(_project, new object[] { new [] {_mainTargetGuid, _unityFrameworkTargetGuid}, "FRAMEWORK_SEARCH_PATHS", path });
+            PBXProjectType.GetMethod("AddBuildProperty", new[] { typeof(string[]), typeof(string), typeof(string) })
+                .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
         public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger)
@@ -155,7 +155,7 @@ fi";
                 return;
             }
 
-            PBXProjectType.GetMethod("AddShellScriptBuildPhase", new []{typeof(string), typeof(string), typeof(string), typeof(string)})
+            PBXProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
         }
 
