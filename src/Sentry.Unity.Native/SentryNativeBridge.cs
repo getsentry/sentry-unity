@@ -105,10 +105,8 @@ namespace Sentry.Unity
         [DllImport("sentry")]
         private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
 
-
         [DllImport("sentry")]
         private static extern void sentry_options_set_database_path(IntPtr options, string path);
-
 
         [DllImport("sentry")]
         private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);

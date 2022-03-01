@@ -294,8 +294,6 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
 
       - name: Run Player - Crash Test
-        # We need to run through bash so that the game-generated Player.log will contain [debug] output messages.
-        shell: bash
         run: pwsh -c "./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Crash"
 
   android-smoke-test:
