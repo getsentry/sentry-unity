@@ -189,6 +189,10 @@ public class SmokeTester : MonoBehaviour
 
         InitSentry(new SentryUnityOptions());
 
+        const int sleepMs = 5000;
+        Debug.Log($"SMOKE TEST: Sleep for {sleepMs} ms to avoid failure caused by the background data sync during sentry init.");
+        Thread.Sleep(sleepMs);
+
         AddContext();
 
         Debug.Log("SMOKE TEST: Issuing a native crash (c++ unhandled exception)");
