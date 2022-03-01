@@ -94,8 +94,6 @@ public class SmokeTester : MonoBehaviour
         options.Dsn = "http://publickey@localhost:8000/12345";
         options.Debug = true;
         options.DebugOnlyInEditor = false;
-        options.DiagnosticLevel = SentryLevel.Debug;
-        options.DiagnosticLogger = new ConsoleDiagnosticLogger(SentryLevel.Debug);
 
 #if SENTRY_NATIVE_IOS
         Debug.Log("SMOKE TEST: Configure Native iOS.");
