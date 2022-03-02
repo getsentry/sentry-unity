@@ -4,13 +4,14 @@ using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;
+using System.Diagnostics;
 
 namespace Sentry.Unity.Editor.Native
 {
     public static class BuildPostProcess
     {
         [PostProcessBuild(1)]
-        public static void OnPostProcessBuild(BuildTarget target, string pathToProject)
+        public static void OnPostProcessBuild(BuildTarget target, string executablePath)
         {
             if (target is not (BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64))
             {
@@ -18,7 +19,7 @@ namespace Sentry.Unity.Editor.Native
             }
 
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
-            var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
+            var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
 
             try
             {
@@ -40,8 +41,9 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
-                addCrashHandler(pathToProject);
-                uploadDebugSymbols(logger, pathToProject);
+                var projectDir = Path.GetDirectoryName(executablePath);
+                addCrashHandler(logger, projectDir);
+                uploadDebugSymbols(logger, projectDir, Path.GetFileName(executablePath));
 
             }
             catch (Exception e)
@@ -51,25 +53,71 @@ namespace Sentry.Unity.Editor.Native
             }
         }
 
-        private static void addCrashHandler(string pathToProject)
+        private static void addCrashHandler(IDiagnosticLogger logger, string projectDir)
         {
             var crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins",
                 "Windows", "Sentry", "crashpad_handler.exe"));
-            var targetPath = Path.Combine(Path.GetDirectoryName(pathToProject), Path.GetFileName(crashpadPath));
+            var targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
+            logger.LogInfo($"Copying the native crash handler '{Path.GetFileName(crashpadPath)}' to the output directory");
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void uploadDebugSymbols(IDiagnosticLogger logger, string pathToProject)
+        private static void uploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
         {
             var cliOptions = SentryCliOptions.LoadCliOptions();
             if (!cliOptions.Validate(logger))
                 return;
 
-            // TODO actual symbol upload
-            // SentryCli.CreateSentryProperties(pathToProject, cliOptions);
-            // SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
+            var propertiesFile = SentryCli.CreateSentryProperties(projectDir, cliOptions);
 
-            // sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
+            logger.LogInfo($"Uploading debuging information using sentry-cli in {projectDir}");
+
+            var paths = "";
+            Func<string, bool> addPath = (string name) =>
+            {
+                var fullPath = Path.Combine(projectDir, name);
+                if (Directory.Exists(fullPath) || File.Exists(fullPath))
+                {
+                    paths += " " + name;
+                    logger.LogDebug($"Adding '{name}' to the debug-info upload");
+                    return true;
+                }
+                else
+                {
+                    logger.LogWarning($"Coudn't find '{name}' - debug symbol upload will be incomplete");
+                    return false;
+                }
+            };
+
+            addPath(executableName);
+            addPath("GameAssembly.dll");
+            addPath("UnityPlayer.dll");
+            addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+
+            // no debug info in sentry.dll but sentry.io will complain about a missing file...
+            // addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
+
+            // Configure the process using the StartInfo properties.
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = SentryCli.SetupSentryCli(),
+                    WorkingDirectory = projectDir,
+                    Arguments = "upload-dif " + paths,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+            process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
+            process.OutputDataReceived += (sender, args) => logger.LogDebug($"sentry-cli: {args.Data.ToString()}");
+            process.ErrorDataReceived += (sender, args) => logger.LogWarning($"sentry-cli: {args.Data.ToString()}");
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
         }
     }
 }
