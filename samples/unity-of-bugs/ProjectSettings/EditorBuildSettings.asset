@@ -12,6 +12,6 @@ EditorBuildSettings:
     path: Assets/Scenes/2_NativeSupport.unity
     guid: b2239cfd14b1c400ea7357ae542078c1
   - enabled: 1
-    path: Assets/Scenes/3_Transition.unity
+    path: Assets/Scenes/3_AdditionalSamples.unity
     guid: 9770f231579c0402c9384221ae02c07f
   m_configObjects: {}
