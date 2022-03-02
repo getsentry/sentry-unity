@@ -290,7 +290,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
 
-            AssertLogContains(SentryLevel.Debug, "Automated symbols upload has been disabled.");
+            AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload has been disabled.");
         }
 
         [Test]
@@ -301,7 +301,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
 
-            AssertLogContains(SentryLevel.Debug, "Automated symbols upload for development builds has been disabled.");
+            AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload for development builds has been disabled.");
         }
 
         [Test]

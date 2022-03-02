@@ -35,7 +35,7 @@ namespace Sentry.Unity.Editor
             return cliOptions;
         }
 
-        public bool Validate(IDiagnosticLogger? logger)
+        public bool Validate(IDiagnosticLogger? logger, bool? isDevelopmentBuild = null)
         {
             if (!UploadSymbols)
             {
@@ -43,7 +43,7 @@ namespace Sentry.Unity.Editor
                 return false;
             }
 
-            if (EditorUserBuildSettings.development && !UploadDevelopmentSymbols)
+            if ((isDevelopmentBuild ?? EditorUserBuildSettings.development) && !UploadDevelopmentSymbols)
             {
                 logger?.LogDebug("sentry-cli: Automated symbols upload for development builds has been disabled.");
                 return false;

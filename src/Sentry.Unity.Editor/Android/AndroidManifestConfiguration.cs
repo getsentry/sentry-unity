@@ -163,7 +163,7 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
-            if (!sentryCliOptions.Validate(logger))
+            if (!sentryCliOptions.Validate(logger, _isDevelopmentBuild))
                 return;
 
             try
