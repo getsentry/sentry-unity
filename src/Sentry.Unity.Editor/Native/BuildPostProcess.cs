@@ -40,43 +40,52 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
-                var crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins",
-                    "Windows", "Sentry", "crashpad_handler.exe"));
-                var targetPath = Path.Combine(Path.GetDirectoryName(pathToProject), Path.GetFileName(crashpadPath));
-                File.Copy(crashpadPath, targetPath, true);
+                addCrashHandler(pathToProject);
+                uploadDebugSymbols(pathToProject);
 
-                // TODO symbol upload
-                // var sentryCliOptions = SentryCliOptions.LoadCliOptions();
-                // if (!sentryCliOptions.UploadSymbols)
-                // {
-                //     logger.LogDebug("Automated symbols upload has been disabled.");
-                //     return;
-                // }
-                //
-                // if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)`
-                // {
-                //     logger.LogDebug("Automated symbols upload for development builds has been disabled.");
-                //     return;
-                // }
-                //
-                // if (!sentryCliOptions.Validate(logger))
-                // {
-                //     logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
-                //                        "\nYou can disable this warning by disabling the automated symbols upload under " +
-                //                        "Tools -> Sentry -> Editor");
-                //     return;
-                // }
-                //
-                // SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
-                // SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
-                //
-                // sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
             }
             catch (Exception e)
             {
                 logger.LogError("Failed to add the Sentry crash handler to the built application", e);
                 throw new BuildFailedException("Sentry Native BuildPostProcess failed");
             }
+        }
+
+        private static void addCrashHandler(string pathToProject)
+        {
+            var crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins",
+                "Windows", "Sentry", "crashpad_handler.exe"));
+            var targetPath = Path.Combine(Path.GetDirectoryName(pathToProject), Path.GetFileName(crashpadPath));
+            File.Copy(crashpadPath, targetPath, true);
+        }
+
+        private static void uploadDebugSymbols(string pathToProject)
+        {
+            // var sentryCliOptions = SentryCliOptions.LoadCliOptions();
+            // if (!sentryCliOptions.UploadSymbols)
+            // {
+            //     logger.LogDebug("Automated symbols upload has been disabled.");
+            //     return;
+            // }
+            //
+            // if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)`
+            // {
+            //     logger.LogDebug("Automated symbols upload for development builds has been disabled.");
+            //     return;
+            // }
+            //
+            // if (!sentryCliOptions.Validate(logger))
+            // {
+            //     logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
+            //                        "\nYou can disable this warning by disabling the automated symbols upload under " +
+            //                        "Tools -> Sentry -> Editor");
+            //     return;
+            // }
+            //
+            // SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
+            // SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
+            //
+            // sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
         }
     }
 }
