@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Sentry.Extensibility;
 
-// The decision to use reflection here came after many attempts to avoid it Allowing customers to export an xcode
+// The decision to use reflection here came after many attempts to avoid it. Allowing customers to export an xcode
 // project outside a Mac while not requiring users to install the iOS tools on Windows and Linux became a challenge
 // More context: https://github.com/getsentry/sentry-unity/issues/400, https://github.com/getsentry/sentry-unity/issues/588
 // using UnityEditor.iOS.Xcode;
