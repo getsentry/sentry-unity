@@ -41,12 +41,12 @@ namespace Sentry.Unity.Editor.Native
                 }
 
                 addCrashHandler(pathToProject);
-                uploadDebugSymbols(pathToProject);
+                uploadDebugSymbols(logger, pathToProject);
 
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to add the Sentry crash handler to the built application", e);
+                logger.LogError("Failed to add the Sentry native integration to the built application", e);
                 throw new BuildFailedException("Sentry Native BuildPostProcess failed");
             }
         }
@@ -59,32 +59,16 @@ namespace Sentry.Unity.Editor.Native
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void uploadDebugSymbols(string pathToProject)
+        private static void uploadDebugSymbols(IDiagnosticLogger logger, string pathToProject)
         {
-            // var sentryCliOptions = SentryCliOptions.LoadCliOptions();
-            // if (!sentryCliOptions.UploadSymbols)
-            // {
-            //     logger.LogDebug("Automated symbols upload has been disabled.");
-            //     return;
-            // }
-            //
-            // if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)`
-            // {
-            //     logger.LogDebug("Automated symbols upload for development builds has been disabled.");
-            //     return;
-            // }
-            //
-            // if (!sentryCliOptions.Validate(logger))
-            // {
-            //     logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
-            //                        "\nYou can disable this warning by disabling the automated symbols upload under " +
-            //                        "Tools -> Sentry -> Editor");
-            //     return;
-            // }
-            //
-            // SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
+            var cliOptions = SentryCliOptions.LoadCliOptions();
+            if (!cliOptions.Validate(logger))
+                return;
+
+            // TODO actual symbol upload
+            // SentryCli.CreateSentryProperties(pathToProject, cliOptions);
             // SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
-            //
+
             // sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
         }
     }

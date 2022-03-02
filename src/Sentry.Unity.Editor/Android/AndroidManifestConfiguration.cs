@@ -163,25 +163,8 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
-            if (!sentryCliOptions.UploadSymbols)
-            {
-                logger.LogDebug("Automated symbols upload has been disabled.");
-                return;
-            }
-
-            if (_isDevelopmentBuild && !sentryCliOptions.UploadDevelopmentSymbols)
-            {
-                logger.LogDebug("Automated symbols upload for development builds has been disabled.");
-                return;
-            }
-
             if (!sentryCliOptions.Validate(logger))
-            {
-                logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
-                                   "\nYou can disable this warning by disabling the automated symbols upload under " +
-                                   "Tools -> Sentry -> Editor");
                 return;
-            }
 
             try
             {

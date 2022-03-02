@@ -37,6 +37,18 @@ namespace Sentry.Unity.Editor
 
         public bool Validate(IDiagnosticLogger? logger)
         {
+            if (!UploadSymbols)
+            {
+                logger?.LogDebug("sentry-cli: Automated symbols upload has been disabled.");
+                return false;
+            }
+
+            if (EditorUserBuildSettings.development && !UploadDevelopmentSymbols)
+            {
+                logger?.LogDebug("sentry-cli: Automated symbols upload for development builds has been disabled.");
+                return false;
+            }
+
             var validated = true;
             if (string.IsNullOrWhiteSpace(Auth))
             {
@@ -54,6 +66,13 @@ namespace Sentry.Unity.Editor
             {
                 logger?.LogWarning("sentry-cli: Project missing. Please set under it Tools > Sentry > Editor");
                 validated = false;
+            }
+
+            if (!validated)
+            {
+                logger?.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
+                                   "\nYou can disable this warning by disabling the automated symbols upload under " +
+                                   "Tools -> Sentry -> Editor");
             }
 
             return validated;
