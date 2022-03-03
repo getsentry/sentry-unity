@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 
 namespace Sentry.Unity.Native
@@ -16,6 +17,11 @@ namespace Sentry.Unity.Native
             if (options.WindowsNativeSupportEnabled)
             {
                 SentryNativeBridge.Init(options);
+                SentryMonoBehaviour.AttachOnApplicationQuittingOverride(() =>
+                {
+                    options?.DiagnosticLogger?.LogDebug("Closing the sentry-native SDK");
+                    SentryNativeBridge.Close();
+                });
                 options.ScopeObserver = new NativeScopeObserver(options);
                 options.EnableScopeSync = true;
                 // options.CrashedLastRun = () =>
@@ -41,5 +47,10 @@ namespace Sentry.Unity.Native
                 SentryNativeBridge.ReinstallBackend();
             }
         }
+    }
+
+    internal class SentryMonoBehaviour : SentryMonoBehaviourInternal
+    {
+        public static void AttachOnApplicationQuittingOverride(Action action) => AttachOnApplicationQuitting(action);
     }
 }

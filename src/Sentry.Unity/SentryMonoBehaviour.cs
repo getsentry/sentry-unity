@@ -50,6 +50,15 @@ namespace Sentry.Unity
         /// </summary>
         public event Action? ApplicationPausing;
 
+        /// <summary>
+        /// Hook to receive an event when the application is quitting.
+        /// <remarks>
+        /// This is not guaranteed to be called on all platforms. See Unity docs for more details:
+        /// https://docs.unity3d.com/ScriptReference/MonoBehaviour.OnApplicationQuit.html
+        /// </remarks>
+        /// </summary>
+        public event Action? ApplicationQuitting;
+
         // Keeping internal track of running state because OnApplicationPause and OnApplicationFocus get called during startup and would fire false resume events
         private bool _isRunning = true;
 
@@ -116,8 +125,31 @@ namespace Sentry.Unity
             }
         }
 
-        // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
-        private void OnApplicationQuit() => Destroy(gameObject);
+        private void OnApplicationQuit()
+        {
+            try
+            {
+                ApplicationQuitting?.Invoke();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarningFormat("ApplicationQuitting.Invoke() threw an exception %s", e.ToString());
+            }
+
+            // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
+            Destroy(gameObject);
+        }
+    }
+
+    /// <summary>
+    /// Sentry-Unity SDK internal class for other Sentry.Unity.* assemblies.
+    /// You should not use this directly in your application.
+    /// </summary>
+    public class SentryMonoBehaviourInternal
+    {
+        /// This is `protected internal` to be semi-hidden from users.
+        protected internal static void AttachOnApplicationQuitting(Action action) =>
+            SentryMonoBehaviour.Instance.ApplicationQuitting += action;
     }
 
     /// <summary>

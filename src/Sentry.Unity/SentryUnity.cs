@@ -31,7 +31,12 @@ namespace Sentry.Unity
             if (sentryUnityOptions.ShouldInitializeSdk())
             {
                 sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());
-                SentrySdk.Init(sentryUnityOptions);
+                var sentryDotNet = SentrySdk.Init(sentryUnityOptions);
+                SentryMonoBehaviour.Instance.ApplicationQuitting += () =>
+                {
+                    sentryUnityOptions.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");
+                    sentryDotNet.Dispose();
+                };
             }
         }
     }

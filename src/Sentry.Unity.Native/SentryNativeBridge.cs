@@ -82,6 +82,8 @@ namespace Sentry.Unity
             sentry_init(cOptions);
         }
 
+        public static void Close() => sentry_close();
+
         // libsentry.so
         [DllImport("sentry")]
         private static extern IntPtr sentry_options_new();
@@ -166,6 +168,9 @@ namespace Sentry.Unity
 
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);
+
+        [DllImport("sentry")]
+        private static extern int sentry_close();
 
         /// <summary>
         /// Re-installs the sentry-native backend essentially retaking the signal handlers.
