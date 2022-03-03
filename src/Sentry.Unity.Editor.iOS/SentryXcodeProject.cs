@@ -14,9 +14,6 @@ namespace Sentry.Unity.Editor.iOS
 {
     internal class SentryXcodeProject : IDisposable
     {
-        private static readonly Type PBXProjectType = null!; // Expected to be set in constructor or throws
-        private static readonly Type PBXProjectExtensionsType = null!; // Expected to be set in constructor or throws
-
         internal const string FrameworkName = "Sentry.framework";
         internal const string BridgeName = "SentryNativeBridge.m";
         internal const string OptionsName = "SentryOptions.m";
@@ -47,22 +44,18 @@ else
     fi
 fi";
 
+        private readonly Type _pbxProjectType = null!;               // Set in constructor or throws
+        private readonly Type _pbxProjectExtensionsType = null!;     // Set in constructor or throws
+        private readonly object _project = null!;           // Set in constructor or throws
+
         private readonly string _projectRoot;
-        private readonly object _project = null!; // Expected to be set in constructor or throws
         private readonly string _projectPath;
 
-        private string _mainTargetGuid = null!;           // Gets set when opening the project
-        private string _unityFrameworkTargetGuid = null!; // Gets set when opening the project
+        private string _mainTargetGuid = null!;             // Set when opening the project
+        private string _unityFrameworkTargetGuid = null!;   // Set when opening the project
 
         private readonly INativeMain _nativeMain;
         private readonly INativeOptions _nativeOptions;
-
-        static SentryXcodeProject()
-        {
-            var xcodeAssembly = Assembly.Load("UnityEditor.iOS.Extensions.Xcode");
-            PBXProjectType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PBXProject");
-            PBXProjectExtensionsType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.Extensions.PBXProjectExtensions");
-        }
 
         internal SentryXcodeProject(string projectRoot) : this(projectRoot, new NativeMain(), new NativeOptions())
         { }
@@ -72,11 +65,15 @@ fi";
             INativeMain mainModifier,
             INativeOptions sentryNativeOptions)
         {
-            _projectRoot = projectRoot;
-            _projectPath = (string)PBXProjectType.GetMethod("GetPBXProjectPath", BindingFlags.Public | BindingFlags.Static)
-                .Invoke(null, new[] { projectRoot });
+            var xcodeAssembly = Assembly.Load("UnityEditor.iOS.Extensions.Xcode");
+            _pbxProjectType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PBXProject");
+            _pbxProjectExtensionsType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.Extensions.PBXProjectExtensions");
 
-            _project = Activator.CreateInstance(PBXProjectType);
+            _project = Activator.CreateInstance(_pbxProjectType);
+
+            _projectRoot = projectRoot;
+            _projectPath = (string)_pbxProjectType.GetMethod("GetPBXProjectPath", BindingFlags.Public | BindingFlags.Static)
+                .Invoke(null, new[] { _projectRoot });
 
             _nativeMain = mainModifier;
             _nativeOptions = sentryNativeOptions;
@@ -97,53 +94,53 @@ fi";
                 throw new FileNotFoundException("Could not locate generated Xcode project at", _projectPath);
             }
 
-            PBXProjectType.GetMethod("ReadFromString", BindingFlags.Public | BindingFlags.Instance)
+            _pbxProjectType.GetMethod("ReadFromString", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new[] { File.ReadAllText(_projectPath) });
-            _mainTargetGuid = (string)PBXProjectType.GetMethod("GetUnityMainTargetGuid", BindingFlags.Public | BindingFlags.Instance)
+            _mainTargetGuid = (string)_pbxProjectType.GetMethod("GetUnityMainTargetGuid", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, null);
-            _unityFrameworkTargetGuid = (string)PBXProjectType.GetMethod("GetUnityFrameworkTargetGuid", BindingFlags.Public | BindingFlags.Instance)
+            _unityFrameworkTargetGuid = (string)_pbxProjectType.GetMethod("GetUnityFrameworkTargetGuid", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, null);
         }
 
         public void AddSentryFramework()
         {
             var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
-            var frameworkGuid = (string)PBXProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
+            var frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
 
-            var addFrameworkToProjectMethod = PBXProjectType.GetMethod("AddFrameworkToProject", BindingFlags.Public | BindingFlags.Instance);
+            var addFrameworkToProjectMethod = _pbxProjectType.GetMethod("AddFrameworkToProject", BindingFlags.Public | BindingFlags.Instance);
             addFrameworkToProjectMethod.Invoke(_project, new object[] { _mainTargetGuid, FrameworkName, false });
             addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, FrameworkName, false });
 
             // Embedding the framework because it's dynamic and needed at runtime
-            PBXProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
+            _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
                 .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
 
             SetSearchPathBuildProperty("$(inherited)");
             SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
 
-            var setBuildPropertyMethod = PBXProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) });
+            var setBuildPropertyMethod = _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) });
             setBuildPropertyMethod.Invoke(_project, new object[] { _mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
             setBuildPropertyMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
 
-            PBXProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+            _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
         }
 
         public void AddSentryNativeBridge()
         {
             var relativeBridgePath = Path.Combine("Libraries", SentryPackageInfo.GetName(), BridgeName);
-            var bridgeGuid = (string)PBXProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
+            var bridgeGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { relativeBridgePath, relativeBridgePath, 1 }); // 1 is PBXSourceTree.Source
 
-            PBXProjectType.GetMethod("AddFileToBuild", BindingFlags.Public | BindingFlags.Instance)
+            _pbxProjectType.GetMethod("AddFileToBuild", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new[] { _unityFrameworkTargetGuid, bridgeGuid });
         }
 
         // Used for testing
         internal void SetSearchPathBuildProperty(string path)
         {
-            PBXProjectType.GetMethod("AddBuildProperty", new[] { typeof(string[]), typeof(string), typeof(string) })
+            _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string[]), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
@@ -155,14 +152,14 @@ fi";
                 return;
             }
 
-            PBXProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
+            _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
         }
 
         public void AddNativeOptions(SentryUnityOptions options)
         {
             _nativeOptions.CreateFile(Path.Combine(_projectRoot, _optionsPath), options);
-            PBXProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
+            _pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { _optionsPath, _optionsPath, 1 }); // 1 is PBXSourceTree.Source
         }
 
@@ -171,9 +168,9 @@ fi";
 
         internal bool MainTargetContainsSymbolUploadBuildPhase()
         {
-            var allBuildPhases = (string[])PBXProjectType.GetMethod("GetAllBuildPhasesForTarget", BindingFlags.Public | BindingFlags.Instance)
+            var allBuildPhases = (string[])_pbxProjectType.GetMethod("GetAllBuildPhasesForTarget", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { _mainTargetGuid });
-            var getBuildPhaseNameMethod = PBXProjectType.GetMethod("GetBuildPhaseName", BindingFlags.Public | BindingFlags.Instance);
+            var getBuildPhaseNameMethod = _pbxProjectType.GetMethod("GetBuildPhaseName", BindingFlags.Public | BindingFlags.Instance);
 
             return allBuildPhases.Any(buildPhase =>
             {
@@ -183,11 +180,11 @@ fi";
         }
 
         internal string ProjectToString() =>
-            (string)PBXProjectType.GetMethod("WriteToString", BindingFlags.Public | BindingFlags.Instance)
+            (string)_pbxProjectType.GetMethod("WriteToString", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, null);
 
         public void Dispose() =>
-            PBXProjectType.GetMethod("WriteToFile", BindingFlags.Public | BindingFlags.Instance)
+            _pbxProjectType.GetMethod("WriteToFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new[] { _projectPath });
     }
 }
