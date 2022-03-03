@@ -294,7 +294,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
 
       - name: Run Player - Crash Test
-        run: pwsh -c "./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Crash"
+        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Crash
 
   android-smoke-test:
     needs: [build]

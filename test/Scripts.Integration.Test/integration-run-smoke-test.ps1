@@ -11,7 +11,13 @@
     [Parameter()]
     [switch] $Crash
 )
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+. $PSScriptRoot/IntegrationGlobals.ps1
+
+Write-Host "Given parameters:"
+Write-Host "  TestAppPath: $TestAppPath"
+Write-Host "   AppDataDir: $AppDataDir"
+Write-Host "        Smoke: $Smoke"
+Write-Host "        Crash: $Crash"
 
 If (!$Smoke -and !$Crash) {
     Write-Error "Select one of the following tests (or both): -Smoke or -Crash"
