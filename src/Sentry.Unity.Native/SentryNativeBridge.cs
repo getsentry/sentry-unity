@@ -67,19 +67,15 @@ namespace Sentry.Unity
                 }
             }
 
-            var prevLogger = _getLogger();
             if (options.DiagnosticLogger is null)
             {
-                if (prevLogger is not null)
-                {
-                    prevLogger.LogDebug("Unsetting the current native logger");
-                }
-                _setLogger(null);
+                _logger?.LogDebug("Unsetting the current native logger");
+                _logger = null;
             }
             else
             {
-                options.DiagnosticLogger.LogDebug($"{(prevLogger is null ? "Setting a" : "Replacing the")} native logger");
-                _setLogger(options.DiagnosticLogger);
+                options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
+                _logger = options.DiagnosticLogger;
                 sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
             }
 
@@ -122,29 +118,16 @@ namespace Sentry.Unity
 
         // The logger we should forward native messages to.
         private static IDiagnosticLogger? _logger;
-        private static Mutex _loggerMutex = new Mutex();
-
-        private static IDiagnosticLogger? _getLogger()
-        {
-            _loggerMutex.WaitOne();
-            var result = _logger;
-            _loggerMutex.ReleaseMutex();
-            return result;
-        }
-        private static void _setLogger(IDiagnosticLogger? logger)
-        {
-            _loggerMutex.WaitOne();
-            _logger = logger;
-            _loggerMutex.ReleaseMutex();
-        }
 
         // This method is called from the C library
         [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
         private static void nativeLog(int cLevel, string message, IntPtr args, IntPtr userData)
         {
-            var logger = _getLogger();
+            var logger = _logger;
             if (logger is null)
+            {
                 return;
+            }
 
             // see sentry.h: sentry_level_e
             var level = cLevel switch
@@ -158,7 +141,9 @@ namespace Sentry.Unity
             };
 
             if (!logger.IsEnabled(level))
+            {
                 return;
+            }
 
             if (message.Contains("%"))
             {
