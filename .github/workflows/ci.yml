@@ -49,12 +49,6 @@ jobs:
   build:
     name: Build - ${{ matrix.unity-version }}
     runs-on: ubuntu-latest
-    # TODO add a "wait" step just before the artifacts are really needed - waiting for the SDK job to complete.
-    #      That way, we can start downloading the docker container while the native SDKs are being built.
-    #      There's no existing action to do that but a simple polling wait action could use the following API
-    #      https://docs.github.com/en/rest/reference/actions#list-jobs-for-a-workflow-run
-    #      https://api.github.com/repos/getsentry/sentry-unity/actions/runs/1816928507/jobs
-    needs: [android-sdk, ios-sdk, windows-sdk]
     strategy:
       fail-fast: false
       matrix:
@@ -82,28 +76,32 @@ jobs:
             temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - uses: actions/download-artifact@v2
+      - name: Start the Unity the docker container
+        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
+
+      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
+          wait-timeout: 3600
 
-      - uses: actions/download-artifact@v2
+      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
         with:
           name: Android-libraries
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+          wait-timeout: 3600
 
-      - uses: actions/download-artifact@v2
+      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
+          wait-timeout: 3600
 
-      - uses: actions/download-artifact@v2
+      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
-
-      - name: Start the Unity the docker container
-        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
+          wait-timeout: 3600
 
       - name: Create Unity license config
         run: |
@@ -225,7 +223,6 @@ jobs:
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
   windows-smoke-test:
-    needs: [build]
     name: Run Windows Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: windows-latest
     strategy:
@@ -246,12 +243,6 @@ jobs:
         id: env
         run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
-      - name: Download UPM package
-        uses: actions/download-artifact@v2
-        with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
-          name: ${{ github.sha }}
-
       # Caching the whole Unity installation would overflow the 10 GiB limit repositories have but we can cache the Hub
       # to achieve some speedup here at a low size cost.
       # See https://github.com/kuler90/setup-unity/blob/797ebd0cc9d0e0ca5bcd6cc280ec1a6e685fbf83/src/setup.js#L36
@@ -266,6 +257,13 @@ jobs:
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: windows-il2cpp
+
+      - name: Download UPM package
+        uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+          wait-timeout: 3600
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
