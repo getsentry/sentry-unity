@@ -89,7 +89,7 @@ public class SmokeTester : MonoBehaviour
         }
     }
 
-    public static void InitSentry(SentryUnityOptions options, bool sentryDotNet)
+    public static void InitSentry(SentryUnityOptions options)
     {
         options.Dsn = "http://publickey@localhost:8000/12345";
         options.Debug = true;
@@ -112,18 +112,12 @@ public class SmokeTester : MonoBehaviour
         SentryNative.Configure(options);
 #else
         Debug.LogWarning("SMOKE TEST: Given platform is not supported for native sentry configuration");
-        if (!sentryDotNet)
-        {
-            throw new Exception("Given platform is not supported");
-        }
+        throw new Exception("Given platform is not supported");
 #endif
 
-        // if (sentryDotNet)
-        // {
         Debug.Log("SMOKE TEST: SentryUnity (.net) Init.");
         SentryUnity.Init(options);
         Debug.Log("SMOKE TEST: SentryUnity (.net) Init OK.");
-        // }
     }
 
     public static void SmokeTest()
@@ -133,7 +127,7 @@ public class SmokeTester : MonoBehaviour
         {
             Debug.Log("SMOKE TEST: Start");
 
-            InitSentry(new SentryUnityOptions() { CreateHttpClientHandler = () => t }, true);
+            InitSentry(new SentryUnityOptions() { CreateHttpClientHandler = () => t });
 
             var currentMessage = 0;
             t.ExpectMessage(currentMessage, "'type':'session'");
@@ -190,10 +184,7 @@ public class SmokeTester : MonoBehaviour
     {
         Debug.Log("SMOKE TEST: Start");
 
-        // Note: we're disabling sentr-dotnet initialization in the crash test because the HTTP minidump isn't being
-        // received consistently by our simple powershell HTTP server (crash-test-server.ps1) in CI. This is likely an
-        // issue in the server, not the SDK but may require further investigation.
-        InitSentry(new SentryUnityOptions(), false);
+        InitSentry(new SentryUnityOptions());
 
         AddContext();
 

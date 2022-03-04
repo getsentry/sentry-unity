@@ -133,6 +133,7 @@ if ($Crash) {
         $httpServerUri = "http://localhost:8000"
         $successMessage = "POST /api/12345/minidump/"
 
+        Write-Host "Waiting for the expected message to appear in the server output logs ..."
         # Wait for 1 minute (600 * 100 milliseconds) until the expected message comes in
         for ($i = 0; $i -lt 600; $i++) {
             $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
@@ -143,7 +144,7 @@ if ($Crash) {
         }
 
         # Stop the HTTP server
-        Write-Host "Stopping the dummy API server ..." -NoNewline
+        Write-Host "Stopping the dummy API server ... " -NoNewline
         try {
             (Invoke-WebRequest -URI "$httpServerUri/STOP").StatusDescription
         }

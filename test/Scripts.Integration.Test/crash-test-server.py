@@ -2,7 +2,6 @@
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import sys
-from typing import get_type_hints
 import threading
 
 
