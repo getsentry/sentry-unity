@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK no longer depends on Unity's iOS module for non iOS builds ([#601](https://github.com/getsentry/sentry-unity/pull/601))
+
 ### Fixes
 
 - iOS builds no longer break when native support disabled or not available ([#592](https://github.com/getsentry/sentry-unity/pull/592))
