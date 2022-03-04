@@ -116,10 +116,10 @@ namespace Sentry.Unity
         [DllImport("sentry")]
         private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
 
-        // The logger we should forward native messages to.
+        // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
         private static IDiagnosticLogger? _logger;
 
-        // This method is called from the C library
+        // This method is called from the C library and forwards incoming messages to the currently set _logger.
         [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
         private static void nativeLog(int cLevel, string message, IntPtr args, IntPtr userData)
         {
@@ -145,6 +145,9 @@ namespace Sentry.Unity
                 return;
             }
 
+            // If the message contains any "formatting" modifiers (that should be substituted by `args`), we need
+            // to apply the formatting. However, we cannot access C var-arg (va_list) in c# thus we pass it back to
+            // vsnprintf (to find out the length of the resulting buffer) & vsprintf (to actually format the message).
             if (message.Contains("%"))
             {
                 var formattedLength = vsnprintf(null, UIntPtr.Zero, message, args);

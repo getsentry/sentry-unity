@@ -5,7 +5,8 @@ $httpServer = [System.Net.HttpListener]::new()
 $httpServer.Prefixes.Add($uri)
 $httpServer.Start()
 
-write-Host "HTTP server listening on $uri"
+Write-Host "HTTP server listening on $uri"
+Write-Host "To stop the server, execute a GET request to ${uri}STOP"
 Write-Host $separator
 
 try {

@@ -89,7 +89,7 @@ public class SmokeTester : MonoBehaviour
         }
     }
 
-    public static void InitSentry(SentryUnityOptions options, bool requireNative = true)
+    public static void InitSentry(SentryUnityOptions options, bool sentryDotNet)
     {
         options.Dsn = "http://publickey@localhost:8000/12345";
         options.Debug = true;
@@ -111,16 +111,19 @@ public class SmokeTester : MonoBehaviour
         options.WindowsNativeSupportEnabled = true;
         SentryNative.Configure(options);
 #else
-        if (requireNative)
+        Debug.LogWarning("SMOKE TEST: Given platform is not supported for native sentry configuration");
+        if (!sentryDotNet)
         {
-            Debug.Log("SMOKE TEST: Given platform is not supported for native sentry configuration");
             throw new Exception("Given platform is not supported");
         }
 #endif
 
-        Debug.Log("SMOKE TEST: SentryUnity Init.");
+        // if (sentryDotNet)
+        // {
+        Debug.Log("SMOKE TEST: SentryUnity (.net) Init.");
         SentryUnity.Init(options);
-        Debug.Log("SMOKE TEST: SentryUnity Init OK.");
+        Debug.Log("SMOKE TEST: SentryUnity (.net) Init OK.");
+        // }
     }
 
     public static void SmokeTest()
@@ -130,7 +133,7 @@ public class SmokeTester : MonoBehaviour
         {
             Debug.Log("SMOKE TEST: Start");
 
-            InitSentry(new SentryUnityOptions() { CreateHttpClientHandler = () => t }, false);
+            InitSentry(new SentryUnityOptions() { CreateHttpClientHandler = () => t }, true);
 
             var currentMessage = 0;
             t.ExpectMessage(currentMessage, "'type':'session'");
@@ -187,11 +190,10 @@ public class SmokeTester : MonoBehaviour
     {
         Debug.Log("SMOKE TEST: Start");
 
-        InitSentry(new SentryUnityOptions());
-
-        const int sleepMs = 5000;
-        Debug.Log($"SMOKE TEST: Sleep for {sleepMs} ms to avoid failure caused by the background data sync during sentry init.");
-        Thread.Sleep(sleepMs);
+        // Note: we're disabling sentr-dotnet initialization in the crash test because the HTTP minidump isn't being
+        // received consistently by our simple powershell HTTP server (crash-test-server.ps1) in CI. This is likely an
+        // issue in the server, not the SDK but may require further investigation.
+        InitSentry(new SentryUnityOptions(), false);
 
         AddContext();
 

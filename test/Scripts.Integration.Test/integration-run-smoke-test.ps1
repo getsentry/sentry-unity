@@ -95,12 +95,12 @@ function RunTest([string] $type) {
 }
 
 function RunApiServer() {
-    $result = "" | Select-Object -Property process, outFile
+    $result = "" | Select-Object -Property process, outFile, errFile
     Write-Host "Starting the HTTP server (dummy API server)"
     $result.outFile = New-TemporaryFile
-    $errFile = New-TemporaryFile
+    $result.errFile = New-TemporaryFile
 
-    $result.process = Start-Process "powershell" -ArgumentList "-command", "$PSScriptRoot/crash-test-server.ps1" -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $errFile
+    $result.process = Start-Process "python3" -ArgumentList "$PSScriptRoot/crash-test-server.py" -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
 
     # The process shouldn't finish by itself, if it did, there was an error, so let's check that
     Start-Sleep -Second 1
@@ -109,9 +109,9 @@ function RunApiServer() {
         Write-Host "Standard Output:" -ForegroundColor Yellow
         Get-Content $result.outFile
         Write-Host "Standard Error:" -ForegroundColor Yellow
-        Get-Content $errFile
+        Get-Content $result.errFile
         Remove-Item $result.outFile
-        Remove-Item $errFile
+        Remove-Item $result.errFile
         exit 1
     }
 
@@ -131,13 +131,12 @@ if ($Crash) {
         RunTest "smoke-crash"
 
         $httpServerUri = "http://localhost:8000"
-        $successMessage = "POST $httpServerUri/api/12345/minidump/"
+        $successMessage = "POST /api/12345/minidump/"
 
         # Wait for 1 minute (600 * 100 milliseconds) until the expected message comes in
         for ($i = 0; $i -lt 600; $i++) {
-            $output = Get-Content $httpServer.outFile -Raw
-
-            if ($output.Contains($successMessage)) {
+            $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
+            if ("$output".Contains($successMessage)) {
                 break
             }
             Start-Sleep -Milliseconds 100
@@ -149,14 +148,20 @@ if ($Crash) {
             (Invoke-WebRequest -URI "$httpServerUri/STOP").StatusDescription
         }
         catch {
+            Write-Host "/STOP request failed, killing the server process"
             $httpServer.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
-        Start-Sleep -Milliseconds 500
-        $output = Get-Content $httpServer.outFile -Raw
-        Remove-Item $httpServer.outFile -ErrorAction Continue
+        $httpServer.process | Wait-Process -Timeout 10 -ErrorAction Continue
 
-        Write-Host "Standard Output:" -ForegroundColor Yellow
-        $output
+        Write-Host "Server stdout:" -ForegroundColor Yellow
+        Get-Content $httpServer.outFile -Raw
+
+        Write-Host "Server stderr:" -ForegroundColor Yellow
+        Get-Content $httpServer.errFile -Raw
+
+        $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
+        Remove-Item $httpServer.outFile -ErrorAction Continue
+        Remove-Item $httpServer.errFile -ErrorAction Continue
 
         if ($output.Contains($successMessage)) {
             Write-Host "smoke-crash test $run/$runs : PASSED" -ForegroundColor Green
