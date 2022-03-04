@@ -15,6 +15,9 @@ namespace Sentry.Unity.iOS
         public static extern bool CrashedLastRun();
 
         [DllImport("__Internal")]
+        public static extern void Close();
+
+        [DllImport("__Internal")]
         public static extern void SentryNativeBridgeAddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
 
         [DllImport("__Internal")]
