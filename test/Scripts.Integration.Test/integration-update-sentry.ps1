@@ -4,37 +4,40 @@ param($arg)
 
 $unityPath = FormatUnityPath $arg
 
-If (-not(Test-Path -Path "$PackageReleaseOutput"))
-{
+If (-not(Test-Path -Path "$PackageReleaseOutput")) {
     Throw "Path $PackageReleaseOutput does not exist. Be sure to run ./test/Scripts.Integration.Test/integration-create-project."
 }
 
-ClearUnityLog
+function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $failMessage, [string[]] $arguments) {
+    ClearUnityLog
 
-Write-Host -NoNewline "Starting Unity process:"
-$UnityProcess = RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk")
-Write-Host " OK"
+    Write-Host -NoNewline "$name | Starting Unity process:"
+    $UnityProcess = RunUnity $unityPath $arguments
+    Write-Host " OK"
 
-WaitForLogFile 30
-$successMessage =  "Sentry Package Installation:"
+    WaitForLogFile 30
 
-Write-Host "Waiting for Unity to add Sentry to the project."
-$stdout = SubscribeToUnityLogFile $UnityProcess $successMessage "Sentry setup: FAILED"
+    Write-Host "$name | Waiting for Unity to finish."
+    $stdout = SubscribeToUnityLogFile $UnityProcess $successMessage $failMessage
 
-Write-Host $stdout
-If ($UnityProcess.ExitCode -ne 0)
-{
-    $exitCode = $UnityProcess.ExitCode
-    Throw "Unity exited with code $exitCode"
+    Write-Host $stdout
+    If ($UnityProcess.ExitCode -ne 0) {
+        $exitCode = $UnityProcess.ExitCode
+        Write-Error "$name | Unity exited with code $exitCode"
+    }
+    ElseIf ($null -ne ($stdout | select-string $successMessage)) {
+        Write-Host "`n$name | SUCCESS" -ForegroundColor Green
+    }
+    Else {
+        Write-Error "$name | Unity exited without an error but the successMessage was not found in the output ('$successMessage')"
+    }
 }
-ElseIf ($null -ne ($stdout | select-string $successMessage))
-{
-    Write-Host "`nSentry added!!"
-}
-Else
-{
-    Throw "Unity exited but failed to add the Sentry package."
-}
+
+RunUnityAndExpect "AddSentryPackage" "Sentry Package Installation:" "Sentry setup: FAILED" @( `
+        "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk")
+
+RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
+        "-quit", "-batchmode", "-nographics", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", "-sentryOptions.Dsn", "http://publickey@localhost:8000/12345")
 
 Write-Host -NoNewline "Updating test files "
 # We were previously using an empty SmokeTester to not generate Build errors.
@@ -43,4 +46,6 @@ Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
 Copy-Item "$PackageReleaseAssetsPath/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"
 Copy-Item "$PackageReleaseAssetsPath/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
-Write-Host " OK"
+Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/CppPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
+
+Write-Host " Unity configuration finished successfully" -ForegroundColor Green

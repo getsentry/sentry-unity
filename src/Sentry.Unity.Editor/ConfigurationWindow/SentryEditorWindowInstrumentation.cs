@@ -19,7 +19,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             if (!EditorApplication.ExecuteMenuItem("Tools/Sentry"))
             {
-                throw new Exception("Menu item 'Tools -> Sentry' not found. Was the Sentry UPM package installed?");
+                throw new Exception($"{functionName} failed: Menu item 'Tools -> Sentry' not found. Was the Sentry UPM package installed?");
             }
 
             var optionsWindow = EditorWindow.GetWindow<SentryWindow>();
@@ -27,7 +27,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             if (options is null)
             {
-                throw new InvalidOperationException("SentryOptions not found");
+                throw new InvalidOperationException($"{functionName} failed: SentryOptions not found");
             }
             Debug.LogFormat("{0}: Found SentryOptions", functionName);
 

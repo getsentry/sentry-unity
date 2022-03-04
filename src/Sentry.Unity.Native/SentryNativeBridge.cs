@@ -1,6 +1,10 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using AOT;
+using System.Threading;
+using System.Text;
 
 namespace Sentry.Unity
 {
@@ -29,6 +33,52 @@ namespace Sentry.Unity
                 sentry_options_set_release(cOptions, options.Release);
             }
 
+            if (options.Environment is not null)
+            {
+                options.DiagnosticLogger?.LogDebug("Setting Environment: {0}", options.Environment);
+                sentry_options_set_environment(cOptions, options.Environment);
+            }
+
+            options.DiagnosticLogger?.LogDebug("Setting Debug: {0}", options.Debug);
+            sentry_options_set_debug(cOptions, options.Debug ? 1 : 0);
+
+            if (options.SampleRate.HasValue)
+            {
+                options.DiagnosticLogger?.LogDebug("Setting Sample Rate: {0}", options.SampleRate.Value);
+                sentry_options_set_sample_rate(cOptions, options.SampleRate.Value);
+            }
+
+            // Disabling the native in favor of the C# layer for now
+            options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
+            sentry_options_set_auto_session_tracking(cOptions, 0);
+
+            if (options.CacheDirectoryPath is not null)
+            {
+                var dir = Path.Combine(options.CacheDirectoryPath, "SentryNative");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
+                    sentry_options_set_database_pathw(cOptions, dir);
+                }
+                else
+                {
+                    options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
+                    sentry_options_set_database_path(cOptions, dir);
+                }
+            }
+
+            if (options.DiagnosticLogger is null)
+            {
+                _logger?.LogDebug("Unsetting the current native logger");
+                _logger = null;
+            }
+            else
+            {
+                options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
+                _logger = options.DiagnosticLogger;
+                sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+            }
+
             sentry_init(cOptions);
         }
 
@@ -42,9 +92,77 @@ namespace Sentry.Unity
         [DllImport("sentry")]
         private static extern void sentry_options_set_release(IntPtr options, string release);
 
-        // TODO we could set a logger for sentry-native, forwarding the logs to `options.DiagnosticLogger?`
-        // [DllImport("sentry")]
-        // private static extern void sentry_options_set_logger(IntPtr options, IntPtr logger, IntPtr userData);
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_debug(IntPtr options, int debug);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_environment(IntPtr options, string environment);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_database_path(IntPtr options, string path);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
+        private delegate void sentry_logger_function_t(int level, string message, IntPtr argsAddress, IntPtr userData);
+
+        [DllImport("sentry")]
+        private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
+
+        // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
+        private static IDiagnosticLogger? _logger;
+
+        // This method is called from the C library and forwards incoming messages to the currently set _logger.
+        [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
+        private static void nativeLog(int cLevel, string message, IntPtr args, IntPtr userData)
+        {
+            var logger = _logger;
+            if (logger is null)
+            {
+                return;
+            }
+
+            // see sentry.h: sentry_level_e
+            var level = cLevel switch
+            {
+                -1 => SentryLevel.Debug,
+                0 => SentryLevel.Info,
+                1 => SentryLevel.Warning,
+                2 => SentryLevel.Error,
+                3 => SentryLevel.Fatal,
+                _ => SentryLevel.Info,
+            };
+
+            if (!logger.IsEnabled(level))
+            {
+                return;
+            }
+
+            // If the message contains any "formatting" modifiers (that should be substituted by `args`), we need
+            // to apply the formatting. However, we cannot access C var-arg (va_list) in c# thus we pass it back to
+            // vsnprintf (to find out the length of the resulting buffer) & vsprintf (to actually format the message).
+            if (message.Contains("%"))
+            {
+                var formattedLength = vsnprintf(null, UIntPtr.Zero, message, args);
+                var buffer = new StringBuilder(formattedLength + 1);
+                vsprintf(buffer, message, args);
+                message = buffer.ToString();
+            }
+            logger.Log(level, $"Native: {message}");
+        }
+
+        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int vsprintf(StringBuilder buffer, string format, IntPtr args);
+
+        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int vsnprintf(string? buffer, UIntPtr bufferSize, string format, IntPtr args);
 
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);

@@ -76,5 +76,10 @@ Else
     Copy-Item -Recurse "$IntegrationScriptsPath/SentrySetup.*" -Destination "$NewProjectAssetsPath/Editor/"
     Write-Host " OK"
 
+    # Don't print stack traces in debug logs. See ./samples/unity-of-bugs/ProjectSettings/PresetManager.asset
+    $projectSettingsPath = "$NewProjectPath/ProjectSettings/ProjectSettings.asset"
+    (Get-Content $projectSettingsPath) -replace "m_StackTraceTypes: ?[01]+", "m_StackTraceTypes: 010000000000000000000000000000000100000001000000" | `
+        Out-File $projectSettingsPath
+
     Write-Host "`nProject created!!"
 }
