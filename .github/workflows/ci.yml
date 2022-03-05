@@ -258,13 +258,6 @@ jobs:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: windows-il2cpp
 
-      - name: Download UPM package
-        uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
-        with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
-          name: ${{ github.sha }}
-          wait-timeout: 3600
-
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Create Unity license config
@@ -281,6 +274,13 @@ jobs:
 
       - name: Build Standalone Player without Sentry SDK
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+
+      - name: Download UPM package
+        uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+          wait-timeout: 3600
 
       - name: Add Sentry to test project
         run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
