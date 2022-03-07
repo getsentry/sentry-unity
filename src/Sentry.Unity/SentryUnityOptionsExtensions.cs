@@ -9,7 +9,7 @@ namespace Sentry.Unity
 
         internal static bool ShouldInitializeSdk(this SentryUnityOptions? options, IApplication? application = null)
         {
-            if (!Validate(options))
+            if (!IsValid(options))
             {
                 return false;
             }
@@ -24,7 +24,7 @@ namespace Sentry.Unity
             return true;
         }
 
-        internal static bool Validate(this SentryUnityOptions? options)
+        internal static bool IsValid(this SentryUnityOptions? options)
         {
             if (options is null)
             {

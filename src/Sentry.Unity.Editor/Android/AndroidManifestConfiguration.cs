@@ -72,7 +72,7 @@ namespace Sentry.Unity.Editor.Android
                 logger.LogWarning("Couldn't load SentryOptions. Can't configure native Android SDK.");
                 disableAutoInit = true;
             }
-            else if (!options.Validate())
+            else if (!options.IsValid())
             {
                 options.DiagnosticLogger?.LogWarning(
                     "Failed to validate Sentry Options. Android native support will not be configured.");
@@ -163,8 +163,10 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
-            if (!sentryCliOptions.Validate(logger, _isDevelopmentBuild))
+            if (!sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
+            {
                 return;
+            }
 
             try
             {

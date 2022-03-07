@@ -35,7 +35,7 @@ namespace Sentry.Unity.Editor
             return cliOptions;
         }
 
-        public bool Validate(IDiagnosticLogger? logger, bool? isDevelopmentBuild = null)
+        public bool IsValid(IDiagnosticLogger? logger, bool? isDevelopmentBuild = null)
         {
             if (!UploadSymbols)
             {

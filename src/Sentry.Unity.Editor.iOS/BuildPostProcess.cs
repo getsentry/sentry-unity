@@ -34,7 +34,7 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddSentryFramework();
                 sentryXcodeProject.AddSentryNativeBridge();
 
-                if (options?.Validate() != true)
+                if (options?.IsValid() is not true)
                 {
                     logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
                     return;
@@ -50,7 +50,7 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddSentryToMain(options);
 
                 var sentryCliOptions = SentryCliOptions.LoadCliOptions();
-                if (sentryCliOptions.Validate(logger))
+                if (sentryCliOptions.IsValid(logger))
                 {
                     SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
                     SentryCli.AddExecutableToXcodeProject(pathToProject, logger);

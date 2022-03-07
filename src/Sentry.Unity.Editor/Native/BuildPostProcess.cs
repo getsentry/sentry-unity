@@ -29,7 +29,7 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
-                if (options?.Validate() is not true)
+                if (options?.IsValid() is not true)
                 {
                     logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
                     return;
@@ -65,7 +65,7 @@ namespace Sentry.Unity.Editor.Native
         private static void UploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
         {
             var cliOptions = SentryCliOptions.LoadCliOptions();
-            if (!cliOptions.Validate(logger))
+            if (!cliOptions.IsValid(logger))
             {
                 return;
             }

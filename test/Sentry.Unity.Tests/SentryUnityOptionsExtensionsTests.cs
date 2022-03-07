@@ -30,7 +30,7 @@ namespace Sentry.Unity.Tests
         {
             SentryUnityOptions? options = null;
 
-            var isValid = options.Validate();
+            var isValid = options.IsValid();
 
             Assert.IsFalse(isValid);
         }
@@ -41,7 +41,7 @@ namespace Sentry.Unity.Tests
             _fixture.Enabled = false;
             var options = _fixture.GetSut();
 
-            var isValid = options.Validate();
+            var isValid = options.IsValid();
 
             Assert.IsFalse(isValid);
         }
@@ -52,7 +52,7 @@ namespace Sentry.Unity.Tests
             _fixture.Dsn = string.Empty;
             var options = _fixture.GetSut();
 
-            var isValid = options.Validate();
+            var isValid = options.IsValid();
 
             Assert.IsFalse(isValid);
         }
