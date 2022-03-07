@@ -85,9 +85,6 @@ function RunTest([string] $type) {
     Else {
         $info = "Test process finished with status code $($process.ExitCode)."
         If ($type -ne "smoke-crash") {
-            if ("$AppDataDir" -ne "") {
-                Get-Content "$AppDataDir/Player.log"
-            }
             throw $info
         }
         Write-Host $info
@@ -170,5 +167,7 @@ if ($Crash) {
         else {
             Write-Error "smoke-crash test $run/$runs : FAILED"
         }
+
+        RunTest "post-crash"
     }
 }
