@@ -314,7 +314,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
                                                    "\nYou can disable this warning by disabling the automated symbols upload under " +
-                                                   "Tools -> Sentry -> Editor");
+                                                   SentryCliOptions.EditorMenuPath);
         }
 
         [Test]

@@ -13,6 +13,8 @@ namespace Sentry.Unity.Editor
         /// </summary>
         internal const string ConfigName = "SentryCliOptions";
 
+        public const string EditorMenuPath = "Tools -> Sentry -> Debug Symbols";
+
         [field: SerializeField] public bool UploadSymbols { get; set; } = true;
         [field: SerializeField] public bool UploadDevelopmentSymbols { get; set; } = false;
         [field: SerializeField] public string? Auth { get; set; }
@@ -35,6 +37,9 @@ namespace Sentry.Unity.Editor
             return cliOptions;
         }
 
+        private static void MissingFieldWarning(IDiagnosticLogger? logger, string name) =>
+            logger?.LogWarning("sentry-cli: {0} missing. Please set it under {1}", name, EditorMenuPath);
+
         public bool IsValid(IDiagnosticLogger? logger, bool? isDevelopmentBuild = null)
         {
             if (!UploadSymbols)
@@ -52,19 +57,19 @@ namespace Sentry.Unity.Editor
             var validated = true;
             if (string.IsNullOrWhiteSpace(Auth))
             {
-                logger?.LogWarning("sentry-cli: Auth token missing. Please set it under Tools > Sentry > Editor");
+                MissingFieldWarning(logger, "Auth name");
                 validated = false;
             }
 
             if (string.IsNullOrWhiteSpace(Organization))
             {
-                logger?.LogWarning("sentry-cli: Organization missing. Please set it under Tools > Sentry > Editor");
+                MissingFieldWarning(logger, "Organization");
                 validated = false;
             }
 
             if (string.IsNullOrWhiteSpace(Project))
             {
-                logger?.LogWarning("sentry-cli: Project missing. Please set under it Tools > Sentry > Editor");
+                MissingFieldWarning(logger, "Project");
                 validated = false;
             }
 
@@ -72,7 +77,7 @@ namespace Sentry.Unity.Editor
             {
                 logger?.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
                                    "\nYou can disable this warning by disabling the automated symbols upload under " +
-                                   "Tools -> Sentry -> Editor");
+                                   EditorMenuPath);
             }
 
             return validated;
