@@ -3,7 +3,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using AOT;
-using System.Threading;
 using System.Text;
 
 namespace Sentry.Unity
@@ -52,19 +51,16 @@ namespace Sentry.Unity
             options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
             sentry_options_set_auto_session_tracking(cOptions, 0);
 
-            if (options.CacheDirectoryPath is not null)
+            var dir = GetCacheDirectory(options);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var dir = Path.Combine(options.CacheDirectoryPath, "SentryNative");
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
-                    sentry_options_set_database_pathw(cOptions, dir);
-                }
-                else
-                {
-                    options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
-                    sentry_options_set_database_path(cOptions, dir);
-                }
+                options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
+                sentry_options_set_database_pathw(cOptions, dir);
+            }
+            else
+            {
+                options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
+                sentry_options_set_database_path(cOptions, dir);
             }
 
             if (options.DiagnosticLogger is null)
@@ -83,6 +79,40 @@ namespace Sentry.Unity
         }
 
         public static void Close() => sentry_close();
+        
+        /// Call after native init() to check if the application has crashed in the previous run and clear the status.
+        /// Because the file is removed, the result will change on subsequent calls so it must be cached for the current runtime.
+        internal static bool HandleCrashedLastRun(SentryUnityOptions options, string cacheDirectory)
+        {
+            // See the file name in [sentry__write_crash_marker](https://github.com/getsentry/sentry-native/blob/0.4.12/src/sentry_database.c#L239)
+            var crashFile = Path.Combine(cacheDirectory, "last_crash");
+
+            if (File.Exists(crashFile))
+            {
+                options.DiagnosticLogger?.LogWarning("The last session seems to have crashed on {0}.", File.ReadAllText(crashFile));
+
+                // Remove the file so that it's not there next time, unless there's another crash.
+                File.Delete(crashFile);
+
+                return true;
+            }
+
+            options.DiagnosticLogger?.LogDebug("The last session looks crash-free - file {0} doesn't exist.", crashFile);
+            return false;
+        }
+
+        internal static string GetCacheDirectory(SentryUnityOptions options)
+        {
+            if (options.CacheDirectoryPath is null)
+            {
+                // same as the default of sentry-native
+                return Path.Combine(Directory.GetCurrentDirectory(), ".sentry-native");
+            }
+            else
+            {
+                return Path.Combine(options.CacheDirectoryPath, "SentryNative");
+            }
+        }
 
         // libsentry.so
         [DllImport("sentry")]
