@@ -42,8 +42,8 @@ namespace Sentry.Unity.Editor.Native
                 }
 
                 var projectDir = Path.GetDirectoryName(executablePath);
-                addCrashHandler(logger, projectDir);
-                uploadDebugSymbols(logger, projectDir, Path.GetFileName(executablePath));
+                AddCrashHandler(logger, projectDir);
+                UploadDebugSymbols(logger, projectDir, Path.GetFileName(executablePath));
 
             }
             catch (Exception e)
@@ -53,24 +53,26 @@ namespace Sentry.Unity.Editor.Native
             }
         }
 
-        private static void addCrashHandler(IDiagnosticLogger logger, string projectDir)
+        private static void AddCrashHandler(IDiagnosticLogger logger, string projectDir)
         {
             var crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins",
                 "Windows", "Sentry", "crashpad_handler.exe"));
             var targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
-            logger.LogInfo($"Copying the native crash handler '{Path.GetFileName(crashpadPath)}' to the output directory");
+            logger.LogInfo("Copying the native crash handler '{0}' to the output directory", Path.GetFileName(crashpadPath));
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void uploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
         {
             var cliOptions = SentryCliOptions.LoadCliOptions();
             if (!cliOptions.Validate(logger))
+            {
                 return;
+            }
 
             var propertiesFile = SentryCli.CreateSentryProperties(projectDir, cliOptions);
 
-            logger.LogInfo($"Uploading debuging information using sentry-cli in {projectDir}");
+            logger.LogInfo("Uploading debugging information using sentry-cli in {0}", projectDir);
 
             var paths = "";
             Func<string, bool> addPath = (string name) =>
@@ -113,7 +115,7 @@ namespace Sentry.Unity.Editor.Native
             };
             process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
             process.OutputDataReceived += (sender, args) => logger.LogDebug($"sentry-cli: {args.Data.ToString()}");
-            process.ErrorDataReceived += (sender, args) => logger.LogWarning($"sentry-cli: {args.Data.ToString()}");
+            process.ErrorDataReceived += (sender, args) => logger.LogError($"sentry-cli: {args.Data.ToString()}");
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
