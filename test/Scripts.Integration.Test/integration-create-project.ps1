@@ -3,7 +3,7 @@
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
 $unityPath = FormatUnityPath $arg
-$packageReleaseZip = "package-release.zip"
+
 # Check if Unity path is correct.
 If (Test-Path -Path "$unityPath")
 {
@@ -13,26 +13,6 @@ Else
 {
     Throw "Expected Unity on $unityPath but it was not found."
 }
-
-# Check if SDK is packed.
-$packageFile = "package-release.zip"
-If (Test-Path -Path "$(ProjectRoot)/$packageFile" )
-{
-    Write-Host "Found $packageFile"
-}
-Else
-{
-    Throw "$packageFile on $(ProjectRoot) but it was not found. Be sure you run ./scripts/pack.ps1"
-}
-
-Write-Host -NoNewline "clearing $PackageReleaseOutput and Extracting $packageReleaseZip :"
-if (Test-Path -Path "$PackageReleaseOutput")
-{
-    Remove-Item -Path "$PackageReleaseOutput" -Recurse
-}
-
-Expand-Archive -LiteralPath "$(ProjectRoot)/$packageReleaseZip" -DestinationPath "$PackageReleaseOutput"
-Write-Host "OK"
 
 # Delete Previous Integration Project Folder if found
 If (Test-Path -Path "$NewProjectPath" )
@@ -65,7 +45,7 @@ Else
 {
     Write-Host -NoNewline  "Copying Test scene"
     New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
-    Copy-Item -Recurse "$PackageReleaseAssetsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
+    Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
     Write-Host " OK"
 
     Write-Host -NoNewline  "Copying Scripts"
