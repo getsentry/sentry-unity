@@ -273,6 +273,14 @@ namespace Sentry.Unity
         }
     }
 
+
+    internal class NativeStackTrace
+    {
+        public IntPtr[] Frames;
+        public string ImageUUID;
+        public string ImageName;
+    }
+
     internal class UnityEventExceptionProcessor : ISentryEventExceptionProcessor
     {
         public void Process(Exception exception, SentryEvent sentryEvent)
@@ -285,6 +293,92 @@ namespace Sentry.Unity
                 sentryEvent.SentryExceptions = new[] { ule.ToSentryException() };
                 sentryEvent.SetTag("source", "log");
             }
+            else
+            {
+                var nativeStackTrace = GetNativeStackTrace(exception);
+
+                var frames = new List<SentryStackFrame>();
+                foreach (var frame in nativeStackTrace.Frames)
+                {
+                    frames.Add(new SentryStackFrame
+                    {
+                        InstructionAddress = String.Format("0x{0:X}", frame),
+                        // TODO: AddressMode = "rel:0",
+                    });
+                }
+
+                frames.Reverse();
+
+                var stacktrace = new SentryStackTrace();
+                foreach (var frame in frames)
+                {
+                    stacktrace.Frames.Add(frame);
+                }
+
+                sentryEvent.SentryExceptions = new[] {
+                    new SentryException
+                    {
+                        Stacktrace = stacktrace,
+                    }
+                };
+                // TODO: create a debug images entry based on the given image.
+                /*
+                sentryEvent.debug_meta.images = new[] {
+                    new SentryDebugImage
+                    {
+                        Name = nativeStackTrace.ImageName,
+                        DebugId = nativeStackTrace.ImageUUID,
+                    }
+                }
+                */
+            }
         }
+
+        private IntPtr[] GetNativeStackTrace(Exception e) {
+            // TODO: make sure this function is safe to call:
+            // * Are we in Il2cpp mode?
+            // * Does the `libil2cpp` we link against have the necessary functions?
+
+            // Create a `GCHandle` for the exception, which we can then use to
+            // essentially get a pointer to the underlying `Il2CppException` C++ object.
+            GCHandle gch = GCHandle.Alloc(e);
+            var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
+            IntPtr addr = il2cpp_gchandle_get_target(gchandle);
+
+            // The `il2cpp_native_stack_trace` allocates and writes the native
+            // instruction pointers to the `addresses`/`numFrames` out-parameters.
+            IntPtr addresses = IntPtr.Zero;
+            int numFrames = 0;
+            string imageUUID;
+            string imageName;
+            il2cpp_native_stack_trace(addr, out addresses, out numFrames, out imageUUID, out imageName);
+
+            // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
+            IntPtr[] frames = new IntPtr[numFrames];
+            Marshal.Copy(addresses, frames, 0, numFrames);
+            il2cpp_free(addresses);
+
+            // We are done with the `GCHandle`.
+            gch.Free();
+
+            return new NativeStackTrace
+            {
+                Frames = frames,
+                ImageUUID = imageUUID,
+                ImageName = imageName,
+            };
+        }
+
+        // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
+        [DllImport("__Internal")]
+        private static extern IntPtr il2cpp_gchandle_get_target(int gchandle);
+
+        // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
+        [DllImport("__Internal")]
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
+
+        // void il2cpp_free(void* ptr)
+        [DllImport("__Internal")]
+        private static extern void il2cpp_free(IntPtr ptr);
     }
 }
