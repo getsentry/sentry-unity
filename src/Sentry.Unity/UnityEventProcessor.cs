@@ -334,7 +334,8 @@ namespace Sentry.Unity
             }
         }
 
-        private IntPtr[] GetNativeStackTrace(Exception e) {
+        private IntPtr[] GetNativeStackTrace(Exception e)
+        {
             // TODO: make sure this function is safe to call:
             // * Are we in Il2cpp mode?
             // * Does the `libil2cpp` we link against have the necessary functions?
