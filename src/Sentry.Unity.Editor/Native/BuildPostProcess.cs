@@ -70,8 +70,6 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var propertiesFile = SentryCli.CreateSentryProperties(projectDir, cliOptions);
-
             logger.LogInfo("Uploading debugging information using sentry-cli in {0}", projectDir);
 
             var paths = "";
@@ -113,7 +111,10 @@ namespace Sentry.Unity.Editor.Native
                     CreateNoWindow = true
                 }
             };
-            process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
+
+            process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;
+            process.StartInfo.EnvironmentVariables["SENTRY_PROJECT"] = cliOptions.Project;
+            process.StartInfo.EnvironmentVariables["SENTRY_AUTH_TOKEN"] = cliOptions.Auth;
             process.OutputDataReceived += (sender, args) => logger.LogDebug($"sentry-cli: {args.Data.ToString()}");
             process.ErrorDataReceived += (sender, args) => logger.LogError($"sentry-cli: {args.Data.ToString()}");
             process.Start();
