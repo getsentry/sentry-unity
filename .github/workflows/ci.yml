@@ -76,7 +76,7 @@ jobs:
             temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - name: Start the Unity the docker container
+      - name: Start the Unity docker container
         run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
 
       - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
