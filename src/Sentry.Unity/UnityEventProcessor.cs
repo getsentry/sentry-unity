@@ -305,7 +305,7 @@ namespace Sentry.Unity
                     frames.Add(new SentryStackFrame
                     {
                         InstructionAddress = String.Format("0x{0:X}", frame),
-                        // TODO: AddressMode = "rel:0",
+                        AddressMode = "rel:0",
                     });
                 }
 
@@ -323,16 +323,15 @@ namespace Sentry.Unity
                         Stacktrace = stacktrace,
                     }
                 };
-                // TODO: create a debug images entry based on the given image.
-                /*
-                sentryEvent.debug_meta.images = new[] {
+                sentryEvent.SentryDebugImages = new[] {
                     new SentryDebugImage
                     {
-                        Name = nativeStackTrace.ImageName,
+                        // NOTE: this obviously is not wasm, but that type is used for images that do not have a `image_addr` but are rather used with "rel:N" AddressMode.
+                        Type = "wasm",
+                        CodeFile = nativeStackTrace.ImageName,
                         DebugId = nativeStackTrace.ImageUUID,
                     }
-                }
-                */
+                };
             }
         }
 
