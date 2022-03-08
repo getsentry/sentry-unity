@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
@@ -276,9 +278,9 @@ namespace Sentry.Unity
 
     internal class NativeStackTrace
     {
-        public IntPtr[] Frames;
-        public string ImageUUID;
-        public string ImageName;
+        public IntPtr[] Frames = null!;
+        public string? ImageUUID;
+        public string? ImageName;
     }
 
     internal class UnityEventExceptionProcessor : ISentryEventExceptionProcessor
@@ -334,7 +336,7 @@ namespace Sentry.Unity
             }
         }
 
-        private IntPtr[] GetNativeStackTrace(Exception e)
+        private NativeStackTrace GetNativeStackTrace(Exception e)
         {
             // TODO: make sure this function is safe to call:
             // * Are we in Il2cpp mode?
@@ -350,8 +352,8 @@ namespace Sentry.Unity
             // instruction pointers to the `addresses`/`numFrames` out-parameters.
             IntPtr addresses = IntPtr.Zero;
             int numFrames = 0;
-            string imageUUID;
-            string imageName;
+            string? imageUUID;
+            string? imageName;
             il2cpp_native_stack_trace(addr, out addresses, out numFrames, out imageUUID, out imageName);
 
             // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
