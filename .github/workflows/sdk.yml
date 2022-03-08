@@ -55,7 +55,7 @@ jobs:
         with:
           name: ${{ inputs.target }}-sdk
           path: package-dev/Plugins/${{ inputs.target }}
-          retention-days: 1
+          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
 
       - uses: actions/upload-artifact@v2
         if: ${{ inputs.target == 'Android' }}
