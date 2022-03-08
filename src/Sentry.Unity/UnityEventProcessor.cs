@@ -323,7 +323,7 @@ namespace Sentry.Unity
                         Stacktrace = stacktrace,
                     }
                 };
-                sentryEvent.SentryDebugImages = new[] {
+                sentryEvent.SentryDebugImages = new List<SentryDebugImage> {
                     new SentryDebugImage
                     {
                         // NOTE: this obviously is not wasm, but that type is used for images that do not have a `image_addr` but are rather used with "rel:N" AddressMode.
