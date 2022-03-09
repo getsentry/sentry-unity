@@ -2,8 +2,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-bool CrashedLastRun() {
-    return[SentrySDK crashedLastRun];
+int CrashedLastRun() {
+    return [SentrySDK crashedLastRun] ? 1 : 0;
 }
 
 void Close() {

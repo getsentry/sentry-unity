@@ -12,7 +12,7 @@ namespace Sentry.Unity.iOS
     internal static class SentryCocoaBridgeProxy
     {
         [DllImport("__Internal")]
-        public static extern bool CrashedLastRun();
+        public static extern int CrashedLastRun();
 
         [DllImport("__Internal")]
         public static extern void Close();
