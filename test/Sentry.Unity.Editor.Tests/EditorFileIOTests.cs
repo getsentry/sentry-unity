@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
 
-namespace Sentry.Unity.Editor.iOS.Tests
+namespace Sentry.Unity.Editor.Tests
 {
-    public class BuildPostProcessorTests
+    public class EditorFileIOTests
     {
         private string _testDirectoryRoot = null!;
         private string _testFrameworkPath = null!;
@@ -35,7 +35,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework");
 
-            BuildPostProcess.CopyFramework(_testFrameworkPath, targetPath, new TestLogger());
+            EditorFileIO.CopyDirectory(_testFrameworkPath, targetPath, new TestLogger());
 
             Assert.IsTrue(Directory.Exists(targetPath));
         }
@@ -46,8 +46,8 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var testLogger = new TestLogger();
             var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework");
 
-            BuildPostProcess.CopyFramework(_testFrameworkPath, targetPath, testLogger);
-            BuildPostProcess.CopyFramework(_testFrameworkPath, targetPath, testLogger);
+            EditorFileIO.CopyDirectory(_testFrameworkPath, targetPath, testLogger);
+            EditorFileIO.CopyDirectory(_testFrameworkPath, targetPath, testLogger);
 
             Assert.IsTrue(testLogger.Logs.Any(log =>
                 log.logLevel == SentryLevel.Debug &&
@@ -57,7 +57,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void CopyFramework_FailedToCopy_ThrowsDirectoryNotFoundException() =>
             Assert.Throws<DirectoryNotFoundException>(() =>
-                BuildPostProcess.CopyFramework("non-existent-path.framework",
+                EditorFileIO.CopyDirectory("non-existent-path.framework",
                     Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework"), new TestLogger()));
 
 
@@ -66,7 +66,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         {
             var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.m");
 
-            BuildPostProcess.CopyFile(_testFilePath, targetPath, new TestLogger());
+            EditorFileIO.CopyFile(_testFilePath, targetPath, new TestLogger());
 
             Assert.IsTrue(File.Exists(targetPath));
         }
@@ -77,8 +77,8 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var testLogger = new TestLogger();
             var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.m");
 
-            BuildPostProcess.CopyFile(_testFilePath, targetPath, testLogger);
-            BuildPostProcess.CopyFile(_testFilePath, targetPath, testLogger);
+            EditorFileIO.CopyFile(_testFilePath, targetPath, testLogger);
+            EditorFileIO.CopyFile(_testFilePath, targetPath, testLogger);
 
             Assert.IsTrue(testLogger.Logs.Any(log =>
                 log.logLevel == SentryLevel.Debug &&
@@ -88,7 +88,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void CopyFile_FailedToCopyFile_ThrowsFileNotFoundException() =>
             Assert.Throws<FileNotFoundException>(() =>
-                BuildPostProcess.CopyFile("non-existent-path.m",
+                EditorFileIO.CopyFile("non-existent-path.m",
                     Path.Combine(_xcodeProjectPath, "NewDirectory", "Test.m"), new TestLogger()));
     }
 }

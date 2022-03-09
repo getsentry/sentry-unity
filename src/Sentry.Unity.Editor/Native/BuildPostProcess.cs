@@ -11,7 +11,7 @@ namespace Sentry.Unity.Editor.Native
     public static class BuildPostProcess
     {
         [PostProcessBuild(1)]
-        public static void OnPostProcessBuild(BuildTarget target, string executablePath)
+        internal static void OnPostProcessBuild(BuildTarget target, string executablePath)
         {
             if (target is not (BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64))
             {
@@ -25,7 +25,7 @@ namespace Sentry.Unity.Editor.Native
             {
                 if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) != ScriptingImplementation.IL2CPP)
                 {
-                    logger.LogWarning("Failed to enable Native support - only availabile with IL2CPP scripting backend.");
+                    logger.LogWarning("Failed to enable Native support - only available with IL2CPP scripting backend.");
                     return;
                 }
 
@@ -41,10 +41,11 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
+                SentryWindowsPlayer.Build(options, executablePath);
+
                 var projectDir = Path.GetDirectoryName(executablePath);
                 AddCrashHandler(logger, projectDir);
                 UploadDebugSymbols(logger, projectDir, Path.GetFileName(executablePath));
-
             }
             catch (Exception e)
             {
