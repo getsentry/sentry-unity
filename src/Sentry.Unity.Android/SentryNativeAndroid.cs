@@ -47,10 +47,9 @@ namespace Sentry.Unity.Android
                 }
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
+                    // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
                     options.DiagnosticLogger?.LogDebug("Closing the sentry-java SDK");
                     SentryJava.Close();
-                    options.DiagnosticLogger?.LogDebug("Closing the sentry-native SDK");
-                    SentryNative.Close();
                 };
             }
         }

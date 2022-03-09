@@ -14,8 +14,6 @@ namespace Sentry.Unity.Android
     /// <see href="https://github.com/getsentry/sentry-native"/>
     public static class SentryNative
     {
-        public static void Close() => sentry_close();
-
         /// <summary>
         /// Re-installs the sentry-native backend essentially retaking the signal handlers.
         /// </summary>
@@ -31,9 +29,6 @@ namespace Sentry.Unity.Android
         // libsentry.io
         [DllImport("sentry")]
         private static extern void sentry_reinstall_backend();
-
-        [DllImport("sentry")]
-        private static extern void sentry_close();
 
         // Testing
         internal static Action ReinstallSentryNativeBackendStrategy = sentry_reinstall_backend;
