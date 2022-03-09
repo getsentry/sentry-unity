@@ -72,7 +72,7 @@ namespace Sentry.Unity.Editor.Android
                 logger.LogWarning("Couldn't load SentryOptions. Can't configure native Android SDK.");
                 disableAutoInit = true;
             }
-            else if (!options.Validate())
+            else if (!options.IsValid())
             {
                 options.DiagnosticLogger?.LogWarning(
                     "Failed to validate Sentry Options. Android native support will not be configured.");
@@ -163,23 +163,8 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
-            if (!sentryCliOptions.UploadSymbols)
+            if (!sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
             {
-                logger.LogDebug("Automated symbols upload has been disabled.");
-                return;
-            }
-
-            if (_isDevelopmentBuild && !sentryCliOptions.UploadDevelopmentSymbols)
-            {
-                logger.LogDebug("Automated symbols upload for development builds has been disabled.");
-                return;
-            }
-
-            if (!sentryCliOptions.Validate(logger))
-            {
-                logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
-                                   "\nYou can disable this warning by disabling the automated symbols upload under " +
-                                   "Tools -> Sentry -> Editor");
                 return;
             }
 

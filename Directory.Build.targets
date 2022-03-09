@@ -307,7 +307,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
-  <!-- Run EditMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
+  <!-- Run EditMode tests with dotnet msbuild /t:UnityEditModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityEditModeTest" DependsOnTargets="Build" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 

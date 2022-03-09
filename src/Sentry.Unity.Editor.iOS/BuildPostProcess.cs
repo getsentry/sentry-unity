@@ -34,7 +34,7 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddSentryFramework();
                 sentryXcodeProject.AddSentryNativeBridge();
 
-                if (options?.Validate() != true)
+                if (options?.IsValid() is not true)
                 {
                     logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
                     return;
@@ -50,30 +50,12 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddSentryToMain(options);
 
                 var sentryCliOptions = SentryCliOptions.LoadCliOptions();
-                if (!sentryCliOptions.UploadSymbols)
+                if (sentryCliOptions.IsValid(logger))
                 {
-                    logger.LogDebug("Automated symbols upload has been disabled.");
-                    return;
+                    SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
+                    SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
+                    sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
                 }
-
-                if (EditorUserBuildSettings.development && !sentryCliOptions.UploadDevelopmentSymbols)
-                {
-                    logger.LogDebug("Automated symbols upload for development builds has been disabled.");
-                    return;
-                }
-
-                if (!sentryCliOptions.Validate(logger))
-                {
-                    logger.LogWarning("sentry-cli validation failed. Symbols will not be uploaded." +
-                                       "\nYou can disable this warning by disabling the automated symbols upload under " +
-                                       "Tools -> Sentry -> Editor");
-                    return;
-                }
-
-                SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
-                SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
-
-                sentryXcodeProject.AddBuildPhaseSymbolUpload(logger);
             }
             catch (Exception e)
             {

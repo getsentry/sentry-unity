@@ -24,7 +24,7 @@ namespace Sentry.Unity
         {
             var cOptions = sentry_options_new();
 
-            // Note: DSN is not null because options.Validate() must have returned true for this to be called.
+            // Note: DSN is not null because options.IsValid() must have returned true for this to be called.
             sentry_options_set_dsn(cOptions, options.Dsn!);
 
             if (options.Release is not null)

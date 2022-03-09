@@ -10,6 +10,14 @@
 
 - iOS builds no longer break when native support disabled or not available ([#592](https://github.com/getsentry/sentry-unity/pull/592))
 
+### Features
+
+- Windows native support (64-bit)
+  - native crash handler ([#380](https://github.com/getsentry/sentry-unity/pull/380))
+  - configuration & log forwarding ([#577](https://github.com/getsentry/sentry-unity/pull/577))
+  - scope synchronization ([#546](https://github.com/getsentry/sentry-unity/pull/546))
+  - symbol upload while building through Unity ([#607](https://github.com/getsentry/sentry-unity/pull/607))
+
 ## 0.11.0
 
 ### Features
