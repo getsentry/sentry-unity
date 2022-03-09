@@ -27,4 +27,8 @@
       Overwrite="true"/>
   </Target>
 
+  <Target Name="todo-remove-memory" AfterTargets="Build" >
+    <Delete Files="$(OutDir)/System.Memory.dll" ContinueOnError="true" />
+  </Target>
+
 </Project>
