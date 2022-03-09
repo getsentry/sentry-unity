@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity.iOS
 {
@@ -24,6 +25,11 @@ namespace Sentry.Unity.iOS
                         .LogDebug("Native iOS SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
 
                     return crashedLastRun;
+                };
+                ApplicationAdapter.Instance.Quitting += () =>
+                {
+                    options.DiagnosticLogger?.LogDebug("Closing the sentry-cocoa SDK");
+                    SentryCocoaBridgeProxy.Close();
                 };
             }
         }

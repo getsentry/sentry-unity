@@ -6,6 +6,10 @@ bool CrashedLastRun() {
     return[SentrySDK crashedLastRun];
 }
 
+void Close() {
+    [SentrySDK close];
+}
+
 void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char* type, const char* category, int level) {
     if (timestamp == NULL && message == NULL && type == NULL && category == NULL) {
         return;

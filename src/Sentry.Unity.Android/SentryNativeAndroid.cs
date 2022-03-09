@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity.Android
 {
@@ -44,6 +45,12 @@ namespace Sentry.Unity.Android
                     // So we register our backend once more to make sure user-defined data is available in the crash report.
                     SentryNative.ReinstallBackend();
                 }
+                ApplicationAdapter.Instance.Quitting += () =>
+                {
+                    // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
+                    options.DiagnosticLogger?.LogDebug("Closing the sentry-java SDK");
+                    SentryJava.Close();
+                };
             }
         }
     }

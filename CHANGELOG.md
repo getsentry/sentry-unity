@@ -9,6 +9,7 @@
 ### Fixes
 
 - iOS builds no longer break when native support disabled or not available ([#592](https://github.com/getsentry/sentry-unity/pull/592))
+- Close sentry instance when quitting the app ([#608](https://github.com/getsentry/sentry-unity/pull/608))
 
 ### Features
 

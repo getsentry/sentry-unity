@@ -28,5 +28,11 @@ namespace Sentry.Unity.Android
             return jo.CallStatic<AndroidJavaObject>("isCrashedLastRun")
                 ?.Call<bool>("booleanValue");
         }
+
+        public static void Close()
+        {
+            using var jo = new AndroidJavaObject("io.sentry.Sentry");
+            jo.CallStatic<AndroidJavaObject>("close");
+        }
     }
 }

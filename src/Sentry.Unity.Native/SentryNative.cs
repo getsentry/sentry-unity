@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity.Native
 {
@@ -16,6 +17,11 @@ namespace Sentry.Unity.Native
             if (options.WindowsNativeSupportEnabled)
             {
                 SentryNativeBridge.Init(options);
+                ApplicationAdapter.Instance.Quitting += () =>
+                {
+                    options.DiagnosticLogger?.LogDebug("Closing the sentry-native SDK");
+                    SentryNativeBridge.Close();
+                };
                 options.ScopeObserver = new NativeScopeObserver(options);
                 options.EnableScopeSync = true;
                 // options.CrashedLastRun = () =>

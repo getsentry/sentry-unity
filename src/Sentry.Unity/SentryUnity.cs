@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
 {
@@ -31,7 +32,12 @@ namespace Sentry.Unity
             if (sentryUnityOptions.ShouldInitializeSdk())
             {
                 sentryUnityOptions.DiagnosticLogger?.LogDebug(sentryUnityOptions.ToString());
-                SentrySdk.Init(sentryUnityOptions);
+                var sentryDotNet = SentrySdk.Init(sentryUnityOptions);
+                ApplicationAdapter.Instance.Quitting += () =>
+                {
+                    sentryUnityOptions.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");
+                    sentryDotNet.Dispose();
+                };
             }
         }
     }
