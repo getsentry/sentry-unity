@@ -1,6 +1,7 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
+using Sentry.Extensibility;
 
 namespace Sentry.Unity.Native
 {
@@ -37,8 +38,11 @@ namespace Sentry.Unity.Native
                 {
                     if (!perDirectoryCrashInfo.TryGetValue(cacheDirectory, out crashedLastRun))
                     {
-                        crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options, cacheDirectory);
+                        crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
                         perDirectoryCrashInfo.Add(cacheDirectory, crashedLastRun);
+
+                        options.DiagnosticLogger?
+                            .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
                     }
                 }
                 options.CrashedLastRun = () => crashedLastRun;

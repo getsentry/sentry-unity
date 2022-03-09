@@ -19,6 +19,9 @@ namespace Sentry.Unity
     /// <see href="https://github.com/getsentry/sentry-native"/>
     public static class SentryNativeBridge
     {
+
+        public static bool CrashedLastRun;
+
         public static void Init(SentryUnityOptions options)
         {
             var cOptions = sentry_options_new();
@@ -79,26 +82,14 @@ namespace Sentry.Unity
         }
 
         public static void Close() => sentry_close();
-        
+
         /// Call after native init() to check if the application has crashed in the previous run and clear the status.
         /// Because the file is removed, the result will change on subsequent calls so it must be cached for the current runtime.
-        internal static bool HandleCrashedLastRun(SentryUnityOptions options, string cacheDirectory)
+        internal static bool HandleCrashedLastRun(SentryUnityOptions options)
         {
-            // See the file name in [sentry__write_crash_marker](https://github.com/getsentry/sentry-native/blob/0.4.12/src/sentry_database.c#L239)
-            var crashFile = Path.Combine(cacheDirectory, "last_crash");
-
-            if (File.Exists(crashFile))
-            {
-                options.DiagnosticLogger?.LogWarning("The last session seems to have crashed on {0}.", File.ReadAllText(crashFile));
-
-                // Remove the file so that it's not there next time, unless there's another crash.
-                File.Delete(crashFile);
-
-                return true;
-            }
-
-            options.DiagnosticLogger?.LogDebug("The last session looks crash-free - file {0} doesn't exist.", crashFile);
-            return false;
+            var result = sentry_get_crashed_last_run() == 1;
+            sentry_clear_crashed_last_run();
+            return result;
         }
 
         internal static string GetCacheDirectory(SentryUnityOptions options)
@@ -201,6 +192,12 @@ namespace Sentry.Unity
 
         [DllImport("sentry")]
         private static extern int sentry_close();
+
+        [DllImport("sentry")]
+        private static extern int sentry_get_crashed_last_run();
+
+        [DllImport("sentry")]
+        private static extern int sentry_clear_crashed_last_run();
 
         /// <summary>
         /// Re-installs the sentry-native backend essentially retaking the signal handlers.
