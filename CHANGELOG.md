@@ -41,6 +41,7 @@
   - configuration & log forwarding ([#577](https://github.com/getsentry/sentry-unity/pull/577))
   - scope synchronization ([#546](https://github.com/getsentry/sentry-unity/pull/546))
   - symbol upload while building through Unity ([#607](https://github.com/getsentry/sentry-unity/pull/607))
+- Capture Native Instruction Addrs for Exceptions ([#614](https://github.com/getsentry/sentry-unity/pull/614))
 
 ### Fixes
 
