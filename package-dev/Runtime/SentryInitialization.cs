@@ -45,8 +45,8 @@ namespace Sentry.Unity
             }
         }
     }
-    
-    internal class SentryUnityInfo : ISentryUnityInfo
+
+    public class SentryUnityInfo : ISentryUnityInfo
     {
         public bool IL2CPP
         {
