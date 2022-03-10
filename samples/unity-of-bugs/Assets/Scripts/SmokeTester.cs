@@ -82,6 +82,10 @@ public class SmokeTester : MonoBehaviour
         {
             SmokeTestCrash();
         }
+        else if (arg == "post-crash")
+        {
+            PostCrashTest();
+        }
         else
         {
             Debug.Log($"Unknown command line argument: {arg}");
@@ -127,7 +131,10 @@ public class SmokeTester : MonoBehaviour
         {
             Debug.Log("SMOKE TEST: Start");
 
-            InitSentry(new SentryUnityOptions() { CreateHttpClientHandler = () => t });
+            var options = new SentryUnityOptions() { CreateHttpClientHandler = () => t };
+            InitSentry(options);
+
+            t.Expect("options.CrashedLastRun() == false", !options.CrashedLastRun());
 
             var currentMessage = 0;
             t.ExpectMessage(currentMessage, "'type':'session'");
@@ -194,6 +201,16 @@ public class SmokeTester : MonoBehaviour
         // shouldn't execute because the previous call should have failed
         Debug.Log("SMOKE TEST: FAIL - unexpected code executed...");
         Application.Quit(-1);
+    }
+
+    public static void PostCrashTest()
+    {
+        var options = new SentryUnityOptions();
+        InitSentry(options);
+
+        var t = new TestHandler();
+        t.Expect("options.CrashedLastRun() == true", options.CrashedLastRun());
+        t.Pass();
     }
 
     private static void AddContext()

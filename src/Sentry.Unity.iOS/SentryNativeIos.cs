@@ -20,7 +20,7 @@ namespace Sentry.Unity.iOS
                 options.EnableScopeSync = true;
                 options.CrashedLastRun = () =>
                 {
-                    var crashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun();
+                    var crashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun() == 1;
                     options.DiagnosticLogger?
                         .LogDebug("Native iOS SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
 

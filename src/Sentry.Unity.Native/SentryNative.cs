@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using System.Collections.Generic;
 
 namespace Sentry.Unity.Native
 {
@@ -8,6 +9,8 @@ namespace Sentry.Unity.Native
     /// </summary>
     public static class SentryNative
     {
+        private static Dictionary<string, bool> _perDirectoryCrashInfo = new Dictionary<string, bool>();
+
         /// <summary>
         /// Configures the native SDK.
         /// </summary>
@@ -24,24 +27,28 @@ namespace Sentry.Unity.Native
                 };
                 options.ScopeObserver = new NativeScopeObserver(options);
                 options.EnableScopeSync = true;
-                // options.CrashedLastRun = () =>
-                // {
-                //     var crashedLastRun = SentryJava.CrashedLastRun();
-                //     if (crashedLastRun is null)
-                //     {
-                //         // Could happen if the Android SDK wasn't initialized before the .NET layer.
-                //         options.DiagnosticLogger?
-                //             .LogWarning("Unclear from the native SDK if the previous run was a crash. Assuming it was not.");
-                //         crashedLastRun = false;
-                //     }
-                //     else
-                //     {
-                //         options.DiagnosticLogger?
-                //             .LogDebug("Native Android SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
-                //     }
 
-                //     return crashedLastRun.Value;
-                // };
+                // Note: we must actually call the function now and on every other call use the value we get here.
+                // Additionally, we cannot call this multiple times for the same directory, because the result changes
+                // on subsequent runs. Therefore, we cache the value during the whole runtime of the application.
+                var cacheDirectory = SentryNativeBridge.GetCacheDirectory(options);
+                bool crashedLastRun = false;
+                // In the event the SDK is re-initialized with a different path on disk, we need to track which ones were already read
+                // Similarly we need to cache the value of each call since a subsequent call would return a different value
+                // as the file used on disk to mark it as crashed is deleted after we read it.
+                lock (_perDirectoryCrashInfo)
+                {
+                    if (!_perDirectoryCrashInfo.TryGetValue(cacheDirectory, out crashedLastRun))
+                    {
+                        crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
+                        _perDirectoryCrashInfo.Add(cacheDirectory, crashedLastRun);
+
+                        options.DiagnosticLogger?
+                            .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
+                    }
+                }
+                options.CrashedLastRun = () => crashedLastRun;
+
                 // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
                 // So we register our backend once more to make sure user-defined data is available in the crash report.
                 SentryNativeBridge.ReinstallBackend();

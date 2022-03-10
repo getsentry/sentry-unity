@@ -85,9 +85,6 @@ function RunTest([string] $type) {
     Else {
         $info = "Test process finished with status code $($process.ExitCode)."
         If ($type -ne "smoke-crash") {
-            if ("$AppDataDir" -ne "") {
-                Get-Content "$AppDataDir/Player.log"
-            }
             throw $info
         }
         Write-Host $info
@@ -125,7 +122,8 @@ if ($Smoke) {
 
 # Native crash test
 if ($Crash) {
-    $runs = 1   # You can increase this to run the crash test multiple times in a loop (until it fails)
+    # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
+    $runs = 5
     for ($run = 1; $run -le $runs; $run++) {
         $httpServer = RunApiServer
         RunTest "smoke-crash"
@@ -134,8 +132,8 @@ if ($Crash) {
         $successMessage = "POST /api/12345/minidump/"
 
         Write-Host "Waiting for the expected message to appear in the server output logs ..."
-        # Wait for 1 minute (600 * 100 milliseconds) until the expected message comes in
-        for ($i = 0; $i -lt 600; $i++) {
+        # Wait for 30 seconds (300 * 100 milliseconds) until the expected message comes in
+        for ($i = 0; $i -lt 300; $i++) {
             $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
             if ("$output".Contains($successMessage)) {
                 break
@@ -167,8 +165,10 @@ if ($Crash) {
         if ($output.Contains($successMessage)) {
             Write-Host "smoke-crash test $run/$runs : PASSED" -ForegroundColor Green
         }
-        else {
+        elseif ($run -ne $runs) {
             Write-Error "smoke-crash test $run/$runs : FAILED"
         }
     }
+
+    RunTest "post-crash"
 }
