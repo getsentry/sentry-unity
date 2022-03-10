@@ -278,7 +278,7 @@ namespace Sentry.Unity
 
     internal class NativeStackTrace
     {
-        public IntPtr[] Frames = null!;
+        public IntPtr[] Frames = new IntPtr[0];
         public string? ImageUUID;
         public string? ImageName;
     }
