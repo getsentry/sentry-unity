@@ -21,11 +21,6 @@ namespace Sentry.Unity.Editor
                 Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
                 FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
             }
-
-            if (!Directory.Exists(targetPath))
-            {
-                throw new DirectoryNotFoundException($"Failed to copy '{sourcePath}' to '{targetPath}'");
-            }
         }
 
         internal static void CopyFile(string sourcePath, string targetPath, IDiagnosticLogger? logger)
@@ -42,11 +37,6 @@ namespace Sentry.Unity.Editor
 
                 Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
                 FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
-            }
-
-            if (!File.Exists(targetPath))
-            {
-                throw new FileNotFoundException($"Failed to copy '{sourcePath}' to '{targetPath}'");
             }
         }
     }
