@@ -47,15 +47,15 @@ namespace Sentry.Unity
     }
     
     internal class SentryUnityInfo : ISentryUnityInfo
-   {
-       public bool IL2CPP
-       {
-           get =>
-   #if ENABLE_IL2CPP
+    {
+        public bool IL2CPP
+        {
+            get =>
+#if ENABLE_IL2CPP
                true;
-   #else
+#else
                false;
-   #endif
-       }
-   }
+#endif
+        }
+    }
 }
