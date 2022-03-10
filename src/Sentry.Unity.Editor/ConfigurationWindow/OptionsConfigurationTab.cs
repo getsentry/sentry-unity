@@ -18,13 +18,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                     "This allows you to override configuration otherwise unavailable from the " +
                                     "editor UI, e.g. set a custom BeforeSend callback. \n\n" +
                                     // TODO other platforms
-                                    // "Because Sentry Unity integration includes both managed c# Unity SDK and a " +
+                                    // "Because Sentry Unity integration includes both managed C# Unity SDK and a " +
                                     // "platform specific one, you can specify the respective overrides separately.\n\n" +
                                     "You can either select an existing script, or create a new one by clicking the " +
                                     "'New' button, which will create one from a template at a selected location.",
                                     MessageType.Info);
 
-            EditorGUILayout.Space();
             EditorGUILayout.Space();
 
             OptionsConfigurationDotNet.Display(options);
@@ -40,7 +39,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         {
             GUILayout.BeginHorizontal();
             options.OptionsConfiguration = EditorGUILayout.ObjectField(
-                    new GUIContent(".net (c#)"), options.OptionsConfiguration, typeof(ScriptableOptionsConfiguration), false)
+                    new GUIContent(".NET (C#)", "A scriptable object that inherits from " +
+                                                            "'ScriptableOptionsConfiguration' and allows you to " +
+                                                            "programmatically modify Sentry options."), 
+                    options.OptionsConfiguration, typeof(ScriptableOptionsConfiguration), false)
                 as ScriptableOptionsConfiguration;
             if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
             {

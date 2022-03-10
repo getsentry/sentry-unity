@@ -67,7 +67,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Options Configuration", EditorStyles.boldLabel);
-            EditorGUILayout.ObjectField(".net (c#)", options.OptionsConfiguration,
+            EditorGUILayout.ObjectField(".NET (C#)", options.OptionsConfiguration,
                 typeof(ScriptableOptionsConfiguration), false);
 
             EditorGUILayout.Space();
