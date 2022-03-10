@@ -41,7 +41,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             options.OptionsConfiguration = EditorGUILayout.ObjectField(
                     new GUIContent(".NET (C#)", "A scriptable object that inherits from " +
                                                             "'ScriptableOptionsConfiguration' and allows you to " +
-                                                            "programmatically modify Sentry options."), 
+                                                            "programmatically modify Sentry options."),
                     options.OptionsConfiguration, typeof(ScriptableOptionsConfiguration), false)
                 as ScriptableOptionsConfiguration;
             if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
