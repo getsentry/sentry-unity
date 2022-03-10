@@ -7,35 +7,46 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     internal static class OptionsConfigurationTab
     {
-        private const string CreateScriptableObjectFlag = "CreateScriptableOptionsObject";
-        private const string ScriptNameKey = "ScriptableOptionsName";
-
         public static void Display(ScriptableSentryUnityOptions options)
         {
             GUILayout.Label("Programmatic Options Configuration", EditorStyles.boldLabel);
 
-            options.OptionsConfiguration = EditorGUILayout.ObjectField(
-                    new GUIContent("Options Configuration", "A scriptable object that inherits from " +
-                                                            "'ScriptableOptionsConfiguration' that allows you to " +
-                                                            "programmatically modify Sentry options i.e. implement " +
-                                                            "the 'BeforeSend' callback."),
-                    options.OptionsConfiguration, typeof(ScriptableOptionsConfiguration), false)
-                as ScriptableOptionsConfiguration;
-
             EditorGUILayout.Space();
+
             EditorGUILayout.HelpBox("The options configuration allows you to programmatically modify " +
                                     "the Sentry options object during runtime initialization of the SDK. " +
-                                    "Clicking the button below will create a scriptable object template at your " +
-                                    "targeted location and create an instance at 'Assets/Resources/Sentry/'.", MessageType.Info);
+                                    "This allows you to override configuration otherwise unavailable from the " +
+                                    "editor UI, e.g. set a custom BeforeSend callback. \n\n" +
+                                    "Because Sentry Unity integration includes both managed c# Unity SDK and a " +
+                                    "platform specific one, you can specify the respective overrides separately.\n\n" +
+                                    "You can either select an existing script, or create a new one by clicking the " +
+                                    "'New' button, which will create one from a template at a selected location.",
+                                    MessageType.Info);
+
             EditorGUILayout.Space();
 
-            if (GUILayout.Button("Create options configuration"))
-            {
-                CreateOptionsConfigurationScript();
+            { // c#
+                EditorGUILayout.Space();
+                GUILayout.BeginHorizontal();
+                options.OptionsConfiguration = EditorGUILayout.ObjectField(
+                        new GUIContent(".net (c#)"), options.OptionsConfiguration, typeof(ScriptableOptionsConfiguration), false)
+                    as ScriptableOptionsConfiguration;
+                if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
+                {
+                    OptionsConfigurationDotNet.CreateScript();
+                }
+                GUILayout.EndHorizontal();
             }
         }
 
-        internal static void CreateOptionsConfigurationScript()
+    }
+
+    internal static class OptionsConfigurationDotNet
+    {
+        private const string CreateScriptableObjectFlag = "CreateScriptableOptionsObject";
+        private const string ScriptNameKey = "ScriptableOptionsName";
+
+        internal static void CreateScript()
         {
             var scriptPath = EditorUtility.SaveFilePanel("Sentry Options Configuration", "Assets", "SentryOptionsConfiguration", "cs");
             if (String.IsNullOrEmpty(scriptPath))
@@ -60,7 +71,7 @@ public class {scriptName} : ScriptableOptionsConfiguration
     // This method gets called when you instantiated the scriptable object and added it to the configuration window
     public override void Configure(SentryUnityOptions options)
     {{
-        // NOTE: Native support is already initialized by the time this method runs, so Unity bugs are captured. 
+        // NOTE: Native support is already initialized by the time this method runs, so Unity bugs are captured.
         // That means changes done to the 'options' here will only affect events from C# scripts.
 
         // Your code here
@@ -68,7 +79,7 @@ public class {scriptName} : ScriptableOptionsConfiguration
 }}");
 
             // The created script has to be compiled and the scriptable object can't immediately be instantiated.
-            // So instead we work around this by setting a 'ShouldCreateOptionsObject' flag in the EditorPrefs to
+            // So instead we work around this by setting a 'CreateScriptableObjectFlag' flag in the EditorPrefs to
             // trigger the creation after the scripts reloaded.
             EditorPrefs.SetBool(CreateScriptableObjectFlag, true);
             EditorPrefs.SetString(ScriptNameKey, scriptName);
