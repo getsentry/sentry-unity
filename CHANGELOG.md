@@ -5,21 +5,18 @@
 ### Features
 
 - The SDK no longer depends on Unity's iOS module for non iOS builds ([#601](https://github.com/getsentry/sentry-unity/pull/601))
-
-### Fixes
-
-- iOS builds no longer break when native support disabled or not available ([#592](https://github.com/getsentry/sentry-unity/pull/592))
-- Close sentry instance when quitting the app ([#608](https://github.com/getsentry/sentry-unity/pull/608))
-- iOS options.CrashedLastRun() reported an incorrect value ([#615](https://github.com/getsentry/sentry-unity/pull/615))
-
-### Features
-
 - Update native SDK to v0.4.16 (pre-release) ([#615](https://github.com/getsentry/sentry-unity/pull/615))
 - Windows native support (64-bit)
   - native crash handler ([#380](https://github.com/getsentry/sentry-unity/pull/380))
   - configuration & log forwarding ([#577](https://github.com/getsentry/sentry-unity/pull/577))
   - scope synchronization ([#546](https://github.com/getsentry/sentry-unity/pull/546))
   - symbol upload while building through Unity ([#607](https://github.com/getsentry/sentry-unity/pull/607))
+
+### Fixes
+
+- iOS builds no longer break when native support disabled or not available ([#592](https://github.com/getsentry/sentry-unity/pull/592))
+- Close sentry instance when quitting the app ([#608](https://github.com/getsentry/sentry-unity/pull/608))
+- iOS options.CrashedLastRun() reported an incorrect value ([#615](https://github.com/getsentry/sentry-unity/pull/615))
 
 ## 0.11.0
 
