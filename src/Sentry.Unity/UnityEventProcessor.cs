@@ -299,16 +299,32 @@ namespace Sentry.Unity
             {
                 var nativeStackTrace = GetNativeStackTrace(exception);
 
+                var debugImages = sentryEvent.DebugImages ?? new List<DebugImage>();
+                var imageIdx = debugImages.Count;
+                debugImages.Add(new DebugImage
+                {
+                    // NOTE: this obviously is not wasm, but that type is used for
+                    // images that do not have a `image_addr` but are rather used with "rel:N" AddressMode.
+                    Type = "wasm",
+                    CodeFile = nativeStackTrace.ImageName,
+                    DebugId = nativeStackTrace.ImageUUID,
+                });
+                sentryEvent.DebugImages = debugImages;
+
+                // TODO: Instead of creating a *new* exception/stacktrace, we should
+                // rather add the missing `InstructionAddress`/`AddressMode` properties
+                // to an existing stack trace as the `sentryEvent` should ideally
+                // have one.
+
                 var frames = new List<SentryStackFrame>();
                 foreach (var frame in nativeStackTrace.Frames)
                 {
                     frames.Add(new SentryStackFrame
                     {
                         InstructionAddress = String.Format("0x{0:X}", frame),
-                        AddressMode = "rel:0",
+                        AddressMode = String.Format("rel:{0}", imageIdx),
                     });
                 }
-
                 frames.Reverse();
 
                 var stacktrace = new SentryStackTrace();
@@ -321,15 +337,6 @@ namespace Sentry.Unity
                     new SentryException
                     {
                         Stacktrace = stacktrace,
-                    }
-                };
-                sentryEvent.SentryDebugImages = new List<SentryDebugImage> {
-                    new SentryDebugImage
-                    {
-                        // NOTE: this obviously is not wasm, but that type is used for images that do not have a `image_addr` but are rather used with "rel:N" AddressMode.
-                        Type = "wasm",
-                        CodeFile = nativeStackTrace.ImageName,
-                        DebugId = nativeStackTrace.ImageUUID,
                     }
                 };
             }
