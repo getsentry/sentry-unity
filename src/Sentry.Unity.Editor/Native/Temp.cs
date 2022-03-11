@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.Native
@@ -8,7 +8,7 @@ namespace Sentry.Unity.Editor.Native
         [MenuItem("Tools/ClickMe")]
         public static void ClickMe()
         {
-            var options = new SentryUnityOptions() {Debug = true, DiagnosticLevel = SentryLevel.Debug,};
+            var options = new SentryUnityOptions() { Debug = true, DiagnosticLevel = SentryLevel.Debug, };
             options.DiagnosticLogger = new UnityLogger(options);
 
             var editorOptions = SentryEditorOptions.LoadEditorOptions();
