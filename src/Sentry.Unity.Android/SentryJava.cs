@@ -32,7 +32,7 @@ namespace Sentry.Unity.Android
         public static void Close()
         {
             using var jo = new AndroidJavaObject("io.sentry.Sentry");
-            jo.CallStatic<AndroidJavaObject>("close");
+            jo.CallStatic("close");
         }
     }
 }
