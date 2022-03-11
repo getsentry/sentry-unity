@@ -505,8 +505,8 @@ void PrintFailedTests(XElement element)
       <SDK Include="iOS"/>
       <SDK Include="Android"/>
     </ItemGroup>
-    <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)/%(SDK.Identity)" />
-    <RemoveDir Directories="$(SentryArtifactsDestination)/%(SDK.Identity)" />
-    <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;%(SDK.Identity)-sdk&quot; -D &quot;$(SentryArtifactsDestination)/%(SDK.Identity)&quot;" />
+    <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
+    <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />
+    <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;%(SDK.Identity)-sdk&quot; -D &quot;$(SentryArtifactsDestination)%(SDK.Identity)&quot;" />
   </Target>
 </Project>

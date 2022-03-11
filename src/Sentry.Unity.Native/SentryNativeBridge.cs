@@ -83,8 +83,8 @@ namespace Sentry.Unity
 
         public static void Close() => sentry_close();
 
-        /// Call after native init() to check if the application has crashed in the previous run and clear the status.
-        /// Because the file is removed, the result will change on subsequent calls so it must be cached for the current runtime.
+        // Call after native init() to check if the application has crashed in the previous run and clear the status.
+        // Because the file is removed, the result will change on subsequent calls so it must be cached for the current runtime.
         internal static bool HandleCrashedLastRun(SentryUnityOptions options)
         {
             var result = sentry_get_crashed_last_run() == 1;
