@@ -49,7 +49,7 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddNativeOptions(options);
                 sentryXcodeProject.AddSentryToMain(options);
 
-                var sentryCliOptions = SentryCliOptions.LoadCliOptions();
+                var sentryCliOptions = SentryEditorOptions.LoadEditorOptions();
                 if (sentryCliOptions.IsValid(logger))
                 {
                     SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);

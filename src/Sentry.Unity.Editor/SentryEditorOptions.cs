@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Sentry.Unity.Editor
 {
     [Serializable]
-    public sealed class SentryCliOptions : ScriptableObject
+    public sealed class SentryEditorOptions : ScriptableObject
     {
         /// <summary>
         /// Sentry CLI config name for Unity
@@ -21,13 +21,18 @@ namespace Sentry.Unity.Editor
         [field: SerializeField] public string? Organization { get; set; }
         [field: SerializeField] public string? Project { get; set; }
 
+
+        [field: SerializeField] public bool AddSentryToWindowsPlayer { get; set; }
+        [field: SerializeField] public string MSBuildPath { get; set; } = string.Empty;
+        [field: SerializeField] public string VSWherePath { get; set; } = string.Empty;
+
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Plugins/Sentry/{notDefaultConfigName ?? ConfigName}.asset";
 
-        internal static SentryCliOptions LoadCliOptions(string? configName = null)
+        internal static SentryEditorOptions LoadEditorOptions(string? configName = null)
         {
             var cliOptions = AssetDatabase.LoadAssetAtPath(GetConfigPath(configName),
-                typeof(SentryCliOptions)) as SentryCliOptions;
+                typeof(SentryEditorOptions)) as SentryEditorOptions;
 
             if (cliOptions is null)
             {
@@ -83,9 +88,9 @@ namespace Sentry.Unity.Editor
             return validated;
         }
 
-        internal static SentryCliOptions CreateCliOptions(string? configName)
+        internal static SentryEditorOptions CreateCliOptions(string? configName)
         {
-            var cliOptions = CreateInstance<SentryCliOptions>();
+            var cliOptions = CreateInstance<SentryEditorOptions>();
 
             AssetDatabase.CreateAsset(cliOptions, GetConfigPath(configName));
             AssetDatabase.SaveAssets();

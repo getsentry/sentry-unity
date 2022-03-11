@@ -14,8 +14,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         {
             public SentryUnityOptions? SentryUnityOptions { get; set; }
             public Func<SentryUnityOptions?> GetSentryUnityOptions { get; set; }
-            public SentryCliOptions? SentryCliOptions { get; set; }
-            public Func<SentryCliOptions?> GetSentryCliOptions { get; set; }
+            public SentryEditorOptions? SentryCliOptions { get; set; }
+            public Func<SentryEditorOptions?> GetSentryCliOptions { get; set; }
             public TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
             public bool IsDevelopmentBuild { get; set; }
             public ScriptingImplementation ScriptingImplementation { get; set; } = ScriptingImplementation.IL2CPP;
@@ -33,7 +33,7 @@ namespace Sentry.Unity.Editor.Tests.Android
                 };
                 SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, LoggerInterceptor);
 
-                SentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+                SentryCliOptions = ScriptableObject.CreateInstance<SentryEditorOptions>();
                 SentryCliOptions.Auth = "test_auth_token";
                 SentryCliOptions.Organization = "test_organization";
                 SentryCliOptions.Project = "test_project";
@@ -314,7 +314,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
                                                    "\nYou can disable this warning by disabling the automated symbols upload under " +
-                                                   SentryCliOptions.EditorMenuPath);
+                                                   SentryEditorOptions.EditorMenuPath);
         }
 
         [Test]

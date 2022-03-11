@@ -41,7 +41,20 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
-                SentryWindowsPlayer.Build(options, executablePath);
+                var editorOptions = SentryEditorOptions.LoadEditorOptions();
+                if (editorOptions.AddSentryToWindowsPlayer)
+                {
+                    if (!File.Exists(editorOptions.MSBuildPath))
+                    {
+                        logger.LogDebug("Failed to find 'MSBuild' at '{0}'. Trying to locate.", editorOptions.MSBuildPath);
+                        MSBuildLocator.SetMSBuildPath(editorOptions, options.DiagnosticLogger);
+                    }
+
+                    var windowsPlayerBuilder = SentryWindowsPlayer.Create(options.DiagnosticLogger);
+                    windowsPlayerBuilder.AddNativeOptions();
+                    windowsPlayerBuilder.AddSentryToMain();
+                    windowsPlayerBuilder.Build(editorOptions.MSBuildPath, executablePath);
+                }
 
                 var projectDir = Path.GetDirectoryName(executablePath);
                 AddCrashHandler(logger, projectDir);
@@ -65,7 +78,7 @@ namespace Sentry.Unity.Editor.Native
 
         private static void UploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
         {
-            var cliOptions = SentryCliOptions.LoadCliOptions();
+            var cliOptions = SentryEditorOptions.LoadEditorOptions();
             if (!cliOptions.IsValid(logger))
             {
                 return;

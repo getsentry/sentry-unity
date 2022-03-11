@@ -1,29 +1,88 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using Sentry.Extensibility;
 using UnityEditor;
-using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor.Native
 {
-    internal static class SentryWindowsPlayer
+    internal class SentryWindowsPlayer
     {
-        internal static readonly ProcessStartInfo StartInfo = new()
-        {
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
+        private readonly string _projectPath;
+        private readonly IDiagnosticLogger? _logger;
 
-        internal static void AddNativeOptions(SentryUnityOptions options)
+        internal SentryWindowsPlayer(string projectPath, IDiagnosticLogger? logger)
         {
+            _projectPath = projectPath;
+            _logger = logger;
         }
 
-        internal static void AddSentryToMain(SentryUnityOptions options)
+        public static SentryWindowsPlayer Create(IDiagnosticLogger? logger)
         {
+            var playerTarget = FileUtil.GetUniqueTempPathInProject();
+            CreateWindowsPlayerProject(LocateWindowsPlayerSource(), playerTarget, logger);
+
+            return new SentryWindowsPlayer(playerTarget, logger);
+        }
+
+        public void AddNativeOptions()
+        {
+            _logger?.LogDebug("Adding Native Options.");
+        }
+
+        public void AddSentryToMain()
+        {
+            _logger?.LogDebug("Adding Sentry to main.");
+        }
+
+        public void Build(string msBuildPath, string executablePath)
+        {
+            _logger?.LogDebug("Building Sentry Windows Player.");
+
+            if (!File.Exists(msBuildPath))
+            {
+                throw new FileNotFoundException($"Failed to find MSBuild at '{msBuildPath}'.");
+            }
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = msBuildPath,
+                    Arguments = _projectPath,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            var output = new StringBuilder();
+            var errorOutput = new StringBuilder();
+            process.OutputDataReceived += (sender, args) => output.Append(args.Data);
+            process.ErrorDataReceived += (sender, args) => errorOutput.Append(args.Data);
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+
+            var logFile = Path.Combine(_projectPath, "build.log");
+            File.WriteAllText(logFile, output.ToString());
+            File.AppendAllText(logFile, errorOutput.ToString());
+
+            if (process.ExitCode == 0)
+            {
+                _logger?.LogDebug("MSBuild succeeded building the Windows Player");
+            }
+            else
+            {
+                throw new Exception($"MSBuild failed to build the Windows Player. Look at '{logFile}' for more information");
+            }
+
+            // TODO: Overwrite the executable with the build output
+            _logger?.LogDebug("Copying player to build output directory.");
         }
 
         internal static string LocateWindowsPlayerSource(IEditorApplication? editorApplication = null)
@@ -39,102 +98,18 @@ namespace Sentry.Unity.Editor.Native
             return playerProjectPath;
         }
 
-        internal static void CreateWindowsPlayerProject(string windowsPlayerSource, string windowsPlayerTarget, IDiagnosticLogger? logger)
+        internal static void CreateWindowsPlayerProject(string projectSource, string projectTarget, IDiagnosticLogger? logger)
         {
-            EditorFileIO.CopyDirectory(windowsPlayerSource, windowsPlayerTarget, logger);
+            logger?.LogDebug("Creating player project from source from '{0}' at '{1}'", projectSource, projectTarget);
+
+            EditorFileIO.CopyDirectory(projectSource, projectTarget, logger);
 
             // TODO: Does the .props file have to look like that?
-            using var props = File.CreateText(Path.Combine(windowsPlayerTarget, "UnityCommon.props"));
+            // The 'UnityCommon.props' is missing from the provided source code
+            using var props = File.CreateText(Path.Combine(projectTarget, "UnityCommon.props"));
             props.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
 </Project>");
-        }
-
-        internal static string LocateMSBuild(string vsWherePath, IDiagnosticLogger? logger)
-        {
-            StartInfo.FileName = vsWherePath;
-            StartInfo.Arguments = "-latest -requires Microsoft.Component.MSBuild -find MSBuild\\**\\Bin\\MSBuild.exe";
-
-            var vsWhereOutput = "";
-            var process = new Process {StartInfo = StartInfo};
-            process.OutputDataReceived += (sender, args) => vsWhereOutput += args.Data;
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
-
-            logger?.LogDebug("VSWhere returned with: {0}", vsWhereOutput);
-
-            if (!File.Exists(vsWhereOutput))
-            {
-                throw new FileNotFoundException($"Failed to locate 'msbuild'. VSWhere returned {vsWhereOutput}");
-            }
-
-            return vsWhereOutput;
-        }
-
-        internal static string LocateVSWhere(IDiagnosticLogger? logger)
-        {
-            var projectPath = Path.GetDirectoryName(Application.dataPath);
-            var directories = Directory.GetDirectories(Path.Combine(projectPath, "Library", "PackageCache"), "com.unity.ide.visualstudio@*");
-            if (directories is null || directories.Length < 1)
-            {
-                throw new Exception("Failed lo locate the 'com.unity.ide.visualstudio' package.");
-            }
-
-            // TODO: Not sure if there can be more than one version of a package in the Library/PackageCache and if it even matters
-            var vsPackagePath = directories[0];
-            logger?.LogDebug("Located 'com.unity.ide.visualstudio' package at {0}", vsPackagePath);
-
-            var vsWherePath = Path.Combine(vsPackagePath, "Editor", "VSWhere", "vswhere.exe");
-            if (!File.Exists(vsWherePath))
-            {
-                throw new FileNotFoundException($"Failed to find 'vswhere.exe' at '{vsWherePath}'");
-            }
-
-            return vsWherePath;
-        }
-
-        public static void Build(SentryUnityOptions options, string executablePath)
-        {
-            var vsWherePath = LocateVSWhere(options.DiagnosticLogger);
-            var msBuildPath = LocateMSBuild(vsWherePath, options.DiagnosticLogger);
-
-            var playerSource = LocateWindowsPlayerSource();
-            var playerTarget = FileUtil.GetUniqueTempPathInProject();
-
-            CreateWindowsPlayerProject(playerSource, playerTarget, options.DiagnosticLogger);
-
-            AddNativeOptions(options);
-            AddSentryToMain(options);
-
-            StartInfo.FileName = msBuildPath;
-            StartInfo.Arguments = playerTarget;
-
-            var outputData = "";
-            var errorData = "";
-            var process = new Process {StartInfo = StartInfo};
-            process.OutputDataReceived += (sender, args) => outputData += args.Data;
-            process.ErrorDataReceived += (sender, args) => errorData += args.Data;
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
-
-            if (outputData.Contains("Build succeeded"))
-            {
-                options.DiagnosticLogger?.LogDebug("Succeeded building the PlaybackEngine");
-            }
-            else if (outputData.Contains("Build failed"))
-            {
-                throw new Exception($"Failed to build the PlaybackEngine: \n {outputData}");
-            }
-
-            var logFile = Path.Combine(playerTarget, "build.log");
-            File.WriteAllText(logFile, outputData);
-            File.AppendAllText(logFile, errorData);
-
-            // TODO: Overwrite the executable with the build output
         }
     }
 }

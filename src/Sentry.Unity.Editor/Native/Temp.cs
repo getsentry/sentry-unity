@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.Native
 {
@@ -9,7 +10,17 @@ namespace Sentry.Unity.Editor.Native
         {
             var options = new SentryUnityOptions() {Debug = true, DiagnosticLevel = SentryLevel.Debug,};
             options.DiagnosticLogger = new UnityLogger(options);
-            SentryWindowsPlayer.Build(options, "");
+
+            var editorOptions = SentryEditorOptions.LoadEditorOptions();
+            editorOptions.VSWherePath = "";
+            editorOptions.MSBuildPath = "";
+
+            MSBuildLocator.SetMSBuildPath(editorOptions, options.DiagnosticLogger);
+
+            var windowsPlayerBuilder = SentryWindowsPlayer.Create(options.DiagnosticLogger);
+            windowsPlayerBuilder.AddNativeOptions();
+            windowsPlayerBuilder.AddSentryToMain();
+            windowsPlayerBuilder.Build(editorOptions.MSBuildPath, "executablePath");
         }
     }
 }

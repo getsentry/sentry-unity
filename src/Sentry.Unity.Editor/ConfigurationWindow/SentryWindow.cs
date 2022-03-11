@@ -24,7 +24,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
-        public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
+        public SentryEditorOptions EditorOptions { get; private set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
@@ -46,7 +46,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             CheckForAndConvertJsonConfig();
             Options = LoadOptions();
-            CliOptions = SentryCliOptions.LoadCliOptions();
+            EditorOptions = SentryEditorOptions.LoadEditorOptions();
         }
 
         private ScriptableSentryUnityOptions LoadOptions()
@@ -147,7 +147,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     OptionsConfigurationTab.Display(Options);
                     break;
                 case 5:
-                    DebugSymbolsTab.Display(CliOptions);
+                    ConfigurationWindow.EditorOptions.Display(EditorOptions);
                     break;
                 default:
                     break;
@@ -169,7 +169,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             Validate();
 
             EditorUtility.SetDirty(Options);
-            EditorUtility.SetDirty(CliOptions);
+            EditorUtility.SetDirty(EditorOptions);
             AssetDatabase.SaveAssets();
         }
 
