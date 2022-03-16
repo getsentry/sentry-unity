@@ -21,7 +21,7 @@ function RunApiServer() {
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
-    }
+    }.GetNewClosure()
 
     # The process shouldn't finish by itself, if it did, there was an error, so let's check that
     Start-Sleep -Second 1
