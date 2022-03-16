@@ -48,7 +48,7 @@ if ("$AppDataDir" -ne "") {
     }
 }
 else {
-    Write-Warning "No AppDataDir param given - if you're running this after a previous smoke-crash test, the smoke test will fail."
+    Write-Warning "No AppDataDir param given - if you're running this after a previous crash test, the smoke test will fail."
     Write-Warning "You can provide AppDataDir and it will be deleted before running the test."
     Write-Warning 'On windows, this would normally be: -AppDataDir "$env:UserProfile\AppData\LocalLow\DefaultCompany\unity-of-bugs\"'
 }
@@ -84,7 +84,7 @@ function RunTest([string] $type) {
     }
     Else {
         $info = "Test process finished with status code $($process.ExitCode)."
-        If ($type -ne "smoke-crash") {
+        If ($type -ne "crash") {
             throw $info
         }
         Write-Host $info
@@ -126,7 +126,7 @@ if ($Crash) {
     $runs = 5
     for ($run = 1; $run -le $runs; $run++) {
         $httpServer = RunApiServer
-        RunTest "smoke-crash"
+        RunTest "crash"
 
         $httpServerUri = "http://localhost:8000"
         $successMessage = "POST /api/12345/minidump/"
@@ -163,11 +163,11 @@ if ($Crash) {
         Remove-Item $httpServer.errFile -ErrorAction Continue
 
         if ($output.Contains($successMessage)) {
-            Write-Host "smoke-crash test $run/$runs : PASSED" -ForegroundColor Green
+            Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
             break
         }
         elseif ($run -ne $runs) {
-            Write-Error "smoke-crash test $run/$runs : FAILED"
+            Write-Error "crash test $run/$runs : FAILED"
         }
     }
 

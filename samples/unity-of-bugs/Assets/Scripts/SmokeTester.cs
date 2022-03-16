@@ -64,7 +64,7 @@ public class SmokeTester : MonoBehaviour
         {
             SmokeTest();
         }
-        else if (arg == "smoke-crash")
+        else if (arg == "crash")
         {
             SmokeTestCrash();
         }
