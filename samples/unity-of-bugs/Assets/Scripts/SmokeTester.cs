@@ -94,30 +94,30 @@ public class SmokeTester : MonoBehaviour
         options.DiagnosticLogger = new UnityLogger(options);
 
 #if SENTRY_NATIVE_IOS
-        Debug.Log("SMOKE TEST: Configure Native iOS.");
+        Debug.Log("TEST: Configure Native iOS.");
         options.IosNativeSupportEnabled = true;
         SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-        Debug.Log("SMOKE TEST: Configure Native Android.");
+        Debug.Log("TEST: Configure Native Android.");
         options.AndroidNativeSupportEnabled = true;
         SentryNativeAndroid.Configure(options, new SentryUnityInfo());
 #elif SENTRY_NATIVE_WINDOWS
-        Debug.Log("SMOKE TEST: Configure Native Windows.");
+        Debug.Log("TEST: Configure Native Windows.");
         options.WindowsNativeSupportEnabled = true;
         SentryNative.Configure(options);
 #else
-        Debug.LogWarning("SMOKE TEST: Given platform is not supported for native sentry configuration");
+        Debug.LogWarning("TEST: Given platform is not supported for native sentry configuration");
         throw new Exception("Given platform is not supported");
 #endif
 
-        Debug.Log("SMOKE TEST: SentryUnity (.net) Init.");
+        Debug.Log("TEST: SentryUnity (.net) Init.");
         SentryUnity.Init(options);
-        Debug.Log("SMOKE TEST: SentryUnity (.net) Init OK.");
+        Debug.Log("TEST: SentryUnity (.net) Init OK.");
     }
 
     public static void SmokeTest()
     {
-        var t = new TestHandler();
+        var t = new TestHandler("SMOKE");
         try
         {
             Debug.Log("SMOKE TEST: Start");
@@ -180,17 +180,17 @@ public class SmokeTester : MonoBehaviour
 
     public static void SmokeTestCrash()
     {
-        Debug.Log("SMOKE TEST: Start");
+        Debug.Log("CRASH TEST: Start");
 
         InitSentry(new SentryUnityOptions());
 
         AddContext();
 
-        Debug.Log("SMOKE TEST: Issuing a native crash (c++ unhandled exception)");
+        Debug.Log("CRASH TEST: Issuing a native crash (c++ unhandled exception)");
         throw_cpp();
 
         // shouldn't execute because the previous call should have failed
-        Debug.Log("SMOKE TEST: FAIL - unexpected code executed...");
+        Debug.Log("CRASH TEST: FAIL - unexpected code executed...");
         Application.Quit(-1);
     }
 
@@ -199,7 +199,7 @@ public class SmokeTester : MonoBehaviour
         var options = new SentryUnityOptions();
         InitSentry(options);
 
-        var t = new TestHandler();
+        var t = new TestHandler("POST-CRASH");
         t.Expect("options.CrashedLastRun() == true", options.CrashedLastRun());
         t.Pass();
     }
@@ -229,6 +229,8 @@ public class SmokeTester : MonoBehaviour
 
     private class TestHandler : HttpClientHandler
     {
+        private String _name;
+
         private List<string> _requests = new List<string>();
 
         private AutoResetEvent _requestReceived = new AutoResetEvent(false);
@@ -238,6 +240,8 @@ public class SmokeTester : MonoBehaviour
         private int _testNumber = 0;
 
         public int exitCode = 0;
+
+        public TestHandler(String name) => _name = name;
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -250,7 +254,7 @@ public class SmokeTester : MonoBehaviour
             var msgText = message.Content.ReadAsStringAsync().Result;
             lock (_requests)
             {
-                Debug.Log($"SMOKE TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+                Debug.Log($"{_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
                 _requests.Add(msgText);
                 _requestReceived.Set();
             }
@@ -276,7 +280,7 @@ public class SmokeTester : MonoBehaviour
             if (exitCode == 0)
             {
                 // On Android we'll grep logcat for this string instead of relying on exit code:
-                Debug.Log("SMOKE TEST: PASS");
+                Debug.Log($"{_name} TEST: PASS");
 
                 // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
                 exitCode = 200;
@@ -287,10 +291,10 @@ public class SmokeTester : MonoBehaviour
         public void Expect(String message, bool result)
         {
             _testNumber++;
-            Debug.Log($"SMOKE TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
+            Debug.Log($"{_name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"SMOKE TEST: Quitting due to a failed test case #{_testNumber} {message}");
+                Debug.Log($"{_name} TEST: Quitting due to a failed test case #{_testNumber} {message}");
                 Exit(_testNumber);
             }
         }
@@ -306,7 +310,7 @@ public class SmokeTester : MonoBehaviour
                 }
                 if (!_requestReceived.WaitOne(_receiveTimeout))
                 {
-                    Debug.Log($"SMOKE TEST: Failed while waiting for an HTTP request #{index} to come in.");
+                    Debug.Log($"{_name} TEST: Failed while waiting for an HTTP request #{index} to come in.");
                     Exit(_testNumber);
                 }
             }

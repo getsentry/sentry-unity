@@ -128,28 +128,36 @@ function Test
         xcrun simctl install $($device.UUID) "$AppPath"
         Write-Host "OK" -ForegroundColor Green
 
-        #### Smoke test ####
-        Write-Host "Launching SmokeTest on $($device.Name)" -ForegroundColor Green
-        $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" "smoke"
+        function RunTest([string] $Name, [string] $SuccessString)
+        {
+            Write-Host "Launching $Name test on $($device.Name)" -ForegroundColor Green
+            $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
-        Write-Host -NoNewline "Smoke test STATUS: "
-        $stdout = $consoleOut  | select-string 'SMOKE TEST: PASS'
-        If ($null -ne $stdout)
-        {
-            Write-Host "PASSED" -ForegroundColor Green
-        }
-        Else
-        {
-            $device.TestFailed = $True
-            Write-Host "FAILED" -ForegroundColor Red
-            Write-Host "$($device.Name) Console"
-            foreach ($consoleLine in $consoleOut)
+            Write-Host -NoNewline "$Name test STATUS: "
+            $stdout = $consoleOut  | select-string $SuccessString
+            If ($null -ne $stdout)
             {
-                Write-Host $consoleLine
+                Write-Host "PASSED" -ForegroundColor Green
             }
-            Write-Host " ===== END OF CONSOLE ====="
+            Else
+            {
+                $device.TestFailed = $True
+                Write-Host "FAILED" -ForegroundColor Red
+                Write-Host "$($device.Name) Console"
+                foreach ($consoleLine in $consoleOut)
+                {
+                    Write-Host $consoleLine
+                }
+                Write-Host " ===== END OF CONSOLE ====="
+            }
         }
-        
+
+        RunTest "smoke" "SMOKE TEST: PASS"
+        # post-crash must fail now, because the previous run wasn't a crash
+        RunTest "post-crash" "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL"
+        RunTest "crash" "CRASH TEST: Issuing a native crash"
+        RunTest "post-crash" "POST-CRASH TEST: PASS"
+
         Write-Host -NoNewline "Removing Smoke Test from $($device.Name): "
         xcrun simctl uninstall $($device.UUID) $AppName
         Write-Host "OK" -ForegroundColor Green
