@@ -34,7 +34,8 @@ MonoBehaviour:
   <IosNativeSupportEnabled>k__BackingField: 1
   <AndroidNativeSupportEnabled>k__BackingField: 1
   <WindowsNativeSupportEnabled>k__BackingField: 1
-  <OptionsConfiguration>k__BackingField: {fileID: 0}
+  <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: bda1a724b0875436aade31393b0129c0,
+    type: 2}
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0
   <DiagnosticLevel>k__BackingField: 0

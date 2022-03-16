@@ -136,7 +136,11 @@ foreach ($device in $DeviceList) {
         $lineWithFailure = $LogcatCache | select-string $FailureString
         If ($lineWithFailure -ne $null) {
             SignalActionSmokeStatus("Failed")
+            Write-Warning "$name test failed"
             Write-Warning "$lineWithFailure"
+            WriteDeviceLog($device)
+            WriteDeviceUiLog($device)
+            TakeScreenshot($device)
             throw "$Name test: FAIL"
         }
         elseif ($lineWithSuccess -ne $null) {
