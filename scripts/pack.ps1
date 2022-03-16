@@ -23,7 +23,8 @@ Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
 
 # Copy samples
 Copy-Item "samples/unity-of-bugs/Assets/Scenes" -Destination "package-release/Samples~/unity-of-bugs/Scenes" -Recurse
-Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Scripts" -Recurse
+Copy-Item "samples/unity-of-bugs/Assets/Scripts" -Destination "package-release/Samples~/unity-of-bugs/Scripts" -Recurse `
+    -Exclude "SmokeTestOptions.cs*"
 
 # Create zip
 Compress-Archive "package-release/*" -DestinationPath "package-release.zip" -Force
