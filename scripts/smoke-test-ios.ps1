@@ -14,12 +14,13 @@ $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
 $ArchivePath = "$XcodeArtifactPath/archive"
 $ProjectName = "Unity-iPhone"
 $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
+$AppName = "io.sentry.samples.unityofbugs"
 
 Class AppleDevice
 {
     [String]$Name
     [String]$UUID
-    [boolean]$TestPassed
+    [boolean]$TestFailed
     [boolean]$TestSkipped
 
     Parse([String]$unparsedDevice)
@@ -126,18 +127,20 @@ function Test
         }
         xcrun simctl install $($device.UUID) "$AppPath"
         Write-Host "OK" -ForegroundColor Green
+
+        #### Smoke test ####
         Write-Host "Launching SmokeTest on $($device.Name)" -ForegroundColor Green
-        $consoleOut = xcrun simctl launch --console-pty $($device.UUID) "io.sentry.samples.unityofbugs" "--test" "smoke"
+        $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" "smoke"
 
         Write-Host -NoNewline "Smoke test STATUS: "
         $stdout = $consoleOut  | select-string 'SMOKE TEST: PASS'
         If ($null -ne $stdout)
         {
             Write-Host "PASSED" -ForegroundColor Green
-            $device.TestPassed = $True
         }
         Else
         {
+            $device.TestFailed = $True
             Write-Host "FAILED" -ForegroundColor Red
             Write-Host "$($device.Name) Console"
             foreach ($consoleLine in $consoleOut)
@@ -146,8 +149,9 @@ function Test
             }
             Write-Host " ===== END OF CONSOLE ====="
         }
+        
         Write-Host -NoNewline "Removing Smoke Test from $($device.Name): "
-        xcrun simctl uninstall $($device.UUID) "io.sentry.samples.unityofbugs"
+        xcrun simctl uninstall $($device.UUID) $AppName
         Write-Host "OK" -ForegroundColor Green
 
         Write-Host -NoNewline "Requesting shutdown for $($device.Name): "
@@ -161,9 +165,10 @@ function Test
     foreach ($device in $deviceList)
     {
         Write-Host -NoNewline "$($device.Name) UUID $($device.UUID): "
-        If ($device.TestPassed)
+        If ($device.TestFailed)
         {
-            Write-Host "PASSED" -ForegroundColor Green
+            Write-Host "FAILED" -ForegroundColor Red
+            $testFailed = $true
         }
         ElseIf ($device.TestSkipped)
         {
@@ -171,8 +176,7 @@ function Test
         }
         Else
         {
-            Write-Host "FAILED" -ForegroundColor Red
-            $testFailed = $true
+            Write-Host "PASSED" -ForegroundColor Green
         }
     }
     Write-Host "End of test."
