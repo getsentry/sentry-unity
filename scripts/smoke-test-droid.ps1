@@ -82,7 +82,7 @@ foreach ($device in $DeviceList) {
     Write-Output "`nChecking device $device with SDK $deviceSdk and API $deviceApi`n"
 
     $stdout = adb -s $device shell "pm list packages -f"
-    if (($stdout | select-string $ProcessName) -ne $null) {
+    if ($null -ne ($stdout | select-string $ProcessName)) {
         Write-Output "Removing previous APP."
         $stdout = adb -s $device uninstall $ProcessName
     }
@@ -139,30 +139,30 @@ foreach ($device in $DeviceList) {
         }
         ElseIf (($LogcatCache | select-string 'Unity   : Timeout while trying detaching primary window.|because ULR inactive')) {
             SignalActionSmokeStatus("Flaky")
-            Write-Warning "Test was flaky, unity failed to initialize."
+            Write-Warning "$name test was flaky, unity failed to initialize."
             WriteDeviceLog($device)
             WriteDeviceUiLog($device)
             TakeScreenshot($device)
-            Throw "Test was flaky, unity failed to initialize."
+            Throw "$name test was flaky, unity failed to initialize."
         }
         ElseIf ($Timeout -eq 0) {
             SignalActionSmokeStatus("Timeout")
-            Write-Warning "Test Timeout, see Logcat info for more information below."
+            Write-Warning "$name Test Timeout, see Logcat info for more information below."
             WriteDeviceLog($device)
             Write-Host "PS info."
             adb -s $device shell ps
 
             WriteDeviceUiLog($device)
             TakeScreenshot($device)
-            Throw "Test Timeout"
+            Throw "$name test Timeout"
         }
         Else {
             SignalActionSmokeStatus("Failed")
-            Write-Warning "Process completed but $Name test was not signaled."
+            Write-Warning "$name test: process completed but $Name test was not signaled."
             WriteDeviceLog($device)
             WriteDeviceUiLog($device)
             TakeScreenshot($device)
-            Throw "$Name Test Failed."
+            Throw "$Name test Failed."
         }
     }
 

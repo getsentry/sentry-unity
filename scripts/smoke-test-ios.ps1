@@ -205,7 +205,7 @@ function LatestRuntime
         Throw "Last runtime was not found, result: $result"
     }
     $lastRuntimeParsed = $result.Groups["runtime"].Value
-    Write-Host "Using $lastRuntimeParsed as latests runtime"
+    Write-Host "Using latest runtime = $lastRuntimeParsed"
     return $lastRuntimeParsed
 }
 

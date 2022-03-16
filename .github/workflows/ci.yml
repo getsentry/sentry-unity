@@ -373,10 +373,12 @@ jobs:
           script: sudo pwsh ./scripts/smoke-test-droid.ps1
 
       - name: Throw error if Smoke test failed
-        # We want to throw an error if the smoke test failed.
-        # We will ignore flaky errors from the emulator setup.
-        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status != 'Flaky') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status != 'Flaky') }}
-        run: exit -1
+        run: |
+          $mainResult = '${{ steps.smoke-test.outputs.smoke-status }}'
+          $retryResult = '${{ steps.smoke-test-retry.outputs.smoke-status }}'
+          if (!($mainResult -eq 'Completed') -and !($mainResult -eq 'Flaky' -and $retryResult -eq 'Completed')) {
+            Write-Error "Test: $mainResult; Retry: $retryResult"
+          }
 
       - name: Upload screenshot if smoke test failed
         if: ${{ failure() }}
