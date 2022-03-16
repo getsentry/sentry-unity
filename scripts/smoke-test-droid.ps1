@@ -11,6 +11,8 @@ Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
 $LogcatCache = $null
 
+. $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
+
 function TakeScreenshot {
     param ( $deviceId )
     adb -s $deviceId shell "screencap -p /storage/emulated/0/screen.png"
@@ -27,6 +29,12 @@ function WriteDeviceUiLog {
     param ( $deviceId )
     Write-Output "`n`nUI XML Log"
     adb -s $deviceId exec-out uiautomator dump /dev/tty
+}
+
+function OnError() {
+    WriteDeviceLog($device)
+    WriteDeviceUiLog($device)
+    TakeScreenshot($device)
 }
 
 function DateTimeNow {
@@ -138,9 +146,7 @@ foreach ($device in $DeviceList) {
             SignalActionSmokeStatus("Failed")
             Write-Warning "$name test failed"
             Write-Warning "$lineWithFailure"
-            WriteDeviceLog($device)
-            WriteDeviceUiLog($device)
-            TakeScreenshot($device)
+            OnError
             throw "$Name test: FAIL"
         }
         elseif ($lineWithSuccess -ne $null) {
@@ -150,28 +156,21 @@ foreach ($device in $DeviceList) {
         ElseIf (($LogcatCache | select-string 'Unity   : Timeout while trying detaching primary window.|because ULR inactive')) {
             SignalActionSmokeStatus("Flaky")
             Write-Warning "$name test was flaky, unity failed to initialize."
-            WriteDeviceLog($device)
-            WriteDeviceUiLog($device)
-            TakeScreenshot($device)
+            OnError
             Throw "$name test was flaky, unity failed to initialize."
         }
         ElseIf ($Timeout -eq 0) {
             SignalActionSmokeStatus("Timeout")
             Write-Warning "$name Test Timeout, see Logcat info for more information below."
-            WriteDeviceLog($device)
             Write-Host "PS info."
             adb -s $device shell ps
-
-            WriteDeviceUiLog($device)
-            TakeScreenshot($device)
+            OnError
             Throw "$name test Timeout"
         }
         Else {
             SignalActionSmokeStatus("Failed")
             Write-Warning "$name test: process completed but $Name test was not signaled."
-            WriteDeviceLog($device)
-            WriteDeviceUiLog($device)
-            TakeScreenshot($device)
+            OnError
             Throw "$Name test Failed."
         }
     }
@@ -179,10 +178,19 @@ foreach ($device in $DeviceList) {
     RunTest -Name "smoke" -SuccessString "SMOKE TEST: PASS" -FailureString "SMOKE TEST: FAIL"
     # post-crash must fail now, because the previous run wasn't a crash
     RunTest -Name "post-crash" -SuccessString "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL" -FailureString "POST-CRASH TEST: PASS"
-    # TODO check data using the crash-test-server.py
-    RunTest -Name  "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
-    RunTest -Name  "post-crash" -SuccessString "POST-CRASH TEST: PASS" -FailureString "POST-CRASH TEST: FAIL"
 
+    try {
+        # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CreshTestWithServer"
+        CrashTestWithServer -SuccessString "TODO" -CrashTestCallback {
+            RunTest -Name  "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
+            RunTest -Name  "post-crash" -SuccessString "POST-CRASH TEST: PASS" -FailureString "POST-CRASH TEST: FAIL"
+        }
+    }
+    catch {
+        SignalActionSmokeStatus("Failed");
+        OnError
+        throw;
+    }
 }
 
 SignalActionSmokeStatus("Completed")

@@ -10,6 +10,8 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime"
 #          '0' or empty will run on 3 devices, otherwise on the specified amount.
 $ErrorActionPreference = "Stop"
 
+. $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
+
 $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
 $ArchivePath = "$XcodeArtifactPath/archive"
 $ProjectName = "Unity-iPhone"
@@ -155,8 +157,22 @@ function Test
         RunTest "smoke" "SMOKE TEST: PASS"
         # post-crash must fail now, because the previous run wasn't a crash
         RunTest "post-crash" "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL"
-        RunTest "crash" "CRASH TEST: Issuing a native crash" # TODO check data using the crash-test-server.py
-        RunTest "post-crash" "POST-CRASH TEST: PASS"
+
+        try {
+            # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CreshTestWithServer"
+            CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
+                RunTest "crash" "CRASH TEST: Issuing a native crash"
+                RunTest "post-crash" "POST-CRASH TEST: PASS"
+            }
+        }
+        catch {
+            Write-Host "$($device.Name) Console"
+            foreach ($consoleLine in $consoleOut)
+            {
+                Write-Output $consoleLine
+            }
+            throw;
+        }
 
         Write-Host -NoNewline "Removing Smoke Test from $($device.Name): "
         xcrun simctl uninstall $($device.UUID) $AppName

@@ -4,6 +4,7 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import sys
 import threading
+import binascii
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -30,7 +31,11 @@ class Handler(BaseHTTPRequestHandler):
         body = ""
         if self.command == "POST" and 'Content-Length' in self.headers:
             content_length = int(self.headers['Content-Length'])
-            body = self.rfile.read(min(1000, content_length)).decode("utf-8")
+            content = self.rfile.read(min(1000, content_length))
+            try:
+                body = content.decode("utf-8")
+            except:
+                body = binascii.hexlify(bytearray(content))
         self.log_message('"%s" %s %s%s',
                          self.requestline, str(code), str(size), body)
 

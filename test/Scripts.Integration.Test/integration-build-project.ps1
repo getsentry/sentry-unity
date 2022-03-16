@@ -36,7 +36,7 @@ If (-not $SetupSentry)
     $UnityProcess = RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-executeMethod", $BuildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName $BuildMethod)", "-quit")
 }
 Else {
-    $UnityProcess = RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-executeMethod", $BuildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName $BuildMethod)", "-sentryOptions.configure", $True, "-sentryOptions.Dsn", "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417", "-quit")
+    $UnityProcess = RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-executeMethod", $BuildMethod , "-buildPath", "$NewProjectBuildPath/$(GetTestAppName $BuildMethod)", "-sentryOptions.configure", $True, "-sentryOptions.Dsn", "http://publickey@localhost:8000/12345", "-quit")
 }
 Write-Host " OK"
 
