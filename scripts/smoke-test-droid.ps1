@@ -9,7 +9,6 @@ Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
 Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
 Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
-$LogcatCache = $null
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
@@ -22,7 +21,7 @@ function TakeScreenshot {
 
 function WriteDeviceLog {
     param ( $deviceId )
-    Write-Output $LogcatCache
+    adb -s $deviceId logcat -d
 }
 
 function WriteDeviceUiLog {
@@ -32,6 +31,7 @@ function WriteDeviceUiLog {
 }
 
 function OnError() {
+    Write-Output "Dumping logs for $device"
     WriteDeviceLog($device)
     WriteDeviceUiLog($device)
     TakeScreenshot($device)
@@ -181,9 +181,9 @@ foreach ($device in $DeviceList) {
 
     try {
         # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CreshTestWithServer"
-        CrashTestWithServer -SuccessString "TODO" -CrashTestCallback {
-            RunTest -Name  "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
-            RunTest -Name  "post-crash" -SuccessString "POST-CRASH TEST: PASS" -FailureString "POST-CRASH TEST: FAIL"
+        CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
+            RunTest -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "`"CRASH TEST: FAIL"
+            RunTest -Name "post-crash" -SuccessString "POST-CRASH TEST: PASS" -FailureString "POST-CRASH TEST: FAIL"
         }
     }
     catch {

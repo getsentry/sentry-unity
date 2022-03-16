@@ -102,14 +102,6 @@ public class SmokeTester : MonoBehaviour
             }
             return -2;
         };
-#if SENTRY_NATIVE_ANDROID
-        Debug.Log("SmokeTester.Configure() - replacing localhost with the host IP for Android emulator");
-        if (options.Dsn != null) {
-            var newDsn = options.Dsn.Replace("localhost", "10.0.2.2");
-            Debug.Log($"SmokeTester.Configure() - Dsn '{options.Dsn}' -> '{newDsn}'");
-            options.Dsn = newDsn;
-        }
-#endif
     }
 
     public static void SmokeTest()

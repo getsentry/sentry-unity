@@ -2,12 +2,26 @@
 # If/when those are merged to some extent, maybe this file could be merged into `IntegrationGlobals.ps1`.
 
 function RunApiServer() {
-    $result = "" | Select-Object -Property process, outFile, errFile
+    $result = "" | Select-Object -Property process, outFile, errFile, stop
     Write-Host "Starting the HTTP server (dummy API server)"
     $result.outFile = New-TemporaryFile
     $result.errFile = New-TemporaryFile
 
     $result.process = Start-Process "python3" -ArgumentList "$PSScriptRoot/crash-test-server.py" -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
+
+    $result.stop = {
+        $uri = "http://localhost:8000"
+        # Stop the HTTP server
+        Write-Host "Stopping the dummy API server ... " -NoNewline
+        try {
+            (Invoke-WebRequest -URI "$uri/STOP").StatusDescription
+        }
+        catch {
+            Write-Host "/STOP request failed, killing the server process"
+            $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
+        }
+        $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
+    }
 
     # The process shouldn't finish by itself, if it did, there was an error, so let's check that
     Start-Sleep -Second 1
@@ -37,11 +51,15 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         $httpServer = RunApiServer
 
         # run the test
-        $CrashTestCallback.Invoke()
+        try {
+            $CrashTestCallback.Invoke()
+        }
+        catch {
+            $httpServer.stop.Invoke()
+            throw
+        }
 
         # evaluate the result
-        $httpServerUri = "http://localhost:8000"
-
         for ($i = 30; $i -gt 0; $i--) {
             Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
             $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
@@ -51,16 +69,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
             Start-Sleep -Milliseconds 1000
         }
 
-        # Stop the HTTP server
-        Write-Host "Stopping the dummy API server ... " -NoNewline
-        try {
-        (Invoke-WebRequest -URI "$httpServerUri/STOP").StatusDescription
-        }
-        catch {
-            Write-Host "/STOP request failed, killing the server process"
-            $httpServer.process | Stop-Process -Force -ErrorAction SilentlyContinue
-        }
-        $httpServer.process | Wait-Process -Timeout 10 -ErrorAction Continue
+        $httpServer.stop.Invoke()
 
         Write-Host "Server stdout:" -ForegroundColor Yellow
         Get-Content $httpServer.outFile -Raw
