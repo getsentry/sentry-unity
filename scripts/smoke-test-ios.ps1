@@ -39,32 +39,16 @@ Class AppleDevice
 
 function Build()
 {
-
-    Write-Host -NoNewline "Applying SmokeTest flag on info.plist: "
-    $smokeTestKey = "<key>RunSentrySmokeTest</key>"
-    $infoPlist = (Get-Content -path "$XcodeArtifactPath/Info.plist" -Raw)
-    If ($infoPlist -clike "*$smokeTestKey*")
-    {
-        Write-Host "SKIPPED" -ForegroundColor Gray
-    }
-    Else 
-    {        
-        $infoPlist.Replace("</dict>`n</plist>", "	$smokeTestKey`n	<string>True</string>`n</dict>`n</plist>") | Set-Content "$XcodeArtifactPath/Info.plist"
-        Write-Host "OK" -ForegroundColor Green
-    }
-
     $mapFileParser = "MapFileParser.sh"
     Write-Host -NoNewline "Fixing permission for $mapFileParser : "
-    $smokeTestKey = "<key>RunSentrySmokeTest</key>"
-    $infoPlist = (Get-Content -path "$XcodeArtifactPath/Info.plist" -Raw)
     If (Test-Path -Path "$XcodeArtifactPath/$mapFileParser")
     {
         # We need to allow the execution of this script, otherwise Xcode will throw permission denied.
         chmod +x "$XcodeArtifactPath/$mapFileParser"
         Write-Host "OK" -ForegroundColor Green
     }
-    Else 
-    {        
+    Else
+    {
         Write-Host "NOT FOUND" -ForegroundColor Gray
     }
 
@@ -83,7 +67,7 @@ function Test
     Write-Host "Retrieving list of available simulators" -ForegroundColor Green
     $deviceListRaw = xcrun simctl list devices
     [AppleDevice[]]$deviceList = @()
-    
+
     # Find the index of the selected runtime
     $runtimeIndex = ($deviceListRaw | Select-String "-- $SelectedRuntime --").LineNumber
     If ($null -eq $runtimeIndex)
@@ -137,11 +121,14 @@ function Test
         Write-Host "Starting Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
         xcrun simctl boot $($device.UUID)
         Write-Host -NoNewline "Installing Smoke Test on $($device.Name): "
+        If (!(Test-Path $AppPath)) {
+            Write-Error "App doesn't exist at the expected path $AppPath. Did you forget to run Build first?"
+        }
         xcrun simctl install $($device.UUID) "$AppPath"
         Write-Host "OK" -ForegroundColor Green
         Write-Host "Launching SmokeTest on $($device.Name)" -ForegroundColor Green
-        $consoleOut = xcrun simctl launch --console-pty $($device.UUID) "io.sentry.samples.unityofbugs"
-        
+        $consoleOut = xcrun simctl launch --console-pty $($device.UUID) "io.sentry.samples.unityofbugs" "--test" "smoke"
+
         Write-Host -NoNewline "Smoke test STATUS: "
         $stdout = $consoleOut  | select-string 'SMOKE TEST: PASS'
         If ($null -ne $stdout)
@@ -149,7 +136,7 @@ function Test
             Write-Host "PASSED" -ForegroundColor Green
             $device.TestPassed = $True
         }
-        Else 
+        Else
         {
             Write-Host "FAILED" -ForegroundColor Red
             Write-Host "$($device.Name) Console"
@@ -182,8 +169,8 @@ function Test
         {
             Write-Host "SKIPPED" -ForegroundColor Gray
         }
-        Else 
-        {        
+        Else
+        {
             Write-Host "FAILED" -ForegroundColor Red
             $testFailed = $true
         }

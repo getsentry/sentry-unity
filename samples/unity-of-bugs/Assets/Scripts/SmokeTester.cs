@@ -48,21 +48,7 @@ public class SmokeTester : MonoBehaviour
             arg = intent.Call<String> ("getStringExtra", "test");
         }
 #elif UNITY_IOS
-        string pListPath = Path.Combine(Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/')), "Info.plist");
-        using (var streamReader = new StreamReader(pListPath, true))
-        {
-            var rawPlist = streamReader.ReadToEnd();
-            var key = "RunSentrySmokeTest";
-            if (rawPlist.Contains(key))
-            {
-                arg = "smoke";
-                Debug.Log("Key " + key + " found on Info.plist starting Smoke test.");
-            }
-            else
-            {
-                Debug.Log("To run Smoke Test, please add key " + key + " into Info.plist");
-            }
-        }
+        arg = getTestArgObjectiveC();
 #else
         var args = Environment.GetCommandLineArgs();
         if (args.Length > 2 && args[1] == "--test")
@@ -92,6 +78,11 @@ public class SmokeTester : MonoBehaviour
             Application.Quit(-1);
         }
     }
+
+#if UNITY_IOS
+    [DllImport("__Internal")]
+    private static extern string getTestArgObjectiveC();
+#endif
 
     public static void InitSentry(SentryUnityOptions options)
     {
