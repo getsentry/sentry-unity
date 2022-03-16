@@ -138,6 +138,14 @@ foreach ($device in $DeviceList) {
             CheckAndCloseActiveSystemAlerts($device)
         }
 
+        if ("$SuccessString" -eq "") {
+            $SuccessString = "${$Name.ToUpper()} TEST: PASS"
+        }
+
+        if ("$FailureString" -eq "") {
+            $FailureString = "${$Name.ToUpper()} TEST: FAIL"
+        }
+
         Write-Output (DateTimeNow)
         $LogcatCache = adb -s $device logcat -d
         $lineWithSuccess = $LogcatCache | select-string $SuccessString
@@ -175,15 +183,14 @@ foreach ($device in $DeviceList) {
         }
     }
 
-    RunTest -Name "smoke" -SuccessString "SMOKE TEST: PASS" -FailureString "SMOKE TEST: FAIL"
-    # post-crash must fail now, because the previous run wasn't a crash
-    RunTest -Name "post-crash" -SuccessString "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL" -FailureString "POST-CRASH TEST: PASS"
+    RunTest -Name "smoke"
+    RunTest -Name "hasnt-crashed"
 
     try {
         # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CreshTestWithServer"
         CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
-            RunTest -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "`"CRASH TEST: FAIL"
-            RunTest -Name "post-crash" -SuccessString "POST-CRASH TEST: PASS" -FailureString "POST-CRASH TEST: FAIL"
+            RunTest -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
+            RunTest -Name "has-crashed"
         }
     }
     catch {

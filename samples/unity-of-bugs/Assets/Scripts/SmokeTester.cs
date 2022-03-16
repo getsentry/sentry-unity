@@ -65,13 +65,17 @@ public class SmokeTester : MonoBehaviour
         {
             SmokeTest();
         }
+        else if (arg == "hasnt-crashed")
+        {
+            HasntCrashedTest();
+        }
         else if (arg == "crash")
         {
-            SmokeTestCrash();
+            CrashTest();
         }
-        else if (arg == "post-crash")
+        else if (arg == "has-crashed")
         {
-            PostCrashTest();
+            HasCrashedTest();
         }
         else
         {
@@ -164,7 +168,7 @@ public class SmokeTester : MonoBehaviour
         }
     }
 
-    public static void SmokeTestCrash()
+    public static void CrashTest()
     {
         Debug.Log("CRASH TEST: Start");
 
@@ -178,9 +182,17 @@ public class SmokeTester : MonoBehaviour
         Application.Quit(-1);
     }
 
-    public static void PostCrashTest()
+    public static void HasntCrashedTest()
     {
-        t.name = "POST-CRASH";
+        t.name = "HASNT-CRASHED";
+        int crashed = _crashedLastRun();
+        t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
+        t.Pass();
+    }
+
+    public static void HasCrashedTest()
+    {
+        t.name = "HAS-CRASHED";
         int crashed = _crashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == true (1)", crashed == 1);
         t.Pass();

@@ -45,7 +45,14 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
     }
 
     # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
-    $runs = 5
+    if ($env:CI -eq $null) {
+        $runs = 1
+        $timeout = 5
+    } else {
+        $runs = 5
+        $timeout = 30
+    }
+
     for ($run = 1; $run -le $runs; $run++) {
         if ($run -ne 1) {
             Write-Host "Sleeping for $run seconds before the next retry..."

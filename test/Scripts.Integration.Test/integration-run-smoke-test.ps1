@@ -95,10 +95,11 @@ function RunTest([string] $type) {
 # Simple smoke test
 if ($Smoke) {
     RunTest "smoke"
+    RunTest "hasnt-crashed"
 }
 
 # Native crash test
 if ($Crash) {
     CrashTestWithServer -SuccessString = "POST /api/12345/minidump/" -CrashTestCallback { RunTest "crash" }
-    RunTest "post-crash"
+    RunTest "has-crashed"
 }

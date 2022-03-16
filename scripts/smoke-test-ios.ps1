@@ -135,6 +135,10 @@ function Test
             Write-Host "Launching $Name test on $($device.Name)" -ForegroundColor Green
             $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
+            if ("$SuccessString" -eq "") {
+                $SuccessString = "${$Name.ToUpper()} TEST: PASS"
+            }
+
             Write-Host -NoNewline "$Name test STATUS: "
             $stdout = $consoleOut  | select-string $SuccessString
             If ($null -ne $stdout)
@@ -154,15 +158,14 @@ function Test
             }
         }
 
-        RunTest "smoke" "SMOKE TEST: PASS"
-        # post-crash must fail now, because the previous run wasn't a crash
-        RunTest "post-crash" "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL"
+        RunTest "smoke"
+        RunTest "hasnt-crashed"
 
         try {
             # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CreshTestWithServer"
             CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
                 RunTest "crash" "CRASH TEST: Issuing a native crash"
-                RunTest "post-crash" "POST-CRASH TEST: PASS"
+                RunTest "has-crashed"
             }
         }
         catch {
