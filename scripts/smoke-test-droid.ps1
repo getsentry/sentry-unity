@@ -97,7 +97,7 @@ foreach ($device in $DeviceList) {
         Throw "Failed to Install APK: $stdout."
     }
 
-    function RunTest([string] $Name, [string] $SuccessString) {
+    function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString) {
         $AppStarted = $false
 
         Write-Output "Clearing logcat from $device."
@@ -132,9 +132,15 @@ foreach ($device in $DeviceList) {
 
         Write-Output (DateTimeNow)
         $LogcatCache = adb -s $device logcat -d
-        $stdout = $LogcatCache  | select-string $SuccessString
-        If ($stdout -ne $null) {
-            Write-Host "$stdout"
+        $lineWithSuccess = $LogcatCache | select-string $SuccessString
+        $lineWithFailure = $LogcatCache | select-string $FailureString
+        If ($lineWithFailure -ne $null) {
+            SignalActionSmokeStatus("Failed")
+            Write-Warning "$lineWithFailure"
+            throw "$Name test: FAIL"
+        }
+        elseif ($lineWithSuccess -ne $null) {
+            Write-Host "$lineWithSuccess"
             Write-Host "$Name test: PASS" -ForegroundColor Green
         }
         ElseIf (($LogcatCache | select-string 'Unity   : Timeout while trying detaching primary window.|because ULR inactive')) {
@@ -166,11 +172,12 @@ foreach ($device in $DeviceList) {
         }
     }
 
-    RunTest "smoke" "SMOKE TEST: PASS"
+    RunTest -Name "smoke" -SuccessString "SMOKE TEST: PASS" -FailureString "SMOKE TEST: FAIL"
     # post-crash must fail now, because the previous run wasn't a crash
-    RunTest "post-crash" "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL"
-    RunTest "crash" "CRASH TEST: Issuing a native crash" # TODO check data using the crash-test-server.py
-    RunTest "post-crash" "POST-CRASH TEST: PASS"
+    RunTest -Name "post-crash" -SuccessString "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL" -FailureString "POST-CRASH TEST: PASS"
+    # TODO check data using the crash-test-server.py
+    RunTest -Name  "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
+    RunTest -Name  "post-crash" -SuccessString "POST-CRASH TEST: PASS" -FailureString "POST-CRASH TEST: FAIL"
 
 }
 

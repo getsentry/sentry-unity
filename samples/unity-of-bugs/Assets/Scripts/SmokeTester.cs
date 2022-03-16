@@ -295,7 +295,7 @@ public class SmokeTester : MonoBehaviour
             Debug.Log($"{_name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"{_name} TEST: Quitting due to a failed test case #{_testNumber} {message}");
+                Debug.Log($"{_name} TEST: FAIL - quitting due to a failed test case #{_testNumber} {message}");
                 Exit(_testNumber);
             }
         }
