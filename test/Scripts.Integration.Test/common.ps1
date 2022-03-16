@@ -47,6 +47,11 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
     # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
     $runs = 5
     for ($run = 1; $run -le $runs; $run++) {
+        if ($run -ne 1) {
+            Write-Host "Sleeping for $run seconds before the next retry..."
+            Start-Sleep -Seconds $run
+        }
+
         # start the server
         $httpServer = RunApiServer
 
@@ -56,7 +61,13 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         }
         catch {
             $httpServer.stop.Invoke()
-            throw
+            if ($run -eq $runs) {
+                throw
+            }
+            else {
+                Write-Warning "crash test $run/$runs : FAILED, retrying. The error was: $_"
+                continue
+            }
         }
 
         # evaluate the result
