@@ -166,7 +166,7 @@ if ($Crash) {
             Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
             break
         }
-        elseif ($run -ne $runs) {
+        elseif ($run -eq $runs) {
             Write-Error "crash test $run/$runs : FAILED"
         }
     }
