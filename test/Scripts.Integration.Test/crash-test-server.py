@@ -28,7 +28,7 @@ class Handler(BaseHTTPRequestHandler):
         if isinstance(code, HTTPStatus):
             code = code.value
         body = ""
-        if self.command == "POST":
+        if self.command == "POST" and 'Content-Length' in self.headers:
             content_length = int(self.headers['Content-Length'])
             body = self.rfile.read(min(1000, content_length)).decode("utf-8")
         self.log_message('"%s" %s %s%s',
