@@ -164,6 +164,7 @@ if ($Crash) {
 
         if ($output.Contains($successMessage)) {
             Write-Host "smoke-crash test $run/$runs : PASSED" -ForegroundColor Green
+            break
         }
         elseif ($run -ne $runs) {
             Write-Error "smoke-crash test $run/$runs : FAILED"
