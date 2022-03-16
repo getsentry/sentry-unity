@@ -375,7 +375,7 @@ jobs:
       - name: Throw error if Smoke test failed
         # We want to throw an error if the smoke test failed.
         # We will ignore flaky errors from the emulator setup.
-        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
+        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status != 'Flaky') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status != 'Flaky') }}
         run: exit -1
 
       - name: Upload screenshot if smoke test failed

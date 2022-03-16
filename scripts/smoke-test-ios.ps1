@@ -146,7 +146,7 @@ function Test
                 Write-Host "$($device.Name) Console"
                 foreach ($consoleLine in $consoleOut)
                 {
-                    Write-Host $consoleLine
+                    Write-Output $consoleLine
                 }
                 Write-Host " ===== END OF CONSOLE ====="
             }

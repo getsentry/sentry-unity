@@ -146,6 +146,7 @@ foreach ($device in $DeviceList) {
             Throw "Test was flaky, unity failed to initialize."
         }
         ElseIf ($Timeout -eq 0) {
+            SignalActionSmokeStatus("Timeout")
             Write-Warning "Test Timeout, see Logcat info for more information below."
             WriteDeviceLog($device)
             Write-Host "PS info."
@@ -156,6 +157,7 @@ foreach ($device in $DeviceList) {
             Throw "Test Timeout"
         }
         Else {
+            SignalActionSmokeStatus("Failed")
             Write-Warning "Process completed but $Name test was not signaled."
             WriteDeviceLog($device)
             WriteDeviceUiLog($device)
