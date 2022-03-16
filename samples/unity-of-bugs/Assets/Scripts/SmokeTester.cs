@@ -45,9 +45,10 @@ public class SmokeTester : MonoBehaviour
         using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
         using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
         {
-            arg = intent.Call<String> ("getStringExtra", "test");
+            arg = intent.Call<String>("getStringExtra", "test");
         }
 #elif UNITY_IOS
+        // .net `Environment.GetCommandLineArgs()` doens't seem to work on iOS so we get the test arg in Objective-C
         arg = getTestArgObjectiveC();
 #else
         var args = Environment.GetCommandLineArgs();
