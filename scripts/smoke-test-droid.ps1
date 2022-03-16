@@ -26,7 +26,7 @@ function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
 {
     if ($deviceApi -eq "21")
     {
-        $dumpFile = "/storage/sdcard/window_dump.xml"
+        $dumpFile = "/data/local/tmp/window_dump.xml"
         adb -s $deviceId exec-out uiautomator dump $dumpFile
         adb -s $deviceId shell cat $dumpFile
     }
