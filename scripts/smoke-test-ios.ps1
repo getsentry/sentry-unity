@@ -155,7 +155,7 @@ function Test
         RunTest "smoke" "SMOKE TEST: PASS"
         # post-crash must fail now, because the previous run wasn't a crash
         RunTest "post-crash" "POST-CRASH TEST | 1. options.CrashedLastRun() == true: FAIL"
-        RunTest "crash" "CRASH TEST: Issuing a native crash"
+        RunTest "crash" "CRASH TEST: Issuing a native crash" # TODO check data using the crash-test-server.py
         RunTest "post-crash" "POST-CRASH TEST: PASS"
 
         Write-Host -NoNewline "Removing Smoke Test from $($device.Name): "
