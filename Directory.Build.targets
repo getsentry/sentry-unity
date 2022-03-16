@@ -318,8 +318,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       <Using Namespace="System.Linq" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-if (Environment.GetEnvironmentVariable("CI") is not null
-      && Environment.GetEnvironmentVariable("UNITY_VERSION") is { } unityVersion)
+if (Environment.GetEnvironmentVariable("UNITY_VERSION") is { } unityVersion)
 {
     Log.LogMessage("Unity Version from environment variable: " + unityVersion);
     UnityVersion = unityVersion;
