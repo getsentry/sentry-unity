@@ -152,7 +152,7 @@ function Test
                 Write-Host "$($device.Name) Console"
                 foreach ($consoleLine in $consoleOut)
                 {
-                    Write-Output $consoleLine
+                    Write-Host $consoleLine
                 }
                 Write-Host " ===== END OF CONSOLE ====="
             }
@@ -162,7 +162,7 @@ function Test
         RunTest "hasnt-crashed"
 
         try {
-            # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CreshTestWithServer"
+            # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
             CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
                 RunTest "crash" "CRASH TEST: Issuing a native crash"
                 RunTest "has-crashed"
@@ -172,7 +172,7 @@ function Test
             Write-Host "$($device.Name) Console"
             foreach ($consoleLine in $consoleOut)
             {
-                Write-Output $consoleLine
+                Write-Host $consoleLine
             }
             throw;
         }
