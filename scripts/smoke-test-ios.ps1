@@ -56,7 +56,7 @@ function Build()
     }
 
     Write-Host "Building iOS project"
-    $xCodeBuild =  Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchivePath/$ProjectName" -PassThru
+    $xCodeBuild = Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchivePath/$ProjectName" -PassThru
     $xCodeBuild.WaitForExit()
     If ($xCodeBuild.ExitCode -ne 0)
     {
@@ -124,7 +124,8 @@ function Test
         Write-Host "Starting Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
         xcrun simctl boot $($device.UUID)
         Write-Host -NoNewline "Installing Smoke Test on $($device.Name): "
-        If (!(Test-Path $AppPath)) {
+        If (!(Test-Path $AppPath))
+        {
             Write-Error "App doesn't exist at the expected path $AppPath. Did you forget to run Build first?"
         }
         xcrun simctl install $($device.UUID) "$AppPath"
@@ -135,12 +136,13 @@ function Test
             Write-Host "Launching $Name test on $($device.Name)" -ForegroundColor Green
             $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
-            if ("$SuccessString" -eq "") {
+            if ("$SuccessString" -eq "")
+            {
                 $SuccessString = "${$Name.ToUpper()} TEST: PASS"
             }
 
             Write-Host -NoNewline "$Name test STATUS: "
-            $stdout = $consoleOut  | select-string $SuccessString
+            $stdout = $consoleOut  | Select-String $SuccessString
             If ($null -ne $stdout)
             {
                 Write-Host "PASSED" -ForegroundColor Green
@@ -161,14 +163,16 @@ function Test
         RunTest "smoke"
         RunTest "hasnt-crashed"
 
-        try {
+        try
+        {
             # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
             CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
                 RunTest "crash" "CRASH TEST: Issuing a native crash"
                 RunTest "has-crashed"
             }
         }
-        catch {
+        catch
+        {
             Write-Host "$($device.Name) Console"
             foreach ($consoleLine in $consoleOut)
             {

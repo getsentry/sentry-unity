@@ -1,7 +1,8 @@
 # Note: this is currently used by "integration-*.ps1" scripts as well as "smoke-test-*.ps1" scripts.
 # If/when those are merged to some extent, maybe this file could be merged into `IntegrationGlobals.ps1`.
 
-function RunApiServer() {
+function RunApiServer()
+{
     $result = "" | Select-Object -Property process, outFile, errFile, stop
     Write-Host "Starting the HTTP server (dummy API server)"
     $result.outFile = New-TemporaryFile
@@ -13,10 +14,12 @@ function RunApiServer() {
         $uri = "http://localhost:8000"
         # Stop the HTTP server
         Write-Host "Stopping the dummy API server ... " -NoNewline
-        try {
-            (Invoke-WebRequest -URI "$uri/STOP").StatusDescription
+        try
+        {
+            (Invoke-WebRequest -Uri "$uri/STOP").StatusDescription
         }
-        catch {
+        catch
+        {
             Write-Host "/STOP request failed, killing the server process"
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
@@ -25,7 +28,8 @@ function RunApiServer() {
 
     # The process shouldn't finish by itself, if it did, there was an error, so let's check that
     Start-Sleep -Second 1
-    if ($result.process.HasExited) {
+    if ($result.process.HasExited)
+    {
         Write-Host "Couldn't start the HTTP server" -ForegroundColor Red
         Write-Host "Standard Output:" -ForegroundColor Yellow
         Get-Content $result.outFile
@@ -39,22 +43,29 @@ function RunApiServer() {
     return $result
 }
 
-function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $SuccessString) {
-    if ("$SuccessString" -eq "") {
+function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $SuccessString)
+{
+    if ("$SuccessString" -eq "")
+    {
         throw "SuccessString cannot be empty"
     }
 
     # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
-    if ($env:CI -eq $null) {
+    if ($env:CI -eq $null)
+    {
         $runs = 1
         $timeout = 5
-    } else {
+    }
+    else
+    {
         $runs = 5
         $timeout = 30
     }
 
-    for ($run = 1; $run -le $runs; $run++) {
-        if ($run -ne 1) {
+    for ($run = 1; $run -le $runs; $run++)
+    {
+        if ($run -ne 1)
+        {
             Write-Host "Sleeping for $run seconds before the next retry..."
             Start-Sleep -Seconds $run
         }
@@ -63,25 +74,31 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         $httpServer = RunApiServer
 
         # run the test
-        try {
+        try
+        {
             $CrashTestCallback.Invoke()
         }
-        catch {
+        catch
+        {
             $httpServer.stop.Invoke()
-            if ($run -eq $runs) {
+            if ($run -eq $runs)
+            {
                 throw
             }
-            else {
+            else
+            {
                 Write-Warning "crash test $run/$runs : FAILED, retrying. The error was: $_"
                 continue
             }
         }
 
         # evaluate the result
-        for ($i = 30; $i -gt 0; $i--) {
+        for ($i = 30; $i -gt 0; $i--)
+        {
             Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
             $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
-            if ("$output".Contains($SuccessString)) {
+            if ("$output".Contains($SuccessString))
+            {
                 break
             }
             Start-Sleep -Milliseconds 1000
@@ -99,14 +116,17 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         Remove-Item $httpServer.outFile -ErrorAction Continue
         Remove-Item $httpServer.errFile -ErrorAction Continue
 
-        if ($output.Contains($SuccessString)) {
+        if ($output.Contains($SuccessString))
+        {
             Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
             break
         }
-        elseif ($run -eq $runs) {
+        elseif ($run -eq $runs)
+        {
             throw "crash test $run/$runs : FAILED"
         }
-        else {
+        else
+        {
             Write-Warning "crash test $run/$runs : FAILED, retrying"
         }
     }

@@ -1,4 +1,4 @@
-Set-Strictmode -Version latest
+Set-StrictMode -Version latest
 
 # GITHUB_WORKSPACE is the root folder where the project is stored.
 Write-Host "#################################################"
@@ -14,24 +14,30 @@ Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
-function TakeScreenshot {
+function TakeScreenshot
+{
     param ( $deviceId )
     adb -s $deviceId shell "screencap -p /storage/emulated/0/screen.png"
     adb pull "/storage/emulated/0/screen.png" "$ApkPath"
     adb shell "rm /storage/emulated/0/screen.png"
 }
 
-function GetDeviceUiLog([string] $deviceId, [string] $deviceApi) {
-    if ($deviceApi -eq "21") {
+function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
+{
+    if ($deviceApi -eq "21")
+    {
         $dumpFile = "/storage/sdcard/window_dump.xml"
         adb -s $deviceId exec-out uiautomator dump $dumpFile
         adb -s $deviceId shell cat $dumpFile
-    } else {
+    }
+    else
+    {
         adb -s $deviceId exec-out uiautomator dump /dev/tty
     }
 }
 
-function OnError([string] $deviceId, [string] $deviceApi) {
+function OnError([string] $deviceId, [string] $deviceApi)
+{
     Write-Host "Dumping logs for $device"
     adb -s $deviceId logcat -d
     Write-Host "UI XML Log"
@@ -39,19 +45,25 @@ function OnError([string] $deviceId, [string] $deviceApi) {
     TakeScreenshot $device
 }
 
-function DateTimeNow {
+function DateTimeNow
+{
     return Get-Date -UFormat "%T %Z"
 }
 
-function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $alert) {
-    if ("$alert" -ne "") {
+function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $alert)
+{
+    if ("$alert" -ne "")
+    {
         Write-Warning "Active system alert found on $deviceId (API $deviceApi). Closing it. The alert was: '$alert'."
-        if ($deviceApi -eq "21") {
+        if ($deviceApi -eq "21")
+        {
             Write-Warning "Issuing ENTER command twice to close the current window."
             # sends "enter" - the first one focues the OK button, the second one taps it
             adb -s $deviceId shell input keyevent 66
             adb -s $deviceId shell input keyevent 66
-        } else {
+        }
+        else
+        {
             # sends "back" action
             Write-Warning "Issuing BACK command to close the current window."
             adb -s $deviceId shell input keyevent 4
@@ -59,16 +71,21 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
     }
 }
 
-function CheckAndCloseActiveSystemAlerts([string] $deviceId, [string] $deviceApi)  {
+function CheckAndCloseActiveSystemAlerts([string] $deviceId, [string] $deviceApi)
+{
     $uiInfoXml = GetDeviceUiLog $deviceId $deviceApi
-    if ($deviceApi -eq "21") {
-        CloseSystemAlert $deviceId $deviceApi ($uiInfoXml | select-string "has stopped")
-    } else {
-        CloseSystemAlert $deviceId $deviceApi ($uiInfoXml | select-string "android:id/alertTitle|has stopped|Close app")
+    if ($deviceApi -eq "21")
+    {
+        CloseSystemAlert $deviceId $deviceApi ($uiInfoXml | Select-String "has stopped")
+    }
+    else
+    {
+        CloseSystemAlert $deviceId $deviceApi ($uiInfoXml | Select-String "android:id/alertTitle|has stopped|Close app")
     }
 }
 
-function SignalActionSmokeStatus {
+function SignalActionSmokeStatus
+{
     param ($smokeStatus)
     echo "::set-output name=smoke-status::$smokeStatus"
 }
@@ -77,38 +94,46 @@ function SignalActionSmokeStatus {
 $RawAdbDeviceList = adb devices
 
 $DeviceList = @()
-foreach ($device in $RawAdbDeviceList) {
-    If ($device.EndsWith("device")) {
+foreach ($device in $RawAdbDeviceList)
+{
+    If ($device.EndsWith("device"))
+    {
         $DeviceList += $device.Replace("device", '').Trim()
     }
 }
 $DeviceCount = $DeviceList.Count
 
-If ($DeviceCount -eq 0) {
+If ($DeviceCount -eq 0)
+{
     SignalActionSmokeStatus("Completed")
     Throw "It seems like no devices were found $RawAdbDeviceList"
 }
-Else {
+Else
+{
     Write-Host "Found $DeviceCount devices: $DeviceList"
 }
 
 # Check if APK was built.
-If (Test-Path -Path "$ApkPath/$ApkFileName" ) {
+If (Test-Path -Path "$ApkPath/$ApkFileName" )
+{
     Write-Host "Found $ApkPath/$ApkFileName"
 }
-Else {
+Else
+{
     SignalActionSmokeStatus("Completed")
     Throw "Expected APK on $ApkPath/$ApkFileName but it was not found."
 }
 
 # Test
-foreach ($device in $DeviceList) {
+foreach ($device in $DeviceList)
+{
     $deviceApi = "$(adb -s $device shell getprop ro.build.version.sdk)".Trim()
     $deviceSdk = "$(adb -s $device shell getprop ro.build.version.release)".Trim()
     Write-Host "`nChecking device $device with SDK '$deviceSdk' and API '$deviceApi'"
 
     $stdout = adb -s $device shell "pm list packages -f"
-    if ($null -ne ($stdout | select-string $ProcessName)) {
+    if ($null -ne ($stdout | Select-String $ProcessName))
+    {
         Write-Host "Removing previous APP."
         $stdout = adb -s $device uninstall $ProcessName
     }
@@ -118,12 +143,14 @@ foreach ($device in $DeviceList) {
 
     Write-Host "Installing test app..."
     $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
-    If ($stdout -notcontains "Success") {
+    If ($stdout -notcontains "Success")
+    {
         SignalActionSmokeStatus("Failed")
         Throw "Failed to Install APK: $stdout."
     }
 
-    function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString) {
+    function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString)
+    {
         $AppStarted = $false
 
         Write-Host "Clearing logcat from $device."
@@ -136,17 +163,20 @@ foreach ($device in $DeviceList) {
 
         Write-Host (DateTimeNow)
         $Timeout = 45
-        While ($Timeout -gt 0) {
+        While ($Timeout -gt 0)
+        {
             #Get a list of active processes
             $processIsRunning = (adb -s $device shell ps)
             #And filter by ProcessName
-            $processIsRunning = $processIsRunning | select-string $ProcessName
+            $processIsRunning = $processIsRunning | Select-String $ProcessName
 
-            If ($processIsRunning -eq $null -And $AppStarted) {
+            If ($processIsRunning -eq $null -And $AppStarted)
+            {
                 $Timeout = -2
                 break
             }
-            ElseIf ($processIsRunning -ne $null -And !$AppStarted) {
+            ElseIf ($processIsRunning -ne $null -And !$AppStarted)
+            {
                 # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
                 $AppStarted = $true
             }
@@ -156,36 +186,42 @@ foreach ($device in $DeviceList) {
             CheckAndCloseActiveSystemAlerts $device $deviceApi
         }
 
-        if ("$SuccessString" -eq "") {
+        if ("$SuccessString" -eq "")
+        {
             $SuccessString = "$($Name.ToUpper()) TEST: PASS"
         }
 
-        if ("$FailureString" -eq "") {
+        if ("$FailureString" -eq "")
+        {
             $FailureString = "$($Name.ToUpper()) TEST: FAIL"
         }
 
         Write-Host (DateTimeNow)
         $LogcatCache = adb -s $device logcat -d
-        $lineWithSuccess = $LogcatCache | select-string $SuccessString
-        $lineWithFailure = $LogcatCache | select-string $FailureString
-        If ($lineWithFailure -ne $null) {
+        $lineWithSuccess = $LogcatCache | Select-String $SuccessString
+        $lineWithFailure = $LogcatCache | Select-String $FailureString
+        If ($lineWithFailure -ne $null)
+        {
             SignalActionSmokeStatus("Failed")
             Write-Warning "$name test failed"
             Write-Warning "$lineWithFailure"
             OnError $device $deviceApi
             throw "$Name test: FAIL"
         }
-        elseif ($lineWithSuccess -ne $null) {
+        elseif ($lineWithSuccess -ne $null)
+        {
             Write-Host "$lineWithSuccess"
             Write-Host "$Name test: PASS" -ForegroundColor Green
         }
-        ElseIf (($LogcatCache | select-string 'Unity   : Timeout while trying detaching primary window.|because ULR inactive')) {
+        ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.|because ULR inactive'))
+        {
             SignalActionSmokeStatus("Flaky")
             Write-Warning "$name test was flaky, unity failed to initialize."
             OnError $device $deviceApi
             Throw "$name test was flaky, unity failed to initialize."
         }
-        ElseIf ($Timeout -eq 0) {
+        ElseIf ($Timeout -eq 0)
+        {
             SignalActionSmokeStatus("Timeout")
             Write-Warning "$name Test Timeout, see Logcat info for more information below."
             Write-Host "PS info."
@@ -193,7 +229,8 @@ foreach ($device in $DeviceList) {
             OnError $device $deviceApi
             Throw "$name test Timeout"
         }
-        Else {
+        Else
+        {
             SignalActionSmokeStatus("Failed")
             Write-Warning "$name test: process completed but $Name test was not signaled."
             OnError $device $deviceApi
@@ -204,14 +241,16 @@ foreach ($device in $DeviceList) {
     RunTest -Name "smoke"
     RunTest -Name "hasnt-crashed"
 
-    try {
+    try
+    {
         # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
         CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
             RunTest -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
             RunTest -Name "has-crashed"
         }
     }
-    catch {
+    catch
+    {
         SignalActionSmokeStatus("Failed");
         OnError $device $deviceApi
         throw;
