@@ -93,9 +93,13 @@ namespace Sentry.Unity.Editor.Native
             addPath("GameAssembly.dll");
             addPath("UnityPlayer.dll");
             addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+            addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
 
-            // no debug info in sentry.dll but sentry.io will complain about a missing file...
-            // addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
+            // To include sentry.pdb, we need to find its location inside the sentry package. This only works when the
+            // sentry package is deployed, not with the dev version (which has a different name). We could have made
+            // it work by checking if the path exists, but we normally don't need symbol upload during development...
+            // Note: using Path.GetFullPath as suggested by https://docs.unity3d.com/Manual/upm-assets.html
+            addPath(Path.GetFullPath($"Packages/io.sentry.unity/Plugins/Windows/Sentry/sentry.pdb"));
 
             // Configure the process using the StartInfo properties.
             var process = new Process

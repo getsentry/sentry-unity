@@ -24,7 +24,6 @@
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
-    <!-- TODO: Do we need: x64, x86, arm64? -->
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
@@ -121,7 +120,6 @@ Expected to exist:
 
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryNativeRoot)install/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryWindowsArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
@@ -180,31 +178,20 @@ Expected to exist:
     <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
 
     <ItemGroup>
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/crashpad_handler.exe" />
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)install/bin/sentry.dll" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.dll" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.pdb" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')">
-    </Copy>
+    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="BuildNativeSDK">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <!-- Using configuration Release because RelWithDebInfo fails to install due to:
-
-  Install configuration: "Release"
-  CMake Error at build/crashpad_build/handler/cmake_install.cmake:39 (file):
-    file INSTALL cannot find
-    "C:/Users/bruno/git/sentry-unity/src/sentry-native/build/crashpad_build/handler/Release/crashpad_handler.exe":
-    File exists.
-  Call Stack (most recent call first):
-    build/crashpad_build/cmake_install.cmake:46 (include)
-    build/cmake_install.cmake:56 (include) -->
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -DCMAKE_BUILD_TYPE=Release -S ."></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --config Release --parallel"></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --install build --prefix install"></Exec>
-
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
