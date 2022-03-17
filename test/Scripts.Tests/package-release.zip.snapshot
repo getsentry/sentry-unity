@@ -16,6 +16,8 @@ Plugins/Windows/Sentry/crashpad_handler.exe
 Plugins/Windows/Sentry/crashpad_handler.exe.meta
 Plugins/Windows/Sentry/sentry.dll
 Plugins/Windows/Sentry/sentry.dll.meta
+Plugins/Windows/Sentry/sentry.pdb
+Plugins/Windows/Sentry/sentry.pdb.meta
 Plugins/Windows/Sentry.meta
 Plugins/Android.meta
 Plugins/iOS.meta
