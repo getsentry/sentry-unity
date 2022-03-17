@@ -3,16 +3,15 @@ name: CI
 on:
   push:
     paths-ignore:
-      - 'CHANGELOG.md'
-  # fixme: temporary build for all branches - reusable-workflows have an issue in combination with `pull_request`
-  # trigger... see https://github.com/github/feedback/discussions/10679 for more details and status if it's fixed.
-  #   branches:
-  #     - main
-  #     - release/**
-
-  # pull_request:
-  #   paths-ignore:
-  #     - 'CHANGELOG.md'
+      - '**/*.md'
+      - '**/*.txt'
+    branches:
+      - main
+      - release/**
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
 
 env:
   LOWEST_SUPPORTED_UNITY_VERSION: 2019
