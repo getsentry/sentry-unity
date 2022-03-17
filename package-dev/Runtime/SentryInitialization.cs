@@ -17,6 +17,9 @@ using Sentry.Unity.iOS;
 using Sentry.Unity.Android;
 #elif SENTRY_NATIVE_WINDOWS
 using Sentry.Unity.Native;
+using Sentry.Extensibility;
+using System;
+using System.IO;
 #endif
 
 [assembly: AlwaysLinkAssembly]
@@ -25,6 +28,10 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
+#if SENTRY_NATIVE_WINDOWS
+        private static FileStream _globalMutex;
+#endif
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
@@ -39,6 +46,38 @@ namespace Sentry.Unity
                 SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE_WINDOWS
                 SentryNative.Configure(options);
+
+                // On Standalone, we disable cache dir in case multiple app instances run over the same path.
+                // Note: we cannot use a named Mutex, because Unit doesn't support it. Instead, we create a file with `FileShare.None`.
+                // https://forum.unity.com/threads/unsupported-internal-call-for-il2cpp-mutex-createmutex_internal-named-mutexes-are-not-supported.387334/
+                if (options.CacheDirectoryPath != null)
+                {
+                    try
+                    {
+                        _globalMutex = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
+                                FileAccess.ReadWrite, FileShare.None);
+
+                        Application.quitting += () =>
+                        {
+                            try
+                            {
+                                _globalMutex.Close();
+                            }
+                            catch (Exception ex)
+                            {
+                                options.DiagnosticLogger?.Log(SentryLevel.Warning,
+                                    "Exception while releasing the lockfile on the config directory.", ex);
+                            }
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        options.DiagnosticLogger?.Log(SentryLevel.Warning, "An exception was thrown while trying to " +
+                            "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
+                        options.CacheDirectoryPath = null;
+                        options.AutoSessionTracking = false;
+                    }
+                }
 #endif
 
                 SentryUnity.Init(options);
