@@ -1,3 +1,8 @@
+param (
+    [Parameter(Position = 0)]
+    [Switch] $IsCI
+)
+
 Set-StrictMode -Version latest
 
 # GITHUB_WORKSPACE is the root folder where the project is stored.
@@ -6,6 +11,13 @@ Write-Host "#   ANDROID                                     #"
 Write-Host "#            VALIDATOR                          #"
 Write-Host "#                       SCRIPT                  #"
 Write-Host "#################################################"
+
+# When launched from the CI android-emulator-runner the usual GH-actions' CI variable is missing.
+# We set it here manually because CrashTestWithServer uses it to determine some configuration.
+if ($IsCI)
+{
+    $env:CI = "true"
+}
 
 Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
 Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"

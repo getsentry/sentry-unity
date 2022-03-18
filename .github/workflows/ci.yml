@@ -319,18 +319,6 @@ jobs:
           name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android
 
-      - name: Select AVD target
-        id: select-avd-target
-        #api-level 30 image is only available with google services.
-        run: |
-          $avdTarget = "default"
-          If (${{ matrix.api-level }} -eq 30)
-          {
-            $avdTarget = "google_apis"
-          }
-          Write-Host "steps.select-avd-target.outputs.target is $avdTarget"
-          echo "::set-output name=target::$avdTarget"
-
       - name: Android emulator setup + Smoke test
         id: smoke-test
         continue-on-error: true
@@ -338,14 +326,15 @@ jobs:
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ steps.select-avd-target.outputs.target }}
+          #api-level 30 image is only available with google services.
+          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86
           cores: 2
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI
 
       - name: Kill emulator if AVD failed.
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
@@ -363,14 +352,14 @@ jobs:
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ steps.select-avd-target.outputs.target }}
-          ram-size: 2048M
-          cores: 2
-          arch: x86
+          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
           force-avd-creation: false
+          ram-size: 2048M
+          arch: x86
+          cores: 2
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI
 
       - name: Throw error if Smoke test failed
         run: |

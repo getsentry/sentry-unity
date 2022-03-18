@@ -51,7 +51,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
     }
 
     # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
-    if ($env:CI -eq $null)
+    if ($null -eq $env:CI)
     {
         $runs = 1
         $timeout = 5
@@ -93,7 +93,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         }
 
         # evaluate the result
-        for ($i = 30; $i -gt 0; $i--)
+        for ($i = $timeout; $i -gt 0; $i--)
         {
             Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
             $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
