@@ -29,9 +29,10 @@ Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.
 function TakeScreenshot
 {
     param ( $deviceId )
-    adb -s $deviceId shell "screencap -p /storage/emulated/0/screen.png"
-    adb pull "/storage/emulated/0/screen.png" "$ApkPath"
-    adb shell "rm /storage/emulated/0/screen.png"
+    $file = "/data/local/tmp/screen.png"
+    adb -s $deviceId shell "screencap -p $file"
+    adb pull $file "$ApkPath"
+    adb shell "rm $file"
 }
 
 function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
