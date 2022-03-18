@@ -29,7 +29,7 @@ namespace Sentry.Unity
     public static class SentryInitialization
     {
 #if SENTRY_NATIVE_WINDOWS
-        private static FileStream _globalMutex;
+        private static FileStream _lockFile;
 #endif
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -54,14 +54,15 @@ namespace Sentry.Unity
                 {
                     try
                     {
-                        _globalMutex = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
+                        _lockFile = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
                                 FileAccess.ReadWrite, FileShare.None);
 
                         Application.quitting += () =>
                         {
                             try
                             {
-                                _globalMutex.Close();
+                                // We don't really need to close, Windows would do that anyway, but let's be nice.
+                                _lockFile.Close();
                             }
                             catch (Exception ex)
                             {
