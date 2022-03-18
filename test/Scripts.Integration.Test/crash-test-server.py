@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import sys
 import threading
+import binascii
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -21,6 +23,21 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.commonServe()
+
+    # override
+    def log_request(self, code='-', size='-'):
+        if isinstance(code, HTTPStatus):
+            code = code.value
+        body = ""
+        if self.command == "POST" and 'Content-Length' in self.headers:
+            content_length = int(self.headers['Content-Length'])
+            content = self.rfile.read(min(1000, content_length))
+            try:
+                body = content.decode("utf-8")
+            except:
+                body = binascii.hexlify(bytearray(content))
+        self.log_message('"%s" %s %s%s',
+                         self.requestline, str(code), str(size), body)
 
 
 host = '127.0.0.1'

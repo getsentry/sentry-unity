@@ -144,12 +144,10 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
-      # Add Sentry DSN via the editor integration so native support is included in the final game
-      - name: Configure Sentry via the Editor Window
-        run: docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
       - name: Build iOS Player
-        run: docker exec unity dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: |
+          docker exec -e TEST_DSN=http://publickey@localhost:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          docker exec unity dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Prepare Sentry package for release
         shell: pwsh
@@ -183,7 +181,9 @@ jobs:
       # TODO: can we make unity only prepare the project, without compiling it, to unlock the unity license faster? iOS is already built like that.
       #       This option should do it: https://docs.unity3d.com/ScriptReference/BuildOptions.AcceptExternalModificationsToPlayer.html
       - name: Build Android Player with IL2CPP
-        run: docker exec unity dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: |
+          docker exec -e TEST_DSN=http://publickey@10.0.2.2:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          docker exec unity dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload Android test app for smoke test.
         uses: actions/upload-artifact@v2
@@ -319,33 +319,22 @@ jobs:
           name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android
 
-      - name: Select AVD target
-        id: select-avd-target
-        #api-level 30 image is only available with google services.
-        run: |
-          $avdTarget = "default"
-          If (${{ matrix.api-level }} -eq 30)
-          {
-            $avdTarget = "google_apis"
-          }
-          Write-Host "steps.select-avd-target.outputs.target is $avdTarget"
-          echo "::set-output name=target::$avdTarget"
-
       - name: Android emulator setup + Smoke test
         id: smoke-test
         continue-on-error: true
-        timeout-minutes: 10
+        timeout-minutes: 30
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ steps.select-avd-target.outputs.target }}
+          #api-level 30 image is only available with google services.
+          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86
           cores: 2
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI
 
       - name: Kill emulator if AVD failed.
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
@@ -357,26 +346,28 @@ jobs:
       - name: Android emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
-        timeout-minutes: 10
+        timeout-minutes: 30
         # Retry the tests if the previous fail happened on the emulator startup.
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
         uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ steps.select-avd-target.outputs.target }}
-          ram-size: 2048M
-          cores: 2
-          arch: x86
+          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
           force-avd-creation: false
+          ram-size: 2048M
+          arch: x86
+          cores: 2
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1
+          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI
 
       - name: Throw error if Smoke test failed
-        # We want to throw an error if the smoke test failed.
-        # We will ignore flaky errors from the emulator setup.
-        if: ${{ (steps.smoke-test.outcome != 'success' && steps.smoke-test.outputs.smoke-status == 'Completed') || (steps.smoke-test-retry.outcome != 'success' && steps.smoke-test-retry.outputs.smoke-status == 'Completed') }}
-        run: exit -1
+        run: |
+          $mainResult = '${{ steps.smoke-test.outputs.smoke-status }}'
+          $retryResult = '${{ steps.smoke-test-retry.outputs.smoke-status }}'
+          if (!($mainResult -eq 'Completed') -and !($mainResult -eq 'Flaky' -and $retryResult -eq 'Completed')) {
+            Write-Error "Test: $mainResult; Retry: $retryResult"
+          }
 
       - name: Upload screenshot if smoke test failed
         if: ${{ failure() }}

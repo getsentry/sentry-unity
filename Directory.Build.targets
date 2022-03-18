@@ -25,6 +25,7 @@
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
+    <TestDsn>$(TEST_DSN)</TestDsn>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -47,7 +48,6 @@
       <StandaloneBuildPath>$(PlayerBuildPath)Windows/IL2CPP_Player.exe</StandaloneBuildPath>
       <StandaloneExecutablePath>$(StandaloneBuildPath)</StandaloneExecutablePath>
       <StandaloneDataPath>$(USERPROFILE)/AppData/LocalLow/DefaultCompany/unity-of-bugs/</StandaloneDataPath>
-      <TestDsn>https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417</TestDsn>
     </PropertyGroup>
 
     <Error Condition="!Exists('$(UnityRoot)') AND $([MSBuild]::IsOSPlatform('Windows'))" Text="UnityRoot not found. Ensure Unity is installed.
@@ -206,6 +206,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   <!-- Setup Sentry options on Unity UI: dotnet msbuild /t:UnityConfigureSentryOptions src/Sentry.Unity -->
   <Target Name="UnityConfigureSentryOptions" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(TestDsn) == ''" Text="TestDsn is empty."></Error>
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
 
@@ -317,8 +318,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       <Using Namespace="System.Linq" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-if (Environment.GetEnvironmentVariable("CI") is not null
-      && Environment.GetEnvironmentVariable("UNITY_VERSION") is { } unityVersion)
+if (Environment.GetEnvironmentVariable("UNITY_VERSION") is { } unityVersion)
 {
     Log.LogMessage("Unity Version from environment variable: " + unityVersion);
     UnityVersion = unityVersion;

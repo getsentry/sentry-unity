@@ -10,16 +10,19 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime"
 #          '0' or empty will run on 3 devices, otherwise on the specified amount.
 $ErrorActionPreference = "Stop"
 
+. $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
+
 $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
 $ArchivePath = "$XcodeArtifactPath/archive"
 $ProjectName = "Unity-iPhone"
 $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
+$AppName = "io.sentry.samples.unityofbugs"
 
 Class AppleDevice
 {
     [String]$Name
     [String]$UUID
-    [boolean]$TestPassed
+    [boolean]$TestFailed
     [boolean]$TestSkipped
 
     Parse([String]$unparsedDevice)
@@ -39,37 +42,21 @@ Class AppleDevice
 
 function Build()
 {
-
-    Write-Host -NoNewline "Applying SmokeTest flag on info.plist: "
-    $smokeTestKey = "<key>RunSentrySmokeTest</key>"
-    $infoPlist = (Get-Content -path "$XcodeArtifactPath/Info.plist" -Raw)
-    If ($infoPlist -clike "*$smokeTestKey*")
-    {
-        Write-Host "SKIPPED" -ForegroundColor Gray
-    }
-    Else 
-    {        
-        $infoPlist.Replace("</dict>`n</plist>", "	$smokeTestKey`n	<string>True</string>`n</dict>`n</plist>") | Set-Content "$XcodeArtifactPath/Info.plist"
-        Write-Host "OK" -ForegroundColor Green
-    }
-
     $mapFileParser = "MapFileParser.sh"
     Write-Host -NoNewline "Fixing permission for $mapFileParser : "
-    $smokeTestKey = "<key>RunSentrySmokeTest</key>"
-    $infoPlist = (Get-Content -path "$XcodeArtifactPath/Info.plist" -Raw)
     If (Test-Path -Path "$XcodeArtifactPath/$mapFileParser")
     {
         # We need to allow the execution of this script, otherwise Xcode will throw permission denied.
         chmod +x "$XcodeArtifactPath/$mapFileParser"
         Write-Host "OK" -ForegroundColor Green
     }
-    Else 
-    {        
+    Else
+    {
         Write-Host "NOT FOUND" -ForegroundColor Gray
     }
 
     Write-Host "Building iOS project"
-    $xCodeBuild =  Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchivePath/$ProjectName" -PassThru
+    $xCodeBuild = Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchivePath/$ProjectName" -PassThru
     $xCodeBuild.WaitForExit()
     If ($xCodeBuild.ExitCode -ne 0)
     {
@@ -83,7 +70,7 @@ function Test
     Write-Host "Retrieving list of available simulators" -ForegroundColor Green
     $deviceListRaw = xcrun simctl list devices
     [AppleDevice[]]$deviceList = @()
-    
+
     # Find the index of the selected runtime
     $runtimeIndex = ($deviceListRaw | Select-String "-- $SelectedRuntime --").LineNumber
     If ($null -eq $runtimeIndex)
@@ -137,30 +124,65 @@ function Test
         Write-Host "Starting Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
         xcrun simctl boot $($device.UUID)
         Write-Host -NoNewline "Installing Smoke Test on $($device.Name): "
+        If (!(Test-Path $AppPath))
+        {
+            Write-Error "App doesn't exist at the expected path $AppPath. Did you forget to run Build first?"
+        }
         xcrun simctl install $($device.UUID) "$AppPath"
         Write-Host "OK" -ForegroundColor Green
-        Write-Host "Launching SmokeTest on $($device.Name)" -ForegroundColor Green
-        $consoleOut = xcrun simctl launch --console-pty $($device.UUID) "io.sentry.samples.unityofbugs"
-        
-        Write-Host -NoNewline "Smoke test STATUS: "
-        $stdout = $consoleOut  | select-string 'SMOKE TEST: PASS'
-        If ($null -ne $stdout)
+
+        function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "PASSED" -ForegroundColor Green
-            $device.TestPassed = $True
+            Write-Host "Launching $Name test on $($device.Name)" -ForegroundColor Green
+            $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
+
+            if ("$SuccessString" -eq "")
+            {
+                $SuccessString = "${$Name.ToUpper()} TEST: PASS"
+            }
+
+            Write-Host -NoNewline "$Name test STATUS: "
+            $stdout = $consoleOut  | Select-String $SuccessString
+            If ($null -ne $stdout)
+            {
+                Write-Host "PASSED" -ForegroundColor Green
+            }
+            Else
+            {
+                $device.TestFailed = $True
+                Write-Host "FAILED" -ForegroundColor Red
+                Write-Host "$($device.Name) Console"
+                foreach ($consoleLine in $consoleOut)
+                {
+                    Write-Host $consoleLine
+                }
+                Write-Host " ===== END OF CONSOLE ====="
+            }
         }
-        Else 
+
+        RunTest "smoke"
+        RunTest "hasnt-crashed"
+
+        try
         {
-            Write-Host "FAILED" -ForegroundColor Red
+            # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
+            CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
+                RunTest "crash" "CRASH TEST: Issuing a native crash"
+                RunTest "has-crashed"
+            }
+        }
+        catch
+        {
             Write-Host "$($device.Name) Console"
             foreach ($consoleLine in $consoleOut)
             {
                 Write-Host $consoleLine
             }
-            Write-Host " ===== END OF CONSOLE ====="
+            throw;
         }
+
         Write-Host -NoNewline "Removing Smoke Test from $($device.Name): "
-        xcrun simctl uninstall $($device.UUID) "io.sentry.samples.unityofbugs"
+        xcrun simctl uninstall $($device.UUID) $AppName
         Write-Host "OK" -ForegroundColor Green
 
         Write-Host -NoNewline "Requesting shutdown for $($device.Name): "
@@ -174,18 +196,18 @@ function Test
     foreach ($device in $deviceList)
     {
         Write-Host -NoNewline "$($device.Name) UUID $($device.UUID): "
-        If ($device.TestPassed)
+        If ($device.TestFailed)
         {
-            Write-Host "PASSED" -ForegroundColor Green
+            Write-Host "FAILED" -ForegroundColor Red
+            $testFailed = $true
         }
         ElseIf ($device.TestSkipped)
         {
             Write-Host "SKIPPED" -ForegroundColor Gray
         }
-        Else 
-        {        
-            Write-Host "FAILED" -ForegroundColor Red
-            $testFailed = $true
+        Else
+        {
+            Write-Host "PASSED" -ForegroundColor Green
         }
     }
     Write-Host "End of test."
@@ -206,7 +228,7 @@ function LatestRuntime
         Throw "Last runtime was not found, result: $result"
     }
     $lastRuntimeParsed = $result.Groups["runtime"].Value
-    Write-Host "Using $lastRuntimeParsed as latests runtime"
+    Write-Host "Using latest runtime = $lastRuntimeParsed"
     return $lastRuntimeParsed
 }
 

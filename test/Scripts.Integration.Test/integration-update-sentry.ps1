@@ -7,18 +7,15 @@ $packageReleaseZip = "package-release.zip"
 
 # Check if SDK is packed.
 $packageFile = "package-release.zip"
-If (Test-Path -Path "$(ProjectRoot)/$packageFile" )
-{
+If (Test-Path -Path "$(ProjectRoot)/$packageFile" ) {
     Write-Host "Found $packageFile"
 }
-Else
-{
+Else {
     Throw "$packageFile on $(ProjectRoot) but it was not found. Be sure you run ./scripts/pack.ps1"
 }
 
 Write-Host -NoNewline "clearing $PackageReleaseOutput and Extracting $packageReleaseZip :"
-if (Test-Path -Path "$PackageReleaseOutput")
-{
+if (Test-Path -Path "$PackageReleaseOutput") {
     Remove-Item -Path "$PackageReleaseOutput" -Recurse
 }
 
@@ -57,16 +54,21 @@ function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $f
 RunUnityAndExpect "AddSentryPackage" "Sentry Package Installation:" "Sentry setup: FAILED" @( `
         "-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-installSentry", "Disk")
 
-RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
-        "-quit", "-batchmode", "-nographics", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", "-sentryOptions.Dsn", "http://publickey@localhost:8000/12345")
-
 Write-Host -NoNewline "Updating test files "
 # We were previously using an empty SmokeTester to not generate Build errors.
 # It was only required to not cause build errors since the new project did't have Sentry installed.
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
 Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
-Copy-Item "$PackageReleaseAssetsPath/Scripts/SmokeTester.cs"      -Destination "$NewProjectAssetsPath/Scripts"
-Copy-Item "$PackageReleaseAssetsPath/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs"              -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta"         -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs"         -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs.meta"    -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/CppPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
+
+RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
+        "-quit", "-batchmode", "-nographics", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", `
+        "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
+        "-sentryOptions.Dsn", "http://publickey@localhost:8000/12345", `
+        "-sentryOptionsScript", "SmokeTestOptions")
 
 Write-Host " Unity configuration finished successfully" -ForegroundColor Green

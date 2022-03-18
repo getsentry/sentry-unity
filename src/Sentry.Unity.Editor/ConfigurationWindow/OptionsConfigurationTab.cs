@@ -46,7 +46,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 as ScriptableOptionsConfiguration;
             if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
             {
-                OptionsConfigurationDotNet.CreateScript();
+                CreateScript();
             }
             GUILayout.EndHorizontal();
         }
@@ -105,6 +105,11 @@ public class {scriptName} : ScriptableOptionsConfiguration
             EditorPrefs.DeleteKey(CreateScriptableObjectFlag);
             EditorPrefs.DeleteKey(ScriptNameKey);
 
+            SetScript(scriptName);
+        }
+
+        internal static void SetScript(String scriptName)
+        {
             var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptName);
             AssetDatabase.CreateAsset(optionsConfigurationObject, $"Assets/Resources/Sentry/{scriptName}.asset");
             AssetDatabase.Refresh();

@@ -31,10 +31,17 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             }
             Debug.LogFormat("{0}: Found SentryOptions", functionName);
 
-            if (args["sentryOptions.Dsn"] is { } dsn)
+            var value = "";
+            if (args.TryGetValue("sentryOptions.Dsn", out value))
             {
-                Debug.LogFormat("{0}: Configuring DSN to {1}", functionName, dsn);
-                options.Dsn = dsn;
+                Debug.LogFormat("{0}: Configuring DSN to {1}", functionName, value);
+                options.Dsn = value;
+            }
+
+            if (args.TryGetValue("sentryOptionsScript", out value))
+            {
+                Debug.LogFormat("{0}: Configuring Options Script to {1}", functionName, value);
+                OptionsConfigurationDotNet.SetScript(value);
             }
 
             optionsWindow.Close();
