@@ -11,7 +11,9 @@ artifacts/
 # Temp folder used during dotnet build to restore selected packages
 /temp/
 
+# Some sample files we don't want included in the repo & the package
 samples/unity-of-bugs/Assets/InitTestScene*
+samples/unity-of-bugs/Assets/Plugins/Sentry/SentryCliOptions.asset*
 
 # Ignore build and Unity artifacts
 package-dev/**/*.dll
