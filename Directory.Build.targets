@@ -161,7 +161,6 @@ Expected to exist:
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry/build/libs/sentry*.jar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" />
-      <AndroidSdkArtifacts Include="$(RepoRoot)lib/gson-2.8.5.jar" />
     </ItemGroup>
 
     <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
