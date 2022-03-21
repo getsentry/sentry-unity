@@ -236,7 +236,7 @@ namespace Sentry.Unity.Editor.Android
 
         public AndroidManifest(string path, IDiagnosticLogger? logger) : base(path)
         {
-            _applicationElement = (XmlElement) SelectSingleNode("/manifest/application");
+            _applicationElement = (XmlElement)SelectSingleNode("/manifest/application");
             _logger = logger;
         }
 
