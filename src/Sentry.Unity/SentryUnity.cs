@@ -47,14 +47,13 @@ namespace Sentry.Unity
                     }
                     catch (Exception ex)
                     {
-                        options.DiagnosticLogger?.Log(SentryLevel.Warning, "An exception was thrown while trying to " +
+                        options.DiagnosticLogger?.LogWarning("An exception was thrown while trying to " +
                             "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
                         options.CacheDirectoryPath = null;
                         options.AutoSessionTracking = false;
                     }
                 }
 
-                options.DiagnosticLogger?.LogDebug(options.ToString());
                 var sentryDotNet = SentrySdk.Init(options);
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
