@@ -78,7 +78,7 @@ namespace Sentry.Unity.Editor.Native
                 var fullPath = Path.Combine(projectDir, name);
                 if (Directory.Exists(fullPath) || File.Exists(fullPath))
                 {
-                    paths += " " + name;
+                    paths += $" \"{name}\"";
                     logger.LogDebug($"Adding '{name}' to the debug-info upload");
                     return true;
                 }
