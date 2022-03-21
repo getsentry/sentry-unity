@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -84,7 +85,8 @@ namespace Sentry.Unity.Editor.Android
                 disableAutoInit = true;
             }
 
-            var androidManifest = new AndroidManifest(manifestPath);
+            var androidManifest = new AndroidManifest(manifestPath, options?.DiagnosticLogger);
+            androidManifest.RemovePreviousConfigurations();
 
             if (disableAutoInit)
             {
@@ -201,6 +203,7 @@ namespace Sentry.Unity.Editor.Android
     {
         private readonly string _path;
         protected const string AndroidXmlNamespace = "http://schemas.android.com/apk/res/android";
+        protected const string AndroidNsPrefix = "android";
 
         protected AndroidXmlDocument(string path)
         {
@@ -227,35 +230,64 @@ namespace Sentry.Unity.Editor.Android
 
     internal class AndroidManifest : AndroidXmlDocument
     {
+        private const string _prefix = "io.sentry";
         private readonly XmlElement _applicationElement;
+        private readonly IDiagnosticLogger? _logger;
 
-        public AndroidManifest(string path) : base(path) =>
-            _applicationElement = (XmlElement)SelectSingleNode("/manifest/application");
+        public AndroidManifest(string path, IDiagnosticLogger? logger) : base(path)
+        {
+            _applicationElement = (XmlElement) SelectSingleNode("/manifest/application");
+            _logger = logger;
+        }
+
+        internal void RemovePreviousConfigurations()
+        {
+            var nodesToRemove = new List<XmlNode>();
+            foreach (XmlNode node in _applicationElement.ChildNodes)
+            {
+                if (node.Name.Equals("meta-data"))
+                {
+                    foreach (XmlAttribute attr in node.Attributes)
+                    {
+                        if (attr.Prefix.Equals(AndroidNsPrefix) && attr.LocalName.Equals("name") && attr.Value.StartsWith(_prefix))
+                        {
+                            _logger?.LogDebug("Removing AndroidManifest meta-data '{0}'", attr.Value);
+                            nodesToRemove.Add(node);
+                            break;
+                        }
+                    }
+                }
+            }
+            foreach (XmlNode node in nodesToRemove)
+            {
+                _ = node.ParentNode.RemoveChild(node);
+            }
+        }
 
         // Without this we get:
         // Unable to get provider io.sentry.android.core.SentryInitProvider: java.lang.IllegalArgumentException: DSN is required. Use empty string to disable SDK.
         internal void DisableSentryAndSave()
         {
-            SetMetaData("io.sentry.auto-init", "false");
+            SetMetaData($"{_prefix}.auto-init", "false");
             _ = Save();
         }
 
-        internal void SetDsn(string dsn) => SetMetaData("io.sentry.dsn", dsn);
-        internal void SetSampleRate(float sampleRate) => SetMetaData("io.sentry.sample-rate", sampleRate.ToString());
-        internal void SetRelease(string release) => SetMetaData("io.sentry.release", release);
-        internal void SetEnvironment(string environment) => SetMetaData("io.sentry.environment", environment);
+        internal void SetDsn(string dsn) => SetMetaData($"{_prefix}.dsn", dsn);
+        internal void SetSampleRate(float sampleRate) => SetMetaData($"{_prefix}.sample-rate", sampleRate.ToString());
+        internal void SetRelease(string release) => SetMetaData($"{_prefix}.release", release);
+        internal void SetEnvironment(string environment) => SetMetaData($"{_prefix}.environment", environment);
 
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
-            => SetMetaData("io.sentry.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
+            => SetMetaData($"{_prefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
 
         internal void SetNdkScopeSync(bool enableNdkScopeSync)
-            => SetMetaData("io.sentry.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
+            => SetMetaData($"{_prefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
 
-        internal void SetDebug(bool debug) => SetMetaData("io.sentry.debug", debug ? "true" : "false");
+        internal void SetDebug(bool debug) => SetMetaData($"{_prefix}.debug", debug ? "true" : "false");
 
         // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
         internal void SetLevel(SentryLevel level) =>
-            SetMetaData("io.sentry.debug.level", level switch
+            SetMetaData($"{_prefix}.debug.level", level switch
             {
                 SentryLevel.Debug => "debug",
                 SentryLevel.Error => "error",
@@ -275,7 +307,7 @@ namespace Sentry.Unity.Editor.Android
 
         private XmlAttribute CreateAndroidAttribute(string key, string value)
         {
-            var attr = CreateAttribute("android", key, AndroidXmlNamespace);
+            var attr = CreateAttribute(AndroidNsPrefix, key, AndroidXmlNamespace);
             attr.Value = value;
             return attr;
         }
