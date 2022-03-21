@@ -98,6 +98,14 @@ namespace Sentry.Unity.Editor.Native
             // Note: using Path.GetFullPath as suggested by https://docs.unity3d.com/Manual/upm-assets.html
             addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
 
+            if (cliOptions.AdditionalSymbolPaths != null)
+            {
+                foreach (var symbol in cliOptions.AdditionalSymbolPaths)
+                {
+                    addPath(symbol);
+                }
+            }
+
             // Configure the process using the StartInfo properties.
             var process = new Process
             {

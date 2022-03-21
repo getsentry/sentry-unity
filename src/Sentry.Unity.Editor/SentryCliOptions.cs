@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace Sentry.Unity.Editor
         [field: SerializeField] public string? Auth { get; set; }
         [field: SerializeField] public string? Organization { get; set; }
         [field: SerializeField] public string? Project { get; set; }
+        [field: SerializeField] public List<string>? AdditionalSymbolPaths { get; set; }
 
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Plugins/Sentry/{notDefaultConfigName ?? ConfigName}.asset";
