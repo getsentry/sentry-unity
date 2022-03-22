@@ -9,6 +9,10 @@
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.14.1...3.15.0)
 - Windows - include sentry.dll & .pdb in debug symbol upload ([#641](https://github.com/getsentry/sentry-unity/pull/641))
 
+### Fixes
+
+- Windows - avoid sentry-dotnet issue when multiple app instances try to access the same cache directory ([#643](https://github.com/getsentry/sentry-unity/pull/643))
+
 ## 0.12.0
 
 ### Features
