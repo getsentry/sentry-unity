@@ -10,7 +10,7 @@ namespace Sentry.Unity.Tests
         [Test]
         public void ToSentryException_MarkedAsUnhandled()
         {
-            var sentryException = new UnityLogException().ToSentryException();
+            var sentryException = new UnityLogException("", "", new SentryUnityOptions()).ToSentryException();
 
             Assert.IsFalse(sentryException.Mechanism?.Handled);
         }
@@ -21,7 +21,7 @@ namespace Sentry.Unity.Tests
             string logStackTrace,
             SentryException sentryException)
         {
-            var actual = new UnityLogException(logString, logStackTrace).ToSentryException();
+            var actual = new UnityLogException(logString, logStackTrace, new SentryUnityOptions()).ToSentryException();
 
             AssertEqual(sentryException, actual);
         }
