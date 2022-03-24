@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Refactor InApp logic from Stack Traces ([#661](https://github.com/getsentry/sentry-unity/pull/661))
 - Whitespaces no longer cause issues when uploading symbols for Windows native  ([#655](https://github.com/getsentry/sentry-unity/pull/655))
 
 ## 0.13.0
