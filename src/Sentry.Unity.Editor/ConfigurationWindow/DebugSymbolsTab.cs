@@ -19,6 +19,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             EditorGUILayout.EndToggleGroup();
 
+            cliOptions.Url = EditorGUILayout.TextField(
+                new GUIContent("Sentry URL", "Fully qualified URL to the Sentry server (defaults to https://sentry.io/)"),
+                cliOptions.Url);
+
             cliOptions.Auth = EditorGUILayout.TextField(
                 new GUIContent("Auth Token", "The authorization token from your user settings in Sentry"),
                 cliOptions.Auth);

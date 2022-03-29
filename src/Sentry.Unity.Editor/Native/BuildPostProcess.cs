@@ -84,7 +84,7 @@ namespace Sentry.Unity.Editor.Native
                 }
                 else
                 {
-                    logger.LogWarning($"Coudn't find '{name}' - debug symbol upload will be incomplete");
+                    logger.LogWarning($"Couldn't find '{name}' - debug symbol upload will be incomplete");
                     return false;
                 }
             };
@@ -112,6 +112,11 @@ namespace Sentry.Unity.Editor.Native
                     CreateNoWindow = true
                 }
             };
+
+            if (cliOptions.Url != null)
+            {
+                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = cliOptions.Url;
+            }
 
             process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;
             process.StartInfo.EnvironmentVariables["SENTRY_PROJECT"] = cliOptions.Project;

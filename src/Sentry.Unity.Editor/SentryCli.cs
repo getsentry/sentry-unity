@@ -20,6 +20,12 @@ namespace Sentry.Unity.Editor
         {
             var propertiesFile = Path.Combine(propertiesPath, "sentry.properties");
             using var properties = File.CreateText(propertiesFile);
+
+            if (sentryCliOptions.Url != null)
+            {
+                properties.WriteLine($"defaults.url={sentryCliOptions.Url}");
+            }
+
             properties.WriteLine($"defaults.org={sentryCliOptions.Organization}");
             properties.WriteLine($"defaults.project={sentryCliOptions.Project}");
             properties.WriteLine($"auth.token={sentryCliOptions.Auth}");
