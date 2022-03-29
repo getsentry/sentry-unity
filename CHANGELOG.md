@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Allow configuring the Sentry URL ([#666](https://github.com/getsentry/sentry-unity/pull/666))
+
 ### Fixes
 
 - Whitespaces no longer cause issues when uploading symbols for Windows native  ([#655](https://github.com/getsentry/sentry-unity/pull/655))
