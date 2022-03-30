@@ -55,6 +55,14 @@ namespace Sentry.Unity
                 }
 
                 var sentryDotNet = SentrySdk.Init(options);
+
+                if (options.AttachScreenshot)
+                {
+                    SentrySdk.ConfigureScope(s =>
+                        s.AddAttachment(new ScreenshotAttachment(
+                            new ScreenshotAttachmentContent(options, SentryMonoBehaviour.Instance))));
+                }
+
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
                     options.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");

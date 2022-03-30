@@ -25,6 +25,7 @@ namespace Sentry.Unity.Integrations
 
         private ApplicationAdapter()
         {
+            // TODO why not logMessageReceivedThreaded? We're currently ignoring errors from other than the main thread.
             Application.logMessageReceived += OnLogMessageReceived;
             Application.quitting += OnQuitting;
         }
