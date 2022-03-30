@@ -78,6 +78,7 @@ namespace Sentry.Unity.Tests
                 AutoSessionTracking = false,
                 AutoSessionTrackingInterval = TimeSpan.FromSeconds(1),
                 AttachStacktrace = true,
+                AttachScreenshot = true,
                 MaxBreadcrumbs = 1,
                 ReportAssembliesMode = ReportAssembliesMode.None,
                 SendDefaultPii = true,
@@ -104,6 +105,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.AutoSessionTracking = expectedOptions.AutoSessionTracking;
             scriptableOptions.AutoSessionTrackingInterval = (int)expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
             scriptableOptions.AttachStacktrace = expectedOptions.AttachStacktrace;
+            scriptableOptions.AttachScreenshot = expectedOptions.AttachScreenshot;
             scriptableOptions.MaxBreadcrumbs = expectedOptions.MaxBreadcrumbs;
             scriptableOptions.ReportAssembliesMode = expectedOptions.ReportAssembliesMode;
             scriptableOptions.SendDefaultPii = expectedOptions.SendDefaultPii;
@@ -166,6 +168,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.AutoSessionTracking, actual.AutoSessionTracking);
             Assert.AreEqual(expected.AutoSessionTrackingInterval, actual.AutoSessionTrackingInterval);
             Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
+            Assert.AreEqual(expected.AttachScreenshot, actual.AttachScreenshot);
             Assert.AreEqual(expected.MaxBreadcrumbs, actual.MaxBreadcrumbs);
             Assert.AreEqual(expected.ReportAssembliesMode, actual.ReportAssembliesMode);
             Assert.AreEqual(expected.SendDefaultPii, actual.SendDefaultPii);

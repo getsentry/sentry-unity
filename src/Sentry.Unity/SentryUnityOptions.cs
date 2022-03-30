@@ -72,6 +72,11 @@ namespace Sentry.Unity
         }
 
         /// <summary>
+        /// Try to attach a current screen capture on error events.
+        /// </summary>
+        public bool AttachScreenshot { get; set; } = false;
+
+        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;

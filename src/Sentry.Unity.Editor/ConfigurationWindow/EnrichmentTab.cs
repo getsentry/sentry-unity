@@ -72,6 +72,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
                                                          "Version or InformationalVersion in each event sent to sentry."),
                 options.ReportAssembliesMode);
+
+            options.AttachScreenshot = EditorGUILayout.Toggle(
+                new GUIContent("Attach Screnshot", "Try to attach current screenshot for error events"),
+                options.AttachScreenshot);
         }
     }
 }

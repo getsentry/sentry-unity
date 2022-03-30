@@ -29,6 +29,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.TextField("Release Override", options.ReleaseOverride);
             EditorGUILayout.TextField("Environment Override", options.EnvironmentOverride);
             EditorGUILayout.Toggle("Attach Stacktrace", options.AttachStacktrace);
+            EditorGUILayout.Toggle("Attach Screenshot", options.AttachScreenshot);
             EditorGUILayout.IntField("Max Breadcrumbs", options.MaxBreadcrumbs);
             EditorGUILayout.EnumPopup("Report Assemblies Mode", options.ReportAssembliesMode);
             EditorGUILayout.Toggle("Send Default Pii", options.SendDefaultPii);

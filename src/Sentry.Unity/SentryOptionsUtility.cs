@@ -19,6 +19,7 @@ namespace Sentry.Unity
             scriptableOptions.AutoSessionTracking = options.AutoSessionTracking;
 
             scriptableOptions.AttachStacktrace = options.AttachStacktrace;
+            scriptableOptions.AttachScreenshot = options.AttachScreenshot;
             scriptableOptions.MaxBreadcrumbs = options.MaxBreadcrumbs;
             scriptableOptions.ReportAssembliesMode = options.ReportAssembliesMode;
             scriptableOptions.SendDefaultPii = options.SendDefaultPii;

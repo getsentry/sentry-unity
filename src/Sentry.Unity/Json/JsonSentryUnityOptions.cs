@@ -51,6 +51,10 @@ namespace Sentry.Unity.Json
             {
                 options.AttachStacktrace = attachStacktrace.GetBoolean();
             }
+            if (json.GetPropertyOrNull("attachScreenshot") is { } attachScreenshot)
+            {
+                options.AttachScreenshot = attachScreenshot.GetBoolean();
+            }
             if (json.GetPropertyOrNull("sampleRate") is { } sampleRate)
             {
                 options.SampleRate = sampleRate.GetSingle() >= 1.0f ? null : sampleRate.GetSingle();
@@ -84,6 +88,7 @@ namespace Sentry.Unity.Json
             scriptableOptions.DebugOnlyInEditor = jsonOptions.DebugOnlyInEditor;
             scriptableOptions.DiagnosticLevel = jsonOptions.DiagnosticLevel;
             scriptableOptions.AttachStacktrace = jsonOptions.AttachStacktrace;
+            scriptableOptions.AttachScreenshot = jsonOptions.AttachScreenshot;
 
             if (jsonOptions.SampleRate is { } sampleRate)
             {
