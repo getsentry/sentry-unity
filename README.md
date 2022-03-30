@@ -27,11 +27,9 @@ Sentry has extensive documentation for this SDK.
 Check the Sentry [Unity documentation for more details](https://docs.sentry.io/platforms/unity/).
 
 
-## Preview Demo
+## Setup Sentry SDK with Unity
 
-A video explaining the project and showing the early support:
-
-[![YouTube Video of Experimental Sentry Unity SDK](https://img.youtube.com/vi/bHc4QMlV8bM/0.jpg)](https://www.youtube.com/watch?v=bHc4QMlV8bM)
+[![YouTube Video of Setup Sentry SDK with Unity](https://img.youtube.com/vi/P0E9upOSznE/0.jpg)](https://www.youtube.com/watch?v=P0E9upOSznE)
 
 ## Legacy SDK
 
