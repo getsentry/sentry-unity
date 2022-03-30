@@ -132,7 +132,7 @@ namespace Sentry.Unity
                     Function = functionName,
                     LineNumber = lineNo == -1 ? null : lineNo
                 };
-                if (_options != null)
+                if (_options is not null)
                 {
                     stackFrame.ConfigureAppFrame(_options);
                 }
