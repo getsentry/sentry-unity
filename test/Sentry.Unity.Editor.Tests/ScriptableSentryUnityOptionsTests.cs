@@ -29,6 +29,9 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("EnvironmentOverride", optionsAsString);
             StringAssert.Contains("AttachStacktrace", optionsAsString);
             StringAssert.Contains("AttachScreenshot", optionsAsString);
+            StringAssert.Contains("ScreenshotMaxWidth", optionsAsString);
+            StringAssert.Contains("ScreenshotMaxHeight", optionsAsString);
+            StringAssert.Contains("ScreenshotQuality", optionsAsString);
             StringAssert.Contains("MaxBreadcrumbs", optionsAsString);
             StringAssert.Contains("ReportAssembliesMode", optionsAsString);
             StringAssert.Contains("SendDefaultPii", optionsAsString);

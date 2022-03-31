@@ -20,6 +20,9 @@ namespace Sentry.Unity
 
             scriptableOptions.AttachStacktrace = options.AttachStacktrace;
             scriptableOptions.AttachScreenshot = options.AttachScreenshot;
+            scriptableOptions.ScreenshotMaxWidth = options.ScreenshotMaxWidth;
+            scriptableOptions.ScreenshotMaxHeight = options.ScreenshotMaxHeight;
+            scriptableOptions.ScreenshotQuality = options.ScreenshotQuality;
             scriptableOptions.MaxBreadcrumbs = options.MaxBreadcrumbs;
             scriptableOptions.ReportAssembliesMode = options.ReportAssembliesMode;
             scriptableOptions.SendDefaultPii = options.SendDefaultPii;

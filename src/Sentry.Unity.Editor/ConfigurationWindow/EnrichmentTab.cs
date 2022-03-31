@@ -45,18 +45,19 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            options.SendDefaultPii = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Send default Pii", "Whether to include default Personal Identifiable " +
-                                                   "Information."),
-                options.SendDefaultPii);
+            {
+                options.SendDefaultPii = EditorGUILayout.BeginToggleGroup(
+                    new GUIContent("Send default PII", "Whether to include default Personal Identifiable " +
+                                                       "Information."),
+                    options.SendDefaultPii);
 
-            options.IsEnvironmentUser = EditorGUILayout.Toggle(
-                new GUIContent("Auto Set UserName", "Whether to report the 'Environment.UserName' as " +
-                                                    "the User affected in the event. Should be disabled for " +
-                                                    "Android and iOS."),
-                options.IsEnvironmentUser);
-
-            EditorGUILayout.EndToggleGroup();
+                options.IsEnvironmentUser = EditorGUILayout.Toggle(
+                    new GUIContent("Auto Set UserName", "Whether to report the 'Environment.UserName' as " +
+                                                        "the User affected in the event. Should be disabled for " +
+                                                        "Android and iOS."),
+                    options.IsEnvironmentUser);
+                EditorGUILayout.EndToggleGroup();
+            }
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
@@ -73,10 +74,24 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                          "Version or InformationalVersion in each event sent to sentry."),
                 options.ReportAssembliesMode);
 
-            options.AttachScreenshot = EditorGUILayout.Toggle(
-                new GUIContent("Attach Screnshot", "Try to attach current screenshot for events.\n" +
-                  "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
-                options.AttachScreenshot);
+            {
+                options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
+                    new GUIContent("Attach Screnshot", "Try to attach current screenshot for events.\n" +
+                        "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
+                    options.AttachScreenshot);
+                options.ScreenshotMaxWidth = EditorGUILayout.IntField(
+                    new GUIContent("Max Width", "Maximum width of the screenshot or 0 to keep the original size. " +
+                        "If the application window is larger, the screenshot will be resized proportionally."),
+                    options.ScreenshotMaxWidth);
+                options.ScreenshotMaxHeight = EditorGUILayout.IntField(
+                    new GUIContent("Max Height", "Maximum height of the screenshot or 0 to keep the original size. " +
+                        "If the application window is larger, the screenshot will be resized proportionally."),
+                    options.ScreenshotMaxHeight);
+                options.ScreenshotQuality = EditorGUILayout.IntSlider(
+                    new GUIContent("JPG quality", "Quality of the JPG screenshot: 0 - 100, where 100 is the best quality and highest size."),
+                    options.ScreenshotQuality, 0, 100);
+                EditorGUILayout.EndToggleGroup();
+            }
         }
     }
 }

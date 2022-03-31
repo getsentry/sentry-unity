@@ -23,6 +23,9 @@ MonoBehaviour:
   <EnvironmentOverride>k__BackingField: 
   <AttachStacktrace>k__BackingField: 0
   <AttachScreenshot>k__BackingField: 1
+  <ScreenshotMaxWidth>k__BackingField: 0
+  <ScreenshotMaxHeight>k__BackingField: 0
+  <ScreenshotQuality>k__BackingField: 75
   <MaxBreadcrumbs>k__BackingField: 100
   <ReportAssembliesMode>k__BackingField: 1
   <SendDefaultPii>k__BackingField: 0
