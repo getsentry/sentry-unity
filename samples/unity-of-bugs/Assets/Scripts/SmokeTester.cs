@@ -137,10 +137,12 @@ public class SmokeTester : MonoBehaviour
 
             t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, guid);
+            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
 
             SentrySdk.CaptureMessage(guid);
             t.ExpectMessage(++currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, guid);
+            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
 
             var ex = new Exception("Exception & context test");
             AddContext();
@@ -151,6 +153,7 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
             t.ExpectMessage(currentMessage, "'tags':{'tag-key':'tag-value'");
             t.ExpectMessage(currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}");
+            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
 
             t.Pass();
         }
