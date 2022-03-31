@@ -26,27 +26,12 @@ namespace Sentry.Unity
 
         public Stream GetStream()
         {
-            if (!_behaviour.MainThreadData.IsMainThread())
-            {
-                _options.DiagnosticLogger?.LogDebug("Won't capture screenshot because we're not on the main thread");
-                return new MemoryStream();
-            }
-            else
-            {
-                // Captures current screenshot synchronously
-                try
-                {
-                    var texture = ScreenCapture.CaptureScreenshotAsTexture();
-                    var bytes = texture.EncodeToJPG();
-                    _options.DiagnosticLogger?.LogDebug("Screenshot captured: {0} bytes", bytes.Length);
-                    return new MemoryStream(bytes);
-                }
-                catch (Exception ex)
-                {
-                    _options.DiagnosticLogger?.LogError("Couldn't capture screenshot", ex);
-                }
-            }
-            return new MemoryStream();
+            // Captures the current screenshot synchronously (throws if not on the UI thread - sentry-dotnet skips the attachment in that case)
+            var texture = ScreenCapture.CaptureScreenshotAsTexture();
+            var bytes = texture.EncodeToJPG();
+            _options.DiagnosticLogger?.LogDebug("Screenshot captured: {0} bytes", bytes.Length);
+            return new MemoryStream(bytes);
+
         }
     }
 }
