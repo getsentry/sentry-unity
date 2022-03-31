@@ -261,10 +261,8 @@ Plugins/iOS/Device/Sentry.framework/Headers/SentryUserFeedback.h.meta
 Plugins/iOS/Device/Sentry.framework/Modules/module.modulemap
 Plugins/iOS/Device/Sentry.framework/Modules/module.modulemap.meta
 Plugins/Android/Sentry.meta
-Plugins/Android/Sentry/gson-2.8.5.jar
-Plugins/Android/Sentry/gson-2.8.5.jar.meta
-Plugins/Android/Sentry/sentry-5.5.0.jar
-Plugins/Android/Sentry/sentry-5.5.0.jar.meta
+Plugins/Android/Sentry/sentry-6.0.0-alpha.4.jar
+Plugins/Android/Sentry/sentry-6.0.0-alpha.4.jar.meta
 Plugins/Android/Sentry/sentry-android-core-release.aar
 Plugins/Android/Sentry/sentry-android-core-release.aar.meta
 Plugins/Android/Sentry/sentry-android-ndk-release.aar
