@@ -51,7 +51,7 @@ namespace Sentry.Unity
                             "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
                         options.CacheDirectoryPath = null;
                         options.AutoSessionTracking = false;
-                        
+
                     }
                 }
 
