@@ -310,35 +310,30 @@ namespace Sentry.Unity
                     DebugId = nativeStackTrace.ImageUUID,
                 });
                 sentryEvent.DebugImages = debugImages;
+                var addrMode = String.Format("rel:{0}", imageIdx);
 
-                // TODO: Instead of creating a *new* exception/stacktrace, we should
-                // rather add the missing `InstructionAddress`/`AddressMode` properties
-                // to an existing stack trace as the `sentryEvent` should ideally
-                // have one.
-
-                var frames = new List<SentryStackFrame>();
-                foreach (var frame in nativeStackTrace.Frames)
+                // TODO: how to handle chained exceptions?
+                var sentryExEnum = sentryEvent.SentryExceptions?.GetEnumerator();
+                if (sentryExEnum == null || !sentryExEnum.MoveNext())
                 {
-                    frames.Add(new SentryStackFrame
-                    {
-                        InstructionAddress = String.Format("0x{0:X}", frame),
-                        AddressMode = String.Format("rel:{0}", imageIdx),
-                    });
+                    return;
                 }
-                frames.Reverse();
-
-                var stacktrace = new SentryStackTrace();
-                foreach (var frame in frames)
+                var sentryException = sentryExEnum.Current;
+                var sentryStacktrace = sentryException.Stacktrace;
+                if (sentryStacktrace == null)
                 {
-                    stacktrace.Frames.Add(frame);
+                    return;
                 }
 
-                sentryEvent.SentryExceptions = new[] {
-                    new SentryException
-                    {
-                        Stacktrace = stacktrace,
-                    }
-                };
+                var nativeLen = nativeStackTrace.Frames.Length;
+                var len = Math.Min(sentryStacktrace.Frames.Count, nativeLen);
+                for (int i = 0; i < len; i++)
+                {
+                    var frame = sentryStacktrace.Frames[i];
+                    var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
+                    frame.InstructionAddress = String.Format("0x{0}", nativeFrame.ToString("X8"));
+                    frame.AddressMode = addrMode;
+                }
             }
         }
 
