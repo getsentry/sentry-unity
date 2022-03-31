@@ -5,7 +5,6 @@ using Sentry.Extensibility;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-
 namespace Sentry.Unity
 {
     internal class ScreenshotAttachment : Attachment
@@ -34,9 +33,6 @@ namespace Sentry.Unity
             }
             else
             {
-                // The async version - uses a custom stream & captures in a coroutine
-                // return new ScreenshotCaptureStream(_options, _behaviour);
-
                 // Captures current screenshot synchronously
                 try
                 {
@@ -53,55 +49,4 @@ namespace Sentry.Unity
             return new MemoryStream();
         }
     }
-
-    // The async version, currently unused because we want the screenshot to be as early as possible after the error
-    // internal class ScreenshotCaptureStream : Stream
-    // {
-    //     private readonly SentryOptions _options;
-    //     private readonly TaskCompletionSource<byte[]> _tcs;
-
-    //     public ScreenshotCaptureStream(SentryOptions options, SentryMonoBehaviour behaviour)
-    //     {
-    //         _options = options;
-    //         _tcs = new();
-    //         behaviour.StartCoroutine(CaptureScreenshot());
-    //     }
-
-    //     private IEnumerator CaptureScreenshot()
-    //     {
-    //         _options.DiagnosticLogger?.LogDebug("Capturing screenshot");
-
-    //         yield return new WaitForEndOfFrame();
-
-    //         var texture = ScreenCapture.CaptureScreenshotAsTexture();
-    //         byte[] bytes = texture.EncodeToJPG();
-    //         UnityEngine.Object.Destroy(texture);
-
-    //         _options.DiagnosticLogger?.LogDebug("Screenshot captured: {0} bytes", bytes.Length);
-
-    //         _tcs.TrySetResult(bytes);
-    //     }
-
-    //     public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-    //     {
-    //         var bytes = await _tcs.Task.ConfigureAwait(false);
-    //         _options.DiagnosticLogger?.LogDebug("Awaiting screenshot finished: {0} bytes", bytes.Length);
-    //         var writer = new BinaryWriter(destination);
-    //         {
-    //             writer.Write(bytes);
-    //         }
-    //         _options.DiagnosticLogger?.LogDebug("Finished writing the screenshot");
-    //     }
-
-    //     public override bool CanRead => throw new NotImplementedException();
-    //     public override bool CanSeek => throw new NotImplementedException();
-    //     public override bool CanWrite => throw new NotImplementedException();
-    //     public override long Length => throw new NotImplementedException();
-    //     public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-    //     public override void Flush() => throw new NotImplementedException();
-    //     public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-    //     public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
-    //     public override void SetLength(long value) => throw new NotImplementedException();
-    //     public override void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-    // }
 }

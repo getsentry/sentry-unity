@@ -74,7 +74,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.ReportAssembliesMode);
 
             options.AttachScreenshot = EditorGUILayout.Toggle(
-                new GUIContent("Attach Screnshot", "Try to attach current screenshot for error events"),
+                new GUIContent("Attach Screnshot", "Try to attach current screenshot for events.\n" +
+                  "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
                 options.AttachScreenshot);
         }
     }
