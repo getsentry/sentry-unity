@@ -69,6 +69,7 @@ RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Con
         "-quit", "-batchmode", "-nographics", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
         "-sentryOptions.Dsn", "http://publickey@localhost:8000/12345", `
-        "-sentryOptionsScript", "SmokeTestOptions")
+        "-sentryOptionsScript", "SmokeTestOptions", `
+        "-attachScreenshot", "true")
 
 Write-Host " Unity configuration finished successfully" -ForegroundColor Green
