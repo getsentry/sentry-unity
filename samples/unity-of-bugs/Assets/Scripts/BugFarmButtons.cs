@@ -6,10 +6,25 @@ using UnityEngine.Assertions;
 
 public class BugFarmButtons : MonoBehaviour
 {
+    private Threading _threading = Threading.MainThread;
+    // private Dropdown _threadingDropdown;
+
     private void Start()
     {
         Debug.Log("Sample Start 🦋");
         Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
+        // _threadingDropdown = ;
+        // _threadingDropdown.onValueChanged.AddListener(delegate
+        // {
+        //     DropdownValueChanged(m_Dropdown);
+        // });
+
+    }
+
+    public void OnThreadingChange(Int32 value)
+    {
+        _threading = (Threading)Enum.ToObject(typeof(Threading), value);
+        Debug.LogFormat("Switched threading to: {0} = {1}", value, _threading);
     }
 
     public void AssertFalse() => Assert.AreEqual(true, false);
@@ -60,4 +75,12 @@ public class CustomException : Exception
     public CustomException(string message) : base(message)
     {
     }
+}
+
+
+internal enum Threading
+{
+    MainThread = 0,
+    Task = 1,
+    Coroutine = 2
 }
