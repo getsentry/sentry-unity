@@ -4,23 +4,51 @@ using Sentry;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class BugFarmButtons : MonoBehaviour
+public class BugFarmButtons : MonoBehaviour, IBugFarm
 {
-    private Threading _threading;
+    private IBugFarm _impl;
 
     private void Start()
     {
         Debug.Log("Sample Start 🦋");
         Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
-        OnThreadingChange(((int)Threading.MainThread));
+        OnThreadingChange(0);
     }
 
     public void OnThreadingChange(int value)
     {
-        _threading = (Threading)Enum.ToObject(typeof(Threading), value);
-        Debug.LogFormat("Set threading to: {0} = {1}", value, _threading);
+        switch (value)
+        {
+            case 0:
+                _impl = new BugFarmMainThread();
+                break;
+            default:
+                throw new ArgumentException($"Invalid threading dropdown value: {value}");
+
+        }
+        Debug.LogFormat("Setting BugFarm implementation to: {0} = {1}", value, _impl.GetType());
     }
 
+    public void AssertFalse() => _impl.AssertFalse();
+    public void ThrowNull() => _impl.ThrowNull();
+    public void ThrowExceptionAndCatch() => _impl.ThrowExceptionAndCatch();
+    public void ThrowNullAndCatch() => _impl.ThrowNullAndCatch();
+    public void CaptureMessage() => _impl.CaptureMessage();
+    public void StackTraceExampleA() => _impl.StackTraceExampleA();
+}
+
+interface IBugFarm
+{
+    void AssertFalse();
+    void ThrowNull();
+    void ThrowExceptionAndCatch();
+    void ThrowNullAndCatch();
+    void CaptureMessage();
+    void StackTraceExampleA();
+}
+
+internal class BugFarmMainThread : IBugFarm
+{
     public void AssertFalse() => Assert.AreEqual(true, false);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -69,12 +97,4 @@ public class CustomException : Exception
     public CustomException(string message) : base(message)
     {
     }
-}
-
-
-internal enum Threading
-{
-    MainThread = 0,
-    Task = 1,
-    Coroutine = 2
 }
