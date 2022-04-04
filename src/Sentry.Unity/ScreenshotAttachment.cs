@@ -27,6 +27,16 @@ namespace Sentry.Unity
 
         public Stream GetStream()
         {
+            // Note: we need to check explicitly that we're on the same thread. While Unity would throw otherwise
+            // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
+            if (!_behaviour.MainThreadData.IsMainThread())
+            {
+                _options.DiagnosticLogger?.LogDebug("Won't capture screenshot because we're not on the main thread");
+                // Throwing here to avoid empty attachment being sent to Sentry.
+                // return new MemoryStream();
+                throw new Exception("Sentry: cannot capture screenshot attachment on other than the main (UI) thread.");
+            }
+
             // Calculate the desired size by calculating the ratio between the desired height/width and the actual one,
             // and than resizing based on the smaller of the two ratios.
             var width = Screen.width;
@@ -41,7 +51,6 @@ namespace Sentry.Unity
             }
 
             // Captures the current screenshot synchronously.
-            // Throws if not on the UI thread - sentry-dotnet skips the attachment in that case.
             var screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
             var rtFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
             ScreenCapture.CaptureScreenshotIntoRenderTexture(rtFull);
