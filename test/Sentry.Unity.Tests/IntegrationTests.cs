@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
@@ -237,6 +238,53 @@ namespace Sentry.Unity.Tests
             Assert.NotNull(testEventCapture.Events.SingleOrDefault(sentryEvent =>
                 sentryEvent.SentryExceptions.SingleOrDefault(exception =>
                     exception.Mechanism?.Handled is false) is not null));
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_DebugLogError_IsCaptured()
+        {
+            // Note: can't use nunit TestCase() because it's not supported with IEnumerator return.
+            yield return BugFarmScene_DebugLogError_IsCapturedShared(false);
+        }
+
+        [UnityTest]
+        public IEnumerator BugFarmScene_DebugLogError_IsCapturedInTask()
+        {
+            // Note: can't use nunit TestCase() because it's not supported with IEnumerator return.
+            yield return BugFarmScene_DebugLogError_IsCapturedShared(true);
+        }
+
+        private IEnumerator BugFarmScene_DebugLogError_IsCapturedShared(bool inTask)
+        {
+            yield return SetupSceneCoroutine("1_BugFarm");
+
+            // arrange
+            var testEventCapture = new TestEventCapture();
+            using var _ = InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            // act
+            testBehaviour.gameObject.SendMessage(
+                inTask ? nameof(testBehaviour.DebugLogErrorInTask) : nameof(testBehaviour.DebugLogError));
+
+            // wait
+            if (inTask)
+            {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+                while (testEventCapture.Events.Count == 0 && stopWatch.ElapsedMilliseconds < 5000)
+                {
+                    yield return null;
+                }
+            }
+
+            // assert
+            Assert.AreEqual(1, testEventCapture.Events.Count);
+            var isMainThread = testEventCapture.Events.First().Tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
+            Assert.AreEqual((!inTask).ToString(), isMainThread.Value);
         }
 
         [UnityTest]

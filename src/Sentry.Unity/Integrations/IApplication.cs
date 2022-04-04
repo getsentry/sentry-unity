@@ -25,7 +25,7 @@ namespace Sentry.Unity.Integrations
 
         private ApplicationAdapter()
         {
-            Application.logMessageReceived += OnLogMessageReceived;
+            Application.logMessageReceivedThreaded += OnLogMessageReceived;
             Application.quitting += OnQuitting;
         }
 

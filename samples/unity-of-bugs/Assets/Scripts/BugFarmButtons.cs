@@ -88,6 +88,8 @@ public class BugFarmButtons : MonoBehaviour
     private void StackTraceExampleB() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
 
     public void StackTraceExampleA() => _executor(() => StackTraceExampleB());
+
+    public void LogError() => _executor(() => Debug.LogError("Debug.LogError() called"));
 }
 
 public class CustomException : Exception
