@@ -1,12 +1,14 @@
 using System;
+using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Sentry;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class BugFarmButtons : MonoBehaviour, IBugFarm
+public class BugFarmButtons : MonoBehaviour
 {
-    private IBugFarm _impl;
+    private Action<Action> _executor;
 
     private void Start()
     {
@@ -17,44 +19,43 @@ public class BugFarmButtons : MonoBehaviour, IBugFarm
 
     public void OnThreadingChange(int value)
     {
+        string name;
         switch (value)
         {
             case 0:
-                _impl = new BugFarmMainThread();
+                name = "Main (UI) Thread";
+                _executor = (Action fn) => fn();
+                break;
+            case 1:
+                name = "Background: Task (unawaited)";
+                _executor = (Action fn) => Task.Run(fn);
+                break;
+            case 2:
+                name = "Background: Task (awaited)";
+                _executor = async (Action fn) => await Task.Run(fn);
+                break;
+            case 3:
+                name = "Background: Coroutine";
+                _executor = (Action fn) => StartCoroutine(Coroutine(fn));
                 break;
             default:
                 throw new ArgumentException($"Invalid threading dropdown value: {value}");
 
         }
-        Debug.LogFormat("Setting BugFarm implementation to: {0} = {1}", value, _impl.GetType());
+        Debug.LogFormat("Setting BugFarm implementation to: {0} = {1}", value, name);
     }
 
-    public void AssertFalse() => _impl.AssertFalse();
-    public void ThrowNull() => _impl.ThrowNull();
-    public void ThrowExceptionAndCatch() => _impl.ThrowExceptionAndCatch();
-    public void ThrowNullAndCatch() => _impl.ThrowNullAndCatch();
-    public void CaptureMessage() => _impl.CaptureMessage();
-    public void StackTraceExampleA() => _impl.StackTraceExampleA();
-}
+    public IEnumerator Coroutine(Action fn)
+    {
+        yield return null;
+        fn();
+    }
 
-interface IBugFarm
-{
-    void AssertFalse();
-    void ThrowNull();
-    void ThrowExceptionAndCatch();
-    void ThrowNullAndCatch();
-    void CaptureMessage();
-    void StackTraceExampleA();
-}
+    public void AssertFalse() => _executor(() => Assert.AreEqual(true, false));
 
-internal class BugFarmMainThread : IBugFarm
-{
-    public void AssertFalse() => Assert.AreEqual(true, false);
+    public void ThrowNull() => _executor(() => throw null);
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public void ThrowNull() => throw null;
-
-    public void ThrowExceptionAndCatch()
+    public void ThrowExceptionAndCatch() => _executor(() =>
     {
         Debug.Log("Throwing an instance of 🐛 CustomException!");
 
@@ -66,9 +67,9 @@ internal class BugFarmMainThread : IBugFarm
         {
             SentrySdk.CaptureException(e);
         }
-    }
+    });
 
-    public void ThrowNullAndCatch()
+    public void ThrowNullAndCatch() => _executor(() =>
     {
         Debug.Log("Throwing 'null' and catching 🐜🐜🐜 it!");
 
@@ -80,16 +81,13 @@ internal class BugFarmMainThread : IBugFarm
         {
             SentrySdk.CaptureException(e);
         }
-    }
+    });
 
-    public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
+    public void CaptureMessage() => _executor(() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️"));
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
     private void StackTraceExampleB() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
 
-    // IL2CPP inlines this anyway :(
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public void StackTraceExampleA() => StackTraceExampleB();
+    public void StackTraceExampleA() => _executor(() => StackTraceExampleB());
 }
 
 public class CustomException : Exception
