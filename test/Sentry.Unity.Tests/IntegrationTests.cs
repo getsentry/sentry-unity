@@ -243,18 +243,28 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator BugFarmScene_DebugLogError_IsCaptured()
         {
-            // Note: can't use nunit TestCase() because it's not supported with IEnumerator return.
-            yield return BugFarmScene_DebugLogError_IsCapturedShared(false);
+            yield return BugFarmScene_DebugLog(inTask: false, logException: false);
         }
 
         [UnityTest]
         public IEnumerator BugFarmScene_DebugLogError_IsCapturedInTask()
         {
-            // Note: can't use nunit TestCase() because it's not supported with IEnumerator return.
-            yield return BugFarmScene_DebugLogError_IsCapturedShared(true);
+            yield return BugFarmScene_DebugLog(inTask: true, logException: false);
+        }
+        [UnityTest]
+        public IEnumerator BugFarmScene_DebugLogException_IsCaptured()
+        {
+            yield return BugFarmScene_DebugLog(inTask: false, logException: true);
         }
 
-        private IEnumerator BugFarmScene_DebugLogError_IsCapturedShared(bool inTask)
+        [UnityTest]
+        public IEnumerator BugFarmScene_DebugLogException_IsCapturedInTask()
+        {
+            yield return BugFarmScene_DebugLog(inTask: true, logException: true);
+        }
+
+        // Note: can't use nunit TestCase() because it's not supported with IEnumerator return.
+        private IEnumerator BugFarmScene_DebugLog(bool inTask, bool logException)
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
@@ -267,8 +277,10 @@ namespace Sentry.Unity.Tests
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
-            testBehaviour.gameObject.SendMessage(
-                inTask ? nameof(testBehaviour.DebugLogErrorInTask) : nameof(testBehaviour.DebugLogError));
+            var method = logException
+                ? (inTask ? nameof(testBehaviour.DebugLogExceptionInTask) : nameof(testBehaviour.DebugLogException))
+                : (inTask ? nameof(testBehaviour.DebugLogErrorInTask) : nameof(testBehaviour.DebugLogError));
+            testBehaviour.gameObject.SendMessage(method);
 
             // wait
             if (inTask)

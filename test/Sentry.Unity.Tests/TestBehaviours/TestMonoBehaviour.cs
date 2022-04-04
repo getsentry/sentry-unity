@@ -13,5 +13,6 @@ namespace Sentry.Unity.Tests.TestBehaviours
         public void DebugLogError() => Debug.LogError("Unity Debug.LogError()");
         public void DebugLogErrorInTask() => Task.Run(DebugLogError);
         public void DebugLogException() => Debug.LogException(new Exception("Unity log exception"));
+        public void DebugLogExceptionInTask() => Task.Run(DebugLogException);
     }
 }
