@@ -2,25 +2,21 @@
 
 ## Unreleased
 
-### Features
-
-- Bump Sentry Java SDK to v6.0.0-alpha.4 ([#653](https://github.com/getsentry/sentry-unity/pull/653))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0-alpha.4/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-java/compare/5.5.0...6.0.0-alpha.4)
-
 ### Fixes
 
 - Whitespaces no longer cause issues when uploading symbols for Windows native  ([#655](https://github.com/getsentry/sentry-unity/pull/655))
 - AndroidManifest update removes previous `io.sentry` entries ([#652](https://github.com/getsentry/sentry-unity/pull/652))
+- Bump Sentry .NET SDK 3.16.0 ([#678](https://github.com/getsentry/sentry-unity/pull/678))
+  - [changelog 3.16.0](https://github.com/getsentry/sentry-dotnet/blob/3.16.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.14.1...3.16.0)
+- Bump Sentry Java SDK to v6.0.0-alpha.4 ([#653](https://github.com/getsentry/sentry-unity/pull/653))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0-alpha.4/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-java/compare/5.5.0...6.0.0-alpha.4)
 
 ## 0.13.0
 
 ### Features
 
-- Bump Sentry .NET SDK 3.16.0 ([#678](https://github.com/getsentry/sentry-unity/pull/678))
-  - [changelog 3.15.0](https://github.com/getsentry/sentry-dotnet/blob/3.15.0/CHANGELOG.md)
-  - [changelog 3.16.0](https://github.com/getsentry/sentry-dotnet/blob/3.16.0/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.14.1...3.16.0)
 - Windows - include sentry.dll & .pdb in debug symbol upload ([#641](https://github.com/getsentry/sentry-unity/pull/641))
 
 ### Fixes
