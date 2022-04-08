@@ -59,4 +59,16 @@ public class AdditionalButtons : MonoBehaviour
         SentrySdk.CaptureMessage("Captured a message with a screenshot attachment");
         SentrySdk.ConfigureScope(scope => scope.ClearAttachments());
     }
+
+    public void ThrowOnBackground() => Task.Run(() => throw null);
+
+    public async void ThrowOnAwaitedBackground() => await Task.Run(() => throw null);
+
+    public void ThrowInCoroutine() => StartCoroutine(ThrowingCoroutine());
+
+    private IEnumerator ThrowingCoroutine()
+    {
+        yield return null;
+        throw null;
+    }
 }
