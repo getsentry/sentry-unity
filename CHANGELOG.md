@@ -17,6 +17,10 @@
 
 ### Features
 
+- Bump Sentry .NET SDK 3.16.0 ([#678](https://github.com/getsentry/sentry-unity/pull/678))
+  - [changelog 3.15.0](https://github.com/getsentry/sentry-dotnet/blob/3.15.0/CHANGELOG.md)
+  - [changelog 3.16.0](https://github.com/getsentry/sentry-dotnet/blob/3.16.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.14.1...3.16.0)
 - Windows - include sentry.dll & .pdb in debug symbol upload ([#641](https://github.com/getsentry/sentry-unity/pull/641))
 
 ### Fixes
