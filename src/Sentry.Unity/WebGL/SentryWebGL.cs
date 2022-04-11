@@ -54,7 +54,7 @@ namespace Sentry.Unity.WebGL
         public WebBackgroundWorker(SentryUnityOptions options, SentryMonoBehaviour behaviour)
         {
             _behaviour = behaviour;
-            _transport = new UnityWebRequestTransport(options, behaviour);
+            _transport = new UnityWebRequestTransport(options);
         }
 
         public bool EnqueueEnvelope(Envelope envelope)
@@ -72,7 +72,7 @@ namespace Sentry.Unity.WebGL
     {
         private readonly SentryUnityOptions _options;
 
-        public UnityWebRequestTransport(SentryUnityOptions options, SentryMonoBehaviour behaviour)
+        public UnityWebRequestTransport(SentryUnityOptions options)
             : base(options)
         {
             _options = options;
@@ -85,7 +85,8 @@ namespace Sentry.Unity.WebGL
             if (processedEnvelope.Items.Count > 0)
             {
                 // Send envelope to ingress
-                var www = CreateWebRequest(CreateRequest(processedEnvelope));
+                var httpRequest = CreateRequest(processedEnvelope);
+                var www = CreateWebRequest(httpRequest, processedEnvelope);
                 yield return www.SendWebRequest();
 
                 var response = GetResponse(www);
@@ -96,28 +97,40 @@ namespace Sentry.Unity.WebGL
             }
         }
 
-        private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
+        private UnityWebRequest CreateWebRequest(HttpRequestMessage message, Envelope envelope)
         {
-            var www = new UnityWebRequest();
-            www.url = message.RequestUri.ToString();
-            www.method = message.Method.Method.ToUpperInvariant();
+            // Note: In order to use the synchronous Envelope.Serialize() we ignore the `message.Content`
+            // which is an `EnvelopeHttpContent` instance and use the actual envelope it wraps.
+            var stream = new MemoryStream();
+            try
+            {
+                envelope.Serialize(stream, _options.DiagnosticLogger);
+                stream.Flush();
+            }
+            catch (Exception e)
+            {
+                _options.DiagnosticLogger?.LogError("Failed to serialize Envelope into the network stream", e);
+                throw;
+            }
+
+            var www = new UnityWebRequest
+            {
+                url = message.RequestUri.ToString(),
+                method = message.Method.Method.ToUpperInvariant(),
+                uploadHandler = new UploadHandlerRaw(stream.ToArray()),
+                downloadHandler = new DownloadHandlerBuffer()
+            };
 
             foreach (var header in message.Headers)
             {
                 www.SetRequestHeader(header.Key, string.Join(",", header.Value));
             }
 
-            var stream = new MemoryStream();
-            _ = message.Content.CopyToAsync(stream).Wait(2000);
-            stream.Flush();
-            www.uploadHandler = new UploadHandlerRaw(stream.ToArray());
-            www.downloadHandler = new DownloadHandlerBuffer();
             return www;
         }
 
         private HttpResponseMessage? GetResponse(UnityWebRequest www)
         {
-
             // if (www.result == UnityWebRequest.Result.ConnectionError) // unity 2021+
             if (www.isNetworkError) // Unity 2019
             {
@@ -134,7 +147,7 @@ namespace Sentry.Unity.WebGL
                     response.Headers.Add(header.Key, header.Value);
                 }
             }
-            response.Content = new ExposedStringContent(www.downloadHandler.text);
+            response.Content = new StringContent(www.downloadHandler.text);
             return response;
         }
     }
@@ -145,31 +158,6 @@ namespace Sentry.Unity.WebGL
         {
             // if this throws, see usages of HttpTransport._httpClient - all should be overridden by UnityWebRequestTransport
             throw new InvalidOperationException("UnityWebRequestMessageHandler must be unused");
-        }
-    }
-
-    internal class ExposedStringContent : StringContent
-    {
-        internal readonly String Content;
-        public ExposedStringContent(String data) : base(data) => Content = data;
-    }
-
-    internal static class JsonExtensions
-    {
-        public static JsonElement? GetPropertyOrNull(this JsonElement json, string name)
-        {
-            if (json.ValueKind != JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            if (json.TryGetProperty(name, out var result) &&
-                result.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null)
-            {
-                return result;
-            }
-
-            return null;
         }
     }
 }
