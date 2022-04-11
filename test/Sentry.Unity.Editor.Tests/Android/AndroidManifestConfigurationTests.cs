@@ -261,6 +261,41 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
+        public void ModifyManifest_RepeatedRunProducesSameResult()
+        {
+            var sut = _fixture.GetSut();
+            var manifest1 = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+            var manifest2 = WithAndroidManifest((basePath) =>
+            {
+                sut.ModifyManifest(basePath);
+                sut.ModifyManifest(basePath);
+            });
+
+            Debug.Log(manifest2);
+            Assert.True(manifest1.Contains("sentry.dsn"));
+            Assert.AreEqual(manifest1, manifest2);
+        }
+
+        [Test]
+        public void ModifyManifest_RepeatedRunRemovesConfigs()
+        {
+            var fixture2 = new Fixture();
+            fixture2.SentryUnityOptions = null;
+            var manifest1 = WithAndroidManifest(basePath => _fixture.GetSut().ModifyManifest(basePath));
+            var manifest2 = WithAndroidManifest((basePath) =>
+            {
+                _fixture.GetSut().ModifyManifest(basePath);
+                fixture2.GetSut().ModifyManifest(basePath);
+            });
+
+            Debug.Log($"Manifest 1 (before):\n{manifest1}");
+            Debug.Log($"Manifest 2 (after):\n{manifest2}");
+            Assert.True(manifest1.Contains("sentry.dsn"));
+            Assert.False(manifest2.Contains("sentry.dsn"));
+        }
+
+
+        [Test]
         public void SetupSymbolsUpload_ScriptingBackendNotIL2CPP_LogsAndReturns()
         {
             _fixture.ScriptingImplementation = ScriptingImplementation.Mono2x;

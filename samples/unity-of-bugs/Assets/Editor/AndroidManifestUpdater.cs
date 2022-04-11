@@ -16,15 +16,23 @@ public class AndroidManifestUpdater : IPostGenerateGradleAndroidProject
         }
 
         Debug.Log($"AndroidManifestUpdater: Updating {manifestName}");
+        var replacement = "<application android:usesCleartextTraffic=\"true\"";
         var text = File.ReadAllText(manifestPath);
-        var newText = text.Replace("<application", "<application android:usesCleartextTraffic=\"true\"");
-        if (text.Equals(newText))
+        if (text.Contains(replacement))
         {
-            Debug.LogError($"AndroidManifestUpdater: Failed find the <application> tag");
+            Debug.Log($"AndroidManifestUpdater: Already contains the configuration, nothing to do.");
         }
         else
         {
-            File.WriteAllText(manifestPath, newText);
+            var newText = text.Replace("<application", replacement);
+            if (text.Equals(newText))
+            {
+                Debug.LogError($"AndroidManifestUpdater: Failed to update the <application> tag");
+            }
+            else
+            {
+                File.WriteAllText(manifestPath, newText);
+            }
         }
     }
 }
