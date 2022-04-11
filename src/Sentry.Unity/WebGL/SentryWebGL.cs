@@ -86,7 +86,7 @@ namespace Sentry.Unity.WebGL
             {
                 // Send envelope to ingress
                 var httpRequest = CreateRequest(processedEnvelope);
-                var www = CreateWebRequest(httpRequest, processedEnvelope);
+                var www = CreateWebRequest(httpRequest);
                 yield return www.SendWebRequest();
 
                 var response = GetResponse(www);
@@ -97,27 +97,17 @@ namespace Sentry.Unity.WebGL
             }
         }
 
-        private UnityWebRequest CreateWebRequest(HttpRequestMessage message, Envelope envelope)
+        private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
         {
             // Note: In order to use the synchronous Envelope.Serialize() we ignore the `message.Content`
             // which is an `EnvelopeHttpContent` instance and use the actual envelope it wraps.
-            var stream = new MemoryStream();
-            try
-            {
-                envelope.Serialize(stream, _options.DiagnosticLogger);
-                stream.Flush();
-            }
-            catch (Exception e)
-            {
-                _options.DiagnosticLogger?.LogError("Failed to serialize Envelope into the network stream", e);
-                throw;
-            }
+            using var stream = ReadStreamFromHttpContent(message.Content);
 
             var www = new UnityWebRequest
             {
                 url = message.RequestUri.ToString(),
                 method = message.Method.Method.ToUpperInvariant(),
-                uploadHandler = new UploadHandlerRaw(stream.ToArray()),
+                uploadHandler = new UploadHandlerRaw(((MemoryStream)stream).ToArray()),
                 downloadHandler = new DownloadHandlerBuffer()
             };
 
