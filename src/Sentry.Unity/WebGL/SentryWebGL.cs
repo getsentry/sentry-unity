@@ -39,6 +39,8 @@ namespace Sentry.Unity.WebGL
             // https://docs.unity3d.com/2019.4/Documentation/ScriptReference/PlayerSettings.WebGL-threadsSupport.html
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
 
+            options.CrashedLastRun = () => false; // no way to recognize crashes in WebGL yet
+
             // Still cant' find out what's using Threads so:
             options.AutoSessionTracking = false;
             options.DetectStartupTime = StartupTimeDetectionMode.None;

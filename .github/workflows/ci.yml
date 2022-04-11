@@ -193,6 +193,11 @@ jobs:
           path: samples/artifacts/builds/Android
           if-no-files-found: error
 
+      - name: Build WebGL Player
+        run: |
+          docker exec -e TEST_DSN=http://publickey@localhost:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          docker exec unity dotnet msbuild /t:UnityBuildPlayerWebGL /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
   package-validation:
     needs: [build]
     name: UPM Package validation

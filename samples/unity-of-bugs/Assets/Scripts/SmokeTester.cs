@@ -14,6 +14,8 @@ using Sentry.Unity.iOS;
 using Sentry.Unity.Android;
 #elif SENTRY_NATIVE_WINDOWS
 using Sentry.Unity.Native;
+#elif UNITY_WEBGL
+using System.Web;
 #endif
 
 #if UNITY_IOS
@@ -50,6 +52,9 @@ public class SmokeTester : MonoBehaviour
 #elif UNITY_IOS
         // .net `Environment.GetCommandLineArgs()` doens't seem to work on iOS so we get the test arg in Objective-C
         arg = getTestArgObjectiveC();
+#elif UNITY_WEBGL
+        var uri = new Uri(Application.absoluteURL);
+        arg = HttpUtility.ParseQueryString(uri.Query).Get("test");
 #else
         var args = Environment.GetCommandLineArgs();
         if (args.Length > 2 && args[1] == "--test")
