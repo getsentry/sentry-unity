@@ -45,7 +45,7 @@ public class BugFarmButtons : MonoBehaviour
 
     public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
 
-    private void StackTraceExampleB() => throw new InvalidOperationException("Exception from A lady beetle 🐞");
+    private void StackTraceExampleB() => throw new InvalidOperationException("Exception from a lady beetle 🐞");
 
     public void StackTraceExampleA() => StackTraceExampleB();
 
