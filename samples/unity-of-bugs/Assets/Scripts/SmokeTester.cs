@@ -39,24 +39,7 @@ public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
-        string arg = null;
-#if SENTRY_NATIVE_ANDROID
-        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
-        using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
-        {
-            arg = intent.Call<String>("getStringExtra", "test");
-        }
-#elif UNITY_IOS
-        // .net `Environment.GetCommandLineArgs()` doens't seem to work on iOS so we get the test arg in Objective-C
-        arg = getTestArgObjectiveC();
-#else
-        var args = Environment.GetCommandLineArgs();
-        if (args.Length > 2 && args[1] == "--test")
-        {
-            arg = args[2];
-        }
-#endif
+        var arg = GetTestArg();
         if (arg == null)
         {
             Debug.Log($"SmokeTest not executed - no argument given");
@@ -89,6 +72,29 @@ public class SmokeTester : MonoBehaviour
     private static extern string getTestArgObjectiveC();
 #endif
 
+    private static string GetTestArg()
+    {
+        string arg = null;
+#if SENTRY_NATIVE_ANDROID
+        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+        using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
+        {
+            arg = intent.Call<String>("getStringExtra", "test");
+        }
+#elif UNITY_IOS
+        // .net `Environment.GetCommandLineArgs()` doens't seem to work on iOS so we get the test arg in Objective-C
+        arg = getTestArgObjectiveC();
+#else
+        var args = Environment.GetCommandLineArgs();
+        if (args.Length > 2 && args[1] == "--test")
+        {
+            arg = args[2];
+        }
+#endif
+        return arg;
+    }
+
     private static TestHandler t = new TestHandler();
 
     private static Func<int> _crashedLastRun = () => -1;
@@ -96,7 +102,13 @@ public class SmokeTester : MonoBehaviour
     // Forwarded from SmokeTestOptions.Configure()
     public static void Configure(SentryUnityOptions options)
     {
-        Debug.Log("SmokeTester.Configure() called");
+        if (GetTestArg() == null)
+        {
+            Debug.Log("SmokeTester.Configure() called but skipped because this is not a SmokeTest (no arg)");
+            return;
+        }
+
+        Debug.Log("SmokeTester.Configure() running");
         options.CreateHttpClientHandler = () => t;
         _crashedLastRun = () =>
         {
