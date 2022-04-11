@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
@@ -36,7 +37,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(1, testEventCapture.Events.Count);
+            Assert.AreEqual(1, testEventCapture.Count);
         }
 
         [UnityTest]
@@ -55,7 +56,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(Application.productName + "@" + Application.version, testEventCapture.Events.First().Release);
+            Assert.AreEqual(Application.productName + "@" + Application.version, testEventCapture.First.Release);
         }
 
         [UnityTest]
@@ -76,7 +77,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(customRelease, testEventCapture.Events.First().Release);
+            Assert.AreEqual(customRelease, testEventCapture.First.Release);
         }
 
         [UnityTest]
@@ -97,7 +98,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+            Assert.AreEqual(Application.version, testEventCapture.First.Release);
 
             PlayerSettings.productName = originalProductName;
         }
@@ -119,7 +120,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
+            Assert.AreEqual(Environment.UserName, testEventCapture.First.User.Username);
         }
 
         [UnityTest]
@@ -140,7 +141,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreEqual(Application.version, testEventCapture.Events.First().Release);
+            Assert.AreEqual(Application.version, testEventCapture.First.Release);
 
             PlayerSettings.productName = originalProductName;
         }
@@ -160,7 +161,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
-            var actual = testEventCapture.Events.First();
+            var actual = testEventCapture.First;
             Assert.AreEqual(Application.isEditor
                 ? "editor"
                 : "production",
@@ -182,7 +183,7 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             // assert
-            Assert.AreNotEqual(Environment.UserName, testEventCapture.Events.First().User.Username);
+            Assert.AreNotEqual(Environment.UserName, testEventCapture.First.User.Username);
         }
 
         [UnityTest]
@@ -214,8 +215,8 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
             Assert.NotNull(nextDsn);
-            Assert.AreEqual(0, sourceEventCapture.Events.Count, sourceDsn);
-            Assert.AreEqual(1, nextEventCapture.Events.Count);
+            Assert.AreEqual(0, sourceEventCapture.Count, sourceDsn);
+            Assert.AreEqual(1, nextEventCapture.Count);
         }
 
         [UnityTest]
@@ -235,9 +236,8 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException));
 
             // assert
-            Assert.NotNull(testEventCapture.Events.SingleOrDefault(sentryEvent =>
-                sentryEvent.SentryExceptions.SingleOrDefault(exception =>
-                    exception.Mechanism?.Handled is false) is not null));
+            Assert.NotNull(testEventCapture.First.SentryExceptions.SingleOrDefault(exception =>
+                    exception.Mechanism?.Handled is false) is not null);
         }
 
         [UnityTest]
@@ -282,20 +282,9 @@ namespace Sentry.Unity.Tests
                 : (inTask ? nameof(testBehaviour.DebugLogErrorInTask) : nameof(testBehaviour.DebugLogError));
             testBehaviour.gameObject.SendMessage(method);
 
-            // wait
-            if (inTask)
-            {
-                var stopWatch = new Stopwatch();
-                stopWatch.Start();
-                while (testEventCapture.Events.Count == 0 && stopWatch.ElapsedMilliseconds < 5000)
-                {
-                    yield return null;
-                }
-            }
-
-            // assert
-            Assert.AreEqual(1, testEventCapture.Events.Count);
-            var isMainThread = testEventCapture.Events.First().Tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
+            Assert.True(testEventCapture.WaitOne(TimeSpan.FromSeconds(10)));
+            Assert.AreEqual(1, testEventCapture.Count);
+            var isMainThread = testEventCapture.First.Tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
             Assert.AreEqual((!inTask).ToString(), isMainThread.Value);
         }
 
@@ -355,13 +344,39 @@ namespace Sentry.Unity.Tests
     internal sealed class TestEventCapture : IEventCapture
     {
         private readonly List<SentryEvent> _events = new();
+        private AutoResetEvent _eventReceived = new AutoResetEvent(false);
 
-        public IReadOnlyCollection<SentryEvent> Events => _events.AsReadOnly();
+        public SentryEvent First
+        {
+            get
+            {
+                lock (_events)
+                {
+                    return _events.First();
+                }
+            }
+        }
 
+        public int Count
+        {
+            get
+            {
+                lock (_events)
+                {
+                    return _events.Count();
+                }
+            }
+        }
         public SentryId Capture(SentryEvent sentryEvent)
         {
-            _events.Add(sentryEvent);
-            return sentryEvent.EventId;
+            lock (_events)
+            {
+                _events.Add(sentryEvent);
+                _eventReceived.Set();
+                return sentryEvent.EventId;
+            }
         }
+
+        public bool WaitOne(TimeSpan timeout) => _eventReceived.WaitOne(timeout);
     }
 }
