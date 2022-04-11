@@ -121,8 +121,12 @@ namespace Sentry.Unity.WebGL
 
         private HttpResponseMessage? GetResponse(UnityWebRequest www)
         {
-            // if (www.result == UnityWebRequest.Result.ConnectionError) // unity 2021+
-            if (www.isNetworkError) // Unity 2019
+            // Let's disable treating "warning:obsolete" as an error here because the alternative of putting a static
+            // function to user code (to be able to use #if UNITY_2019) is just ugly.
+#pragma warning disable 618
+            // if (www.result == UnityWebRequest.Result.ConnectionError) // unity 2021+; `.result` not present on 2019
+            if (www.isNetworkError) // Unity 2019; obsolete (error) on later versions
+#pragma warning restore 618
             {
                 _options.DiagnosticLogger?.LogWarning("Failed to send request: {0}", www.error);
                 return null;
