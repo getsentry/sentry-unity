@@ -5,9 +5,14 @@
 #define SENTRY_NATIVE_ANDROID
 #elif UNITY_STANDALONE_WIN && ENABLE_IL2CPP
 #define SENTRY_NATIVE_WINDOWS
+#elif UNITY_WEBGL
+#define SENTRY_WEBGL
 #endif
 #endif
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -18,6 +23,9 @@ using Sentry.Unity.Android;
 #elif SENTRY_NATIVE_WINDOWS
 using Sentry.Unity.Native;
 #endif
+using Sentry.Extensibility;
+using Sentry.Internal;
+using Sentry.Protocol.Envelopes;
 
 [assembly: AlwaysLinkAssembly]
 
@@ -39,6 +47,8 @@ namespace Sentry.Unity
                 SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE_WINDOWS
                 SentryNative.Configure(options);
+#elif SENTRY_WEBGL
+                SentryWebGL.Configure(options);
 #endif
 
                 SentryUnity.Init(options);
