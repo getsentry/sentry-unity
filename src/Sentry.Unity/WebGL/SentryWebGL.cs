@@ -32,23 +32,17 @@ namespace Sentry.Unity.WebGL
         {
             options.DiagnosticLogger?.LogDebug("Updating configuration for Unity WebGL.");
 
-            // Caching transport relies on a background thread
-            options.CacheDirectoryPath = null;
             // Note: we need to use a custom background worker which actually doesn't work in the background
             // because Unity doesn't support async (multithreading) yet. This may change in the future so let's watch
             // https://docs.unity3d.com/2019.4/Documentation/ScriptReference/PlayerSettings.WebGL-threadsSupport.html
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
 
-            options.CrashedLastRun = () => false; // no way to recognize crashes in WebGL yet
-
-            // Still can't find out what's using Threads so:
-            options.AutoSessionTracking = false;
-            options.DetectStartupTime = StartupTimeDetectionMode.None;
-            options.DisableTaskUnobservedTaskExceptionCapture();
-            options.DisableAppDomainUnhandledExceptionCapture();
-            options.DisableAppDomainProcessExitFlush();
-            options.DisableDuplicateEventDetection();
-            options.ReportAssembliesMode = ReportAssembliesMode.None;
+            // We may be able to do so after implementing the JS support.
+            // Additionally, we could recognize the situation when the unity gets stuck due to an error in JS/native:
+            //    "An abnormal situation has occurred: the PlayerLoop internal function has been called recursively.
+            //     Please contact Customer Support with a sample project so that we can reproduce the problem and troubleshoot it."
+            // Maybe we could write a file when this error occurs and recognize it on the next start. Like unity-native.
+            options.CrashedLastRun = () => false;
         }
     }
 

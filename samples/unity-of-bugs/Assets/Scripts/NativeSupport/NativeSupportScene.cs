@@ -14,7 +14,8 @@ public class NativeSupportScene : MonoBehaviour
 #if UNITY_EDITOR || !PLATFORM_IOS
         _iosButtons.SetActive(false);
 #endif
-#if UNITY_EDITOR || !PLATFORM_WEBGL
+        // TODO: webgl native buttons support is currently not available - it requires a javascript error handling
+#if true || UNITY_EDITOR || !PLATFORM_WEBGL
         _webglButtons.SetActive(false);
 #endif
     }
