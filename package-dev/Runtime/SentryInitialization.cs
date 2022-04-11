@@ -22,6 +22,8 @@ using Sentry.Unity.iOS;
 using Sentry.Unity.Android;
 #elif SENTRY_NATIVE_WINDOWS
 using Sentry.Unity.Native;
+#elif SENTRY_WEBGL
+using Sentry.Unity.WebGL;
 #endif
 using Sentry.Extensibility;
 using Sentry.Internal;

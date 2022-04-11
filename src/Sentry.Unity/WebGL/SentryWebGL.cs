@@ -24,6 +24,8 @@ namespace Sentry.Unity.WebGL
         /// <param name="options">The Sentry Unity options to use.</param>
         public static void Configure(SentryUnityOptions options)
         {
+            options.DiagnosticLogger?.LogDebug("Updating configuration for Unity WebGL.");
+
             // Caching transport relies on a background thread
             options.CacheDirectoryPath = null;
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
@@ -68,8 +70,8 @@ namespace Sentry.Unity.WebGL
         {
             var dsn = Dsn.Parse(_options.Dsn!);
             var authHeader =
-                $"Sentry sentry_version={_options.SentryVersion}," +
-                $"sentry_client={SdkVersion.Instance.Name}/{SdkVersion.Instance.Version}," +
+                $"Sentry sentry_version={Sentry.Constants.ProtocolVersion}," +
+                $"sentry_client={UnitySdkInfo.Name}/{UnitySdkInfo.Version}," +
                 $"sentry_key={dsn.PublicKey}," +
                 (dsn.SecretKey is { } secretKey ? $"sentry_secret={secretKey}," : null) +
                 $"sentry_timestamp={_clock.GetUtcNow().ToUnixTimeSeconds()}";
