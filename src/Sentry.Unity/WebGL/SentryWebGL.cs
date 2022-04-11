@@ -68,12 +68,12 @@ namespace Sentry.Unity.WebGL
         public int QueuedItems { get; }
     }
 
-    internal class UnityWebRequestTransport : HttpTransport
+    internal class UnityWebRequestTransport : HttpTransportBase
     {
         private readonly SentryUnityOptions _options;
 
         public UnityWebRequestTransport(SentryUnityOptions options, SentryMonoBehaviour behaviour)
-            : base(options, new HttpClient(new UnityWebRequestMessageHandler()))
+            : base(options)
         {
             _options = options;
         }
@@ -81,11 +81,8 @@ namespace Sentry.Unity.WebGL
         // adapted HttpTransport.SendEnvelopeAsync()
         internal IEnumerator SendEnvelopeAsync(Envelope envelope)
         {
-            var instant = DateTimeOffset.Now;
-
-            // Apply rate limiting and re-package envelope items
-            using var processedEnvelope = ProcessEnvelope(envelope, instant);
-            if (processedEnvelope.Items.Count != 0)
+            using var processedEnvelope = ProcessEnvelope(envelope);
+            if (processedEnvelope.Items.Count > 0)
             {
                 // Send envelope to ingress
                 var www = CreateWebRequest(CreateRequest(processedEnvelope));
@@ -94,50 +91,7 @@ namespace Sentry.Unity.WebGL
                 var response = GetResponse(www);
                 if (response != null)
                 {
-                    // Read & set rate limits for future requests
-                    ExtractRateLimits(response, instant);
-
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        HandleFailure(response, processedEnvelope, www);
-                    }
-                    else if (_options.DiagnosticLogger?.IsEnabled(SentryLevel.Debug) is true)
-                    {
-                        _options.DiagnosticLogger?.LogDebug("Envelope '{0}' sent successfully. Payload:\n{1}",
-                            envelope.TryGetEventId(), Encoding.UTF8.GetString(www.uploadHandler.data));
-                    }
-                    else
-                    {
-                        _options.DiagnosticLogger?.LogInfo("Envelope '{0}' successfully received by Sentry.",
-                            processedEnvelope.TryGetEventId());
-                    }
-                }
-            }
-        }
-
-        // adapted HttpTransport.HandleFailureAsync()
-        private void HandleFailure(HttpResponseMessage response, Envelope processedEnvelope, UnityWebRequest www)
-        {
-            // Spare the overhead if level is not enabled
-            if (_options.DiagnosticLogger?.IsEnabled(SentryLevel.Error) is true && response.Content is { } content)
-            {
-                var responseString = ((ExposedStringContent)response.Content).Content;
-                if (string.Equals(content.Headers.ContentType?.MediaType, "application/json",
-                    StringComparison.OrdinalIgnoreCase))
-                {
-                    using var document = JsonDocument.Parse(responseString);
-                    LogFailure(response, processedEnvelope, document.RootElement);
-                }
-                else
-                {
-                    LogFailure(response, processedEnvelope, responseString);
-                }
-
-                // If debug level, dump the whole envelope to the logger
-                if (_options.DiagnosticLogger?.IsEnabled(SentryLevel.Debug) is true)
-                {
-                    _options.DiagnosticLogger?.LogDebug("Failed envelope '{0}' has payload:\n{1}\n",
-                        processedEnvelope.TryGetEventId(), Encoding.UTF8.GetString(www.uploadHandler.data));
+                    HandleResponse(response, processedEnvelope);
                 }
             }
         }
