@@ -23,10 +23,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
@@ -47,10 +44,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
@@ -89,10 +83,7 @@ namespace Sentry.Unity.Tests
             var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = " ";
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
@@ -132,10 +123,7 @@ namespace Sentry.Unity.Tests
             var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = null;
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
@@ -153,10 +141,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
@@ -174,10 +159,7 @@ namespace Sentry.Unity.Tests
             yield return SetupSceneCoroutine("1_BugFarm");
 
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
@@ -226,10 +208,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
@@ -270,10 +249,7 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
-            });
+            using var _ = InitSentrySdk(testEventCapture);
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // act
@@ -331,6 +307,11 @@ namespace Sentry.Unity.Tests
             });
             return new SentryDisposable();
         }
+
+        internal static IDisposable InitSentrySdk(TestEventCapture testEventCapture) => InitSentrySdk(o =>
+            {
+                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+            });
 
         private sealed class SentryDisposable : IDisposable
         {
