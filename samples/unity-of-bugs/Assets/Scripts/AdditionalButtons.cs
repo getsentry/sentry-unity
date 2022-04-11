@@ -42,8 +42,20 @@ public class AdditionalButtons : MonoBehaviour
         SentrySdk.ConfigureScope(scope => scope.Contexts = null);
     }
 
-    public void BackgroundBreadcrumb() =>
+    public void BackgroundBreadcrumb()
+    {
+#if PLATFORM_WEBGL
+        StartCoroutine(CoroutineBreadcrumb());
+#else
         Task.Run(() => SentrySdk.AddBreadcrumb("Breadcrumb from the background", "background task"));
+#endif
+    }
+
+    private IEnumerator CoroutineBreadcrumb()
+    {
+        SentrySdk.AddBreadcrumb("Breadcrumb from the background", "coroutine");
+        yield return null;
+    }
 
     public void CaptureMessageWithScreenshot() => StartCoroutine(CaptureScreenshot());
 
