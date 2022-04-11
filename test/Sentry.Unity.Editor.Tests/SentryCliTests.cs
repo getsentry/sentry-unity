@@ -61,7 +61,9 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions()
+        [TestCase("")]
+        [TestCase("urlOverride")]
+        public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions(string urlOverride)
         {
             var propertiesDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(propertiesDirectory);
@@ -70,6 +72,7 @@ namespace Sentry.Unity.Editor.Tests
             sentryCliTestOptions.Auth = Guid.NewGuid().ToString();
             sentryCliTestOptions.Organization = Guid.NewGuid().ToString();
             sentryCliTestOptions.Project = Guid.NewGuid().ToString();
+            sentryCliTestOptions.UrlOverride = urlOverride;
 
             SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions);
 
@@ -78,6 +81,11 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains(sentryCliTestOptions.Auth, properties);
             StringAssert.Contains(sentryCliTestOptions.Organization, properties);
             StringAssert.Contains(sentryCliTestOptions.Project, properties);
+
+            if (!string.IsNullOrEmpty(sentryCliTestOptions.UrlOverride))
+            {
+                StringAssert.Contains(urlOverride, properties);
+            }
 
             Directory.Delete(propertiesDirectory, true);
         }

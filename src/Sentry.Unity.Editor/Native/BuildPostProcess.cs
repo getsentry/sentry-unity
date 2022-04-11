@@ -113,9 +113,9 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            if (cliOptions.Url != null)
+            if (!string.IsNullOrEmpty(cliOptions.UrlOverride))
             {
-                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = cliOptions.Url;
+                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = cliOptions.UrlOverride;
             }
 
             process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;

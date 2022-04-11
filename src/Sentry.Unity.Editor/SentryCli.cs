@@ -21,9 +21,9 @@ namespace Sentry.Unity.Editor
             var propertiesFile = Path.Combine(propertiesPath, "sentry.properties");
             using var properties = File.CreateText(propertiesFile);
 
-            if (sentryCliOptions.Url != null)
+            if (!string.IsNullOrEmpty(sentryCliOptions.UrlOverride))
             {
-                properties.WriteLine($"defaults.url={sentryCliOptions.Url}");
+                properties.WriteLine($"defaults.url={sentryCliOptions.UrlOverride}");
             }
 
             properties.WriteLine($"defaults.org={sentryCliOptions.Organization}");

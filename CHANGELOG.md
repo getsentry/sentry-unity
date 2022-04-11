@@ -4,7 +4,7 @@
 
 ### Features
 
-- Allow configuring the Sentry URL ([#666](https://github.com/getsentry/sentry-unity/pull/666))
+- Adding override for Sentry CLI URL ([#666](https://github.com/getsentry/sentry-unity/pull/666))
 
 ### Fixes
 
