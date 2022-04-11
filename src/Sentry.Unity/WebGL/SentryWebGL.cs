@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
@@ -51,14 +52,18 @@ namespace Sentry.Unity.WebGL
 
     internal class WebBackgroundWorker : IBackgroundWorker
     {
-        private readonly HttpTransport _transport;
+        private readonly SentryMonoBehaviour _behaviour;
+        private readonly UnityWebRequestTransport _transport;
 
-        public WebBackgroundWorker(SentryUnityOptions options, SentryMonoBehaviour behaviour) =>
-            _transport = new HttpTransport(options, new HttpClient(new UnityWebRequestMessageHandler(options, behaviour)));
+        public WebBackgroundWorker(SentryUnityOptions options, SentryMonoBehaviour behaviour)
+        {
+            _behaviour = behaviour;
+            _transport = new UnityWebRequestTransport(options, behaviour);
+        }
 
         public bool EnqueueEnvelope(Envelope envelope)
         {
-            _ = _transport.SendEnvelopeAsync(envelope);
+            _ = _behaviour.StartCoroutine(_transport.SendEnvelopeAsync(envelope));
             return true;
         }
 
@@ -67,84 +72,157 @@ namespace Sentry.Unity.WebGL
         public int QueuedItems { get; }
     }
 
-    internal class UnityWebRequestMessageHandler : HttpMessageHandler
+    internal class UnityWebRequestTransport : HttpTransport
     {
-        private readonly SentryMonoBehaviour _behaviour;
-        private readonly SentryOptions _options;
+        private readonly SentryUnityOptions _options;
 
-        public UnityWebRequestMessageHandler(SentryOptions options, SentryMonoBehaviour behaviour)
+        public UnityWebRequestTransport(SentryUnityOptions options, SentryMonoBehaviour behaviour)
+            : base(options, new HttpClient(new UnityWebRequestMessageHandler()))
         {
-            _behaviour = behaviour;
             _options = options;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage message, CancellationToken cancellationToken)
+        // adapted HttpTransport.SendEnvelopeAsync()
+        internal IEnumerator SendEnvelopeAsync(Envelope envelope)
         {
-            var tcs = new TaskCompletionSource<HttpResponseMessage>();
-            _ = _behaviour.StartCoroutine(SendInCoroutine(message, cancellationToken, tcs));
-            return tcs.Task;
-        }
+            var instant = DateTimeOffset.Now;
 
-        private IEnumerator SendInCoroutine(HttpRequestMessage message, CancellationToken cancellationToken, TaskCompletionSource<HttpResponseMessage> tcs)
-        {
-            var www = new UnityWebRequest();
-            UnityWebRequestAsyncOperation? result;
-            try
+            // Apply rate limiting and re-package envelope items
+            using var processedEnvelope = ProcessEnvelope(envelope, instant);
+            if (processedEnvelope.Items.Count != 0)
             {
-                www.url = message.RequestUri.ToString();
-                www.method = message.Method.Method.ToUpperInvariant();
+                // Send envelope to ingress
+                var www = CreateWebRequest(CreateRequest(processedEnvelope));
+                yield return www.SendWebRequest();
 
-                foreach (var header in message.Headers)
+                var response = GetResponse(www);
+                if (response != null)
                 {
-                    www.SetRequestHeader(header.Key, string.Join(",", header.Value));
-                }
+                    // Read & set rate limits for future requests
+                    ExtractRateLimits(response, instant);
 
-                var stream = new MemoryStream();
-                _ = message.Content.CopyToAsync(stream).Wait(2000, cancellationToken);
-                stream.Flush();
-                www.uploadHandler = new UploadHandlerRaw(stream.ToArray());
-                www.downloadHandler = new DownloadHandlerBuffer();
-                result = www.SendWebRequest();
-            }
-            catch (Exception e)
-            {
-                _options.DiagnosticLogger?.Log(SentryLevel.Warning, "Error sending request to Sentry", e);
-                _ = tcs.TrySetException(e);
-                result = null;
-            }
-            yield return result;
-
-
-            if (result != null)
-            {
-                try
-                {
-                    if (www.isNetworkError)
+                    if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        throw new Exception(www.error);
+                        HandleFailure(response, processedEnvelope, www);
+                    }
+                    else if (_options.DiagnosticLogger?.IsEnabled(SentryLevel.Debug) is true)
+                    {
+                        _options.DiagnosticLogger?.LogDebug("Envelope '{0}' sent successfully. Payload:\n{1}",
+                            envelope.TryGetEventId(), Encoding.UTF8.GetString(www.uploadHandler.data));
                     }
                     else
                     {
-                        var response = new HttpResponseMessage((HttpStatusCode)www.responseCode);
-                        foreach (var header in www.GetResponseHeaders())
-                        {
-                            // Unity would throw if we tried to set content-length/content-length
-                            if (!string.Equals(header.Key, "content-length", StringComparison.InvariantCultureIgnoreCase)
-                                && !string.Equals(header.Key, "content-type", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                response.Headers.Add(header.Key, header.Value);
-                            }
-                        }
-                        response.Content = new StringContent(www.downloadHandler.text);
-                        _ = tcs.TrySetResult(response);
+                        _options.DiagnosticLogger?.LogInfo("Envelope '{0}' successfully received by Sentry.",
+                            processedEnvelope.TryGetEventId());
                     }
                 }
-                catch (Exception e)
+            }
+        }
+
+        // adapted HttpTransport.HandleFailureAsync()
+        private void HandleFailure(HttpResponseMessage response, Envelope processedEnvelope, UnityWebRequest www)
+        {
+            // Spare the overhead if level is not enabled
+            if (_options.DiagnosticLogger?.IsEnabled(SentryLevel.Error) is true && response.Content is { } content)
+            {
+                var responseString = ((ExposedStringContent)response.Content).Content;
+                if (string.Equals(content.Headers.ContentType?.MediaType, "application/json",
+                    StringComparison.OrdinalIgnoreCase))
                 {
-                    _options.DiagnosticLogger?.Log(SentryLevel.Warning, "Error sending request to Sentry", e);
-                    _ = tcs.TrySetException(e);
+                    using var document = JsonDocument.Parse(responseString);
+                    LogFailure(response, processedEnvelope, document.RootElement);
+                }
+                else
+                {
+                    LogFailure(response, processedEnvelope, responseString);
+                }
+
+                // If debug level, dump the whole envelope to the logger
+                if (_options.DiagnosticLogger?.IsEnabled(SentryLevel.Debug) is true)
+                {
+                    _options.DiagnosticLogger?.LogDebug("Failed envelope '{0}' has payload:\n{1}\n",
+                        processedEnvelope.TryGetEventId(), Encoding.UTF8.GetString(www.uploadHandler.data));
                 }
             }
+
+            // SDK is in debug mode, and envelope was too large. To help troubleshoot:
+            // NOTE: likely no point to do this on WebGL - who would check the file (in IndexDB)?
+        }
+
+        private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
+        {
+            var www = new UnityWebRequest();
+            www.url = message.RequestUri.ToString();
+            www.method = message.Method.Method.ToUpperInvariant();
+
+            foreach (var header in message.Headers)
+            {
+                www.SetRequestHeader(header.Key, string.Join(",", header.Value));
+            }
+
+            var stream = new MemoryStream();
+            _ = message.Content.CopyToAsync(stream).Wait(2000);
+            stream.Flush();
+            www.uploadHandler = new UploadHandlerRaw(stream.ToArray());
+            www.downloadHandler = new DownloadHandlerBuffer();
+            return www;
+        }
+
+        private HttpResponseMessage? GetResponse(UnityWebRequest www)
+        {
+
+            if (www.result == UnityWebRequest.Result.ConnectionError) // unity 2021+
+            // if (www.isNetworkError)
+            {
+                _options.DiagnosticLogger?.LogWarning("Failed to set TCS request result for: {0}", www.error);
+                return null;
+            }
+
+            var response = new HttpResponseMessage((HttpStatusCode)www.responseCode);
+            foreach (var header in www.GetResponseHeaders())
+            {
+                // Unity would throw if we tried to set content-type or content-length
+                if (header.Key != "content-length" && header.Key != "content-type")
+                {
+                    response.Headers.Add(header.Key, header.Value);
+                }
+            }
+            response.Content = new ExposedStringContent(www.downloadHandler.text);
+            return response;
+        }
+    }
+
+    internal class UnityWebRequestMessageHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage _, CancellationToken __)
+        {
+            // if this throws, see usages of HttpTransport._httpClient
+            throw new InvalidOperationException("UnityWebRequestMessageHandler must be unused");
+        }
+    }
+
+    internal class ExposedStringContent : StringContent
+    {
+        internal readonly String Content;
+        public ExposedStringContent(String data) : base(data) => Content = data;
+    }
+
+    internal static class JsonExtensions
+    {
+        public static JsonElement? GetPropertyOrNull(this JsonElement json, string name)
+        {
+            if (json.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            if (json.TryGetProperty(name, out var result) &&
+                result.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null)
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }
