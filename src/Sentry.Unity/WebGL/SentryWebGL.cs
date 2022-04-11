@@ -43,6 +43,9 @@ namespace Sentry.Unity.WebGL
             //     Please contact Customer Support with a sample project so that we can reproduce the problem and troubleshoot it."
             // Maybe we could write a file when this error occurs and recognize it on the next start. Like unity-native.
             options.CrashedLastRun = () => false;
+
+            // Disable async when accessing files (e.g. FileStream(useAsync: true)) because it throws on WebGL.
+            options.UseAsyncFileIO = false;
         }
     }
 
@@ -99,15 +102,12 @@ namespace Sentry.Unity.WebGL
 
         private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
         {
-            // Note: In order to use the synchronous Envelope.Serialize() we ignore the `message.Content`
-            // which is an `EnvelopeHttpContent` instance and use the actual envelope it wraps.
-            using var stream = ReadStreamFromHttpContent(message.Content);
-
+            using var contentStream = ReadStreamFromHttpContent(message.Content);
             var www = new UnityWebRequest
             {
                 url = message.RequestUri.ToString(),
                 method = message.Method.Method.ToUpperInvariant(),
-                uploadHandler = new UploadHandlerRaw(((MemoryStream)stream).ToArray()),
+                uploadHandler = new UploadHandlerRaw(((MemoryStream)contentStream).ToArray()),
                 downloadHandler = new DownloadHandlerBuffer()
             };
 
