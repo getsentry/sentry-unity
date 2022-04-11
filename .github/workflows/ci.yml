@@ -195,7 +195,7 @@ jobs:
 
       - name: Build WebGL Player
         run: |
-          docker exec -e TEST_DSN=http://publickey@localhost:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          docker exec -e TEST_DSN=http://publickey@127.0.0.1:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityBuildPlayerWebGL /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload WebGL Build

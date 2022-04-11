@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 # Testing approach:
-#  1. Start an server that serves the pre-built WebGL app directory (index.html & co), as well as logs API requests
+#  1. Start a web=server for pre-built WebGL app directory (index.html & co) and to collect the API requests
 #  3. Run the smoke test using chromedriver
-#  4. Check the messages received on the API server
+#  4. Check the messages received by the API server
 
 import binascii
 import datetime

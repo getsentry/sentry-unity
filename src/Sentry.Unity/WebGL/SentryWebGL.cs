@@ -41,7 +41,7 @@ namespace Sentry.Unity.WebGL
 
             options.CrashedLastRun = () => false; // no way to recognize crashes in WebGL yet
 
-            // Still cant' find out what's using Threads so:
+            // Still can't find out what's using Threads so:
             options.AutoSessionTracking = false;
             options.DetectStartupTime = StartupTimeDetectionMode.None;
             options.DisableTaskUnobservedTaskExceptionCapture();
@@ -69,7 +69,7 @@ namespace Sentry.Unity.WebGL
             return true;
         }
 
-        public Task FlushAsync(TimeSpan timeout) => Task.CompletedTask; // TODO maybe we can implement this somehow?
+        public Task FlushAsync(TimeSpan timeout) => Task.CompletedTask;
 
         public int QueuedItems { get; }
     }
@@ -146,9 +146,6 @@ namespace Sentry.Unity.WebGL
                         processedEnvelope.TryGetEventId(), Encoding.UTF8.GetString(www.uploadHandler.data));
                 }
             }
-
-            // SDK is in debug mode, and envelope was too large. To help troubleshoot:
-            // NOTE: likely no point to do this on WebGL - who would check the file (in IndexDB)?
         }
 
         private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
@@ -198,7 +195,7 @@ namespace Sentry.Unity.WebGL
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage _, CancellationToken __)
         {
-            // if this throws, see usages of HttpTransport._httpClient
+            // if this throws, see usages of HttpTransport._httpClient - all should be overridden by UnityWebRequestTransport
             throw new InvalidOperationException("UnityWebRequestMessageHandler must be unused");
         }
     }
