@@ -102,7 +102,9 @@ public class SmokeTester : MonoBehaviour
     public static void Configure(SentryUnityOptions options)
     {
         Debug.Log("SmokeTester.Configure() called");
+#if UNITY_WEBGL
         options.CreateHttpClientHandler = () => t;
+#endif
         _crashedLastRun = () =>
         {
             if (options.CrashedLastRun != null)
@@ -126,7 +128,7 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'type':'session'");
 
             var guid = Guid.NewGuid().ToString();
-            Debug.LogError(guid);
+            Debug.LogError($"LogError(GUID)={guid}");
 
             // Skip the session init requests (there may be multiple of othem). We can't skip them by a "positive"
             // because they're also repeated with standard events (in an envelope).
@@ -141,11 +143,11 @@ public class SmokeTester : MonoBehaviour
             Debug.Log($"Done skipping non-event requests. Last one was: #{currentMessage}");
 
             t.ExpectMessage(currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, guid);
+            t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
 
-            SentrySdk.CaptureMessage(guid);
+            SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
             t.ExpectMessage(++currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, guid);
+            t.ExpectMessage(currentMessage, $"CaptureMessage(GUID)={guid}");
 
             var ex = new Exception("Exception & context test");
             AddContext();
@@ -281,7 +283,10 @@ public class SmokeTester : MonoBehaviour
 
                 // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
                 exitCode = 200;
+
+#if !UNITY_WEBGL  // We don't quit on WebGL because outgoing HTTP requests (in coroutines) would be cancelled.
                 Application.Quit(exitCode);
+#endif
             }
         }
 

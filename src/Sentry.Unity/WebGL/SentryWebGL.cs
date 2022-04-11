@@ -176,7 +176,7 @@ namespace Sentry.Unity.WebGL
             // if (www.result == UnityWebRequest.Result.ConnectionError) // unity 2021+
             if (www.isNetworkError) // Unity 2019
             {
-                _options.DiagnosticLogger?.LogWarning("Failed to set TCS request result for: {0}", www.error);
+                _options.DiagnosticLogger?.LogWarning("Failed to send request: {0}", www.error);
                 return null;
             }
 
