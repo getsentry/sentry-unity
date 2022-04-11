@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - '**.md'
       - '**.txt'
-  workflow_dispatch:  # e.g. to manually trigger on foreign PRs
+  workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
   LOWEST_SUPPORTED_UNITY_VERSION: 2019
@@ -197,6 +197,13 @@ jobs:
         run: |
           docker exec -e TEST_DSN=http://publickey@localhost:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityBuildPlayerWebGL /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Upload WebGL Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: testapp-webgl-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/WebGL
+          if-no-files-found: error
 
   package-validation:
     needs: [build]
@@ -454,3 +461,25 @@ jobs:
             $runtime = "iOS " + $runtime
           }
           ./Scripts/smoke-test-ios.ps1 Test "$runtime"
+
+  webgl-smoke-test:
+    needs: [build]
+    name: Run WebGL Unity ${{ matrix.unity-version }} Smoke Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ['2019', '2020', '2021']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Download test app artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: testapp-webgl-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/WebGL
+
+      - run: pip3 install --user selenium
+
+      - run: python3 scripts/smoke-test-webgl.py
