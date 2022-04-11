@@ -1,10 +1,14 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
+using Sentry.Http;
 using Sentry.Infrastructure;
 using Sentry.Internal;
 using Sentry.Internal.Http;
@@ -47,49 +51,100 @@ namespace Sentry.Unity.WebGL
 
     internal class WebBackgroundWorker : IBackgroundWorker
     {
-        private readonly SentryUnityOptions _options;
-        private readonly ISystemClock _clock = new SystemClock();
+        private readonly HttpTransport _transport;
 
-        private readonly SentryMonoBehaviour _behaviour;
-        // private readonly ITransport _transport;
-
-        public WebBackgroundWorker(SentryUnityOptions options, SentryMonoBehaviour behaviour)
-        {
-            _options = options;
-            _behaviour = behaviour;
-        }
+        public WebBackgroundWorker(SentryUnityOptions options, SentryMonoBehaviour behaviour) =>
+            _transport = new HttpTransport(options, new HttpClient(new UnityWebRequestMessageHandler(options, behaviour)));
 
         public bool EnqueueEnvelope(Envelope envelope)
         {
-            _ = _behaviour.StartCoroutine(SendEnvelope(envelope));
+            _ = _transport.SendEnvelopeAsync(envelope);
             return true;
         }
 
-        private IEnumerator SendEnvelope(Envelope envelope)
-        {
-            var builder = new HttpRequestBuilder(_options);
-            var www = new UnityWebRequest();
-            www.url = builder.GetEnvelopeEndpointUri().ToString();
-            www.method = UnityWebRequest.kHttpVerbPOST;
-            www.SetRequestHeader(builder.AuthHeaderName, builder.AuthHeader(_clock.GetUtcNow()));
-            // TODO is it OK to call .Wait() here in webGL?
-            var stream = new MemoryStream();
-            envelope.SerializeAsync(stream, _options.DiagnosticLogger).Wait(TimeSpan.FromSeconds(2));
-            stream.Flush();
-            www.uploadHandler = new UploadHandlerRaw(stream.ToArray());
-            www.downloadHandler = new DownloadHandlerBuffer();
-            yield return www.SendWebRequest();
-
-            if (www.isNetworkError || www.isHttpError || www.responseCode != 200)
-            {
-                _options.DiagnosticLogger?.LogWarning("error sending request to Sentry: {0}", www.error);
-            }
-
-            _options.DiagnosticLogger?.LogDebug("Sentry sent back: {0}", www.downloadHandler.text);
-        }
-
-        public Task FlushAsync(TimeSpan timeout) => Task.CompletedTask;
+        public Task FlushAsync(TimeSpan timeout) => Task.CompletedTask; // TODO maybe we can implement this somehow?
 
         public int QueuedItems { get; }
+    }
+
+    internal class UnityWebRequestMessageHandler : HttpMessageHandler
+    {
+        private readonly SentryMonoBehaviour _behaviour;
+        private readonly SentryOptions _options;
+
+        public UnityWebRequestMessageHandler(SentryOptions options, SentryMonoBehaviour behaviour)
+        {
+            _behaviour = behaviour;
+            _options = options;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage message, CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<HttpResponseMessage>();
+            _ = _behaviour.StartCoroutine(SendInCoroutine(message, cancellationToken, tcs));
+            return tcs.Task;
+        }
+
+        private IEnumerator SendInCoroutine(HttpRequestMessage message, CancellationToken cancellationToken, TaskCompletionSource<HttpResponseMessage> tcs)
+        {
+            var www = new UnityWebRequest();
+            UnityWebRequestAsyncOperation? result;
+            try
+            {
+                www.url = message.RequestUri.ToString();
+                www.method = message.Method.Method.ToUpperInvariant();
+
+                foreach (var header in message.Headers)
+                {
+                    www.SetRequestHeader(header.Key, string.Join(",", header.Value));
+                }
+
+                var stream = new MemoryStream();
+                _ = message.Content.CopyToAsync(stream).Wait(2000, cancellationToken);
+                stream.Flush();
+                www.uploadHandler = new UploadHandlerRaw(stream.ToArray());
+                www.downloadHandler = new DownloadHandlerBuffer();
+                result = www.SendWebRequest();
+            }
+            catch (Exception e)
+            {
+                _options.DiagnosticLogger?.Log(SentryLevel.Warning, "Error sending request to Sentry", e);
+                _ = tcs.TrySetException(e);
+                result = null;
+            }
+            yield return result;
+
+
+            if (result != null)
+            {
+                try
+                {
+                    if (www.isNetworkError)
+                    {
+                        throw new Exception(www.error);
+                    }
+                    else
+                    {
+                        var response = new HttpResponseMessage((HttpStatusCode)www.responseCode);
+                        foreach (var header in www.GetResponseHeaders())
+                        {
+                            // Unity would throw if we tried to set content-length/content-length
+                            if (!string.Equals(header.Key, "content-length", StringComparison.InvariantCultureIgnoreCase)
+                                && !string.Equals(header.Key, "content-type", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                response.Headers.Add(header.Key, header.Value);
+                            }
+                        }
+                        response.Content = new StringContent(www.downloadHandler.text);
+                        _ = tcs.TrySetResult(response);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _options.DiagnosticLogger?.Log(SentryLevel.Warning, "Error sending request to Sentry", e);
+                    _ = tcs.TrySetException(e);
+                }
+            }
+        }
     }
 }
