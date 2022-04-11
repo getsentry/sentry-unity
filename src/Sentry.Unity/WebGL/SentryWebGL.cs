@@ -173,8 +173,8 @@ namespace Sentry.Unity.WebGL
         private HttpResponseMessage? GetResponse(UnityWebRequest www)
         {
 
-            if (www.result == UnityWebRequest.Result.ConnectionError) // unity 2021+
-            // if (www.isNetworkError)
+            // if (www.result == UnityWebRequest.Result.ConnectionError) // unity 2021+
+            if (www.isNetworkError) // Unity 2019
             {
                 _options.DiagnosticLogger?.LogWarning("Failed to set TCS request result for: {0}", www.error);
                 return null;

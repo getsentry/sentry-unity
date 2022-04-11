@@ -784,6 +784,7 @@ PlayerSettings:
   scriptingBackend:
     Android: 1
     Standalone: 1
+    WebGL: 1
   il2cppCompilerConfiguration:
     Android: 1
   managedStrippingLevel: {}
