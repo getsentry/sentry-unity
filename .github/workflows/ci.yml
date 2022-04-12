@@ -72,25 +72,25 @@ jobs:
       - name: Start the Unity docker container
         run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
 
-      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: Android-libraries
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
@@ -269,7 +269,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
-        uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
@@ -382,7 +382,7 @@ jobs:
         uses: actions/checkout@v2.3.3
 
       - name: Download XCode app artifact
-        uses: vaind/download-artifact@3682b366b0e69c7108d5cf991efe7034ea0dd56d
+        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: testapp-ios-project-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode
