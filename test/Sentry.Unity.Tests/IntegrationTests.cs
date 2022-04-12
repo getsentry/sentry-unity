@@ -230,6 +230,7 @@ namespace Sentry.Unity.Tests
         {
             yield return BugFarmScene_DebugLog(inTask: true, logException: false);
         }
+
         [UnityTest]
         public IEnumerator BugFarmScene_DebugLogException_IsCaptured()
         {
@@ -249,16 +250,22 @@ namespace Sentry.Unity.Tests
 
             // arrange
             var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
-            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            // act
-            var method = logException
-                ? (inTask ? nameof(testBehaviour.DebugLogExceptionInTask) : nameof(testBehaviour.DebugLogException))
-                : (inTask ? nameof(testBehaviour.DebugLogErrorInTask) : nameof(testBehaviour.DebugLogError));
-            testBehaviour.gameObject.SendMessage(method);
+            using (var _ = InitSentrySdk(testEventCapture))
+            {
+                var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            Assert.True(testEventCapture.WaitOne(TimeSpan.FromSeconds(10)));
+                // act
+                var method = logException
+                    ? (inTask ? nameof(testBehaviour.DebugLogExceptionInTask) : nameof(testBehaviour.DebugLogException))
+                    : (inTask ? nameof(testBehaviour.DebugLogErrorInTask) : nameof(testBehaviour.DebugLogError));
+
+                UnityEngine.Debug.Log("Triggering event throught he UI");
+                testBehaviour.gameObject.SendMessage(method);
+
+                Assert.True(testEventCapture.WaitOne(TimeSpan.FromSeconds(5)));
+            }
+
             Assert.AreEqual(1, testEventCapture.Count);
             var isMainThread = testEventCapture.First.Tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
             Assert.AreEqual((!inTask).ToString(), isMainThread.Value);
