@@ -40,11 +40,7 @@ public class SmokeTester : MonoBehaviour
     public void Start()
     {
         var arg = GetTestArg();
-        if (arg == null)
-        {
-            Debug.Log($"SmokeTest not executed - no argument given");
-        }
-        else if (arg == "smoke")
+        if (arg == "smoke")
         {
             SmokeTest();
         }
@@ -60,7 +56,7 @@ public class SmokeTester : MonoBehaviour
         {
             HasCrashedTest();
         }
-        else
+        else if (arg != null)
         {
             Debug.Log($"Unknown command line argument: {arg}");
             Application.Quit(-1);
