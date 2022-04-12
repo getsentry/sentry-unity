@@ -73,7 +73,7 @@ namespace Sentry.Unity.Integrations
 
             if (stackTrace is not null)
             {
-                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace, _sentryOptions!))
+                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace, _sentryOptions))
                 {
                     Level = ToEventTagType(type)
                 };

@@ -20,7 +20,8 @@ namespace Sentry.Unity
 
         private SentryOptions? _options { get; }
 
-        public UnityLogException(string logString, string logStackTrace, SentryOptions options)
+        public UnityLogException(string logString, string logStackTrace, SentryOptions? options)
+
         {
             LogString = logString;
             LogStackTrace = logStackTrace;
