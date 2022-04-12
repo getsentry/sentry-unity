@@ -4,9 +4,6 @@
 
 ### Features
 
-- Bump Sentry Java SDK to v6.0.0-alpha.4 ([#653](https://github.com/getsentry/sentry-unity/pull/653))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0-alpha.4/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-java/compare/5.5.0...6.0.0-alpha.4)
 - WebGL - .NET support ([#657](https://github.com/getsentry/sentry-unity/pull/657))
 
 ### Fixes
