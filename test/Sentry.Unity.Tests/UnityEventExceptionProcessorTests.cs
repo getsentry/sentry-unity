@@ -10,9 +10,11 @@ namespace Sentry.Unity.Tests
         {
             // arrange
             var unityEventProcessor = new UnityEventExceptionProcessor();
+            var options = new SentryUnityOptions();
             var ill2CppUnityLogException = new UnityLogException(
                 "one: two",
-                "BugFarm.ThrowNull () (at <00000000000000000000000000000000>:0)");
+                "BugFarm.ThrowNull () (at <00000000000000000000000000000000>:0)",
+                options);
             var sentryEvent = new SentryEvent();
 
             // act

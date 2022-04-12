@@ -18,6 +18,15 @@ namespace Sentry.Unity
         public string LogString { get; }
         public string LogStackTrace { get; }
 
+        private SentryOptions? _options { get; }
+
+        public UnityLogException(string logString, string logStackTrace, SentryOptions? options)
+        {
+            LogString = logString;
+            LogStackTrace = logStackTrace;
+            _options = options;
+        }
+
         public UnityLogException(string logString, string logStackTrace)
         {
             LogString = logString;
@@ -116,16 +125,19 @@ namespace Sentry.Unity
                 }
 
                 var filenameWithoutZeroes = StripZeroes(filename);
-                frames.Add(new SentryStackFrame
+                var stackFrame = new SentryStackFrame
                 {
                     FileName = TryResolveFileNameForMono(filenameWithoutZeroes),
                     AbsolutePath = filenameWithoutZeroes,
                     Function = functionName,
-                    LineNumber = lineNo == -1 ? null : lineNo,
-                    InApp = functionName != null
-                        && !functionName.StartsWith("UnityEngine", StringComparison.Ordinal)
-                        && !functionName.StartsWith("System", StringComparison.Ordinal)
-                });
+                    LineNumber = lineNo == -1 ? null : lineNo
+                };
+                if (_options is not null)
+                {
+                    stackFrame.ConfigureAppFrame(_options);
+                }
+
+                frames.Add(stackFrame);
             }
 
             frames.Reverse();
