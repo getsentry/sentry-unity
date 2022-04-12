@@ -4,10 +4,7 @@
 
 ### Features
 
-- Bump Sentry Java SDK to v6.0.0-alpha.4 ([#653](https://github.com/getsentry/sentry-unity/pull/653))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0-alpha.4/CHANGELOG.md)
-  - [diff](https://github.com/getsentry/sentry-java/compare/5.5.0...6.0.0-alpha.4)
-- Capture `Debug.LogError()` and `Debug.LogException()` on background threads ([#673](https://github.com/getsentry/sentry-unity/pull/673))
+- Capture `Debug.LogError()` and `Debug.LogException()` also on background threads ([#673](https://github.com/getsentry/sentry-unity/pull/673))
 
 - Adding override for Sentry CLI URL ([#666](https://github.com/getsentry/sentry-unity/pull/666))
 
