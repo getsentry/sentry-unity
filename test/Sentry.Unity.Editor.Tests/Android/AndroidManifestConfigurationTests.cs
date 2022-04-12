@@ -279,8 +279,7 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void ModifyManifest_RepeatedRunRemovesConfigs()
         {
-            var fixture2 = new Fixture();
-            fixture2.SentryUnityOptions = null;
+            var fixture2 = new Fixture { SentryUnityOptions = null };
             var manifest1 = WithAndroidManifest(basePath => _fixture.GetSut().ModifyManifest(basePath));
             var manifest2 = WithAndroidManifest((basePath) =>
             {
@@ -293,7 +292,6 @@ namespace Sentry.Unity.Editor.Tests.Android
             Assert.True(manifest1.Contains("sentry.dsn"));
             Assert.False(manifest2.Contains("sentry.dsn"));
         }
-
 
         [Test]
         public void SetupSymbolsUpload_ScriptingBackendNotIL2CPP_LogsAndReturns()
