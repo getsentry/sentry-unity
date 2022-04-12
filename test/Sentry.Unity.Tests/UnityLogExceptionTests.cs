@@ -374,7 +374,6 @@ Expected: False == True",
 
             var actual = new UnityLogException(logString, logStackTrace, new SentryUnityOptions()).ToSentryException();
 
-
             var firstStackTrace = actual!.Stacktrace!.Frames[0];
             {
                 Assert.AreEqual(0, firstStackTrace.LineNumber);
