@@ -66,11 +66,19 @@ namespace Sentry.Unity
         private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
         {
             using var contentStream = ReadStreamFromHttpContent(message.Content);
+            var contentMemoryStream = contentStream as MemoryStream;
+            if (contentMemoryStream is null)
+            {
+                contentMemoryStream = new MemoryStream();
+                contentStream.CopyTo(contentMemoryStream);
+                contentMemoryStream.Flush();
+            }
+
             var www = new UnityWebRequest
             {
                 url = message.RequestUri.ToString(),
                 method = message.Method.Method.ToUpperInvariant(),
-                uploadHandler = new UploadHandlerRaw(((MemoryStream)contentStream).ToArray()),
+                uploadHandler = new UploadHandlerRaw(contentMemoryStream.ToArray()),
                 downloadHandler = new DownloadHandlerBuffer()
             };
 
