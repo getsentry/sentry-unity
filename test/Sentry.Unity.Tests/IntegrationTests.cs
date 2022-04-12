@@ -173,13 +173,8 @@ namespace Sentry.Unity.Tests
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            // We should use the sample Dsn for the nextDsn
-            // to avoid static dsn.
-            var options = AssetDatabase.LoadAssetAtPath(ScriptableSentryUnityOptions.GetConfigPath(ScriptableSentryUnityOptions.ConfigName),
-                typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
-
             var sourceEventCapture = new TestEventCapture();
-            var sourceDsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+            var sourceDsn = "http://publickey@localhost:8000/12345";
             using var firstDisposable = InitSentrySdk(o =>
             {
                 o.Dsn = sourceDsn;
@@ -187,16 +182,10 @@ namespace Sentry.Unity.Tests
             });
 
             var nextEventCapture = new TestEventCapture();
-            var nextDsn = options?.Dsn;
-            using var secondDisposable = InitSentrySdk(o =>
-            {
-                o.Dsn = nextDsn;
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: nextEventCapture));
-            });
+            using var secondDisposable = InitSentrySdk(nextEventCapture); // uses the default test DSN
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
 
-            Assert.NotNull(nextDsn);
             Assert.AreEqual(0, sourceEventCapture.Count, sourceDsn);
             Assert.AreEqual(1, nextEventCapture.Count);
         }
