@@ -41,10 +41,10 @@ public class SmokeTester : MonoBehaviour
     }
 
 #if UNITY_IOS
-    [DllImport("__Internal")]
-    private static extern string getTestArgObjectiveC();
-#endif
-
+    // .net `Environment.GetCommandLineArgs()` doens't seem to work on iOS so we get the test arg in Objective-C
+    [DllImport("__Internal", EntryPoint="getTestArgObjectiveC")]
+    private static extern string GetTestArg();
+#else
     private static string GetTestArg()
     {
         string arg = null;
@@ -55,9 +55,6 @@ public class SmokeTester : MonoBehaviour
         {
             arg = intent.Call<String>("getStringExtra", "test");
         }
-#elif UNITY_IOS
-        // .net `Environment.GetCommandLineArgs()` doens't seem to work on iOS so we get the test arg in Objective-C
-        arg = getTestArgObjectiveC();
 #else
         var args = Environment.GetCommandLineArgs();
         if (args.Length > 2 && args[1] == "--test")
@@ -67,6 +64,7 @@ public class SmokeTester : MonoBehaviour
 #endif
         return arg;
     }
+#endif
 
     private static TestHandler t = new TestHandler();
 

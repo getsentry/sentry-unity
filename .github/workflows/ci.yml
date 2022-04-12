@@ -178,6 +178,8 @@ jobs:
       #       This option should do it: https://docs.unity3d.com/ScriptReference/BuildOptions.AcceptExternalModificationsToPlayer.html
       - name: Build Android Player with IL2CPP
         run: |
+          # Clean the previous (iOS) build or Unity 2021 fails to build because it caches the SmokeTester.cs precompiled with iOS directives.
+          sudo git clean -ffxd samples
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@10.0.2.2:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
