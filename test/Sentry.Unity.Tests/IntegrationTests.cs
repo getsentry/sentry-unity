@@ -268,6 +268,11 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual(1, testEventCapture.Count);
             var isMainThread = testEventCapture.First.Tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
+            if (isMainThread.Value is null)
+            {
+                UnityEngine.Debug.LogWarning("Event is missing the thread tag. "
+                    + $"Message: {testEventCapture.First.Message}. Exception: {testEventCapture.First.Exception}");
+            }
             Assert.AreEqual((!inTask).ToString(), isMainThread.Value);
         }
 
