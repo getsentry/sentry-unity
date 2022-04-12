@@ -37,7 +37,7 @@ namespace Sentry.Unity.WebGL
             // https://docs.unity3d.com/2019.4/Documentation/ScriptReference/PlayerSettings.WebGL-threadsSupport.html
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
 
-            // We may be able to do so after implementing the JS support.
+            // No way to recognize crashes in WebGL yet. We may be able to do so after implementing the JS support.
             // Additionally, we could recognize the situation when the unity gets stuck due to an error in JS/native:
             //    "An abnormal situation has occurred: the PlayerLoop internal function has been called recursively.
             //     Please contact Customer Support with a sample project so that we can reproduce the problem and troubleshoot it."

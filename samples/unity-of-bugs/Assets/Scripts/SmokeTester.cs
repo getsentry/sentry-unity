@@ -102,9 +102,7 @@ public class SmokeTester : MonoBehaviour
     public static void Configure(SentryUnityOptions options)
     {
         Debug.Log("SmokeTester.Configure() called");
-#if UNITY_WEBGL
         options.CreateHttpClientHandler = () => t;
-#endif
         _crashedLastRun = () =>
         {
             if (options.CrashedLastRun != null)

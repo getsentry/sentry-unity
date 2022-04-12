@@ -10,9 +10,6 @@
 #endif
 #endif
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -25,9 +22,6 @@ using Sentry.Unity.Native;
 #elif SENTRY_WEBGL
 using Sentry.Unity.WebGL;
 #endif
-using Sentry.Extensibility;
-using Sentry.Internal;
-using Sentry.Protocol.Envelopes;
 
 [assembly: AlwaysLinkAssembly]
 
