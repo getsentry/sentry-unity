@@ -1,27 +1,3 @@
-#if !UNITY_EDITOR
-#if UNITY_IOS
-#define SENTRY_NATIVE_IOS
-#elif UNITY_ANDROID
-#define SENTRY_NATIVE_ANDROID
-#elif UNITY_STANDALONE_WIN && ENABLE_IL2CPP
-#define SENTRY_NATIVE_WINDOWS
-#endif
-#endif
-
-#if SENTRY_NATIVE_IOS
-using Sentry.Unity.iOS;
-#elif UNITY_ANDROID
-using Sentry.Unity.Android;
-#elif SENTRY_NATIVE_WINDOWS
-using Sentry.Unity.Native;
-#endif
-
-#if UNITY_IOS
-using System.IO;
-using System.Diagnostics;
-using Debug = UnityEngine.Debug;
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +10,7 @@ using Sentry;
 using Sentry.Infrastructure;
 using Sentry.Unity;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class SmokeTester : MonoBehaviour
 {
@@ -71,7 +48,7 @@ public class SmokeTester : MonoBehaviour
     private static string GetTestArg()
     {
         string arg = null;
-#if SENTRY_NATIVE_ANDROID
+#if UNITY_ANDROID
         using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
         using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
