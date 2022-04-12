@@ -10,7 +10,7 @@ namespace Sentry.Unity.Tests
         [Test]
         public void ToSentryException_MarkedAsUnhandled()
         {
-            var sentryException = new UnityLogException().ToSentryException();
+            var sentryException = new UnityLogException("", "", new SentryUnityOptions()).ToSentryException();
 
             Assert.IsFalse(sentryException.Mechanism?.Handled);
         }
@@ -21,7 +21,7 @@ namespace Sentry.Unity.Tests
             string logStackTrace,
             SentryException sentryException)
         {
-            var actual = new UnityLogException(logString, logStackTrace).ToSentryException();
+            var actual = new UnityLogException(logString, logStackTrace, new SentryUnityOptions()).ToSentryException();
 
             AssertEqual(sentryException, actual);
         }
@@ -361,6 +361,46 @@ Expected: False == True",
             else
             {
                 Assert.Null(actual.Mechanism);
+            }
+        }
+
+        [Test]
+        public void ToSentryException_MonoStackTrace_InAppFalse()
+        {
+            var logString = "TlsException: Handshake failed - error code: UNITYTLS_INTERNAL_ERROR, verify result: UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED";
+            var expectedMessaage = "Handshake failed - error code: UNITYTLS_INTERNAL_ERROR, verify result: UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED";
+            var logStackTrace = "Mono.Unity.UnityTlsContext.ProcessHandshake () (at <ef151b6abb5d474cb2c1cb8906a8b5a4>:0)";
+            var expectedFunction = "Mono.Unity.UnityTlsContext.ProcessHandshake ()";
+
+            var actual = new UnityLogException(logString, logStackTrace, new SentryUnityOptions()).ToSentryException();
+
+            var firstStackTrace = actual!.Stacktrace!.Frames[0];
+            {
+                Assert.AreEqual(0, firstStackTrace.LineNumber);
+                Assert.AreEqual(expectedMessaage, actual.Value);
+                Assert.False(firstStackTrace.InApp);
+                Assert.AreEqual(expectedFunction, firstStackTrace.Function);
+            }
+        }
+
+        [Test]
+        public void ToSentryException_IncludeMonoStackTrace_InAppTrue()
+        {
+            var logString = "TlsException: Handshake failed - error code: UNITYTLS_INTERNAL_ERROR, verify result: UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED";
+            var expectedMessaage = "Handshake failed - error code: UNITYTLS_INTERNAL_ERROR, verify result: UNITYTLS_X509VERIFY_FLAG_NOT_TRUSTED";
+            var logStackTrace = "Mono.Unity.UnityTlsContext.ProcessHandshake () (at <ef151b6abb5d474cb2c1cb8906a8b5a4>:0)";
+            var expectedFunction = "Mono.Unity.UnityTlsContext.ProcessHandshake ()";
+
+            var options = new SentryUnityOptions();
+            options.AddInAppInclude("Mono");
+            var actual = new UnityLogException(logString, logStackTrace, options).ToSentryException();
+
+            var firstStackTrace = actual!.Stacktrace!.Frames[0];
+            {
+                Assert.AreEqual(0, firstStackTrace.LineNumber);
+                Assert.AreEqual(expectedMessaage, actual.Value);
+                Assert.True(firstStackTrace.InApp);
+                Assert.AreEqual(expectedFunction, firstStackTrace.Function);
             }
         }
     }
