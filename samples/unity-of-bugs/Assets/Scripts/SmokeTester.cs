@@ -49,7 +49,8 @@ public class SmokeTester : MonoBehaviour
     private static string GetTestArg()
     {
         string arg = null;
-#if UNITY_ANDROID
+#if UNITY_EDITOR
+#elif UNITY_ANDROID
         using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
         using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
