@@ -1,27 +1,3 @@
-#if !UNITY_EDITOR
-#if UNITY_IOS
-#define SENTRY_NATIVE_IOS
-#elif UNITY_ANDROID
-#define SENTRY_NATIVE_ANDROID
-#elif UNITY_STANDALONE_WIN && ENABLE_IL2CPP
-#define SENTRY_NATIVE_WINDOWS
-#endif
-#endif
-
-#if SENTRY_NATIVE_IOS
-using Sentry.Unity.iOS;
-#elif UNITY_ANDROID
-using Sentry.Unity.Android;
-#elif SENTRY_NATIVE_WINDOWS
-using Sentry.Unity.Native;
-#endif
-
-#if UNITY_IOS
-using System.IO;
-using System.Diagnostics;
-using Debug = UnityEngine.Debug;
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,34 +10,14 @@ using Sentry;
 using Sentry.Infrastructure;
 using Sentry.Unity;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
-        string arg = null;
-#if SENTRY_NATIVE_ANDROID
-        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
-        using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
-        {
-            arg = intent.Call<String>("getStringExtra", "test");
-        }
-#elif UNITY_IOS
-        // .net `Environment.GetCommandLineArgs()` doens't seem to work on iOS so we get the test arg in Objective-C
-        arg = getTestArgObjectiveC();
-#else
-        var args = Environment.GetCommandLineArgs();
-        if (args.Length > 2 && args[1] == "--test")
-        {
-            arg = args[2];
-        }
-#endif
-        if (arg == null)
-        {
-            Debug.Log($"SmokeTest not executed - no argument given");
-        }
-        else if (arg == "smoke")
+        var arg = GetTestArg();
+        if (arg == "smoke")
         {
             SmokeTest();
         }
@@ -77,7 +33,7 @@ public class SmokeTester : MonoBehaviour
         {
             HasCrashedTest();
         }
-        else
+        else if (arg != null)
         {
             Debug.Log($"Unknown command line argument: {arg}");
             Application.Quit(-1);
@@ -85,8 +41,29 @@ public class SmokeTester : MonoBehaviour
     }
 
 #if UNITY_IOS
-    [DllImport("__Internal")]
-    private static extern string getTestArgObjectiveC();
+    // .NET `Environment.GetCommandLineArgs()` doesn't seem to work on iOS so we get the test arg in Objective-C
+    [DllImport("__Internal", EntryPoint="getTestArgObjectiveC")]
+    private static extern string GetTestArg();
+#else
+    private static string GetTestArg()
+    {
+        string arg = null;
+#if UNITY_ANDROID
+        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+        using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
+        {
+            arg = intent.Call<String>("getStringExtra", "test");
+        }
+#else
+        var args = Environment.GetCommandLineArgs();
+        if (args.Length > 2 && args[1] == "--test")
+        {
+            arg = args[2];
+        }
+#endif
+        return arg;
+    }
 #endif
 
     private static TestHandler t = new TestHandler();
@@ -96,7 +73,13 @@ public class SmokeTester : MonoBehaviour
     // Forwarded from SmokeTestOptions.Configure()
     public static void Configure(SentryUnityOptions options)
     {
-        Debug.Log("SmokeTester.Configure() called");
+        if (GetTestArg() == null)
+        {
+            Debug.Log("SmokeTester.Configure() called but skipped because this is not a SmokeTest (no arg)");
+            return;
+        }
+
+        Debug.Log("SmokeTester.Configure() running");
         options.CreateHttpClientHandler = () => t;
         _crashedLastRun = () =>
         {

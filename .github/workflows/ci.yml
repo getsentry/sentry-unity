@@ -5,7 +5,7 @@ on:
     paths-ignore:
       - '**.md'
       - '**.txt'
-  workflow_dispatch:  # e.g. to manually trigger on foreign PRs
+  workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
   LOWEST_SUPPORTED_UNITY_VERSION: 2019
@@ -116,7 +116,9 @@ jobs:
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
         if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
-        run: docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
+        run: |
+          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn= /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
         if: ${{ failure() }}
@@ -140,7 +142,7 @@ jobs:
 
       - name: Build iOS Player
         run: |
-          docker exec -e TEST_DSN=http://publickey@localhost:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@localhost:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Prepare Sentry package for release
@@ -176,7 +178,9 @@ jobs:
       #       This option should do it: https://docs.unity3d.com/ScriptReference/BuildOptions.AcceptExternalModificationsToPlayer.html
       - name: Build Android Player with IL2CPP
         run: |
-          docker exec -e TEST_DSN=http://publickey@10.0.2.2:8000/12345 unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          # Clean the previous (iOS) build or Unity 2021 fails to build because it caches the SmokeTester.cs precompiled with iOS directives.
+          sudo git clean -ffxd samples
+          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@10.0.2.2:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload Android test app for smoke test.

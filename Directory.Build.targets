@@ -25,7 +25,6 @@
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
-    <TestDsn>$(TEST_DSN)</TestDsn>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -205,7 +204,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   <!-- Setup Sentry options on Unity UI: dotnet msbuild /t:UnityConfigureSentryOptions src/Sentry.Unity -->
   <Target Name="UnityConfigureSentryOptions" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
-    <Error Condition="$(TestDsn) == ''" Text="TestDsn is empty."></Error>
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
 
