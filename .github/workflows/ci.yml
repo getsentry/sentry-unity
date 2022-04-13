@@ -480,6 +480,6 @@ jobs:
           name: testapp-webgl-${{ matrix.unity-version }}
           path: samples/artifacts/builds/WebGL
 
-      - run: pip3 install --user selenium
+      - run: pip3 install --upgrade --user selenium urllib3 requests
 
       - run: python3 scripts/smoke-test-webgl.py
