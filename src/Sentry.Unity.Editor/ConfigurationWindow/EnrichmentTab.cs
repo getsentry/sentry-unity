@@ -74,6 +74,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                          "Version or InformationalVersion in each event sent to sentry."),
                 options.ReportAssembliesMode);
 
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
             {
                 options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                     new GUIContent("Attach Screnshot", "Try to attach current screenshot for events.\n" +
