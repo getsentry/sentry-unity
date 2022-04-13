@@ -559,7 +559,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 253040317}
-        m_MethodName: StopAllCoroutines
+        m_MethodName: StackTraceExampleA
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

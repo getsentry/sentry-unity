@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Sentry;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -13,6 +14,7 @@ public class BugFarmButtons : MonoBehaviour
 
     public void AssertFalse() => Assert.AreEqual(true, false);
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void ThrowNull() => throw null;
 
     public void ThrowExceptionAndCatch()
@@ -45,8 +47,11 @@ public class BugFarmButtons : MonoBehaviour
 
     public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private void StackTraceExampleB() => throw new InvalidOperationException("Exception from a lady beetle 🐞");
 
+    // IL2CPP inlines this anyway :(
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void StackTraceExampleA() => StackTraceExampleB();
 
     public void LogError() => Debug.LogError("Debug.LogError() called");

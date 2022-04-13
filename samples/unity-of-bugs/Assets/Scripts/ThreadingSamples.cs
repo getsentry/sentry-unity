@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Sentry;
 using UnityEngine;
@@ -52,6 +53,7 @@ public class ThreadingSamples : MonoBehaviour
 
     public void AssertFalse() => _executor(() => Assert.AreEqual(true, false));
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void ThrowNull() => _executor(() => throw null);
 
     public void ThrowExceptionAndCatch() => _executor(() =>
@@ -84,8 +86,10 @@ public class ThreadingSamples : MonoBehaviour
 
     public void CaptureMessage() => _executor(() => SentrySdk.CaptureMessage("🕷️🧵️🕷️ Spider message 🕷️🧵️🕷️"));
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private void StackTraceExampleB() => throw new InvalidOperationException("Exception from a lady beetle 🐞🧵");
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void StackTraceExampleA() => _executor(() => StackTraceExampleB());
 
     public void LogError() => _executor(() => Debug.LogError("Debug.LogError() called"));
