@@ -70,7 +70,7 @@ jobs:
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Start the Unity docker container
-        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}-main
+        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}
 
       - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
@@ -115,7 +115,7 @@ jobs:
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
-        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021.2')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
+        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: |
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn= /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
@@ -130,7 +130,7 @@ jobs:
       - name: Run Unity tests (editmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
-        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021.2')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
+        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
@@ -301,7 +301,7 @@ jobs:
         api-level: [21, 27, 29, 30]
         unity-version: ['2019', '2020', '2021']
         exclude:
-          # API 21 is no longer supported on Unity 2021.2.10f1
+          # API 21 is no longer supported since Unity 2021.2.10f1
           - api-level: 21
             unity-version: '2021'
     defaults:
