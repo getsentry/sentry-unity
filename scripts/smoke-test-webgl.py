@@ -77,6 +77,7 @@ class TestDriver:
     def __init__(self):
         options = Options()
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        options.add_argument('--headless')
         d = DesiredCapabilities.CHROME
         d['goog:loggingPrefs'] = {'browser': 'ALL'}
         self.driver = webdriver.Chrome(

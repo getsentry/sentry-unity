@@ -483,3 +483,4 @@ jobs:
       - run: pip3 install --upgrade --user selenium urllib3 requests
 
       - run: python3 scripts/smoke-test-webgl.py
+        timeout-minutes: 10
