@@ -24,15 +24,20 @@ scriptDir = os.path.dirname(os.path.abspath(__file__))
 appDir = os.path.join(scriptDir, '..', 'samples',
                       'artifacts', 'builds', 'WebGL')
 
+ignoreRegex = '"exception":{"values":\[{"type":"(' + '|'.join(
+    ['The resource [^ ]+ could not be loaded from the resource file!', 'GL.End requires material.SetPass before!']) + ')"'
+
 
 class RequestVerifier:
     __requests = []
     __testNumber = 0
 
     def Capture(self, info, body):
-        if re.match('"exception":{"values":[{"type":"The resource [^ ]+ could not be loaded from the resource file!"', body):
+        match = re.search(ignoreRegex, body)
+        if match:
             print(
-                "TEST: Skipping the received HTTP Request because it's an unrelated unity bug:\n{}".format(body))
+                "TEST: Skipping the received HTTP Request because it's an unrelated unity bug:\n{}".format(match.group(0)))
+            return
 
         print("TEST: Received HTTP Request #{} = {}\n{}".format(
             len(self.__requests), info, body), flush=True)
