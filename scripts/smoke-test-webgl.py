@@ -8,6 +8,7 @@
 import binascii
 import datetime
 import logging
+import re
 import time
 import os
 from http import HTTPStatus
@@ -29,7 +30,11 @@ class RequestVerifier:
     __testNumber = 0
 
     def Capture(self, info, body):
-        print("TEST: Recieved HTTP Request #{} = {}\n{}".format(
+        if re.match('"exception":{"values":[{"type":"The resource [^ ]+ could not be loaded from the resource file!"', body):
+            print(
+                "TEST: Skipping the received HTTP Request because it's an unrelated unity bug:\n{}".format(body))
+
+        print("TEST: Received HTTP Request #{} = {}\n{}".format(
             len(self.__requests), info, body), flush=True)
         self.__requests.append({"request": info, "body": body})
 
