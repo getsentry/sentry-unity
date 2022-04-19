@@ -68,11 +68,12 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         body = ""
         content = self.rfile.read(int(self.headers['Content-Length']))
-        try:
-            body = content.decode("utf-8")
-        except:
-            logging.exception("Exception while parsing an API request")
-            body = binascii.hexlify(bytearray(content))
+        parts = content.split(b'\n')
+        for part in parts:
+            try:
+                body += '\n' + part.decode("utf-8")
+            except:
+                body += '\n(binary chunk: {} bytes)'.format(len(part))
         t.Capture(self.requestline, body)
         self.send_response(HTTPStatus.OK, '{'+'}')
         self.end_headers()
@@ -135,9 +136,13 @@ t.ExpectMessage(currentMessage, "'type':'session'")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "LogError(GUID)")
+t.ExpectMessage(
+    currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "CaptureMessage(GUID)")
+t.ExpectMessage(
+    currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(
@@ -147,4 +152,6 @@ t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}")
 t.ExpectMessage(currentMessage, "'tags':{'tag-key':'tag-value'")
 t.ExpectMessage(
     currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}")
+t.ExpectMessage(
+    currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
 print('TEST: PASS', flush=True)
