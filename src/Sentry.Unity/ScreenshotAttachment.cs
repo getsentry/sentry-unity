@@ -37,6 +37,11 @@ namespace Sentry.Unity
                 throw new Exception("Sentry: cannot capture screenshot attachment on other than the main (UI) thread.");
             }
 
+            return new MemoryStream(CaptureScreenshot());
+        }
+
+        private byte[] CaptureScreenshot()
+        {
             // Calculate the desired size by calculating the ratio between the desired height/width and the actual one,
             // and than resizing based on the smaller of the two ratios.
             var width = Screen.width;
@@ -86,7 +91,7 @@ namespace Sentry.Unity
             var bytes = screenshot.EncodeToJPG(_options.ScreenshotQuality);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
                     "Screenshot captured at {0}x{1}: {0} bytes", null, width, height, bytes.Length);
-            return new MemoryStream(bytes);
+            return bytes;
         }
     }
 }
