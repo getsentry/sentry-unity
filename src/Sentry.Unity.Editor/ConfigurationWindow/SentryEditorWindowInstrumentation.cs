@@ -47,18 +47,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (args.TryGetValue("attachScreenshot", out value))
             {
                 bool boolValue;
-                switch (value.ToLowerInvariant())
+                if (!Boolean.TryParse(value, out boolValue))
                 {
-                    case "true":
-                    case "1":
-                        boolValue = true;
-                        break;
-                    case "false":
-                    case "0":
-                        boolValue = false;
-                        break;
-                    default:
-                        throw new ArgumentException("Unknown boolean argument value: " + value, "attachScreenshot");
+                    throw new ArgumentException("Unknown boolean argument value: " + value, "attachScreenshot");
                 }
                 Debug.LogFormat("{0}: Configuring AttachScreenshot to {1}", functionName, boolValue);
                 options.AttachScreenshot = boolValue;

@@ -80,7 +80,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             {
                 options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
-                    new GUIContent("Attach Screnshot", "Try to attach current screenshot for events.\n" +
+                    new GUIContent("Attach Screenshot", "Try to attach current screenshot on events.\n" +
                         "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
                     options.AttachScreenshot);
                 options.ScreenshotMaxWidth = EditorGUILayout.IntField(
