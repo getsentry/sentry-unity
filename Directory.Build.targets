@@ -25,7 +25,6 @@
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
-    <TestDsn>$(TEST_DSN)</TestDsn>
   </PropertyGroup>
 
   <!-- Use the Unity Editor version set in the sample project of the repo -->
@@ -205,7 +204,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   <!-- Setup Sentry options on Unity UI: dotnet msbuild /t:UnityConfigureSentryOptions src/Sentry.Unity -->
   <Target Name="UnityConfigureSentryOptions" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
-    <Error Condition="$(TestDsn) == ''" Text="TestDsn is empty."></Error>
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
 
@@ -254,6 +252,20 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <!-- <Error Condition="!Exists('$(IOSBuildPath)')" Text="iOS build not found. Did something go wrong?"></Error> -->
+  </Target>
+
+  <!-- Build a WebGL player: dotnet msbuild /t:UnityBuildPlayerWebGL src/Sentry.Unity -->
+  <Target Name="UnityBuildPlayerWebGL" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+
+    <Message Importance="High" Text="Building the sample player for WebGL." />
+
+    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Builder.BuildWebGLPlayer -buildPath $(PlayerBuildPath)WebGL" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <!-- Run smoke test on the WebGL player: dotnet msbuild /t:UnitySmokeTestPlayerWebGL src/Sentry.Unity -->
+  <Target Name="UnitySmokeTestPlayerWebGL" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Exec Command="python3 -X utf8 &quot;$(RepoRoot)/scripts/smoke-test-webgl.py&quot;" IgnoreStandardErrorWarningFormat="true"/>
   </Target>
 
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build

@@ -42,9 +42,6 @@ public class AdditionalButtons : MonoBehaviour
         SentrySdk.ConfigureScope(scope => scope.Contexts = null);
     }
 
-    public void BackgroundBreadcrumb() =>
-        Task.Run(() => SentrySdk.AddBreadcrumb("Breadcrumb from the background", "background task"));
-
     public void CaptureMessageWithScreenshot() => StartCoroutine(CaptureScreenshot());
 
     private IEnumerator CaptureScreenshot()

@@ -11,16 +11,9 @@ Editor/sentry-cli/sentry-cli-Linux-x86_64
 Editor/sentry-cli/sentry-cli-Linux-x86_64.meta
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe.meta
-Plugins/Windows.meta
-Plugins/Windows/Sentry/crashpad_handler.exe
-Plugins/Windows/Sentry/crashpad_handler.exe.meta
-Plugins/Windows/Sentry/sentry.dll
-Plugins/Windows/Sentry/sentry.dll.meta
-Plugins/Windows/Sentry/sentry.pdb
-Plugins/Windows/Sentry/sentry.pdb.meta
-Plugins/Windows/Sentry.meta
 Plugins/Android.meta
 Plugins/iOS.meta
+Plugins/Windows.meta
 Plugins/iOS/Device.meta
 Plugins/iOS/SentryNativeBridge.m
 Plugins/iOS/SentryNativeBridge.m.meta
@@ -267,6 +260,13 @@ Plugins/Android/Sentry/sentry-android-core-release.aar
 Plugins/Android/Sentry/sentry-android-core-release.aar.meta
 Plugins/Android/Sentry/sentry-android-ndk-release.aar
 Plugins/Android/Sentry/sentry-android-ndk-release.aar.meta
+Plugins/Windows/Sentry.meta
+Plugins/Windows/Sentry/crashpad_handler.exe
+Plugins/Windows/Sentry/crashpad_handler.exe.meta
+Plugins/Windows/Sentry/sentry.dll
+Plugins/Windows/Sentry/sentry.dll.meta
+Plugins/Windows/Sentry/sentry.pdb
+Plugins/Windows/Sentry/sentry.pdb.meta
 Runtime/io.sentry.unity.runtime.asmdef
 Runtime/io.sentry.unity.runtime.asmdef.meta
 Runtime/Sentry.dll
@@ -319,6 +319,8 @@ Samples~/unity-of-bugs/Scenes/2_NativeSupport.unity
 Samples~/unity-of-bugs/Scenes/2_NativeSupport.unity.meta
 Samples~/unity-of-bugs/Scenes/3_AdditionalSamples.unity
 Samples~/unity-of-bugs/Scenes/3_AdditionalSamples.unity.meta
+Samples~/unity-of-bugs/Scenes/4_ThreadedSamples.unity
+Samples~/unity-of-bugs/Scenes/4_ThreadedSamples.unity.meta
 Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs
 Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs
@@ -330,6 +332,8 @@ Samples~/unity-of-bugs/Scripts/SceneButtons.cs
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/SmokeTester.cs
 Samples~/unity-of-bugs/Scripts/SmokeTester.cs.meta
+Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs
+Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/AndroidButtons.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/AndroidButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/CPlugin.c
@@ -338,6 +342,8 @@ Samples~/unity-of-bugs/Scripts/NativeSupport/CppPlugin.cpp
 Samples~/unity-of-bugs/Scripts/NativeSupport/CppPlugin.cpp.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/IosButtons.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/IosButtons.cs.meta
+Samples~/unity-of-bugs/Scripts/NativeSupport/JavaScriptPlugin.jslib
+Samples~/unity-of-bugs/Scripts/NativeSupport/JavaScriptPlugin.jslib.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/KotlinPlugin.kt
 Samples~/unity-of-bugs/Scripts/NativeSupport/KotlinPlugin.kt.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/NativeButtons.cs
@@ -346,6 +352,8 @@ Samples~/unity-of-bugs/Scripts/NativeSupport/NativeSupportScene.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/NativeSupportScene.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m
 Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m.meta
+Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs
+Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs.meta
 CHANGELOG.md
 CHANGELOG.md.meta
 Editor.meta
