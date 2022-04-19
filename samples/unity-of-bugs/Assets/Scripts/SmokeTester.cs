@@ -306,7 +306,8 @@ public class SmokeTester : MonoBehaviour
         public bool CheckMessage(int index, String substring)
         {
 #if UNITY_WEBGL
-            // Note: we cannot use the standard checks on WebGL - it would get stuck here because of the lack of multi-threading
+            // Note: we cannot use the standard checks on WebGL - it would get stuck here because of the lack of multi-threading.
+            // The verification is done in the python script used for WebGL smoke test
             return true;
 #else
             var message = GetMessage(index);

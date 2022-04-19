@@ -40,9 +40,7 @@ namespace Sentry.Unity
 
         public UnityWebRequestTransport(SentryUnityOptions options)
             : base(options)
-        {
-            _options = options;
-        }
+        => _options = options;
 
         // adapted HttpTransport.SendEnvelopeAsync()
         internal IEnumerator SendEnvelopeAsync(Envelope envelope)
@@ -56,7 +54,7 @@ namespace Sentry.Unity
                 yield return www.SendWebRequest();
 
                 var response = GetResponse(www);
-                if (response != null)
+                if (response is not null)
                 {
                     HandleResponse(response, processedEnvelope);
                 }
@@ -107,7 +105,7 @@ namespace Sentry.Unity
             foreach (var header in www.GetResponseHeaders())
             {
                 // Unity would throw if we tried to set content-type or content-length
-                if (header.Key != "content-length" && header.Key != "content-type")
+                if (header.Key is not "content-length" && header.Key is not "content-type")
                 {
                     response.Headers.Add(header.Key, header.Value);
                 }
