@@ -52,10 +52,19 @@ class RequestVerifier:
         else:
             raise Exception(info)
 
-    def ExpectMessage(self, index, substring):
+    def CheckMessage(self, index, substring, negate):
         message = self.__requests[index]["body"]
-        self.Expect("HTTP Request #{} contains \"{}\".".format(index, substring),
-                    substring in message or substring.replace("'", "\"") in message)
+        contains = substring in message or substring.replace(
+            "'", "\"") in message
+        return contains if not negate else not contains
+
+    def ExpectMessage(self, index, substring):
+        self.Expect("HTTP Request #{} contains \"{}\".".format(
+            index, substring), self.CheckMessage(index, substring, False))
+
+    def ExpectMessageNot(self, index, substring):
+        self.Expect("HTTP Request #{} doesn't contain \"{}\".".format(
+            index, substring), self.CheckMessage(index, substring, True))
 
 
 t = RequestVerifier()
@@ -138,11 +147,13 @@ t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "LogError(GUID)")
 t.ExpectMessage(
     currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
+t.ExpectMessageNot(currentMessage, "'length':0")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "CaptureMessage(GUID)")
 t.ExpectMessage(
     currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
+t.ExpectMessageNot(currentMessage, "'length':0")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(
@@ -154,4 +165,5 @@ t.ExpectMessage(
     currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}")
 t.ExpectMessage(
     currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
+t.ExpectMessageNot(currentMessage, "'length':0")
 print('TEST: PASS', flush=True)

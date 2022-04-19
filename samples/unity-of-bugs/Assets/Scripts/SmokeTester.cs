@@ -126,11 +126,13 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+            t.ExpectMessageNot(currentMessage, "'length':0");
 
             SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
             t.ExpectMessage(++currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"CaptureMessage(GUID)={guid}");
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+            t.ExpectMessageNot(currentMessage, "'length':0");
 
             var ex = new Exception("Exception & context test");
             AddContext();
@@ -142,6 +144,7 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'tags':{'tag-key':'tag-value'");
             t.ExpectMessage(currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}");
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+            t.ExpectMessageNot(currentMessage, "'length':0");
 
             t.Pass();
         }
@@ -306,19 +309,23 @@ public class SmokeTester : MonoBehaviour
             }
         }
 
-        public bool CheckMessage(int index, String substring)
+        public bool CheckMessage(int index, String substring, bool negate = false)
         {
 #if UNITY_WEBGL
             // Note: we cannot use the standard checks on WebGL - it would get stuck here because of the lack of multi-threading.
-            // The verification is done in the python script used for WebGL smoke test
+            // The verification is done in the python script used for WebGL smoke test - smoke-test-webgl.py
             return true;
 #else
             var message = GetMessage(index);
-            return message.Contains(substring) || message.Contains(substring.Replace("'", "\""));
+            var contains = message.Contains(substring) || message.Contains(substring.Replace("'", "\""));
+            return negate ? !contains : contains;
 #endif
         }
 
         public void ExpectMessage(int index, String substring) =>
             Expect($"HTTP Request #{index} contains \"{substring}\".", CheckMessage(index, substring));
+
+        public void ExpectMessageNot(int index, String substring) =>
+            Expect($"HTTP Request #{index} doesn't contain \"{substring}\".", CheckMessage(index, substring, negate: true));
     }
 }
