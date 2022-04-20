@@ -112,6 +112,21 @@ jobs:
           docker exec unity bash -c 'dotnet tool install --global Alias --version 0.2.0 && \
           ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
+      - name: Prepare Sentry package for release
+        shell: pwsh
+        run: ./scripts/pack.ps1
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        with:
+          name: ${{ github.sha }}
+          if-no-files-found: error
+          # Adding the native libraries so the symbol collector craft target can find/upload them
+          path: |
+            package-release.zip
+            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+
       - name: Run Unity tests (playmode)
         # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
         # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
@@ -145,17 +160,6 @@ jobs:
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@localhost:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-      - name: Prepare Sentry package for release
-        shell: pwsh
-        run: ./scripts/pack.ps1
-
-      - name: Upload build artifacts if build failed
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: Build output
-          path: artifacts/build
-
       - name: Upload Xcode project for smoke test.
         uses: actions/upload-artifact@v2
         with:
@@ -163,50 +167,55 @@ jobs:
           path: samples/artifacts/builds/iOS/Xcode
           if-no-files-found: error
 
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v2
-        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+  smoke-test-build:
+    name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ['2019', '2020', '2021']
+        platform: ['Android', 'WebGL']
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+
+      - name: Load env
+        id: env
+        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Start the Unity docker container
+        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}
+
+      - name: Create Unity license config
+        run: |
+          docker exec unity mkdir -p /usr/share/unity3d/config/
+          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
+
+      - name: Download UPM package
+        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: ${{ github.sha }}
-          if-no-files-found: error
-          # Adding the native libraries so the symbol collector craft target can find/upload them
-          path: |
-            package-release.zip
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
+          wait-timeout: 3600
 
-      # TODO: can we make unity only prepare the project, without compiling it, to unlock the unity license faster? iOS is already built like that.
-      #       This option should do it: https://docs.unity3d.com/ScriptReference/BuildOptions.AcceptExternalModificationsToPlayer.html
-      - name: Build Android Player with IL2CPP
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
+
+      - name: Build ${{ matrix.platform }} Player
         run: |
-          # Clean the previous (iOS) build or Unity 2021 fails to build because it caches the SmokeTester.cs precompiled with iOS directives.
-          sudo git clean -ffxd samples
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@10.0.2.2:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          docker exec unity dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          $testDsnServer = If ("${{ matrix.platform }}" -eq "Android") {"10.0.2.2"} Else {"127.0.0.1"}
+          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@$testDsnServer:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          docker exec unity dotnet msbuild /t:UnityBuildPlayer${{ matrix.platform }} /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-      - name: Upload Android test app for smoke test.
+      - name: Upload test app for smoke test
         uses: actions/upload-artifact@v2
         with:
-          name: testapp-android-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/Android/IL2CPP_Player.apk
-          if-no-files-found: error
-
-      - name: Upload Android Build
-        uses: actions/upload-artifact@v2
-        with:
-          name: Android Build
-          path: samples/artifacts/builds/Android
-          if-no-files-found: error
-
-      - name: Build WebGL Player
-        run: |
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@127.0.0.1:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          docker exec unity dotnet msbuild /t:UnityBuildPlayerWebGL /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Upload WebGL Build
-        uses: actions/upload-artifact@v2
-        with:
-          name: testapp-webgl-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/WebGL
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/${{ matrix.platform }}
           if-no-files-found: error
 
   package-validation:
@@ -291,6 +300,9 @@ jobs:
           name: ${{ github.sha }}
           wait-timeout: 3600
 
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
+
       - name: Add Sentry to test project
         run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
 
@@ -304,7 +316,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Crash
 
   android-smoke-test:
-    needs: [build]
+    needs: [smoke-test-build]
     name: Run Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: macos-latest
     strategy:
@@ -326,7 +338,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v2
         with:
-          name: testapp-android-${{ matrix.unity-version }}
+          name: testapp-Android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android
 
       - name: Android emulator setup + Smoke test
@@ -387,6 +399,7 @@ jobs:
           path: samples/artifacts/builds/Android/screen.png
 
   ios-smoke-test-build:
+    needs: [build]
     name: Build iOS Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: macos-latest
     strategy:
@@ -398,11 +411,10 @@ jobs:
         uses: actions/checkout@v2.3.3
 
       - name: Download XCode app artifact
-        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        uses: actions/download-artifact@v2
         with:
           name: testapp-ios-project-${{ matrix.unity-version }}
           path: samples/artifacts/builds/iOS/Xcode
-          wait-timeout: 3600
 
       - name: Build iOS package
         shell: pwsh
@@ -467,7 +479,7 @@ jobs:
           ./Scripts/smoke-test-ios.ps1 Test "$runtime"
 
   webgl-smoke-test:
-    needs: [build]
+    needs: [smoke-test-build]
     name: Run WebGL Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: ubuntu-latest
     strategy:
@@ -481,7 +493,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v2
         with:
-          name: testapp-webgl-${{ matrix.unity-version }}
+          name: testapp-WebGL-${{ matrix.unity-version }}
           path: samples/artifacts/builds/WebGL
 
       - run: pip3 install --upgrade --user selenium urllib3 requests

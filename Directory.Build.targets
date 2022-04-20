@@ -232,8 +232,8 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec Command="pwsh &quot;$(RepoRoot)/test/Scripts.Integration.Test/integration-run-smoke-test.ps1&quot; -Smoke -Crash &quot;$(StandaloneExecutablePath)&quot; -AppDataDir &quot;$(StandaloneDataPath)&quot;" />
   </Target>
 
-  <!-- Build an Android player with IL2CPP: dotnet msbuild /t:UnityBuildPlayerAndroidIL2CPP src/Sentry.Unity -->
-  <Target Name="UnityBuildPlayerAndroidIL2CPP" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <!-- Build an Android player: dotnet msbuild /t:UnityBuildPlayerAndroid src/Sentry.Unity -->
+  <Target Name="UnityBuildPlayerAndroid" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>

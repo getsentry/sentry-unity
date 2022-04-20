@@ -3,28 +3,6 @@ param($arg)
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
 $unityPath = FormatUnityPath $arg
-$packageReleaseZip = "package-release.zip"
-
-# Check if SDK is packed.
-$packageFile = "package-release.zip"
-If (Test-Path -Path "$(ProjectRoot)/$packageFile" ) {
-    Write-Host "Found $packageFile"
-}
-Else {
-    Throw "$packageFile on $(ProjectRoot) but it was not found. Be sure you run ./scripts/pack.ps1"
-}
-
-Write-Host -NoNewline "clearing $PackageReleaseOutput and Extracting $packageReleaseZip :"
-if (Test-Path -Path "$PackageReleaseOutput") {
-    Remove-Item -Path "$PackageReleaseOutput" -Recurse
-}
-
-Expand-Archive -LiteralPath "$(ProjectRoot)/$packageReleaseZip" -DestinationPath "$PackageReleaseOutput"
-Write-Host "OK"
-
-If (-not(Test-Path -Path "$PackageReleaseOutput")) {
-    Throw "Path $PackageReleaseOutput does not exist. Be sure to run ./test/Scripts.Integration.Test/integration-create-project."
-}
 
 function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $failMessage, [string[]] $arguments) {
     ClearUnityLog
