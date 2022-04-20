@@ -1,14 +1,17 @@
-param($arg)
+param(
+    [string] $UnityPath,
+    [string] $Platform = ""
+)
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-$unityPath = FormatUnityPath $arg
+$UnityPath = FormatUnityPath $UnityPath
 
 function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $failMessage, [string[]] $arguments) {
     ClearUnityLog
 
     Write-Host -NoNewline "$name | Starting Unity process:"
-    $UnityProcess = RunUnity $unityPath $arguments
+    $UnityProcess = RunUnity $UnityPath $arguments
     Write-Host " OK"
 
     WaitForLogFile 30
@@ -46,7 +49,7 @@ Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/CppPlugin.*" -Destina
 RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
         "-quit", "-batchmode", "-nographics", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
-        "-sentryOptions.Dsn", "http://publickey@localhost:8000/12345", `
+        "-sentryOptions.Dsn", "$(TestDsnFor $Platform)", `
         "-sentryOptionsScript", "SmokeTestOptions", `
         "-attachScreenshot", "true")
 

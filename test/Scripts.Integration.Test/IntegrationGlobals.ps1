@@ -22,8 +22,17 @@ function GetTestAppName
     {
         return "test.exe"
     }
-    ElseIf ($buildMethod.contains("Linux")) {
+    ElseIf ($buildMethod.contains("Linux"))
+    {
         return "test"
+    }
+    ElseIf ($buildMethod.contains("Android"))
+    {
+        return "test.apk"
+    }
+    ElseIf ($buildMethod.contains("WebGL"))
+    {
+        return ""
     }
     Else
     {
@@ -39,7 +48,7 @@ $NewProjectPath = "$(ProjectRoot)/samples/$NewProjectName"
 $NewProjectBuildPath = "$NewProjectPath/Build"
 $NewProjectAssetsPath = "$NewProjectPath/Assets"
 
-$UnityOfBugsPath =  "$(ProjectRoot)/samples/unity-of-bugs"
+$UnityOfBugsPath = "$(ProjectRoot)/samples/unity-of-bugs"
 
 $NewProjectLogPath = "$(ProjectRoot)/samples/logfile.txt"
 
@@ -65,18 +74,21 @@ function FormatUnityPath
         Throw "Unity path is required."
     }
 
-    If ($IsMacOS)
+    If ($unityPath.StartsWith("docker "))
     {
-        If ($unityPath.EndsWith("Contents/MacOS/Unity") -eq $false)
+    }
+    ElseIf ($IsMacOS)
+    {
+        If (-not $unityPath.EndsWith("Contents/MacOS/Unity"))
         {
             $unityPath = $unityPath + "/Unity"
         }
     }
     ElseIf ($IsWindows)
     {
-        If ($unityPath.EndsWith("Unity.exe") -eq $false)
+        If (-not $unityPath.EndsWith("Unity.exe"))
         {
-            $unityPath = $unityPath +  "/Unity.exe"
+            $unityPath = $unityPath + "/Unity.exe"
         }
     }
     ElseIf ($IsLinux)
@@ -95,14 +107,72 @@ function FormatUnityPath
     return $unityPath
 }
 
+function BuildMethodFor([string] $platform)
+{
+    switch ("$platform")
+    {
+        "Android" { return "Builder.BuildAndroidIl2CPPPlayer" }
+        "MacOS" { return "Builder.BuildMacIl2CPPPlayer" }
+        "Windows" { return "Builder.BuildWindowsIl2CPPPlayer" }
+        "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
+        "WebGL" { return "Builder.BuildWebGLPlayer" }
+        Default
+        {
+            If ($IsMacOS)
+            {
+                return BuildMethodFor "MacOS"
+            }
+            ElseIf ($IsWindows)
+            {
+                return BuildMethodFor "Windows"
+            }
+            ElseIf ($IsLinux)
+            {
+                return BuildMethodFor "Linux"
+            }
+            Else
+            {
+                Throw "Unsupported build platform"
+            }
+        }
+    }
+}
+
+function TestDsnFor([string] $platform)
+{
+    $dsn = "http://publickey@"
+    switch ("$platform")
+    {
+        "Android" { $dsn += "10.0.2.2"; break; }
+        "WebGL" { $dsn += "127.0.0.1"; break; }
+        Default { $dsn += "localhost" }
+    }
+    $dsn += ":8000/12345"
+    return $dsn
+}
+
 function RunUnity([string] $unityPath, [string[]] $arguments)
 {
-    If ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "")
+    If ($unityPath.StartsWith("docker "))
+    {
+        # Fix paths (they're supposed to be the current working directory in the docker container)
+        Write-Host "Removing project root ($(ProjectRoot)) from the docker arguments: $arguments"
+        $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)/", "") }
+        # Remove "-batchmode" which ends up being duplicate because the referenced unity-editor script already adds it
+        Write-Host "Removing argument '-batchmode' - it would be duplicate and cause a build to fail"
+        $arguments = $arguments | Where-Object { $_ –ne "-batchmode" }
+        Write-Host "Updated arguments: $arguments"
+        # Move docker arguments from $unityPath to $arguments, leaving "docker" as $unityPath
+        $arguments = ($unityPath.Split(" ") | Select-Object -Skip 1) + $arguments
+        $unityPath = "docker"
+    }
+    ElseIf ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "")
     {
         $arguments = @("-ae", "/dev/stdout", "$unityPath") + $arguments
         $unityPath = "xvfb-run"
     }
-    return Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+    Write-Host "Running $unityPath $arguments"
+    return Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru -WindowStyle Hidden
 }
 
 function ClearUnityLog
@@ -140,11 +210,11 @@ function WaitForLogFile
 function SubscribeToUnityLogFile()
 {
     param (
-        [Parameter(Mandatory=$true, Position=0)]
+        [Parameter(Mandatory = $true, Position = 0)]
         [System.Diagnostics.Process]$unityProcess,
-        [Parameter(Mandatory=$false, Position=1)]
+        [Parameter(Mandatory = $false, Position = 1)]
         [string] $SuccessString,
-        [Parameter(Mandatory=$false, Position=2)]
+        [Parameter(Mandatory = $false, Position = 2)]
         [string]$FailString
     )
 
@@ -175,7 +245,7 @@ function SubscribeToUnityLogFile()
             $dateNow = Get-Date -UFormat "%T %Z"
 
             #print line as normal/errored/warning
-            If ($null -ne ($line | select-string "ERROR | Failed "))
+            If ($null -ne ($line | Select-String "ERROR | Failed "))
             {
                 # line contains "ERROR " OR " Failed "
                 Write-Host "$dateNow - $line" -ForegroundColor Red
@@ -193,7 +263,7 @@ function SubscribeToUnityLogFile()
             {
                 $returnCondition = $line
             }
-            ElseIf($FailString -and ($line | Select-String $FailString))
+            ElseIf ($FailString -and ($line | Select-String $FailString))
             {
                 $returnCondition = $line
             }
@@ -204,7 +274,7 @@ function SubscribeToUnityLogFile()
         {
             $unityClosedDelay++
         }
-    } while ($unityClosedDelay -le 2  -or $line -ne $null)
+    } while ($unityClosedDelay -le 2 -or $line -ne $null)
     $logStreamReader.Dispose()
     $logFileStream.Dispose()
     return $returnCondition

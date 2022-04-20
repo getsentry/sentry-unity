@@ -178,6 +178,8 @@ jobs:
     defaults:
       run:
         shell: pwsh
+    env:
+      UNITY_PATH: docker exec unity unity-editor
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -189,12 +191,21 @@ jobs:
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
-        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}
+        run: |
+          $image = unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-$("${{ matrix.platform }}".ToLower())-1
+          Write-Host "Starting up a docker container with $image"
+          docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
 
       - name: Create Unity license config
         run: |
           docker exec unity mkdir -p /usr/share/unity3d/config/
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
+
+      - name: Create new Project
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Build Standalone Player without Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -205,17 +216,17 @@ jobs:
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
 
-      - name: Build ${{ matrix.platform }} Player
-        run: |
-          $testDsnServer = If ("${{ matrix.platform }}" -eq "Android") {"10.0.2.2"} Else {"127.0.0.1"}
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@$testDsnServer:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          docker exec unity dotnet msbuild /t:UnityBuildPlayer${{ matrix.platform }} /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+      - name: Add Sentry to test project
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+
+      - name: Build Standalone Player Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Upload test app for smoke test
         uses: actions/upload-artifact@v2
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/${{ matrix.platform }}
+          path: samples/IntegrationTest/Build
           if-no-files-found: error
 
   package-validation:
@@ -340,6 +351,8 @@ jobs:
         with:
           name: testapp-Android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android
+
+      - run: mv samples/artifacts/builds/Android/test.apk samples/artifacts/builds/Android/IL2CPP_Player.apk
 
       - name: Android emulator setup + Smoke test
         id: smoke-test
