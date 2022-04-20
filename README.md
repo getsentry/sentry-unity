@@ -33,7 +33,7 @@ Check the Sentry [Unity documentation for more details](https://docs.sentry.io/p
 
 ## Legacy SDK
 
-If you are using Unity 5.6 or building WebGL players, these are not supported by this SDK. WebGL support will be added later, but there are no plans to support versions of Unity older than **2019.4**.
+If you are using Unity 5.6 or 2018, these are not supported by this SDK. There are no plans to support versions of Unity older than **2019.4**.
 
 Sentry offered a minimalistic but stable SDK called [_sentry-unity-lite_](https://github.com/getsentry/sentry-unity-lite). It's available on a different repository. That SDK is now deprecated but is still compatible with Sentry server.
 
