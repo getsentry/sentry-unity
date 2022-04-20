@@ -175,10 +175,9 @@ jobs:
       matrix:
         unity-version: ['2019', '2020', '2021']
         platform: ['Android', 'WebGL']
-    defaults:
-      run:
-        shell: pwsh
     env:
+      # Run the `unity-editor` command inside the `unity` docker container under the current user & group.
+      # UNITY_PATH: docker exec --user 1001:121 unity unity-editor
       UNITY_PATH: docker exec unity unity-editor
     steps:
       - name: Checkout
@@ -186,14 +185,15 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "::set-output name=unityVersion::$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
         run: |
-          $image = unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-$("${{ matrix.platform }}".ToLower())-1
-          Write-Host "Starting up a docker container with $image"
+          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-${{ matrix.platform }}-1"
+          image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
+          echo "Starting up a docker container with $image"
           docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
 
       - name: Create Unity license config
@@ -202,10 +202,10 @@ jobs:
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Create new Project
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build Standalone Player without Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -214,13 +214,15 @@ jobs:
           wait-timeout: 3600
 
       - name: Extract UPM package
-        run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-extract-package.ps1
 
       - name: Add Sentry to test project
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
-      - name: Build Standalone Player Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+      - name: Build Standalone Player with Sentry SDK
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+
+      - run: sudo chown -R $(id -u):$(id -g) samples/IntegrationTest
 
       - name: Upload test app for smoke test
         uses: actions/upload-artifact@v2

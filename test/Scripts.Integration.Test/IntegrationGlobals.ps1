@@ -156,8 +156,8 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
     If ($unityPath.StartsWith("docker "))
     {
         # Fix paths (they're supposed to be the current working directory in the docker container)
-        Write-Host "Removing project root ($(ProjectRoot)) from the docker arguments: $arguments"
-        $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)/", "") }
+        Write-Host "Replacing project root ($(ProjectRoot)) in docker arguments: $arguments"
+        $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)", "/sentry-unity") }
         # Remove "-batchmode" which ends up being duplicate because the referenced unity-editor script already adds it
         Write-Host "Removing argument '-batchmode' - it would be duplicate and cause a build to fail"
         $arguments = $arguments | Where-Object { $_ –ne "-batchmode" }
@@ -172,7 +172,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
         $unityPath = "xvfb-run"
     }
     Write-Host "Running $unityPath $arguments"
-    return Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru -WindowStyle Hidden
+    return Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
 }
 
 function ClearUnityLog
