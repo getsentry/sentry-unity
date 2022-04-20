@@ -145,15 +145,15 @@ t.ExpectMessage(currentMessage, "'type':'session'")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "LogError(GUID)")
-t.ExpectMessage(
-    currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
-t.ExpectMessageNot(currentMessage, "'length':0")
+# t.ExpectMessage(
+#     currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
+# t.ExpectMessageNot(currentMessage, "'length':0")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "CaptureMessage(GUID)")
-t.ExpectMessage(
-    currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
-t.ExpectMessageNot(currentMessage, "'length':0")
+# t.ExpectMessage(
+#     currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
+# t.ExpectMessageNot(currentMessage, "'length':0")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(
@@ -163,7 +163,7 @@ t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}")
 t.ExpectMessage(currentMessage, "'tags':{'tag-key':'tag-value'")
 t.ExpectMessage(
     currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}")
-t.ExpectMessage(
-    currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
-t.ExpectMessageNot(currentMessage, "'length':0")
+# t.ExpectMessage(
+# currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
+# t.ExpectMessageNot(currentMessage, "'length':0")
 print('TEST: PASS', flush=True)
