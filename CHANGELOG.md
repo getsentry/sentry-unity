@@ -4,8 +4,13 @@
 
 ### Features
 
-- Capture `Debug.LogError()` and `Debug.LogException()` also on background threads ([#673](https://github.com/getsentry/sentry-unity/pull/673))
+- WebGL - .NET support ([#657](https://github.com/getsentry/sentry-unity/pull/657))
 
+## 0.14.0
+
+### Features
+
+- Capture `Debug.LogError()` and `Debug.LogException()` also on background threads ([#673](https://github.com/getsentry/sentry-unity/pull/673))
 - Adding override for Sentry CLI URL ([#666](https://github.com/getsentry/sentry-unity/pull/666))
 
 ### Fixes
