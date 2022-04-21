@@ -177,7 +177,7 @@ foreach ($device in $DeviceList)
         Write-Host "Clearing logcat from $device."
         adb -s $device logcat -c
 
-        Write-Host "Starting Test..."
+        Write-Host "Starting Test '$Name'"
 
         adb -s $device shell am start -n $TestActivityName -e test $Name
         #despite calling start, the app might not be started yet.
@@ -240,7 +240,14 @@ foreach ($device in $DeviceList)
             Write-Host "$lineWithSuccess"
             Write-Host "$Name test: PASS" -ForegroundColor Green
         }
-        ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.|because ULR inactive'))
+        ElseIf (($LogcatCache | Select-String 'CRASH   :'))
+        {
+            SignalActionSmokeStatus("Crashed")
+            Write-Warning "$name test app has crashed."
+            OnError $device $deviceApi
+            Throw "$name test app has crashed."
+        }
+        ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.'))
         {
             SignalActionSmokeStatus("Flaky")
             Write-Warning "$name test was flaky, unity failed to initialize."
