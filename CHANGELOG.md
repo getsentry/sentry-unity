@@ -12,6 +12,7 @@
 
 - Capture `Debug.LogError()` and `Debug.LogException()` also on background threads ([#673](https://github.com/getsentry/sentry-unity/pull/673))
 - Adding override for Sentry CLI URL ([#666](https://github.com/getsentry/sentry-unity/pull/666))
+- Option to automatically attach screenshots to all events ([#670](https://github.com/getsentry/sentry-unity/pull/670))
 
 ### Fixes
 

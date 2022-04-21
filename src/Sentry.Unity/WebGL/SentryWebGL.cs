@@ -29,6 +29,13 @@ namespace Sentry.Unity.WebGL
 
             // Disable async when accessing files (e.g. FileStream(useAsync: true)) because it throws on WebGL.
             options.UseAsyncFileIO = false;
+
+            if (options.AttachScreenshot)
+            {
+                options.AttachScreenshot = false;
+                options.DiagnosticLogger?.LogWarning("Attaching screenshots on WebGL is disabled - " +
+                    "it currently produces blank screenshots mid-frame.");
+            }
         }
     }
 }

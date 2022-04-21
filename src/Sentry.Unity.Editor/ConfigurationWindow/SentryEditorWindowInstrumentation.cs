@@ -44,6 +44,17 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 OptionsConfigurationDotNet.SetScript(value);
             }
 
+            if (args.TryGetValue("attachScreenshot", out value))
+            {
+                bool boolValue;
+                if (!Boolean.TryParse(value, out boolValue))
+                {
+                    throw new ArgumentException("Unknown boolean argument value: " + value, "attachScreenshot");
+                }
+                Debug.LogFormat("{0}: Configuring AttachScreenshot to {1}", functionName, boolValue);
+                options.AttachScreenshot = boolValue;
+            }
+
             optionsWindow.Close();
             Debug.LogFormat("{0}: Sentry options Configured", functionName);
         }

@@ -51,10 +51,19 @@ namespace Sentry.Unity
                             "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
                         options.CacheDirectoryPath = null;
                         options.AutoSessionTracking = false;
+
                     }
                 }
 
                 var sentryDotNet = SentrySdk.Init(options);
+
+                if (options.AttachScreenshot)
+                {
+                    SentrySdk.ConfigureScope(s =>
+                        s.AddAttachment(new ScreenshotAttachment(
+                            new ScreenshotAttachmentContent(options, SentryMonoBehaviour.Instance))));
+                }
+
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
                     options.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");
