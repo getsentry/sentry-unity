@@ -171,8 +171,21 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
         $arguments = @("-ae", "/dev/stdout", "$unityPath") + $arguments
         $unityPath = "xvfb-run"
     }
+
+    ClearUnityLog
     Write-Host "Running $unityPath $arguments"
-    return Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+    $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+
+    Write-Host "Waiting for Unity to finish."
+    WaitForLogFile 30
+    $stdout = SubscribeToUnityLogFile $process
+
+    if ($process.ExitCode -ne 0)
+    {
+        Throw "Unity exited with code $($process.ExitCode)"
+    }
+
+    return $stdout
 }
 
 function ClearUnityLog
@@ -207,18 +220,8 @@ function WaitForLogFile
     Write-Host " OK"
 }
 
-function SubscribeToUnityLogFile()
+function SubscribeToUnityLogFile([System.Diagnostics.Process] $unityProcess)
 {
-    param (
-        [Parameter(Mandatory = $true, Position = 0)]
-        [System.Diagnostics.Process]$unityProcess,
-        [Parameter(Mandatory = $false, Position = 1)]
-        [string] $SuccessString,
-        [Parameter(Mandatory = $false, Position = 2)]
-        [string]$FailString
-    )
-
-    $returnCondition = $null
     $unityClosedDelay = 0
 
     If ($unityProcess -eq $null)
@@ -242,31 +245,22 @@ function SubscribeToUnityLogFile()
         }
         Else
         {
-            $dateNow = Get-Date -UFormat "%T %Z"
-
+            $dateNow = Get-Date -Format "HH:mm:ss.fff"
             #print line as normal/errored/warning
-            If ($null -ne ($line | Select-String "ERROR | Failed "))
+            If ($null -ne ($line | Select-String "\bERROR\b|\bFailed\b"))
             {
-                # line contains "ERROR " OR " Failed "
-                Write-Host "$dateNow - $line" -ForegroundColor Red
+                $color = 'Red'
             }
-            ElseIf ($null -ne ($line | Select-String "WARNING | Line:"))
+            ElseIf ($null -ne ($line | Select-String "\bWARNING\b|\bLine:"))
             {
-                Write-Host "$dateNow - $line" -ForegroundColor Yellow
+                $color = 'Yellow'
             }
             Else
             {
-                $Host.UI.WriteLine("$dateNow - $line")
+                $color = (Get-Host).ui.rawui.ForegroundColor
             }
-
-            If ($SuccessString -and ($line | Select-String $SuccessString))
-            {
-                $returnCondition = $line
-            }
-            ElseIf ($FailString -and ($line | Select-String $FailString))
-            {
-                $returnCondition = $line
-            }
+            Write-Host "$dateNow | $line" -ForegroundColor $color
+            Write-Output "$dateNow | $line"
         }
         # Unity is closed but logfile wasn't updated in time.
         # Adds additional delay to wait for the last lines.
@@ -277,5 +271,4 @@ function SubscribeToUnityLogFile()
     } while ($unityClosedDelay -le 2 -or $line -ne $null)
     $logStreamReader.Dispose()
     $logFileStream.Dispose()
-    return $returnCondition
 }

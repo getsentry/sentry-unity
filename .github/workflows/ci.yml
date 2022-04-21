@@ -228,7 +228,6 @@ jobs:
           sudo chown -R $(id -u):$(id -g) .
           sudo rm -rf *_BackUpThisFolder_ButDontShipItWithYourGame
 
-
       - name: Upload test app for smoke test
         uses: actions/upload-artifact@v2
         with:
