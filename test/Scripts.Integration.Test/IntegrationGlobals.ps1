@@ -188,11 +188,6 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
         WaitForLogFile 30
         $stdout = SubscribeToUnityLogFile $process
 
-        if ($process.ExitCode -ne 0)
-        {
-            Throw "Unity exited with code $($process.ExitCode)"
-        }
-
         if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
         {
             Write-Host -ForegroundColor Red "Unity failed because it couldn't acquire a license."
@@ -206,6 +201,10 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
         }
         else
         {
+            if ($process.ExitCode -ne 0)
+            {
+                Throw "Unity exited with code $($process.ExitCode)"
+            }
             return $stdout
         }
     } while ($stopwatch.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
