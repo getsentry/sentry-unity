@@ -1,5 +1,8 @@
 $ErrorActionPreference = "Stop"
 
+$RunUnityLicenseRetryTimeoutSeconds = 3600
+$RunUnityLicenseRetryIntervalSeconds = 60
+
 function ProjectRoot
 {
     if ($null -ne $Global:NewProjectPathCache)
@@ -172,20 +175,40 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
         $unityPath = "xvfb-run"
     }
 
-    ClearUnityLog
-    Write-Host "Running $unityPath $arguments"
-    $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+    $stopwatch = [System.Diagnostics.Stopwatch]::new()
+    $stopwatch.Start()
 
-    Write-Host "Waiting for Unity to finish."
-    WaitForLogFile 30
-    $stdout = SubscribeToUnityLogFile $process
-
-    if ($process.ExitCode -ne 0)
+    do
     {
-        Throw "Unity exited with code $($process.ExitCode)"
-    }
+        ClearUnityLog
+        Write-Host "Running $unityPath $arguments"
+        $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
 
-    return $stdout
+        Write-Host "Waiting for Unity to finish."
+        WaitForLogFile 30
+        $stdout = SubscribeToUnityLogFile $process
+
+        if ($process.ExitCode -ne 0)
+        {
+            Throw "Unity exited with code $($process.ExitCode)"
+        }
+
+        if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
+        {
+            Write-Host -ForegroundColor Red "Unity failed because it couldn't acquire a license."
+            $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatch.Elapsed.TotalSeconds
+            $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
+            if ($timeToSleep -gt 0)
+            {
+                Write-Host -ForegroundColor Yellow "Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
+                Start-Sleep -Seconds $timeToSleep
+            }
+        }
+        else
+        {
+            return $stdout
+        }
+    } while ($stopwatch.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
 }
 
 function ClearUnityLog
@@ -201,23 +224,16 @@ function ClearUnityLog
 
 function WaitForLogFile
 {
-    $timeout = 30
-    Write-Host -NoNewline "Waiting for log file "
-    do
+    for ($i = 0; $i -lt 30; $i++)
     {
-        $LogCreated = Test-Path -Path "$NewProjectLogPath"
-        Write-Host -NoNewline "."
-        $timeout--
-        If ($timeout -eq 0)
+        if (Test-Path -Path "$NewProjectLogPath")
         {
-            Throw "Timeout"
+            return
         }
-        ElseIf (!$LogCreated) #validate
-        {
-            Start-Sleep -Seconds 1
-        }
-    } while ($LogCreated -ne $true)
-    Write-Host " OK"
+        Write-Host "Waiting for log file to appear: $NewProjectLogPath ..."
+        Start-Sleep -Seconds 1
+    }
+    Throw "Timeout while waiting for the log file to appear: $NewProjectLogPath"
 }
 
 function SubscribeToUnityLogFile([System.Diagnostics.Process] $unityProcess)
@@ -249,17 +265,16 @@ function SubscribeToUnityLogFile([System.Diagnostics.Process] $unityProcess)
             #print line as normal/errored/warning
             If ($null -ne ($line | Select-String "\bERROR\b|\bFailed\b"))
             {
-                $color = 'Red'
+                Write-Host "$dateNow | $line" -ForegroundColor Red
             }
             ElseIf ($null -ne ($line | Select-String "\bWARNING\b|\bLine:"))
             {
-                $color = 'Yellow'
+                Write-Host "$dateNow | $line" -ForegroundColor Yellow
             }
             Else
             {
-                $color = (Get-Host).ui.rawui.ForegroundColor
+                Write-Host "$dateNow | $line"
             }
-            Write-Host "$dateNow | $line" -ForegroundColor $color
             Write-Output "$dateNow | $line"
         }
         # Unity is closed but logfile wasn't updated in time.
