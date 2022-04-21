@@ -1,6 +1,7 @@
 param (
     [Parameter(Position = 0)]
-    [Switch] $IsCI
+    [Switch] $IsCI,
+    [Switch] $IsIntegrationTest
 )
 
 Set-StrictMode -Version latest
@@ -19,10 +20,21 @@ if ($IsCI)
     $env:CI = "true"
 }
 
-Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
-Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
-Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
-Set-Variable -Name "TestActivityName" -Value "io.sentry.samples.unityofbugs/com.unity3d.player.UnityPlayerActivity"
+
+if ($IsIntegrationTest)
+{
+    Set-Variable -Name "ApkPath" -Value "samples/IntegrationTest/Build"
+    Set-Variable -Name "ApkFileName" -Value "test.apk"
+    Set-Variable -Name "ProcessName" -Value "com.DefaultCompany.IntegrationTest"
+}
+else
+{
+
+    Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
+    Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
+    Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
+}
+Set-Variable -Name "TestActivityName" -Value "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
@@ -127,13 +139,9 @@ Else
 }
 
 # Check if APK was built.
-If (Test-Path -Path "$ApkPath/$ApkFileName" )
+If (-not (Test-Path -Path "$ApkPath/$ApkFileName" ))
 {
-    Write-Host "Found $ApkPath/$ApkFileName"
-}
-Else
-{
-    SignalActionSmokeStatus("Completed")
+    SignalActionSmokeStatus("Failed")
     Throw "Expected APK on $ApkPath/$ApkFileName but it was not found."
 }
 
@@ -213,6 +221,12 @@ foreach ($device in $DeviceList)
         $LogcatCache = adb -s $device logcat -d
         $lineWithSuccess = $LogcatCache | Select-String $SuccessString
         $lineWithFailure = $LogcatCache | Select-String $FailureString
+
+        if ($lineWithFailure -eq $null)
+        {
+            $lineWithFailure = $LogcatCache | Select-String "Error: Activity class .* does not exist."
+        }
+
         If ($lineWithFailure -ne $null)
         {
             SignalActionSmokeStatus("Failed")
@@ -233,7 +247,7 @@ foreach ($device in $DeviceList)
             OnError $device $deviceApi
             Throw "$name test was flaky, unity failed to initialize."
         }
-        ElseIf ($Timeout -eq 0)
+        ElseIf ($Timeout -le 0)
         {
             SignalActionSmokeStatus("Timeout")
             Write-Warning "$name Test Timeout, see Logcat info for more information below."
