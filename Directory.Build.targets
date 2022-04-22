@@ -207,7 +207,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
 
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions -sentryOptions.Dsn $(TestDsn)" IgnoreStandardErrorWarningFormat="true">
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions -sentryOptions.Dsn $(TestDsn)" IgnoreStandardErrorWarningFormat="true">
       <Output TaskParameter="ExitCode" PropertyName="UnityConfigureSentryOptionsExitCode"/>
     </Exec>
 
@@ -222,7 +222,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
 
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
   </Target>
 
   <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP src/Sentry.Unity -->
@@ -238,7 +238,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?"></Error>
   </Target>
@@ -249,7 +249,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building iOS Xcode project."></Message>
 
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)" IgnoreStandardErrorWarningFormat="true"></Exec>
 
     <!-- <Error Condition="!Exists('$(IOSBuildPath)')" Text="iOS build not found. Did something go wrong?"></Error> -->
   </Target>
@@ -260,7 +260,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Building the sample player for WebGL." />
 
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnitySampleProjectPath) -executeMethod Builder.BuildWebGLPlayer -buildPath $(PlayerBuildPath)WebGL" IgnoreStandardErrorWarningFormat="true" />
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod Builder.BuildWebGLPlayer -buildPath $(PlayerBuildPath)WebGL" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
   <!-- Run smoke test on the WebGL player: dotnet msbuild /t:UnitySmokeTestPlayerWebGL src/Sentry.Unity -->
@@ -275,7 +275,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity Create Packages."></Message>
 
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -createProject $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -createProject $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
     <PropertyGroup>
       <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
       <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
@@ -290,7 +290,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity Restore Packages."></Message>
 
-    <Exec Command="$(UnityExec) -quit -batchmode -nographics -logFile - -projectPath $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
@@ -301,7 +301,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
 
-    <Exec Command="$(UnityExec) -batchmode -nographics -logFile - -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
@@ -312,7 +312,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity EditMode tests."></Message>
 
-    <Exec Command="$(UnityExec) -batchmode -nographics -logFile - -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
 
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>

@@ -12,7 +12,7 @@ $outputPath = "$NewProjectBuildPath/$(GetTestAppName $buildMethod)"
 ClearUnityLog
 
 Write-Host -NoNewline "Executing ${buildMethod}:"
-RunUnity $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", "-logfile", "$NewProjectLogPath", `
+RunUnityCustom $unityPath @("-batchmode", "-projectPath ", "$NewProjectPath", `
         "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit") > $null
 Write-Host "Project built successfully" -ForegroundColor Green
 Get-ChildItem $NewProjectBuildPath

@@ -21,7 +21,7 @@ New-Item -Path "$(ProjectRoot)/samples" -Name $NewProjectName -ItemType "directo
 Write-Host " OK"
 
 Write-Host "Creating integration project:"
-RunUnity $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-quit") > $null
+RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "-quit") > $null
 
 Write-Host -NoNewline "Copying Test scene"
 New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
