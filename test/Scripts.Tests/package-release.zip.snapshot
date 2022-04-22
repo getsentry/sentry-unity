@@ -99,6 +99,8 @@ Plugins/iOS/Simulator/Sentry.framework/Headers/SentryNSError.h
 Plugins/iOS/Simulator/Sentry.framework/Headers/SentryNSError.h.meta
 Plugins/iOS/Simulator/Sentry.framework/Headers/SentryOptions.h
 Plugins/iOS/Simulator/Sentry.framework/Headers/SentryOptions.h.meta
+Plugins/iOS/Simulator/Sentry.framework/Headers/SentryProfilingConditionals.h
+Plugins/iOS/Simulator/Sentry.framework/Headers/SentryProfilingConditionals.h.meta
 Plugins/iOS/Simulator/Sentry.framework/Headers/SentrySampleDecision.h
 Plugins/iOS/Simulator/Sentry.framework/Headers/SentrySampleDecision.h.meta
 Plugins/iOS/Simulator/Sentry.framework/Headers/SentrySamplingContext.h
@@ -215,6 +217,8 @@ Plugins/iOS/Device/Sentry.framework/Headers/SentryNSError.h
 Plugins/iOS/Device/Sentry.framework/Headers/SentryNSError.h.meta
 Plugins/iOS/Device/Sentry.framework/Headers/SentryOptions.h
 Plugins/iOS/Device/Sentry.framework/Headers/SentryOptions.h.meta
+Plugins/iOS/Device/Sentry.framework/Headers/SentryProfilingConditionals.h
+Plugins/iOS/Device/Sentry.framework/Headers/SentryProfilingConditionals.h.meta
 Plugins/iOS/Device/Sentry.framework/Headers/SentrySampleDecision.h
 Plugins/iOS/Device/Sentry.framework/Headers/SentrySampleDecision.h.meta
 Plugins/iOS/Device/Sentry.framework/Headers/SentrySamplingContext.h
