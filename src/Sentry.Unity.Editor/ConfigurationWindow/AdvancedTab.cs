@@ -59,9 +59,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.AndroidNativeSupportEnabled);
 
             options.WindowsNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("Windows Native Support", "Whether to enable Native Windows support to " +
-                                                         "capture errors written in languages such as C and C++."),
+                new GUIContent("Windows Native Support", "Whether to enable native crashes support on Windows."),
                 options.WindowsNativeSupportEnabled);
+
+            options.MacosNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("macOS Native Support", "Whether to enable native crashes support on macOS."),
+                options.MacosNativeSupportEnabled);
         }
 
 

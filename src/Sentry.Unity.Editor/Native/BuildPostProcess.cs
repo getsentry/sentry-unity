@@ -13,7 +13,7 @@ namespace Sentry.Unity.Editor.Native
         [PostProcessBuild(1)]
         public static void OnPostProcessBuild(BuildTarget target, string executablePath)
         {
-            if (target is not (BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64))
+            if (EditorUserBuildSettings.selectedBuildTargetGroup is not BuildTargetGroup.Standalone)
             {
                 return;
             }
@@ -35,9 +35,9 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
-                if (!options.WindowsNativeSupportEnabled)
+                if (!IsEnabledForPlatform(target, options))
                 {
-                    logger.LogDebug("Windows Native support disabled through the options.");
+                    logger.LogDebug("Native support for the current platform is disabled in the configuration.");
                     return;
                 }
 
@@ -52,6 +52,13 @@ namespace Sentry.Unity.Editor.Native
                 throw new BuildFailedException("Sentry Native BuildPostProcess failed");
             }
         }
+
+        private static bool IsEnabledForPlatform(BuildTarget target, SentryUnityOptions options) => target switch
+        {
+            BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
+            BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
+            _ => false,
+        };
 
         private static void AddCrashHandler(IDiagnosticLogger logger, string projectDir)
         {

@@ -56,6 +56,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
 
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
@@ -129,6 +130,7 @@ namespace Sentry.Unity
             options.IosNativeSupportEnabled = scriptableOptions.IosNativeSupportEnabled;
             options.AndroidNativeSupportEnabled = scriptableOptions.AndroidNativeSupportEnabled;
             options.WindowsNativeSupportEnabled = scriptableOptions.WindowsNativeSupportEnabled;
+            options.MacosNativeSupportEnabled = scriptableOptions.MacosNativeSupportEnabled;
 
             options.Debug = scriptableOptions.Debug;
             options.DebugOnlyInEditor = scriptableOptions.DebugOnlyInEditor;
