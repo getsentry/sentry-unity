@@ -3,8 +3,13 @@
 #define SENTRY_NATIVE_IOS
 #elif UNITY_ANDROID
 #define SENTRY_NATIVE_ANDROID
+// After enabling support for Linux, we can use UNITY_STANDALONE:
+// #elif UNITY_STANDALONE && ENABLE_IL2CPP
+// #define SENTRY_NATIVE_STANDALONE
 #elif UNITY_STANDALONE_WIN && ENABLE_IL2CPP
-#define SENTRY_NATIVE_WINDOWS
+#define SENTRY_NATIVE_STANDALONE
+#elif UNITY_STANDALONE_OSX && ENABLE_IL2CPP
+#define SENTRY_NATIVE_STANDALONE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
@@ -15,9 +20,9 @@ using UnityEngine.Scripting;
 
 #if SENTRY_NATIVE_IOS
 using Sentry.Unity.iOS;
-#elif UNITY_ANDROID
+#elif SENTRY_NATIVE_ANDROID
 using Sentry.Unity.Android;
-#elif SENTRY_NATIVE_WINDOWS
+#elif SENTRY_NATIVE_STANDALONE
 using Sentry.Unity.Native;
 #elif SENTRY_WEBGL
 using Sentry.Unity.WebGL;
@@ -41,7 +46,7 @@ namespace Sentry.Unity
                 SentryNativeIos.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
                 SentryNativeAndroid.Configure(options, sentryUnityInfo);
-#elif SENTRY_NATIVE_WINDOWS
+#elif SENTRY_NATIVE_STANDALONE
                 SentryNative.Configure(options);
 #elif SENTRY_WEBGL
                 SentryWebGL.Configure(options);

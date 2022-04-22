@@ -10,16 +10,9 @@ namespace Sentry.Unity
     /// <summary>
     /// P/Invoke to `sentry-native` functions.
     /// </summary>
-    /// <remarks>
-    /// The `sentry-native` SDK on Android is brought in through the `sentry-android-ndk`
-    /// maven package.
-    /// On Standalone players on Windows and Linux it's build directly for those platforms.
-    /// </remarks>
-    /// <see href="https://github.com/getsentry/sentry-java"/>
     /// <see href="https://github.com/getsentry/sentry-native"/>
     public static class SentryNativeBridge
     {
-
         public static bool CrashedLastRun;
 
         public static void Init(SentryUnityOptions options)
@@ -173,19 +166,22 @@ namespace Sentry.Unity
             // vsnprintf (to find out the length of the resulting buffer) & vsprintf (to actually format the message).
             if (message.Contains("%"))
             {
-                var formattedLength = vsnprintf(null, UIntPtr.Zero, message, args);
-                var buffer = new StringBuilder(formattedLength + 1);
-                vsprintf(buffer, message, args);
-                message = buffer.ToString();
+                // TODO macOS & Linux support
+                // var formattedLength = vsnprintf(null, UIntPtr.Zero, message, args);
+                // var buffer = new StringBuilder(formattedLength + 1);
+                // vsprintf(buffer, message, args);
+                // message = buffer.ToString();
             }
             logger.Log(level, $"Native: {message}");
         }
 
-        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int vsprintf(StringBuilder buffer, string format, IntPtr args);
+        // [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        // [DllImport("__Internal", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        // private static extern int vsprintf(StringBuilder buffer, string format, IntPtr args);
 
-        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int vsnprintf(string? buffer, UIntPtr bufferSize, string format, IntPtr args);
+        // [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        // [DllImport("__Internal", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        // private static extern int vsnprintf(string? buffer, UIntPtr bufferSize, string format, IntPtr args);
 
         [DllImport("sentry")]
         private static extern void sentry_init(IntPtr options);

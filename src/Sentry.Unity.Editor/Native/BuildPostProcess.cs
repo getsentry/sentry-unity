@@ -42,8 +42,9 @@ namespace Sentry.Unity.Editor.Native
                 }
 
                 var projectDir = Path.GetDirectoryName(executablePath);
-                AddCrashHandler(logger, projectDir);
-                UploadDebugSymbols(logger, projectDir, Path.GetFileName(executablePath));
+                var executableName = Path.GetFileName(executablePath);
+                AddCrashHandler(logger, target, projectDir, executableName);
+                UploadDebugSymbols(logger, target, projectDir, executableName);
 
             }
             catch (Exception e)
@@ -60,16 +61,31 @@ namespace Sentry.Unity.Editor.Native
             _ => false,
         };
 
-        private static void AddCrashHandler(IDiagnosticLogger logger, string projectDir)
+        private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
         {
-            var crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins",
-                "Windows", "Sentry", "crashpad_handler.exe"));
-            var targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
-            logger.LogInfo("Copying the native crash handler '{0}' to the output directory", Path.GetFileName(crashpadPath));
+            string crashpadPath;
+            string targetPath;
+            if (target is (BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64))
+            {
+                crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
+                targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
+            }
+            else if (target is BuildTarget.StandaloneOSX)
+            {
+                crashpadPath = Path.Combine("macOS", "Sentry", "crashpad_handler");
+                targetPath = Path.Combine(projectDir, executableName, "Contents", "MacOS", Path.GetFileName(crashpadPath));
+            }
+            else
+            {
+                throw new ArgumentException($"Unsupported build target: {target}");
+            }
+
+            crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
+            logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
         {
             var cliOptions = SentryCliOptions.LoadCliOptions();
             if (!cliOptions.IsValid(logger))
@@ -97,13 +113,18 @@ namespace Sentry.Unity.Editor.Native
             };
 
             addPath(executableName);
-            addPath("GameAssembly.dll");
-            addPath("UnityPlayer.dll");
             addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
-            addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
-
-            // Note: using Path.GetFullPath as suggested by https://docs.unity3d.com/Manual/upm-assets.html
-            addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+            if (target is (BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64))
+            {
+                addPath("GameAssembly.dll");
+                addPath("UnityPlayer.dll");
+                addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+            }
+            else if (target is BuildTarget.StandaloneOSX)
+            {
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/libsentry.dylib.dSYM"));
+            }
 
             // Configure the process using the StartInfo properties.
             var process = new Process

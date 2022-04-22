@@ -38,6 +38,7 @@ namespace Sentry.Unity
                 // On Standalone, we disable cache dir in case multiple app instances run over the same path.
                 // Note: we cannot use a named Mutex, because Unit doesn't support it. Instead, we create a file with `FileShare.None`.
                 // https://forum.unity.com/threads/unsupported-internal-call-for-il2cpp-mutex-createmutex_internal-named-mutexes-are-not-supported.387334/
+                // TODO macOS & Linux implementation
                 if (ApplicationAdapter.Instance.Platform is RuntimePlatform.WindowsPlayer && options.CacheDirectoryPath is not null)
                 {
                     try

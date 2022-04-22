@@ -1,6 +1,7 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Sentry.Unity.Native
 {
@@ -17,7 +18,12 @@ namespace Sentry.Unity.Native
         /// <param name="options">The Sentry Unity options to use.</param>
         public static void Configure(SentryUnityOptions options)
         {
-            if (options.WindowsNativeSupportEnabled)
+            if (ApplicationAdapter.Instance.Platform switch
+            {
+                RuntimePlatform.WindowsPlayer => options.WindowsNativeSupportEnabled,
+                RuntimePlatform.OSXPlayer => options.MacosNativeSupportEnabled,
+                _ => false,
+            })
             {
                 SentryNativeBridge.Init(options);
                 ApplicationAdapter.Instance.Quitting += () =>
