@@ -24,6 +24,7 @@
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
+    <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)/macOS/Sentry/</SentrymacOSArtifactsDestination>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
@@ -117,8 +118,9 @@ Expected to exist:
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
-  <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+  <Target Name="CleanNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentrymacOSArtifactsDestination)" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryWindowsArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
@@ -168,6 +170,26 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
   </Target>
 
+  <!-- Build the Sentry Native SDK for macOS: dotnet msbuild /t:BuildmacOSSDK src/Sentry.Unity -->
+  <Target Name="BuildmacOSSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And $([MSBuild]::IsOsPlatform('OSX'))
+          And !Exists('$(SentrymacOSArtifactsDestination)')" DependsOnTargets="BuildNativeSDK" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
+    <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for macOS to UPM package."></Message>
+
+    <ItemGroup>
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/crashpad_handler" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/libsentry.dylib" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <NativeSdkDebugSymbols Include="$(SentryNativeRoot)build/libsentry.dylib.dSYM/**/*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentrymacOSArtifactsDestination)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(NativeSdkDebugSymbols)" DestinationFiles="$(SentrymacOSArtifactsDestination)/libsentry.dylib.dSYM/%(RecursiveDir)%(Filename)%(Extension)" />
+  </Target>
+
   <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
   <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
@@ -187,7 +209,11 @@ Expected to exist:
   <Target Name="BuildNativeSDK">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -S ."></Exec>
+    <Exec Command="which python3" ConsoleToMSBuild="true" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="PythonExecutable" />
+    </Exec>
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D CMAKE_OSX_ARCHITECTURES=&quot;arm64;x86_64&quot; -D PYTHON_EXECUTABLE=$(PythonExecutable) -S ."></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
   </Target>
