@@ -226,7 +226,7 @@ jobs:
         run: |
           cd samples/IntegrationTest/Build
           sudo chown -R $(id -u):$(id -g) .
-          sudo rm -rf *_BackUpThisFolder_ButDontShipItWithYourGame
+          # sudo rm -rf *_BackUpThisFolder_ButDontShipItWithYourGame
 
       - name: Upload test app for smoke test
         uses: actions/upload-artifact@v2
@@ -413,7 +413,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: testapp-android-screenshot-${{ matrix.api-level }}-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/Android/screen.png
+          path: samples/IntegrationTest/Build/screen.png
 
   ios-smoke-test-build:
     needs: [build]
