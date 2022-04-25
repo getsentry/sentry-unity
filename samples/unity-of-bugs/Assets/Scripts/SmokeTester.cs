@@ -41,7 +41,7 @@ public class SmokeTester : MonoBehaviour
         }
     }
 
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
     // .NET `Environment.GetCommandLineArgs()` doesn't seem to work on iOS so we get the test arg in Objective-C
     [DllImport("__Internal", EntryPoint="getTestArgObjectiveC")]
     private static extern string GetTestArg();
