@@ -12,7 +12,7 @@ namespace Sentry.Unity.Editor.iOS
         [PostProcessBuild(1)]
         public static void OnPostProcessBuild(BuildTarget target, string pathToProject)
         {
-            if (target is not BuildTarget.iOS)
+            if (target is not (BuildTarget.iOS or BuildTarget.StandaloneOSX))
             {
                 return;
             }
@@ -33,12 +33,15 @@ namespace Sentry.Unity.Editor.iOS
                     return;
                 }
 
-                logger.LogDebug("Enabling native support.");
-                xcframework.CopyToTarget();
-                bridge.CopyToTarget();
+                logger.LogDebug("Enabling native support for {0}.", pathToProject);
 
-                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
-                sentryXcodeProject.AddSentryFramework(xcframework.RelativePath(pathToProject));
+                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, target);
+                if (target is BuildTarget.iOS)
+                {
+                    xcframework.CopyToTarget();
+                    sentryXcodeProject.AddSentryFramework(xcframework.RelativePath(pathToProject));
+                }
+                bridge.CopyToTarget();
                 sentryXcodeProject.AddSentryNativeBridge(bridge.RelativePath(pathToProject));
                 sentryXcodeProject.AddNativeOptions(options!);
                 sentryXcodeProject.AddSentryToMain(options!);

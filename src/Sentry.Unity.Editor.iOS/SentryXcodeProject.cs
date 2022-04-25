@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Sentry.Extensibility;
+using UnityEditor;
 
 // The decision to use reflection here came after many attempts to avoid it. Allowing customers to export an xcode
 // project outside a Mac while not requiring users to install the iOS tools on Windows and Linux became a challenge
@@ -55,11 +56,12 @@ fi";
         private readonly INativeMain _nativeMain;
         private readonly INativeOptions _nativeOptions;
 
-        internal SentryXcodeProject(string projectRoot) : this(projectRoot, new NativeMain(), new NativeOptions())
+        internal SentryXcodeProject(string projectRoot, BuildTarget buildTarget) : this(projectRoot, buildTarget, new NativeMain(), new NativeOptions())
         { }
 
         internal SentryXcodeProject(
             string projectRoot,
+            BuildTarget buildTarget,
             INativeMain mainModifier,
             INativeOptions sentryNativeOptions)
         {
@@ -70,16 +72,23 @@ fi";
             _project = Activator.CreateInstance(_pbxProjectType);
 
             _projectRoot = projectRoot;
-            _projectPath = (string)_pbxProjectType.GetMethod("GetPBXProjectPath", BindingFlags.Public | BindingFlags.Static)
-                .Invoke(null, new[] { _projectRoot });
+            if (buildTarget is BuildTarget.iOS)
+            {
+                _projectPath = (string)_pbxProjectType.GetMethod("GetPBXProjectPath", BindingFlags.Public | BindingFlags.Static)
+                    .Invoke(null, new[] { _projectRoot });
+            }
+            else
+            {
+                _projectPath = Path.Combine(_projectRoot, "GameAssembly.xcodeproj/project.pbxproj");
+            }
 
             _nativeMain = mainModifier;
             _nativeOptions = sentryNativeOptions;
         }
 
-        public static SentryXcodeProject Open(string path)
+        public static SentryXcodeProject Open(string path, BuildTarget buildTarget)
         {
-            var xcodeProject = new SentryXcodeProject(path);
+            var xcodeProject = new SentryXcodeProject(path, buildTarget);
             xcodeProject.ReadFromProjectFile();
 
             return xcodeProject;

@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
+using UnityEditor;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
@@ -39,7 +40,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
                 };
             }
 
-            public SentryXcodeProject GetSut() => new(ProjectRoot, NativeMain, NativeOptions);
+            public SentryXcodeProject GetSut() => new(ProjectRoot, BuildTarget.iOS, NativeMain, NativeOptions);
         }
 
         private Fixture _fixture = new();
