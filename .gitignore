@@ -19,7 +19,7 @@ samples/unity-of-bugs/Assets/Plugins/Sentry/SentryCliOptions.asset*
 package-dev/**/*.dll
 package-dev/**/*.exe
 package-dev/**/*.meta
-package-dev/**/*.framework
+package-dev/**/*.xcframework
 package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/TestSentryOptions.json
@@ -28,9 +28,6 @@ package-dev/Plugins/*/Sentry/crashpad_handler*
 
 # Adding .meta to control target platforms for all of our DLLs
 !package-dev/**/Sentry*.dll.meta
-
-# required to be marked as iOS only
-!package-dev/**/*.framework.meta
 
 # required to be excluded on all platforms because we don't want Unity to copy it during build
 !package-dev/**/SentryNativeBridge.m.meta
