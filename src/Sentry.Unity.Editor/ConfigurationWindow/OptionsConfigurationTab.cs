@@ -9,19 +9,22 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
     {
         public static void Display(ScriptableSentryUnityOptions options)
         {
-            GUILayout.Label("Programmatic Options Configuration", EditorStyles.boldLabel);
+            GUILayout.Label("Scriptable Options Configuration", EditorStyles.boldLabel);
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.HelpBox("The options configuration allows you to programmatically modify " +
-                                    "the Sentry options object during runtime initialization of the SDK. " +
+            EditorGUILayout.HelpBox("The scriptable options configuration allows you to programmatically " +
+                                    "modify the Sentry options at runtime, right before the SDK gets initialized." +
                                     "This allows you to override configuration otherwise unavailable from the " +
-                                    "editor UI, e.g. set a custom BeforeSend callback. \n\n" +
+                                    "Editor UI, e.g. set a custom BeforeSend callback.",
+                                    MessageType.Info);
+
+            EditorGUILayout.HelpBox("Clicking the 'New' button will prompt you with selecting a location for " +
+                                    "your custom 'ScriptableSentryConfiguration' script and automatically " +
+                                    "create a new instance at 'Assets/Resources/Sentry/'",
                                     // TODO other platforms
                                     // "Because Sentry Unity integration includes both managed C# Unity SDK and a " +
                                     // "platform specific one, you can specify the respective overrides separately.\n\n" +
-                                    "You can either select an existing script, or create a new one by clicking the " +
-                                    "'New' button, which will create one from a template at a selected location.",
                                     MessageType.Info);
 
             EditorGUILayout.Space();
