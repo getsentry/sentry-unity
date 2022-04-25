@@ -82,9 +82,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
 
-            xcodeProject.AddSentryFramework();
-
-            StringAssert.Contains(SentryXcodeProject.FrameworkName, xcodeProject.ProjectToString());
+            var path = "Frameworks/XYZ.framework";
+            xcodeProject.AddSentryFramework(path);
+            StringAssert.Contains(path, xcodeProject.ProjectToString());
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             xcodeProject.ReadFromProjectFile();
             xcodeProject.SetSearchPathBuildProperty(testPath);
 
-            xcodeProject.AddSentryFramework();
+            xcodeProject.AddSentryFramework("Sentry.framework");
 
             StringAssert.Contains(testPath, xcodeProject.ProjectToString());
         }
@@ -106,9 +106,9 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
 
-            xcodeProject.AddSentryNativeBridge();
-
-            StringAssert.Contains(SentryXcodeProject.BridgeName, xcodeProject.ProjectToString());
+            var path = "path/to/file.m";
+            xcodeProject.AddSentryNativeBridge(path);
+            StringAssert.Contains(path, xcodeProject.ProjectToString());
         }
 
         [Test]

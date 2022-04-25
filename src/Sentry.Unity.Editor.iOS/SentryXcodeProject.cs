@@ -14,8 +14,6 @@ namespace Sentry.Unity.Editor.iOS
 {
     internal class SentryXcodeProject : IDisposable
     {
-        internal const string FrameworkName = "Sentry.framework";
-        internal const string BridgeName = "SentryNativeBridge.m";
         internal const string OptionsName = "SentryOptions.m";
         internal const string SymbolUploadPhaseName = "SymbolUpload";
 
@@ -102,15 +100,15 @@ fi";
                 .Invoke(_project, null);
         }
 
-        public void AddSentryFramework()
+        public void AddSentryFramework(string relativeFrameworkPath)
         {
-            var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
+            var frameworkName = Path.GetFileName(relativeFrameworkPath);
             var frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
 
             var addFrameworkToProjectMethod = _pbxProjectType.GetMethod("AddFrameworkToProject", BindingFlags.Public | BindingFlags.Instance);
-            addFrameworkToProjectMethod.Invoke(_project, new object[] { _mainTargetGuid, FrameworkName, false });
-            addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, FrameworkName, false });
+            addFrameworkToProjectMethod.Invoke(_project, new object[] { _mainTargetGuid, frameworkName, false });
+            addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, frameworkName, false });
 
             // Embedding the framework because it's dynamic and needed at runtime
             _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
@@ -127,9 +125,8 @@ fi";
                 .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
         }
 
-        public void AddSentryNativeBridge()
+        public void AddSentryNativeBridge(string relativeBridgePath)
         {
-            var relativeBridgePath = Path.Combine("Libraries", SentryPackageInfo.GetName(), BridgeName);
             var bridgeGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { relativeBridgePath, relativeBridgePath, 1 }); // 1 is PBXSourceTree.Source
 

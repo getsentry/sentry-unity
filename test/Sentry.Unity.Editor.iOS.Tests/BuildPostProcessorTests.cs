@@ -33,62 +33,26 @@ namespace Sentry.Unity.Editor.iOS.Tests
         [Test]
         public void CopyFrameworkToXcodeProject_CopyFramework_DirectoryExists()
         {
-            var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework");
-
-            BuildPostProcess.CopyFramework(_testFrameworkPath, targetPath, new TestLogger());
-
-            Assert.IsTrue(Directory.Exists(targetPath));
+            var asset = new BuildAsset(_testFrameworkPath, Path.Combine(_xcodeProjectPath, "SomeDirectory"), new TestLogger());
+            asset.CopyToTarget();
+            Assert.IsTrue(Directory.Exists(asset.targetPath));
         }
 
         [Test]
-        public void CopyFramework_FrameworkAlreadyExists_LogsSkipMessage()
+        public void CopyFramework_FailedToCopy_ThrowsDirectoryNotFoundException()
         {
-            var testLogger = new TestLogger();
-            var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework");
-
-            BuildPostProcess.CopyFramework(_testFrameworkPath, targetPath, testLogger);
-            BuildPostProcess.CopyFramework(_testFrameworkPath, targetPath, testLogger);
-
-            Assert.IsTrue(testLogger.Logs.Any(log =>
-                log.logLevel == SentryLevel.Debug &&
-                log.message.Contains("has already been copied to")));
+            var asset = new BuildAsset("non-existent-path.framework",
+                    Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework"), new TestLogger());
+            Assert.Throws<IOException>(() => asset.CopyToTarget());
         }
-
-        [Test]
-        public void CopyFramework_FailedToCopy_ThrowsDirectoryNotFoundException() =>
-            Assert.Throws<DirectoryNotFoundException>(() =>
-                BuildPostProcess.CopyFramework("non-existent-path.framework",
-                    Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework"), new TestLogger()));
 
 
         [Test]
         public void CopyFile_CopyFile_FileExists()
         {
-            var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.m");
-
-            BuildPostProcess.CopyFile(_testFilePath, targetPath, new TestLogger());
-
-            Assert.IsTrue(File.Exists(targetPath));
+            var asset = new BuildAsset(_testFilePath, Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.m"), new TestLogger());
+            asset.CopyToTarget();
+            Assert.IsTrue(File.Exists(asset.targetPath));
         }
-
-        [Test]
-        public void CopyFile_FileAlreadyExists_LogsSkipMessage()
-        {
-            var testLogger = new TestLogger();
-            var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.m");
-
-            BuildPostProcess.CopyFile(_testFilePath, targetPath, testLogger);
-            BuildPostProcess.CopyFile(_testFilePath, targetPath, testLogger);
-
-            Assert.IsTrue(testLogger.Logs.Any(log =>
-                log.logLevel == SentryLevel.Debug &&
-                log.message.Contains("has already been copied to")));
-        }
-
-        [Test]
-        public void CopyFile_FailedToCopyFile_ThrowsFileNotFoundException() =>
-            Assert.Throws<FileNotFoundException>(() =>
-                BuildPostProcess.CopyFile("non-existent-path.m",
-                    Path.Combine(_xcodeProjectPath, "NewDirectory", "Test.m"), new TestLogger()));
     }
 }

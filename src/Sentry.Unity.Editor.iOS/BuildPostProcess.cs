@@ -12,7 +12,7 @@ namespace Sentry.Unity.Editor.iOS
         [PostProcessBuild(1)]
         public static void OnPostProcessBuild(BuildTarget target, string pathToProject)
         {
-            if (target != BuildTarget.iOS)
+            if (target is not BuildTarget.iOS)
             {
                 return;
             }
@@ -22,32 +22,26 @@ namespace Sentry.Unity.Editor.iOS
 
             try
             {
-                // Unity doesn't allow an appending builds when switching iOS SDK versions and this will make sure we always copy the correct version of the Sentry.framework
-                var frameworkDirectory = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK ? "Device" : "Simulator";
-                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", frameworkDirectory, "Sentry.framework"));
-                CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", "Sentry.framework"), options?.DiagnosticLogger);
+                var packagePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "Cocoa"));
+                var xcframework = new BuildAsset(Path.Combine(packagePath, "Sentry.xcframework"), Path.Combine(pathToProject, "Frameworks"), logger);
+                var bridge = new BuildAsset(Path.Combine(packagePath, "SentryNativeBridge.m"), Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName()), logger);
 
-                var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "SentryNativeBridge.m"));
-                CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), "SentryNativeBridge.m"), options?.DiagnosticLogger);
+                if (!IsEnabled(options, logger))
+                {
+                    xcframework.DeleteTarget();
+                    bridge.DeleteTarget();
+                    return;
+                }
+
+                logger.LogDebug("Enabling native support.");
+                xcframework.CopyToTarget();
+                bridge.CopyToTarget();
 
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
-                sentryXcodeProject.AddSentryFramework();
-                sentryXcodeProject.AddSentryNativeBridge();
-
-                if (options?.IsValid() is not true)
-                {
-                    logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
-                    return;
-                }
-
-                if (!options.IosNativeSupportEnabled)
-                {
-                    logger.LogDebug("iOS Native support disabled through the options.");
-                    return;
-                }
-
-                sentryXcodeProject.AddNativeOptions(options);
-                sentryXcodeProject.AddSentryToMain(options);
+                sentryXcodeProject.AddSentryFramework(xcframework.RelativePath(pathToProject));
+                sentryXcodeProject.AddSentryNativeBridge(bridge.RelativePath(pathToProject));
+                sentryXcodeProject.AddNativeOptions(options!);
+                sentryXcodeProject.AddSentryToMain(options!);
 
                 var sentryCliOptions = SentryCliOptions.LoadCliOptions();
                 if (sentryCliOptions.IsValid(logger))
@@ -63,47 +57,90 @@ namespace Sentry.Unity.Editor.iOS
             }
         }
 
-        internal static void CopyFramework(string sourcePath, string targetPath, IDiagnosticLogger? logger)
+        private static bool IsEnabled(SentryUnityOptions? options, IDiagnosticLogger logger)
         {
-            if (Directory.Exists(targetPath))
+            if (options?.IsValid() is not true)
             {
-                logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
-                return;
+                logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
+                return false;
             }
-
-            if (Directory.Exists(sourcePath))
+            if (!options.IosNativeSupportEnabled)
             {
-                logger?.LogDebug("Copying from: '{0}' to '{1}'", sourcePath, targetPath);
-
-                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
-                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
+                logger.LogDebug("Native support disabled through the options.");
+                return false;
             }
+            return true;
+        }
+    }
 
-            if (!Directory.Exists(targetPath))
+    internal class BuildAsset
+    {
+        internal readonly string sourcePath;
+        internal readonly string targetPath;
+        readonly string targetDir;
+        readonly IDiagnosticLogger logger;
+
+        internal BuildAsset(string sourcePath, string targetDir, IDiagnosticLogger logger)
+        {
+            this.sourcePath = sourcePath;
+            this.targetDir = targetDir;
+            this.targetPath = Path.Combine(targetDir, Path.GetFileName(sourcePath));
+            this.logger = logger;
+        }
+
+        internal string RelativePath(string basePath)
+        {
+            if (targetPath.StartsWith(basePath))
             {
-                throw new DirectoryNotFoundException($"Failed to copy '{sourcePath}' to '{targetPath}'");
+                return targetPath.Substring(basePath.Length).TrimStart('/', '\\');
+            }
+            else
+            {
+                throw new Exception("Cannot produce a relative path for the given build asset"
+                        + $" '{targetPath}' because doesn't start with the base path '{basePath}'.");
             }
         }
 
-        internal static void CopyFile(string sourcePath, string targetPath, IDiagnosticLogger? logger)
+        internal bool TargetExists() => Directory.Exists(targetPath) || File.Exists(targetPath);
+
+        internal void DeleteTarget(bool silent = false)
         {
-            if (File.Exists(targetPath))
+            if (Directory.Exists(targetPath))
             {
-                logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
-                return;
+                if (!silent)
+                {
+                    logger.LogDebug("Removing '{0}' recursively", targetPath);
+                }
+                Directory.Delete(targetPath, true);
+            }
+            else if (File.Exists(targetPath))
+            {
+                if (!silent)
+                {
+                    logger.LogDebug("Removing '{0}'", targetPath);
+                }
+                File.Delete(targetPath);
+            }
+        }
+
+        internal void CopyToTarget()
+        {
+            if (TargetExists())
+            {
+                logger.LogDebug("Replacing '{0}' with '{1}'", targetPath, sourcePath);
+                DeleteTarget(true);
+            }
+            else
+            {
+                logger.LogDebug("Copying from: '{0}' to '{1}'", sourcePath, targetPath);
             }
 
-            if (File.Exists(sourcePath))
-            {
-                logger?.LogDebug("Copying from: '{0}' to '{1}'", sourcePath, targetPath);
+            Directory.CreateDirectory(targetDir);
+            FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
 
-                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
-                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
-            }
-
-            if (!File.Exists(targetPath))
+            if (!TargetExists())
             {
-                throw new FileNotFoundException($"Failed to copy '{sourcePath}' to '{targetPath}'");
+                throw new IOException($"Failed to copy '{sourcePath}' to '{targetPath}'");
             }
         }
     }
