@@ -11,7 +11,6 @@ namespace Sentry.Unity.Tests
             var resourceNames = typeof(SentryWindow).Assembly.GetManifestResourceNames();
 
             Assert.NotNull(resourceNames);
-            Assert.Contains("Sentry.Unity.Editor.Resources.link.xml", resourceNames);
             Assert.Contains("Sentry.Unity.Editor.Resources.SentryLogoLight.png", resourceNames);
             Assert.Contains("Sentry.Unity.Editor.Resources.SentryLogoDark.png", resourceNames);
         }
