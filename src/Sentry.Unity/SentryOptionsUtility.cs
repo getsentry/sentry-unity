@@ -1,7 +1,4 @@
-using System.Linq;
-using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
-using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -50,10 +47,8 @@ namespace Sentry.Unity
             scriptableOptions.DiagnosticLevel = SentryLevel.Warning;
         }
 
-        public static void TryAttachLogger(SentryUnityOptions options, IApplication? application = null)
+        public static void TryAttachLogger(SentryUnityOptions options)
         {
-            application ??= ApplicationAdapter.Instance;
-
             if (options.Debug && options.DiagnosticLogger is null)
             {
                 options.DiagnosticLogger = new UnityLogger(options);

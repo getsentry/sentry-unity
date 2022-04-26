@@ -23,7 +23,7 @@ namespace Sentry.Unity.Tests.Stubs
         public event Application.LogCallback? LogMessageReceived;
         public event Action? Quitting;
         public string ActiveSceneName => "TestSceneName";
-        public bool IsEditor { set; get; }
+        public bool IsEditor { get; }
         public string ProductName { get; }
         public string Version { get; }
         public string PersistentDataPath { get; }
