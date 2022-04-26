@@ -35,10 +35,6 @@ namespace Sentry.Unity.Json
             {
                 options.Debug = debug.GetBoolean();
             }
-            if (json.GetPropertyOrNull("debugOnlyInEditor") is { } debugOnlyInEditor)
-            {
-                options.DebugOnlyInEditor = debugOnlyInEditor.GetBoolean();
-            }
             if (json.GetEnumOrNull<SentryLevel>("diagnosticLevel") is { } diagnosticLevel)
             {
                 options.DiagnosticLevel = diagnosticLevel;
@@ -81,7 +77,6 @@ namespace Sentry.Unity.Json
 
             scriptableOptions.CaptureInEditor = jsonOptions.CaptureInEditor;
             scriptableOptions.Debug = jsonOptions.Debug;
-            scriptableOptions.DebugOnlyInEditor = jsonOptions.DebugOnlyInEditor;
             scriptableOptions.DiagnosticLevel = jsonOptions.DiagnosticLevel;
             scriptableOptions.AttachStacktrace = jsonOptions.AttachStacktrace;
 

@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -53,9 +54,7 @@ namespace Sentry.Unity
         {
             application ??= ApplicationAdapter.Instance;
 
-            if (options.DiagnosticLogger is null
-                && options.Debug
-                && (!options.DebugOnlyInEditor || application.IsEditor))
+            if (options.Debug && options.DiagnosticLogger is null)
             {
                 options.DiagnosticLogger = new UnityLogger(options);
             }
