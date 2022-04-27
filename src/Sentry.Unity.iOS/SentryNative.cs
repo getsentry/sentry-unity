@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity.iOS
 {
@@ -14,24 +15,43 @@ namespace Sentry.Unity.iOS
         /// <param name="options">The Sentry Unity options to use.</param>
         public static void Configure(SentryUnityOptions options)
         {
-            if (options.IosNativeSupportEnabled)
+            switch (ApplicationAdapter.Instance.Platform)
             {
-                options.ScopeObserver = new NativeScopeObserver("iOS", options);
-                options.EnableScopeSync = true;
-                options.CrashedLastRun = () =>
-                {
-                    var crashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun() == 1;
-                    options.DiagnosticLogger?
-                        .LogDebug("Native iOS SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
-
-                    return crashedLastRun;
-                };
-                ApplicationAdapter.Instance.Quitting += () =>
-                {
-                    options.DiagnosticLogger?.LogDebug("Closing the sentry-cocoa SDK");
-                    SentryCocoaBridgeProxy.Close();
-                };
+                case RuntimePlatform.IPhonePlayer:
+                    if (!options.IosNativeSupportEnabled)
+                    {
+                        return;
+                    }
+                    options.ScopeObserver = new NativeScopeObserver("iOS", options);
+                    break;
+                case RuntimePlatform.OSXPlayer:
+                    if (!options.MacosNativeSupportEnabled)
+                    {
+                        return;
+                    }
+                    options.ScopeObserver = new NativeScopeObserver("macOS", options);
+                    if (SentryCocoaBridgeProxy.Init() != 1)
+                    {
+                        options.DiagnosticLogger?.LogWarning("Failed to initialzie the native SDK");
+                        return;
+                    }
+                    break;
             }
+
+            options.EnableScopeSync = true;
+            options.CrashedLastRun = () =>
+            {
+                var crashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun() == 1;
+                options.DiagnosticLogger?
+                    .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
+
+                return crashedLastRun;
+            };
+            ApplicationAdapter.Instance.Quitting += () =>
+            {
+                options.DiagnosticLogger?.LogDebug("Closing the sentry-cocoa SDK");
+                SentryCocoaBridgeProxy.Close();
+            };
         }
     }
 }

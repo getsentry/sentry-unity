@@ -2,11 +2,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-int CrashedLastRun() {
+// must be here to match the native bridge API for macOS
+int SentryNativeBridgeInit() {
+    return 0; // this shouldn't be used so return "false"
+}
+
+int SentryNativeBridgeCrashedLastRun() {
     return [SentrySDK crashedLastRun] ? 1 : 0;
 }
 
-void Close() {
+void SentryNativeBridgeClose() {
     [SentrySDK close];
 }
 
