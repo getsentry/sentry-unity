@@ -200,7 +200,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             new UnityLogger(new SentryOptions()).LogWarning(validationError.ToString());
         }
-        
+
         private void SetTitle()
         {
             var isDarkMode = EditorGUIUtility.isProSkin;
