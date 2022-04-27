@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- `DebugOnlyInEditor` now also applies to .NET SDK logging ([#706](https://github.com/getsentry/sentry-unity/pull/706))
 - Bump Sentry Cocoa SDK 7.13.0 ([#697](https://github.com/getsentry/sentry-unity/pull/697))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.13.0/CHANGELOG.md)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.7.0...7.13.0)
