@@ -310,7 +310,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [21, 27, 29, 30]
+        api-level: [21, 27, 29, 30, latest]
         unity-version: ['2019', '2020', '2021']
         exclude:
           # API 21 is no longer supported since Unity 2021.2.10f1
@@ -329,18 +329,51 @@ jobs:
           name: testapp-android-${{ matrix.unity-version }}
           path: samples/artifacts/builds/Android
 
-      - name: Android emulator setup + Smoke test
+      # outputs variabled: version-label, api-level, target, arch
+      - name: Configure Android Settings
+        id: droid-settings
+        shell: pwsh
+        run : |
+          # Setup API Level
+          $apiLevel = '${{ matrix.api-level }}'
+          if ( $apiLevel -eq 'latest') 
+          {
+            # Gets the latest API level that isn't in Beta/Alpha
+            $response = (Invoke-WebRequest -UseBasicParsing -Uri "https://developer.android.com/studio/releases/platforms").Content
+            $result = [regex]::Match($response, " \(API level (?<model>\d+)\)")
+            $apiLevel = $result.Groups["model"].Value
+            Write-Output "Latest API is $apiLevel"
+            echo "::set-output name=api-level::$apiLevel"
+            echo "::set-output name=version-label::$apiLevel (latest)"
+          }
+          else 
+          {
+            Write-Output "Current API is $apiLevel"
+            echo "::set-output name=api-level::$apiLevel"
+            echo "::set-output name=version-label::$arch"
+          }
+          
+          # Setup Arch and Target
+          $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
+          Write-Output "Current Target is $target"
+          echo "::set-output name=target::$target"
+          
+          $arch = $apiLevel -ge 30 ? 'x86_64' : 'x86'
+          Write-Output "Current Arch is $arch"
+          echo "::set-output name=arch::$arch"
+          
+      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator  setup  + Smoke test
         id: smoke-test
         continue-on-error: true
         timeout-minutes: 30
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
-          api-level: ${{ matrix.api-level }}
+          api-level: ${{ steps.droid-settings.outputs.api-level }}
           #api-level 30 image is only available with google services.
-          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
+          target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
-          arch: x86
+          arch: ${{ steps.droid-settings.outputs.arch }}
           cores: 2
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -353,19 +386,19 @@ jobs:
           adb emu kill
           sleep 7
 
-      - name: Android emulator setup + Smoke test (Retry)
+      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
         timeout-minutes: 30
         # Retry the tests if the previous fail happened on the emulator startup.
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
+          api-level: ${{ steps.droid-settings.outputs.api-level }}
+          target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
-          arch: x86
+          arch: ${{ steps.droid-settings.outputs.arch }}
           cores: 2
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
