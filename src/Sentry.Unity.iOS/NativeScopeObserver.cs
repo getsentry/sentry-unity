@@ -2,9 +2,9 @@ using System;
 
 namespace Sentry.Unity.iOS
 {
-    public class IosNativeScopeObserver : ScopeObserver
+    public class NativeScopeObserver : ScopeObserver
     {
-        public IosNativeScopeObserver(SentryOptions options) : base("iOS", options) { }
+        public NativeScopeObserver(string name, SentryOptions options) : base(name, options) { }
 
         public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
         {

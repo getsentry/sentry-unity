@@ -50,16 +50,16 @@ LoadSentryDylib()
 
 // [sdkClass startWithOptionsObject:options];
 
-// int CrashedLastRun() {
+int CrashedLastRun() {
 //     return [SentrySDK crashedLastRun] ? 1 : 0;
-// }
+}
 
-// void Close() {
+void Close() {
 //     [SentrySDK close];
-// }
+}
 
-// void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char*
-// type, const char* category, int level) {
+void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char*
+type, const char* category, int level) {
 //     if (timestamp == NULL && message == NULL && type == NULL && category == NULL) {
 //         return;
 //     }
@@ -93,9 +93,9 @@ LoadSentryDylib()
 
 //         [scope addBreadcrumb:breadcrumb];
 //     }];
-// }
+}
 
-// void SentryNativeBridgeSetExtra(const char* key, const char* value) {
+void SentryNativeBridgeSetExtra(const char* key, const char* value) {
 //     if (key == NULL) {
 //         return;
 //     }
@@ -108,9 +108,9 @@ LoadSentryDylib()
 //             [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
 //         }
 //     }];
-// }
+}
 
-// void SentryNativeBridgeSetTag(const char* key, const char* value) {
+void SentryNativeBridgeSetTag(const char* key, const char* value) {
 //     if (key == NULL) {
 //         return;
 //     }
@@ -123,9 +123,9 @@ LoadSentryDylib()
 //             [scope removeTagForKey:[NSString stringWithUTF8String:key]];
 //         }
 //     }];
-// }
+}
 
-// void SentryNativeBridgeUnsetTag(const char* key) {
+void SentryNativeBridgeUnsetTag(const char* key) {
 //     if (key == NULL) {
 //         return;
 //     }
@@ -133,10 +133,10 @@ LoadSentryDylib()
 //     [SentrySDK configureScope:^(SentryScope * scope) {
 //         [scope removeTagForKey:[NSString stringWithUTF8String:key]];
 //     }];
-// }
+}
 
-// void SentryNativeBridgeSetUser(const char* email, const char* userId, const char* ipAddress,
-// const char* username) {
+void SentryNativeBridgeSetUser(const char* email, const char* userId, const char* ipAddress,
+const char* username) {
 //     if (email == NULL && userId == NULL && ipAddress == NULL && username == NULL) {
 //         return;
 //     }
@@ -164,10 +164,10 @@ LoadSentryDylib()
 
 //         [scope setUser:user];
 //     }];
-// }
+}
 
-// void SentryNativeBridgeUnsetUser() {
+void SentryNativeBridgeUnsetUser() {
 //     [SentrySDK configureScope:^(SentryScope * scope) {
 //         [scope setUser:nil];
 //     }];
-// }
+}

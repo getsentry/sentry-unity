@@ -1,6 +1,6 @@
 #if !UNITY_EDITOR
-#if UNITY_IOS
-#define SENTRY_NATIVE_IOS
+#if UNITY_IOS || (UNITY_STANDALONE_OSX && ENABLE_IL2CPP)
+#define SENTRY_NATIVE_COCOA
 #elif UNITY_ANDROID
 #define SENTRY_NATIVE_ANDROID
 #elif UNITY_STANDALONE_WIN && ENABLE_IL2CPP
@@ -13,7 +13,7 @@
 using UnityEngine;
 using UnityEngine.Scripting;
 
-#if SENTRY_NATIVE_IOS
+#if SENTRY_NATIVE_COCOA
 using Sentry.Unity.iOS;
 #elif UNITY_ANDROID
 using Sentry.Unity.Android;
@@ -37,8 +37,8 @@ namespace Sentry.Unity
             {
                 var sentryUnityInfo = new SentryUnityInfo();
 
-#if SENTRY_NATIVE_IOS
-                SentryNativeIos.Configure(options);
+#if SENTRY_NATIVE_COCOA
+                SentryNativeCocoa.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
                 SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE_WINDOWS
