@@ -64,7 +64,7 @@ namespace Sentry.Unity.Editor.Native
 
         private static void UploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
         {
-            var cliOptions = SentryCliOptions.LoadCliOptions();
+            var cliOptions = SentryScriptableObject.Load<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
             {
                 return;

@@ -22,6 +22,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         public static SentryWindow Instance => GetWindow<SentryWindow>();
 
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
+        protected virtual string SentryCliAssetName { get; } = SentryCliOptions.ConfigName;
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
         public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
@@ -45,44 +46,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             CopyLinkXmlToPlugins();
 
             CheckForAndConvertJsonConfig();
-            Options = LoadOptions();
-            CliOptions = SentryCliOptions.LoadCliOptions();
-        }
 
-        private ScriptableSentryUnityOptions LoadOptions()
-        {
-            var options = AssetDatabase.LoadAssetAtPath(
-                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName),
-                typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
-
-            if (options is null)
-            {
-                options = CreateOptions(SentryOptionsAssetName);
-            }
-
-            return options;
-        }
-
-        internal static ScriptableSentryUnityOptions CreateOptions(string? notDefaultConfigName = null)
-        {
-            if (!AssetDatabase.IsValidFolder("Assets/Resources"))
-            {
-                AssetDatabase.CreateFolder("Assets", "Resources");
-            }
-
-            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{ScriptableSentryUnityOptions.ConfigRootFolder}"))
-            {
-                AssetDatabase.CreateFolder("Assets/Resources", ScriptableSentryUnityOptions.ConfigRootFolder);
-            }
-
-            var scriptableOptions = CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
-
-            AssetDatabase.CreateAsset(scriptableOptions,
-                ScriptableSentryUnityOptions.GetConfigPath(notDefaultConfigName));
-            AssetDatabase.SaveAssets();
-
-            return scriptableOptions;
+            Options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(
+                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
+            CliOptions = SentryScriptableObject.Load<SentryCliOptions>(
+                SentryCliOptions.GetConfigPath(SentryCliAssetName));
         }
 
         private void CheckForAndConvertJsonConfig()
@@ -95,7 +63,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 return;
             }
 
-            var scriptableOptions = CreateOptions(SentryOptionsAssetName);
+            var scriptableOptions = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(
+                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
             JsonSentryUnityOptions.ToScriptableOptions(sentryOptionsTextAsset, scriptableOptions);
 
             EditorUtility.SetDirty(scriptableOptions);

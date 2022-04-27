@@ -23,7 +23,7 @@ namespace Sentry.Unity
         public static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.asset";
 
-        [field: SerializeField] public bool Enabled { get; set; }
+        [field: SerializeField] public bool Enabled { get; set; } = true;
 
         [field: SerializeField] public string? Dsn { get; set; }
         [field: SerializeField] public bool CaptureInEditor { get; set; }

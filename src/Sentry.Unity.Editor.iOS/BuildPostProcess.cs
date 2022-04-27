@@ -3,7 +3,6 @@ using System.IO;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -49,7 +48,7 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddNativeOptions(options);
                 sentryXcodeProject.AddSentryToMain(options);
 
-                var sentryCliOptions = SentryCliOptions.LoadCliOptions();
+                var sentryCliOptions = SentryScriptableObject.Load<SentryCliOptions>(SentryCliOptions.GetConfigPath());
                 if (sentryCliOptions.IsValid(logger))
                 {
                     SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);
