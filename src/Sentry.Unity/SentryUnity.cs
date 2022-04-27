@@ -32,7 +32,7 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions options)
         {
-            SentryOptionsUtility.TryAttachLogger(options);
+            options.TryAttachLogger();
             if (options.ShouldInitializeSdk())
             {
                 // On Standalone, we disable cache dir in case multiple app instances run over the same path.

@@ -164,6 +164,18 @@ Environment: {Environment}
 Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
 ";
         }
+
+        internal void TryAttachLogger(IApplication? application = null)
+        {
+            application ??= ApplicationAdapter.Instance;
+
+            if (DiagnosticLogger is null
+                && Debug
+                && (!DebugOnlyInEditor || application.IsEditor))
+            {
+                DiagnosticLogger = new UnityLogger(this);
+            }
+        }
     }
 
     /// <summary>
