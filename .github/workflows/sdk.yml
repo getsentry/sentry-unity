@@ -40,7 +40,7 @@ jobs:
         run: |
           if [[ "${{ inputs.target }}" == "Android" ]]; then
             submodules="modules/sentry-java"
-          elif [[ "${{ inputs.target }}" == "iOS" ]]; then
+          elif [[ "${{ inputs.target }}" == "iOS" || "${{ inputs.target }}" == "macOS"  ]]; then
             submodules="modules/sentry-cocoa"
           else
             submodules="modules/sentry-native"

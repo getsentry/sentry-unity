@@ -15,10 +15,11 @@
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
-    <!-- Cocoa -->
+    <!-- iOS -->
     <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
     <SentryiOSDeviceArtifactsDestination>$(SentryArtifactsDestination)/iOS/Device/Sentry.framework/</SentryiOSDeviceArtifactsDestination>
     <SentryiOSSimulatorArtifactsDestination>$(SentryArtifactsDestination)/iOS/Simulator/Sentry.framework/</SentryiOSSimulatorArtifactsDestination>
+    <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)/macOS/Sentry/</SentrymacOSArtifactsDestination>
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)/Android/Sentry/</SentryAndroidArtifactsDestination>
@@ -107,6 +108,7 @@ Expected to exist:
   </Target>
 
   <Target Name="CleaniOSSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryCocoaRoot)Carthage" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryiOSDeviceArtifactsDestination)" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryiOSSimulatorArtifactsDestination)" ContinueOnError="true" />
   </Target>
@@ -115,6 +117,12 @@ Expected to exist:
     <!-- The jar file is version appended and we copy by glob so to avoid duplicates: -->
     <RemoveDir Directories="$(SentryAndroidRoot)sentry/build/libs/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
+  </Target>
+
+  <Target Name="CleanmacOSSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryCocoaRoot)Carthage/Build/Mac" ContinueOnError="true" />
+    <Delete Files="$(SentrymacOSArtifactsDestination)/Sentry.dylib" ContinueOnError="true" />
+    <Delete Files="$(SentrymacOSArtifactsDestination)/Sentry.dylib.dSYM" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -143,8 +151,20 @@ Expected to exist:
     <Copy SourceFiles="@(iOSSimulatorBuildPath)" DestinationFiles="@(iOSSimulatorBuildPath->'$(SentryiOSSimulatorArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
 
-    <Error Condition="(!Exists('$(SentryiOSDeviceArtifactsDestination)') OR !Exists('$(SentryiOSSimulatorArtifactsDestination)'))" Text="Failed to build the Cocoa SDK.">
-    </Error>
+    <Error Condition="(!Exists('$(SentryiOSDeviceArtifactsDestination)') OR !Exists('$(SentryiOSSimulatorArtifactsDestination)'))" Text="Failed to build the iOS SDK." />
+  </Target>
+
+  <!-- Build the macOS SDK: dotnet msbuild /t:BuildmacOSSDK src/Sentry.Unity -->
+  <Target Name="BuildmacOSSDK" BeforeTargets="BeforeBuild" Condition="$([MSBuild]::IsOSPlatform('OSX'))
+          And '$(MSBuildProjectName)' == 'Sentry.Unity'
+          And (!Exists('$(SentrymacOSArtifactsDestination)/Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)/Sentry.dylib.dSYM'))">
+    <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
+    <Message Importance="High" Text="Building Sentry macOS SDK."></Message>
+
+    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --no-skip-current --platform macOS"></Exec>
+
+    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)/Sentry.dylib" />
+    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)/Sentry.dylib.dSYM" />
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->

@@ -33,6 +33,12 @@ jobs:
       target: iOS
       runsOn: macos-latest
 
+  macos-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: macOS
+      runsOn: macos-latest
+
   windows-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
@@ -88,6 +94,12 @@ jobs:
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
+          wait-timeout: 3600
+
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        with:
+          name: macOS-sdk
+          path: package-dev/Plugins/macOS
           wait-timeout: 3600
 
       - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
