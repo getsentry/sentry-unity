@@ -34,7 +34,7 @@ namespace Sentry.Unity
         /// <summary>
         /// Interval in milliseconds a session terminates if put in the background.
         /// </summary>
-        [field: SerializeField] public int AutoSessionTrackingInterval { get; set; } = 30000;
+        [field: SerializeField] public int AutoSessionTrackingInterval { get; set; } = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
 
         [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
         [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
