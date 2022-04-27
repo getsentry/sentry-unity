@@ -33,17 +33,6 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [Test]
-        public void Options_ReadFromJson_Success()
-        {
-            var optionsFilePath = GetTestOptionsFilePath();
-            Assert.IsTrue(File.Exists(optionsFilePath));
-
-            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
-
-            JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
-        }
-
-        [Test]
         [TestCase(true)]
         [TestCase(false)]
         public void ToSentryOptions_OptionsCreated_AreEqualToNewOptions(bool isBuilding)
@@ -145,23 +134,6 @@ namespace Sentry.Unity.Tests
             ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
 
             Assert.IsTrue(optionsConfiguration.GotCalled);
-        }
-
-        [Test]
-        [TestCase(true)]
-        [TestCase(false)]
-        public void ToScriptableOptions_ConvertJsonOptions_AreEqual(bool isBuilding)
-        {
-            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
-            var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
-
-            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
-            JsonSentryUnityOptions.ToScriptableOptions(jsonTextAsset, scriptableOptions);
-
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
-
-            AssertOptions(expectedOptions, actualOptions);
         }
 
         public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)

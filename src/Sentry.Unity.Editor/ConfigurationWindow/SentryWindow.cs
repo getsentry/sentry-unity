@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
-using Sentry.Unity.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,7 +43,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             SetTitle();
             CopyLinkXmlToPlugins();
 
-            CheckForAndConvertJsonConfig();
             Options = LoadOptions();
             CliOptions = SentryCliOptions.LoadCliOptions();
         }
@@ -83,25 +81,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             AssetDatabase.SaveAssets();
 
             return scriptableOptions;
-        }
-
-        private void CheckForAndConvertJsonConfig()
-        {
-            var sentryOptionsTextAsset =
-                AssetDatabase.LoadAssetAtPath(JsonSentryUnityOptions.GetConfigPath(), typeof(TextAsset)) as TextAsset;
-            if (sentryOptionsTextAsset is null)
-            {
-                // Json config not found, nothing to do.
-                return;
-            }
-
-            var scriptableOptions = CreateOptions(SentryOptionsAssetName);
-            JsonSentryUnityOptions.ToScriptableOptions(sentryOptionsTextAsset, scriptableOptions);
-
-            EditorUtility.SetDirty(scriptableOptions);
-            AssetDatabase.SaveAssets();
-
-            AssetDatabase.DeleteAsset(JsonSentryUnityOptions.GetConfigPath());
         }
 
         // ReSharper disable once UnusedMember.Local
