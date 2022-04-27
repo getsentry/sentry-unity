@@ -64,7 +64,7 @@ namespace Sentry.Unity.Json
                 options.Environment = environment.GetString();
             }
 
-            SentryOptionsUtility.TryAttachLogger(options);
+            options.TryAttachLogger();
             return options;
         }
 

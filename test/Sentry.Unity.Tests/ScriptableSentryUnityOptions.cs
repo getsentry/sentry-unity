@@ -51,14 +51,13 @@ namespace Sentry.Unity.Tests
             var expectedOptions = new SentryUnityOptions(_fixture.Application, isBuilding);
 
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
 
             // These are config window specific differences in default values we actually want
             scriptableOptions.Debug = false;
             scriptableOptions.DebugOnlyInEditor = false;
             scriptableOptions.DiagnosticLevel = SentryLevel.Debug;
 
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding, _fixture.Application);
+            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
 
             AssertOptions(expectedOptions, actualOptions);
         }
@@ -128,7 +127,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = expectedOptions.DebugOnlyInEditor;
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-            var optionsActual = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding, _fixture.Application);
+            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
 
             AssertOptions(expectedOptions, optionsActual);
         }
@@ -142,7 +141,7 @@ namespace Sentry.Unity.Tests
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
             scriptableOptions.OptionsConfiguration = optionsConfiguration;
 
-            ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
+            scriptableOptions.ToSentryUnityOptions(isBuilding);
 
             Assert.IsTrue(optionsConfiguration.GotCalled);
         }
@@ -156,10 +155,9 @@ namespace Sentry.Unity.Tests
             var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
 
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
             JsonSentryUnityOptions.ToScriptableOptions(jsonTextAsset, scriptableOptions);
 
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
+            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding);
 
             AssertOptions(expectedOptions, actualOptions);
         }
