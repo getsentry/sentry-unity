@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Dropped support for Sentry options as Json ([#709](https://github.com/getsentry/sentry-unity/pull/709))
+  - If you're migrating from version 0.3.0 or older, make sure to upgrade to 0.15.0 first, as it is the last version supporting the automated conversion of the options as Json file to a Scriptable Object.
+
 ## 0.15.0
 
 ### Features
