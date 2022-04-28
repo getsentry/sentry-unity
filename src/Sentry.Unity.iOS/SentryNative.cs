@@ -13,9 +13,11 @@ namespace Sentry.Unity.iOS
         /// Configures the native support.
         /// </summary>
         /// <param name="options">The Sentry Unity options to use.</param>
-        public static void Configure(SentryUnityOptions options)
+        public static void Configure(SentryUnityOptions options) => Configure(options, ApplicationAdapter.Instance.Platform);
+
+        internal static void Configure(SentryUnityOptions options, RuntimePlatform platform)
         {
-            switch (ApplicationAdapter.Instance.Platform)
+            switch (platform)
             {
                 case RuntimePlatform.IPhonePlayer:
                     if (!options.IosNativeSupportEnabled)
@@ -36,6 +38,10 @@ namespace Sentry.Unity.iOS
                     }
                     options.ScopeObserver = new NativeScopeObserver("macOS", options);
                     break;
+                default:
+                    options.DiagnosticLogger?
+                        .LogWarning("Cocoa SentryNative.Configure() called for unsupported platform: '{0}'", platform);
+                    return;
             }
 
             options.EnableScopeSync = true;
