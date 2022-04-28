@@ -358,7 +358,7 @@ jobs:
           Write-Output "Current Target is $target"
           echo "::set-output name=target::$target"
           
-          $arch = 'x86' # dropping x86_64
+          $arch = $apiLevel -ge 31 ? 'x86_64' : 'x86'
           Write-Output "Current Arch is $arch"
           echo "::set-output name=arch::$arch"
           
