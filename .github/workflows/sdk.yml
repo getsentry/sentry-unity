@@ -32,7 +32,7 @@ jobs:
           path: |
             package-dev/Plugins
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets') }}
+          key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'package-dev/Plugins/${{ inputs.target }}/**') }}
 
       - name: Checkout submodules
         if: steps.cache.outputs.cache-hit != 'true'
