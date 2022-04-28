@@ -123,6 +123,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.ReleaseOverride = expectedOptions.Release;
             scriptableOptions.EnvironmentOverride = expectedOptions.Environment;
             scriptableOptions.Debug = expectedOptions.Debug;
+            scriptableOptions.DebugOnlyInEditor = false; // Affects Debug otherwise
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
             var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
@@ -139,7 +140,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.Debug = true;
             scriptableOptions.DebugOnlyInEditor = true;
 
-            var actualDebug = ScriptableSentryUnityOptions.ShouldDebug(scriptableOptions, isEditorPlayer);
+            var actualDebug = scriptableOptions.ShouldDebug(isEditorPlayer);
 
             Assert.AreEqual(expectedDebug, actualDebug);
         }
@@ -151,10 +152,9 @@ namespace Sentry.Unity.Tests
         {
             var optionsConfiguration = ScriptableObject.CreateInstance<TestOptionsConfiguration>();
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-
             scriptableOptions.OptionsConfiguration = optionsConfiguration;
 
-            ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
+            scriptableOptions.ToSentryUnityOptions(isBuilding);
 
             Assert.IsTrue(optionsConfiguration.GotCalled);
         }

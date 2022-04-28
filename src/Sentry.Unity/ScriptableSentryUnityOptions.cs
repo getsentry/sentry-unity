@@ -132,29 +132,30 @@ namespace Sentry.Unity
                 options.CacheDirectoryPath = null;
             }
 
-            options.IosNativeSupportEnabled = scriptableOptions.IosNativeSupportEnabled;
-            options.AndroidNativeSupportEnabled = scriptableOptions.AndroidNativeSupportEnabled;
-            options.WindowsNativeSupportEnabled = scriptableOptions.WindowsNativeSupportEnabled;
+            options.IosNativeSupportEnabled = IosNativeSupportEnabled;
+            options.AndroidNativeSupportEnabled = AndroidNativeSupportEnabled;
+            options.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
 
             // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
             // need to set it here directly.
-            options.Debug = ShouldDebug(scriptableOptions, application.IsEditor && !isBuilding);
-            options.DiagnosticLevel = scriptableOptions.DiagnosticLevel;
+            options.Debug = ShouldDebug(application.IsEditor && !isBuilding);
+            options.DiagnosticLevel = DiagnosticLevel;
 
             options.TryAttachLogger();
+
             OptionsConfiguration?.Configure(options);
 
             return options;
         }
 
-        internal static bool ShouldDebug(ScriptableSentryUnityOptions scriptableOptions, bool isEditorPlayer)
+        internal bool ShouldDebug(bool isEditorPlayer)
         {
             if (!isEditorPlayer)
             {
-                return !scriptableOptions.DebugOnlyInEditor && scriptableOptions.Debug;
+                return !DebugOnlyInEditor && Debug;
             }
 
-            return scriptableOptions.Debug;
+            return Debug;
         }
     }
 }

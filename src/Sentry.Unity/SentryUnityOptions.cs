@@ -160,13 +160,9 @@ Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
 ";
         }
 
-        internal void TryAttachLogger(IApplication? application = null)
+        internal void TryAttachLogger()
         {
-            application ??= ApplicationAdapter.Instance;
-
-            if (DiagnosticLogger is null
-                && Debug
-                && (!DebugOnlyInEditor || application.IsEditor))
+            if (Debug && DiagnosticLogger is null)
             {
                 DiagnosticLogger = new UnityLogger(this);
             }
