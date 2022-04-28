@@ -42,7 +42,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         private void Awake()
         {
             SetTitle();
-            CopyLinkXmlToPlugins();
 
             CheckForAndConvertJsonConfig();
             Options = LoadOptions();
@@ -200,30 +199,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             OnValidationError(validationError);
 
             new UnityLogger(new SentryOptions()).LogWarning(validationError.ToString());
-        }
-
-        /// <summary>
-        /// Creates Sentry folder 'Plugins/Sentry' and copies the link.xml into it
-        /// </summary>
-        private void CopyLinkXmlToPlugins()
-        {
-            if (!AssetDatabase.IsValidFolder("Assets/Plugins"))
-            {
-                AssetDatabase.CreateFolder("Assets", "Plugins");
-            }
-
-            if (!AssetDatabase.IsValidFolder("Assets/Plugins/Sentry"))
-            {
-                AssetDatabase.CreateFolder("Assets/Plugins", "Sentry");
-            }
-
-            if (!File.Exists(LinkXmlPath))
-            {
-                using var fileStream = File.Create(LinkXmlPath);
-                using var resourceStream =
-                    GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
-                resourceStream.CopyTo(fileStream);
-            }
         }
 
         private void SetTitle()

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
@@ -86,6 +87,8 @@ namespace Sentry.Unity.Editor
 
         internal static SentryCliOptions CreateCliOptions(string? configName)
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(GetConfigPath(configName)));
+
             var cliOptions = CreateInstance<SentryCliOptions>();
 
             AssetDatabase.CreateAsset(cliOptions, GetConfigPath(configName));
