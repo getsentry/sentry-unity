@@ -9,7 +9,7 @@ static Class SentryBreadcrumb;
 static Class SentryUser;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
-    name = dlsym(dylib, "OBJC_CLASS_$_" #name);                                                    \
+    name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
     if (!name) {                                                                                   \
         NSLog(@"Sentry (native bridge): Couldn't load %@ class from the dynamic library", name);   \
         break;                                                                                     \
@@ -40,42 +40,42 @@ int SentryNativeBridgeLoadLibrary()
     return loadStatus;
 }
 
-// We're doing dynamic access so we're getting warnings about missing class/instance methods...
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wobjc-method-access"
-
-void *SentryNativeBridgeOptionsNew() { return (void *)[[NSMutableDictionary alloc] init]; }
-
-void SentryNativeBridgeOptionsSetString(void *options, const char *name, const char *value)
+const void *SentryNativeBridgeOptionsNew()
 {
-    NSMutableDictionary *dictOptions = (NSMutableDictionary *)options;
+    return CFBridgingRetain([[NSMutableDictionary alloc] init]);
+}
+
+void SentryNativeBridgeOptionsSetString(const void *options, const char *name, const char *value)
+{
+    NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
     dictOptions[[NSString stringWithUTF8String:name]] = [NSString stringWithUTF8String:value];
 }
 
-void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value)
+void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int32_t value)
 {
-    NSMutableDictionary *dictOptions = (NSMutableDictionary *)options;
+    NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithInt:value];
 }
 
-void SentryNativeBridgeStartWithOptions(void *options)
+void SentryNativeBridgeStartWithOptions(const void *options)
 {
-    [SentrySDK startWithOptions:((NSMutableDictionary *)options)];
-    [((NSMutableDictionary *)options) release];
+    NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
+    [SentrySDK performSelector:@selector(startWithOptions:) withObject:dictOptions];
 }
 
-/*****************************************************************************/
-/* The remaining code is a copy of iOS/SentryNativeBridge.m                  */
-/* with minor changes to make it work with dynamically loaded classes.       */
-/* Specifically:                                                             */
-/*   - use `id` as variable types                                            */
-/*   - use [obj setValue:value forKey:@"prop"] instead of `obj.prop = value` */
-/*****************************************************************************/
+/*******************************************************************************/
+/* The remaining code is a copy of iOS/SentryNativeBridge.m with changes to    */
+/* make it work with dynamically loaded classes. Mainly:                       */
+/*   - call: [class performSelector:@selector(arg1:arg2:)                      */
+/*                  withObject:arg1Value withObject:arg2Value];                */
+/*   - use `id` as variable types                                              */
+/*   - use [obj setValue:value forKey:@"prop"] instead of `obj.prop = value`   */
+/*******************************************************************************/
 
 int SentryNativeBridgeCrashedLastRun()
 {
     @try {
-        return [SentrySDK crashedLastRun] ? 1 : 0;
+        return [SentrySDK performSelector:@selector(crashedLastRun)] ? 1 : 0;
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to get crashedLastRun: %@", exception.reason);
     }
@@ -98,31 +98,37 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
+    // declaring the (block) callback as a variable to avoid too much editor blank space on the left
+    void (^scopeUpdateBlock)(id) = ^void(id scope) {
+        id breadcrumb = [[SentryBreadcrumb alloc] init];
+
+        if (timestamp != NULL) {
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+            [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
+            [breadcrumb
+                setValue:[dateFormatter dateFromString:[NSString stringWithUTF8String:timestamp]]
+                  forKey:@"timestamp"];
+        }
+
+        if (message != NULL) {
+            [breadcrumb setValue:[NSString stringWithUTF8String:message] forKey:@"message"];
+        }
+
+        if (type != NULL) {
+            [breadcrumb setValue:[NSString stringWithUTF8String:type] forKey:@"type"];
+        }
+
+        if (category != NULL) {
+            [breadcrumb setValue:[NSString stringWithUTF8String:category] forKey:@"category"];
+        }
+
+        [breadcrumb setValue:[NSNumber numberWithInt:level] forKey:@"level"];
+
+        [scope performSelector:@selector(addBreadcrumb:) withObject:breadcrumb];
+    };
+
     @try {
-        [SentrySDK configureScope:^(id scope) {
-            id breadcrumb = [[SentryBreadcrumb alloc]
-                initWithLevel:level
-                     category:(category ? [NSString stringWithUTF8String:category] : nil)];
-
-            if (timestamp != NULL) {
-                NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-                [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
-                [breadcrumb setValue:[dateFormatter
-                                         dateFromString:[NSString stringWithUTF8String:timestamp]]
-                              forKey:@"timestamp"];
-                [dateFormatter release];
-            }
-
-            if (message != NULL) {
-                [breadcrumb setValue:[NSString stringWithUTF8String:message] forKey:@"message"];
-            }
-
-            if (type != NULL) {
-                [breadcrumb setValue:[NSString stringWithUTF8String:type] forKey:@"type"];
-            }
-
-            [scope addBreadcrumb:breadcrumb];
-        }];
+        [SentrySDK performSelector:@selector(configureScope:) withObject:scopeUpdateBlock];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to add breadcrumb: %@", exception.reason);
     }
@@ -135,14 +141,17 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
     }
 
     @try {
-        [SentrySDK configureScope:^(id scope) {
-            if (value != NULL) {
-                [scope setExtraValue:[NSString stringWithUTF8String:value]
-                              forKey:[NSString stringWithUTF8String:key]];
-            } else {
-                [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
-            }
-        }];
+        [SentrySDK performSelector:@selector(configureScope:)
+                        withObject:^(id scope) {
+                            if (value != NULL) {
+                                [scope performSelector:@selector(setExtraValue:forKey:)
+                                            withObject:[NSString stringWithUTF8String:value]
+                                            withObject:[NSString stringWithUTF8String:key]];
+                            } else {
+                                [scope performSelector:@selector(removeExtraForKey:)
+                                            withObject:[NSString stringWithUTF8String:key]];
+                            }
+                        }];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to set extra: %@", exception.reason);
     }
@@ -155,14 +164,17 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
     }
 
     @try {
-        [SentrySDK configureScope:^(id scope) {
-            if (value != NULL) {
-                [scope setTagValue:[NSString stringWithUTF8String:value]
-                            forKey:[NSString stringWithUTF8String:key]];
-            } else {
-                [scope removeTagForKey:[NSString stringWithUTF8String:key]];
-            }
-        }];
+        [SentrySDK performSelector:@selector(configureScope:)
+                        withObject:^(id scope) {
+                            if (value != NULL) {
+                                [scope performSelector:@selector(setTagValue:forKey:)
+                                            withObject:[NSString stringWithUTF8String:value]
+                                            withObject:[NSString stringWithUTF8String:key]];
+                            } else {
+                                [scope performSelector:@selector(removeTagForKey:)
+                                            withObject:[NSString stringWithUTF8String:key]];
+                            }
+                        }];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to set tag: %@", exception.reason);
     }
@@ -175,8 +187,11 @@ void SentryNativeBridgeUnsetTag(const char *key)
     }
 
     @try {
-        [SentrySDK configureScope:^(
-            id scope) { [scope removeTagForKey:[NSString stringWithUTF8String:key]]; }];
+        [SentrySDK performSelector:@selector(configureScope:)
+                        withObject:^(id scope) {
+                            [scope performSelector:@selector(removeTagForKey:)
+                                        withObject:[NSString stringWithUTF8String:key]];
+                        }];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to unset tag: %@", exception.reason);
     }
@@ -190,27 +205,31 @@ void SentryNativeBridgeSetUser(
     }
 
     @try {
-        [SentrySDK configureScope:^(id scope) {
-            id user = [[SentryUser alloc] init];
+        [SentrySDK
+            performSelector:@selector(configureScope:)
+                 withObject:^(id scope) {
+                     id user = [[SentryUser alloc] init];
 
-            if (email != NULL) {
-                [user setValue:[NSString stringWithUTF8String:email] forKey:@"email"];
-            }
+                     if (email != NULL) {
+                         [user setValue:[NSString stringWithUTF8String:email] forKey:@"email"];
+                     }
 
-            if (userId != NULL) {
-                [user setValue:[NSString stringWithUTF8String:userId] forKey:@"userId"];
-            }
+                     if (userId != NULL) {
+                         [user setValue:[NSString stringWithUTF8String:userId] forKey:@"userId"];
+                     }
 
-            if (ipAddress != NULL) {
-                [user setValue:[NSString stringWithUTF8String:ipAddress] forKey:@"ipAddress"];
-            }
+                     if (ipAddress != NULL) {
+                         [user setValue:[NSString stringWithUTF8String:ipAddress]
+                                 forKey:@"ipAddress"];
+                     }
 
-            if (username != NULL) {
-                [user setValue:[NSString stringWithUTF8String:username] forKey:@"username"];
-            }
+                     if (username != NULL) {
+                         [user setValue:[NSString stringWithUTF8String:username]
+                                 forKey:@"username"];
+                     }
 
-            [scope setUser:user];
-        }];
+                     [scope setUser:user];
+                 }];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to set user: %@", exception.reason);
     }
@@ -219,10 +238,9 @@ void SentryNativeBridgeSetUser(
 void SentryNativeBridgeUnsetUser()
 {
     @try {
-        [SentrySDK configureScope:^(id scope) { [scope setUser:nil]; }];
+        [SentrySDK performSelector:@selector(configureScope:)
+                        withObject:^(id scope) { [scope setUser:nil]; }];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to unset user: %@", exception.reason);
     }
 }
-
-#pragma clang diagnostic pop
