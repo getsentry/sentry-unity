@@ -27,9 +27,24 @@ void SentryNativeBridgeStartWithOptions(void *options)
     // macOS only
 }
 
-int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }
+int SentryNativeBridgeCrashedLastRun()
+{
+    @try {
+        return [SentrySDK crashedLastRun] ? 1 : 0;
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to get crashedLastRun: %@", exception.reason);
+    }
+    return -1;
+}
 
-void SentryNativeBridgeClose() { [SentrySDK close]; }
+void SentryNativeBridgeClose()
+{
+    @try {
+        [SentrySDK close];
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to close: %@", exception.reason);
+    }
+}
 
 void SentryNativeBridgeAddBreadcrumb(
     const char *timestamp, const char *message, const char *type, const char *category, int level)
@@ -38,34 +53,33 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
-        SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc] init];
+    @try {
+        [SentrySDK configureScope:^(SentryScope *scope) {
+            SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc]
+                initWithLevel:level
+                     category:(category ? [NSString stringWithUTF8String:category] : nil)];
 
-        if (timestamp != NULL) {
-            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-            [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
-            breadcrumb.timestamp =
-                [dateFormatter dateFromString:[NSString stringWithCString:timestamp
-                                                                 encoding:NSUTF8StringEncoding]];
-        }
+            if (timestamp != NULL) {
+                NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+                [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
+                breadcrumb.timestamp =
+                    [dateFormatter dateFromString:[NSString stringWithUTF8String:timestamp]];
+                [dateFormatter release];
+            }
 
-        if (message != NULL) {
-            breadcrumb.message = [NSString stringWithCString:message encoding:NSUTF8StringEncoding];
-        }
+            if (message != NULL) {
+                breadcrumb.message = [NSString stringWithUTF8String:message];
+            }
 
-        if (type != NULL) {
-            breadcrumb.type = [NSString stringWithCString:type encoding:NSUTF8StringEncoding];
-        }
+            if (type != NULL) {
+                breadcrumb.type = [NSString stringWithUTF8String:type];
+            }
 
-        if (category != NULL) {
-            breadcrumb.category = [NSString stringWithCString:category
-                                                     encoding:NSUTF8StringEncoding];
-        }
-
-        breadcrumb.level = level;
-
-        [scope addBreadcrumb:breadcrumb];
-    }];
+            [scope addBreadcrumb:breadcrumb];
+        }];
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to add breadcrumb: %@", exception.reason);
+    }
 }
 
 void SentryNativeBridgeSetExtra(const char *key, const char *value)
@@ -74,14 +88,18 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
-        if (value != NULL) {
-            [scope setExtraValue:[NSString stringWithUTF8String:value]
-                          forKey:[NSString stringWithUTF8String:key]];
-        } else {
-            [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
-        }
-    }];
+    @try {
+        [SentrySDK configureScope:^(SentryScope *scope) {
+            if (value != NULL) {
+                [scope setExtraValue:[NSString stringWithUTF8String:value]
+                              forKey:[NSString stringWithUTF8String:key]];
+            } else {
+                [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
+            }
+        }];
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to set extra: %@", exception.reason);
+    }
 }
 
 void SentryNativeBridgeSetTag(const char *key, const char *value)
@@ -90,14 +108,18 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
-        if (value != NULL) {
-            [scope setTagValue:[NSString stringWithUTF8String:value]
-                        forKey:[NSString stringWithUTF8String:key]];
-        } else {
-            [scope removeTagForKey:[NSString stringWithUTF8String:key]];
-        }
-    }];
+    @try {
+        [SentrySDK configureScope:^(SentryScope *scope) {
+            if (value != NULL) {
+                [scope setTagValue:[NSString stringWithUTF8String:value]
+                            forKey:[NSString stringWithUTF8String:key]];
+            } else {
+                [scope removeTagForKey:[NSString stringWithUTF8String:key]];
+            }
+        }];
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to set tag: %@", exception.reason);
+    }
 }
 
 void SentryNativeBridgeUnsetTag(const char *key)
@@ -106,8 +128,12 @@ void SentryNativeBridgeUnsetTag(const char *key)
         return;
     }
 
-    [SentrySDK configureScope:^(
-        SentryScope *scope) { [scope removeTagForKey:[NSString stringWithUTF8String:key]]; }];
+    @try {
+        [SentrySDK configureScope:^(
+            SentryScope *scope) { [scope removeTagForKey:[NSString stringWithUTF8String:key]]; }];
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to unset tag: %@", exception.reason);
+    }
 }
 
 void SentryNativeBridgeSetUser(
@@ -117,32 +143,40 @@ void SentryNativeBridgeSetUser(
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
-        SentryUser *user = [[SentryUser alloc] init];
+    @try {
+        [SentrySDK configureScope:^(SentryScope *scope) {
+            SentryUser *user = [[SentryUser alloc] init];
 
-        if (email != NULL) {
-            user.email = [NSString stringWithCString:email encoding:NSUTF8StringEncoding];
-        }
+            if (email != NULL) {
+                user.email = [NSString stringWithUTF8String:email];
+            }
 
-        if (userId != NULL) {
-            user.userId = [NSString stringWithCString:userId encoding:NSUTF8StringEncoding];
-        }
+            if (userId != NULL) {
+                user.userId = [NSString stringWithUTF8String:userId];
+            }
 
-        if (ipAddress != NULL) {
-            user.ipAddress = [NSString stringWithCString:ipAddress encoding:NSUTF8StringEncoding];
-        }
+            if (ipAddress != NULL) {
+                user.ipAddress = [NSString stringWithUTF8String:ipAddress];
+            }
 
-        if (username != NULL) {
-            user.username = [NSString stringWithCString:username encoding:NSUTF8StringEncoding];
-        }
+            if (username != NULL) {
+                user.username = [NSString stringWithUTF8String:username];
+            }
 
-        [scope setUser:user];
-    }];
+            [scope setUser:user];
+        }];
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to set user: %@", exception.reason);
+    }
 }
 
 void SentryNativeBridgeUnsetUser()
 {
-    [SentrySDK configureScope:^(SentryScope *scope) { [scope setUser:nil]; }];
+    @try {
+        [SentrySDK configureScope:^(SentryScope *scope) { [scope setUser:nil]; }];
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): failed to unset user: %@", exception.reason);
+    }
 }
 
 NS_ASSUME_NONNULL_END
