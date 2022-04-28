@@ -39,11 +39,6 @@ namespace Sentry.Unity
         /// </summary>
         public bool EnableLogDebouncing { get; set; } = false;
 
-        /// <summary>
-        /// Whether the SDK should be in <see cref="Debug"/> mode only while in the Unity Editor.
-        /// </summary>
-        public bool DebugOnlyInEditor { get; set; }
-
         private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
 
         /// <summary>
