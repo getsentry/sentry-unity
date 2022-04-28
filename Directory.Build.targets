@@ -15,7 +15,7 @@
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
-    <!-- iOS -->
+    <!-- Cocoa -->
     <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
     <SentryiOSDeviceArtifactsDestination>$(SentryArtifactsDestination)/iOS/Device/Sentry.framework/</SentryiOSDeviceArtifactsDestination>
     <SentryiOSSimulatorArtifactsDestination>$(SentryArtifactsDestination)/iOS/Simulator/Sentry.framework/</SentryiOSSimulatorArtifactsDestination>
@@ -521,6 +521,7 @@ void PrintFailedTests(XElement element)
     <ItemGroup>
       <SDK Include="Windows"/>
       <SDK Include="iOS"/>
+      <SDK Include="macOS"/>
       <SDK Include="Android"/>
     </ItemGroup>
     <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
