@@ -26,14 +26,15 @@ namespace Sentry.Unity
         [field: SerializeField] public bool Enabled { get; set; } = true;
 
         [field: SerializeField] public string? Dsn { get; set; }
-        [field: SerializeField] public bool CaptureInEditor { get; set; }
-        [field: SerializeField] public bool EnableLogDebouncing { get; set; }
-        [field: SerializeField] public double TracesSampleRate { get; set; }
-        [field: SerializeField] public bool AutoSessionTracking { get; set; }
+        [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
+        [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
+        [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
+        [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
+
         /// <summary>
         /// Interval in milliseconds a session terminates if put in the background.
         /// </summary>
-        [field: SerializeField] public int AutoSessionTrackingInterval { get; set; }
+        [field: SerializeField] public int AutoSessionTrackingInterval { get; set; } = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
 
         [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
         [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
@@ -41,17 +42,22 @@ namespace Sentry.Unity
         [field: SerializeField] public bool AttachScreenshot { get; set; }
         [field: SerializeField] public int ScreenshotMaxWidth { get; set; }
         [field: SerializeField] public int ScreenshotMaxHeight { get; set; }
-        [field: SerializeField] public int ScreenshotQuality { get; set; }
-        [field: SerializeField] public int MaxBreadcrumbs { get; set; }
-        [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; }
+        [field: SerializeField] public int ScreenshotQuality { get; set; } = 75;
+        [field: SerializeField] public int MaxBreadcrumbs { get; set; } = Constants.DefaultMaxBreadcrumbs;
+
+        [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
         [field: SerializeField] public bool SendDefaultPii { get; set; }
         [field: SerializeField] public bool IsEnvironmentUser { get; set; }
 
-        [field: SerializeField] public bool EnableOfflineCaching { get; set; }
+        [field: SerializeField] public bool EnableOfflineCaching { get; set; } = true;
         [field: SerializeField] public int MaxCacheItems { get; set; } = 30;
-        [field: SerializeField] public int InitCacheFlushTimeout { get; set; }
+
+        /// <summary>
+        /// Time in milliseconds for flushing the cache at startup
+        /// </summary>
+        [field: SerializeField] public int InitCacheFlushTimeout { get; set; } = (int)TimeSpan.Zero.TotalMilliseconds;
         [field: SerializeField] public float? SampleRate { get; set; }
-        [field: SerializeField] public int ShutdownTimeout { get; set; }
+        [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
         [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
@@ -59,9 +65,9 @@ namespace Sentry.Unity
 
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
-        [field: SerializeField] public bool Debug { get; set; }
-        [field: SerializeField] public bool DebugOnlyInEditor { get; set; }
-        [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; }
+        [field: SerializeField] public bool Debug { get; set; } = true;
+        [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
+        [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; } = SentryLevel.Warning;
 
         public static SentryUnityOptions? LoadSentryUnityOptions(bool isBuilding = false)
         {
