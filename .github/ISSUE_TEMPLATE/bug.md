@@ -11,6 +11,8 @@ Sentry SaaS (sentry.io) or self-hosted/on-premise (which version?)
 
 Which version of the SDK?
 
+How did you install the package? (Git-URL, Assetstore)
+
 Which version of Unity?
 
 Is this happening in Unity (editor) or on a player like Android, iOS, Windows?
