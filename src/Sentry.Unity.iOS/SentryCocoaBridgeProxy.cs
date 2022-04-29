@@ -43,7 +43,7 @@ namespace Sentry.Unity.iOS
 
             var diagnosticLevel = options.DiagnosticLevel.ToString().ToLowerInvariant();
             options.DiagnosticLogger?.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
-            OptionsSetString(cOptions, "environment", diagnosticLevel);
+            OptionsSetString(cOptions, "diagnosticLevel", diagnosticLevel);
 
             // Disabling the native in favor of the C# layer for now
             options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
