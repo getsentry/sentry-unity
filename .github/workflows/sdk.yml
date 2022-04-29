@@ -22,6 +22,9 @@ jobs:
       - name: Get submodules status
         run: git submodule status | tee submodules-status
 
+      - run: cp -r package-dev/Plugins/${{ inputs.target }} sdk-static || echo "never mind, no files checked in..."
+        shell: bash
+
       - name: Restore from cache
         uses: actions/cache@v2
         id: cache
@@ -32,7 +35,7 @@ jobs:
           path: |
             package-dev/Plugins
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'package-dev/Plugins/${{ inputs.target }}/**') }}
+          key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
       - name: Checkout submodules
         if: steps.cache.outputs.cache-hit != 'true'
