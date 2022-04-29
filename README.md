@@ -30,6 +30,7 @@ Check the Sentry [Unity documentation for more details](https://docs.sentry.io/p
 ## Setup Sentry SDK with Unity
 
 [![YouTube Video of Setup Sentry SDK with Unity](https://img.youtube.com/vi/P0E9upOSznE/0.jpg)](https://www.youtube.com/watch?v=P0E9upOSznE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgetsentry%2Fsentry-unity.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgetsentry%2Fsentry-unity?ref=badge_shield)
 
 ## Legacy SDK
 
@@ -44,3 +45,7 @@ Sentry offered a minimalistic but stable SDK called [_sentry-unity-lite_](https:
 * [![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/PXa5Apfe7K)  
 * [![Stack Overflow](https://img.shields.io/badge/stack%20overflow-sentry-green.svg)](http://stackoverflow.com/questions/tagged/sentry)
 * [![Twitter Follow](https://img.shields.io/twitter/follow/getsentry?label=getsentry&style=social)](https://twitter.com/intent/follow?screen_name=getsentry)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgetsentry%2Fsentry-unity.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgetsentry%2Fsentry-unity?ref=badge_large)
