@@ -13,7 +13,15 @@ Editor/sentry-cli/sentry-cli-Windows-x86_64.exe
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe.meta
 Plugins/Android.meta
 Plugins/iOS.meta
+Plugins/macOS.meta
 Plugins/Windows.meta
+Plugins/macOS/Sentry.meta
+Plugins/macOS/SentryNativeBridge.m
+Plugins/macOS/SentryNativeBridge.m.meta
+Plugins/macOS/Sentry/Sentry.dylib
+Plugins/macOS/Sentry/Sentry.dylib.dSYM
+Plugins/macOS/Sentry/Sentry.dylib.dSYM.meta
+Plugins/macOS/Sentry/Sentry.dylib.meta
 Plugins/iOS/Device.meta
 Plugins/iOS/SentryNativeBridge.m
 Plugins/iOS/SentryNativeBridge.m.meta
