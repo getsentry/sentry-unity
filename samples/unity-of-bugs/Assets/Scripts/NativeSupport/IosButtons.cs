@@ -10,6 +10,7 @@ public class IosButtons : MonoBehaviour
     public void ThrowObjectiveC()
     {
 #if PLATFORM_IOS
+        Debug.Log("The iOS SDK supports capturing Objective-C exceptions. Consider enabling 'GCC_ENABLE_OBJC_EXCEPTIONS' in the Xcode build settings.");
         throwObjectiveC();
 #else
         Debug.Log("Requires IL2CPP. Try this on a native player that supports Objective-C native plugins.");
