@@ -112,6 +112,11 @@ jobs:
           docker exec unity bash -c 'dotnet tool install --global Alias --version 0.2.0 && \
           ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
+      - name: Update .meta files before packaging
+        # We need to open & close Unity on the sample project to update .meta files in package-dev.
+        # We could add a new custom target but reusing UnityConfigureSentryOptions is good enough.
+        run: docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
       - name: Prepare Sentry package for release
         shell: pwsh
         run: ./scripts/pack.ps1
