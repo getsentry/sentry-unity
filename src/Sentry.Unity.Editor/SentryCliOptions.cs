@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;

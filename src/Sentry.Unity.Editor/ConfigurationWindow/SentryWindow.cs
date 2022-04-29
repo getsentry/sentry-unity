@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
-using Sentry.Unity.Json;
 using UnityEditor;
 using UnityEngine;
 
@@ -43,34 +42,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         private void Awake()
         {
             SetTitle();
-            CopyLinkXmlToPlugins();
-
-            CheckForAndConvertJsonConfig();
 
             Options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(
                 ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
             CliOptions = SentryScriptableObject.Load<SentryCliOptions>(
                 SentryCliOptions.GetConfigPath(SentryCliAssetName));
-        }
-
-        private void CheckForAndConvertJsonConfig()
-        {
-            var sentryOptionsTextAsset =
-                AssetDatabase.LoadAssetAtPath(JsonSentryUnityOptions.GetConfigPath(), typeof(TextAsset)) as TextAsset;
-            if (sentryOptionsTextAsset is null)
-            {
-                // Json config not found, nothing to do.
-                return;
-            }
-
-            var scriptableOptions = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(
-                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
-            JsonSentryUnityOptions.ToScriptableOptions(sentryOptionsTextAsset, scriptableOptions);
-
-            EditorUtility.SetDirty(scriptableOptions);
-            AssetDatabase.SaveAssets();
-
-            AssetDatabase.DeleteAsset(JsonSentryUnityOptions.GetConfigPath());
         }
 
         // ReSharper disable once UnusedMember.Local
@@ -169,30 +145,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             OnValidationError(validationError);
 
             new UnityLogger(new SentryOptions()).LogWarning(validationError.ToString());
-        }
-
-        /// <summary>
-        /// Creates Sentry folder 'Plugins/Sentry' and copies the link.xml into it
-        /// </summary>
-        private void CopyLinkXmlToPlugins()
-        {
-            if (!AssetDatabase.IsValidFolder("Assets/Plugins"))
-            {
-                AssetDatabase.CreateFolder("Assets", "Plugins");
-            }
-
-            if (!AssetDatabase.IsValidFolder("Assets/Plugins/Sentry"))
-            {
-                AssetDatabase.CreateFolder("Assets/Plugins", "Sentry");
-            }
-
-            if (!File.Exists(LinkXmlPath))
-            {
-                using var fileStream = File.Create(LinkXmlPath);
-                using var resourceStream =
-                    GetType().Assembly.GetManifestResourceStream("Sentry.Unity.Editor.Resources.link.xml");
-                resourceStream.CopyTo(fileStream);
-            }
         }
 
         private void SetTitle()

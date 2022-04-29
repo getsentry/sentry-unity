@@ -33,17 +33,6 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [Test]
-        public void Options_ReadFromJson_Success()
-        {
-            var optionsFilePath = GetTestOptionsFilePath();
-            Assert.IsTrue(File.Exists(optionsFilePath));
-
-            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
-
-            JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
-        }
-
-        [Test]
         [TestCase(true)]
         [TestCase(false)]
         public void ToSentryOptions_OptionsCreated_AreEqualToNewOptions(bool isBuilding)
@@ -51,14 +40,13 @@ namespace Sentry.Unity.Tests
             var expectedOptions = new SentryUnityOptions(_fixture.Application, isBuilding);
 
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
 
             // These are config window specific differences in default values we actually want
             scriptableOptions.Debug = false;
             scriptableOptions.DebugOnlyInEditor = false;
             scriptableOptions.DiagnosticLevel = SentryLevel.Debug;
 
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding, _fixture.Application);
+            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
 
             AssertOptions(expectedOptions, actualOptions);
         }
@@ -95,7 +83,6 @@ namespace Sentry.Unity.Tests
                 Release = "testRelease",
                 Environment = "testEnvironment",
                 Debug = true,
-                DebugOnlyInEditor = true,
                 DiagnosticLevel = SentryLevel.Info,
             };
 
@@ -125,12 +112,26 @@ namespace Sentry.Unity.Tests
             scriptableOptions.ReleaseOverride = expectedOptions.Release;
             scriptableOptions.EnvironmentOverride = expectedOptions.Environment;
             scriptableOptions.Debug = expectedOptions.Debug;
-            scriptableOptions.DebugOnlyInEditor = expectedOptions.DebugOnlyInEditor;
+            scriptableOptions.DebugOnlyInEditor = false; // Affects Debug otherwise
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-            var optionsActual = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding, _fixture.Application);
+            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
 
             AssertOptions(expectedOptions, optionsActual);
+        }
+
+        [Test]
+        [TestCase(true, true)]
+        [TestCase(false, false)]
+        public void ShouldDebug_DebugOnlyInEditor_ReturnsExpectedDebug(bool isEditorPlayer, bool expectedDebug)
+        {
+            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+            scriptableOptions.Debug = true;
+            scriptableOptions.DebugOnlyInEditor = true;
+
+            var actualDebug = scriptableOptions.ShouldDebug(isEditorPlayer);
+
+            Assert.AreEqual(expectedDebug, actualDebug);
         }
 
         [Test]
@@ -142,26 +143,9 @@ namespace Sentry.Unity.Tests
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
             scriptableOptions.OptionsConfiguration = optionsConfiguration;
 
-            ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
+            scriptableOptions.ToSentryUnityOptions(isBuilding);
 
             Assert.IsTrue(optionsConfiguration.GotCalled);
-        }
-
-        [Test]
-        [TestCase(true)]
-        [TestCase(false)]
-        public void ToScriptableOptions_ConvertJsonOptions_AreEqual(bool isBuilding)
-        {
-            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
-            var expectedOptions = JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
-
-            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
-            JsonSentryUnityOptions.ToScriptableOptions(jsonTextAsset, scriptableOptions);
-
-            var actualOptions = ScriptableSentryUnityOptions.ToSentryUnityOptions(scriptableOptions, isBuilding);
-
-            AssertOptions(expectedOptions, actualOptions);
         }
 
         public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
@@ -191,7 +175,6 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.Environment, actual.Environment);
             Assert.AreEqual(expected.CacheDirectoryPath, actual.CacheDirectoryPath);
             Assert.AreEqual(expected.Debug, actual.Debug);
-            Assert.AreEqual(expected.DebugOnlyInEditor, actual.DebugOnlyInEditor);
             Assert.AreEqual(expected.DiagnosticLevel, actual.DiagnosticLevel);
         }
 

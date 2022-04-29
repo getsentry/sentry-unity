@@ -71,80 +71,83 @@ namespace Sentry.Unity
 
         public static SentryUnityOptions? LoadSentryUnityOptions(bool isBuilding = false)
         {
-            // TODO: Deprecated and to be removed once we update far enough.
-            var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
-            if (sentryOptionsTextAsset != null)
-            {
-                var options = JsonSentryUnityOptions.LoadFromJson(sentryOptionsTextAsset);
-                return options;
-            }
-
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
-                return ToSentryUnityOptions(scriptableOptions, isBuilding);
+                return scriptableOptions.ToSentryUnityOptions(isBuilding);
             }
 
             return null;
         }
 
-        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions, bool isBuilding, IApplication? application = null)
+        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
             var options = new SentryUnityOptions(application, isBuilding)
             {
-                Enabled = scriptableOptions.Enabled,
-                Dsn = scriptableOptions.Dsn,
-                CaptureInEditor = scriptableOptions.CaptureInEditor,
-                EnableLogDebouncing = scriptableOptions.EnableLogDebouncing,
-                TracesSampleRate = scriptableOptions.TracesSampleRate,
-                AutoSessionTracking = scriptableOptions.AutoSessionTracking,
-                AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval),
-                AttachStacktrace = scriptableOptions.AttachStacktrace,
-                AttachScreenshot = scriptableOptions.AttachScreenshot,
-                ScreenshotMaxWidth = scriptableOptions.ScreenshotMaxWidth,
-                ScreenshotMaxHeight = scriptableOptions.ScreenshotMaxHeight,
-                ScreenshotQuality = scriptableOptions.ScreenshotQuality,
-                MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs,
-                ReportAssembliesMode = scriptableOptions.ReportAssembliesMode,
-                SendDefaultPii = scriptableOptions.SendDefaultPii,
-                IsEnvironmentUser = scriptableOptions.IsEnvironmentUser,
-                MaxCacheItems = scriptableOptions.MaxCacheItems,
-                InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout),
-                SampleRate = scriptableOptions.SampleRate,
-                ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout),
-                MaxQueueItems = scriptableOptions.MaxQueueItems
+                Enabled = Enabled,
+                Dsn = Dsn,
+                CaptureInEditor = CaptureInEditor,
+                EnableLogDebouncing = EnableLogDebouncing,
+                TracesSampleRate = TracesSampleRate,
+                AutoSessionTracking = AutoSessionTracking,
+                AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
+                AttachStacktrace = AttachStacktrace,
+                AttachScreenshot = AttachScreenshot,
+                ScreenshotMaxWidth = ScreenshotMaxWidth,
+                ScreenshotMaxHeight = ScreenshotMaxHeight,
+                ScreenshotQuality = ScreenshotQuality,
+                MaxBreadcrumbs = MaxBreadcrumbs,
+                ReportAssembliesMode = ReportAssembliesMode,
+                SendDefaultPii = SendDefaultPii,
+                IsEnvironmentUser = IsEnvironmentUser,
+                MaxCacheItems = MaxCacheItems,
+                InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
+                SampleRate = SampleRate,
+                ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
+                MaxQueueItems = MaxQueueItems
             };
 
-            if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))
+            if (!string.IsNullOrWhiteSpace(ReleaseOverride))
             {
-                options.Release = scriptableOptions.ReleaseOverride;
+                options.Release = ReleaseOverride;
             }
 
-            if (!string.IsNullOrWhiteSpace(scriptableOptions.EnvironmentOverride))
+            if (!string.IsNullOrWhiteSpace(EnvironmentOverride))
             {
-                options.Environment = scriptableOptions.EnvironmentOverride;
+                options.Environment = EnvironmentOverride;
             }
 
-            if (!scriptableOptions.EnableOfflineCaching)
+            if (!EnableOfflineCaching)
             {
                 options.CacheDirectoryPath = null;
             }
 
-            options.IosNativeSupportEnabled = scriptableOptions.IosNativeSupportEnabled;
-            options.AndroidNativeSupportEnabled = scriptableOptions.AndroidNativeSupportEnabled;
-            options.WindowsNativeSupportEnabled = scriptableOptions.WindowsNativeSupportEnabled;
+            options.IosNativeSupportEnabled = IosNativeSupportEnabled;
+            options.AndroidNativeSupportEnabled = AndroidNativeSupportEnabled;
+            options.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
 
-            options.Debug = scriptableOptions.Debug;
-            options.DebugOnlyInEditor = scriptableOptions.DebugOnlyInEditor;
-            options.DiagnosticLevel = scriptableOptions.DiagnosticLevel;
+            // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
+            // need to set it here directly.
+            options.Debug = ShouldDebug(application.IsEditor && !isBuilding);
+            options.DiagnosticLevel = DiagnosticLevel;
 
-            SentryOptionsUtility.TryAttachLogger(options);
+            options.TryAttachLogger();
 
-            scriptableOptions.OptionsConfiguration?.Configure(options);
+            OptionsConfiguration?.Configure(options);
 
             return options;
+        }
+
+        internal bool ShouldDebug(bool isEditorPlayer)
+        {
+            if (!isEditorPlayer)
+            {
+                return !DebugOnlyInEditor && Debug;
+            }
+
+            return Debug;
         }
     }
 }

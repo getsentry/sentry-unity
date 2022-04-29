@@ -39,11 +39,6 @@ namespace Sentry.Unity
         /// </summary>
         public bool EnableLogDebouncing { get; set; } = false;
 
-        /// <summary>
-        /// Whether the SDK should be in <see cref="Debug"/> mode only while in the Unity Editor.
-        /// </summary>
-        public bool DebugOnlyInEditor { get; set; }
-
         private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
 
         /// <summary>
@@ -163,6 +158,14 @@ Release: {Release}
 Environment: {Environment}
 Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
 ";
+        }
+
+        internal void TryAttachLogger()
+        {
+            if (Debug && DiagnosticLogger is null)
+            {
+                DiagnosticLogger = new UnityLogger(this);
+            }
         }
     }
 
