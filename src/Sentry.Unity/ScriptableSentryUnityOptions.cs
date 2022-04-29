@@ -71,14 +71,6 @@ namespace Sentry.Unity
 
         public static SentryUnityOptions? LoadSentryUnityOptions(bool isBuilding = false)
         {
-            // TODO: Deprecated and to be removed once we update far enough.
-            var sentryOptionsTextAsset = Resources.Load<TextAsset>($"{ConfigRootFolder}/{ConfigName}");
-            if (sentryOptionsTextAsset != null)
-            {
-                var options = JsonSentryUnityOptions.LoadFromJson(sentryOptionsTextAsset);
-                return options;
-            }
-
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {

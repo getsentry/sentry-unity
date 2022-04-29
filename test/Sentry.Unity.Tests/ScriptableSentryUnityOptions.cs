@@ -33,17 +33,6 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [Test]
-        public void Options_ReadFromJson_Success()
-        {
-            var optionsFilePath = GetTestOptionsFilePath();
-            Assert.IsTrue(File.Exists(optionsFilePath));
-
-            var jsonTextAsset = new TextAsset(File.ReadAllText(GetTestOptionsFilePath()));
-
-            JsonSentryUnityOptions.LoadFromJson(jsonTextAsset);
-        }
-
-        [Test]
         [TestCase(true)]
         [TestCase(false)]
         public void ToSentryOptions_OptionsCreated_AreEqualToNewOptions(bool isBuilding)
