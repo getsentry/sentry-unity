@@ -373,6 +373,7 @@ jobs:
           target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
+          disk-size: 4096M
           arch: ${{ steps.droid-settings.outputs.arch }}
           cores: 2
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
@@ -397,9 +398,10 @@ jobs:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
           target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
-          ram-size: 2048M
+          ram-size: 4096M
+          disk-size: 4096M
           arch: ${{ steps.droid-settings.outputs.arch }}
-          cores: 2
+          cores: 4
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI
