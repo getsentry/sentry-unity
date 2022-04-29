@@ -144,23 +144,6 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        [TestCase(false)]
-        [TestCase(true)]
-        public void ModifyManifest_DebugOnlyInEditor_ControlsDebugMode(bool debugOnlyInEditor)
-        {
-            _fixture.SentryUnityOptions!.DebugOnlyInEditor = debugOnlyInEditor;
-            // Debug Only In Editor means: Don't set debug=true in any player build
-            var expectDebugFlag = !debugOnlyInEditor;
-
-            var sut = _fixture.GetSut();
-            var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
-
-            Assert.AreEqual(expectDebugFlag, manifest.Contains(
-                    "<meta-data android:name=\"io.sentry.debug\""),
-                $"'debug' in Manifest:\n{manifest}");
-        }
-
-        [Test]
         public void ModifyManifest_ReleaseIsNull_ReleaseNotSet()
         {
             _fixture.SentryUnityOptions!.Release = null;

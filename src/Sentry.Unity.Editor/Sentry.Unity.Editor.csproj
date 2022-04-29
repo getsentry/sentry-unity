@@ -9,7 +9,6 @@
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\link.xml" />
     <EmbeddedResource Include="Resources\SentryLogoDark.png" />
     <EmbeddedResource Include="Resources\SentryLogoLight.png" />
   </ItemGroup>

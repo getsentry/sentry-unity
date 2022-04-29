@@ -99,14 +99,10 @@ namespace Sentry.Unity.Editor.Android
 
             options.DiagnosticLogger?.LogDebug("Setting DSN: {0}", options.Dsn);
             androidManifest.SetDsn(options.Dsn!);
-            if (!options.DebugOnlyInEditor)
+            if (options.Debug)
             {
                 options.DiagnosticLogger?.LogDebug("Setting Debug: {0}", options.Debug);
                 androidManifest.SetDebug(options.Debug);
-            }
-            else
-            {
-                options.DiagnosticLogger?.LogDebug("Not setting debug flag because DebugOnlyInEditor is true");
             }
 
             if (options.Release is not null)
