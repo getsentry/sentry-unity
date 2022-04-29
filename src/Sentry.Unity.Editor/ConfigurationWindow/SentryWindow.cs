@@ -75,7 +75,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             }
 
             var scriptableOptions = CreateInstance<ScriptableSentryUnityOptions>();
-            SentryOptionsUtility.SetDefaults(scriptableOptions);
 
             AssetDatabase.CreateAsset(scriptableOptions,
                 ScriptableSentryUnityOptions.GetConfigPath(notDefaultConfigName));

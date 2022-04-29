@@ -23,17 +23,18 @@ namespace Sentry.Unity
         public static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.asset";
 
-        [field: SerializeField] public bool Enabled { get; set; }
+        [field: SerializeField] public bool Enabled { get; set; } = true;
 
         [field: SerializeField] public string? Dsn { get; set; }
-        [field: SerializeField] public bool CaptureInEditor { get; set; }
-        [field: SerializeField] public bool EnableLogDebouncing { get; set; }
-        [field: SerializeField] public double TracesSampleRate { get; set; }
-        [field: SerializeField] public bool AutoSessionTracking { get; set; }
+        [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
+        [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
+        [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
+        [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
+
         /// <summary>
         /// Interval in milliseconds a session terminates if put in the background.
         /// </summary>
-        [field: SerializeField] public int AutoSessionTrackingInterval { get; set; }
+        [field: SerializeField] public int AutoSessionTrackingInterval { get; set; } = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
 
         [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
         [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
@@ -41,17 +42,22 @@ namespace Sentry.Unity
         [field: SerializeField] public bool AttachScreenshot { get; set; }
         [field: SerializeField] public int ScreenshotMaxWidth { get; set; }
         [field: SerializeField] public int ScreenshotMaxHeight { get; set; }
-        [field: SerializeField] public int ScreenshotQuality { get; set; }
-        [field: SerializeField] public int MaxBreadcrumbs { get; set; }
-        [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; }
+        [field: SerializeField] public int ScreenshotQuality { get; set; } = 75;
+        [field: SerializeField] public int MaxBreadcrumbs { get; set; } = Constants.DefaultMaxBreadcrumbs;
+
+        [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
         [field: SerializeField] public bool SendDefaultPii { get; set; }
         [field: SerializeField] public bool IsEnvironmentUser { get; set; }
 
-        [field: SerializeField] public bool EnableOfflineCaching { get; set; }
+        [field: SerializeField] public bool EnableOfflineCaching { get; set; } = true;
         [field: SerializeField] public int MaxCacheItems { get; set; } = 30;
-        [field: SerializeField] public int InitCacheFlushTimeout { get; set; }
+
+        /// <summary>
+        /// Time in milliseconds for flushing the cache at startup
+        /// </summary>
+        [field: SerializeField] public int InitCacheFlushTimeout { get; set; } = (int)TimeSpan.Zero.TotalMilliseconds;
         [field: SerializeField] public float? SampleRate { get; set; }
-        [field: SerializeField] public int ShutdownTimeout { get; set; }
+        [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
         [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
@@ -59,9 +65,9 @@ namespace Sentry.Unity
 
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
-        [field: SerializeField] public bool Debug { get; set; }
-        [field: SerializeField] public bool DebugOnlyInEditor { get; set; }
-        [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; }
+        [field: SerializeField] public bool Debug { get; set; } = true;
+        [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
+        [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; } = SentryLevel.Warning;
 
         public static SentryUnityOptions? LoadSentryUnityOptions(bool isBuilding = false)
         {
@@ -76,80 +82,80 @@ namespace Sentry.Unity
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
-                return ToSentryUnityOptions(scriptableOptions, isBuilding);
+                return scriptableOptions.ToSentryUnityOptions(isBuilding);
             }
 
             return null;
         }
 
-        internal static SentryUnityOptions ToSentryUnityOptions(ScriptableSentryUnityOptions scriptableOptions, bool isBuilding, IApplication? application = null)
+        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
             var options = new SentryUnityOptions(application, isBuilding)
             {
-                Enabled = scriptableOptions.Enabled,
-                Dsn = scriptableOptions.Dsn,
-                CaptureInEditor = scriptableOptions.CaptureInEditor,
-                EnableLogDebouncing = scriptableOptions.EnableLogDebouncing,
-                TracesSampleRate = scriptableOptions.TracesSampleRate,
-                AutoSessionTracking = scriptableOptions.AutoSessionTracking,
-                AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(scriptableOptions.AutoSessionTrackingInterval),
-                AttachStacktrace = scriptableOptions.AttachStacktrace,
-                AttachScreenshot = scriptableOptions.AttachScreenshot,
-                ScreenshotMaxWidth = scriptableOptions.ScreenshotMaxWidth,
-                ScreenshotMaxHeight = scriptableOptions.ScreenshotMaxHeight,
-                ScreenshotQuality = scriptableOptions.ScreenshotQuality,
-                MaxBreadcrumbs = scriptableOptions.MaxBreadcrumbs,
-                ReportAssembliesMode = scriptableOptions.ReportAssembliesMode,
-                SendDefaultPii = scriptableOptions.SendDefaultPii,
-                IsEnvironmentUser = scriptableOptions.IsEnvironmentUser,
-                MaxCacheItems = scriptableOptions.MaxCacheItems,
-                InitCacheFlushTimeout = TimeSpan.FromMilliseconds(scriptableOptions.InitCacheFlushTimeout),
-                SampleRate = scriptableOptions.SampleRate,
-                ShutdownTimeout = TimeSpan.FromMilliseconds(scriptableOptions.ShutdownTimeout),
-                MaxQueueItems = scriptableOptions.MaxQueueItems
+                Enabled = Enabled,
+                Dsn = Dsn,
+                CaptureInEditor = CaptureInEditor,
+                EnableLogDebouncing = EnableLogDebouncing,
+                TracesSampleRate = TracesSampleRate,
+                AutoSessionTracking = AutoSessionTracking,
+                AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
+                AttachStacktrace = AttachStacktrace,
+                AttachScreenshot = AttachScreenshot,
+                ScreenshotMaxWidth = ScreenshotMaxWidth,
+                ScreenshotMaxHeight = ScreenshotMaxHeight,
+                ScreenshotQuality = ScreenshotQuality,
+                MaxBreadcrumbs = MaxBreadcrumbs,
+                ReportAssembliesMode = ReportAssembliesMode,
+                SendDefaultPii = SendDefaultPii,
+                IsEnvironmentUser = IsEnvironmentUser,
+                MaxCacheItems = MaxCacheItems,
+                InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
+                SampleRate = SampleRate,
+                ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
+                MaxQueueItems = MaxQueueItems
             };
 
-            if (!string.IsNullOrWhiteSpace(scriptableOptions.ReleaseOverride))
+            if (!string.IsNullOrWhiteSpace(ReleaseOverride))
             {
-                options.Release = scriptableOptions.ReleaseOverride;
+                options.Release = ReleaseOverride;
             }
 
-            if (!string.IsNullOrWhiteSpace(scriptableOptions.EnvironmentOverride))
+            if (!string.IsNullOrWhiteSpace(EnvironmentOverride))
             {
-                options.Environment = scriptableOptions.EnvironmentOverride;
+                options.Environment = EnvironmentOverride;
             }
 
-            if (!scriptableOptions.EnableOfflineCaching)
+            if (!EnableOfflineCaching)
             {
                 options.CacheDirectoryPath = null;
             }
 
-            options.IosNativeSupportEnabled = scriptableOptions.IosNativeSupportEnabled;
-            options.AndroidNativeSupportEnabled = scriptableOptions.AndroidNativeSupportEnabled;
-            options.WindowsNativeSupportEnabled = scriptableOptions.WindowsNativeSupportEnabled;
+            options.IosNativeSupportEnabled = IosNativeSupportEnabled;
+            options.AndroidNativeSupportEnabled = AndroidNativeSupportEnabled;
+            options.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
 
             // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
             // need to set it here directly.
-            options.Debug = ShouldDebug(scriptableOptions, application.IsEditor && !isBuilding);
-            options.DiagnosticLevel = scriptableOptions.DiagnosticLevel;
+            options.Debug = ShouldDebug(application.IsEditor && !isBuilding);
+            options.DiagnosticLevel = DiagnosticLevel;
 
-            SentryOptionsUtility.TryAttachLogger(options);
+            options.TryAttachLogger();
 
-            scriptableOptions.OptionsConfiguration?.Configure(options);
+            OptionsConfiguration?.Configure(options);
 
             return options;
         }
 
-        internal static bool ShouldDebug(ScriptableSentryUnityOptions scriptableOptions, bool isEditorPlayer)
+        internal bool ShouldDebug(bool isEditorPlayer)
         {
             if (!isEditorPlayer)
             {
-                return !scriptableOptions.DebugOnlyInEditor && scriptableOptions.Debug;
+                return !DebugOnlyInEditor && Debug;
             }
 
-            return scriptableOptions.Debug;
+            return Debug;
         }
     }
 }
