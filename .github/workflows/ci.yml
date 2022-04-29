@@ -350,6 +350,9 @@ jobs:
           # API 21 is no longer supported since Unity 2021.2.10f1
           - api-level: 21
             unity-version: '2021'
+          # Smoke test currently crashes on API 30 with Unity 2021 build on CI, see issue #719
+          - api-level: 30
+            unity-version: '2021'
     defaults:
       run:
         shell: pwsh
