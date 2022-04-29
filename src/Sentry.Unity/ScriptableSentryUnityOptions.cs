@@ -1,6 +1,5 @@
 using System;
 using Sentry.Unity.Integrations;
-using Sentry.Unity.Json;
 using UnityEngine;
 
 namespace Sentry.Unity

@@ -4,8 +4,8 @@ namespace Sentry.Unity.Editor
 {
     public static class SentryPackageInfo
     {
-        internal static string PackageName = "io.sentry.unity";
-        internal static string PackageNameDev = "io.sentry.unity.dev";
+        internal static string PackageName = SentryUnityOptions.PackageName;
+        internal static string PackageNameDev = SentryUnityOptions.PackageName + ".dev";
 
         internal static string GetName()
         {

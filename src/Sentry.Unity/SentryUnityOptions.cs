@@ -1,8 +1,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
-using UnityEngine;
-
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
