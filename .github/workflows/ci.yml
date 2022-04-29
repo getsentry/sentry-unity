@@ -272,16 +272,21 @@ jobs:
         # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
-  windows-smoke-test:
-    name: Run Windows Unity ${{ matrix.unity-version }} Smoke Test
-    runs-on: windows-latest
+  desktop-smoke-test:
+    name: Run  ${{ matrix.os }} Unity ${{ matrix.unity-version }} Smoke Test
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021']
+        os: ['windows', 'macos']
         include:
-          - os: windows-latest
+          - os: windows
+            unity-modules: windows-il2cpp
             unity-config-path: C:/ProgramData/Unity/config/
+          - os: macos
+            unity-modules: mac-il2cpp
+            unity-config-path: /Library/Application Support/Unity/config/
     defaults:
       run:
         shell: pwsh
@@ -293,20 +298,11 @@ jobs:
         id: env
         run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
-      # Caching the whole Unity installation would overflow the 10 GiB limit repositories have but we can cache the Hub
-      # to achieve some speedup here at a low size cost.
-      # See https://github.com/kuler90/setup-unity/blob/797ebd0cc9d0e0ca5bcd6cc280ec1a6e685fbf83/src/setup.js#L36
-      - name: Cache Unity Hub
-        uses: actions/cache@v2
-        with:
-          path: 'C:/Program Files/Unity Hub'
-          key: unity-hub|windows
-
       - name: Setup Unity
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
-          unity-modules: windows-il2cpp
+          unity-modules: ${{ matrix.unity-modules }}
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -317,6 +313,7 @@ jobs:
 
       # Step used to reduce the Unity path to avoid long path errors on Windows.
       - name: Make symbolic link for Unity (Windows)
+        if: matrix.os == 'windows'
         run: New-Item -ItemType SymbolicLink -Path "C:\${{ steps.env.outputs.unityVersion }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ steps.env.outputs.unityVersion }}"
 
       - name: Create new Project
