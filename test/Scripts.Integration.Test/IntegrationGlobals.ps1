@@ -1,5 +1,7 @@
 $ErrorActionPreference = "Stop"
 
+. $PSScriptRoot/../../scripts/unity-utils.ps1
+
 function ProjectRoot
 {
     if ($null -ne $Global:NewProjectPathCache)
@@ -22,8 +24,17 @@ function GetTestAppName
     {
         return "test.exe"
     }
-    ElseIf ($buildMethod.contains("Linux")) {
+    ElseIf ($buildMethod.contains("Linux"))
+    {
         return "test"
+    }
+    ElseIf ($buildMethod.contains("Android"))
+    {
+        return "test.apk"
+    }
+    ElseIf ($buildMethod.contains("WebGL"))
+    {
+        return ""
     }
     Else
     {
@@ -39,9 +50,7 @@ $NewProjectPath = "$(ProjectRoot)/samples/$NewProjectName"
 $NewProjectBuildPath = "$NewProjectPath/Build"
 $NewProjectAssetsPath = "$NewProjectPath/Assets"
 
-$UnityOfBugsPath =  "$(ProjectRoot)/samples/unity-of-bugs"
-
-$NewProjectLogPath = "$(ProjectRoot)/samples/logfile.txt"
+$UnityOfBugsPath = "$(ProjectRoot)/samples/unity-of-bugs"
 
 $IntegrationScriptsPath = "$(ProjectRoot)/test/Scripts.Integration.Test"
 $PackageReleaseOutput = "$(ProjectRoot)/test-package-release"
@@ -65,18 +74,21 @@ function FormatUnityPath
         Throw "Unity path is required."
     }
 
-    If ($IsMacOS)
+    If ($unityPath.StartsWith("docker "))
     {
-        If ($unityPath.EndsWith("Contents/MacOS/Unity") -eq $false)
+    }
+    ElseIf ($IsMacOS)
+    {
+        If (-not $unityPath.EndsWith("Contents/MacOS/Unity"))
         {
             $unityPath = $unityPath + "/Unity"
         }
     }
     ElseIf ($IsWindows)
     {
-        If ($unityPath.EndsWith("Unity.exe") -eq $false)
+        If (-not $unityPath.EndsWith("Unity.exe"))
         {
-            $unityPath = $unityPath +  "/Unity.exe"
+            $unityPath = $unityPath + "/Unity.exe"
         }
     }
     ElseIf ($IsLinux)
@@ -95,117 +107,59 @@ function FormatUnityPath
     return $unityPath
 }
 
-function RunUnity([string] $unityPath, [string[]] $arguments)
+function BuildMethodFor([string] $platform)
 {
-    If ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "")
+    switch ("$platform")
     {
-        $arguments = @("-ae", "/dev/stdout", "$unityPath") + $arguments
-        $unityPath = "xvfb-run"
-    }
-    return Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
-}
-
-function ClearUnityLog
-{
-    Write-Host -NoNewline "Removing Unity log:"
-    If (Test-Path -Path "$NewProjectLogPath")
-    {
-        #Force is required if it's opened by another process.
-        Remove-Item -Path "$NewProjectLogPath" -Force
-    }
-    Write-Host " OK"
-}
-
-function WaitForLogFile
-{
-    $timeout = 30
-    Write-Host -NoNewline "Waiting for log file "
-    do
-    {
-        $LogCreated = Test-Path -Path "$NewProjectLogPath"
-        Write-Host -NoNewline "."
-        $timeout--
-        If ($timeout -eq 0)
+        "Android" { return "Builder.BuildAndroidIl2CPPPlayer" }
+        "MacOS" { return "Builder.BuildMacIl2CPPPlayer" }
+        "Windows" { return "Builder.BuildWindowsIl2CPPPlayer" }
+        "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
+        "WebGL" { return "Builder.BuildWebGLPlayer" }
+        Default
         {
-            Throw "Timeout"
-        }
-        ElseIf (!$LogCreated) #validate
-        {
-            Start-Sleep -Seconds 1
-        }
-    } while ($LogCreated -ne $true)
-    Write-Host " OK"
-}
-
-function SubscribeToUnityLogFile()
-{
-    param (
-        [Parameter(Mandatory=$true, Position=0)]
-        [System.Diagnostics.Process]$unityProcess,
-        [Parameter(Mandatory=$false, Position=1)]
-        [string] $SuccessString,
-        [Parameter(Mandatory=$false, Position=2)]
-        [string]$FailString
-    )
-
-    $returnCondition = $null
-    $unityClosedDelay = 0
-
-    If ($unityProcess -eq $null)
-    {
-        Throw "Unity process not received"
-    }
-
-    $logFileStream = New-Object System.IO.FileStream("$NewProjectLogPath", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
-    If (-not $logFileStream)
-    {
-        Throw "Failed to open logfile on $NewProjectLogPath"
-    }
-    $logStreamReader = New-Object System.IO.StreamReader($LogFileStream)
-    do
-    {
-        $line = $logStreamReader.ReadLine()
-
-        If ($line -eq $null)
-        {
-            Start-Sleep -Milliseconds 400
-        }
-        Else
-        {
-            $dateNow = Get-Date -UFormat "%T %Z"
-
-            #print line as normal/errored/warning
-            If ($null -ne ($line | select-string "ERROR | Failed "))
+            If ($IsMacOS)
             {
-                # line contains "ERROR " OR " Failed "
-                Write-Host "$dateNow - $line" -ForegroundColor Red
+                return BuildMethodFor "MacOS"
             }
-            ElseIf ($null -ne ($line | Select-String "WARNING | Line:"))
+            ElseIf ($IsWindows)
             {
-                Write-Host "$dateNow - $line" -ForegroundColor Yellow
+                return BuildMethodFor "Windows"
+            }
+            ElseIf ($IsLinux)
+            {
+                return BuildMethodFor "Linux"
             }
             Else
             {
-                $Host.UI.WriteLine("$dateNow - $line")
+                Throw "Unsupported build platform"
             }
+        }
+    }
+}
 
-            If ($SuccessString -and ($line | Select-String $SuccessString))
-            {
-                $returnCondition = $line
-            }
-            ElseIf($FailString -and ($line | Select-String $FailString))
-            {
-                $returnCondition = $line
-            }
-        }
-        # Unity is closed but logfile wasn't updated in time.
-        # Adds additional delay to wait for the last lines.
-        If ($UnityProcess.HasExited)
-        {
-            $unityClosedDelay++
-        }
-    } while ($unityClosedDelay -le 2  -or $line -ne $null)
-    $logStreamReader.Dispose()
-    $logFileStream.Dispose()
-    return $returnCondition
+function TestDsnFor([string] $platform)
+{
+    $dsn = "http://publickey@"
+    switch ("$platform")
+    {
+        "Android" { $dsn += "10.0.2.2"; break; }
+        "WebGL" { $dsn += "127.0.0.1"; break; }
+        Default { $dsn += "localhost" }
+    }
+    $dsn += ":8000/12345"
+    return $dsn
+}
+
+function RunUnityCustom([string] $unityPath, [string[]] $arguments)
+{
+    If ($unityPath.StartsWith("docker "))
+    {
+        # Fix paths (they're supposed to be the current working directory in the docker container)
+        Write-Host "Replacing project root ($(ProjectRoot)) in docker arguments: $arguments"
+        $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)", "/sentry-unity") }
+
+    }
+
+    return RunUnity $unityPath $arguments
 }

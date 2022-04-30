@@ -50,7 +50,7 @@ package-dev/alias-references.txt
 
 # ignore integration test files
 Samples/IntegrationTest
-Samples/logfile.txt
+unity.log
 
 # Ignore package release
 test-package-release/

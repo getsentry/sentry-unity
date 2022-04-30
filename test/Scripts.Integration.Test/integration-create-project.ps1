@@ -1,20 +1,12 @@
-﻿param($arg)
+﻿param(
+    [string] $UnityPath
+)
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
 
-$unityPath = FormatUnityPath $arg
+$UnityPath = FormatUnityPath $UnityPath
 
-# Check if Unity path is correct.
-If (Test-Path -Path "$unityPath")
-{
-    Write-Host "Found Unity"
-}
-Else
-{
-    Throw "Expected Unity on $unityPath but it was not found."
-}
-
-# Delete Previous Integration Project Folder if found
+# # Delete Previous Integration Project Folder if found
 If (Test-Path -Path "$NewProjectPath" )
 {
     Write-Host -NoNewline "Removing previous integration test:"
@@ -28,38 +20,29 @@ Write-Host -NoNewline "Creating directory for integration test:"
 New-Item -Path "$(ProjectRoot)/samples" -Name $NewProjectName -ItemType "directory"
 Write-Host " OK"
 
-Write-Host -NoNewline "Creating integration project:"
-$UnityProcess = RunUnity $unityPath @("-batchmode", "-createProject", "$NewProjectPath", "-logfile", "$NewProjectLogPath", "-quit")
+Write-Host "Creating integration project:"
+RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "-quit") > $null
+
+Write-Host -NoNewline "Copying Test scene"
+New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
+Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
 Write-Host " OK"
 
-WaitForLogFile 30
+Write-Host -NoNewline "Copying Scripts"
+$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
+$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
+Copy-Item -Recurse "$IntegrationScriptsPath/SmokeTester.*" -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item -Recurse "$UnityOfBugsPath/Assets/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
+Copy-Item -Recurse "$IntegrationScriptsPath/SentrySetup.*" -Destination "$NewProjectAssetsPath/Editor/"
+Write-Host " OK"
 
-Write-Host "Waiting for Unity to create the project."
-SubscribeToUnityLogFile $UnityProcess
+# Update ProjectSettings
+$projectSettingsPath = "$NewProjectPath/ProjectSettings/ProjectSettings.asset"
+$projectSettings = Get-Content $projectSettingsPath
+# Don't print stack traces in debug logs. See ./samples/unity-of-bugs/ProjectSettings/PresetManager.asset
+$projectSettings = $projectSettings -replace "m_StackTraceTypes: ?[01]+", "m_StackTraceTypes: 010000000000000000000000000000000100000001000000"
+# Build Android for x86_64 - for the emulator
+$projectSettings = $projectSettings -replace "AndroidTargetArchitectures: ?[0-9]+", "AndroidTargetArchitectures: 4"
+$projectSettings | Out-File $projectSettingsPath
 
-If ($UnityProcess.ExitCode -ne 0)
-{
-    Throw "Unity exited with code $($UnityProcess.ExitCode)"
-}
-Else
-{
-    Write-Host -NoNewline  "Copying Test scene"
-    New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
-    Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
-    Write-Host " OK"
-
-    Write-Host -NoNewline  "Copying Scripts"
-    $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
-    $stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
-    Copy-Item -Recurse "$IntegrationScriptsPath/SmokeTester.*" -Destination "$NewProjectAssetsPath/Scripts/"
-    Copy-Item -Recurse "$UnityOfBugsPath/Assets/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
-    Copy-Item -Recurse "$IntegrationScriptsPath/SentrySetup.*" -Destination "$NewProjectAssetsPath/Editor/"
-    Write-Host " OK"
-
-    # Don't print stack traces in debug logs. See ./samples/unity-of-bugs/ProjectSettings/PresetManager.asset
-    $projectSettingsPath = "$NewProjectPath/ProjectSettings/ProjectSettings.asset"
-    (Get-Content $projectSettingsPath) -replace "m_StackTraceTypes: ?[01]+", "m_StackTraceTypes: 010000000000000000000000000000000100000001000000" | `
-        Out-File $projectSettingsPath
-
-    Write-Host "`nProject created!!"
-}
+Write-Host "`nProject created!!"

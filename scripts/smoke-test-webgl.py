@@ -33,6 +33,10 @@ class RequestVerifier:
     __testNumber = 0
 
     def Capture(self, info, body):
+
+        # Note: this error seems to be related to *not* using https - we could probably use it by providing self-signed
+        # certificate when starting the http server.
+        # We would also have to add `options.add_argument('ignore-certificate-errors')` to the chromedriver setup.
         match = re.search(ignoreRegex, body)
         if match:
             print(
@@ -86,6 +90,34 @@ class Handler(SimpleHTTPRequestHandler):
         t.Capture(self.requestline, body)
         self.send_response(HTTPStatus.OK, '{'+'}')
         self.end_headers()
+
+    # Special handling for .br (brotli) - we must send "Content-Encoding: br" header.
+    # Therefore, we override `send_head()` with our custom implementation in that case
+    def send_head(self):
+        path = self.translate_path(self.path)
+        if path.endswith('.br'):
+            f = None
+            try:
+                f = open(path, 'rb')
+            except OSError:
+                self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+                return None
+
+            ctype = self.guess_type(path[:-3])
+            try:
+                fs = os.fstat(f.fileno())
+                self.send_response(HTTPStatus.OK)
+                self.send_header("Content-Encoding", 'br')
+                self.send_header("Content-type", ctype)
+                self.send_header("Content-Length", str(fs[6]))
+                self.send_header("Last-Modified",
+                                 self.date_time_string(fs.st_mtime))
+                self.end_headers()
+                return f
+            except:
+                f.close()
+                raise
+        return super().send_head()
 
 
 appServer = ThreadingHTTPServer((host, port), Handler)
