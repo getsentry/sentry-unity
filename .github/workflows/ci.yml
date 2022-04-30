@@ -181,8 +181,6 @@ jobs:
         unity-version: ['2019', '2020', '2021']
         platform: ['Android', 'WebGL']
     env:
-      # Run the `unity-editor` command inside the `unity` docker container under the current user & group.
-      # UNITY_PATH: docker exec --user 1001:121 unity unity-editor
       UNITY_PATH: docker exec unity unity-editor
     steps:
       - name: Checkout
@@ -231,7 +229,7 @@ jobs:
         run: |
           cd samples/IntegrationTest/Build
           sudo chown -R $(id -u):$(id -g) .
-          # sudo rm -rf *_BackUpThisFolder_ButDontShipItWithYourGame
+          sudo rm -rf *_BackUpThisFolder_ButDontShipItWithYourGame
 
       - name: Upload test app for smoke test
         uses: actions/upload-artifact@v2
