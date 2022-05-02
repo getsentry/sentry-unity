@@ -23,7 +23,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         $unityPath = "xvfb-run"
     }
 
-    $logFilePath = "$pwd/unity.log"
+    $logFilePath = "unity.log"
 
     foreach ($arg in $arguments)
     {
