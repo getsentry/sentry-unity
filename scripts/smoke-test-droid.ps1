@@ -271,10 +271,11 @@ foreach ($device in $DeviceList)
         }
 
         Write-Host (DateTimeNow)
+        Start-Sleep 5 #Extra time for flushing logcat
         $LogcatCache = adb -s $device logcat -d
         $lineWithSuccess = $LogcatCache | Select-String $SuccessString
         $lineWithFailure = $LogcatCache | Select-String $FailureString
-        If ($lineWithFailure -ne $null)
+        if ($lineWithFailure -ne $null)
         {
             SignalActionSmokeStatus("Failed")
             Write-Warning "$name test failed"
@@ -287,14 +288,14 @@ foreach ($device in $DeviceList)
             Write-Host "$lineWithSuccess"
             Write-Host "$Name test: PASS" -ForegroundColor Green
         }
-        ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.|because ULR inactive'))
+        elseif (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.|because ULR inactive'))
         {
             SignalActionSmokeStatus("Flaky")
             Write-Warning "$name test was flaky, unity failed to initialize."
             OnError $device $deviceApi
             Throw "$name test was flaky, unity failed to initialize."
         }
-        ElseIf ($Timeout -eq 0)
+        elseif ($Timeout -eq 0)
         {
             SignalActionSmokeStatus("Timeout")
             Write-Warning "$name Test Timeout, see Logcat info for more information below."
@@ -303,7 +304,7 @@ foreach ($device in $DeviceList)
             OnError $device $deviceApi
             Throw "$name test Timeout"
         }
-        Else
+        else
         {
             SignalActionSmokeStatus("Failed")
             Write-Warning "$name test: process completed but $Name test was not signaled."
