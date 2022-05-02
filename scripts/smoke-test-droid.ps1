@@ -153,6 +153,9 @@ function SignalActionSmokeStatus
     echo "::set-output name=smoke-status::$smokeStatus"
 }
 
+Write-Warning "Deep sleep for 30 seconds"
+Start-Sleep 30
+
 # Filter device List
 $RawAdbDeviceList = adb devices
 
