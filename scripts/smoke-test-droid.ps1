@@ -67,19 +67,58 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
 {
     if ("$alert" -ne "")
     {
-        Write-Warning "Active system alert found on $deviceId (API $deviceApi). Closing it. The alert was: '$alert'."
-        if ($deviceApi -eq "21")
-        {
-            Write-Warning "Issuing ENTER command twice to close the current window."
-            # sends "enter" - the first one focues the OK button, the second one taps it
-            adb -s $deviceId shell input keyevent 66
-            adb -s $deviceId shell input keyevent 66
+        $splittedXml = $alert -split "<node"
+        $alertTitle = ""
+        $alertOption1Label = $null
+        $alertOption1Coord = $null
+        $alertOption2Label = $null
+        $alertOption2Coord = $null
+
+        if ($splittedXml.Count -ne 1) {
+            #we have a "valid" XML
+            foreach ($iterator in $splittedXml) {
+                if ($iterator.Contains("alertTitle")) {
+                    $titleRegex = [regex]::Match($iterator, "text=\`"(?<text>.+)\`" resource-id")
+                    $alertTitle = $titleRegex.Groups["text"].Value
+                }
+                elseif ($iterator.Contains("Button")) {
+                    $buttonRegex = [regex]::Match($iterator, "text=\`"(?<text>.+)\`" resource-id.* bounds=\`"\[(?<horStart>\d+),(?<verStart>\d+)\]\[(?<horEnd>\d+),(?<verEnd>\d+)\]\`"")
+                    if ($null -eq $alertOption1Label) {
+                        $alertOption1Label = $buttonRegex.Groups["text"].Value
+                        $alertOption1Coord = ($buttonRegex.Groups["horStart"].Value, $buttonRegex.Groups["verStart"].Value, $buttonRegex.Groups["horEnd"].Value, $buttonRegex.Groups["verEnd"].Value)
+                    }
+                    else {
+                        $alertOption2Label = $buttonRegex.Groups["text"].Value
+                        $alertOption2Coord = ($buttonRegex.Groups["horStart"].Value, $buttonRegex.Groups["verStart"].Value, $buttonRegex.Groups["horEnd"].Value, $buttonRegex.Groups["verEnd"].Value)
+                    }
+                }
+            }
+
+            if ($null -ne $alertTitle) {
+                Write-Warning "WARNING: found Alert on Screen, TITLE: $alertTitle `n Options: `n $alertOption1Label at $alertOption1Coord `n $alertOption2Label at $alertOption2Coord "
+                
+                $tapX = [int]([int]$alertOption1Coord[0] + [int]$alertOption1Coord[2] ) / 2
+                $tapY = [int]([int]$alertOption1Coord[1] + [int]$alertOption1Coord[3] ) / 2
+                Write-Host "Tapping on $alertOption2Label at [$tapX, $tapY]"
+                adb -s $deviceId shell input tap $tapX $tapY
+            }
         }
-        else
+        else 
         {
-            # sends "back" action
-            Write-Warning "Issuing BACK command to close the current window."
-            adb -s $deviceId shell input keyevent 4
+            Write-Warning "Active system alert found on $deviceId (API $deviceApi). Closing it. The alert was: '$alert'."
+            if ($deviceApi -eq "21")
+            {
+                Write-Warning "Issuing ENTER command twice to close the current window."
+                # sends "enter" - the first one focues the OK button, the second one taps it
+                adb -s $deviceId shell input keyevent 66
+                adb -s $deviceId shell input keyevent 66
+            }
+            else
+            {
+                # sends "back" action
+                Write-Warning "Issuing BACK command to close the current window."
+                adb -s $deviceId shell input keyevent 4
+            }
         }
     }
 }
@@ -87,6 +126,7 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
 function CheckAndCloseActiveSystemAlerts([string] $deviceId, [string] $deviceApi)
 {
     $uiInfoXml = GetDeviceUiLog $deviceId $deviceApi
+
     if ($deviceApi -eq "21")
     {
         CloseSystemAlert $deviceId $deviceApi ($uiInfoXml | Select-String "has stopped")
