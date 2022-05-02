@@ -95,11 +95,21 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
             }
 
             if ($null -ne $alertTitle) {
-                Write-Warning "WARNING: found Alert on Screen, TITLE: $alertTitle `n Options: `n $alertOption1Label at $alertOption1Coord `n $alertOption2Label at $alertOption2Coord "
-                
-                $tapX = [int]([int]$alertOption1Coord[0] + [int]$alertOption1Coord[2] ) / 2
-                $tapY = [int]([int]$alertOption1Coord[1] + [int]$alertOption1Coord[3] ) / 2
-                Write-Host "Tapping on $alertOption2Label at [$tapX, $tapY]"
+                Write-Warning "WARNING: found Alert on Screen, TITLE: $alertTitle `n Options: `n $alertOption1Label at $alertOption1Coord `n $alertOption2Label at $alertOption2Coord "                
+
+                if ($null -eq $alertOption2Label)
+                {
+                    $tapX = [int]([int]$alertOption1Coord[0] + [int]$alertOption1Coord[2] ) / 2
+                    $tapY = [int]([int]$alertOption1Coord[1] + [int]$alertOption1Coord[3] ) / 2    
+                    $tapLabel = $alertOption1Label
+                }
+                else 
+                {
+                    $tapX = [int]([int]$alertOption2Coord[0] + [int]$alertOption2Coord[2] ) / 2
+                    $tapY = [int]([int]$alertOption2Coord[1] + [int]$alertOption2Coord[3] ) / 2                        
+                    $tapLabel = $alertOption2Label
+                }
+                Write-Host "Tapping on $tapLabel at [$tapX, $tapY]"
                 adb -s $deviceId shell input tap $tapX $tapY
             }
         }
@@ -194,9 +204,20 @@ foreach ($device in $DeviceList)
     # Move device to home screen
     $stdout = adb -s $device shell input keyevent KEYCODE_HOME
 
-    Write-Host "Installing test app..."
-    $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
-    If ($stdout -notcontains "Success")
+    $adbInstallRetry = 5
+    do
+    {
+        Write-Host "Installing test app..."
+        $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
+        
+        if ($stdout.Contains("Broken pipe"))
+        {
+            Write-Warning "Failed to comunicate with the Device, retrying..."
+            Start-Sleep 3
+            $adbInstallRetry--
+        }
+    } while ($adbInstallRetry -gt 1 -and $stdout.Contains("Broken pipe"))
+    if ($stdout -notcontains "Success")
     {
         SignalActionSmokeStatus("Failed")
         Throw "Failed to Install APK: $stdout."
