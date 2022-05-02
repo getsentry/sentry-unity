@@ -311,11 +311,6 @@ jobs:
           New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
           Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
-      # Step used to reduce the Unity path to avoid long path errors on Windows.
-      - name: Make symbolic link for Unity (Windows)
-        if: matrix.os == 'windows'
-        run: New-Item -ItemType SymbolicLink -Path "C:\${{ steps.env.outputs.unityVersion }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ steps.env.outputs.unityVersion }}"
-
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
