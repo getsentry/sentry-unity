@@ -37,8 +37,10 @@ public class SmokeTester : MonoBehaviour
         else if (arg != null)
         {
             Debug.Log($"Unknown command line argument: {arg}");
+            Task.Delay(1000).Wait();
             Application.Quit(-1);
         }
+        Task.Delay(1000).Wait();
     }
 
 #if UNITY_IOS
