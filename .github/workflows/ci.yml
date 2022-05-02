@@ -273,7 +273,7 @@ jobs:
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
   desktop-smoke-test:
-    name: Run  ${{ matrix.os }} Unity ${{ matrix.unity-version }} Smoke Test
+    name: Run  ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
@@ -317,10 +317,10 @@ jobs:
         run: New-Item -ItemType SymbolicLink -Path "C:\${{ steps.env.outputs.unityVersion }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ steps.env.outputs.unityVersion }}"
 
       - name: Create new Project
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build Standalone Player without Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -333,10 +333,10 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
 
       - name: Add Sentry to test project
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build Standalone Player Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Run Player - Smoke Test
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke

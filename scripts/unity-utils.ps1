@@ -1,8 +1,7 @@
 $RunUnityLicenseRetryTimeoutSeconds = 3600
 $RunUnityLicenseRetryIntervalSeconds = 60
-$RunUnityLogFile = 'unity.log'
 
-function RunUnity([string] $unityPath, [string[]] $arguments)
+function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
     If ($unityPath.StartsWith("docker "))
     {
@@ -24,30 +23,32 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
         $unityPath = "xvfb-run"
     }
 
+    $logFilePath = "$pwd/unity.log"
+
     foreach ($arg in $arguments)
     {
         if ($arg -ieq "logfile" -or $arg -ieq "-logfile")
         {
-            # Note: if we really needed to use a custom value: get the next arg and overwrite $RunUnityLogFile.
+            # Note: if we really needed to use a custom value: get the next arg and overwrite $logFilePath.
             #       The only issue then would be if it was stdout ('-').
             throw "You must not pass the 'logfile' argument - this script needs to set it to a custom value."
         }
     }
 
-    $arguments += @("-logfile", $RunUnityLogFile)
+    $arguments += @("-logfile", $logFilePath)
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
 
     do
     {
-        ClearUnityLog
+        ClearUnityLog $logFilePath
+        New-Item $logFilePath
+
         Write-Host "Running $unityPath $arguments"
         $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
 
-        Write-Host "Waiting for Unity to finish."
-        WaitForLogFile 30
-        $stdout = SubscribeToUnityLogFile $process
+        $stdout = WaitForUnityExit $logFilePath $process
 
         if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
         {
@@ -66,38 +67,25 @@ function RunUnity([string] $unityPath, [string[]] $arguments)
             {
                 Throw "Unity exited with code $($process.ExitCode)"
             }
-            return $stdout
+            return $ReturnLogOutput ? $stdout : $null
         }
     } while ($stopwatch.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
 }
 
-function ClearUnityLog
+function ClearUnityLog([string] $logFilePath)
 {
     Write-Host -NoNewline "Removing Unity log:"
-    If (Test-Path -Path "$RunUnityLogFile")
+    If (Test-Path -Path $logFilePath)
     {
         #Force is required if it's opened by another process.
-        Remove-Item -Path "$RunUnityLogFile" -Force
+        Remove-Item -Path $logFilePath -Force
     }
     Write-Host " OK"
 }
 
-function WaitForLogFile
+function WaitForUnityExit([string] $RunUnityLogFile, [System.Diagnostics.Process] $unityProcess)
 {
-    for ($i = 0; $i -lt 30; $i++)
-    {
-        if (Test-Path -Path "$RunUnityLogFile")
-        {
-            return
-        }
-        Write-Host "Waiting for log file to appear: $RunUnityLogFile ..."
-        Start-Sleep -Seconds 1
-    }
-    Throw "Timeout while waiting for the log file to appear: $RunUnityLogFile"
-}
-
-function SubscribeToUnityLogFile([System.Diagnostics.Process] $unityProcess)
-{
+    Write-Host "Waiting for Unity to finish."
     $unityClosedDelay = 0
 
     If ($unityProcess -eq $null)
@@ -105,7 +93,7 @@ function SubscribeToUnityLogFile([System.Diagnostics.Process] $unityProcess)
         Throw "Unity process not received"
     }
 
-    $logFileStream = New-Object System.IO.FileStream("$RunUnityLogFile", [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    $logFileStream = New-Object System.IO.FileStream($RunUnityLogFile, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
     If (-not $logFileStream)
     {
         Throw "Failed to open logfile on $RunUnityLogFile"

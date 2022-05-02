@@ -63,9 +63,9 @@ function FormatUnityPath
     If ($path)
     {
         #Ajust path on MacOS
-        If ($path -match "Unity.app/$")
+        If ($path -match "Unity.app/?$")
         {
-            $path = $path + "Contents/MacOS"
+            $path = $path + "/Contents/MacOS"
         }
         $unityPath = $path
     }

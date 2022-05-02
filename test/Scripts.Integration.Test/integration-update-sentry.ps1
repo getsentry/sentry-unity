@@ -9,7 +9,7 @@ $UnityPath = FormatUnityPath $UnityPath
 
 function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $failMessage, [string[]] $arguments)
 {
-    $stdout = RunUnityCustom $UnityPath $arguments
+    $stdout = RunUnityCustom $UnityPath $arguments -ReturnLogOutput
     If ($null -ne ($stdout | Select-String $successMessage))
     {
         Write-Host "`n$name | SUCCESS" -ForegroundColor Green
