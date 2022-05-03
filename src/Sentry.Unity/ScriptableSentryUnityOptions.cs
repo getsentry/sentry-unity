@@ -68,12 +68,19 @@ namespace Sentry.Unity
         [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
         [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; } = SentryLevel.Warning;
 
-        public static SentryUnityOptions? LoadSentryUnityOptions(bool isBuilding = false)
+        /// <summary>
+        /// Loads the ScriptableSentryUnityOptions from `Resource`.
+        /// </summary>
+        /// <returns>The SentryUnityOptions generated from the ScriptableSentryUnityOptions</returns>
+        /// <remarks>
+        /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
+        /// </remarks>
+        public static SentryUnityOptions? LoadSentryUnityOptions()
         {
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
-                return scriptableOptions.ToSentryUnityOptions(isBuilding);
+                return scriptableOptions.ToSentryUnityOptions(false);
             }
 
             return null;

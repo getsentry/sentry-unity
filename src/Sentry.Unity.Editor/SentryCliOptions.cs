@@ -26,19 +26,6 @@ namespace Sentry.Unity.Editor
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Plugins/Sentry/{notDefaultConfigName ?? ConfigName}.asset";
 
-        internal static SentryCliOptions LoadCliOptions(string? configName = null)
-        {
-            var cliOptions = AssetDatabase.LoadAssetAtPath(GetConfigPath(configName),
-                typeof(SentryCliOptions)) as SentryCliOptions;
-
-            if (cliOptions is null)
-            {
-                cliOptions = CreateCliOptions(configName);
-            }
-
-            return cliOptions;
-        }
-
         private static void MissingFieldWarning(IDiagnosticLogger? logger, string name) =>
             logger?.LogWarning("sentry-cli: {0} missing. Please set it under {1}", name, EditorMenuPath);
 
@@ -83,18 +70,6 @@ namespace Sentry.Unity.Editor
             }
 
             return validated;
-        }
-
-        internal static SentryCliOptions CreateCliOptions(string? configName)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(GetConfigPath(configName)));
-
-            var cliOptions = CreateInstance<SentryCliOptions>();
-
-            AssetDatabase.CreateAsset(cliOptions, GetConfigPath(configName));
-            AssetDatabase.SaveAssets();
-
-            return cliOptions;
         }
     }
 }

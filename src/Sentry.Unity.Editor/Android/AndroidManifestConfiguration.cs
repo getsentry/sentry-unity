@@ -24,8 +24,9 @@ namespace Sentry.Unity.Editor.Android
         public int callbackOrder => 1;
 
         public AndroidManifestConfiguration()
-            : this(() => ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer),
-                () => SentryCliOptions.LoadCliOptions(),
+            : this(() => SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
+                    .ToSentryUnityOptions(BuildPipeline.isBuildingPlayer),
+                () => SentryScriptableObject.Load<SentryCliOptions>(SentryCliOptions.GetConfigPath()),
                 isDevelopmentBuild: EditorUserBuildSettings.development,
                 scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
         {

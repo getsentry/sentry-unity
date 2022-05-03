@@ -3,7 +3,6 @@ using System.IO;
 using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -17,7 +16,8 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
+                .ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             try
@@ -49,7 +49,7 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddNativeOptions(options);
                 sentryXcodeProject.AddSentryToMain(options);
 
-                var sentryCliOptions = SentryCliOptions.LoadCliOptions();
+                var sentryCliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
                 if (sentryCliOptions.IsValid(logger))
                 {
                     SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions);

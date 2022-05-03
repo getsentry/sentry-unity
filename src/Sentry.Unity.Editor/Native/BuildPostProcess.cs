@@ -18,7 +18,8 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
+                .ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
 
             try
@@ -64,7 +65,7 @@ namespace Sentry.Unity.Editor.Native
 
         private static void UploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
         {
-            var cliOptions = SentryCliOptions.LoadCliOptions();
+            var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
             {
                 return;
