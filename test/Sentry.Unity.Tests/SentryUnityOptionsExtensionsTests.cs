@@ -11,12 +11,14 @@ namespace Sentry.Unity.Tests
             public bool Enabled { get; set; } = true;
             public string Dsn { get; set; } = "http://test.com";
             public bool CaptureInEditor { get; set; } = true;
+            public bool Debug { get; set; } = true;
 
             public SentryUnityOptions GetSut() => new()
             {
                 Enabled = Enabled,
                 Dsn = Dsn,
-                CaptureInEditor = CaptureInEditor
+                CaptureInEditor = CaptureInEditor,
+                Debug = Debug,
             };
         }
 
@@ -87,6 +89,28 @@ namespace Sentry.Unity.Tests
             var shouldInitialize = options.ShouldInitializeSdk(_fixture.TestApplication);
 
             Assert.IsFalse(shouldInitialize);
+        }
+
+        [Test]
+        public void SetupLogging_DebugTrue_SetsUnityLogger()
+        {
+            var options = _fixture.GetSut();
+
+            options.SetupLogging();
+
+            Assert.IsInstanceOf<UnityLogger>(options.DiagnosticLogger);
+        }
+
+        [Test]
+        public void SetupLogging_DebugFalse_RemovesUnityLogger()
+        {
+            _fixture.Debug = false;
+            var options = _fixture.GetSut();
+            options.DiagnosticLogger = new UnityLogger(options);
+
+            options.SetupLogging();
+
+            Assert.IsNull(options.DiagnosticLogger);
         }
     }
 }

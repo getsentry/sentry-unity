@@ -48,5 +48,21 @@ namespace Sentry.Unity
 
             return true;
         }
+
+        internal static void SetupLogging(this SentryUnityOptions options)
+        {
+            if (options.Debug)
+            {
+                if (options.DiagnosticLogger is null)
+                {
+                    options.DiagnosticLogger = new UnityLogger(options);
+                    options.DiagnosticLogger.LogDebug("Logging enabled with 'UnityLogger' min level: {0}", options.DiagnosticLevel);
+                }
+            }
+            else
+            {
+                options.DiagnosticLogger = null;
+            }
+        }
     }
 }

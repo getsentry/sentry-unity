@@ -132,7 +132,7 @@ namespace Sentry.Unity
             options.Debug = ShouldDebug(application.IsEditor && !isBuilding);
             options.DiagnosticLevel = DiagnosticLevel;
 
-            options.TryAttachLogger();
+            options.SetupLogging();
 
             OptionsConfiguration?.Configure(options);
 
