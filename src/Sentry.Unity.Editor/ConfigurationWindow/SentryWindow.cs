@@ -43,9 +43,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         {
             SetTitle();
 
-            Options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(
+            Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(
                 ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
-            CliOptions = SentryScriptableObject.Load<SentryCliOptions>(
+            CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(
                 SentryCliOptions.GetConfigPath(SentryCliAssetName));
         }
 

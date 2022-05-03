@@ -6,10 +6,9 @@ namespace Sentry.Unity.Editor
 {
     internal static class SentryScriptableObject
     {
-        internal static T Load<T>(string path) where T : ScriptableObject
+        internal static T CreateOrLoad<T>(string path) where T : ScriptableObject
         {
-            Debug.Log($"loading from: {path}");
-            var options = AssetDatabase.LoadAssetAtPath<T>(path);
+            var options = Load<T>(path);
             if (options == null)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -22,5 +21,7 @@ namespace Sentry.Unity.Editor
 
             return options;
         }
+
+        internal static T Load<T>(string path) where T : ScriptableObject => AssetDatabase.LoadAssetAtPath<T>(path);
     }
 }
