@@ -16,20 +16,42 @@ namespace Sentry.Unity.Editor.Tests
         public void TearDown() => AssetDatabase.DeleteAsset(Path.GetDirectoryName(_tempPath));
 
         [Test]
-        public void Load_ScriptableSentryUnityOptionsDoesNotExist_ReturnsNewObject()
+        public void CreateOrLoad_ScriptableSentryUnityOptionsAssetDoesNotExist_CreatesNewOptionsAsset()
         {
-            SentryScriptableObject.Load<ScriptableSentryUnityOptions>(_tempPath);
+            Assert.IsFalse(File.Exists(_tempPath)); // Sanity check
+
+            SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(_tempPath);
 
             Assert.IsTrue(File.Exists(_tempPath));
         }
 
         [Test]
-        public void Load_ScriptableSentryUnityOptionsAlreadyExist_ReturnsObject()
+        public void CreateOrLoad_SentryCliOptionsAssetDoesNotExist_CreatesNewOptionsAsset()
+        {
+            Assert.IsFalse(File.Exists(_tempPath)); // Sanity check
+
+            SentryScriptableObject.CreateOrLoad<SentryCliOptions>(_tempPath);
+
+            Assert.IsTrue(File.Exists(_tempPath));
+        }
+
+        [Test]
+        public void Load_OptionsAssetDoesNotExist_ReturnsNull()
+        {
+            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(_tempPath);
+
+            Assert.IsNull(options);
+        }
+
+        [Test]
+        public void Load_ScriptableSentryUnityOptionsExist_LoadsSavedOptionsAsset()
         {
             var expectedDsn = "test_dsn";
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(_tempPath);
+            var options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(_tempPath);
             options.Dsn = expectedDsn;
             AssetDatabase.SaveAssets(); // Saving to disk
+
+            Assert.IsTrue(File.Exists(_tempPath)); // Sanity check
 
             var actualOptions = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(_tempPath);
 
@@ -37,20 +59,14 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void Load_SentryCliOptionsDoesNotExist_ReturnsNewObject()
-        {
-            SentryScriptableObject.Load<SentryCliOptions>(_tempPath);
-
-            Assert.IsTrue(File.Exists(_tempPath));
-        }
-
-        [Test]
-        public void Load_SentryCliOptionsAlreadyExist_ReturnsObject()
+        public void Load_SentryCliOptionsExist_LoadsSavedOptionsAsset()
         {
             var expectedAuth = "test_auth";
-            var options = SentryScriptableObject.Load<SentryCliOptions>(_tempPath);
+            var options = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(_tempPath);
             options.Auth = expectedAuth;
             AssetDatabase.SaveAssets(); // Saving to disk
+
+            Assert.IsTrue(File.Exists(_tempPath)); // Sanity check
 
             var actualOptions = SentryScriptableObject.Load<SentryCliOptions>(_tempPath);
 
