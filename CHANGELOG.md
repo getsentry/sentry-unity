@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SentryUnityOptions now provide a method to disable the UnityLoggingIntegration ([#724](https://github.com/getsentry/sentry-unity/pull/724))
+
 ### Fixes
 
 - Dropped support for Sentry options as Json ([#709](https://github.com/getsentry/sentry-unity/pull/709))
