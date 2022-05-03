@@ -151,7 +151,7 @@ function TestDsnFor([string] $platform)
     return $dsn
 }
 
-function RunUnityCustom([string] $unityPath, [string[]] $arguments)
+function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
     If ($unityPath.StartsWith("docker "))
     {
@@ -161,5 +161,5 @@ function RunUnityCustom([string] $unityPath, [string[]] $arguments)
 
     }
 
-    return RunUnity $unityPath $arguments
+    return RunUnity $unityPath $arguments -ReturnLogOutput:$ReturnLogOutput
 }
