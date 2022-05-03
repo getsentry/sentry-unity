@@ -92,9 +92,11 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void SetupLogging_DebugTrue_SetsUnityLogger()
+        public void SetupLogging_DebugAndNoDiagnosticLogger_SetsUnityLogger()
         {
             var options = _fixture.GetSut();
+
+            Assert.IsNull(options.DiagnosticLogger); // Sanity check
 
             options.SetupLogging();
 
@@ -102,7 +104,7 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void SetupLogging_DebugFalse_RemovesUnityLogger()
+        public void SetupLogging_DebugFalse_DiagnosticLoggerIsNull()
         {
             _fixture.Debug = false;
             var options = _fixture.GetSut();
@@ -111,6 +113,20 @@ namespace Sentry.Unity.Tests
             options.SetupLogging();
 
             Assert.IsNull(options.DiagnosticLogger);
+        }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SetupLogging_DiagnosticLoggerSet_LeavesOrRemovesDiagnosticLogger(bool debug)
+        {
+            _fixture.Debug = debug;
+            var options = _fixture.GetSut();
+            options.DiagnosticLogger = new UnityLogger(options);
+
+            options.SetupLogging();
+
+            Assert.AreEqual(debug, options.DiagnosticLogger is not null);
         }
     }
 }
