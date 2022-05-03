@@ -63,13 +63,15 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         }
         else
         {
-            if ($process.ExitCode -ne 0)
-            {
-                Throw "Unity exited with code $($process.ExitCode)"
-            }
-            return $ReturnLogOutput ? $stdout : $null
+            break
         }
     } while ($stopwatch.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
+    
+    if ($process.ExitCode -ne 0)
+    {
+        Throw "Unity exited with code $($process.ExitCode)"
+    }
+    return $ReturnLogOutput ? $stdout : $null
 }
 
 function ClearUnityLog([string] $logFilePath)
