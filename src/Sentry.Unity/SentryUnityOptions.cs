@@ -110,8 +110,9 @@ namespace Sentry.Unity
         /// Whether the SDK should add native support for Linux
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
-        // Initialized by native SDK binding code and to set the User.ID in sentry-dotnet.
 
+
+        // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? DefaultUserId;
 
         public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
