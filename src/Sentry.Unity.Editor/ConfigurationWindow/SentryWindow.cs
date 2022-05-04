@@ -21,6 +21,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         public static SentryWindow Instance => GetWindow<SentryWindow>();
 
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
+        protected virtual string SentryCliAssetName { get; } = SentryCliOptions.ConfigName;
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
         public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
@@ -42,43 +43,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         {
             SetTitle();
 
-            Options = LoadOptions();
-            CliOptions = SentryCliOptions.LoadCliOptions();
-        }
-
-        private ScriptableSentryUnityOptions LoadOptions()
-        {
-            var options = AssetDatabase.LoadAssetAtPath(
-                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName),
-                typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
-
-            if (options is null)
-            {
-                options = CreateOptions(SentryOptionsAssetName);
-            }
-
-            return options;
-        }
-
-        internal static ScriptableSentryUnityOptions CreateOptions(string? notDefaultConfigName = null)
-        {
-            if (!AssetDatabase.IsValidFolder("Assets/Resources"))
-            {
-                AssetDatabase.CreateFolder("Assets", "Resources");
-            }
-
-            if (!AssetDatabase.IsValidFolder($"Assets/Resources/{ScriptableSentryUnityOptions.ConfigRootFolder}"))
-            {
-                AssetDatabase.CreateFolder("Assets/Resources", ScriptableSentryUnityOptions.ConfigRootFolder);
-            }
-
-            var scriptableOptions = CreateInstance<ScriptableSentryUnityOptions>();
-
-            AssetDatabase.CreateAsset(scriptableOptions,
-                ScriptableSentryUnityOptions.GetConfigPath(notDefaultConfigName));
-            AssetDatabase.SaveAssets();
-
-            return scriptableOptions;
+            Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(
+                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
+            CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(
+                SentryCliOptions.GetConfigPath(SentryCliAssetName));
         }
 
         // ReSharper disable once UnusedMember.Local

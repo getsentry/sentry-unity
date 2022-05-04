@@ -11,12 +11,14 @@ namespace Sentry.Unity.Tests
             public bool Enabled { get; set; } = true;
             public string Dsn { get; set; } = "http://test.com";
             public bool CaptureInEditor { get; set; } = true;
+            public bool Debug { get; set; } = true;
 
             public SentryUnityOptions GetSut() => new()
             {
                 Enabled = Enabled,
                 Dsn = Dsn,
-                CaptureInEditor = CaptureInEditor
+                CaptureInEditor = CaptureInEditor,
+                Debug = Debug,
             };
         }
 
@@ -87,6 +89,44 @@ namespace Sentry.Unity.Tests
             var shouldInitialize = options.ShouldInitializeSdk(_fixture.TestApplication);
 
             Assert.IsFalse(shouldInitialize);
+        }
+
+        [Test]
+        public void SetupLogging_DebugAndNoDiagnosticLogger_SetsUnityLogger()
+        {
+            var options = _fixture.GetSut();
+
+            Assert.IsNull(options.DiagnosticLogger); // Sanity check
+
+            options.SetupLogging();
+
+            Assert.IsInstanceOf<UnityLogger>(options.DiagnosticLogger);
+        }
+
+        [Test]
+        public void SetupLogging_DebugFalse_DiagnosticLoggerIsNull()
+        {
+            _fixture.Debug = false;
+            var options = _fixture.GetSut();
+            options.DiagnosticLogger = new UnityLogger(options);
+
+            options.SetupLogging();
+
+            Assert.IsNull(options.DiagnosticLogger);
+        }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SetupLogging_DiagnosticLoggerSet_LeavesOrRemovesDiagnosticLogger(bool debug)
+        {
+            _fixture.Debug = debug;
+            var options = _fixture.GetSut();
+            options.DiagnosticLogger = new UnityLogger(options);
+
+            options.SetupLogging();
+
+            Assert.AreEqual(debug, options.DiagnosticLogger is not null);
         }
     }
 }
