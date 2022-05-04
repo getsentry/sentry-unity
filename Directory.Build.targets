@@ -203,7 +203,7 @@ Expected to exist:
 
     <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -S ."></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
 
@@ -224,7 +224,7 @@ Expected to exist:
 
     <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Linux." />
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
 
     <MakeDir Directories="$(SentryLinuxArtifactsDestination)"/>
