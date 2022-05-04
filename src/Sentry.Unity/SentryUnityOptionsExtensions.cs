@@ -64,5 +64,12 @@ namespace Sentry.Unity
                 options.DiagnosticLogger = null;
             }
         }
+
+        /// <summary>
+        /// Disables the capture of errors through <see cref="UnityApplicationLoggingIntegration"/>.
+        /// </summary>
+        /// <param name="options">The SentryUnityOptions to remove the integration from.</param>
+        public static void DisableUnityApplicationLoggingIntegration(this SentryUnityOptions options) =>
+            options.RemoveIntegration<UnityApplicationLoggingIntegration>();
     }
 }
