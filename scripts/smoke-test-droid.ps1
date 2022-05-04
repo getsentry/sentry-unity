@@ -52,9 +52,14 @@ function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
 function OnError([string] $deviceId, [string] $deviceApi)
 {
     Write-Host "Dumping logs for $device"
+
+    Write-Host "::group::Android Logcat"
     adb -s $deviceId logcat -d
-    Write-Host "UI XML Log"
+    Write-Host "::endgroup::"
+
+    Write-Host "::group::UI XML Log"
     GetDeviceUiLog $device $deviceApi
+    Write-Host "::endgroup::"
     TakeScreenshot $device
 }
 
@@ -290,6 +295,7 @@ foreach ($device in $DeviceList)
         {
             Write-Host "$lineWithSuccess"
             Write-Host "$Name test: PASS" -ForegroundColor Green
+            OnError $device $deviceApi
         }
         elseif (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.|because ULR inactive'))
         {
