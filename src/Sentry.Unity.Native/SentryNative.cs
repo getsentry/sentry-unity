@@ -2,6 +2,7 @@ using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace Sentry.Unity.Native
 {
@@ -39,6 +40,15 @@ namespace Sentry.Unity.Native
                 };
                 options.ScopeObserver = new NativeScopeObserver(options);
                 options.EnableScopeSync = true;
+
+                // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
+                options.DefaultUserId = AnalyticsSessionInfo.userId;
+                if (options.DefaultUserId is not null)
+                {
+                    options.DiagnosticLogger?.LogDebug(
+                        "Setting Unity AnalyticsSessionInfo.userId ('{0}') as the default user ID.", options.DefaultUserId);
+                    options.ScopeObserver.SetUser(new User { Id = options.DefaultUserId });
+                }
 
                 // Note: we must actually call the function now and on every other call use the value we get here.
                 // Additionally, we cannot call this multiple times for the same directory, because the result changes

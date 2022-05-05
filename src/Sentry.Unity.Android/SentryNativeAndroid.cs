@@ -56,7 +56,7 @@ namespace Sentry.Unity.Android
                 if (options.DefaultUserId is not null)
                 {
                     options.DiagnosticLogger?
-                                .LogDebug("Setting Android 'installationId' '{0}' as the default user ID.", options.DefaultUserId);
+                                .LogDebug("Setting Android installationId ('{0}') as the default user ID.", options.DefaultUserId);
                 }
                 else
                 {
