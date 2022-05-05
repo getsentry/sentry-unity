@@ -183,6 +183,7 @@ t.ExpectMessage(currentMessage, "'type':'session'")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "LogError(GUID)")
+t.ExpectMessage(currentMessage, "'user':{'id':'")
 # t.ExpectMessage(
 #     currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
 # t.ExpectMessageNot(currentMessage, "'length':0")
