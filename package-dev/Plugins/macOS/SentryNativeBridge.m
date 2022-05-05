@@ -11,7 +11,7 @@ static Class SentryUser;
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
     if (!name) {                                                                                   \
-        NSLog(@"Sentry (native bridge): Couldn't load %@ class from the dynamic library", name);   \
+        NSLog(@"Sentry (bridge): Couldn't load class '" #name "' from the dynamic library");       \
         break;                                                                                     \
     }
 
@@ -24,7 +24,7 @@ int SentryNativeBridgeLoadLibrary()
         do {
             void *dylib = dlopen("@executable_path/../PlugIns/Sentry.dylib", RTLD_LAZY);
             if (!dylib) {
-                NSLog(@"Sentry (native bridge): Couldn't load Sentry.dylib - dlopen() failed");
+                NSLog(@"Sentry (bridge): Couldn't load Sentry.dylib - dlopen() failed");
                 break;
             }
 
@@ -65,6 +65,9 @@ void SentryNativeBridgeStartWithOptions(const void *options)
 
 void SentryConfigureScope(void (^callback)(id))
 {
+    // setValue:forKey: may throw if the property is not found; same for performSelector.
+    // Even though this shouldn't happen, better not take the chance of letting an unhandled
+    // exception while setting error info - it would just crash the app immediately.
     @try {
         [SentrySDK performSelector:@selector(configureScope:) withObject:callback];
     } @catch (NSException *exception) {
@@ -77,6 +80,7 @@ void SentryConfigureScope(void (^callback)(id))
 /* make it work with dynamically loaded classes. Mainly:                       */
 /*   - call: [class performSelector:@selector(arg1:arg2:)                      */
 /*                  withObject:arg1Value withObject:arg2Value];                */
+/*     or xCode warns of class/instance method not found                       */
 /*   - use `id` as variable types                                              */
 /*   - use [obj setValue:value forKey:@"prop"] instead of `obj.prop = value`   */
 /*******************************************************************************/
@@ -94,7 +98,7 @@ int SentryNativeBridgeCrashedLastRun()
 void SentryNativeBridgeClose()
 {
     @try {
-        [SentrySDK close];
+        [SentrySDK performSelector:@selector(close)];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to close: %@", exception.reason);
     }
@@ -210,11 +214,12 @@ void SentryNativeBridgeSetUser(
             [user setValue:[NSString stringWithUTF8String:username] forKey:@"username"];
         }
 
-        [scope setUser:user];
+        [scope performSelector:@selector(setUser:) withObject:user];
     });
 }
 
 void SentryNativeBridgeUnsetUser()
 {
-    SentryConfigureScope(^(id scope) { [scope setUser:nil]; });
+    SentryConfigureScope(
+        ^(id scope) { [scope performSelector:@selector(setUser:) withObject:nil]; });
 }

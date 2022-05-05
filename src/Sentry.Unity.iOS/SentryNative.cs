@@ -33,7 +33,7 @@ namespace Sentry.Unity.iOS
                     }
                     if (!SentryCocoaBridgeProxy.Init(options))
                     {
-                        options.DiagnosticLogger?.LogWarning("Failed to initialzie the native SDK");
+                        options.DiagnosticLogger?.LogWarning("Failed to initialize the native SDK");
                         return;
                     }
                     options.ScopeObserver = new NativeScopeObserver("macOS", options);

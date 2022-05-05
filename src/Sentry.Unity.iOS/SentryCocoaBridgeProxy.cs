@@ -13,9 +13,9 @@ namespace Sentry.Unity.iOS
     /// <see href="https://github.com/getsentry/sentry-cocoa"/>
     internal static class SentryCocoaBridgeProxy
     {
+        // Note: used on macOS only
         public static bool Init(SentryUnityOptions options)
         {
-            // Note: used on macOS only
             if (LoadLibrary() != 1)
             {
                 return false;
