@@ -1,37 +1,60 @@
 using System.IO;
+using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
-    internal static class DebugSymbolUpload
+    internal class DebugSymbolUpload
     {
-        internal static readonly string GradleExportedSymbolsPath = Path.Combine("unityLibrary", "src", "main", "symbols");
+        private IDiagnosticLogger _logger;
 
-        public static string GetSymbolsPath(string unityProjectPath, string gradleProjectPath, bool isProjectExporting)
+        public DebugSymbolUpload(IDiagnosticLogger logger)
         {
-            var symbolsPath = Path.Combine(unityProjectPath, "Temp", "StagingArea", "symbols");
-            if (isProjectExporting)
-            {
-                // We can no longer trust the Unity temp directory to exist so we copy the symbols to the export directory.
-                var copiedSymbolsPath = Path.Combine(gradleProjectPath, GradleExportedSymbolsPath);
-                CopySymbols(symbolsPath, copiedSymbolsPath);
-
-                return copiedSymbolsPath;
-            }
-
-            return symbolsPath;
+            _logger = logger;
         }
 
-        public static void AppendUploadToGradleFile(string sentryCliPath, string gradleProjectPath, string symbolsDirectoryPath, IApplication? application = null)
+        public string[] GetDefaultSymbolPaths(string unityProjectPath, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            // Gradle doesn't support backslahes on path (Windows) so converting to forward slashes
+            // Starting from 2021.2 Unity caches the build inside the 'Library' instead of 'Temp'
+            if (application.UnityVersion.StartsWith("2022")
+                || application.UnityVersion.StartsWith("2021.3")
+                || application.UnityVersion.StartsWith("2021.2"))
+            {
+                _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
+                return new[]
+                {
+                    Path.Combine(unityProjectPath, "Library", "Bee"),
+                    Path.Combine(unityProjectPath, "Library", "Android")
+                };
+            }
+
+            _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbols upload: 'Temp'.");
+            return new[]
+            {
+                Path.Combine(unityProjectPath, "Temp", "StagingArea"),
+                Path.Combine(unityProjectPath, "Temp", "gradleOut")
+            };
+        }
+
+        public void AppendUploadToGradleFile(string sentryCliPath, string gradleProjectPath, string[] symbolsDirectoryPaths, IApplication? application = null)
+        {
+            application ??= ApplicationAdapter.Instance;
+
+            _logger.LogDebug("Appending debug symbols upload task to gradle file.");
+
+            // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
             if (application.Platform == RuntimePlatform.WindowsEditor)
             {
+                _logger.LogDebug("Converting backslashes to forward slashes.");
+
                 sentryCliPath = sentryCliPath.Replace(@"\", "/");
-                symbolsDirectoryPath = symbolsDirectoryPath.Replace(@"\", "/");
+                for (var i = 0; i < symbolsDirectoryPaths.Length; i++)
+                {
+                    symbolsDirectoryPaths[i] = symbolsDirectoryPaths[i].Replace(@"\", "/");
+                }
             }
 
             if (!File.Exists(sentryCliPath))
@@ -45,15 +68,19 @@ namespace Sentry.Unity.Editor.Android
                 throw new FileNotFoundException("Failed to find 'build.gradle'", gradleProjectPath);
             }
 
-            if (!Directory.Exists(symbolsDirectoryPath))
+            var pathsAsArgument = "";
+            foreach (var symbolsDirectoryPath in symbolsDirectoryPaths)
             {
-                throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolsDirectoryPath}");
+                if (Directory.Exists(symbolsDirectoryPath))
+                {
+                    pathsAsArgument += $"\"{symbolsDirectoryPath}\",";
+                }
+                else
+                {
+                    throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolsDirectoryPath}");
+                }
             }
 
-            // There are two sets of symbols:
-            // 1. The one specific to gradle (i.e. launcher)
-            // 2. The ones Unity also provides via "Create Symbols.zip" that can be found in Temp/StagingArea/symbols/
-            // We either get the path to the temp directory or if the project gets exported we copy the symbols to the output directory
             using var streamWriter = File.AppendText(gradleFilePath);
             streamWriter.Write($@"
 // Credentials and project settings information are stored in the sentry.properties file
@@ -63,12 +90,7 @@ gradle.taskGraph.whenReady {{
         exec {{
             environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
             executable ""{sentryCliPath}""
-            args = [""upload-dif"", ""./unityLibrary/src/main/jniLibs/""]
-        }}
-        exec {{
-            environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
-            executable ""{sentryCliPath}""
-            args = [""upload-dif"", ""{symbolsDirectoryPath}""]
+            args = [""upload-dif"", {pathsAsArgument}]
         }}
     }}
 }}");
@@ -76,12 +98,12 @@ gradle.taskGraph.whenReady {{
 
         internal static void CopySymbols(string sourcePath, string targetPath)
         {
-            foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+            foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
             {
                 Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
             }
 
-            foreach (string newPath in Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories))
+            foreach (var newPath in Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories))
             {
                 File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
             }

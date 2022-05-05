@@ -170,15 +170,28 @@ namespace Sentry.Unity.Editor.Android
 
             try
             {
-                var symbolsPath = DebugSymbolUpload.GetSymbolsPath(
-                    unityProjectPath,
-                    gradleProjectPath,
-                    EditorUserBuildSettings.exportAsGoogleAndroidProject);
+                logger.LogInfo("Adding automated debug symbol upload.");
+
+                var symbolsUpload = new DebugSymbolUpload(logger);
+                var symbolsPath = Array.Empty<string>();
+
+                if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
+                {
+                    // copy symbols?
+
+                    logger.LogDebug("Exporting project: trying to take the symbols with us.");
+                    symbolsPath = new[] { gradleProjectPath };
+                }
+                else
+                {
+                    symbolsPath = symbolsUpload.GetDefaultSymbolPaths(unityProjectPath);
+                }
 
                 var sentryCliPath = SentryCli.SetupSentryCli();
                 SentryCli.CreateSentryProperties(gradleProjectPath, sentryCliOptions);
 
-                DebugSymbolUpload.AppendUploadToGradleFile(sentryCliPath, gradleProjectPath, symbolsPath);
+                // TODO: make this  reentrant!
+                symbolsUpload.AppendUploadToGradleFile(sentryCliPath, gradleProjectPath, symbolsPath);
             }
             catch (Exception e)
             {
