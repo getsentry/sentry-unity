@@ -3,5 +3,5 @@ $ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/unity-utils.ps1
 
-Log output is written to 'unity.log'
+# Log output is written to 'unity.log'
 RunUnity $args[0] ($args | Select-Object -Skip 1)
