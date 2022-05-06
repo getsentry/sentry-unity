@@ -156,15 +156,20 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
+            var symbolsUpload = new DebugSymbolUpload(logger, unityProjectPath, gradleProjectPath, EditorUserBuildSettings.exportAsGoogleAndroidProject);
+
             var sentryCliOptions = _getSentryCliOptions();
             if (sentryCliOptions is null)
             {
                 logger.LogWarning("Failed to load sentry-cli options - Skipping symbols upload.");
+                symbolsUpload.RemoveUploadFromGradleFile();
+
                 return;
             }
 
             if (!sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
             {
+                symbolsUpload.RemoveUploadFromGradleFile();
                 return;
             }
 
@@ -172,26 +177,15 @@ namespace Sentry.Unity.Editor.Android
             {
                 logger.LogInfo("Adding automated debug symbol upload.");
 
-                var symbolsUpload = new DebugSymbolUpload(logger);
-                var symbolsPath = Array.Empty<string>();
-
-                if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
-                {
-                    // copy symbols?
-
-                    logger.LogDebug("Exporting project: trying to take the symbols with us.");
-                    symbolsPath = new[] { gradleProjectPath };
-                }
-                else
-                {
-                    symbolsPath = symbolsUpload.GetDefaultSymbolPaths(unityProjectPath);
-                }
-
                 var sentryCliPath = SentryCli.SetupSentryCli();
                 SentryCli.CreateSentryProperties(gradleProjectPath, sentryCliOptions);
 
-                // TODO: make this  reentrant!
-                symbolsUpload.AppendUploadToGradleFile(sentryCliPath, gradleProjectPath, symbolsPath);
+                if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
+                {
+                    symbolsUpload.TryCopySymbolsToGradleProject();
+                }
+
+                symbolsUpload.AppendUploadToGradleFile(sentryCliPath);
             }
             catch (Exception e)
             {

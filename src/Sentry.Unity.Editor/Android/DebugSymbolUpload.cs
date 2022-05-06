@@ -1,83 +1,106 @@
 using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using UnityEngine;
+using UnityEditor;
 
 namespace Sentry.Unity.Editor.Android
 {
     internal class DebugSymbolUpload
     {
-        private IDiagnosticLogger _logger;
+        private readonly IDiagnosticLogger _logger;
 
-        public DebugSymbolUpload(IDiagnosticLogger logger)
-        {
-            _logger = logger;
-        }
+        private readonly bool _isNewBuildingBacked;
 
-        public string[] GetDefaultSymbolPaths(string unityProjectPath, IApplication? application = null)
+        private const string RelativeBuildOutputPathOld = "Temp/StagingArea/symbols";
+        private const string RelativeGradlePathOld = "Temp/gradleOut";
+        private const string RelativeBuildOutputPathNew = "Library/Bee/artifacts/Android";
+        private const string RelativeAndroidPathNew = "Library/Android";
+
+        private readonly string _unityProjectPath;
+        private readonly string _gradleProjectPath;
+
+        private string[] _symbolUploadPaths;
+
+        public DebugSymbolUpload(IDiagnosticLogger logger,
+            string unityProjectPath,
+            string gradleProjectPath,
+            bool isExporting,
+            IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            // Starting from 2021.2 Unity caches the build inside the 'Library' instead of 'Temp'
+            _logger = logger;
+
+            _unityProjectPath = unityProjectPath;
+            _gradleProjectPath = gradleProjectPath;
+
+            // Starting from 2021.2 Unity caches the build output inside 'Library' instead of 'Temp'
             if (application.UnityVersion.StartsWith("2022")
                 || application.UnityVersion.StartsWith("2021.3")
                 || application.UnityVersion.StartsWith("2021.2"))
             {
-                _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
-                return new[]
-                {
-                    Path.Combine(unityProjectPath, "Library", "Bee"),
-                    Path.Combine(unityProjectPath, "Library", "Android")
-                };
+                _isNewBuildingBacked = true;
             }
 
-            _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbols upload: 'Temp'.");
-            return new[]
-            {
-                Path.Combine(unityProjectPath, "Temp", "StagingArea"),
-                Path.Combine(unityProjectPath, "Temp", "gradleOut")
-            };
+            _symbolUploadPaths = GetSymbolUploadPaths(isExporting);
         }
 
-        public void AppendUploadToGradleFile(string sentryCliPath, string gradleProjectPath, string[] symbolsDirectoryPaths, IApplication? application = null)
+        public void TryCopySymbolsToGradleProject()
         {
-            application ??= ApplicationAdapter.Instance;
-
-            _logger.LogDebug("Appending debug symbols upload task to gradle file.");
-
-            // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
-            if (application.Platform == RuntimePlatform.WindowsEditor)
+            // The new building backend takes care of making the debug symbol files available within the exported project
+            if (_isNewBuildingBacked)
             {
-                _logger.LogDebug("Converting backslashes to forward slashes.");
-
-                sentryCliPath = sentryCliPath.Replace(@"\", "/");
-                for (var i = 0; i < symbolsDirectoryPaths.Length; i++)
-                {
-                    symbolsDirectoryPaths[i] = symbolsDirectoryPaths[i].Replace(@"\", "/");
-                }
+                _logger.LogDebug("New building backend. Skipping copying of debug symbols.");
+                return;
             }
 
+            _logger.LogInfo("Copying debug symbols to exported gradle project.");
+
+            var buildOutputPath = Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld);
+            var targetRoot = Path.Combine(_gradleProjectPath, "symbols");
+
+            foreach (var sourcePath in Directory.GetFiles(buildOutputPath, "*.so", SearchOption.AllDirectories))
+            {
+                var targetPath = sourcePath.Replace(buildOutputPath, targetRoot);
+                _logger.LogDebug("Copying '{0}' to '{1}'", sourcePath, targetPath);
+
+                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
+                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
+            }
+        }
+
+        public void AppendUploadToGradleFile(string sentryCliPath)
+        {
+            var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
+            if (!File.Exists(gradleFilePath))
+            {
+                throw new FileNotFoundException("Failed to find 'build.gradle'", _gradleProjectPath);
+            }
+
+            if (File.ReadAllText(gradleFilePath).Contains("sentry.properties"))
+            {
+                _logger.LogDebug("Symbol upload has already been added in a previous build.");
+                return;
+            }
+
+            _logger.LogInfo("Appending debug symbols upload task to gradle file.");
+
+            sentryCliPath = ConvertSlashes(sentryCliPath);
             if (!File.Exists(sentryCliPath))
             {
                 throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
             }
 
-            var gradleFilePath = Path.Combine(gradleProjectPath, "build.gradle");
-            if (!File.Exists(gradleFilePath))
+            var symbolPathArgument = string.Empty;
+            foreach (var symbolUploadPath in _symbolUploadPaths)
             {
-                throw new FileNotFoundException("Failed to find 'build.gradle'", gradleProjectPath);
-            }
-
-            var pathsAsArgument = "";
-            foreach (var symbolsDirectoryPath in symbolsDirectoryPaths)
-            {
-                if (Directory.Exists(symbolsDirectoryPath))
+                if (Directory.Exists(symbolUploadPath))
                 {
-                    pathsAsArgument += $"\"{symbolsDirectoryPath}\",";
+                    symbolPathArgument += $"\"{ConvertSlashes(symbolUploadPath)}\",";
                 }
                 else
                 {
-                    throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolsDirectoryPath}");
+                    throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolUploadPath}");
                 }
             }
 
@@ -90,23 +113,58 @@ gradle.taskGraph.whenReady {{
         exec {{
             environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
             executable ""{sentryCliPath}""
-            args = [""upload-dif"", {pathsAsArgument}]
+            args = [""upload-dif"", {symbolPathArgument}]
         }}
     }}
 }}");
         }
 
-        internal static void CopySymbols(string sourcePath, string targetPath)
+        public void RemoveUploadFromGradleFile()
         {
-            foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+            var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
+            if (File.Exists(gradleFilePath) && File.ReadAllText(gradleFilePath).Contains("sentry.properties"))
             {
-                Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
-            }
+                var gradleFileLines = File.ReadAllLines(gradleFilePath);
+                using var streamWriter = File.CreateText(gradleFilePath);
+                for (var i = 0; i < gradleFileLines.Length; i++)
+                {
+                    if (gradleFileLines[i].Contains("// Credentials and"))
+                    {
+                        i += 11; // The task we append has 11 lines
+                        continue;
+                    }
 
-            foreach (var newPath in Directory.GetFiles(sourcePath, "*", SearchOption.AllDirectories))
-            {
-                File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+                    streamWriter.WriteLine(gradleFileLines[i]);
+                }
             }
         }
+
+        internal string[] GetSymbolUploadPaths(bool isExporting)
+        {
+            if (isExporting)
+            {
+                return new[] { _gradleProjectPath };
+            }
+
+            if (_isNewBuildingBacked)
+            {
+                _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
+                return new[]
+                {
+                    Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew),
+                    Path.Combine(_unityProjectPath, RelativeAndroidPathNew)
+                };
+            }
+
+            _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbols upload: 'Temp'.");
+            return new[]
+            {
+                Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld),
+                Path.Combine(_unityProjectPath, RelativeGradlePathOld)
+            };
+        }
+
+        // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
+        internal static string ConvertSlashes(string path) => path.Replace(@"\", "/");
     }
 }
