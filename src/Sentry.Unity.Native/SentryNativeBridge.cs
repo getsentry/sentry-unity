@@ -2,28 +2,25 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
+using UnityEngine;
 using AOT;
-using System.Text;
 
 namespace Sentry.Unity
 {
     /// <summary>
     /// P/Invoke to `sentry-native` functions.
     /// </summary>
-    /// <remarks>
-    /// The `sentry-native` SDK on Android is brought in through the `sentry-android-ndk`
-    /// maven package.
-    /// On Standalone players on Windows and Linux it's build directly for those platforms.
-    /// </remarks>
-    /// <see href="https://github.com/getsentry/sentry-java"/>
     /// <see href="https://github.com/getsentry/sentry-native"/>
     public static class SentryNativeBridge
     {
 
         public static bool CrashedLastRun;
 
-        public static void Init(SentryUnityOptions options)
+        public static bool Init(SentryUnityOptions options)
         {
+            _isLinux = ApplicationAdapter.Instance.Platform is RuntimePlatform.LinuxPlayer;
+
             var cOptions = sentry_options_new();
 
             // Note: DSN is not null because options.IsValid() must have returned true for this to be called.
@@ -55,7 +52,8 @@ namespace Sentry.Unity
             sentry_options_set_auto_session_tracking(cOptions, 0);
 
             var dir = GetCacheDirectory(options);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
+            if (ApplicationAdapter.Instance.Platform is RuntimePlatform.WindowsPlayer)
             {
                 options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
                 sentry_options_set_database_pathw(cOptions, dir);
@@ -78,7 +76,8 @@ namespace Sentry.Unity
                 sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
             }
 
-            sentry_init(cOptions);
+            _logger?.LogDebug("Initializing sentry native");
+            return 0 == sentry_init(cOptions);
         }
 
         public static void Close() => sentry_close();
@@ -134,17 +133,30 @@ namespace Sentry.Unity
         private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
-        private delegate void sentry_logger_function_t(int level, string message, IntPtr argsAddress, IntPtr userData);
+        private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
 
         [DllImport("sentry")]
         private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
 
         // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
         private static IDiagnosticLogger? _logger;
+        private static bool _isLinux = false;
 
         // This method is called from the C library and forwards incoming messages to the currently set _logger.
         [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
-        private static void nativeLog(int cLevel, string message, IntPtr args, IntPtr userData)
+        private static void nativeLog(int cLevel, IntPtr format, IntPtr args, IntPtr userData)
+        {
+            try
+            {
+                nativeLogImpl(cLevel, format, args, userData);
+            }
+            catch
+            {
+                // never allow an exception back to native code - it would crash the app
+            }
+        }
+
+        private static void nativeLogImpl(int cLevel, IntPtr format, IntPtr args, IntPtr userData)
         {
             var logger = _logger;
             if (logger is null)
@@ -168,27 +180,93 @@ namespace Sentry.Unity
                 return;
             }
 
-            // If the message contains any "formatting" modifiers (that should be substituted by `args`), we need
-            // to apply the formatting. However, we cannot access C var-arg (va_list) in c# thus we pass it back to
-            // vsnprintf (to find out the length of the resulting buffer) & vsprintf (to actually format the message).
-            if (message.Contains("%"))
+            string? message = null;
+            try
             {
-                var formattedLength = vsnprintf(null, UIntPtr.Zero, message, args);
-                var buffer = new StringBuilder(formattedLength + 1);
-                vsprintf(buffer, message, args);
-                message = buffer.ToString();
+                // We cannot access C var-arg (va_list) in c# thus we pass it back to vsnprintf to do thet formatting.
+                // For Linux, we must make a copy of the VaList to be able to pass it back...
+                if (_isLinux)
+                {
+                    var argsStruct = Marshal.PtrToStructure<VaListLinux64>(args);
+                    var formattedLength = 0;
+                    WithMarshalledStruct(argsStruct, argsPtr =>
+                    {
+                        formattedLength = 1 + vsnprintf_linux(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
+                    });
+
+                    WithAllocatedPtr(formattedLength, buffer =>
+                    WithMarshalledStruct(argsStruct, argsPtr =>
+                    {
+                        vsnprintf_linux(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                        message = Marshal.PtrToStringAnsi(buffer);
+                    }));
+                }
+                else
+                {
+                    var formattedLength = 1 + vsnprintf_windows(IntPtr.Zero, UIntPtr.Zero, format, args);
+                    WithAllocatedPtr(formattedLength, buffer =>
+                    {
+                        vsnprintf_windows(buffer, (UIntPtr)formattedLength, format, args);
+                        message = Marshal.PtrToStringAnsi(buffer);
+                    });
+                }
             }
-            logger.Log(level, $"Native: {message}");
+            catch (Exception err)
+            {
+                logger.Log(level, $"Exception in native log forwarder: {err}");
+            }
+
+            if (message == null)
+            {
+                // try to at least print the unreplaced message pattern
+                message = Marshal.PtrToStringAnsi(format);
+            }
+
+            if (message != null)
+            {
+                logger.Log(level, $"Native: {message}");
+            }
         }
 
-        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int vsprintf(StringBuilder buffer, string format, IntPtr args);
+        [DllImport("msvcrt", EntryPoint = "vsnprintf")]
+        private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
-        [DllImport("msvcrt.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int vsnprintf(string? buffer, UIntPtr bufferSize, string format, IntPtr args);
+        [DllImport("libc", EntryPoint = "vsnprintf")]
+        private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+
+        // https://stackoverflow.com/a/4958507/2386130
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct VaListLinux64
+        {
+            uint gp_offset;
+            uint fp_offset;
+            IntPtr overflow_arg_area;
+            IntPtr reg_save_area;
+        }
+
+        private static void WithAllocatedPtr(int size, Action<IntPtr> action)
+        {
+            var ptr = IntPtr.Zero;
+            try
+            {
+                ptr = Marshal.AllocHGlobal(size);
+                action(ptr);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
+
+        private static void WithMarshalledStruct<T>(T structure, Action<IntPtr> action) where T : notnull =>
+            WithAllocatedPtr(Marshal.SizeOf(structure), ptr =>
+            {
+                Marshal.StructureToPtr(structure, ptr, false);
+                action(ptr);
+            });
 
         [DllImport("sentry")]
-        private static extern void sentry_init(IntPtr options);
+        private static extern int sentry_init(IntPtr options);
 
         [DllImport("sentry")]
         private static extern int sentry_close();
