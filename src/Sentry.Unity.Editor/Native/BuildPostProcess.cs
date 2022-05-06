@@ -13,7 +13,7 @@ namespace Sentry.Unity.Editor.Native
         [PostProcessBuild(1)]
         public static void OnPostProcessBuild(BuildTarget target, string executablePath)
         {
-            if (target is not (BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64))
+            if (EditorUserBuildSettings.selectedBuildTargetGroup is not BuildTargetGroup.Standalone)
             {
                 return;
             }
@@ -36,15 +36,16 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
-                if (!options.WindowsNativeSupportEnabled)
+                if (!IsEnabledForPlatform(target, options))
                 {
-                    logger.LogDebug("Windows Native support disabled through the options.");
+                    logger.LogDebug("Native support for the current platform is disabled in the configuration.");
                     return;
                 }
 
                 var projectDir = Path.GetDirectoryName(executablePath);
-                AddCrashHandler(logger, projectDir);
-                UploadDebugSymbols(logger, projectDir, Path.GetFileName(executablePath));
+                var executableName = Path.GetFileName(executablePath);
+                AddCrashHandler(logger, target, projectDir, executableName);
+                UploadDebugSymbols(logger, target, projectDir, executableName);
 
             }
             catch (Exception e)
@@ -54,16 +55,38 @@ namespace Sentry.Unity.Editor.Native
             }
         }
 
-        private static void AddCrashHandler(IDiagnosticLogger logger, string projectDir)
+        private static bool IsEnabledForPlatform(BuildTarget target, SentryUnityOptions options) => target switch
         {
-            var crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins",
-                "Windows", "Sentry", "crashpad_handler.exe"));
-            var targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
-            logger.LogInfo("Copying the native crash handler '{0}' to the output directory", Path.GetFileName(crashpadPath));
+            BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
+            BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
+            _ => false,
+        };
+
+        private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
+        {
+            string crashpadPath;
+            string targetPath;
+            if (target is BuildTarget.StandaloneWindows64)
+            {
+                crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
+                targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
+            }
+            else if (target is BuildTarget.StandaloneOSX)
+            {
+                // No standalone crash handler for macOS - uses built-in handler in sentry-cocoa.
+                return;
+            }
+            else
+            {
+                throw new ArgumentException($"Unsupported build target: {target}");
+            }
+
+            crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
+            logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, string projectDir, string executableName)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
         {
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
@@ -91,13 +114,18 @@ namespace Sentry.Unity.Editor.Native
             };
 
             addPath(executableName);
-            addPath("GameAssembly.dll");
-            addPath("UnityPlayer.dll");
             addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
-            addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
-
-            // Note: using Path.GetFullPath as suggested by https://docs.unity3d.com/Manual/upm-assets.html
-            addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+            if (target is BuildTarget.StandaloneWindows64)
+            {
+                addPath("GameAssembly.dll");
+                addPath("UnityPlayer.dll");
+                addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+            }
+            else if (target is BuildTarget.StandaloneOSX)
+            {
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
+            }
 
             // Configure the process using the StartInfo properties.
             var process = new Process

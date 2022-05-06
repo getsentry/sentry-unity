@@ -3,6 +3,5 @@ BasedOnStyle: WebKit
 IndentWidth: 4
 IndentPPDirectives: AfterHash
 ColumnLimit: 100
-AlwaysBreakAfterDefinitionReturnType: All
 PointerAlignment: Right
 ForEachMacros: ['SENTRY_WITH_SCOPE', 'SENTRY_WITH_SCOPE_MUT']

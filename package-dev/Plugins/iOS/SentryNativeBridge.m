@@ -2,116 +2,123 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-int CrashedLastRun() {
-    return [SentrySDK crashedLastRun] ? 1 : 0;
-}
+// macOS only
+int SentryNativeBridgeLoadLibrary() { return 0; }
+void *SentryNativeBridgeOptionsNew() { return nil; }
+void SentryNativeBridgeOptionsSetString(void *options, const char *name, const char *value) { }
+void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }
+void SentryNativeBridgeStartWithOptions(void *options) { }
 
-void Close() {
-    [SentrySDK close];
-}
+int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }
 
-void SentryNativeBridgeAddBreadcrumb(const char* timestamp, const char* message, const char* type, const char* category, int level) {
+void SentryNativeBridgeClose() { [SentrySDK close]; }
+
+void SentryNativeBridgeAddBreadcrumb(
+    const char *timestamp, const char *message, const char *type, const char *category, int level)
+{
     if (timestamp == NULL && message == NULL && type == NULL && category == NULL) {
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope * scope) {
-        SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc] init];
+    [SentrySDK configureScope:^(SentryScope *scope) {
+        SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc]
+            initWithLevel:level
+                 category:(category ? [NSString stringWithUTF8String:category] : nil)];
 
         if (timestamp != NULL) {
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
-            breadcrumb.timestamp = [dateFormatter dateFromString:[NSString stringWithCString:timestamp encoding:NSUTF8StringEncoding]];
+            breadcrumb.timestamp =
+                [dateFormatter dateFromString:[NSString stringWithUTF8String:timestamp]];
         }
 
         if (message != NULL) {
-            breadcrumb.message = [NSString stringWithCString:message encoding:NSUTF8StringEncoding];
+            breadcrumb.message = [NSString stringWithUTF8String:message];
         }
 
         if (type != NULL) {
-            breadcrumb.type = [NSString stringWithCString:type encoding:NSUTF8StringEncoding];
+            breadcrumb.type = [NSString stringWithUTF8String:type];
         }
-
-        if (category != NULL) {
-            breadcrumb.category = [NSString stringWithCString:category encoding:NSUTF8StringEncoding];
-        }
-
-        breadcrumb.level = level;
 
         [scope addBreadcrumb:breadcrumb];
     }];
 }
 
-void SentryNativeBridgeSetExtra(const char* key, const char* value) {
+void SentryNativeBridgeSetExtra(const char *key, const char *value)
+{
     if (key == NULL) {
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope * scope) {
+    [SentrySDK configureScope:^(SentryScope *scope) {
         if (value != NULL) {
-            [scope setExtraValue:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
+            [scope setExtraValue:[NSString stringWithUTF8String:value]
+                          forKey:[NSString stringWithUTF8String:key]];
         } else {
             [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
         }
     }];
 }
 
-void SentryNativeBridgeSetTag(const char* key, const char* value) {
+void SentryNativeBridgeSetTag(const char *key, const char *value)
+{
     if (key == NULL) {
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope * scope) {
+    [SentrySDK configureScope:^(SentryScope *scope) {
         if (value != NULL) {
-            [scope setTagValue:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
+            [scope setTagValue:[NSString stringWithUTF8String:value]
+                        forKey:[NSString stringWithUTF8String:key]];
         } else {
             [scope removeTagForKey:[NSString stringWithUTF8String:key]];
         }
     }];
 }
 
-void SentryNativeBridgeUnsetTag(const char* key) {
+void SentryNativeBridgeUnsetTag(const char *key)
+{
     if (key == NULL) {
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope * scope) {
-        [scope removeTagForKey:[NSString stringWithUTF8String:key]];
-    }];
+    [SentrySDK configureScope:^(
+        SentryScope *scope) { [scope removeTagForKey:[NSString stringWithUTF8String:key]]; }];
 }
 
-void SentryNativeBridgeSetUser(const char* email, const char* userId, const char* ipAddress, const char* username) {
+void SentryNativeBridgeSetUser(
+    const char *email, const char *userId, const char *ipAddress, const char *username)
+{
     if (email == NULL && userId == NULL && ipAddress == NULL && username == NULL) {
         return;
     }
 
-    [SentrySDK configureScope:^(SentryScope * scope) {
+    [SentrySDK configureScope:^(SentryScope *scope) {
         SentryUser *user = [[SentryUser alloc] init];
 
         if (email != NULL) {
-            user.email = [NSString stringWithCString:email encoding:NSUTF8StringEncoding];
+            user.email = [NSString stringWithUTF8String:email];
         }
 
         if (userId != NULL) {
-            user.userId = [NSString stringWithCString:userId encoding:NSUTF8StringEncoding];
+            user.userId = [NSString stringWithUTF8String:userId];
         }
 
         if (ipAddress != NULL) {
-            user.ipAddress = [NSString stringWithCString:ipAddress encoding:NSUTF8StringEncoding];
+            user.ipAddress = [NSString stringWithUTF8String:ipAddress];
         }
 
         if (username != NULL) {
-            user.username = [NSString stringWithCString:username encoding:NSUTF8StringEncoding];
+            user.username = [NSString stringWithUTF8String:username];
         }
 
         [scope setUser:user];
     }];
 }
 
-void SentryNativeBridgeUnsetUser() {
-    [SentrySDK configureScope:^(SentryScope * scope) {
-        [scope setUser:nil];
-    }];
+void SentryNativeBridgeUnsetUser()
+{
+    [SentrySDK configureScope:^(SentryScope *scope) { [scope setUser:nil]; }];
 }
 
 NS_ASSUME_NONNULL_END

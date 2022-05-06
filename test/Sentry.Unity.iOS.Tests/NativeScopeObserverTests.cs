@@ -11,7 +11,7 @@ namespace Sentry.Unity.iOS.Tests
         {
             var timestamp = DateTimeOffset.UtcNow;
 
-            var timestampString = IosNativeScopeObserver.GetTimestamp(timestamp);
+            var timestampString = NativeScopeObserver.GetTimestamp(timestamp);
             var actualTimestamp = DateTimeOffset.ParseExact(timestampString, "o", CultureInfo.InvariantCulture);
 
             Assert.AreEqual(timestamp, actualTimestamp);
@@ -25,7 +25,7 @@ namespace Sentry.Unity.iOS.Tests
         [TestCase(BreadcrumbLevel.Critical, 5)]
         public void GetBreadcrumbLevel_TestCases(BreadcrumbLevel level, int expectedNativeLevel)
         {
-            var actualLevel = IosNativeScopeObserver.GetBreadcrumbLevel(level);
+            var actualLevel = NativeScopeObserver.GetBreadcrumbLevel(level);
 
             Assert.AreEqual(actualLevel, expectedNativeLevel);
         }

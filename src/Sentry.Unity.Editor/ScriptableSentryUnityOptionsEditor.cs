@@ -65,6 +65,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Toggle("iOS Native Support", options.IosNativeSupportEnabled);
             EditorGUILayout.Toggle("Android Native Support", options.AndroidNativeSupportEnabled);
             EditorGUILayout.Toggle("Windows Native Support", options.WindowsNativeSupportEnabled);
+            EditorGUILayout.Toggle("macOS Native Support", options.MacosNativeSupportEnabled);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);

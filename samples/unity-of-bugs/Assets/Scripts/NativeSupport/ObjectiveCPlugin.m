@@ -2,8 +2,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-void
-throwObjectiveC()
+void throwObjectiveC()
 {
 #ifdef __EXCEPTIONS
     NSLog(@"Throwing an Objective-C Exception");
@@ -17,8 +16,7 @@ throwObjectiveC()
 #endif
 }
 
-char *
-getTestArgObjectiveC()
+char *getTestArgObjectiveC()
 {
     NSArray *args = NSProcessInfo.processInfo.arguments;
 

@@ -14,14 +14,12 @@ If (Test-Path -Path "$NewProjectPath" )
     Write-Host " OK"
 }
 
-ClearUnityLog
-
 Write-Host -NoNewline "Creating directory for integration test:"
 New-Item -Path "$(ProjectRoot)/samples" -Name $NewProjectName -ItemType "directory"
 Write-Host " OK"
 
 Write-Host "Creating integration project:"
-RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "-quit") > $null
+RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "-quit")
 
 Write-Host -NoNewline "Copying Test scene"
 New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"

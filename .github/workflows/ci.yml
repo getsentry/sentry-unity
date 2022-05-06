@@ -33,6 +33,12 @@ jobs:
       target: iOS
       runsOn: macos-latest
 
+  macos-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: macOS
+      runsOn: macos-latest
+
   windows-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
@@ -88,6 +94,12 @@ jobs:
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
+          wait-timeout: 3600
+
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        with:
+          name: macOS-sdk
+          path: package-dev/Plugins/macOS
           wait-timeout: 3600
 
       - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -260,16 +272,21 @@ jobs:
         # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
-  windows-smoke-test:
-    name: Run Windows Unity ${{ matrix.unity-version }} Smoke Test
-    runs-on: windows-latest
+  desktop-smoke-test:
+    name: Run  ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021']
+        os: ['windows', 'macos']
         include:
-          - os: windows-latest
+          - os: windows
+            unity-modules: windows-il2cpp
             unity-config-path: C:/ProgramData/Unity/config/
+          - os: macos
+            unity-modules: mac-il2cpp
+            unity-config-path: /Library/Application Support/Unity/config/
     defaults:
       run:
         shell: pwsh
@@ -281,20 +298,11 @@ jobs:
         id: env
         run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
 
-      # Caching the whole Unity installation would overflow the 10 GiB limit repositories have but we can cache the Hub
-      # to achieve some speedup here at a low size cost.
-      # See https://github.com/kuler90/setup-unity/blob/797ebd0cc9d0e0ca5bcd6cc280ec1a6e685fbf83/src/setup.js#L36
-      - name: Cache Unity Hub
-        uses: actions/cache@v2
-        with:
-          path: 'C:/Program Files/Unity Hub'
-          key: unity-hub|windows
-
       - name: Setup Unity
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
-          unity-modules: windows-il2cpp
+          unity-modules: ${{ matrix.unity-modules }}
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -303,15 +311,11 @@ jobs:
           New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
           Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
-      # Step used to reduce the Unity path to avoid long path errors on Windows.
-      - name: Make symbolic link for Unity (Windows)
-        run: New-Item -ItemType SymbolicLink -Path "C:\${{ steps.env.outputs.unityVersion }}" -Target "C:\Program Files\Unity\Hub\Editor\${{ steps.env.outputs.unityVersion }}"
-
       - name: Create new Project
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build Standalone Player without Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -324,10 +328,10 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
 
       - name: Add Sentry to test project
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build Standalone Player Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Run Player - Smoke Test
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
