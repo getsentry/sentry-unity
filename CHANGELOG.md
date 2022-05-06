@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- Use the global LogHandler to capture unhandled Exceptions ([#731](https://github.com/getsentry/sentry-unity/pull/731))
 - Dropped support for Sentry options as Json ([#709](https://github.com/getsentry/sentry-unity/pull/709))
   - If you're migrating from version 0.3.0 or older, make sure to upgrade to 0.15.0 first, as it is the last version supporting the automated conversion of the options as Json file to a Scriptable Object.
 - Bump Sentry .NET SDK 3.17.0 ([#726](https://github.com/getsentry/sentry-unity/pull/726))
@@ -40,7 +41,7 @@
 ### Fixes
 
 - Refactor InApp logic from Stack Traces ([#661](https://github.com/getsentry/sentry-unity/pull/661))
-- Whitespaces no longer cause issues when uploading symbols for Windows native  ([#655](https://github.com/getsentry/sentry-unity/pull/655))
+- Whitespaces no longer cause issues when uploading symbols for Windows native ([#655](https://github.com/getsentry/sentry-unity/pull/655))
 - AndroidManifest update removes previous `io.sentry` entries ([#652](https://github.com/getsentry/sentry-unity/pull/652))
 - Bump Sentry .NET SDK 3.16.0 ([#678](https://github.com/getsentry/sentry-unity/pull/678))
   - [changelog 3.16.0](https://github.com/getsentry/sentry-dotnet/blob/3.16.0/CHANGELOG.md)
@@ -108,7 +109,7 @@
 
 ### Fixes
 
-- Sentry.Unity.Editor.iOS.dll no longer breaks builds on Windows when the iOS module has not been installed  ([#559](https://github.com/getsentry/sentry-unity/pull/559))
+- Sentry.Unity.Editor.iOS.dll no longer breaks builds on Windows when the iOS module has not been installed ([#559](https://github.com/getsentry/sentry-unity/pull/559))
 - Importing the link.xml when opening the config window no longer causes an infinite loop ([#539](https://github.com/getsentry/sentry-unity/pull/539))
 - Bump Sentry .NET SDK 3.14.0 ([#561](https://github.com/getsentry/sentry-unity/pull/561))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.14.0/CHANGELOG.md)
