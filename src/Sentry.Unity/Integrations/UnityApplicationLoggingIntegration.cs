@@ -1,6 +1,7 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations
@@ -133,6 +134,11 @@ namespace Sentry.Unity.Integrations
 
         public void LogException(Exception exception, UnityEngine.Object context)
         {
+            // NOTE: This might not be entirely true, as a user could as well call
+            // `LogException` for a handled exception.
+            // However, as the runtime will call `LogException` for uncaught
+            // Exceptions, we will generally treat these as unhandled in user code.
+            exception.Data[Mechanism.HandledKey] = false;
             exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
             _ = _hub.CaptureException(exception);
 
