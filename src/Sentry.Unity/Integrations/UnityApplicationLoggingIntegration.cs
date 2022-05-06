@@ -18,6 +18,8 @@ namespace Sentry.Unity.Integrations
         private IHub? _hub;
         private SentryUnityOptions? _sentryOptions;
 
+        private SentryLogHandler? _logHandler;
+
         public UnityApplicationLoggingIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
         {
             _application = application ?? ApplicationAdapter.Instance;
@@ -28,6 +30,9 @@ namespace Sentry.Unity.Integrations
         {
             _hub = hub;
             _sentryOptions = sentryOptions as SentryUnityOptions;
+
+            _logHandler = new SentryLogHandler(hub, Debug.unityLogger.logHandler);
+            Debug.unityLogger.logHandler = _logHandler;
 
             _application.LogMessageReceived += OnLogMessageReceived;
             _application.Quitting += OnQuitting;
@@ -71,20 +76,7 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            if (stackTrace is not null)
-            {
-                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace, _sentryOptions))
-                {
-                    Level = ToEventTagType(type)
-                };
-
-                _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
-                _hub.CaptureEvent(sentryEvent);
-            }
-            else
-            {
-                _hub.CaptureMessage(condition, ToEventTagType(type));
-            }
+            _hub.CaptureMessage(condition, ToEventTagType(type));
 
             // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
@@ -126,5 +118,30 @@ namespace Sentry.Unity.Integrations
                 LogType.Warning => BreadcrumbLevel.Warning,
                 _ => BreadcrumbLevel.Info
             };
+    }
+
+    internal sealed class SentryLogHandler : ILogHandler
+    {
+        private ILogHandler _logHandler;
+        private IHub _hub;
+
+        public SentryLogHandler(IHub hub, ILogHandler parentLogHandler)
+        {
+            _hub = hub;
+            _logHandler = parentLogHandler;
+        }
+
+        public void LogException(Exception exception, UnityEngine.Object context)
+        {
+            exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
+            _ = _hub.CaptureException(exception);
+
+            _logHandler.LogException(exception, context);
+        }
+
+        public void LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args)
+        {
+            _logHandler.LogFormat(logType, context, format, args);
+        }
     }
 }
