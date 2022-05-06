@@ -50,6 +50,12 @@ jobs:
           fi
           ./scripts/init-submodules.sh src/sentry-dotnet $submodules
 
+      - name: Installing Linux Dependencies
+        if: ${{inputs.target == 'Linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install zlib1g-dev libcurl4-openssl-dev
+
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
