@@ -72,7 +72,8 @@ namespace Sentry.Unity.Editor.Native
             }
             else if (target is BuildTarget.StandaloneLinux64)
             {
-                crashpadPath = Path.Combine("Linux", "Sentry", "crashpad_handler");
+                // No standalone crash handler for Linux - uses built-in breakpad.
+                return;
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
