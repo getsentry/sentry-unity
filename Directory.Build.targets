@@ -126,12 +126,16 @@ Expected to exist:
 
   <Target Name="CleanLinuxSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryLinuxArtifactsDestination)" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)/crashpad_handler" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)/libsentry.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)/libsentry.full" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryWindowsArtifactsDestination)" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/crashpad_handler.exe" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/sentry.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/sentry.pdb" ContinueOnError="true" />
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
