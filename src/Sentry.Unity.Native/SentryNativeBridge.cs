@@ -183,7 +183,7 @@ namespace Sentry.Unity
             string? message = null;
             try
             {
-                // We cannot access C var-arg (va_list) in c# thus we pass it back to vsnprintf to do thet formatting.
+                // We cannot access C var-arg (va_list) in c# thus we pass it back to vsnprintf to do the formatting.
                 // For Linux, we must make a copy of the VaList to be able to pass it back...
                 if (_isLinux)
                 {
