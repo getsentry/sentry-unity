@@ -3,11 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using Sentry.Extensibility;
 using Sentry.Unity.Editor.Android;
-using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -15,16 +12,17 @@ namespace Sentry.Unity.Editor.Tests.Android
     {
         private class Fixture
         {
-            public TestApplication Application { get; set; }
             public TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
             public string FakeProjectPath { get; set; }
             public string UnityProjectPath { get; set; }
             public string GradleProjectPath { get; set; }
             public string SentryCliPath { get; set; }
 
+            public bool IsExporting { get; set; }
+            public TestApplication Application { get; set; }
+
             public Fixture()
             {
-                Application = new TestApplication(unityVersion: "2019.4");
                 LoggerInterceptor = new();
 
                 FakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -32,9 +30,12 @@ namespace Sentry.Unity.Editor.Tests.Android
                 UnityProjectPath = Path.Combine(FakeProjectPath, "UnityProject");
                 GradleProjectPath = Path.Combine(FakeProjectPath, "GradleProject");
                 SentryCliPath = Path.Combine(FakeProjectPath, "fake-sentry-cli");
+
+                Application = new TestApplication(unityVersion: "2019.4");
             }
 
-            public DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), LoggerInterceptor), UnityProjectPath, GradleProjectPath);
+            public DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), LoggerInterceptor),
+                UnityProjectPath, GradleProjectPath, IsExporting, Application);
         }
 
         [SetUp]
@@ -67,7 +68,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         [TestCase("2019.4", DebugSymbolUpload.RelativeBuildOutputPathOld, DebugSymbolUpload.RelativeGradlePathOld)]
         [TestCase("2021.2", DebugSymbolUpload.RelativeBuildOutputPathNew, DebugSymbolUpload.RelativeAndroidPathNew)]
-        public void GetSymbolUploadPaths_IsExportingFalse_ReturnsCorrectPathForVersion(string unityVersion, string relativeBuildPath, string gradlePath)
+        public void GetSymbolUploadPaths_IsExportingFalse_ReturnsCorrectPathForVersion(string unityVersion,
+            string relativeBuildPath, string gradlePath)
         {
             var sut = _fixture.GetSut();
 
@@ -145,7 +147,8 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.RemoveUploadFromGradleFile();
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Skipping removing the upload task. The task has not been added to the gradle project.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug,
+                "Skipping removing the upload task. The task has not been added to the gradle project.");
         }
 
         [Test]
@@ -173,7 +176,8 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.TryCopySymbolsToGradleProject(_fixture.Application);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "New building backend. Skipping copying of debug symbols.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug,
+                "New building backend. Skipping copying of debug symbols.");
         }
 
         [Test]

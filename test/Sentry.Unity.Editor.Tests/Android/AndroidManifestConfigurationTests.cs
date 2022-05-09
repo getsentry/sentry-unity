@@ -317,6 +317,8 @@ namespace Sentry.Unity.Editor.Tests.Android
             sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
             _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload has been disabled.");
+
+            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
 
         [Test]

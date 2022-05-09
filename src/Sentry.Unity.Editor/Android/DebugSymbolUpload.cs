@@ -37,14 +37,15 @@ gradle.taskGraph.whenReady {{
         public DebugSymbolUpload(IDiagnosticLogger logger,
             string unityProjectPath,
             string gradleProjectPath,
-            bool isExporting = false)
+            bool isExporting = false,
+            IApplication? application = null)
         {
             _logger = logger;
 
             _unityProjectPath = unityProjectPath;
             _gradleProjectPath = gradleProjectPath;
 
-            _symbolUploadPaths = GetSymbolUploadPaths(isExporting);
+            _symbolUploadPaths = GetSymbolUploadPaths(isExporting, application);
         }
 
         public void AppendUploadToGradleFile(string sentryCliPath)
