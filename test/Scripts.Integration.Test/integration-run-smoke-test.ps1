@@ -104,7 +104,8 @@ if ($Crash) {
     #       Windows posts the crash immediately because the handler runs as a standalone process.
     if ($IsMacOS -or $IsLinux)
     {
-        CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'7b2264736e223a2268" -CrashTestCallback {
+        $expectedFragment = $IsMacOS ? '1f8b08000000000000' : '7b2264736e223a2268'
+        CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'$expectedFragment" -CrashTestCallback {
             RunTest "crash" "CRASH TEST: Issuing a native crash"
             RunTest "has-crashed"
         }

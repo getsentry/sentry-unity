@@ -5,10 +5,9 @@
 #  3. Run the smoke test using chromedriver
 #  4. Check the messages received by the API server
 
-import binascii
 import datetime
-import logging
 import re
+import sys
 import time
 import os
 from http import HTTPStatus
@@ -21,8 +20,15 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 host = '127.0.0.1'
 port = 8000
 scriptDir = os.path.dirname(os.path.abspath(__file__))
-appDir = os.path.join(scriptDir, '..', 'samples',
-                      'artifacts', 'builds', 'WebGL')
+
+if len(sys.argv) > 1:
+    appDir = sys.argv[1]
+else:
+    appDir = os.path.join(scriptDir, '..', 'samples',
+                          'artifacts', 'builds', 'WebGL')
+
+
+print("Using appDir:{}".format(appDir))
 
 ignoreRegex = '"exception":{"values":\[{"type":"(' + '|'.join(
     ['The resource [^ ]+ could not be loaded from the resource file!', 'GL.End requires material.SetPass before!']) + ')"'

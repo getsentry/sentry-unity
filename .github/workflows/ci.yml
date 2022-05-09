@@ -539,15 +539,17 @@ jobs:
         id: download
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/${{ matrix.platform }}
+          path: samples/IntegrationTest/Build
 
       - name: Run (WebGL)
         if: ${{ matrix.platform == 'WebGL' }}
         timeout-minutes: 10
         run: |
           pip3 install --upgrade --user selenium urllib3 requests
-          python3 scripts/smoke-test-webgl.py
+          python3 scripts/smoke-test-webgl.py "${{steps.download.outputs.download-path}}"
 
       - name: Run (Linux)
         if: ${{ matrix.platform == 'Linux' }}
-        run: pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -TestAppPath "${{steps.download.outputs.download-path}}"
+        run: |
+          chmod +x ${{steps.download.outputs.download-path}}/*
+          pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke -Crash
