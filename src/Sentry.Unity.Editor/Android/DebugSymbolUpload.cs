@@ -143,6 +143,7 @@ gradle.taskGraph.whenReady {{
         {
             if (isExporting)
             {
+                _logger.LogInfo("Exporting the project. Root for symbols upload: {0}", _gradleProjectPath);
                 return new[] { _gradleProjectPath };
             }
 
