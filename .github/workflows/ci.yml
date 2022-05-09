@@ -196,6 +196,7 @@ jobs:
           path: samples/artifacts/builds/iOS/Xcode
           if-no-files-found: error
 
+  # Docker-based build to prepare a game ("player") using for some platforms. The actual execution runs in another job.
   smoke-test-build:
     name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: ubuntu-latest
@@ -203,7 +204,10 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021']
-        platform: ['Android', 'WebGL']
+        platform: ['Android', 'WebGL', 'Linux']
+        include:
+          - platform: Linux
+            image-suffix: '-il2cpp'
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
@@ -218,7 +222,7 @@ jobs:
 
       - name: Start the Unity docker container
         run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-${{ matrix.platform }}-1"
+          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-${{ matrix.platform }}${{ matrix.image-suffix }}-1.0.1"
           image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
           echo "Starting up a docker container with $image"
           docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
@@ -285,7 +289,7 @@ jobs:
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
   desktop-smoke-test:
-    name: Run  ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
+    name: Run ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
@@ -517,25 +521,33 @@ jobs:
           }
           ./Scripts/smoke-test-ios.ps1 Test "$runtime"
 
-  webgl-smoke-test:
+  smoke-test-run:
     needs: [smoke-test-build]
-    name: Run WebGL Unity ${{ matrix.unity-version }} Smoke Test
+    name: Run  ${{ matrix.platform }} Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021']
+        platform: ['WebGL', 'Linux']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
       - name: Download test app artifact
         uses: actions/download-artifact@v2
+        id: download
         with:
-          name: testapp-WebGL-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/WebGL
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: samples/artifacts/builds/${{ matrix.platform }}
 
-      - run: pip3 install --upgrade --user selenium urllib3 requests
-
-      - run: python3 scripts/smoke-test-webgl.py
+      - name: Run (WebGL)
+        if: ${{ matrix.platform == 'WebGL' }}
         timeout-minutes: 10
+        run: |
+          pip3 install --upgrade --user selenium urllib3 requests
+          python3 scripts/smoke-test-webgl.py
+
+      - name: Run (Linux)
+        if: ${{ matrix.platform == 'Linux' }}
+        run: pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -TestAppPath "${{steps.download.outputs.download-path}}"

@@ -45,7 +45,7 @@ if ("$TestAppPath" -eq "") {
 if ("$AppDataDir" -ne "") {
     if (Test-Path $AppDataDir) {
         Write-Warning "Removing AppDataDir '$AppDataDir'"
-        Remove-Item  -Recurse $AppDataDir
+        Remove-Item -Force -Recurse $AppDataDir
     }
 }
 else {
@@ -100,10 +100,11 @@ if ($Smoke) {
 
 # Native crash test
 if ($Crash) {
-    if ($IsMacOS)
+    # Note: macOS & Linux apps post the crash on the next app launch so we must run both as part of the "CrashTestWithServer"
+    #       Windows posts the crash immediately because the handler runs as a standalone process.
+    if ($IsMacOS -or $IsLinux)
     {
-        # Note: macOS apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
-        CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
+        CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'7b2264736e223a2268" -CrashTestCallback {
             RunTest "crash" "CRASH TEST: Issuing a native crash"
             RunTest "has-crashed"
         }
