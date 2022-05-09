@@ -62,7 +62,7 @@ namespace Sentry.Unity
             var rtResized = RenderTexture.GetTemporary(width, height);
             // On all (currently supported) platforms except Android, the image is mirrored horizontally & vertically.
             // So we must mirror it back.
-            if (ApplicationAdapter.Instance.Platform == RuntimePlatform.Android)
+            if (ApplicationAdapter.Instance.Platform is (RuntimePlatform.Android or RuntimePlatform.LinuxPlayer))
             {
                 Graphics.Blit(rtFull, rtResized);
             }
