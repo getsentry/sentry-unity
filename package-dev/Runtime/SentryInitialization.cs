@@ -10,6 +10,7 @@
 #endif
 #endif
 
+using System;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -37,17 +38,30 @@ namespace Sentry.Unity
             {
                 var sentryUnityInfo = new SentryUnityInfo();
 
+                Exception nativeInitException = null;
+
+                try
+                {
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Configure(options);
+                    SentryNativeCocoa.Configure(options);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Configure(options, sentryUnityInfo);
+                    SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE
-                SentryNative.Configure(options);
+                    SentryNative.Configure(options);
 #elif SENTRY_WEBGL
-                SentryWebGL.Configure(options);
+                    SentryWebGL.Configure(options);
 #endif
+                }
+                catch (Exception e)
+                {
+                    nativeInitException = e;
+                }
 
                 SentryUnity.Init(options);
+                if (nativeInitException != null)
+                {
+                    SentrySdk.CaptureException(nativeInitException);
+                }
             }
         }
     }
