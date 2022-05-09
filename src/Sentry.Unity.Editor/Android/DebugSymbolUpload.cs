@@ -11,17 +11,15 @@ namespace Sentry.Unity.Editor.Android
     {
         private readonly IDiagnosticLogger _logger;
 
-        private readonly bool _isNewBuildingBacked;
-
-        private const string RelativeBuildOutputPathOld = "Temp/StagingArea/symbols";
-        private const string RelativeGradlePathOld = "Temp/gradleOut";
-        private const string RelativeBuildOutputPathNew = "Library/Bee/artifacts/Android";
-        private const string RelativeAndroidPathNew = "Library/Android";
+        internal const string RelativeBuildOutputPathOld = "Temp/StagingArea/symbols";
+        internal const string RelativeGradlePathOld = "Temp/gradleOut";
+        internal const string RelativeBuildOutputPathNew = "Library/Bee/artifacts/Android";
+        internal const string RelativeAndroidPathNew = "Library/Android";
 
         private readonly string _unityProjectPath;
         private readonly string _gradleProjectPath;
 
-        private string[] _symbolUploadPaths;
+        internal string[] _symbolUploadPaths;
 
         private string _symbolUploadTask = @"
 // Credentials and project settings information are stored in the sentry.properties file
@@ -39,48 +37,14 @@ gradle.taskGraph.whenReady {{
         public DebugSymbolUpload(IDiagnosticLogger logger,
             string unityProjectPath,
             string gradleProjectPath,
-            bool isExporting,
-            IApplication? application = null)
+            bool isExporting = false)
         {
-            application ??= ApplicationAdapter.Instance;
-
             _logger = logger;
 
             _unityProjectPath = unityProjectPath;
             _gradleProjectPath = gradleProjectPath;
 
-            // Starting from 2021.2 Unity caches the build output inside 'Library' instead of 'Temp'
-            var version = new Version(application.UnityVersion.Substring(0, 6)); // year.version
-            if (version >= new Version("2021.2"))
-            {
-                _isNewBuildingBacked = true;
-            }
-
             _symbolUploadPaths = GetSymbolUploadPaths(isExporting);
-        }
-
-        public void TryCopySymbolsToGradleProject()
-        {
-            // The new building backend takes care of making the debug symbol files available within the exported project
-            if (_isNewBuildingBacked)
-            {
-                _logger.LogDebug("New building backend. Skipping copying of debug symbols.");
-                return;
-            }
-
-            _logger.LogInfo("Copying debug symbols to exported gradle project.");
-
-            var buildOutputPath = Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld);
-            var targetRoot = Path.Combine(_gradleProjectPath, "symbols");
-
-            foreach (var sourcePath in Directory.GetFiles(buildOutputPath, "*.so", SearchOption.AllDirectories))
-            {
-                var targetPath = sourcePath.Replace(buildOutputPath, targetRoot);
-                _logger.LogDebug("Copying '{0}' to '{1}'", sourcePath, targetPath);
-
-                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
-                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
-            }
         }
 
         public void AppendUploadToGradleFile(string sentryCliPath)
@@ -88,7 +52,7 @@ gradle.taskGraph.whenReady {{
             var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
             if (!File.Exists(gradleFilePath))
             {
-                throw new FileNotFoundException("Failed to find 'build.gradle'", _gradleProjectPath);
+                throw new FileNotFoundException("Failed to find 'build.gradle'.", _gradleProjectPath);
             }
 
             if (File.ReadAllText(gradleFilePath).Contains("sentry.properties"))
@@ -122,18 +86,18 @@ gradle.taskGraph.whenReady {{
             streamWriter.Write(_symbolUploadTask, sentryCliPath, symbolPathArgument);
         }
 
-        public void RemoveUploadTaskFromGradleFile()
+        public void RemoveUploadFromGradleFile()
         {
             var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
             if (!File.Exists(gradleFilePath))
             {
-                throw new FileNotFoundException($"Failed to find 'build.gradle' at '{gradleFilePath}'");
+                throw new FileNotFoundException($"Failed to find 'build.gradle'.", _gradleProjectPath);
             }
 
             var gradleBuildFile = File.ReadAllText(gradleFilePath);
             if (!gradleBuildFile.Contains("sentry.properties"))
             {
-                _logger.LogDebug("Symbol upload has not been added to the gradle project.");
+                _logger.LogDebug("Skipping removing the upload task. The task has not been added to the gradle project.");
                 return;
             }
 
@@ -150,14 +114,38 @@ gradle.taskGraph.whenReady {{
             streamWriter.Write(gradleBuildFile);
         }
 
-        internal string[] GetSymbolUploadPaths(bool isExporting)
+        public void TryCopySymbolsToGradleProject(IApplication? application = null)
+        {
+            // The new building backend takes care of making the debug symbol files available within the exported project
+            if (IsNewBuildingBackend(application))
+            {
+                _logger.LogDebug("New building backend. Skipping copying of debug symbols.");
+                return;
+            }
+
+            _logger.LogInfo("Copying debug symbols to exported gradle project.");
+
+            var buildOutputPath = Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld);
+            var targetRoot = Path.Combine(_gradleProjectPath, "symbols");
+
+            foreach (var sourcePath in Directory.GetFiles(buildOutputPath, "*.so", SearchOption.AllDirectories))
+            {
+                var targetPath = sourcePath.Replace(buildOutputPath, targetRoot);
+                _logger.LogDebug("Copying '{0}' to '{1}'", sourcePath, targetPath);
+
+                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
+                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
+            }
+        }
+
+        internal string[] GetSymbolUploadPaths(bool isExporting, IApplication? application = null)
         {
             if (isExporting)
             {
                 return new[] { _gradleProjectPath };
             }
 
-            if (_isNewBuildingBacked)
+            if (IsNewBuildingBackend(application))
             {
                 _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
                 return new[]
@@ -173,6 +161,20 @@ gradle.taskGraph.whenReady {{
                 Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld),
                 Path.Combine(_unityProjectPath, RelativeGradlePathOld)
             };
+        }
+
+        internal static bool IsNewBuildingBackend(IApplication? application = null)
+        {
+            application ??= ApplicationAdapter.Instance;
+
+            // Starting from 2021.2 Unity caches the build output inside 'Library' instead of 'Temp'
+            var version = new Version(application.UnityVersion.Substring(0, 6)); // year.version
+            if (version >= new Version("2021.2"))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes

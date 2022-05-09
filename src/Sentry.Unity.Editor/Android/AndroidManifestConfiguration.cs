@@ -162,14 +162,14 @@ namespace Sentry.Unity.Editor.Android
             if (sentryCliOptions is null)
             {
                 logger.LogWarning("Failed to load sentry-cli options.");
-                symbolsUpload.RemoveUploadTaskFromGradleFile();
+                symbolsUpload.RemoveUploadFromGradleFile();
 
                 return;
             }
 
             if (!sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
             {
-                symbolsUpload.RemoveUploadTaskFromGradleFile();
+                symbolsUpload.RemoveUploadFromGradleFile();
                 return;
             }
 

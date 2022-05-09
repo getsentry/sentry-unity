@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using NUnit.Framework;
 using Sentry.Extensibility;
 
 namespace Sentry.Unity.Tests.SharedClasses

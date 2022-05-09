@@ -77,7 +77,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Warning, "Couldn't load SentryOptions. Can't configure native Android SDK.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "Couldn't load SentryOptions. Can't configure native Android SDK.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -91,7 +91,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -108,7 +108,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -122,7 +122,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Debug, $"Android Native support disabled via options.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Android Native support disabled via options.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -136,7 +136,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Debug, $"Setting DSN: {expected}");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting DSN: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.dsn\" android:value=\"{expected}\" />"),
@@ -163,7 +163,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Debug, $"Setting Release: {expected}");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting Release: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.release\" android:value=\"{expected}\" />"),
@@ -190,7 +190,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Debug, $"Setting Environment: {expected}");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting Environment: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.environment\" android:value=\"{expected}\" />"),
@@ -220,7 +220,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             // Debug message is only logged if level is Debug:
             if (levels.SentryLevel == SentryLevel.Debug)
             {
-                AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {levels.SentryLevel}");
+                _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {levels.SentryLevel}");
             }
 
             Assert.True(manifest.Contains(
@@ -236,7 +236,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            AssertLogContains(SentryLevel.Debug, $"Setting SampleRate: {expected}");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting SampleRate: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.sample-rate\" android:value=\"{expected}\" />"),
@@ -284,53 +284,75 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
 
-            AssertLogContains(SentryLevel.Debug, "Automated symbols upload requires the IL2CPP scripting backend.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload requires the IL2CPP scripting backend.");
         }
 
         [Test]
         public void SetupSymbolsUpload_SentryCliOptionsNull_LogsWarningAndReturns()
         {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+
             _fixture.SentryCliOptions = null;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
-            AssertLogContains(SentryLevel.Warning, "Failed to load sentry-cli options - Skipping symbols upload.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "Failed to load sentry-cli options.");
+
+            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
 
         [Test]
         public void SetupSymbolsUpload_SymbolsUploadDisabled_LogsAndReturns()
         {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+
             _fixture.SentryCliOptions!.UploadSymbols = false;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
-            AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload has been disabled.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload has been disabled.");
         }
 
         [Test]
         public void SetupSymbolsUpload_DevelopmentBuildDevUploadDisabled_LogsAndReturns()
         {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+
             _fixture.IsDevelopmentBuild = true;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
-            AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload for development builds has been disabled.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload for development builds has been disabled.");
+
+            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
 
         [Test]
         public void SetupSymbolsUpload_SentryCliOptionsInvalid_LogsAndReturns()
         {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+
             _fixture.SentryCliOptions!.Auth = string.Empty;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
-            AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
                                                    "\nYou can disable this warning by disabling the automated symbols upload under " +
                                                    SentryCliOptions.EditorMenuPath);
+
+            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
 
         [Test]
@@ -350,10 +372,6 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
-
-        private void AssertLogContains(SentryLevel sentryLevel, string message)
-            => CollectionAssert.Contains(_fixture.LoggerInterceptor.Messages,
-                (sentryLevel, $"Sentry: ({sentryLevel.ToString()}) {message} "));
 
         private string WithAndroidManifest(Action<string> callback)
         {
