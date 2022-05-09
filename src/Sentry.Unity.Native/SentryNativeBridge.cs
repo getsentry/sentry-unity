@@ -76,7 +76,7 @@ namespace Sentry.Unity
                 sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
             }
 
-            _logger?.LogDebug("Initializing sentry native");
+            options.DiagnosticLogger?.LogDebug("Initializing sentry native");
             return 0 == sentry_init(cOptions);
         }
 
@@ -159,7 +159,7 @@ namespace Sentry.Unity
         private static void nativeLogImpl(int cLevel, IntPtr format, IntPtr args, IntPtr userData)
         {
             var logger = _logger;
-            if (logger is null)
+            if (logger is null || format == IntPtr.Zero || args == IntPtr.Zero)
             {
                 return;
             }
