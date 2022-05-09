@@ -13,6 +13,7 @@ Editor/sentry-cli/sentry-cli-Windows-x86_64.exe
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe.meta
 Plugins/Android.meta
 Plugins/iOS.meta
+Plugins/Linux.meta
 Plugins/macOS.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
@@ -272,6 +273,11 @@ Plugins/Android/Sentry/sentry-android-core-release.aar
 Plugins/Android/Sentry/sentry-android-core-release.aar.meta
 Plugins/Android/Sentry/sentry-android-ndk-release.aar
 Plugins/Android/Sentry/sentry-android-ndk-release.aar.meta
+Plugins/Linux/Sentry.meta
+Plugins/Linux/Sentry/libsentry.full
+Plugins/Linux/Sentry/libsentry.full.meta
+Plugins/Linux/Sentry/libsentry.so
+Plugins/Linux/Sentry/libsentry.so.meta
 Plugins/Windows/Sentry.meta
 Plugins/Windows/Sentry/crashpad_handler.exe
 Plugins/Windows/Sentry/crashpad_handler.exe.meta
