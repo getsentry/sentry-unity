@@ -161,21 +161,21 @@ namespace Sentry.Unity.Editor.Android
             var sentryCliOptions = _getSentryCliOptions();
             if (sentryCliOptions is null)
             {
-                logger.LogWarning("Failed to load sentry-cli options - Skipping symbols upload.");
-                symbolsUpload.RemoveUploadFromGradleFile();
+                logger.LogWarning("Failed to load sentry-cli options.");
+                symbolsUpload.RemoveUploadTaskFromGradleFile();
 
                 return;
             }
 
             if (!sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
             {
-                symbolsUpload.RemoveUploadFromGradleFile();
+                symbolsUpload.RemoveUploadTaskFromGradleFile();
                 return;
             }
 
             try
             {
-                logger.LogInfo("Adding automated debug symbol upload.");
+                logger.LogInfo("Adding automated debug symbol upload to the gradle project.");
 
                 var sentryCliPath = SentryCli.SetupSentryCli();
                 SentryCli.CreateSentryProperties(gradleProjectPath, sentryCliOptions);

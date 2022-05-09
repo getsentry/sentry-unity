@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEditor;
@@ -21,6 +23,19 @@ namespace Sentry.Unity.Editor.Android
 
         private string[] _symbolUploadPaths;
 
+        private string _symbolUploadTask = @"
+// Credentials and project settings information are stored in the sentry.properties file
+gradle.taskGraph.whenReady {{
+    gradle.taskGraph.allTasks[-1].doLast {{
+        println 'Uploading symbols to Sentry'
+        exec {{
+            environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
+            executable ""{0}""
+            args = [""upload-dif"", {1}]
+        }}
+    }}
+}}";
+
         public DebugSymbolUpload(IDiagnosticLogger logger,
             string unityProjectPath,
             string gradleProjectPath,
@@ -35,9 +50,8 @@ namespace Sentry.Unity.Editor.Android
             _gradleProjectPath = gradleProjectPath;
 
             // Starting from 2021.2 Unity caches the build output inside 'Library' instead of 'Temp'
-            if (application.UnityVersion.StartsWith("2022")
-                || application.UnityVersion.StartsWith("2021.3")
-                || application.UnityVersion.StartsWith("2021.2"))
+            var version = new Version(application.UnityVersion.Substring(0, 6)); // year.version
+            if (version >= new Version("2021.2"))
             {
                 _isNewBuildingBacked = true;
             }
@@ -105,38 +119,35 @@ namespace Sentry.Unity.Editor.Android
             }
 
             using var streamWriter = File.AppendText(gradleFilePath);
-            streamWriter.Write($@"
-// Credentials and project settings information are stored in the sentry.properties file
-gradle.taskGraph.whenReady {{
-    gradle.taskGraph.allTasks[-1].doLast {{
-        println 'Uploading symbols to Sentry'
-        exec {{
-            environment ""SENTRY_PROPERTIES"", ""./sentry.properties""
-            executable ""{sentryCliPath}""
-            args = [""upload-dif"", {symbolPathArgument}]
-        }}
-    }}
-}}");
+            streamWriter.Write(_symbolUploadTask, sentryCliPath, symbolPathArgument);
         }
 
-        public void RemoveUploadFromGradleFile()
+        public void RemoveUploadTaskFromGradleFile()
         {
             var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
-            if (File.Exists(gradleFilePath) && File.ReadAllText(gradleFilePath).Contains("sentry.properties"))
+            if (!File.Exists(gradleFilePath))
             {
-                var gradleFileLines = File.ReadAllLines(gradleFilePath);
-                using var streamWriter = File.CreateText(gradleFilePath);
-                for (var i = 0; i < gradleFileLines.Length; i++)
-                {
-                    if (gradleFileLines[i].Contains("// Credentials and"))
-                    {
-                        i += 11; // The task we append has 11 lines
-                        continue;
-                    }
-
-                    streamWriter.WriteLine(gradleFileLines[i]);
-                }
+                throw new FileNotFoundException($"Failed to find 'build.gradle' at '{gradleFilePath}'");
             }
+
+            var gradleBuildFile = File.ReadAllText(gradleFilePath);
+            if (!gradleBuildFile.Contains("sentry.properties"))
+            {
+                _logger.LogDebug("Symbol upload has not been added to the gradle project.");
+                return;
+            }
+
+            _logger.LogDebug("Removing the upload task from gradle project.");
+
+            // Replacing the paths with '.*' and escaping the task
+            var uploadTaskFilter = string.Format(_symbolUploadTask, ".*", ".*");
+            uploadTaskFilter = Regex.Replace(uploadTaskFilter, "\"", "\\\"");
+            uploadTaskFilter = Regex.Replace(uploadTaskFilter, @"\[", "\\[");
+
+            gradleBuildFile = Regex.Replace(gradleBuildFile, uploadTaskFilter, "");
+
+            using var streamWriter = File.CreateText(gradleFilePath);
+            streamWriter.Write(gradleBuildFile);
         }
 
         internal string[] GetSymbolUploadPaths(bool isExporting)
