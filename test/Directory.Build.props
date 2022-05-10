@@ -31,7 +31,9 @@
         <Private>false</Private>
       </Reference>
 
-<!--  TODO: The parent directory-->
+<!--  TODO: The parent directory contains a 'UnityEngine.dll' but that one is different? But if that one does not get -->
+<!--      referenced here and we just add the CoreModule it leads to 'ambiguous references' and 'Type exists in both -->
+<!--      'UnityEngine.CoreModule and UnityEngine' -->
       <Reference Include="UnityEngine">
         <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.dll</HintPath>
         <Private>false</Private>
