@@ -99,7 +99,7 @@ namespace Sentry.Unity.Editor.Android
             }
 
             logger.LogDebug("Configuring Sentry options on AndroidManifest: {0}", basePath);
-
+            androidManifest.SetSDK("sentry.java.android.unity");
             logger.LogDebug("Setting DSN: {0}", _options!.Dsn);
             androidManifest.SetDsn(_options.Dsn!);
             if (_options.Debug)
@@ -305,6 +305,8 @@ namespace Sentry.Unity.Editor.Android
 
         internal void SetRelease(string release) => SetMetaData($"{SentryPrefix}.release", release);
         internal void SetEnvironment(string environment) => SetMetaData($"{SentryPrefix}.environment", environment);
+
+        internal void SetSDK(string name) => SetMetaData($"{SentryPrefix}.sdk.name", name);
 
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
             => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
