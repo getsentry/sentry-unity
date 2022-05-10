@@ -131,7 +131,7 @@ namespace Sentry.Unity.Editor.Native
             {
                 addPath("GameAssembly.so");
                 addPath("UnityPlayer.so");
-                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.full"));
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
