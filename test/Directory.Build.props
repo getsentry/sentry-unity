@@ -30,6 +30,16 @@
         <HintPath>$(UnityTestPath)/UnityEngine.TestRunner.dll</HintPath>
         <Private>false</Private>
       </Reference>
+
+<!--  TODO: The parent directory-->
+      <Reference Include="UnityEngine">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.CoreModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
     </ItemGroup>
     <Error Condition="!Exists('$(UnityTestPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTestPath)/UnityEngine.TestRunner.dll"></Error>
   </Target>

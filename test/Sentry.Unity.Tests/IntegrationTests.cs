@@ -64,7 +64,7 @@ namespace Sentry.Unity.Tests
             using var _ = InitSentrySdk(o =>
             {
                 o.Release = customRelease;
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: testEventCapture));
             });
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
@@ -102,7 +102,7 @@ namespace Sentry.Unity.Tests
             var testEventCapture = new TestEventCapture();
             using var _ = InitSentrySdk(o =>
             {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: testEventCapture));
                 o.SendDefaultPii = true;
                 o.IsEnvironmentUser = true;
             });
@@ -178,7 +178,7 @@ namespace Sentry.Unity.Tests
             using var firstDisposable = InitSentrySdk(o =>
             {
                 o.Dsn = sourceDsn;
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: sourceEventCapture));
+                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: sourceEventCapture));
             });
 
             var nextEventCapture = new TestEventCapture();
@@ -312,7 +312,7 @@ namespace Sentry.Unity.Tests
 
         internal static IDisposable InitSentrySdk(TestEventCapture testEventCapture) => InitSentrySdk(o =>
             {
-                o.AddIntegration(new UnityApplicationLoggingIntegration(eventCapture: testEventCapture));
+                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: testEventCapture));
             });
 
         private sealed class SentryDisposable : IDisposable

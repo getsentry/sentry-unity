@@ -66,10 +66,10 @@ namespace Sentry.Unity
         }
 
         /// <summary>
-        /// Disables the capture of errors through <see cref="UnityApplicationLoggingIntegration"/>.
+        /// Disables the capture of errors through <see cref="UnityLogHandlerIntegration"/>.
         /// </summary>
         /// <param name="options">The SentryUnityOptions to remove the integration from.</param>
         public static void DisableUnityApplicationLoggingIntegration(this SentryUnityOptions options) =>
-            options.RemoveIntegration<UnityApplicationLoggingIntegration>();
+            options.RemoveIntegration<UnityLogHandlerIntegration>();
     }
 }
