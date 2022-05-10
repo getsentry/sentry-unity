@@ -52,9 +52,15 @@ namespace Sentry.Unity
                     SentryWebGL.Configure(options);
 #endif
                 }
+                catch (DllNotFoundException e)
+                {
+                    nativeInitException = new Exception(
+                        "Sentry native-error capture configuration failed to load a native library. This usually " +
+                        "means the library is missing from the application bundle or the installation directory.", e);
+                }
                 catch (Exception e)
                 {
-                    nativeInitException = e;
+                    nativeInitException = new Exception("Sentry native error capture configuration failed.", e);
                 }
 
                 SentryUnity.Init(options);
