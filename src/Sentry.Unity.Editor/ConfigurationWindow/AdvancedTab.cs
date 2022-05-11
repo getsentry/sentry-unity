@@ -65,8 +65,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             options.MacosNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("macOS Native Support", "Whether to enable native crashes support on macOS."),
                 options.MacosNativeSupportEnabled);
+
+            options.LinuxNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Linux Native Support", "Whether to enable native crashes support on Linux."),
+                options.LinuxNativeSupportEnabled);
         }
-
-
     }
 }

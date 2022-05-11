@@ -1,6 +1,7 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Sentry.Unity.Native
 {
@@ -17,9 +18,20 @@ namespace Sentry.Unity.Native
         /// <param name="options">The Sentry Unity options to use.</param>
         public static void Configure(SentryUnityOptions options)
         {
-            if (options.WindowsNativeSupportEnabled)
+            if (ApplicationAdapter.Instance.Platform switch
             {
-                SentryNativeBridge.Init(options);
+                RuntimePlatform.WindowsPlayer => options.WindowsNativeSupportEnabled,
+                RuntimePlatform.LinuxPlayer => options.LinuxNativeSupportEnabled,
+                _ => false,
+            })
+            {
+                if (!SentryNativeBridge.Init(options))
+                {
+                    options.DiagnosticLogger?
+                        .LogWarning("Sentry native initialization failed - native crashes are not captured.");
+                    return;
+                }
+
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
                     options.DiagnosticLogger?.LogDebug("Closing the sentry-native SDK");
@@ -48,10 +60,6 @@ namespace Sentry.Unity.Native
                     }
                 }
                 options.CrashedLastRun = () => crashedLastRun;
-
-                // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
-                // So we register our backend once more to make sure user-defined data is available in the crash report.
-                SentryNativeBridge.ReinstallBackend();
             }
         }
     }

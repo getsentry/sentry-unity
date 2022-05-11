@@ -25,6 +25,7 @@
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
+    <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)/Linux/Sentry/</SentryLinuxArtifactsDestination>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
@@ -123,9 +124,17 @@ Expected to exist:
     <Delete Files="$(SentrymacOSArtifactsDestination)/Sentry.dylib.dSYM" ContinueOnError="true" />
   </Target>
 
+  <Target Name="CleanLinuxSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)/libsentry.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)/libsentry.dbg.so" ContinueOnError="true" />
+  </Target>
+
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryWindowsArtifactsDestination)" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/crashpad_handler.exe" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/sentry.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/sentry.pdb" ContinueOnError="true" />
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
@@ -189,9 +198,14 @@ Expected to exist:
   <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
   <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
-          And !Exists('$(SentryWindowsArtifactsDestination)/sentry.dll')" DependsOnTargets="BuildNativeSDK" BeforeTargets="BeforeBuild">
+          And !Exists('$(SentryWindowsArtifactsDestination)/sentry.dll')" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
-    <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
+
+    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
 
     <ItemGroup>
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
@@ -202,12 +216,23 @@ Expected to exist:
     <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')" />
   </Target>
 
-  <Target Name="BuildNativeSDK">
+  <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
+  <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And $([MSBuild]::IsOsPlatform('Linux'))
+          And !Exists('$(SentryLinuxArtifactsDestination)/libsentry.so')" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -S ."></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
+    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Linux." />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
+
+    <MakeDir Directories="$(SentryLinuxArtifactsDestination)"/>
+
+    <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArtifactsDestination)libsentry.so" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cp build/libsentry.so $(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
+    <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
@@ -521,6 +546,7 @@ void PrintFailedTests(XElement element)
       <SDK Include="iOS"/>
       <SDK Include="macOS"/>
       <SDK Include="Android"/>
+      <SDK Include="Linux"/>
     </ItemGroup>
     <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
     <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />

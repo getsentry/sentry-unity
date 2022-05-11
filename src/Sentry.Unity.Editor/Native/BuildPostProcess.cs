@@ -59,17 +59,21 @@ namespace Sentry.Unity.Editor.Native
         {
             BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
             BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
+            BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
             _ => false,
         };
 
         private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
         {
             string crashpadPath;
-            string targetPath;
             if (target is BuildTarget.StandaloneWindows64)
             {
                 crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
-                targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
+            }
+            else if (target is BuildTarget.StandaloneLinux64)
+            {
+                // No standalone crash handler for Linux - uses built-in breakpad.
+                return;
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
@@ -82,6 +86,7 @@ namespace Sentry.Unity.Editor.Native
             }
 
             crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
+            var targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
             logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
             File.Copy(crashpadPath, targetPath, true);
         }
@@ -121,6 +126,12 @@ namespace Sentry.Unity.Editor.Native
                 addPath("UnityPlayer.dll");
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+            }
+            else if (target is BuildTarget.StandaloneLinux64)
+            {
+                addPath("GameAssembly.so");
+                addPath("UnityPlayer.so");
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
