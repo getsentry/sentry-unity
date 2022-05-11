@@ -100,5 +100,8 @@ namespace Sentry.Unity.iOS
 
         [DllImport("__Internal")]
         public static extern void SentryNativeBridgeUnsetUser();
+
+        [DllImport("__Internal", EntryPoint = "SentryNativeBridgeGetInstallationId")]
+        public static extern string GetInstallationId();
     }
 }
