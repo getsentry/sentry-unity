@@ -13,6 +13,7 @@
 
 - macOS native crash support ([#710](https://github.com/getsentry/sentry-unity/pull/710))
 - The SentryUnityOptions now provide a method to disable the UnityLoggingIntegration ([#724](https://github.com/getsentry/sentry-unity/pull/724))
+- Automatic user IDs on native crashes & .NET events ([#728](https://github.com/getsentry/sentry-unity/pull/728))
 
 ### Fixes
 
