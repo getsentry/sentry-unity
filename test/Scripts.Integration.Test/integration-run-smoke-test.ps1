@@ -39,6 +39,7 @@ if ("$TestAppPath" -eq "") {
     }
     ElseIf ($IsLinux) {
         $TestAppPath = "$NewProjectBuildPath/test"
+        chmod +x $TestAppPath
         if ("$AppDataDir" -eq "") {
             $AppDataDir = "$env:HOME/.config/unity3d/DefaultCompany/$NewProjectName/"
         }
@@ -47,6 +48,10 @@ if ("$TestAppPath" -eq "") {
         Write-Error "Unsupported build"
     }
 }
+
+Write-Host "Resolved parameters:"
+Write-Host "  TestAppPath: $TestAppPath"
+Write-Host "   AppDataDir: $AppDataDir"
 
 if ("$AppDataDir" -ne "") {
     if (Test-Path $AppDataDir) {
@@ -63,9 +68,14 @@ else {
 Set-Strictmode -Version latest
 
 function RunTest([string] $type) {
-    Write-Host "Running $TestAppPath --test $type"
+    if ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and (Get-Command "xvfb-run" -ErrorAction SilentlyContinue)) {
+        Write-Host "Running xvfb-run -ae /dev/stdout $TestAppPath --test $type"
+        $process = Start-Process "xvfb-run" -ArgumentList "-ae", "/dev/stdout", "$TestAppPath", "--test", $type -PassThru
+    } else {
+        Write-Host "Running $TestAppPath --test $type"
+        $process = Start-Process "$TestAppPath" -ArgumentList "--test", $type -PassThru
+    }
 
-    $process = Start-Process "$TestAppPath"  -ArgumentList "--test", $type -PassThru
     If ($null -eq $process) {
         Throw "Process not found."
     }

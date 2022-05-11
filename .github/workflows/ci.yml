@@ -550,6 +550,4 @@ jobs:
 
       - name: Run (Linux)
         if: ${{ matrix.platform == 'Linux' }}
-        run: |
-          chmod +x ${{steps.download.outputs.download-path}}/*
-          pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke -Crash
+        run: pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke -Crash
