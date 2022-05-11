@@ -63,6 +63,9 @@ class RequestVerifier:
             raise Exception(info)
 
     def CheckMessage(self, index, substring, negate):
+        if len(self.__requests) <= index:
+            raise Exception('HTTP Request #{} not captured.'.format(index))
+
         message = self.__requests[index]["body"]
         contains = substring in message or substring.replace(
             "'", "\"") in message
