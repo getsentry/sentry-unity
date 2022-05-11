@@ -10,12 +10,14 @@ namespace Sentry.Unity.Tests.Stubs
             bool isEditor = true,
             string productName = "",
             string version = "",
+            string unityVersion = "",
             string persistentDataPath = "",
             RuntimePlatform platform = RuntimePlatform.WindowsEditor)
         {
             IsEditor = isEditor;
             ProductName = productName;
             Version = version;
+            UnityVersion = unityVersion;
             PersistentDataPath = persistentDataPath;
             Platform = platform;
         }
@@ -26,6 +28,7 @@ namespace Sentry.Unity.Tests.Stubs
         public bool IsEditor { get; }
         public string ProductName { get; }
         public string Version { get; }
+        public string UnityVersion { get; }
         public string PersistentDataPath { get; }
         public RuntimePlatform Platform { get; }
         private void OnQuitting() => Quitting?.Invoke();

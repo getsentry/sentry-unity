@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
-using UnityEngine;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -12,19 +12,30 @@ namespace Sentry.Unity.Editor.Tests.Android
     {
         private class Fixture
         {
+            public TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
             public string FakeProjectPath { get; set; }
             public string UnityProjectPath { get; set; }
             public string GradleProjectPath { get; set; }
             public string SentryCliPath { get; set; }
 
+            public bool IsExporting { get; set; }
+            public TestApplication Application { get; set; }
+
             public Fixture()
             {
+                LoggerInterceptor = new();
+
                 FakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
                 UnityProjectPath = Path.Combine(FakeProjectPath, "UnityProject");
                 GradleProjectPath = Path.Combine(FakeProjectPath, "GradleProject");
                 SentryCliPath = Path.Combine(FakeProjectPath, "fake-sentry-cli");
+
+                Application = new TestApplication(unityVersion: "2019.4");
             }
+
+            public DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), LoggerInterceptor),
+                UnityProjectPath, GradleProjectPath, IsExporting, Application);
         }
 
         [SetUp]
@@ -40,77 +51,148 @@ namespace Sentry.Unity.Editor.Tests.Android
         public void TearDown() => Directory.Delete(Path.GetFullPath(_fixture.FakeProjectPath), true);
 
         [Test]
-        public void GetSymbolsPath_IsExportingFalse_ReturnsUnityDefaultPath()
+        [TestCase("2019.4", false)]
+        [TestCase("2020.3", false)]
+        [TestCase("2021.1", false)]
+        [TestCase("2021.2", true)]
+        [TestCase("2022.1", true)]
+        public void IsNewBuildingBackend(string unityVersion, bool expectedIsNewBuildingBackend)
         {
-            var expectedSymbolsPath = Path.Combine(_fixture.UnityProjectPath, "Temp", "StagingArea", "symbols");
+            _fixture.Application = new TestApplication(unityVersion: unityVersion);
 
-            var actualSymbolsPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
+            var actualIsNewBuildingBackend = DebugSymbolUpload.IsNewBuildingBackend(_fixture.Application);
 
-            Assert.AreEqual(expectedSymbolsPath, actualSymbolsPath);
+            Assert.AreEqual(expectedIsNewBuildingBackend, actualIsNewBuildingBackend);
         }
 
         [Test]
-        public void GetSymbolsPath_IsExportingTrue_CopiesSymbolsAndReturnsPath()
+        [TestCase("2019.4", DebugSymbolUpload.RelativeBuildOutputPathOld, DebugSymbolUpload.RelativeGradlePathOld)]
+        [TestCase("2021.2", DebugSymbolUpload.RelativeBuildOutputPathNew, DebugSymbolUpload.RelativeAndroidPathNew)]
+        public void GetSymbolUploadPaths_IsExportingFalse_ReturnsCorrectPathForVersion(string unityVersion,
+            string relativeBuildPath, string gradlePath)
         {
-            var expectedSymbolsPath = Path.Combine(_fixture.GradleProjectPath, DebugSymbolUpload.GradleExportedSymbolsPath);
+            var sut = _fixture.GetSut();
 
-            var actualSymbolsPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, true);
+            var actualSymbolsPaths = sut.GetSymbolUploadPaths(false);
 
-            Assert.AreEqual(expectedSymbolsPath, actualSymbolsPath);
-            Assert.IsTrue(Directory.Exists(expectedSymbolsPath));
+            Assert.NotNull(actualSymbolsPaths.Any(path => path.Contains(relativeBuildPath)));
+            Assert.NotNull(actualSymbolsPaths.Any(path => path.Contains(gradlePath)));
+        }
 
-            var files = Directory.GetFiles(expectedSymbolsPath, "*.so", SearchOption.AllDirectories).ToList();
-            Assert.IsNotNull(files.Find(f => f.EndsWith("libil2cpp.dbg.so")));
-            Assert.IsNotNull(files.Find(f => f.EndsWith("libil2cpp.sym.so")));
-            Assert.IsNotNull(files.Find(f => f.EndsWith("libunity.sym.so")));
+        [Test]
+        public void GetSymbolUploadPaths_IsExportingTrue_ReturnsPathToExportedProject()
+        {
+            var sut = _fixture.GetSut();
+
+            var actualSymbolPaths = sut.GetSymbolUploadPaths(true);
+
+            Assert.AreEqual(1, actualSymbolPaths.Length);
+            Assert.NotNull(actualSymbolPaths.Any(path => path.Contains(_fixture.GradleProjectPath)));
         }
 
         [Test]
         public void AppendUploadToGradleFile_SentryCliFileDoesNotExist_ThrowsFileNotFoundException()
         {
-            var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
             var invalidSentryCliPath = Path.GetRandomFileName();
+            var sut = _fixture.GetSut();
 
-            var ex = Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(invalidSentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath));
+            var ex = Assert.Throws<FileNotFoundException>(() => sut.AppendUploadToGradleFile(invalidSentryCliPath));
             Assert.AreEqual(invalidSentryCliPath, ex.FileName);
         }
 
         [Test]
         public void AppendUploadToGradleFile_BuildGradleFileDoesNotExist_ThrowsFileNotFoundException()
         {
-            var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, false);
-            var invalidGradlePath = Path.GetRandomFileName();
+            _fixture.GradleProjectPath = Path.GetRandomFileName();
+            var sut = _fixture.GetSut();
 
-            var ex = Assert.Throws<FileNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, invalidGradlePath, symbolsDirectoryPath));
-            Assert.AreEqual(invalidGradlePath, ex.FileName);
+            var ex = Assert.Throws<FileNotFoundException>(() => sut.AppendUploadToGradleFile(_fixture.SentryCliPath));
+            Assert.AreEqual(_fixture.GradleProjectPath, ex.FileName);
         }
 
         [Test]
         public void AppendUploadToGradleFile_SymbolsDirectoryDoesNotExist_ThrowsDirectoryNotFoundException()
         {
-            Assert.Throws<DirectoryNotFoundException>(() => DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, String.Empty));
+            var sut = _fixture.GetSut();
+            sut._symbolUploadPaths = new[] { string.Empty };
+
+            Assert.Throws<DirectoryNotFoundException>(() => sut.AppendUploadToGradleFile(_fixture.SentryCliPath));
         }
 
         [Test]
-        [TestCase(true)]
-        [TestCase(false)]
-        public void AppendUploadToGradleFile_AllRequirementsMet_AppendsSentryCliToFile(bool export)
+        public void AppendUploadToGradleFile_AllRequirementsMet_AppendsUploadTask()
         {
-            var symbolsDirectoryPath = DebugSymbolUpload.GetSymbolsPath(_fixture.UnityProjectPath, _fixture.GradleProjectPath, export);
-            var expectedSentryCliPath = _fixture.SentryCliPath;
-            var expectedSymbolsDirectoryPath = symbolsDirectoryPath;
+            var sut = _fixture.GetSut();
 
-            if (Application.platform == RuntimePlatform.WindowsEditor)
-            {
-                expectedSentryCliPath = expectedSentryCliPath.Replace(@"\", "/");
-                expectedSymbolsDirectoryPath = symbolsDirectoryPath.Replace(@"\", "/");
-            }
-
-            DebugSymbolUpload.AppendUploadToGradleFile(_fixture.SentryCliPath, _fixture.GradleProjectPath, symbolsDirectoryPath);
+            sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
             var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
 
-            StringAssert.Contains(expectedSentryCliPath, actualFileContent);
-            StringAssert.Contains(expectedSymbolsDirectoryPath, actualFileContent);
+            StringAssert.Contains("sentry.properties", actualFileContent);
+        }
+
+        [Test]
+        public void RemoveUploadTaskFromGradleFile_GradleFileDoesNotExist_ThrowsFileNotFoundException()
+        {
+            _fixture.GradleProjectPath = Path.GetRandomFileName();
+            var sut = _fixture.GetSut();
+
+            var ex = Assert.Throws<FileNotFoundException>(() => sut.RemoveUploadFromGradleFile());
+            Assert.AreEqual(_fixture.GradleProjectPath, ex.FileName);
+        }
+
+        [Test]
+        public void RemoveUploadTaskFromGradleFile_UploadHasNotBeenAdded_LogsAndReturns()
+        {
+            var sut = _fixture.GetSut();
+
+            sut.RemoveUploadFromGradleFile();
+
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug,
+                "Skipping removing the upload task. The task has not been added to the gradle project.");
+        }
+
+        [Test]
+        public void RemoveUploadTaskFromGradleFile_UploadHasBeenAdded_RemovesUploadTask()
+        {
+            var sut = _fixture.GetSut();
+            sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
+
+            // Sanity check
+            var actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
+            StringAssert.Contains("sentry.properties", actualFileContent);
+
+            sut.RemoveUploadFromGradleFile();
+
+            actualFileContent = File.ReadAllText(Path.Combine(_fixture.GradleProjectPath, "build.gradle"));
+            StringAssert.DoesNotContain("sentry.properties", actualFileContent);
+        }
+
+        [Test]
+        public void TryCopySymbolsToGradleProject_IsNewBuildingBackend_LogsAndReturns()
+        {
+            _fixture.Application = new TestApplication(unityVersion: "2021.2");
+
+            var sut = _fixture.GetSut();
+
+            sut.TryCopySymbolsToGradleProject(_fixture.Application);
+
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug,
+                "New building backend. Skipping copying of debug symbols.");
+        }
+
+        [Test]
+        public void TryCopySymbolsToGradleProject_IsOldBuildingBackend_CopiesFilesFromBuildOutputToSymbolsDirectory()
+        {
+            _fixture.Application = new TestApplication(unityVersion: "2019.4");
+            var expectedSymbolsPath = Path.Combine(_fixture.GradleProjectPath, "symbols");
+            var sut = _fixture.GetSut();
+
+            sut.TryCopySymbolsToGradleProject(_fixture.Application);
+
+            var files = Directory.GetFiles(expectedSymbolsPath, "*.so", SearchOption.AllDirectories).ToList();
+            Assert.IsNotNull(files.Find(f => f.EndsWith("libil2cpp.dbg.so")));
+            Assert.IsNotNull(files.Find(f => f.EndsWith("libil2cpp.sym.so")));
+            Assert.IsNotNull(files.Find(f => f.EndsWith("libunity.sym.so")));
         }
 
         public static void SetupFakeProject(string fakeProjectPath)
@@ -120,12 +202,12 @@ namespace Sentry.Unity.Editor.Tests.Android
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var projectTemplatePath = Path.Combine(assemblyPath, "TestFiles", "SymbolsUploadProject");
 
-            foreach (string dirPath in Directory.GetDirectories(projectTemplatePath, "*", SearchOption.AllDirectories))
+            foreach (var dirPath in Directory.GetDirectories(projectTemplatePath, "*", SearchOption.AllDirectories))
             {
                 Directory.CreateDirectory(dirPath.Replace(projectTemplatePath, fakeProjectPath));
             }
 
-            foreach (string newPath in Directory.GetFiles(projectTemplatePath, "*", SearchOption.AllDirectories))
+            foreach (var newPath in Directory.GetFiles(projectTemplatePath, "*", SearchOption.AllDirectories))
             {
                 File.Copy(newPath, newPath.Replace(projectTemplatePath, fakeProjectPath), true);
             }
