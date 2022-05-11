@@ -14,7 +14,7 @@ namespace Sentry.Unity.Editor.Android
         internal const string RelativeBuildOutputPathOld = "Temp/StagingArea/symbols";
         internal const string RelativeGradlePathOld = "Temp/gradleOut";
         internal const string RelativeBuildOutputPathNew = "Library/Bee/artifacts/Android";
-        internal const string RelativeAndroidPathNew = "Library/Android";
+        internal const string RelativeAndroidPathNew = "Library/Bee/Android";
 
         private readonly string _unityProjectPath;
         private readonly string _gradleProjectPath;

@@ -183,10 +183,11 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void TryCopySymbolsToGradleProject_IsOldBuildingBackend_CopiesFilesFromBuildOutputToSymbolsDirectory()
         {
+            _fixture.Application = new TestApplication(unityVersion: "2019.4");
             var expectedSymbolsPath = Path.Combine(_fixture.GradleProjectPath, "symbols");
             var sut = _fixture.GetSut();
 
-            sut.TryCopySymbolsToGradleProject();
+            sut.TryCopySymbolsToGradleProject(_fixture.Application);
 
             var files = Directory.GetFiles(expectedSymbolsPath, "*.so", SearchOption.AllDirectories).ToList();
             Assert.IsNotNull(files.Find(f => f.EndsWith("libil2cpp.dbg.so")));
