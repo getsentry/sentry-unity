@@ -196,7 +196,7 @@ jobs:
           path: samples/artifacts/builds/iOS/Xcode
           if-no-files-found: error
 
-  # Docker-based build to prepare a game ("player") using for some platforms. The actual execution runs in another job.
+  # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: ubuntu-latest

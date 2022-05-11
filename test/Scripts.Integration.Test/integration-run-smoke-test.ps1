@@ -27,6 +27,9 @@ If (!$Smoke -and !$Crash) {
 if ("$TestAppPath" -eq "") {
     If ($IsMacOS) {
         $TestAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/$NewProjectName"
+        if ("$AppDataDir" -eq "") {
+            $AppDataDir = "$env:HOME/Library/Logs/DefaultCompany/$NewProjectName/"
+        }
     }
     ElseIf ($IsWindows) {
         $TestAppPath = "$NewProjectBuildPath/test.exe"
@@ -36,6 +39,9 @@ if ("$TestAppPath" -eq "") {
     }
     ElseIf ($IsLinux) {
         $TestAppPath = "$NewProjectBuildPath/test"
+        if ("$AppDataDir" -eq "") {
+            $AppDataDir = "$env:HOME/.config/unity3d/DefaultCompany/$NewProjectName/"
+        }
     }
     Else {
         Write-Error "Unsupported build"
