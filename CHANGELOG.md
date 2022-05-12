@@ -1,11 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Linux native crash support ([#734](https://github.com/getsentry/sentry-unity/pull/734))
+
 ## 0.16.0
 
 ### Features
 
 - macOS native crash support ([#710](https://github.com/getsentry/sentry-unity/pull/710))
-- Linux native crash support ([#734](https://github.com/getsentry/sentry-unity/pull/734))
 - The SentryUnityOptions now provide a method to disable the UnityLoggingIntegration ([#724](https://github.com/getsentry/sentry-unity/pull/724))
 
 ### Fixes
