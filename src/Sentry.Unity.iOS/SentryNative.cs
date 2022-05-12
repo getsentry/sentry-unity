@@ -59,15 +59,6 @@ namespace Sentry.Unity.iOS
                 SentryCocoaBridgeProxy.Close();
             };
             options.DefaultUserId = SentryCocoaBridgeProxy.GetInstallationId();
-            if (options.DefaultUserId is not null)
-            {
-                options.DiagnosticLogger?
-                            .LogDebug("Setting installationId ('{0}') as the default user ID.", options.DefaultUserId);
-            }
-            else
-            {
-                options.DiagnosticLogger?.LogWarning("Failed to set the default user ID based on installationId (empty).");
-            }
         }
     }
 }

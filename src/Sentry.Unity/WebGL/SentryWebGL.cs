@@ -40,11 +40,6 @@ namespace Sentry.Unity.WebGL
 
             // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
             options.DefaultUserId = AnalyticsSessionInfo.userId;
-            if (options.DefaultUserId is not null)
-            {
-                options.DiagnosticLogger?.LogDebug(
-                    "Setting Unity AnalyticsSessionInfo.userId ('{0}') as the default user ID.", options.DefaultUserId);
-            }
         }
     }
 }

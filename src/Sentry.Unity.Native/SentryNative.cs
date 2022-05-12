@@ -45,8 +45,6 @@ namespace Sentry.Unity.Native
                 options.DefaultUserId = AnalyticsSessionInfo.userId;
                 if (options.DefaultUserId is not null)
                 {
-                    options.DiagnosticLogger?.LogDebug(
-                        "Setting Unity AnalyticsSessionInfo.userId ('{0}') as the default user ID.", options.DefaultUserId);
                     options.ScopeObserver.SetUser(new User { Id = options.DefaultUserId });
                 }
 
