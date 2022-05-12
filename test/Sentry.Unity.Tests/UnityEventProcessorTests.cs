@@ -85,8 +85,8 @@ namespace Sentry.Unity.Tests
             Assert.NotZero(_testLogger.Logs.Count(log => log.logLevel <= SentryLevel.Info));
         }
 
-        [UnityTest]
-        public IEnumerator SentrySdkCaptureEvent_OnNotUIThreadThenUIThreadThenNotUIThread_Cached()
+        [Test]
+        public void SentrySdkCaptureEvent_OnNotUIThreadThenUIThreadThenNotUIThread_Cached()
         {
             // arrange
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
@@ -113,7 +113,7 @@ namespace Sentry.Unity.Tests
             options.AddEventProcessor(new UnityEventProcessor(options, _sentryMonoBehaviour, _testApplication));
             SentryUnity.Init(options);
 
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
 
             // act & assert
             var nonUiThreadEventDataNotCached = NonUiThread();
@@ -275,8 +275,8 @@ namespace Sentry.Unity.Tests
             Assert.IsNull(sentryEvent.ServerName);
         }
 
-        [UnityTest]
-        public IEnumerator Process_DeviceUniqueIdentifierWithSendDefaultPii_IsNotNull()
+        [Test]
+        public void Process_DeviceUniqueIdentifierWithSendDefaultPii_IsNotNull()
         {
             // arrange
             var sentryOptions = new SentryOptions { SendDefaultPii = true };
@@ -284,15 +284,15 @@ namespace Sentry.Unity.Tests
             var sentryEvent = new SentryEvent();
 
             // act
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             sut.Process(sentryEvent);
 
             // assert
             Assert.IsNotNull(sentryEvent.Contexts.Device.DeviceUniqueIdentifier);
         }
 
-        [UnityTest]
-        public IEnumerator Process_AppProtocol_Assigned()
+        [Test]
+        public void Process_AppProtocol_Assigned()
         {
             // arrange
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
@@ -303,15 +303,15 @@ namespace Sentry.Unity.Tests
             var sentryEvent = new SentryEvent();
 
             // act
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             unityEventProcessor.Process(sentryEvent);
 
             // assert
             Assert.IsNotNull(sentryEvent.Contexts.App.StartTime);
         }
 
-        [UnityTest]
-        public IEnumerator Process_Tags_Set()
+        [Test]
+        public void Process_Tags_Set()
         {
             // arrange
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
@@ -327,7 +327,7 @@ namespace Sentry.Unity.Tests
             var sentryEvent = new SentryEvent();
 
             // act
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             unityEventProcessor.Process(sentryEvent);
 
             // assert
@@ -357,8 +357,8 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(bool.TrueString, isMainThread.Value);
         }
 
-        [UnityTest]
-        public IEnumerator Process_OperatingSystemProtocol_Assigned()
+        [Test]
+        public void Process_OperatingSystemProtocol_Assigned()
         {
             // arrange
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo { OperatingSystem = "Windows" };
@@ -367,15 +367,15 @@ namespace Sentry.Unity.Tests
 
             // act
             // SentryInitialization always called
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             sut.Process(sentryEvent);
 
             // assert
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.OperatingSystem, sentryEvent.Contexts.OperatingSystem.RawDescription);
         }
 
-        [UnityTest]
-        public IEnumerator Process_DeviceProtocol_Assigned()
+        [Test]
+        public void Process_DeviceProtocol_Assigned()
         {
             const long toByte = 1048576L; // in `UnityEventProcessor.PopulateDevice`
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
@@ -391,7 +391,7 @@ namespace Sentry.Unity.Tests
             var sut = new UnityEventProcessor(_sentryOptions, _sentryMonoBehaviour, _testApplication);
             var sentryEvent = new SentryEvent();
 
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             sut.Process(sentryEvent);
 
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.ProcessorCount, sentryEvent.Contexts.Device.ProcessorCount);
@@ -403,8 +403,8 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SystemMemorySize * toByte, sentryEvent.Contexts.Device.MemorySize);
         }
 
-        [UnityTest]
-        public IEnumerator Process_UnityProtocol_Assigned()
+        [Test]
+        public void Process_UnityProtocol_Assigned()
         {
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
@@ -418,7 +418,7 @@ namespace Sentry.Unity.Tests
             var sentryEvent = new SentryEvent();
 
             // act
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             sut.Process(sentryEvent);
 
             var unityProtocol = (Unity.Protocol.Unity)sentryEvent.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
@@ -428,8 +428,8 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.RenderingThreadingMode!.Value, unityProtocol.RenderingThreadingMode);
         }
 
-        [UnityTest]
-        public IEnumerator Process_GpuProtocol_Assigned()
+        [Test]
+        public void Process_GpuProtocol_Assigned()
         {
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
@@ -453,7 +453,7 @@ namespace Sentry.Unity.Tests
 
             // act
             // SentryInitialization always called
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             sut.Process(sentryEvent);
 
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceId, sentryEvent.Contexts.Gpu.Id);
@@ -472,8 +472,8 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.SupportsGeometryShaders, sentryEvent.Contexts.Gpu.SupportsGeometryShaders);
         }
 
-        [UnityTest]
-        public IEnumerator Process_GpuProtocolGraphicsShaderLevel_Assigned(
+        [Test]
+        public void Process_GpuProtocolGraphicsShaderLevel_Assigned(
             [ValueSource(nameof(ShaderLevels))] (int, string) shaderValue)
         {
             var (shaderLevel, shaderDescription) = shaderValue;
@@ -488,7 +488,7 @@ namespace Sentry.Unity.Tests
 
             // act
             // SentryInitialization always called
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             sut.Process(sentryEvent);
 
             Assert.AreEqual(shaderDescription, sentryEvent.Contexts.Gpu.GraphicsShaderLevel);
@@ -507,8 +507,8 @@ namespace Sentry.Unity.Tests
            (21, "21")
         };
 
-        [UnityTest]
-        public IEnumerator Process_GpuProtocolGraphicsShaderLevelMinusOne_Ignored()
+        [Test]
+        public void Process_GpuProtocolGraphicsShaderLevelMinusOne_Ignored()
         {
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
@@ -520,7 +520,7 @@ namespace Sentry.Unity.Tests
 
             // act
             // SentryInitialization always called
-            yield return _sentryMonoBehaviour.CollectData();
+            _sentryMonoBehaviour.CollectData();
             sut.Process(sentryEvent);
 
             Assert.IsNull(sentryEvent.Contexts.Gpu.GraphicsShaderLevel);
