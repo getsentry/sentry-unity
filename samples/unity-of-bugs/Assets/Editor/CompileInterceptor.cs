@@ -2,38 +2,27 @@
 using UnityEditor.Compilation;
 using UnityEngine;
 
-[InitializeOnLoad]
 public class CompileInterceptor
 {
-    static CompileInterceptor()
+    [InitializeOnLoadMethod]
+    public static void Setup()
     {
-        CompilationPipeline.compilationStarted -= OnCompilationStarted;
-        CompilationPipeline.compilationStarted += OnCompilationStarted;
+        CompilationPipeline.compilationStarted += o => Debug.Log("Compilation started.");
 
-        CompilationPipeline.assemblyCompilationStarted -= OnAssemblyCompilationStarted;
-        CompilationPipeline.assemblyCompilationStarted += OnAssemblyCompilationStarted;
+        CompilationPipeline.assemblyCompilationStarted += assemblyPath =>
+            Debug.Log($"Starting to compile: {assemblyPath}");;
 
-        CompilationPipeline.assemblyCompilationFinished -= OnAssemblyCompilationFinished;
-        CompilationPipeline.assemblyCompilationFinished += OnAssemblyCompilationFinished;
-
-        CompilationPipeline.compilationFinished -= OnCompilationFinished;
-        CompilationPipeline.compilationFinished += OnCompilationFinished;
-    }
-
-    private static void OnCompilationStarted(object o) => Debug.Log("Compilation started.");
-    private static void OnAssemblyCompilationStarted(string assemblyPath) =>
-        Debug.Log($"Starting to compile: {assemblyPath}");
-
-    private static void OnAssemblyCompilationFinished(string assemblyPath, CompilerMessage[] compilerMessages)
-    {
-        if (assemblyPath.Contains("Assembly-CSharp.dll"))
+        CompilationPipeline.assemblyCompilationFinished += (assemblyPath, compilerMessages) =>
         {
-            Debug.Log($"Finished compiling: {assemblyPath}");
+            if (assemblyPath.Contains("Assembly-CSharp.dll"))
+            {
+                Debug.Log($"Finished compiling: {assemblyPath}");
 
-            // This is running on the main thread
-            Debug.Log("This is where IL Weaving will happen.");
-        }
+                // This is running on the main thread
+                Debug.Log("This is where IL Weaving will happen.");
+            }
+        };
+
+        CompilationPipeline.compilationFinished += o => Debug.Log("Compilation finished.");
     }
-
-    private static void OnCompilationFinished(object o) => Debug.Log("Compilation finished.");
 }
