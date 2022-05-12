@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.IO;
+using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
 
@@ -10,16 +11,16 @@ public class CompileInterceptor
         CompilationPipeline.compilationStarted += o => Debug.Log("Compilation started.");
 
         CompilationPipeline.assemblyCompilationStarted += assemblyPath =>
-            Debug.Log($"Starting to compile: {assemblyPath}");;
+            Debug.Log($"Compiling: {assemblyPath}");;
 
         CompilationPipeline.assemblyCompilationFinished += (assemblyPath, compilerMessages) =>
         {
             if (assemblyPath.Contains("Assembly-CSharp.dll"))
             {
-                Debug.Log($"Finished compiling: {assemblyPath}");
+                Debug.Log($"<color=red>Finished compiling: {assemblyPath} with size: {new FileInfo(assemblyPath).Length}</color>");
 
                 // This is running on the main thread
-                Debug.Log("This is where IL Weaving will happen.");
+                Debug.Log("IL Weaving will happen here.");
             }
         };
 
