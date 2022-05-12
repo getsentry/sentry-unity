@@ -112,7 +112,6 @@ namespace Sentry.Unity
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
 
-
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
         internal string? DefaultUserId
@@ -134,6 +133,11 @@ namespace Sentry.Unity
 
         // Whether components & integrations can use multi-threading.
         internal bool MultiThreading = true;
+
+        /// <summary>
+        /// Used to synchronize context from .NET to the native SDK
+        /// </summary>
+        internal ContextWriter? NativeContextWriter { get; set; } = null;
 
         public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
         {

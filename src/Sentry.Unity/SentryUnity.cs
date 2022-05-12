@@ -64,6 +64,28 @@ namespace Sentry.Unity
                             new ScreenshotAttachmentContent(options, SentryMonoBehaviour.Instance))));
                 }
 
+                if (options.NativeContextWriter is { } contextWriter)
+                {
+                    SentrySdk.ConfigureScope(scope =>
+                    {
+                        foreach (var pair in scope.Contexts)
+                        {
+                            if (pair.Value is IJsonSerializable && pair.Value is not null)
+                            {
+                                try
+                                {
+                                    contextWriter.Write((pair.Value as IJsonSerializable)!, options.DiagnosticLogger);
+                                    options.DiagnosticLogger?.LogDebug("Context {0} synchronized to the native SDK", pair.Key);
+                                }
+                                catch (Exception e)
+                                {
+                                    options.DiagnosticLogger?.LogWarning("Failed to synchronize context {0} to the native SDK: {1}", pair.Key, e);
+                                }
+                            }
+                        }
+                    });
+                }
+
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
                     options.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");
