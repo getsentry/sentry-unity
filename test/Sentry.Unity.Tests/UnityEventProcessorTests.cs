@@ -354,7 +354,7 @@ namespace Sentry.Unity.Tests
 
             var isMainThread = tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
             Assert.NotNull(isMainThread);
-            Assert.AreEqual(bool.TrueString, isMainThread.Value);
+            Assert.AreEqual("true", isMainThread.Value);
         }
 
         [UnityTest]

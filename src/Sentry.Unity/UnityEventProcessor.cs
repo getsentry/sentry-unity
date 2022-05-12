@@ -117,9 +117,7 @@ namespace Sentry.Unity
                 device.BatteryStatus = SystemInfo.batteryStatus.ToString(); // don't cache
 
                 var batteryLevel = SystemInfo.batteryLevel;
-#pragma warning disable RECS0018 // Value is exact when expressing no battery level
-                if (batteryLevel != -1.0)
-#pragma warning restore RECS0018
+                if (batteryLevel > 0.0)
                 {
                     device.BatteryLevel = (short?)(batteryLevel * 100); // don't cache
                 }
@@ -197,7 +195,7 @@ namespace Sentry.Unity
 
             if (_mainThreadData.SupportsDrawCallInstancing.HasValue)
             {
-                @event.SetTag("unity.gpu.supports_instancing", _mainThreadData.SupportsDrawCallInstancing.Value ? "true" : "false");
+                @event.SetTag("unity.gpu.supports_instancing", _mainThreadData.SupportsDrawCallInstancing.Value.ToTagValue());
             }
 
             if (_mainThreadData.DeviceType is not null && _mainThreadData.DeviceType.IsValueCreated)
@@ -210,7 +208,7 @@ namespace Sentry.Unity
                 @event.SetTag("unity.device.unique_identifier", _mainThreadData.DeviceUniqueIdentifier.Value);
             }
 
-            @event.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToString());
+            @event.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToTagValue());
         }
 
         /// <summary>
@@ -286,5 +284,10 @@ namespace Sentry.Unity
                 sentryEvent.SetTag("source", "log");
             }
         }
+    }
+
+    internal static class TagValueNormalizer
+    {
+        internal static string ToTagValue(this Boolean value) => value ? "true" : "false";
     }
 }
