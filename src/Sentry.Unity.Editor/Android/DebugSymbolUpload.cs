@@ -143,13 +143,13 @@ gradle.taskGraph.whenReady {{
         {
             if (isExporting)
             {
-                _logger.LogInfo("Exporting the project. Root for symbol upload: {0}", _gradleProjectPath);
+                _logger.LogInfo("Exporting the project. Root for symbols upload: {0}", _gradleProjectPath);
                 return new[] { _gradleProjectPath };
             }
 
             if (IsNewBuildingBackend(application))
             {
-                _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbol upload: 'Library'.");
+                _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
                 return new[]
                 {
                     Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew),
@@ -157,7 +157,7 @@ gradle.taskGraph.whenReady {{
                 };
             }
 
-            _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbol upload: 'Temp'.");
+            _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbols upload: 'Temp'.");
             return new[]
             {
                 Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld),
