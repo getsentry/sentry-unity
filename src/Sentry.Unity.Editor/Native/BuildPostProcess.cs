@@ -18,21 +18,29 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                .ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = SentryScriptableObject
+                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
+                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
 
             try
             {
                 if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) != ScriptingImplementation.IL2CPP)
                 {
-                    logger.LogWarning("Failed to enable Native support - only availabile with IL2CPP scripting backend.");
+                    logger.LogWarning("Failed to enable Native support - only available with IL2CPP scripting backend.");
                     return;
                 }
 
-                if (options?.IsValid() is not true)
+                if (options is null)
                 {
-                    logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
+                    logger.LogWarning("Native support disabled. " +
+                                      "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                    return;
+                }
+
+                if (!options.IsValid())
+                {
+                    logger.LogDebug("Native support disabled.");
                     return;
                 }
 
@@ -42,11 +50,12 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
+                logger.LogDebug("Adding native support.");
+
                 var projectDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
                 AddCrashHandler(logger, target, projectDir, executableName);
                 UploadDebugSymbols(logger, target, projectDir, executableName);
-
             }
             catch (Exception e)
             {

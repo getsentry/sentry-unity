@@ -147,8 +147,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.RemoveUploadFromGradleFile();
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug,
-                "Skipping removing the upload task. The task has not been added to the gradle project.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "No previous upload task found.");
         }
 
         [Test]
