@@ -149,40 +149,40 @@ namespace Sentry.Unity.Editor.Android
 
         internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
         {
-            var disableSymbolUpload = false;
+            var disableSymbolsUpload = false;
             var logger = _options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
             var symbolsUpload = new DebugSymbolUpload(logger, unityProjectPath, gradleProjectPath,
                 EditorUserBuildSettings.exportAsGoogleAndroidProject);
 
             if (_options is null)
             {
-                disableSymbolUpload = true;
+                disableSymbolsUpload = true;
             }
             else if (!_options.Enabled)
             {
-                disableSymbolUpload = true;
+                disableSymbolsUpload = true;
             }
             else if (!_options.AndroidNativeSupportEnabled)
             {
-                disableSymbolUpload = true;
+                disableSymbolsUpload = true;
             }
 
             if (_sentryCliOptions is null)
             {
                 logger.LogWarning("Failed to load sentry-cli options.");
-                disableSymbolUpload = true;
+                disableSymbolsUpload = true;
             }
             else if (!_sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
             {
-                disableSymbolUpload = true;
+                disableSymbolsUpload = true;
             }
             else if(_scriptingImplementation != ScriptingImplementation.IL2CPP)
             {
                 logger.LogDebug("Automated symbols upload requires the IL2CPP scripting backend.");
-                disableSymbolUpload = true;
+                disableSymbolsUpload = true;
             }
 
-            if (disableSymbolUpload)
+            if (disableSymbolsUpload)
             {
                 symbolsUpload.RemoveUploadFromGradleFile();
                 return;
