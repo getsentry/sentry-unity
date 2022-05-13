@@ -176,7 +176,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 disableSymbolsUpload = true;
             }
-            else if(_scriptingImplementation != ScriptingImplementation.IL2CPP)
+            else if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
             {
                 logger.LogDebug("Automated symbols upload requires the IL2CPP scripting backend.");
                 disableSymbolsUpload = true;
