@@ -12,6 +12,7 @@ namespace Sentry.Unity.Integrations
         bool IsEditor { get; }
         string ProductName { get; }
         string Version { get; }
+        string UnityVersion { get; }
         string PersistentDataPath { get; }
         RuntimePlatform Platform { get; }
     }
@@ -40,6 +41,7 @@ namespace Sentry.Unity.Integrations
         public string ProductName => Application.productName;
 
         public string Version => Application.version;
+        public string UnityVersion => Application.unityVersion;
 
         public string PersistentDataPath => Application.persistentDataPath;
 

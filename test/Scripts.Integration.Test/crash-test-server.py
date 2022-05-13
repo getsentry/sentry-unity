@@ -31,11 +31,12 @@ class Handler(BaseHTTPRequestHandler):
         body = ""
         if self.command == "POST" and 'Content-Length' in self.headers:
             content_length = int(self.headers['Content-Length'])
-            content = self.rfile.read(min(1000, content_length))
+            content = self.rfile.read(content_length)
             try:
                 body = content.decode("utf-8")
             except:
                 body = binascii.hexlify(bytearray(content))
+            body = body[0:min(1000, len(body))]
         self.log_message('"%s" %s %s%s',
                          self.requestline, str(code), str(size), body)
 

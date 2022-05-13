@@ -101,6 +101,16 @@ namespace Sentry.Unity
         /// </summary>
         public bool WindowsNativeSupportEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Whether the SDK should add native support for MacOS
+        /// </summary>
+        public bool MacosNativeSupportEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Whether the SDK should add native support for Linux
+        /// </summary>
+        public bool LinuxNativeSupportEnabled { get; set; } = true;
+
         public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
         {
         }

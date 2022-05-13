@@ -3,8 +3,7 @@
 #include <string>
 
 extern "C" {
-void
-crash_in_cpp()
+void crash_in_cpp()
 {
     char *ptr = 0;
     *ptr += 1;
@@ -12,8 +11,7 @@ crash_in_cpp()
 }
 
 extern "C" {
-void
-throw_cpp()
+void throw_cpp()
 {
     try {
         // throws std::length_error

@@ -63,9 +63,9 @@ function FormatUnityPath
     If ($path)
     {
         #Ajust path on MacOS
-        If ($path -match "Unity.app/$")
+        If ($path -match "Unity.app/?$")
         {
-            $path = $path + "Contents/MacOS"
+            $path = $path + "/Contents/MacOS"
         }
         $unityPath = $path
     }
@@ -151,7 +151,7 @@ function TestDsnFor([string] $platform)
     return $dsn
 }
 
-function RunUnityCustom([string] $unityPath, [string[]] $arguments)
+function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
     If ($unityPath.StartsWith("docker "))
     {
@@ -161,5 +161,5 @@ function RunUnityCustom([string] $unityPath, [string[]] $arguments)
 
     }
 
-    return RunUnity $unityPath $arguments
+    return RunUnity $unityPath $arguments -ReturnLogOutput:$ReturnLogOutput
 }

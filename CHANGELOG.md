@@ -4,11 +4,19 @@
 
 ### Features
 
+- Linux native crash support ([#734](https://github.com/getsentry/sentry-unity/pull/734))
+
+## 0.16.0
+
+### Features
+
+- macOS native crash support ([#710](https://github.com/getsentry/sentry-unity/pull/710))
 - The SentryUnityOptions now provide a method to disable the UnityLoggingIntegration ([#724](https://github.com/getsentry/sentry-unity/pull/724))
 
 ### Fixes
 
 - Use the global LogHandler to capture unhandled Exceptions ([#731](https://github.com/getsentry/sentry-unity/pull/731))
+- The automated debug symbol upload now works with Unity 2021.2 and newer ([#730](https://github.com/getsentry/sentry-unity/pull/730))
 - Dropped support for Sentry options as Json ([#709](https://github.com/getsentry/sentry-unity/pull/709))
   - If you're migrating from version 0.3.0 or older, make sure to upgrade to 0.15.0 first, as it is the last version supporting the automated conversion of the options as Json file to a Scriptable Object.
 - Bump Sentry .NET SDK 3.17.0 ([#726](https://github.com/getsentry/sentry-unity/pull/726))

@@ -156,29 +156,36 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
+            var symbolsUpload = new DebugSymbolUpload(logger, unityProjectPath, gradleProjectPath, EditorUserBuildSettings.exportAsGoogleAndroidProject);
+
             var sentryCliOptions = _getSentryCliOptions();
             if (sentryCliOptions is null)
             {
-                logger.LogWarning("Failed to load sentry-cli options - Skipping symbols upload.");
+                logger.LogWarning("Failed to load sentry-cli options.");
+                symbolsUpload.RemoveUploadFromGradleFile();
+
                 return;
             }
 
             if (!sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
             {
+                symbolsUpload.RemoveUploadFromGradleFile();
                 return;
             }
 
             try
             {
-                var symbolsPath = DebugSymbolUpload.GetSymbolsPath(
-                    unityProjectPath,
-                    gradleProjectPath,
-                    EditorUserBuildSettings.exportAsGoogleAndroidProject);
+                logger.LogInfo("Adding automated debug symbol upload to the gradle project.");
 
                 var sentryCliPath = SentryCli.SetupSentryCli();
                 SentryCli.CreateSentryProperties(gradleProjectPath, sentryCliOptions);
 
-                DebugSymbolUpload.AppendUploadToGradleFile(sentryCliPath, gradleProjectPath, symbolsPath);
+                if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
+                {
+                    symbolsUpload.TryCopySymbolsToGradleProject();
+                }
+
+                symbolsUpload.AppendUploadToGradleFile(sentryCliPath);
             }
             catch (Exception e)
             {

@@ -27,6 +27,9 @@ If (!$Smoke -and !$Crash) {
 if ("$TestAppPath" -eq "") {
     If ($IsMacOS) {
         $TestAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/$NewProjectName"
+        if ("$AppDataDir" -eq "") {
+            $AppDataDir = "$env:HOME/Library/Logs/DefaultCompany/$NewProjectName/"
+        }
     }
     ElseIf ($IsWindows) {
         $TestAppPath = "$NewProjectBuildPath/test.exe"
@@ -36,16 +39,24 @@ if ("$TestAppPath" -eq "") {
     }
     ElseIf ($IsLinux) {
         $TestAppPath = "$NewProjectBuildPath/test"
+        chmod +x $TestAppPath
+        if ("$AppDataDir" -eq "") {
+            $AppDataDir = "$env:HOME/.config/unity3d/DefaultCompany/$NewProjectName/"
+        }
     }
     Else {
         Write-Error "Unsupported build"
     }
 }
 
+Write-Host "Resolved parameters:"
+Write-Host "  TestAppPath: $TestAppPath"
+Write-Host "   AppDataDir: $AppDataDir"
+
 if ("$AppDataDir" -ne "") {
     if (Test-Path $AppDataDir) {
         Write-Warning "Removing AppDataDir '$AppDataDir'"
-        Remove-Item  -Recurse $AppDataDir
+        Remove-Item -Force -Recurse $AppDataDir
     }
 }
 else {
@@ -57,9 +68,14 @@ else {
 Set-Strictmode -Version latest
 
 function RunTest([string] $type) {
-    Write-Host "Running $TestAppPath --test $type"
+    if ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and (Get-Command "xvfb-run" -ErrorAction SilentlyContinue)) {
+        Write-Host "Running xvfb-run -ae /dev/stdout $TestAppPath --test $type"
+        $process = Start-Process "xvfb-run" -ArgumentList "-ae", "/dev/stdout", "$TestAppPath", "--test", $type -PassThru
+    } else {
+        Write-Host "Running $TestAppPath --test $type"
+        $process = Start-Process "$TestAppPath" -ArgumentList "--test", $type -PassThru
+    }
 
-    $process = Start-Process "$TestAppPath"  -ArgumentList "--test", $type -PassThru
     If ($null -eq $process) {
         Throw "Process not found."
     }
@@ -100,6 +116,19 @@ if ($Smoke) {
 
 # Native crash test
 if ($Crash) {
-    CrashTestWithServer -SuccessString = "POST /api/12345/minidump/" -CrashTestCallback { RunTest "crash" }
-    RunTest "has-crashed"
+    # Note: macOS & Linux apps post the crash on the next app launch so we must run both as part of the "CrashTestWithServer"
+    #       Windows posts the crash immediately because the handler runs as a standalone process.
+    if ($IsMacOS -or $IsLinux)
+    {
+        $expectedFragment = $IsMacOS ? '1f8b08000000000000' : '7b2264736e223a2268'
+        CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'$expectedFragment" -CrashTestCallback {
+            RunTest "crash" "CRASH TEST: Issuing a native crash"
+            RunTest "has-crashed"
+        }
+    }
+    else
+    {
+        CrashTestWithServer -SuccessString = "POST /api/12345/minidump/" -CrashTestCallback { RunTest "crash" }
+        RunTest "has-crashed"
+    }
 }
