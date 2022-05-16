@@ -198,7 +198,7 @@ namespace Sentry.Unity.Tests
     {
         private GameObject _gameObject = null!;
         private SentryMonoBehaviour _sentryMonoBehaviour = null!;
-        private SentryOptions _sentryOptions = null!;
+        private SentryUnityOptions _sentryOptions = null!;
         private TestApplication _testApplication = null!;
 
         [SetUp]
@@ -206,7 +206,7 @@ namespace Sentry.Unity.Tests
         {
             _gameObject = new GameObject("ProcessorTest");
             _sentryMonoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
-            _sentryOptions = new SentryOptions
+            _sentryOptions = new SentryUnityOptions
             {
                 Debug = true,
                 DiagnosticLogger = new TestLogger()
@@ -279,7 +279,7 @@ namespace Sentry.Unity.Tests
         public void Process_DeviceUniqueIdentifierWithSendDefaultPii_IsNotNull()
         {
             // arrange
-            var sentryOptions = new SentryOptions { SendDefaultPii = true };
+            var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
             var sut = new UnityEventProcessor(sentryOptions, _sentryMonoBehaviour, _testApplication);
             var sentryEvent = new SentryEvent();
 
@@ -299,7 +299,7 @@ namespace Sentry.Unity.Tests
             {
                 MainThreadId = 1
             };
-            var unityEventProcessor = new UnityEventProcessor(new SentryOptions(), _sentryMonoBehaviour, _testApplication);
+            var unityEventProcessor = new UnityEventProcessor(new(), _sentryMonoBehaviour, _testApplication);
             var sentryEvent = new SentryEvent();
 
             // act
@@ -308,6 +308,39 @@ namespace Sentry.Unity.Tests
 
             // assert
             Assert.IsNotNull(sentryEvent.Contexts.App.StartTime);
+        }
+
+        [Test]
+        public void Process_UserId_SetIfEmpty()
+        {
+            // arrange
+            var options = new SentryUnityOptions { DefaultUserId = "foo" };
+            var processor = new UnityEventProcessor(options, _sentryMonoBehaviour, _testApplication);
+            var sentryEvent = new SentryEvent();
+
+            // act
+            _sentryMonoBehaviour.CollectData();
+            processor.Process(sentryEvent);
+
+            // assert
+            Assert.AreEqual(sentryEvent.User.Id, options.DefaultUserId);
+        }
+
+        [Test]
+        public void Process_UserId_UnchangedIfNonEmpty()
+        {
+            // arrange
+            var options = new SentryUnityOptions { DefaultUserId = "foo" };
+            var processor = new UnityEventProcessor(options, _sentryMonoBehaviour, _testApplication);
+            var sentryEvent = new SentryEvent();
+            sentryEvent.User.Id = "bar";
+
+            // act
+            _sentryMonoBehaviour.CollectData();
+            processor.Process(sentryEvent);
+
+            // assert
+            Assert.AreEqual(sentryEvent.User.Id, "bar");
         }
 
         [Test]
@@ -322,7 +355,7 @@ namespace Sentry.Unity.Tests
                 InstallMode = ApplicationInstallMode.Store.ToString()
             };
 
-            var sentryOptions = new SentryOptions { SendDefaultPii = true };
+            var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
             var unityEventProcessor = new UnityEventProcessor(sentryOptions, _sentryMonoBehaviour, _testApplication);
             var sentryEvent = new SentryEvent();
 

@@ -125,6 +125,7 @@ public class SmokeTester : MonoBehaviour
 
             t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
+            t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");
 
