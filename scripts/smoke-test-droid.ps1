@@ -118,7 +118,7 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
                 adb -s $deviceId shell input tap $tapX $tapY
             }
         }
-        else 
+        else
         {
             Write-Warning "Active system alert found on $deviceId (API $deviceApi). Closing it. The alert was: '$alert'."
             if ($deviceApi -eq "21")
@@ -141,7 +141,6 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
 function CheckAndCloseActiveSystemAlerts([string] $deviceId, [string] $deviceApi)
 {
     $uiInfoXml = GetDeviceUiLog $deviceId $deviceApi
-
     if ($deviceApi -eq "21")
     {
         CloseSystemAlert $deviceId $deviceApi ($uiInfoXml | Select-String "has stopped")
@@ -157,9 +156,6 @@ function SignalActionSmokeStatus
     param ($smokeStatus)
     echo "::set-output name=smoke-status::$smokeStatus"
 }
-
-Write-Warning "Deep sleep for 30 seconds"
-Start-Sleep 30
 
 # Filter device List
 $RawAdbDeviceList = adb devices
@@ -279,7 +275,6 @@ foreach ($device in $DeviceList)
         }
 
         Write-Host (DateTimeNow)
-        Start-Sleep 5 #Extra time for flushing logcat
         $LogcatCache = adb -s $device logcat -d
         $lineWithSuccess = $LogcatCache | Select-String $SuccessString
         $lineWithFailure = $LogcatCache | Select-String $FailureString
@@ -297,10 +292,19 @@ foreach ($device in $DeviceList)
             Write-Host "$Name test: PASS" -ForegroundColor Green
             OnError $device $deviceApi
         }
-        elseif (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.|because ULR inactive'))
+        # Unity   : Timeout while trying detaching primary window.: Unity failed to initialize.
+        # ^Unity   : The App and the Native SDK may be initialized but Unity itself failed to initialize.
+        elseif (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.|because ULR inactive|^Unity   :') -or $null -eq ($LogcatCache | Select-String 'Unity   :'))
         {
             SignalActionSmokeStatus("Flaky")
             Write-Warning "$name test was flaky, unity failed to initialize."
+            OnError $device $deviceApi
+            Throw "$name test was flaky, unity failed to initialize."
+        }
+        elseif ($null -eq ($LogcatCache | Select-String 'Unity   :') -and $null -ne ($LogcatCache | Select-String 'Sentry   :'))
+        {
+            SignalActionSmokeStatus("Flaky")
+            Write-Warning "$name test was flaky, native SDK was initialized but not Unity."
             OnError $device $deviceApi
             Throw "$name test was flaky, unity failed to initialize."
         }
