@@ -138,13 +138,15 @@ namespace Sentry.Unity
             set => _sentrySystemInfo = value;
         }
 
-        private void Start()
-            => StartCoroutine(CollectData());
+        // Note: Awake is called only once and synchronously while the object is built.
+        // We want to do it this way instead of a StartCoroutine() so that we have the context info ASAP.
+        private void Awake() => CollectData();
 
-        internal IEnumerator CollectData()
+        internal void CollectData()
         {
+            // Note: Awake() runs on the main thread. The following code just reads a couple of variables so there's no
+            // delay on the UI and we're safe to do it on the main thread.
             MainThreadData.MainThreadId = SentrySystemInfo.MainThreadId;
-            yield return null;
             MainThreadData.ProcessorCount = SentrySystemInfo.ProcessorCount;
             MainThreadData.DeviceType = SentrySystemInfo.DeviceType;
             MainThreadData.OperatingSystem = SentrySystemInfo.OperatingSystem;
@@ -154,7 +156,6 @@ namespace Sentry.Unity
             MainThreadData.DeviceUniqueIdentifier = SentrySystemInfo.DeviceUniqueIdentifier;
             MainThreadData.DeviceModel = SentrySystemInfo.DeviceModel;
             MainThreadData.SystemMemorySize = SentrySystemInfo.SystemMemorySize;
-            yield return null;
             MainThreadData.GraphicsDeviceId = SentrySystemInfo.GraphicsDeviceId;
             MainThreadData.GraphicsDeviceName = SentrySystemInfo.GraphicsDeviceName;
             MainThreadData.GraphicsDeviceVendorId = SentrySystemInfo.GraphicsDeviceVendorId;
