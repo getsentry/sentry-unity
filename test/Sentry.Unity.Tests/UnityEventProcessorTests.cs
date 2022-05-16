@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
@@ -86,10 +87,12 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void SentrySdkCaptureEvent_OnNotUIThreadThenUIThreadThenNotUIThread_Cached()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SentrySdkCaptureEvent(bool collectOnUiThread)
         {
             // arrange
-            _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+            var sysInfo = _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
                 GraphicsDeviceVendorId = new Lazy<string>(() => "VendorId"),
                 GraphicsMultiThreaded = new Lazy<bool>(() => true),
@@ -99,7 +102,8 @@ namespace Sentry.Unity.Tests
                 IsDebugBuild = new Lazy<bool>(() => true),
                 TargetFrameRate = new Lazy<string>(() => "-1"),
                 CopyTextureSupport = new Lazy<string>(() => "Basic, Copy3D, DifferentTypes, TextureToRT, RTToTexture"),
-                RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded")
+                RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
+                StartTime = new(() => DateTimeOffset.UtcNow),
             };
             var options = new SentryUnityOptions
             {
@@ -113,64 +117,66 @@ namespace Sentry.Unity.Tests
             options.AddEventProcessor(new UnityEventProcessor(options, _sentryMonoBehaviour, _testApplication));
             SentryUnity.Init(options);
 
-            _sentryMonoBehaviour.CollectData();
+            if (collectOnUiThread)
+            {
+                _sentryMonoBehaviour.CollectData();
+            }
+            else
+            {
+                // Note: Task.Run().Wait() may be executed on the main thread if it hasn't yet started when Wait() runs.
+                // We prevent it by explicitly sleeping on the main thread
+                var task = Task.Run(_sentryMonoBehaviour.CollectData);
+                Thread.Sleep(10);
+                task.Wait();
+            }
 
             // act & assert
-            var nonUiThreadEventDataNotCached = NonUiThread();
-            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Gpu.VendorId);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Gpu.VendorId)));
-            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Gpu.MultiThreadedRendering);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Gpu.MultiThreadedRendering)));
-            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.DeviceType);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Device.DeviceType)));
-            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.Model);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Device.Model)));
-            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.Device.DeviceUniqueIdentifier);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.Device.DeviceUniqueIdentifier)));
-            Assert.IsNull(nonUiThreadEventDataNotCached.Contexts.App.BuildType);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCached.Contexts.App.BuildType)));
-            var nonUiThreadEventDataNotCachedUnity = (Unity.Protocol.Unity)nonUiThreadEventDataNotCached.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
-            Assert.IsNull(nonUiThreadEventDataNotCachedUnity.TargetFrameRate);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCachedUnity.TargetFrameRate)));
-            Assert.IsNull(nonUiThreadEventDataNotCachedUnity.CopyTextureSupport);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCachedUnity.CopyTextureSupport)));
-            Assert.IsNull(nonUiThreadEventDataNotCachedUnity.RenderingThreadingMode);
-            Assert.IsTrue(NonUiThreadDebugMessageExists(nameof(nonUiThreadEventDataNotCachedUnity.RenderingThreadingMode)));
+            for (int i = 0; i <= 1; i++)
+            {
+                // Events should have the same context, regardless of the thread they were issued on.
+                // The context only depends on the thread the data has been collected in, see CollectData() above.
+                var @event = i == 0 ? NonUiThread() : UiThread();
+
+                if (collectOnUiThread)
+                {
+                    Assert.AreEqual(sysInfo.GraphicsDeviceVendorId!.Value, @event.Contexts.Gpu.VendorId);
+                    Assert.AreEqual(sysInfo.GraphicsMultiThreaded!.Value, @event.Contexts.Gpu.MultiThreadedRendering);
+                    Assert.AreEqual(sysInfo.DeviceType!.Value, @event.Contexts.Device.DeviceType);
+                    Assert.AreEqual(sysInfo.DeviceModel!.Value, @event.Contexts.Device.Model);
+                    Assert.AreEqual(sysInfo.DeviceUniqueIdentifier!.Value, @event.Contexts.Device.DeviceUniqueIdentifier);
+                    Assert.AreEqual(sysInfo.IsDebugBuild!.Value ? "debug" : "release", @event.Contexts.App.BuildType);
+                    var unityContext = (Unity.Protocol.Unity)@event.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
+                    Assert.AreEqual(sysInfo.TargetFrameRate!.Value, unityContext.TargetFrameRate);
+                    Assert.AreEqual(sysInfo.CopyTextureSupport!.Value, unityContext.CopyTextureSupport);
+                    Assert.AreEqual(sysInfo.RenderingThreadingMode!.Value, unityContext.RenderingThreadingMode);
+                }
+                else
+                {
+                    Assert.IsNull(@event.Contexts.Gpu.VendorId);
+                    Assert.IsNull(@event.Contexts.Gpu.MultiThreadedRendering);
+                    Assert.IsNull(@event.Contexts.Device.DeviceType);
+                    Assert.IsNull(@event.Contexts.Device.Model);
+                    Assert.IsNull(@event.Contexts.Device.DeviceUniqueIdentifier);
+                    Assert.IsNull(@event.Contexts.App.BuildType);
+                    // TODO Assert.IsNull( @event.Contexts.App.StartTime);
+                    var unityContext = (Unity.Protocol.Unity)@event.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
+                    Assert.IsNull(unityContext.TargetFrameRate);
+                    Assert.IsNull(unityContext.CopyTextureSupport);
+                    Assert.IsNull(unityContext.RenderingThreadingMode);
+
+                }
+            }
 
             var uiThreadEventDataCached = UiThread();
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVendorId!.Value, uiThreadEventDataCached.Contexts.Gpu.VendorId);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsMultiThreaded!.Value, uiThreadEventDataCached.Contexts.Gpu.MultiThreadedRendering);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceType!.Value, uiThreadEventDataCached.Contexts.Device.DeviceType);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceModel!.Value, uiThreadEventDataCached.Contexts.Device.Model);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier!.Value, uiThreadEventDataCached.Contexts.Device.DeviceUniqueIdentifier);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.IsDebugBuild!.Value ? "debug" : "release", uiThreadEventDataCached.Contexts.App.BuildType);
-            var uiThreadEventDataCachedUnity = (Unity.Protocol.Unity)uiThreadEventDataCached.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.TargetFrameRate!.Value, uiThreadEventDataCachedUnity.TargetFrameRate);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.CopyTextureSupport!.Value, uiThreadEventDataCachedUnity.CopyTextureSupport);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.RenderingThreadingMode!.Value, uiThreadEventDataCachedUnity.RenderingThreadingMode);
 
             var nonUiThreadEventDataCached = NonUiThread();
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsDeviceVendorId!.Value, nonUiThreadEventDataCached.Contexts.Gpu.VendorId);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.GraphicsMultiThreaded!.Value, nonUiThreadEventDataCached.Contexts.Gpu.MultiThreadedRendering);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceType!.Value, nonUiThreadEventDataCached.Contexts.Device.DeviceType);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceModel!.Value, nonUiThreadEventDataCached.Contexts.Device.Model);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.DeviceUniqueIdentifier!.Value, nonUiThreadEventDataCached.Contexts.Device.DeviceUniqueIdentifier);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.IsDebugBuild!.Value ? "debug" : "release", nonUiThreadEventDataCached.Contexts.App.BuildType);
-            var nonUiThreadEventDataCachedUnity = (Unity.Protocol.Unity)nonUiThreadEventDataCached.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.TargetFrameRate!.Value, nonUiThreadEventDataCachedUnity.TargetFrameRate);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.CopyTextureSupport!.Value, nonUiThreadEventDataCachedUnity.CopyTextureSupport);
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.RenderingThreadingMode!.Value, nonUiThreadEventDataCachedUnity.RenderingThreadingMode);
-
-            bool NonUiThreadDebugMessageExists(string propertyName)
-                => _testLogger.Logs.Any(log =>
-                     log.logLevel == SentryLevel.Debug &&
-                     log.message.Contains(propertyName));
 
             static SentryEvent NonUiThread()
             {
                 var sentryEvent = CreateSentryEvent();
-                Task.Run(() => SentrySdk.CaptureEvent(sentryEvent))
-                    .Wait();
+                var task = Task.Run(() => SentrySdk.CaptureEvent(sentryEvent));
+                Thread.Sleep(10);
+                task.Wait();
                 SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
                 return sentryEvent;
             }
@@ -592,5 +598,6 @@ namespace Sentry.Unity.Tests
         public Lazy<string>? TargetFrameRate { get; set; }
         public Lazy<string>? CopyTextureSupport { get; set; }
         public Lazy<string>? RenderingThreadingMode { get; set; }
+        public Lazy<DateTimeOffset>? StartTime { get; set; }
     }
 }

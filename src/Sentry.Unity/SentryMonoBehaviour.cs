@@ -148,20 +148,15 @@ namespace Sentry.Unity
             // delay on the UI and we're safe to do it on the main thread.
             MainThreadData.MainThreadId = SentrySystemInfo.MainThreadId;
             MainThreadData.ProcessorCount = SentrySystemInfo.ProcessorCount;
-            MainThreadData.DeviceType = SentrySystemInfo.DeviceType;
             MainThreadData.OperatingSystem = SentrySystemInfo.OperatingSystem;
             MainThreadData.CpuDescription = SentrySystemInfo.CpuDescription;
             MainThreadData.SupportsVibration = SentrySystemInfo.SupportsVibration;
             MainThreadData.DeviceName = SentrySystemInfo.DeviceName;
-            MainThreadData.DeviceUniqueIdentifier = SentrySystemInfo.DeviceUniqueIdentifier;
-            MainThreadData.DeviceModel = SentrySystemInfo.DeviceModel;
             MainThreadData.SystemMemorySize = SentrySystemInfo.SystemMemorySize;
             MainThreadData.GraphicsDeviceId = SentrySystemInfo.GraphicsDeviceId;
             MainThreadData.GraphicsDeviceName = SentrySystemInfo.GraphicsDeviceName;
-            MainThreadData.GraphicsDeviceVendorId = SentrySystemInfo.GraphicsDeviceVendorId;
             MainThreadData.GraphicsDeviceVendor = SentrySystemInfo.GraphicsDeviceVendor;
             MainThreadData.GraphicsMemorySize = SentrySystemInfo.GraphicsMemorySize;
-            MainThreadData.GraphicsMultiThreaded = SentrySystemInfo.GraphicsMultiThreaded;
             MainThreadData.NpotSupport = SentrySystemInfo.NpotSupport;
             MainThreadData.GraphicsDeviceVersion = SentrySystemInfo.GraphicsDeviceVersion;
             MainThreadData.GraphicsDeviceType = SentrySystemInfo.GraphicsDeviceType;
@@ -171,11 +166,34 @@ namespace Sentry.Unity
             MainThreadData.SupportsComputeShaders = SentrySystemInfo.SupportsComputeShaders;
             MainThreadData.SupportsGeometryShaders = SentrySystemInfo.SupportsGeometryShaders;
             MainThreadData.GraphicsShaderLevel = SentrySystemInfo.GraphicsShaderLevel;
-            MainThreadData.IsDebugBuild = SentrySystemInfo.IsDebugBuild;
             MainThreadData.InstallMode = SentrySystemInfo.InstallMode;
-            MainThreadData.TargetFrameRate = SentrySystemInfo.TargetFrameRate;
-            MainThreadData.CopyTextureSupport = SentrySystemInfo.CopyTextureSupport;
-            MainThreadData.RenderingThreadingMode = SentrySystemInfo.RenderingThreadingMode;
+            if (MainThreadData.IsMainThread())
+            {
+                MainThreadData.DeviceType = SentrySystemInfo.DeviceType?.Value;
+                MainThreadData.DeviceUniqueIdentifier = SentrySystemInfo.DeviceUniqueIdentifier?.Value;
+                MainThreadData.DeviceModel = SentrySystemInfo.DeviceModel?.Value;
+                MainThreadData.GraphicsDeviceVendorId = SentrySystemInfo.GraphicsDeviceVendorId?.Value;
+                MainThreadData.GraphicsMultiThreaded = SentrySystemInfo.GraphicsMultiThreaded?.Value;
+                MainThreadData.IsDebugBuild = SentrySystemInfo.IsDebugBuild?.Value;
+                MainThreadData.TargetFrameRate = SentrySystemInfo.TargetFrameRate?.Value;
+                MainThreadData.CopyTextureSupport = SentrySystemInfo.CopyTextureSupport?.Value;
+                MainThreadData.RenderingThreadingMode = SentrySystemInfo.RenderingThreadingMode?.Value;
+                MainThreadData.StartTime = SentrySystemInfo.StartTime?.Value;
+            }
+            else
+            {
+                // Note: while this shouldn't ever occur, we want to make sure there are some values instead of UB.
+                MainThreadData.DeviceType = null;
+                MainThreadData.DeviceUniqueIdentifier = null;
+                MainThreadData.DeviceModel = null;
+                MainThreadData.GraphicsDeviceVendorId = null;
+                MainThreadData.GraphicsMultiThreaded = null;
+                MainThreadData.IsDebugBuild = null;
+                MainThreadData.TargetFrameRate = null;
+                MainThreadData.CopyTextureSupport = null;
+                MainThreadData.RenderingThreadingMode = null;
+                MainThreadData.StartTime = null;
+            }
         }
     }
 }
