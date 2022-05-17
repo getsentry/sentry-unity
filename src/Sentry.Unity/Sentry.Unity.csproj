@@ -24,4 +24,9 @@
     <WriteLinesToFile File="$(DevPackagePath)/alias-references.txt" Lines="$(UnityManagedPath)/UnityEngine.dll" Overwrite="true" />
   </Target>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Sentry.Unity.Native</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

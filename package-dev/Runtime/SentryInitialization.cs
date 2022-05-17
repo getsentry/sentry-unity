@@ -43,7 +43,7 @@ namespace Sentry.Unity
                 try
                 {
 #if SENTRY_NATIVE_COCOA
-                    SentryNativeCocoa.Configure(options);
+                    SentryNativeCocoa.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE_ANDROID
                     SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE

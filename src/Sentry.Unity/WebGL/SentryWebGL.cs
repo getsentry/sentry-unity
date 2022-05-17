@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using UnityEngine.Analytics;
 
 namespace Sentry.Unity.WebGL
 {
@@ -36,6 +37,9 @@ namespace Sentry.Unity.WebGL
                 options.DiagnosticLogger?.LogWarning("Attaching screenshots on WebGL is disabled - " +
                     "it currently produces blank screenshots mid-frame.");
             }
+
+            // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
+            options.DefaultUserId = AnalyticsSessionInfo.userId;
         }
     }
 }

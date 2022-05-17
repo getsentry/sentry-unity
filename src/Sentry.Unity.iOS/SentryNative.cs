@@ -13,9 +13,10 @@ namespace Sentry.Unity.iOS
         /// Configures the native support.
         /// </summary>
         /// <param name="options">The Sentry Unity options to use.</param>
-        public static void Configure(SentryUnityOptions options) => Configure(options, ApplicationAdapter.Instance.Platform);
+        public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo) =>
+            Configure(options, sentryUnityInfo, ApplicationAdapter.Instance.Platform);
 
-        internal static void Configure(SentryUnityOptions options, RuntimePlatform platform)
+        internal static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
         {
             switch (platform)
             {
@@ -58,6 +59,10 @@ namespace Sentry.Unity.iOS
                 options.DiagnosticLogger?.LogDebug("Closing the sentry-cocoa SDK");
                 SentryCocoaBridgeProxy.Close();
             };
+            if (sentryUnityInfo.IL2CPP)
+            {
+                options.DefaultUserId = SentryCocoaBridgeProxy.GetInstallationId();
+            }
         }
     }
 }

@@ -63,6 +63,9 @@ class RequestVerifier:
             raise Exception(info)
 
     def CheckMessage(self, index, substring, negate):
+        if len(self.__requests) <= index:
+            raise Exception('HTTP Request #{} not captured.'.format(index))
+
         message = self.__requests[index]["body"]
         contains = substring in message or substring.replace(
             "'", "\"") in message
@@ -183,6 +186,7 @@ t.ExpectMessage(currentMessage, "'type':'session'")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "LogError(GUID)")
+t.ExpectMessage(currentMessage, "'user':{'id':'")
 # t.ExpectMessage(
 #     currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
 # t.ExpectMessageNot(currentMessage, "'length':0")

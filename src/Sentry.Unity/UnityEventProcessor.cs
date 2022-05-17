@@ -19,12 +19,12 @@ namespace Sentry.Unity
 
     internal class UnityEventProcessor : ISentryEventProcessor
     {
-        private readonly SentryOptions _sentryOptions;
+        private readonly SentryUnityOptions _sentryOptions;
         private readonly MainThreadData _mainThreadData;
         private readonly IApplication _application;
 
 
-        public UnityEventProcessor(SentryOptions sentryOptions, SentryMonoBehaviour sentryMonoBehaviour, IApplication? application = null)
+        public UnityEventProcessor(SentryUnityOptions sentryOptions, SentryMonoBehaviour sentryMonoBehaviour, IApplication? application = null)
         {
             _sentryOptions = sentryOptions;
             _mainThreadData = sentryMonoBehaviour.MainThreadData;
@@ -42,6 +42,7 @@ namespace Sentry.Unity
                 PopulateGpu(@event.Contexts.Gpu);
                 PopulateUnity((Protocol.Unity)@event.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity()));
                 PopulateTags(@event);
+                PopulateUser(@event);
             }
             catch (Exception ex)
             {
@@ -209,6 +210,17 @@ namespace Sentry.Unity
             }
 
             @event.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToTagValue());
+        }
+
+        private void PopulateUser(SentryEvent @event)
+        {
+            if (_sentryOptions.DefaultUserId is not null)
+            {
+                if (@event.User.Id is null)
+                {
+                    @event.User.Id = _sentryOptions.DefaultUserId;
+                }
+            }
         }
 
         /// <summary>
