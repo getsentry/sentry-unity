@@ -139,25 +139,27 @@ namespace Sentry.Unity
         /// </summary>
         internal ContextWriter? NativeContextWriter { get; set; } = null;
 
-        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
-        {
-        }
+        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false) { }
 
-        internal SentryUnityOptions(IApplication application, bool isBuilding)
+        internal SentryUnityOptions(IApplication application, bool isBuilding) :
+            this(SentryMonoBehaviour.Instance, application, isBuilding)
+        { }
+
+        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
+            this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityLogHandlerIntegration());
-            this.AddIntegration(new ANRIntegration(SentryMonoBehaviour.Instance));
-            this.AddIntegration(new UnityScopeIntegration(SentryMonoBehaviour.Instance, application));
+            this.AddIntegration(new ANRIntegration(behaviour));
+            this.AddIntegration(new UnityScopeIntegration(behaviour, application));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));
+            this.AddIntegration(new SessionIntegration(behaviour));
 
             IsGlobalModeEnabled = true;
 

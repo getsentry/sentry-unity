@@ -106,7 +106,7 @@ namespace Sentry.Unity.Tests
                 RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
                 StartTime = new(() => DateTimeOffset.UtcNow),
             };
-            var options = new SentryUnityOptions
+            var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
             {
                 Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
                 Enabled = true,
@@ -115,8 +115,6 @@ namespace Sentry.Unity.Tests
                 Debug = true,
                 DiagnosticLogger = _testLogger
             };
-            options.AddEventProcessor(new UnityEventProcessor(options, _sentryMonoBehaviour));
-            options.AddIntegration(new UnityScopeIntegration(_sentryMonoBehaviour, _testApplication));
 
             if (collectOnUiThread)
             {

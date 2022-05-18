@@ -1,93 +1,84 @@
-using System;
-using System.IO;
-using System.Text.Json;
-using Sentry.Extensibility;
-
 namespace Sentry.Unity
 {
     /// <summary>
-    /// Allows synchronizing Context from .NET to native layers. It does so,
-    /// by first passing converting the context object, e.g. Device, to JSON,
-    /// and then parsing it with Utf8JsonReader, while invoking the abstract
-    /// methods. The native layer should forward these to native calls.
+    /// Allows synchronizing Context from .NET to native layers.
+    /// We're providing a single method that the implementations should override.
+    /// They can chose to either have the single method directl in native using p/invoke,
+    /// or use a more fine-grained interface, whatever is best for the platform.
     /// </summary>
-    /// <remarks>
-    /// The objects given to Write() are expected to produce a single-level
-    /// map of key-value pairs. The "type" key must indicate the object name.
-    /// </remarks>
     internal abstract class ContextWriter
     {
-        public void Write(IJsonSerializable contextObject, IDiagnosticLogger? logger)
+        public void Write(Scope scope)
         {
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream);
-
-            contextObject.WriteTo(writer, logger);
-            writer.Flush();
-
-            var options = new JsonReaderOptions
-            {
-                MaxDepth = 1, // We expect a flat object
-                AllowTrailingCommas = true,
-                CommentHandling = JsonCommentHandling.Skip,
-            };
-
-            var json = stream.GetBuffer();
-            var reader = new Utf8JsonReader(json, options);
-
-            string? type = null;
-            string? property = null;
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonTokenType.StartObject:
-                        StartObject();
-                        break;
-                    case JsonTokenType.EndObject:
-                        if (type is null)
-                        {
-                            logger?.LogWarning("ContextWriter: can't write the context object - 'type' not set.");
-                        }
-                        else
-                        {
-                            EndObject(type!);
-                        }
-                        // No more data expected after an object end.
-                        // We must `return` here or an exception would be thrown:
-                        // "JsonReaderException: '0x00' is invalid after a single JSON value. Expected end of data."
-                        return;
-                    case JsonTokenType.PropertyName:
-                        property = reader.GetString()!;
-                        break;
-                    case JsonTokenType.String:
-                        AddProperty(property!, reader.GetString()!);
-                        break;
-                    case JsonTokenType.Number:
-                        AddProperty(property!, reader.GetInt64());
-                        break;
-                    case JsonTokenType.True:
-                    case JsonTokenType.False:
-                        AddProperty(property!, reader.GetBoolean());
-                        break;
-                    case JsonTokenType.Null:
-                    case JsonTokenType.Comment:
-                        // skip silently
-                        break;
-                    case JsonTokenType.StartArray:
-                    case JsonTokenType.EndArray:
-                    case JsonTokenType.None:
-                    default:
-                        logger?.LogWarning("ContextWriter({0}): encountered an unsupported JSON token {1}", type, reader.TokenType);
-                        break;
-                }
-            }
+            var unityContext = (Protocol.Unity)scope.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity());
+            WriteScope(
+                scope.Contexts.App.StartTime?.ToString("o"),
+                scope.Contexts.App.BuildType,
+                scope.Contexts.OperatingSystem.RawDescription,
+                scope.Contexts.Device.ProcessorCount,
+                scope.Contexts.Device.CpuDescription,
+                scope.Contexts.Device.Timezone?.Id,
+                scope.Contexts.Device.SupportsVibration,
+                scope.Contexts.Device.Name,
+                scope.Contexts.Device.Simulator,
+                scope.Contexts.Device.DeviceUniqueIdentifier,
+                scope.Contexts.Device.DeviceType,
+                scope.Contexts.Device.Model,
+                scope.Contexts.Device.MemorySize,
+                scope.Contexts.Gpu.Id,
+                scope.Contexts.Gpu.Name,
+                scope.Contexts.Gpu.VendorName,
+                scope.Contexts.Gpu.MemorySize,
+                scope.Contexts.Gpu.NpotSupport,
+                scope.Contexts.Gpu.Version,
+                scope.Contexts.Gpu.ApiType,
+                scope.Contexts.Gpu.MaxTextureSize,
+                scope.Contexts.Gpu.SupportsDrawCallInstancing,
+                scope.Contexts.Gpu.SupportsRayTracing,
+                scope.Contexts.Gpu.SupportsComputeShaders,
+                scope.Contexts.Gpu.SupportsGeometryShaders,
+                scope.Contexts.Gpu.VendorId,
+                scope.Contexts.Gpu.MultiThreadedRendering,
+                scope.Contexts.Gpu.GraphicsShaderLevel,
+                unityContext.InstallMode,
+                unityContext.TargetFrameRate,
+                unityContext.CopyTextureSupport,
+                unityContext.RenderingThreadingMode
+            );
         }
-
-        protected abstract void StartObject();
-        protected abstract void AddProperty(string name, string value);
-        protected abstract void AddProperty(string name, long value);
-        protected abstract void AddProperty(string name, bool value);
-        protected abstract void EndObject(string name);
+        protected abstract void WriteScope(
+            string? AppStartTime,
+            string? AppBuildType,
+            string? OperatingSystemRawDescription,
+            int? DeviceProcessorCount,
+            string? DeviceCpuDescription,
+            string? DeviceTimezone,
+            bool? DeviceSupportsVibration,
+            string? DeviceName,
+            bool? DeviceSimulator,
+            string? DeviceDeviceUniqueIdentifier,
+            string? DeviceDeviceType,
+            string? DeviceModel,
+            long? DeviceMemorySize,
+            int? GpuId,
+            string? GpuName,
+            string? GpuVendorName,
+            int? GpuMemorySize,
+            string? GpuNpotSupport,
+            string? GpuVersion,
+            string? GpuApiType,
+            int? GpuMaxTextureSize,
+            bool? GpuSupportsDrawCallInstancing,
+            bool? GpuSupportsRayTracing,
+            bool? GpuSupportsComputeShaders,
+            bool? GpuSupportsGeometryShaders,
+            string? GpuVendorId,
+            bool? GpuMultiThreadedRendering,
+            string? GpuGraphicsShaderLevel,
+            string? UnityInstallMode,
+            string? UnityTargetFrameRate,
+            string? UnityCopyTextureSupport,
+            string? UnityRenderingThreadingMode
+        );
     }
 }
