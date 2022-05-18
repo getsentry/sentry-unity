@@ -23,6 +23,7 @@
 - Bump Sentry Java SDK to v6.0.0-rc.1 ([#725](https://github.com/getsentry/sentry-unity/pull/725))
   - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0-rc.1/CHANGELOG.md?plain=1#L3..L79)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-alpha.4...6.0.0-rc.1)
+- Add rich context info to native crashes ([#747](https://github.com/getsentry/sentry-unity/pull/747))
 
 ## 0.16.0
 
