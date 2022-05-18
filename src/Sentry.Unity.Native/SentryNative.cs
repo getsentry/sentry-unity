@@ -40,6 +40,7 @@ namespace Sentry.Unity.Native
                 };
                 options.ScopeObserver = new NativeScopeObserver(options);
                 options.EnableScopeSync = true;
+                options.NativeContextWriter = new NativeContextWriter();
 
                 // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
                 options.DefaultUserId = AnalyticsSessionInfo.userId;
