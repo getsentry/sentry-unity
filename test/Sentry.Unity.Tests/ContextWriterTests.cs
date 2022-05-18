@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
@@ -80,6 +81,7 @@ namespace Sentry.Unity.Tests
             // act
             _sentryMonoBehaviour.CollectData();
             SentryUnity.Init(options);
+            Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
             // assert
             Assert.AreEqual(sysInfo.StartTime?.Value.ToString("o"), context.AppStartTime);
@@ -119,6 +121,8 @@ namespace Sentry.Unity.Tests
 
     internal sealed class MockContextWriter : ContextWriter
     {
+        public AutoResetEvent SyncFinished = new AutoResetEvent(false);
+
         public string? AppStartTime = null;
         public string? AppBuildType = null;
         public string? OperatingSystemRawDescription = null;
@@ -219,6 +223,7 @@ namespace Sentry.Unity.Tests
             this.UnityTargetFrameRate = UnityTargetFrameRate;
             this.UnityCopyTextureSupport = UnityCopyTextureSupport;
             this.UnityRenderingThreadingMode = UnityRenderingThreadingMode;
+            SyncFinished.Set();
         }
     }
 }

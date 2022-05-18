@@ -6,6 +6,10 @@ namespace Sentry.Unity
     /// They can chose to either have the single method directl in native using p/invoke,
     /// or use a more fine-grained interface, whatever is best for the platform.
     /// </summary>
+    /// <remarks>
+    /// WriteScope() is called in a new Task (background thread from a pool).
+    /// </remarks>
+
     internal abstract class ContextWriter
     {
         public void Write(Scope scope)

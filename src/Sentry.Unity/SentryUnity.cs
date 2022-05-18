@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
@@ -68,11 +69,11 @@ namespace Sentry.Unity
                 {
                     try
                     {
-                        SentrySdk.ConfigureScope(contextWriter.Write);
+                        SentrySdk.ConfigureScopeAsync((scope) => Task.Run(() => contextWriter.Write(scope)));
                     }
                     catch (Exception e)
                     {
-                        options.DiagnosticLogger?.LogWarning("Failed to synchronize scope to the native SDK: {1}", e);
+                        options.DiagnosticLogger?.LogWarning("Failed to synchronize scope to the native SDK: {0}", e);
                     }
                 }
 
