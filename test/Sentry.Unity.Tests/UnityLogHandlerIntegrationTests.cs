@@ -152,8 +152,9 @@ namespace Sentry.Unity.Tests
         {
             var sut = _fixture.GetSut();
             var message = "Test Message";
+            var exception = new Exception(message);
 
-            sut.CaptureException(new Exception(message), null);
+            sut.CaptureException(exception, null);
 
             Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count); // Sanity check
 
@@ -161,7 +162,7 @@ namespace Sentry.Unity.Tests
             _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
             var breadcrumb = scope.Breadcrumbs.Single();
 
-            Assert.AreEqual(message, breadcrumb.Message);
+            Assert.AreEqual(exception.GetType() + ": " + message, breadcrumb.Message);
             Assert.AreEqual("unity.logger", breadcrumb.Category);
             Assert.AreEqual(BreadcrumbLevel.Error, breadcrumb.Level);
         }
