@@ -37,11 +37,18 @@ namespace Sentry.Unity.Integrations
 
         public void LogException(Exception exception, UnityEngine.Object context)
         {
+            CaptureException(exception, context);
+            _unityLogHandler.LogException(exception, context);
+        }
+
+        internal void CaptureException(Exception exception, UnityEngine.Object? context)
+        {
             if (_hub?.IsEnabled is not true)
             {
-                _unityLogHandler.LogException(exception, context);
                 return;
             }
+
+            // TODO: Capture the context (i.e. grab the name if != null)
 
             // NOTE: This might not be entirely true, as a user could as well call `Debug.LogException`
             // and expect a handled exception but it is not possible for us to differentiate
@@ -50,19 +57,20 @@ namespace Sentry.Unity.Integrations
             exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
             _ = _hub.CaptureException(exception);
 
-            _unityLogHandler.LogException(exception, context);
+            // So the next event includes this error as a breadcrumb
+            _hub.AddBreadcrumb(message: exception.Message, category: "unity.logger", level: BreadcrumbLevel.Error);
         }
 
         public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
         {
-            HandleLog(logType, context, format, args);
+            CaptureLogFormat(logType, context, format, args);
             _unityLogHandler.LogFormat(logType, context, format, args);
         }
 
-        internal void HandleLog(LogType logType, UnityEngine.Object? context, string format, params object[] args)
+        internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
         {
-            // TODO: Figure out if this is guaranteed?
-            // TODO: Deal and capture the context (i.e. grab the name if != null)
+            // TODO: Figure out if format {0} and args.length == 1 is guaranteed?
+            // TODO: Capture the context (i.e. grab the name if != null)
 
             if (!format.Equals("{0}") || args.Length is > 1 or <= 0)
             {
@@ -103,17 +111,11 @@ namespace Sentry.Unity.Integrations
             }
 
             // TODO: to check against 'MinBreadcrumbLevel'
-            if (logType != LogType.Error && logType != LogType.Exception && logType != LogType.Assert)
+            if (logType is LogType.Error or LogType.Assert)
             {
-                // TODO: MinBreadcrumbLevel
-                // options.MinBreadcrumbLevel
-                _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
-                return;
+                _hub.CaptureMessage(logMessage, ToEventTagType(logType));
             }
 
-            _hub.CaptureMessage(logMessage, ToEventTagType(logType));
-
-            // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
         }
 

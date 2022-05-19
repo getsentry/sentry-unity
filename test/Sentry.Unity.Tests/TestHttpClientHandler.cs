@@ -64,7 +64,7 @@ namespace Sentry.Unity.Tests
                 }
             }
 
-            Debug.LogError("TestHttpClientHandler timed out waiting for an event.");
+            Debug.LogError(UnityLogger.LogPrefix + "TestHttpClientHandler timed out waiting for an event.");
             return string.Empty;
         }
     }
