@@ -89,6 +89,8 @@ gradle.taskGraph.whenReady {{
 
         public void RemoveUploadFromGradleFile()
         {
+            _logger.LogDebug("Removing the upload task from the gradle project.");
+
             var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
             if (!File.Exists(gradleFilePath))
             {
@@ -98,11 +100,9 @@ gradle.taskGraph.whenReady {{
             var gradleBuildFile = File.ReadAllText(gradleFilePath);
             if (!gradleBuildFile.Contains("sentry.properties"))
             {
-                _logger.LogDebug("Skipping removing the upload task. The task has not been added to the gradle project.");
+                _logger.LogDebug("No previous upload task found.");
                 return;
             }
-
-            _logger.LogDebug("Removing the upload task from gradle project.");
 
             // Replacing the paths with '.*' and escaping the task
             var uploadTaskFilter = string.Format(_symbolUploadTask, ".*", ".*");

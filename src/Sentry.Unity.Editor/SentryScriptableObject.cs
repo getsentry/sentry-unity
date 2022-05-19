@@ -22,6 +22,6 @@ namespace Sentry.Unity.Editor
             return options;
         }
 
-        internal static T Load<T>(string path) where T : ScriptableObject => AssetDatabase.LoadAssetAtPath<T>(path);
+        internal static T? Load<T>(string path) where T : ScriptableObject => AssetDatabase.LoadAssetAtPath<T>(path);
     }
 }
