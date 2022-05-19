@@ -11,55 +11,58 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public UnityLogHandlerIntegration GetSut(IHub hub, SentryOptions sentryOptions)
+            public TestHub Hub { get; set; }= null!;
+            public SentryUnityOptions SentryOptions { get; set; } = null!;
+
+            public UnityLogHandlerIntegration GetSut()
             {
                 var application = new TestApplication();
                 var integration = new UnityLogHandlerIntegration(application);
-                integration.Register(hub, sentryOptions);
+                integration.Register(Hub, SentryOptions);
                 return integration;
             }
         }
 
         private Fixture _fixture = null!;
-        private TestHub _hub = null!;
-        private SentryUnityOptions _sentryOptions = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _fixture = new Fixture();
-            _hub = new TestHub();
-            _sentryOptions = new SentryUnityOptions();
+            _fixture = new Fixture
+            {
+                Hub = new TestHub(),
+                SentryOptions = new SentryUnityOptions()
+            };
         }
 
         [Test]
         public void LogFormat_LogStartsWithUnityLoggerPrefix_NotCaptured()
         {
-            var sut = _fixture.GetSut(_hub, _sentryOptions);
+            var sut = _fixture.GetSut();
             var message = $"{UnityLogger.LogPrefix}message";
 
             sut.LogFormat(LogType.Error, null, "{0}", message);
 
             LogAssert.Expect(LogType.Error, message);
-            Assert.AreEqual(0, _hub.CapturedEvents.Count);
+            Assert.AreEqual(0, _fixture.Hub.CapturedEvents.Count);
         }
 
         [Test]
         public void LogFormat_WithError_CaptureEvent()
         {
-            var sut = _fixture.GetSut(_hub, _sentryOptions);
+            var sut = _fixture.GetSut();
             var message = "message";
 
             sut.LogFormat(LogType.Error, null, "{0}", message);
 
             LogAssert.Expect(LogType.Error, message);
-            Assert.AreEqual(1, _hub.CapturedEvents.Count);
+            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
         }
 
         [Test]
         public void LogFormat_Breadcrumbs_Added()
         {
-            var sut = _fixture.GetSut(_hub, _sentryOptions);
+            var sut = _fixture.GetSut();
             var message = "message";
 
             sut.LogFormat(LogType.Warning, null, "{0}", message);
@@ -67,7 +70,7 @@ namespace Sentry.Unity.Tests
             sut.LogFormat(LogType.Error, null, "{0}", message);
             LogAssert.Expect(LogType.Error, message);
 
-            Assert.AreEqual(2, _hub.ConfigureScopeCalls.Count);
+            Assert.AreEqual(2, _fixture.Hub.ConfigureScopeCalls.Count);
         }
 
         [Test]
@@ -76,8 +79,8 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Error)]
         public void LogFormat_LogDebounceEnabled_DebouncesMessage(LogType unityLogType)
         {
-            _sentryOptions.EnableLogDebouncing = true;
-            var sut = _fixture.GetSut(_hub, _sentryOptions);
+            _fixture.SentryOptions.EnableLogDebouncing = true;
+            var sut = _fixture.GetSut();
             var message = "message";
 
             sut.LogFormat(unityLogType, null, "{0}", message);
@@ -85,24 +88,24 @@ namespace Sentry.Unity.Tests
             sut.LogFormat(unityLogType, null, "{0}", message);
             LogAssert.Expect(unityLogType, message);
 
-            Assert.AreEqual(1, _hub.ConfigureScopeCalls.Count);
+            Assert.AreEqual(1, _fixture.Hub.ConfigureScopeCalls.Count);
         }
 
         [TestCaseSource(nameof(LogTypesAndSentryLevels))]
         public void LogFormat_UnityErrorLogTypes_CapturedAndCorrespondToSentryLevel(LogType unityLogType, SentryLevel sentryLevel, BreadcrumbLevel breadcrumbLevel)
         {
-            var sut = _fixture.GetSut(_hub, _sentryOptions);
+            var sut = _fixture.GetSut();
             var message = "message";
 
             sut.LogFormat(unityLogType, null, "{0}", message);
             LogAssert.Expect(unityLogType, message);
 
-            var configureScope = _hub.ConfigureScopeCalls.Single();
-            var scope = new Scope(_sentryOptions);
+            var configureScope = _fixture.Hub.ConfigureScopeCalls.Single();
+            var scope = new Scope(_fixture.SentryOptions);
             configureScope(scope);
             var breadcrumb = scope.Breadcrumbs.Single();
 
-            Assert.NotNull(_hub.CapturedEvents.SingleOrDefault(capturedEvent => capturedEvent.Level == sentryLevel));
+            Assert.NotNull(_fixture.Hub.CapturedEvents.SingleOrDefault(capturedEvent => capturedEvent.Level == sentryLevel));
             Assert.AreEqual(message, breadcrumb.Message);
             Assert.AreEqual("unity.logger", breadcrumb.Category);
             Assert.AreEqual(breadcrumbLevel, breadcrumb.Level);
@@ -118,18 +121,18 @@ namespace Sentry.Unity.Tests
         [TestCaseSource(nameof(LogTypesNotCaptured))]
         public void LogFormat_UnityNotErrorLogTypes_NotCaptured(LogType unityLogType, BreadcrumbLevel breadcrumbLevel)
         {
-            var sut = _fixture.GetSut(_hub, _sentryOptions);
+            var sut = _fixture.GetSut();
             var message = "message";
 
             sut.LogFormat(unityLogType, null, "{0}", message);
             LogAssert.Expect(unityLogType, message);
 
-            var configureScope = _hub.ConfigureScopeCalls.Single();
-            var scope = new Scope(_sentryOptions);
+            var configureScope = _fixture.Hub.ConfigureScopeCalls.Single();
+            var scope = new Scope(_fixture.SentryOptions);
             configureScope(scope);
             var breadcrumb = scope.Breadcrumbs.Single();
 
-            Assert.AreEqual(0, _hub.CapturedEvents.Count);
+            Assert.AreEqual(0, _fixture.Hub.CapturedEvents.Count);
             Assert.AreEqual(message, breadcrumb.Message);
             Assert.AreEqual("unity.logger", breadcrumb.Category);
             Assert.AreEqual(breadcrumbLevel, breadcrumb.Level);

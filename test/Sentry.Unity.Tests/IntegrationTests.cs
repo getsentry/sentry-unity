@@ -1,11 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using NUnit.Framework;
-using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
 using UnityEngine;
@@ -16,254 +11,270 @@ namespace Sentry.Unity.Tests
 {
     public sealed class IntegrationTests
     {
-        [UnityTest]
-        public IEnumerator BugFarmScene_ObjectCreatedWithExceptionLogicAndCalled_OneEventIsCreated()
+        private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
+        private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
+
+        private string _eventMessage = null!; // Set in setup
+        private string _identifyingEventValueAttribute = null!; // Set in setup
+
+        [SetUp]
+        public void Setup()
         {
-            yield return SetupSceneCoroutine("1_BugFarm");
-
-            // arrange
-            var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
-            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
-
-            // act
-            /*
-             * We don't want to call testBehaviour.TestException(); because it won't go via Sentry infra.
-             * We don't have it in tests, but in scenes.
-             */
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
-
-            // assert
-            Assert.AreEqual(1, testEventCapture.Count);
+            _testHttpClientHandler = new TestHttpClientHandler();
+            _eventMessage = Guid.NewGuid() + " Test Event";
+            _identifyingEventValueAttribute = CreateAttribute("value", _eventMessage);
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationProductNameAtVersionAsRelease()
+        public IEnumerator ThrowException_EventContainingMessageGetsCaptured()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            // arrange
-            var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
+            using var _ = InitSentrySdk();
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+            // We don't want to call testBehaviour.TestException(); because it won't go via Sentry infra.
+             // We don't have it in tests, but in scenes.
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            // assert
-            Assert.AreEqual(Application.productName + "@" + Application.version, testEventCapture.First.Release);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_IncludesCustomRelease()
+        public IEnumerator ThrowException_EventIncludesApplicationProductNameAtVersionAsRelease()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            // arrange
+            var expectedAttribute = CreateAttribute("release", Application.productName + "@" + Application.version);
+            using var _ = InitSentrySdk();
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
+
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
+        }
+
+        [UnityTest]
+        public IEnumerator ThrowException_CustomReleaseSet_EventIncludesCustomRelease()
+        {
+            yield return SetupSceneCoroutine("1_BugFarm");
+
             var customRelease = "CustomRelease";
-            var testEventCapture = new TestEventCapture();
+            var expectedAttribute = CreateAttribute("release", customRelease);
             using var _ = InitSentrySdk(o =>
             {
                 o.Release = customRelease;
-                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: testEventCapture));
             });
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            // assert
-            Assert.AreEqual(customRelease, testEventCapture.First.Release);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease_WhenProductNameWhitespace()
+        public IEnumerator ThrowException_ProductNameWhitespace_EventIncludesApplicationVersionAsRelease()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            // arrange
             var originalProductName = PlayerSettings.productName;
             PlayerSettings.productName = " ";
-            var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
+            var expectedAttribute = CreateAttribute("release", Application.version);
+            using var _ = InitSentrySdk();
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            // assert
-            Assert.AreEqual(Application.version, testEventCapture.First.Release);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
 
             PlayerSettings.productName = originalProductName;
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_UserNameIsEnvironmentUserNameWithDefaultPii()
+        public IEnumerator ThrowException_ProductNameEmpty_EventIncludesApplicationVersionAsRelease()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            var testEventCapture = new TestEventCapture();
+            var originalProductName = PlayerSettings.productName;
+            PlayerSettings.productName = null;
+            var expectedAttribute = CreateAttribute("release", Application.version);
+            using var _ = InitSentrySdk();
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
+
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
+
+            PlayerSettings.productName = originalProductName;
+        }
+
+        [UnityTest]
+        public IEnumerator ThrowException_EditorTest_EventIncludesEditorAsEnvironment()
+        {
+            yield return SetupSceneCoroutine("1_BugFarm");
+
+            var expectedAttribute = CreateAttribute("environment", "editor");
+            using var _ = InitSentrySdk();
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
+
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
+        }
+
+        [UnityTest]
+        public IEnumerator ThrowException_SendDefaultPiiIsTrue_EventIncludesEnvironmentUserNameAsUserName()
+        {
+            yield return SetupSceneCoroutine("1_BugFarm");
+
+            var expectedAttribute = CreateAttribute("username", Environment.UserName);
             using var _ = InitSentrySdk(o =>
             {
-                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: testEventCapture));
                 o.SendDefaultPii = true;
                 o.IsEnvironmentUser = true;
             });
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            // assert
-            Assert.AreEqual(Environment.UserName, testEventCapture.First.User.Username);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationVersionAsRelease_WhenProductNameEmpty()
+        public IEnumerator ThrowException_SendDefaultPiiIsFalse_EventDoesNotIncludeEnvironmentUserNameAsUserName()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            // arrange
-            var originalProductName = PlayerSettings.productName;
-            PlayerSettings.productName = null;
-            var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
+            var expectedAttribute = CreateAttribute("username", Environment.UserName);
+            using var _ = InitSentrySdk();
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            // assert
-            Assert.AreEqual(Application.version, testEventCapture.First.Release);
-
-            PlayerSettings.productName = originalProductName;
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Not.Contain(expectedAttribute));
         }
 
+        // [UnityTest]
+        // public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
+        // {
+        //     yield return SetupSceneCoroutine("1_BugFarm");
+        //
+        //     var sourceEventCapture = new TestEventCapture();
+        //     var sourceDsn = "http://publickey@localhost:8000/12345";
+        //     using var firstDisposable = InitSentrySdk(o =>
+        //     {
+        //         o.Dsn = sourceDsn;
+        //         o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: sourceEventCapture));
+        //     });
+        //
+        //     var nextEventCapture = new TestEventCapture();
+        //     using var secondDisposable = InitSentrySdk(nextEventCapture); // uses the default test DSN
+        //     var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+        //     testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+        //
+        //     Assert.AreEqual(0, sourceEventCapture.Count, sourceDsn);
+        //     Assert.AreEqual(1, nextEventCapture.Count);
+        // }
+
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_IncludesApplicationInEditorOrProduction()
+        public IEnumerator DebugLogException_IsMarkedUnhandled()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            // arrange
-            var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
+            var expectedMechanism = "\"mechanism\":{\"type\":\"Unity.LogException\",\"handled\":false}}]}";
+            using var _ = InitSentrySdk();
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
 
-            var actual = testEventCapture.First;
-            Assert.AreEqual(Application.isEditor
-                ? "editor"
-                : "production",
-                actual.Environment);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
+            Assert.That(triggeredEvent, Does.Contain(expectedMechanism));
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_EventCaptured_UserNameIsNotEnvironmentUserNameByDefault()
+        public IEnumerator DebugLogError_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
+            _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage); // DebugLogError gets captured as a message
+            var expectedAttribute = CreateAttribute("unity.is_main_thread", "true");
+
+            using var _ = InitSentrySdk();
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogError), _eventMessage);
 
-            // assert
-            Assert.AreNotEqual(Environment.UserName, testEventCapture.First.User.Username);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
+        public IEnumerator DebugLogError_InTask_IsCapturedAndIsMainThreadIsFalse()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            var sourceEventCapture = new TestEventCapture();
-            var sourceDsn = "http://publickey@localhost:8000/12345";
-            using var firstDisposable = InitSentrySdk(o =>
-            {
-                o.Dsn = sourceDsn;
-                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: sourceEventCapture));
-            });
+            _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage); // DebugLogError gets captured as a message
+            var expectedAttribute = CreateAttribute("unity.is_main_thread", "false");
 
-            var nextEventCapture = new TestEventCapture();
-            using var secondDisposable = InitSentrySdk(nextEventCapture); // uses the default test DSN
-            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
-
-            Assert.AreEqual(0, sourceEventCapture.Count, sourceDsn);
-            Assert.AreEqual(1, nextEventCapture.Count);
-        }
-
-        [UnityTest]
-        public IEnumerator BugFarmScene_DebugLogException_IsMarkedUnhandled()
-        {
-            yield return SetupSceneCoroutine("1_BugFarm");
-
-            // arrange
-            var testEventCapture = new TestEventCapture();
-            using var _ = InitSentrySdk(testEventCapture);
+            using var _ = InitSentrySdk();
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-            // act
-            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogErrorInTask), _eventMessage);
 
-            // assert
-            Assert.NotNull(testEventCapture.First.SentryExceptions.SingleOrDefault(exception =>
-                    exception.Mechanism?.Handled is false) is not null);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_DebugLogError_IsCaptured()
-        {
-            yield return BugFarmScene_DebugLog(inTask: false, logException: false);
-        }
-
-        [UnityTest]
-        public IEnumerator BugFarmScene_DebugLogError_IsCapturedInTask()
-        {
-            yield return BugFarmScene_DebugLog(inTask: true, logException: false);
-        }
-
-        [UnityTest]
-        public IEnumerator BugFarmScene_DebugLogException_IsCaptured()
-        {
-            yield return BugFarmScene_DebugLog(inTask: false, logException: true);
-        }
-
-        [UnityTest]
-        public IEnumerator BugFarmScene_DebugLogException_IsCapturedInTask()
-        {
-            yield return BugFarmScene_DebugLog(inTask: true, logException: true);
-        }
-
-        // Note: can't use nunit TestCase() because it's not supported with IEnumerator return.
-        private IEnumerator BugFarmScene_DebugLog(bool inTask, bool logException)
+        public IEnumerator DebugLogException_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            // arrange
-            var testEventCapture = new TestEventCapture();
+            var expectedAttribute = CreateAttribute("unity.is_main_thread", "true");
 
-            using (var _ = InitSentrySdk(testEventCapture))
-            {
-                var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+            using var _ = InitSentrySdk();
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
-                // act
-                var method = logException
-                    ? (inTask ? nameof(testBehaviour.DebugLogExceptionInTask) : nameof(testBehaviour.DebugLogException))
-                    : (inTask ? nameof(testBehaviour.DebugLogErrorInTask) : nameof(testBehaviour.DebugLogError));
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
 
-                UnityEngine.Debug.Log("Triggering event throught he UI");
-                testBehaviour.gameObject.SendMessage(method);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
+        }
 
-                Assert.True(testEventCapture.WaitOne(TimeSpan.FromSeconds(5)));
-            }
+        [UnityTest]
+        public IEnumerator DebugLogException_InTask_IsCapturedAndIsMainThreadIsTrue()
+        {
+            yield return SetupSceneCoroutine("1_BugFarm");
 
-            Assert.AreEqual(1, testEventCapture.Count);
-            var isMainThread = testEventCapture.First.Tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
-            if (isMainThread.Value is null)
-            {
-                UnityEngine.Debug.LogWarning("Event is missing the thread tag. "
-                    + $"Message: {testEventCapture.First.Message}. Exception: {testEventCapture.First.Exception}");
-            }
-            // FIXME flaky (value is null):
-            // Assert.AreEqual((!inTask).ToString(), isMainThread.Value);
+            var expectedAttribute = CreateAttribute("unity.is_main_thread", "false");
+
+            using var _ = InitSentrySdk();
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogExceptionInTask), _eventMessage);
+
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
+            Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
 
         [UnityTest]
@@ -287,6 +298,8 @@ namespace Sentry.Unity.Tests
             ScriptableSentryUnityOptionsTests.AssertOptions(expectedOptions, actualOptions!);
         }
 
+        private static string CreateAttribute(string name, string value) => $"\"{name}\":\"{value}\"";
+
         internal static IEnumerator SetupSceneCoroutine(string sceneName)
         {
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);
@@ -299,67 +312,22 @@ namespace Sentry.Unity.Tests
             LogAssert.ignoreFailingMessages = true;
         }
 
-        internal static IDisposable InitSentrySdk(Action<SentryUnityOptions> configure)
+        internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
         {
             SentryUnity.Init(options =>
             {
                 options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+                options.CreateHttpClientHandler = () => _testHttpClientHandler;
 
-                configure.Invoke(options);
+                configure?.Invoke(options);
             });
+
             return new SentryDisposable();
         }
-
-        internal static IDisposable InitSentrySdk(TestEventCapture testEventCapture) => InitSentrySdk(o =>
-            {
-                o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: testEventCapture));
-            });
 
         private sealed class SentryDisposable : IDisposable
         {
             public void Dispose() => SentrySdk.Close();
         }
-    }
-
-    /*
-     * Example of event capture which is used in Sentry.Unity infra
-     */
-    internal sealed class TestEventCapture : IEventCapture
-    {
-        private readonly List<SentryEvent> _events = new();
-        private AutoResetEvent _eventReceived = new AutoResetEvent(false);
-
-        public SentryEvent First
-        {
-            get
-            {
-                lock (_events)
-                {
-                    return _events.First();
-                }
-            }
-        }
-
-        public int Count
-        {
-            get
-            {
-                lock (_events)
-                {
-                    return _events.Count();
-                }
-            }
-        }
-        public SentryId Capture(SentryEvent sentryEvent)
-        {
-            lock (_events)
-            {
-                _events.Add(sentryEvent);
-                _eventReceived.Set();
-                return sentryEvent.EventId;
-            }
-        }
-
-        public bool WaitOne(TimeSpan timeout) => _eventReceived.WaitOne(timeout);
     }
 }

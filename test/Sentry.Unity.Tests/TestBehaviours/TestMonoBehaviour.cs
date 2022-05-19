@@ -9,10 +9,10 @@ namespace Sentry.Unity.Tests.TestBehaviours
      */
     internal sealed class TestMonoBehaviour : MonoBehaviour
     {
-        public void TestException() => throw new Exception("This is an exception");
-        public void DebugLogError() => Debug.LogError("Unity Debug.LogError()");
-        public void DebugLogErrorInTask() => Task.Run(DebugLogError);
-        public void DebugLogException() => Debug.LogException(new Exception("Unity log exception"));
-        public void DebugLogExceptionInTask() => Task.Run(DebugLogException);
+        public void ThrowException(string message) => throw new Exception(message);
+        public void DebugLogError(string message) => Debug.LogError(message);
+        public void DebugLogErrorInTask(string message) => Task.Run(() => DebugLogError(message));
+        public void DebugLogException(string message) => Debug.LogException(new Exception(message));
+        public void DebugLogExceptionInTask(string message) => Task.Run(() => DebugLogException(message));
     }
 }

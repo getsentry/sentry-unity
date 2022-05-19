@@ -12,8 +12,6 @@ namespace Sentry.Unity.Integrations
         internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
 
-        // TODO: remove 'IEventCapture' in  further iteration
-        private readonly IEventCapture? _eventCapture;
         private readonly IApplication _application;
 
         private IHub? _hub;
@@ -21,10 +19,9 @@ namespace Sentry.Unity.Integrations
 
         private ILogHandler _unityLogHandler = null!; // Set during register
 
-        public UnityLogHandlerIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
+        public UnityLogHandlerIntegration(IApplication? application = null)
         {
             _application = application ?? ApplicationAdapter.Instance;
-            _eventCapture = eventCapture;
         }
 
         public void Register(IHub hub, SentryOptions sentryOptions)
@@ -40,8 +37,9 @@ namespace Sentry.Unity.Integrations
 
         public void LogException(Exception exception, UnityEngine.Object context)
         {
-            if (_hub?.IsEnabled != true)
+            if (_hub?.IsEnabled is not true)
             {
+                _unityLogHandler.LogException(exception, context);
                 return;
             }
 
@@ -58,36 +56,43 @@ namespace Sentry.Unity.Integrations
 
         public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
         {
-            if (_hub?.IsEnabled != true)
-            {
-                _unityLogHandler.LogFormat(logType, context, format, args);
-                return;
-            }
+            HandleLog(logType, context, format, args);
+            _unityLogHandler.LogFormat(logType, context, format, args);
+        }
 
+        internal void HandleLog(LogType logType, UnityEngine.Object? context, string format, params object[] args)
+        {
             // TODO: Figure out if this is guaranteed?
             // TODO: Deal and capture the context (i.e. grab the name if != null)
 
             if (!format.Equals("{0}") || args.Length is > 1 or <= 0)
             {
-                _unityLogHandler.LogFormat(logType, context, format, args);
                 return;
             }
 
             if (args[0] is not string logMessage)
             {
-                _unityLogHandler.LogFormat(logType, context, format, args);
                 return;
             }
 
             // We're not capturing SDK internal logs
             if (logMessage.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
             {
-                // TODO: Maybe color Sentry internal logs (highlight 'Sentry')
-                _unityLogHandler.LogFormat(logType, context, format, args);
+                // TODO: Maybe color Sentry internal logs (highlight 'Sentry'?)
                 return;
             }
 
-            if (_sentryOptions?.EnableLogDebouncing == true)
+            if (_sentryOptions?.CaptureLogsAsBreadcrumbs is false)
+            {
+                return;
+            }
+
+            if (_hub?.IsEnabled is not true)
+            {
+                return;
+            }
+
+            if (_sentryOptions?.EnableLogDebouncing is true)
             {
                 var debounced = logType switch
                 {
@@ -99,7 +104,6 @@ namespace Sentry.Unity.Integrations
 
                 if (!debounced)
                 {
-                    _unityLogHandler.LogFormat(logType, context, format, args);
                     return;
                 }
             }
@@ -110,7 +114,6 @@ namespace Sentry.Unity.Integrations
                 // TODO: MinBreadcrumbLevel
                 // options.MinBreadcrumbLevel
                 _hub.AddBreadcrumb(message: (string)args[0], category: "unity.logger", level: ToBreadcrumbLevel(logType));
-                _unityLogHandler.LogFormat(logType, context, format, args);
                 return;
             }
 
@@ -118,13 +121,6 @@ namespace Sentry.Unity.Integrations
 
             // So the next event includes this error as a breadcrumb:
             _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
-
-            _unityLogHandler.LogFormat(logType, context, format, args);
-        }
-
-        internal void HandleLog(LogType logType, UnityEngine.Object context, string format, params object[] args)
-        {
-
         }
 
         private void OnQuitting()
