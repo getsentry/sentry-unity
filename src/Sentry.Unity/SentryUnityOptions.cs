@@ -64,9 +64,7 @@ namespace Sentry.Unity
                 }
             }
         }
-
-        public bool CaptureLogsAsBreadcrumbs { get; set; } = true;
-
+        
         /// <summary>
         /// Try to attach a current screen capture on error events.
         /// </summary>

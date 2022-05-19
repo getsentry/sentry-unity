@@ -43,10 +43,9 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            // NOTE: This might not be entirely true, as a user could as well call
-            // `LogException` for a handled exception.
-            // However, as the runtime will call `LogException` for uncaught
-            // Exceptions, we will generally treat these as unhandled in user code.
+            // NOTE: This might not be entirely true, as a user could as well call `Debug.LogException`
+            // and expect a handled exception but it is not possible for us to differentiate
+            // https://docs.sentry.io/platforms/unity/troubleshooting/#unhandled-excpetions---debuglogexception
             exception.Data[Mechanism.HandledKey] = false;
             exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
             _ = _hub.CaptureException(exception);
@@ -79,11 +78,6 @@ namespace Sentry.Unity.Integrations
             if (logMessage.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
             {
                 // TODO: Maybe color Sentry internal logs (highlight 'Sentry'?)
-                return;
-            }
-
-            if (_sentryOptions?.CaptureLogsAsBreadcrumbs is false)
-            {
                 return;
             }
 
