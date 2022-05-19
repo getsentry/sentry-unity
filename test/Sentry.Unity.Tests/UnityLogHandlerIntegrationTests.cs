@@ -57,7 +57,7 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
             Assert.NotNull(_fixture.Hub.CapturedEvents[0].Message);
-            Assert.AreEqual( message, _fixture.Hub.CapturedEvents[0].Message!.Message);
+            Assert.AreEqual(message, _fixture.Hub.CapturedEvents[0].Message!.Message);
         }
 
         [Test]
@@ -144,7 +144,7 @@ namespace Sentry.Unity.Tests
             Assert.IsFalse((bool)capturedEvent.Exception!.Data[Mechanism.HandledKey]);
 
             Assert.IsTrue(capturedEvent.Exception!.Data.Contains(Mechanism.MechanismKey));
-            Assert.AreEqual("Unity.LogException",(string)capturedEvent.Exception!.Data[Mechanism.MechanismKey]);
+            Assert.AreEqual("Unity.LogException", (string)capturedEvent.Exception!.Data[Mechanism.MechanismKey]);
         }
 
         [Test]
