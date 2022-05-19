@@ -64,7 +64,7 @@ namespace Sentry.Unity
                 }
             }
         }
-        
+
         /// <summary>
         /// Try to attach a current screen capture on error events.
         /// </summary>
