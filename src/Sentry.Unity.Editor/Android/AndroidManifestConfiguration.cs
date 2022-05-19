@@ -154,7 +154,7 @@ namespace Sentry.Unity.Editor.Android
             var symbolsUpload = new DebugSymbolUpload(logger, unityProjectPath, gradleProjectPath,
                 EditorUserBuildSettings.exportAsGoogleAndroidProject);
 
-            if (_options is null)
+            if (_options is null || !_options.Enabled || !_options.AndroidNativeSupportEnabled)
             {
                 disableSymbolsUpload = true;
             }
