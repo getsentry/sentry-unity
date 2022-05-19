@@ -158,14 +158,6 @@ namespace Sentry.Unity.Editor.Android
             {
                 disableSymbolsUpload = true;
             }
-            else if (!_options.Enabled)
-            {
-                disableSymbolsUpload = true;
-            }
-            else if (!_options.AndroidNativeSupportEnabled)
-            {
-                disableSymbolsUpload = true;
-            }
 
             if (_sentryCliOptions is null)
             {
