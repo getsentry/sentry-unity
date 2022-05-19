@@ -40,7 +40,7 @@ namespace Sentry.Unity.Tests
                 var eventRequest = _requests.Find(r => r.Contains(EventQualifier));
                 if (!string.IsNullOrEmpty(eventRequest))
                 {
-                    Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n"+ eventRequest);
+                    Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n" + eventRequest);
                     return eventRequest;
                 }
             }
@@ -53,10 +53,10 @@ namespace Sentry.Unity.Tests
                 {
                     lock (_requests)
                     {
-                        if (_requests.Count > 0 && _requests[_requests.Count -1].Contains(EventQualifier))
+                        if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(EventQualifier))
                         {
                             var eventRequest = _requests[_requests.Count - 1];
-                            Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n"+ eventRequest);
+                            Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n" + eventRequest);
 
                             return eventRequest;
                         }

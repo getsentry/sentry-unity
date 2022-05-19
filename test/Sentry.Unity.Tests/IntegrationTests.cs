@@ -34,7 +34,7 @@ namespace Sentry.Unity.Tests
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             // We don't want to call testBehaviour.TestException(); because it won't go via Sentry infra.
-             // We don't have it in tests, but in scenes.
+            // We don't have it in tests, but in scenes.
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
             var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
