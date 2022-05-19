@@ -113,7 +113,7 @@ namespace Sentry.Unity.Integrations
             {
                 // TODO: MinBreadcrumbLevel
                 // options.MinBreadcrumbLevel
-                _hub.AddBreadcrumb(message: (string)args[0], category: "unity.logger", level: ToBreadcrumbLevel(logType));
+                _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
                 return;
             }
 
