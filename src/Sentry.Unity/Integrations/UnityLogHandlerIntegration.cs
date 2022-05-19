@@ -52,13 +52,13 @@ namespace Sentry.Unity.Integrations
 
             // NOTE: This might not be entirely true, as a user could as well call `Debug.LogException`
             // and expect a handled exception but it is not possible for us to differentiate
-            // https://docs.sentry.io/platforms/unity/troubleshooting/#unhandled-excpetions---debuglogexception
+            // https://docs.sentry.io/platforms/unity/troubleshooting/#unhandled-exceptions---debuglogexception
             exception.Data[Mechanism.HandledKey] = false;
             exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
             _ = _hub.CaptureException(exception);
 
             // So the next event includes this error as a breadcrumb
-            _hub.AddBreadcrumb(message: exception.Message, category: "unity.logger", level: BreadcrumbLevel.Error);
+            _hub.AddBreadcrumb(message: exception.GetType() + ": "+ exception.Message, category: "unity.logger", level: BreadcrumbLevel.Error);
         }
 
         public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
