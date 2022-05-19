@@ -11,7 +11,7 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public TestHub Hub { get; set; }= null!;
+            public TestHub Hub { get; set; } = null!;
             public SentryUnityOptions SentryOptions { get; set; } = null!;
 
             public UnityLogHandlerIntegration GetSut()
