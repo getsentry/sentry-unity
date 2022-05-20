@@ -16,8 +16,9 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                .ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = SentryScriptableObject
+                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
+                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             try
@@ -34,9 +35,16 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddSentryFramework();
                 sentryXcodeProject.AddSentryNativeBridge();
 
-                if (options?.IsValid() is not true)
+                if (options is null)
                 {
-                    logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
+                    logger.LogWarning("Native support disabled. " +
+                                      "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                    return;
+                }
+
+                if (!options.IsValid())
+                {
+                    logger.LogWarning("Native support disabled.");
                     return;
                 }
 

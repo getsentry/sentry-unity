@@ -27,19 +27,19 @@ namespace Sentry.Unity.Editor
             => $"Assets/Plugins/Sentry/{notDefaultConfigName ?? ConfigName}.asset";
 
         private static void MissingFieldWarning(IDiagnosticLogger? logger, string name) =>
-            logger?.LogWarning("sentry-cli: {0} missing. Please set it under {1}", name, EditorMenuPath);
+            logger?.LogWarning("{0} missing. Please set it under {1}", name, EditorMenuPath);
 
         public bool IsValid(IDiagnosticLogger? logger, bool? isDevelopmentBuild = null)
         {
             if (!UploadSymbols)
             {
-                logger?.LogDebug("sentry-cli: Automated symbols upload has been disabled.");
+                logger?.LogDebug("Automated symbols upload has been disabled.");
                 return false;
             }
 
             if ((isDevelopmentBuild ?? EditorUserBuildSettings.development) && !UploadDevelopmentSymbols)
             {
-                logger?.LogDebug("sentry-cli: Automated symbols upload for development builds has been disabled.");
+                logger?.LogDebug("Automated symbols upload for development builds has been disabled.");
                 return false;
             }
 
