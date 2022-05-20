@@ -69,9 +69,14 @@ namespace Sentry.Unity.Integrations
 
         internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
         {
+            if (_hub?.IsEnabled is not true)
+            {
+                return;
+            }
+
             // TODO: Figure out if format {0} and args.length == 1 is guaranteed?
             // TODO: Capture the context (i.e. grab the name if != null)
-
+            
             if (!format.Equals("{0}") || args.Length is > 1 or <= 0)
             {
                 return;
@@ -86,11 +91,6 @@ namespace Sentry.Unity.Integrations
             if (logMessage.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
             {
                 // TODO: Maybe color Sentry internal logs (highlight 'Sentry'?)
-                return;
-            }
-
-            if (_hub?.IsEnabled is not true)
-            {
                 return;
             }
 
