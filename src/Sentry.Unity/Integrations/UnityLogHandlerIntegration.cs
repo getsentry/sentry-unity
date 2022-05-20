@@ -76,7 +76,7 @@ namespace Sentry.Unity.Integrations
 
             // TODO: Figure out if format {0} and args.length == 1 is guaranteed?
             // TODO: Capture the context (i.e. grab the name if != null)
-            
+
             if (!format.Equals("{0}") || args.Length is > 1 or <= 0)
             {
                 return;
