@@ -105,7 +105,7 @@ namespace Sentry.Unity
             foreach (var header in www.GetResponseHeaders())
             {
                 // Unity would throw if we tried to set content-type or content-length
-                if (header.Key is not "content-length" && header.Key is not "content-type")
+                if (header.Key.ToLowerInvariant() is not ("content-length" or "content-type"))
                 {
                     response.Headers.Add(header.Key, header.Value);
                 }

@@ -7,12 +7,15 @@
 #define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
+#else
+#define SENTRY_DEFAULT
 #endif
 #endif
 
 using System;
 using UnityEngine;
 using UnityEngine.Scripting;
+using UnityEngine.Analytics;
 
 #if SENTRY_NATIVE_COCOA
 using Sentry.Unity.iOS;
@@ -22,6 +25,8 @@ using Sentry.Unity.Android;
 using Sentry.Unity.Native;
 #elif SENTRY_WEBGL
 using Sentry.Unity.WebGL;
+#elif SENTRY_DEFAULT
+using Sentry.Unity.Default;
 #endif
 
 [assembly: AlwaysLinkAssembly]
@@ -50,6 +55,8 @@ namespace Sentry.Unity
                     SentryNative.Configure(options);
 #elif SENTRY_WEBGL
                     SentryWebGL.Configure(options);
+#elif SENTRY_DEFAULT
+                    SentryUnknownPlatform.Configure(options);
 #endif
                 }
                 catch (DllNotFoundException e)
