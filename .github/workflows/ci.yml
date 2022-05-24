@@ -133,7 +133,7 @@ jobs:
 
       - name: Assembly alias
         run: |
-          docker exec unity bash -c 'dotnet tool install --global Alias --version 0.2.0 && \
+          docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3 && \
           ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
       - name: Update .meta files before packaging
