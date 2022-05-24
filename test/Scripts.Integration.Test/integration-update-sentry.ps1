@@ -39,6 +39,9 @@ RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Con
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
         "-sentryOptions.Dsn", "$(TestDsnFor $Platform)", `
         "-sentryOptionsScript", "SmokeTestOptions", `
-        "-attachScreenshot", "true")
+        "-attachScreenshot", "true", `
+        "-cliOptions.Org", "sentry-sdks", `
+        "-cliOptions.Project", "sentry-unity", `
+        "-cliOptions.Auth", "dummy-token")
 
 Write-Host " Unity configuration finished successfully" -ForegroundColor Green
