@@ -195,7 +195,14 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('Linux'))
     {
-        throw 'Not implemented'
+        $expectedFiles = @(
+            'test',
+            'test_s.debug',
+            'GameAssembly.so',
+            'UnityPlayer.so',
+            'UnityPlayer_s.debug',
+            'libsentry.dbg.so'
+        )
     }
     ElseIf ($buildMethod.contains('Android'))
     {
