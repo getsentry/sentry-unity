@@ -10,9 +10,8 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
 
     $result.process = Start-Process "python3" -ArgumentList @("$PSScriptRoot/$ServerScript.py", $Uri) `
             -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
-    $result.output = {
-        (Get-Content $result.outFile -Raw) + (Get-Content $result.errFile -Raw)
-    }.GetNewClosure()
+
+    $result.output = { "$(Get-Content $result.outFile -Raw)`n$(Get-Content $result.errFile -Raw)" }.GetNewClosure()
 
     $result.dispose = {
         $result.stop.Invoke()
@@ -27,7 +26,7 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
 
         Remove-Item $result.outFile -ErrorAction Continue
         Remove-Item $result.errFile -ErrorAction Continue
-        return $stdout + $stderr
+        return "$stdout`n$stderr"
     }.GetNewClosure()
 
     $result.stop = {
@@ -35,7 +34,7 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
         Write-Host "Stopping the $ServerScript ... " -NoNewline
         try
         {
-            (Invoke-WebRequest -Uri "$Uri/STOP").StatusDescription
+            Write-Host (Invoke-WebRequest -Uri "$Uri/STOP").StatusDescription
         }
         catch
         {
@@ -43,7 +42,7 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
-        $result.stop = {}.GetNewClosure()
+        $result.stop = {}
     }.GetNewClosure()
 
     # The process shouldn't finish by itself, if it did, there was an error, so let's check that
@@ -124,12 +123,14 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         }
 
         $output = $httpServer.dispose.Invoke()
-        if ($output.Contains($SuccessString))
+        Write-Host "Looking for the SuccessString ($SuccessString) in the server output..."
+        if ("$output".Contains($SuccessString))
         {
             Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
             break
         }
-        elseif ($run -eq $runs)
+        Write-Host "SuccessString ($SuccessString) not found..." -ForegroundColor Red
+        if ($run -eq $runs)
         {
             throw "crash test $run/$runs : FAILED"
         }
