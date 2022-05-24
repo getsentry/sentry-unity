@@ -74,6 +74,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 cliOptions.Auth = value;
             }
 
+            if (args.TryGetValue("cliOptions.UrlOverride", out value))
+            {
+                Debug.LogFormat("{0}: Configuring symbol-upload UrlOverride to {1}", functionName, value);
+                cliOptions.UrlOverride = value;
+            }
             optionsWindow.Close();
             Debug.LogFormat("{0}: Sentry options Configured", functionName);
         }

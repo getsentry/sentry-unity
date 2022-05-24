@@ -1,14 +1,15 @@
 # Note: this is currently used by "integration-*.ps1" scripts as well as "smoke-test-*.ps1" scripts.
 # If/when those are merged to some extent, maybe this file could be merged into `IntegrationGlobals.ps1`.
 
-function RunApiServer([string] $ServerScript)
+function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:8000")
 {
     $result = "" | Select-Object -Property process, outFile, errFile, stop, output, dispose
-    Write-Host "Starting the $ServerScript"
+    Write-Host "Starting the $ServerScript on $Uri"
     $result.outFile = New-TemporaryFile
     $result.errFile = New-TemporaryFile
 
-    $result.process = Start-Process "python3" -ArgumentList "$PSScriptRoot/$ServerScript.py" -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
+    $result.process = Start-Process "python3" -ArgumentList @("$PSScriptRoot/$ServerScript.py", $Uri) `
+            -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
     $result.output = {
         (Get-Content $result.outFile -Raw) + (Get-Content $result.errFile -Raw)
     }.GetNewClosure()
@@ -30,12 +31,11 @@ function RunApiServer([string] $ServerScript)
     }.GetNewClosure()
 
     $result.stop = {
-        $uri = "http://localhost:8000"
         # Stop the HTTP server
         Write-Host "Stopping the $ServerScript ... " -NoNewline
         try
         {
-            (Invoke-WebRequest -Uri "$uri/STOP").StatusDescription
+            (Invoke-WebRequest -Uri "$Uri/STOP").StatusDescription
         }
         catch
         {
@@ -143,7 +143,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
 function RunWithSymbolServer([ScriptBlock] $Callback)
 {
     # start the server
-    $httpServer = RunApiServer "symbol-upload-server"
+    $httpServer = RunApiServer "symbol-upload-server" (SymbolServerUrlFor $UnityPath)
 
     # run the test
     try

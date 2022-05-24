@@ -157,6 +157,11 @@ function TestDsnFor([string] $platform)
     return $dsn
 }
 
+function SymbolServerUrlFor([string] $UnityPath)
+{
+    $UnityPath.StartsWith("docker ") ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
+}
+
 function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
     If ($unityPath.StartsWith("docker "))

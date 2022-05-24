@@ -2,6 +2,7 @@
 
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlparse
 import sys
 import threading
 import binascii
@@ -9,9 +10,7 @@ import json
 
 apiOrg = 'sentry-sdks'
 apiProject = 'sentry-unity'
-host = '127.0.0.1'
-port = 8000
-serverUri = 'http://{}:{}'.format(host, port)
+uri = urlparse(sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8000')
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -26,7 +25,7 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if self.isApi('api/0/organizations/{}/chunk-upload/'.format(apiOrg)):
-            self.writeJSON('{"url":"' + serverUri + self.path + '",'
+            self.writeJSON('{"url":"' + uri.geturl() + self.path + '",'
                            '"chunkSize":8388608,"chunksPerRequest":64,"maxFileSize":2147483648,'
                            '"maxRequestSize":33554432,"concurrency":1,"hashAlgorithm":"sha1","compression":["gzip"],'
                            '"accept":["debug_files","release_files","pdbs","sources","bcsymbolmaps"]}')
@@ -104,7 +103,7 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.flush()
 
 
-print("HTTP server listening on {}".format(serverUri))
-print("To stop the server, execute a GET request to {}/STOP".format(serverUri))
-httpd = ThreadingHTTPServer((host, port), Handler)
+print("HTTP server listening on {}".format(uri.geturl()))
+print("To stop the server, execute a GET request to {}/STOP".format(uri.geturl()))
+httpd = ThreadingHTTPServer((uri.hostname, uri.port), Handler)
 target = httpd.serve_forever()
