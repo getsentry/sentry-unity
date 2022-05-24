@@ -180,7 +180,13 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     $expectedFiles = @()
     If ($buildMethod.contains('Mac'))
     {
-        throw 'Not implemented'
+        $expectedFiles = @(
+            'IntegrationTest',
+            'UnityPlayer.dylib',
+            'GameAssembly.dylib',
+            'Sentry.dylib',
+            'Sentry.dylib.dSYM'
+        )
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
