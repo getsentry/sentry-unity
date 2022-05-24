@@ -169,3 +169,75 @@ function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $Re
 
     return RunUnity $unityPath $arguments -ReturnLogOutput:$ReturnLogOutput
 }
+
+function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput)
+{
+    $expectedFiles = @()
+    If ($buildMethod.contains('Mac'))
+    {
+        throw 'Not implemented'
+    }
+    ElseIf ($buildMethod.contains('Windows'))
+    {
+        $expectedFiles = @(
+            'test.exe',
+            'GameAssembly.dll',
+            'GameAssembly.pdb',
+            'UnityPlayer.dll',
+            'sentry.pdb',
+            'sentry.dll'
+        )
+    }
+    ElseIf ($buildMethod.contains('Linux'))
+    {
+        throw 'Not implemented'
+    }
+    ElseIf ($buildMethod.contains('Android'))
+    {
+        $expectedFiles = @(
+            'libmain.so',
+            'libunity.so',
+            'libil2cpp.so',
+            'libil2cpp.dbg.so',
+            'libil2cpp.sym.so',
+            'libsentry.so',
+            'libsentry-android.so'
+        )
+    }
+    ElseIf ($buildMethod.contains('IOS'))
+    {
+        throw 'Not implemented'
+    }
+    ElseIf ($buildMethod.contains('WebGL'))
+    {
+        Write-Host 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
+        return
+    }
+    Else
+    {
+        Throw "Cannot CheckSymbolServerOutput() for an unknown buildMethod: '$buildMethod'"
+    }
+
+    Write-Host 'Verifying debug symbol upload...'
+    $successful = $true
+    foreach ($name in $expectedFiles)
+    {
+        if ($symbolServerOutput -match "Received: .* $([Regex]::Escape($name))\b")
+        {
+            Write-Host "  $name - OK"
+        }
+        else
+        {
+            $successful = $false
+            Write-Host "  $name - MISSING" -ForegroundColor Red
+        }
+    }
+    if ($successful)
+    {
+        Write-Host 'All expected debug symbols have been uploaded' -ForegroundColor Green
+    }
+    else
+    {
+        exit 1
+    }
+}
