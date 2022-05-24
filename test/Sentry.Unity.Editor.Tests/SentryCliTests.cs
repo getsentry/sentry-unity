@@ -62,8 +62,8 @@ namespace Sentry.Unity.Editor.Tests
 
         [Test]
         [TestCase("")]
-        [TestCase("urlOverride")]
-        public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions(string urlOverride)
+        [TestCase("http://key@example.com/12345")]
+        public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions(string dsn)
         {
             var propertiesDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(propertiesDirectory);
@@ -72,9 +72,10 @@ namespace Sentry.Unity.Editor.Tests
             sentryCliTestOptions.Auth = Guid.NewGuid().ToString();
             sentryCliTestOptions.Organization = Guid.NewGuid().ToString();
             sentryCliTestOptions.Project = Guid.NewGuid().ToString();
-            sentryCliTestOptions.UrlOverride = urlOverride;
 
-            SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions);
+            var options = new SentryUnityOptions() { Dsn = dsn };
+
+            SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions, options);
 
             var properties = File.ReadAllText(Path.Combine(propertiesDirectory, "sentry.properties"));
 
@@ -82,9 +83,10 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains(sentryCliTestOptions.Organization, properties);
             StringAssert.Contains(sentryCliTestOptions.Project, properties);
 
-            if (!string.IsNullOrEmpty(sentryCliTestOptions.UrlOverride))
+            if (!string.IsNullOrEmpty(options.Dsn))
             {
-                StringAssert.Contains(urlOverride, properties);
+                // Note: we test whether `SentryCli.UrlOverride()` itself works elsewhere.
+                StringAssert.Contains(SentryCli.UrlOverride(options.Dsn), properties);
             }
 
             Directory.Delete(propertiesDirectory, true);
@@ -123,6 +125,18 @@ namespace Sentry.Unity.Editor.Tests
             Assert.AreEqual(1, logger.Logs.Count);
 
             Directory.Delete(fakeXcodeProjectDirectory, true);
+        }
+
+        [Test]
+        public void UrlOverride()
+        {
+            Assert.IsNull(SentryCli.UrlOverride(null));
+            Assert.IsNull(SentryCli.UrlOverride("https://key@o447951.ingest.sentry.io/5439417"));
+            Assert.IsNull(SentryCli.UrlOverride("https://foo.sentry.io/5439417"));
+            Assert.IsNull(SentryCli.UrlOverride("http://sentry.io"));
+            Assert.AreEqual("http://127.0.0.1:8000", SentryCli.UrlOverride("http://key@127.0.0.1:8000/12345"));
+            Assert.AreEqual("https://example.com", SentryCli.UrlOverride("https://key@example.com/12345"));
+            Assert.AreEqual("http://localhost:8000", SentryCli.UrlOverride("http://key@localhost:8000/12345"));
         }
     }
 }

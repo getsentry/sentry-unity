@@ -185,7 +185,7 @@ namespace Sentry.Unity.Editor.Android
                 logger.LogInfo("Adding automated debug symbols upload to the gradle project.");
 
                 var sentryCliPath = SentryCli.SetupSentryCli();
-                SentryCli.CreateSentryProperties(gradleProjectPath, _sentryCliOptions!);
+                SentryCli.CreateSentryProperties(gradleProjectPath, _sentryCliOptions!, _options!);
 
                 if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
                 {
