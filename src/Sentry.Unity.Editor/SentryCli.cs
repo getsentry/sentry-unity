@@ -21,7 +21,7 @@ namespace Sentry.Unity.Editor
             var propertiesFile = Path.Combine(propertiesPath, "sentry.properties");
             using var properties = File.CreateText(propertiesFile);
 
-            if (UrlOverride(options.Dsn) is { } urlOverride)
+            if (UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
             {
                 properties.WriteLine($"defaults.url={urlOverride}");
             }
@@ -103,12 +103,12 @@ namespace Sentry.Unity.Editor
             SetExecutePermission(executableDestination);
         }
 
-        internal static string? UrlOverride(string? dsn)
+        internal static string? UrlOverride(string? dsnOption, string? urlOverrideOption)
         {
-            string? result = null;
-            if (!string.IsNullOrEmpty(dsn))
+            string? result = urlOverrideOption;
+            if (result is null && !string.IsNullOrEmpty(dsnOption))
             {
-                var uri = new Uri(dsn);
+                var uri = new Uri(dsnOption);
 
                 // Override the URL if the DSN is configured to a non-default server
                 if (!uri.DnsSafeHost.Equals("sentry.io") && !uri.DnsSafeHost.EndsWith(".sentry.io"))

@@ -62,8 +62,8 @@ namespace Sentry.Unity.Editor.Tests
 
         [Test]
         [TestCase("")]
-        [TestCase("http://key@example.com/12345")]
-        public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions(string dsn)
+        [TestCase("urlOverride")]
+        public void CreateSentryProperties_PropertyFileCreatedAndContainsSentryCliOptions(string urlOverride)
         {
             var propertiesDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(propertiesDirectory);
@@ -72,10 +72,9 @@ namespace Sentry.Unity.Editor.Tests
             sentryCliTestOptions.Auth = Guid.NewGuid().ToString();
             sentryCliTestOptions.Organization = Guid.NewGuid().ToString();
             sentryCliTestOptions.Project = Guid.NewGuid().ToString();
+            sentryCliTestOptions.UrlOverride = urlOverride;
 
-            var options = new SentryUnityOptions() { Dsn = dsn };
-
-            SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions, options);
+            SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions, new());
 
             var properties = File.ReadAllText(Path.Combine(propertiesDirectory, "sentry.properties"));
 
@@ -83,10 +82,9 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains(sentryCliTestOptions.Organization, properties);
             StringAssert.Contains(sentryCliTestOptions.Project, properties);
 
-            if (!string.IsNullOrEmpty(options.Dsn))
+            if (!string.IsNullOrEmpty(sentryCliTestOptions.UrlOverride))
             {
-                // Note: we test whether `SentryCli.UrlOverride()` itself works elsewhere.
-                StringAssert.Contains(SentryCli.UrlOverride(options.Dsn), properties);
+                StringAssert.Contains(urlOverride, properties);
             }
 
             Directory.Delete(propertiesDirectory, true);
@@ -130,13 +128,14 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void UrlOverride()
         {
-            Assert.IsNull(SentryCli.UrlOverride(null));
-            Assert.IsNull(SentryCli.UrlOverride("https://key@o447951.ingest.sentry.io/5439417"));
-            Assert.IsNull(SentryCli.UrlOverride("https://foo.sentry.io/5439417"));
-            Assert.IsNull(SentryCli.UrlOverride("http://sentry.io"));
-            Assert.AreEqual("http://127.0.0.1:8000", SentryCli.UrlOverride("http://key@127.0.0.1:8000/12345"));
-            Assert.AreEqual("https://example.com", SentryCli.UrlOverride("https://key@example.com/12345"));
-            Assert.AreEqual("http://localhost:8000", SentryCli.UrlOverride("http://key@localhost:8000/12345"));
+            Assert.IsNull(SentryCli.UrlOverride(null, null));
+            Assert.IsNull(SentryCli.UrlOverride("https://key@o447951.ingest.sentry.io/5439417", null));
+            Assert.IsNull(SentryCli.UrlOverride("https://foo.sentry.io/5439417", null));
+            Assert.IsNull(SentryCli.UrlOverride("http://sentry.io", null));
+            Assert.AreEqual("http://127.0.0.1:8000", SentryCli.UrlOverride("http://key@127.0.0.1:8000/12345", null));
+            Assert.AreEqual("pass-through", SentryCli.UrlOverride("http://key@127.0.0.1:8000/12345", "pass-through"));
+            Assert.AreEqual("https://example.com", SentryCli.UrlOverride("https://key@example.com/12345", null));
+            Assert.AreEqual("http://localhost:8000", SentryCli.UrlOverride("http://key@localhost:8000/12345", null));
         }
     }
 }

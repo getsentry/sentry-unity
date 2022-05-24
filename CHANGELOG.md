@@ -7,7 +7,6 @@
 - Linux native crash support ([#734](https://github.com/getsentry/sentry-unity/pull/734))
 - Collect context information synchronously during init to capture it for very early events ([#744](https://github.com/getsentry/sentry-unity/pull/744))
 - Automatic user IDs on native crashes & .NET events ([#728](https://github.com/getsentry/sentry-unity/pull/728))
-- Replace URL override option for CLI with DSN parsing ([#763](https://github.com/getsentry/sentry-unity/pull/763))
 
 ## 0.16.0
 

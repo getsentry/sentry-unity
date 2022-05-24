@@ -162,7 +162,7 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            if (SentryCli.UrlOverride(options.Dsn) is { } urlOverride)
+            if (SentryCli.UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
             {
                 process.StartInfo.EnvironmentVariables["SENTRY_URL"] = urlOverride;
             }
