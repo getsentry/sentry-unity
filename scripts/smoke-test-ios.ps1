@@ -1,5 +1,10 @@
-param($Action, $SelectedRuntime, $DevicesToRun)
-Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime"
+param (
+    [string] $Action,
+    [string] $SelectedRuntime,
+    [Int32] $DevicesToRun = 3,
+    [Switch] $IsIntegrationTest
+)
+Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIntegrationTest=$IsIntegrationTest"
 # $Action: 'Build' for build only
 #          'Test' for Smoke test only
 #          null for building and testing
@@ -12,11 +17,21 @@ $ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
-$XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
-$ArchivePath = "$XcodeArtifactPath/archive"
 $ProjectName = "Unity-iPhone"
-$AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
-$AppName = "io.sentry.samples.unityofbugs"
+if ($IsIntegrationTest)
+{
+    $XcodeArtifactPath = "samples/IntegrationTest/Build"
+    $ArchivePath = "$XcodeArtifactPath/archive"
+    $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/IntegrationTest.app"
+    $AppName = "com.DefaultCompany.IntegrationTest"
+}
+else
+{
+    $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
+    $ArchivePath = "$XcodeArtifactPath/archive"
+    $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
+    $AppName = "io.sentry.samples.unityofbugs"
+}
 
 Class AppleDevice
 {
@@ -56,7 +71,13 @@ function Build()
     }
 
     Write-Host "Building iOS project"
-    $xCodeBuild = Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchivePath/$ProjectName" -PassThru
+    $xCodeBuild = Start-Process -FilePath "xcodebuild" -PassThru -ArgumentList `
+        "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", `
+        "-scheme", "Unity-iPhone", `
+        "-configuration", "Release", `
+        "-sdk", "iphonesimulator", `
+        "-derivedDataPath", "$ArchivePath/$ProjectName"
+
     $xCodeBuild.WaitForExit()
     If ($xCodeBuild.ExitCode -ne 0)
     {
@@ -101,10 +122,6 @@ function Test
     }
 
     $devicesRan = 0
-    If (0 -eq $DevicesToRun -Or $null -eq $DevicesToRun)
-    {
-        $DevicesToRun = 3
-    }
     ForEach ($device in $deviceList)
     {
         If ($skippedItems -lt $skipCount)

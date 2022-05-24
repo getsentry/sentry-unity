@@ -184,18 +184,6 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
-      - name: Build iOS Player
-        run: |
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@localhost:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          docker exec unity dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Upload Xcode project for smoke test.
-        uses: actions/upload-artifact@v2
-        with:
-          name: testapp-ios-project-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode
-          if-no-files-found: error
-
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
@@ -204,7 +192,7 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021']
-        platform: ['Android', 'WebGL', 'Linux']
+        platform: ['Android', 'WebGL', 'Linux', 'iOS']
         include:
           - platform: Linux
             image-suffix: '-il2cpp'
@@ -251,7 +239,7 @@ jobs:
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }}
 
       - name: Prepare for upload
         run: |
@@ -442,8 +430,8 @@ jobs:
           path: samples/IntegrationTest/Build/screen.png
 
   ios-smoke-test-build:
-    needs: [build]
-    name: Build iOS Unity ${{ matrix.unity-version }} Smoke Test
+    needs: [smoke-test-build]
+    name: Compile iOS Smoke Test - ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -456,8 +444,8 @@ jobs:
       - name: Download XCode app artifact
         uses: actions/download-artifact@v2
         with:
-          name: testapp-ios-project-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode
+          name: testapp-iOS-${{ matrix.unity-version }}
+          path: samples/IntegrationTest/Build
 
       - name: Build iOS package
         shell: pwsh
@@ -466,16 +454,16 @@ jobs:
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
-          name: testapp-ios-${{ matrix.unity-version }}
+          name: testapp-iOS-compiled-${{ matrix.unity-version }}
           # Ignore the files that are not required for the test.
           path: |
-            samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
+            samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
             !**/Release-iphonesimulator/*.dSYM
             !**/Release-iphonesimulator/UnityFramework.framework/*
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Run iOS ${{ matrix.ios-runtime }} Unity ${{ matrix.unity-version }} Smoke Test
+    name: Run iOS ${{ matrix.ios-runtime }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -493,8 +481,8 @@ jobs:
       - name: Download app artifact
         uses: actions/download-artifact@v2
         with:
-          name: testapp-ios-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
+          name: testapp-iOS-compiled-${{ matrix.unity-version }}
+          path: samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
 
       - name: Setup xcode-install
         # Github Virtual machine already sets the runtime and simulator for the latest release.
