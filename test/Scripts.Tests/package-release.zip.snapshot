@@ -301,8 +301,6 @@ Runtime/Sentry.System.Numerics.Vectors.dll
 Runtime/Sentry.System.Numerics.Vectors.dll.meta
 Runtime/Sentry.System.Reflection.Metadata.dll
 Runtime/Sentry.System.Reflection.Metadata.dll.meta
-Runtime/Sentry.System.Runtime.CompilerServices.Unsafe.dll
-Runtime/Sentry.System.Runtime.CompilerServices.Unsafe.dll.meta
 Runtime/Sentry.System.Text.Encodings.Web.dll
 Runtime/Sentry.System.Text.Encodings.Web.dll.meta
 Runtime/Sentry.System.Text.Json.dll
@@ -329,6 +327,8 @@ Runtime/Sentry.xml
 Runtime/Sentry.xml.meta
 Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
+Runtime/System.Runtime.CompilerServices.Unsafe.dll
+Runtime/System.Runtime.CompilerServices.Unsafe.dll.meta
 Samples~/unity-of-bugs/Scenes.meta
 Samples~/unity-of-bugs/Scripts.meta
 Samples~/unity-of-bugs/Scenes/1_Bugfarm.unity
