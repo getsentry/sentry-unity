@@ -9,7 +9,7 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
     $result.errFile = New-TemporaryFile
 
     $result.process = Start-Process "python3" -ArgumentList @("$PSScriptRoot/$ServerScript.py", $Uri) `
-            -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
+        -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
 
     $result.output = { "$(Get-Content $result.outFile -Raw)`n$(Get-Content $result.errFile -Raw)" }.GetNewClosure()
 
@@ -141,6 +141,11 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
     }
 }
 
+function SymbolServerUrlFor([string] $UnityPath)
+{
+    $UnityPath.StartsWith("docker ") ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
+}
+
 function RunWithSymbolServer([ScriptBlock] $Callback)
 {
     # start the server
@@ -157,4 +162,94 @@ function RunWithSymbolServer([ScriptBlock] $Callback)
     }
 
     return $httpServer.dispose.Invoke()
+}
+
+function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput)
+{
+    $expectedFiles = @()
+    If ($buildMethod.contains('Mac'))
+    {
+        $expectedFiles = @(
+            'IntegrationTest',
+            'UnityPlayer.dylib',
+            'GameAssembly.dylib',
+            'Sentry.dylib',
+            'Sentry.dylib.dSYM'
+        )
+    }
+    ElseIf ($buildMethod.contains('Windows'))
+    {
+        $expectedFiles = @(
+            'test.exe',
+            'GameAssembly.dll',
+            'GameAssembly.pdb',
+            'UnityPlayer.dll',
+            'sentry.pdb',
+            'sentry.dll'
+        )
+    }
+    ElseIf ($buildMethod.contains('Linux'))
+    {
+        $expectedFiles = @(
+            'test',
+            'test_s.debug',
+            'GameAssembly.so',
+            'UnityPlayer.so',
+            'UnityPlayer_s.debug',
+            'libsentry.dbg.so'
+        )
+    }
+    ElseIf ($buildMethod.contains('Android'))
+    {
+        $expectedFiles = @(
+            'libmain.so',
+            'libunity.so',
+            'libunity.dbg.so',
+            'libil2cpp.so',
+            'libil2cpp.dbg.so',
+            'libsentry.so',
+            'libsentry-android.so'
+        )
+    }
+    ElseIf ($buildMethod.contains('IOS'))
+    {
+        $expectedFiles = @(
+            'IntegrationTest',
+            'UnityFramework',
+            'libiPhone-lib.dylib',
+            'Sentry'
+        )
+    }
+    ElseIf ($buildMethod.contains('WebGL'))
+    {
+        Write-Host 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
+        return
+    }
+    Else
+    {
+        Throw "Cannot CheckSymbolServerOutput() for an unknown buildMethod: '$buildMethod'"
+    }
+
+    Write-Host 'Verifying debug symbol upload...'
+    $successful = $true
+    foreach ($name in $expectedFiles)
+    {
+        if ($symbolServerOutput -match "Received: .* $([Regex]::Escape($name))\b")
+        {
+            Write-Host "  $name - OK"
+        }
+        else
+        {
+            $successful = $false
+            Write-Host "  $name - MISSING" -ForegroundColor Red
+        }
+    }
+    if ($successful)
+    {
+        Write-Host 'All expected debug symbols have been uploaded' -ForegroundColor Green
+    }
+    else
+    {
+        exit 1
+    }
 }

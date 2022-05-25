@@ -33,6 +33,7 @@ Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$N
 Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs.meta" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/CppPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/ObjectiveCPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
 
 RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
         "-quit", "-batchmode", "-nographics", "-projectPath ", $NewProjectPath, `

@@ -58,32 +58,25 @@ Class AppleDevice
 function Build()
 {
     $mapFileParser = "MapFileParser.sh"
-    Write-Host -NoNewline "Fixing permission for $mapFileParser : "
     If (Test-Path -Path "$XcodeArtifactPath/$mapFileParser")
     {
+        Write-Host -NoNewline "Fixing permission for $mapFileParser : "
         # We need to allow the execution of this script, otherwise Xcode will throw permission denied.
         chmod +x "$XcodeArtifactPath/$mapFileParser"
         Write-Host "OK" -ForegroundColor Green
     }
-    Else
-    {
-        Write-Host "NOT FOUND" -ForegroundColor Gray
-    }
 
-    Write-Host "Building iOS project"
-    $xCodeBuild = Start-Process -FilePath "xcodebuild" -PassThru -ArgumentList `
-        "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", `
-        "-scheme", "Unity-iPhone", `
-        "-configuration", "Release", `
-        "-sdk", "iphonesimulator", `
-        "-derivedDataPath", "$ArchivePath/$ProjectName"
-
-    $xCodeBuild.WaitForExit()
-    If ($xCodeBuild.ExitCode -ne 0)
-    {
-        Throw "Xcode build exited with code $($xCodeBuild.ExitCode)."
+    $symbolServerOutput = RunWithSymbolServer -Callback {
+        Write-Host "Building iOS project"
+        xcodebuild `
+            -project "$XcodeArtifactPath/$ProjectName.xcodeproj" `
+            -scheme "Unity-iPhone" `
+            -configuration "Release" `
+            -sdk "iphonesimulator" `
+            -derivedDataPath "$ArchivePath/$ProjectName" `
+        | Write-Host
     }
-    Write-Host "OK" -ForegroundColor Green
+    CheckSymbolServerOutput 'IOS' $symbolServerOutput
 }
 
 function Test
