@@ -204,9 +204,9 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         $expectedFiles = @(
             'libmain.so',
             'libunity.so',
-            'libunity.dbg.so',
+            @('libunity.dbg.so', 'libunity.sym.so'),
             'libil2cpp.so',
-            'libil2cpp.dbg.so',
+            @('libil2cpp.dbg.so', 'libil2cpp.sym.so'),
             'libsentry.so',
             'libsentry-android.so'
         )
@@ -232,17 +232,21 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
 
     Write-Host 'Verifying debug symbol upload...'
     $successful = $true
-    foreach ($name in $expectedFiles)
+    :nextExpectedFile foreach ($name in $expectedFiles)
     {
-        if ($symbolServerOutput -match "Received: .* $([Regex]::Escape($name))\b")
+        $alternatives = ($name -is [array]) ? $name : @($name)
+        foreach ($name in $alternatives)
         {
-            Write-Host "  $name - OK"
+            # It's enough if a single symbol alternative is found
+            if ($symbolServerOutput -match "Received: .* $([Regex]::Escape($name))\b")
+            {
+                Write-Host "  $name - OK"
+                continue nextExpectedFile
+            }
         }
-        else
-        {
-            $successful = $false
-            Write-Host "  $name - MISSING" -ForegroundColor Red
-        }
+        # Note: control only gets here if none of the alternatives match...
+        $successful = $false
+        Write-Host "  $name - MISSING" -ForegroundColor Red
     }
     if ($successful)
     {
