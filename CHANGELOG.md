@@ -8,6 +8,9 @@
 - Collect context information synchronously during init to capture it for very early events ([#744](https://github.com/getsentry/sentry-unity/pull/744))
 - Automatic user IDs on native crashes & .NET events ([#728](https://github.com/getsentry/sentry-unity/pull/728))
 - Use single-threaded HTTP transport on unknown platforms ([#756](https://github.com/getsentry/sentry-unity/pull/756))
+- Bump Sentry Cocoa SDK to v7.16.0 ([#725](https://github.com/getsentry/sentry-unity/pull/725))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/compare/7.13.0...7.16.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.13.0...7.16.0)
 
 ## 0.16.0
 
