@@ -456,7 +456,7 @@ jobs:
 
       - name: Build iOS package
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Build
+        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest
 
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
@@ -514,7 +514,7 @@ jobs:
           {
             $runtime = "iOS " + $runtime
           }
-          ./Scripts/smoke-test-ios.ps1 Test "$runtime"
+          ./Scripts/smoke-test-ios.ps1 Test "$runtime" -IsIntegrationTest
 
   smoke-test-run:
     needs: [smoke-test-build]
