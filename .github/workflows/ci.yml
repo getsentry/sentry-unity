@@ -134,7 +134,7 @@ jobs:
       - name: Assembly alias
         run: |
           docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3 && \
-          ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
+          ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "System.Collections.Immutable;System.Numerics.Vectors;System.Buffers;System.Threading.Tasks.Extensions;Microsoft.Bcl.AsyncInterfaces;System.Text.Encodings.Web;System.Text.Json;System.Memory;System.Reflection.Metadata"'
 
       - name: Update .meta files before packaging
         # We need to open & close Unity on the sample project to update .meta files in package-dev.
