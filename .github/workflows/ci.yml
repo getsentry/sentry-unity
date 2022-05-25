@@ -254,6 +254,13 @@ jobs:
           path: samples/IntegrationTest/Build
           if-no-files-found: error
 
+      - name: Upload IntegrationTest project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: samples/IntegrationTest
+
   package-validation:
     needs: [build]
     name: UPM Package validation

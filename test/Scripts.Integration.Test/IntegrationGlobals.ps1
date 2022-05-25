@@ -215,10 +215,9 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         $expectedFiles = @(
             'libmain.so',
             'libunity.so',
-            'libunity.sym.so',
+            'libunity.dbg.so',
             'libil2cpp.so',
             'libil2cpp.dbg.so',
-            'libil2cpp.sym.so',
             'libsentry.so',
             'libsentry-android.so'
         )
