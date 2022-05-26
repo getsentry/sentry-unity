@@ -141,9 +141,10 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
     }
 }
 
-function SymbolServerUrlFor([string] $UnityPath)
+function SymbolServerUrlFor([string] $UnityPath, [string] $Platform = "")
 {
-    $UnityPath.StartsWith("docker ") ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
+    # Note: iOS has special handling - it's the "update-sentry" script runs elsewhere than the actual build & upload.
+    ($UnityPath.StartsWith("docker ") -and ($Platform -ne "iOS")) ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
 }
 
 function RunWithSymbolServer([ScriptBlock] $Callback)

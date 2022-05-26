@@ -45,6 +45,6 @@ RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Con
         "-cliOptions.Org", "sentry-sdks", `
         "-cliOptions.Project", "sentry-unity", `
         "-cliOptions.Auth", "dummy-token", `
-        "-cliOptions.UrlOverride", (SymbolServerUrlFor $UnityPath))
+        "-cliOptions.UrlOverride", (SymbolServerUrlFor $UnityPath $Platform))
 
 Write-Host " Unity configuration finished successfully" -ForegroundColor Green
