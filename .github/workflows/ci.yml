@@ -82,7 +82,18 @@ jobs:
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Start the Unity docker container
-        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}
+        # 1. We use the host dotnet installation - it's much faster than installing inside the docker container.
+        # 2. We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
+        #    Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
+        run: |
+          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-ios-1.0.1"
+          docker run -td --name unity \
+            -v ${{ github.workspace }}:/sentry-unity \
+            -v /usr/share/dotnet:/usr/share/dotnet \
+            -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
+            --workdir /sentry-unity $image
+          docker exec unity ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+          docker exec unity ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
 
       - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
