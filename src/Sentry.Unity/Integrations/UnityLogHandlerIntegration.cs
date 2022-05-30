@@ -58,7 +58,7 @@ namespace Sentry.Unity.Integrations
             _ = _hub.CaptureException(exception);
 
             // So the next event includes this error as a breadcrumb
-            _hub.AddBreadcrumb(message: exception.GetType() + ": " + exception.Message, category: "unity.logger", level: BreadcrumbLevel.Error);
+            _hub.AddBreadcrumb(message: $"{exception.GetType()}: {exception.Message}", category: "unity.logger", level: BreadcrumbLevel.Error);
         }
 
         public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
@@ -76,7 +76,7 @@ namespace Sentry.Unity.Integrations
 
             // TODO: Figure out if format {0} and args.length == 1 is guaranteed?
             // TODO: Capture the context (i.e. grab the name if != null)
-            
+
             if (!format.Equals("{0}") || args.Length is > 1 or <= 0)
             {
                 return;
