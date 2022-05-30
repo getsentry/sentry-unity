@@ -15,7 +15,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.Scripting;
-using UnityEngine.Analytics;
 
 #if SENTRY_NATIVE_COCOA
 using Sentry.Unity.iOS;

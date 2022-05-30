@@ -11,7 +11,7 @@ namespace Sentry.Unity.Default
     {
         public static void Configure(SentryUnityOptions options)
         {
-            // This is only provided on a best-effort basis for other then the explicitly supported platforms.
+            // This is only provided on a best-effort basis for other than the explicitly supported platforms.
             if (options.BackgroundWorker is null)
             {
                 options.DiagnosticLogger?.Log(SentryLevel.Debug,
