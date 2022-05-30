@@ -8,6 +8,7 @@
 - Collect context information synchronously during init to capture it for very early events ([#744](https://github.com/getsentry/sentry-unity/pull/744))
 - Automatic user IDs on native crashes & .NET events ([#728](https://github.com/getsentry/sentry-unity/pull/728))
 - Use single-threaded HTTP transport on unknown platforms ([#756](https://github.com/getsentry/sentry-unity/pull/756))
+- Disable offline caching on unknown platforms ([#770](https://github.com/getsentry/sentry-unity/pull/770))
 
 ## 0.16.0
 
