@@ -92,8 +92,7 @@ namespace Sentry.Unity
             try
             {
                 long msUntilCheck; // avoiding allocs in the loop
-                var watch = new Stopwatch();
-                watch.Start();
+                var watch = Stopwatch.StartNew();
 
                 while (!_cancel.IsCancellationRequested)
                 {

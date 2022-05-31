@@ -10,7 +10,7 @@ namespace Sentry.Unity.Tests
 {
     public class AnrDetectionTests
     {
-        private const int timeout = 100;
+        private const int timeout = 1000;
 
         private ANRWatchDog StartWatchdog()
         {
@@ -48,9 +48,8 @@ namespace Sentry.Unity.Tests
             sut.OnApplicationNotResponding += (_, e) => arn = e;
 
             // yield WaitForSeconds doesn't block the UI thread
-            var watch = new Stopwatch();
-            watch.Start();
-            while (watch.ElapsedMilliseconds < timeout * 5)
+            var watch = Stopwatch.StartNew();
+            while (watch.ElapsedMilliseconds < timeout * 3)
             {
                 yield return new WaitForSeconds(0.01f);
             }
