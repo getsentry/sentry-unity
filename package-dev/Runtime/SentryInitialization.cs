@@ -38,6 +38,7 @@ namespace Sentry.Unity
         public static void Init()
         {
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
+            SentryIntegrations.Configure(options);
             if (options.ShouldInitializeSdk())
             {
                 var sentryUnityInfo = new SentryUnityInfo();
