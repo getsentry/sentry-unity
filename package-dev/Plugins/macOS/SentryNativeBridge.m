@@ -44,7 +44,9 @@ int SentryNativeBridgeLoadLibrary()
 
 const void *SentryNativeBridgeOptionsNew()
 {
-    return CFBridgingRetain([[NSMutableDictionary alloc] init]);
+    NSMutableDictionary *dictOptions = [[NSMutableDictionary alloc] init];
+    dictOptions[@"sdk"] = @ { @"name" : @"sentry.cocoa.unity" };
+    return CFBridgingRetain(dictOptions);
 }
 
 void SentryNativeBridgeOptionsSetString(const void *options, const char *name, const char *value)
