@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Tests
 {
@@ -46,8 +47,8 @@ namespace Sentry.Unity.Tests
             }
 
             // While within timeout: check every newly received request
-            var startTime = DateTime.Now;
-            while (DateTime.Now < startTime + timeout)
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.Elapsed < timeout)
             {
                 if (_requestReceived.WaitOne(TimeSpan.FromMilliseconds(16))) // Once per frame
                 {

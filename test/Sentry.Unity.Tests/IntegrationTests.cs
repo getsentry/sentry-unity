@@ -169,27 +169,27 @@ namespace Sentry.Unity.Tests
             Assert.That(triggeredEvent, Does.Not.Contain(expectedAttribute));
         }
 
-        // [UnityTest]
-        // public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
-        // {
-        //     yield return SetupSceneCoroutine("1_BugFarm");
-        //
-        //     var sourceEventCapture = new TestEventCapture();
-        //     var sourceDsn = "http://publickey@localhost:8000/12345";
-        //     using var firstDisposable = InitSentrySdk(o =>
-        //     {
-        //         o.Dsn = sourceDsn;
-        //         o.AddIntegration(new UnityLogHandlerIntegration(eventCapture: sourceEventCapture));
-        //     });
-        //
-        //     var nextEventCapture = new TestEventCapture();
-        //     using var secondDisposable = InitSentrySdk(nextEventCapture); // uses the default test DSN
-        //     var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
-        //     testBehaviour.gameObject.SendMessage(nameof(testBehaviour.TestException));
-        //
-        //     Assert.AreEqual(0, sourceEventCapture.Count, sourceDsn);
-        //     Assert.AreEqual(1, nextEventCapture.Count);
-        // }
+        [UnityTest]
+        public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
+        {
+            yield return SetupSceneCoroutine("1_BugFarm");
+
+            var firstHttpClientHandler = new TestHttpClientHandler();
+            using var firstDisposable = InitSentrySdk(o =>
+            {
+                o.Dsn = "http://publickey@localhost:8000/12345";
+                o.CreateHttpClientHandler = () => firstHttpClientHandler;
+            });
+
+            using var secondDisposable = InitSentrySdk(); // uses the default test DSN
+
+            var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
+            testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
+
+            Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(_eventReceiveTimeout));
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
+            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
+        }
 
         [UnityTest]
         public IEnumerator DebugLogException_IsMarkedUnhandled()

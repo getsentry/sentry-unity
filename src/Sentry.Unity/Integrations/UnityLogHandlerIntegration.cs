@@ -37,8 +37,15 @@ namespace Sentry.Unity.Integrations
 
         public void LogException(Exception exception, UnityEngine.Object context)
         {
-            CaptureException(exception, context);
-            _unityLogHandler.LogException(exception, context);
+            try
+            {
+                CaptureException(exception, context);
+            }
+            finally
+            {
+                // Always pass the exception back to Unity
+                _unityLogHandler.LogException(exception, context);
+            }
         }
 
         internal void CaptureException(Exception exception, UnityEngine.Object? context)
@@ -48,7 +55,7 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            // TODO: Capture the context (i.e. grab the name if != null)
+            // TODO: Capture the context (i.e. grab the name if != null and set it as context)
 
             // NOTE: This might not be entirely true, as a user could as well call `Debug.LogException`
             // and expect a handled exception but it is not possible for us to differentiate
@@ -63,8 +70,15 @@ namespace Sentry.Unity.Integrations
 
         public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
         {
-            CaptureLogFormat(logType, context, format, args);
-            _unityLogHandler.LogFormat(logType, context, format, args);
+            try
+            {
+                CaptureLogFormat(logType, context, format, args);
+            }
+            finally
+            {
+                // Always pass the log back to Unity
+                _unityLogHandler.LogFormat(logType, context, format, args);
+            }
         }
 
         internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
@@ -74,10 +88,8 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            // TODO: Figure out if format {0} and args.length == 1 is guaranteed?
-            // TODO: Capture the context (i.e. grab the name if != null)
-
-            if (!format.Equals("{0}") || args.Length is > 1 or <= 0)
+            // TODO: Is format '{0}' and args.length == 1 guaranteed?
+            if (args.Length == 0 || !format.Contains("{0}"))
             {
                 return;
             }
@@ -109,6 +121,8 @@ namespace Sentry.Unity.Integrations
                     return;
                 }
             }
+
+            // TODO: Capture the context (i.e. grab the name if != null and set it as context)
 
             // TODO: to check against 'MinBreadcrumbLevel'
             if (logType is LogType.Error or LogType.Assert)
