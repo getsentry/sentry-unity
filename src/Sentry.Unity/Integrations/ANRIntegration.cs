@@ -76,9 +76,9 @@ namespace Sentry.Unity
 
         private IEnumerator UpdateUiStatus()
         {
-            yield return new WaitForEndOfFrame();
-
             var waitForSeconds = new WaitForSeconds((float)Math.Min(sleepInterval, _checkIntervalMilliseconds) / 1000);
+
+            yield return waitForSeconds;
             while (!_cancel.IsCancellationRequested)
             {
                 _uiIsResponsive = true;
