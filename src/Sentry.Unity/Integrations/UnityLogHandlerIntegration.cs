@@ -124,12 +124,12 @@ namespace Sentry.Unity.Integrations
 
             // TODO: Capture the context (i.e. grab the name if != null and set it as context)
 
-            // TODO: to check against 'MinBreadcrumbLevel'
             if (logType is LogType.Error or LogType.Assert)
             {
                 _hub.CaptureMessage(logMessage, ToEventTagType(logType));
             }
 
+            // So the next event includes this as a breadcrumb
             _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
         }
 
