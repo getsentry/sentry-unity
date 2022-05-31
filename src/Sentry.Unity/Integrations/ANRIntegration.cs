@@ -1,74 +1,103 @@
 using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Threading;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity
 {
     internal class ANRIntegration : ISdkIntegration
     {
         private static ANRWatchDog _watchdog = new ANRWatchDog();
+        private SentryMonoBehaviour _monoBehaviour;
+
+        public ANRIntegration(SentryMonoBehaviour monoBehaviour)
+        {
+            _monoBehaviour = monoBehaviour;
+        }
 
         public void Register(IHub hub, SentryOptions options)
         {
-            _watchdog.Attach(hub, options.DiagnosticLogger);
+            _watchdog.StartOnce(options.DiagnosticLogger, _monoBehaviour);
+            _watchdog.OnApplicationNotResponding += (_, e) => hub.CaptureException(e);
         }
     }
 
     internal class ANRWatchDog
     {
-        private const int checkIntervalMilliseconds = 5000;
+        private int _checkIntervalMilliseconds;
 
         // Note: we don't sleep for the check interval duration to prevent the thread from blocking shutdown.
+        // Note 2: if this is higher than _checkIntervalMilliseconds, the lower value is used.
         private const int sleepInterval = 1000;
 
-        // TODO stop on app shutdown
         private CancellationTokenSource _cancel = new CancellationTokenSource();
         private IDiagnosticLogger? _logger;
+        private SentryMonoBehaviour _monoBehaviour = null!;
         private bool _uiIsResponsive = false;
+        private bool _reported = false; // don't report the same ANR instance multiple times
         private Thread _thread = null!;
-        private event Action _event = () => { };
+        internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
 
-        public void Attach(IHub hub, IDiagnosticLogger? logger)
+        internal ANRWatchDog(int checkIntervalMilliseconds = 5000)
         {
-            // Start the thread, if not yet running
-            lock (_cancel)
-            {
-                _logger ??= logger;
-                _thread ??= new Thread(Run)
-                {
-                    Name = "Sentry-ANR-WatchDog"
-                };
-            }
-
-            _event += () =>
-            {
-                // TODO trigger even on `hub`
-            };
+            _checkIntervalMilliseconds = checkIntervalMilliseconds;
         }
 
-        private void CheckUiThread()
+        internal void StartOnce(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour)
         {
-            // TODO implement
+            // Start the thread, if not yet running.
+            lock (_cancel)
+            {
+                if (_thread is null)
+                {
+                    _monoBehaviour = monoBehaviour;
+                    _logger = logger;
+                    _thread = new Thread(Run)
+                    {
+                        Name = "Sentry-ANR-WatchDog"
+                    };
+                    _thread.Start();
+
+                    // Stop the thread when the app is being shut down.
+                    _monoBehaviour.Application.Quitting += () =>
+                    {
+                        _cancel.Cancel();
+                        _thread.Join();
+                    };
+
+                    // Update the UI status periodically by running a couroutine on the UI thread
+                    _monoBehaviour.StartCoroutine(UpdateUiStatus());
+                }
+            }
+        }
+
+        private IEnumerator UpdateUiStatus()
+        {
+            yield return new WaitForEndOfFrame();
+
+            var waitForSeconds = new WaitForSeconds((float)Math.Min(sleepInterval, _checkIntervalMilliseconds) / 1000);
+            while (!_cancel.IsCancellationRequested)
+            {
+                _uiIsResponsive = true;
+                _reported = false;
+                yield return waitForSeconds;
+            }
         }
 
         private void Run()
         {
             try
             {
-                if (!_uiIsResponsive)
-                {
-                    CheckUiThread();
-                }
-
                 long msUntilCheck; // avoiding allocs in the loop
                 var watch = new Stopwatch();
                 watch.Start();
 
                 while (!_cancel.IsCancellationRequested)
                 {
-                    msUntilCheck = checkIntervalMilliseconds - watch.ElapsedMilliseconds;
+                    msUntilCheck = _checkIntervalMilliseconds - watch.ElapsedMilliseconds;
                     if (msUntilCheck > 0)
                     {
                         // sleep for a bit
@@ -77,14 +106,16 @@ namespace Sentry.Unity
                     else
                     {
                         // time to check
-                        if (!_uiIsResponsive)
+                        if (!_uiIsResponsive && !_reported)
                         {
-                            _event?.Invoke();
+                            var message = $"Application not responding for at least {_checkIntervalMilliseconds} ms.";
+                            _logger?.LogInfo("Detected an ANR event: {0}", message);
+                            OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
+                            _reported = true;
                         }
 
                         _uiIsResponsive = false;
-                        CheckUiThread();
-                        watch.Reset();
+                        watch.Restart();
                     }
                 }
             }
@@ -93,5 +124,12 @@ namespace Sentry.Unity
                 _logger?.Log(SentryLevel.Warning, "Exception in the ANR watchdog.", e);
             }
         }
+    }
+
+    internal class ApplicationNotResponding : Exception
+    {
+        internal ApplicationNotResponding() : base() { }
+        internal ApplicationNotResponding(string message) : base(message) { }
+        internal ApplicationNotResponding(string message, Exception innerException) : base(message, innerException) { }
     }
 }

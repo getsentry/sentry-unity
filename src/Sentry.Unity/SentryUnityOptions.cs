@@ -146,7 +146,7 @@ namespace Sentry.Unity
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityLogHandlerIntegration());
-            this.AddIntegration(new ANRIntegration());
+            this.AddIntegration(new ANRIntegration(SentryMonoBehaviour.Instance));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
             this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));
