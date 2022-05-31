@@ -287,14 +287,6 @@ namespace Sentry.Unity
     {
         public void Process(Exception exception, SentryEvent sentryEvent)
         {
-            if (exception is UnityLogException ule)
-            {
-                // TODO: At this point the original (Mono+.NET stack trace factories already ran)
-                // Ideally this strategy would fit into the SDK hooks, even though this parse gives not only
-                // a stacktrace but also the exception message and type so currently can't be hooked into StackTraceFactory
-                sentryEvent.SentryExceptions = new[] { ule.ToSentryException() };
-                sentryEvent.SetTag("source", "log");
-            }
         }
     }
 

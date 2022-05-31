@@ -111,7 +111,7 @@ public class SmokeTester : MonoBehaviour
             var guid = Guid.NewGuid().ToString();
             Debug.LogError($"LogError(GUID)={guid}");
 
-            // Skip the session init requests (there may be multiple of othem). We can't skip them by a "positive"
+            // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
             // because they're also repeated with standard events (in an envelope).
             Debug.Log("Skipping all non-event requests");
             for (; currentMessage < 10; currentMessage++)
