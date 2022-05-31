@@ -15,10 +15,18 @@ namespace Sentry.Unity.Default
             if (options.BackgroundWorker is null)
             {
                 options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                        "Configuring on an unknown platform. Using WebBackgroundWorker to improve compatibility.");
+                    "Platform support for background thread execution is unknown: using WebBackgroundWorker.");
                 options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
             }
+
             options.DefaultUserId = AnalyticsSessionInfo.userId;
+
+            if (options.CacheDirectoryPath is not null)
+            {
+                options.DiagnosticLogger?.Log(SentryLevel.Debug,
+                    "Platform support for offline caching is unknown - disabling it.");
+                options.CacheDirectoryPath = null;
+            }
         }
     }
 }
