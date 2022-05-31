@@ -71,7 +71,7 @@ function Build()
 
         # We need to manually switch the CLI executable, because the artifact that came through GH actions'
         # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
-        # Side note: the permissions are set by the SentryCli.cs so end-users aren't n affected if we ship the CLI
+        # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
         #             with the missing executable bit in the UPM package - it's fixed on build.
         chmod +x "$XcodeArtifactPath/sentry-cli-Darwin-universal"
 

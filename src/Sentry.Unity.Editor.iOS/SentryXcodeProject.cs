@@ -34,7 +34,7 @@ if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
 else
     echo ""Bitcode is enabled""
     if [ ""$ACTION"" = ""install"" ] ; then
-        echo ""note: Uploading debug symbols and bcsymbolmaps(Bitcode enabled).""
+        echo ""note: Uploading debug symbols and bcsymbolmaps (Bitcode enabled).""
         process_upload_symbols
     else
         echo ""note: Skipping debug symbol upload because Bitcode is enabled and this is a non-install build.""
