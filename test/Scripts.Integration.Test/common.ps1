@@ -1,22 +1,40 @@
 # Note: this is currently used by "integration-*.ps1" scripts as well as "smoke-test-*.ps1" scripts.
 # If/when those are merged to some extent, maybe this file could be merged into `IntegrationGlobals.ps1`.
 
-function RunApiServer()
+function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:8000")
 {
-    $result = "" | Select-Object -Property process, outFile, errFile, stop
-    Write-Host "Starting the HTTP server (dummy API server)"
+    $result = "" | Select-Object -Property process, outFile, errFile, stop, output, dispose
+    Write-Host "Starting the $ServerScript on $Uri"
     $result.outFile = New-TemporaryFile
     $result.errFile = New-TemporaryFile
 
-    $result.process = Start-Process "python3" -ArgumentList "$PSScriptRoot/crash-test-server.py" -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
+    $result.process = Start-Process "python3" -ArgumentList @("$PSScriptRoot/$ServerScript.py", $Uri) `
+        -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
+
+    $result.output = { "$(Get-Content $result.outFile -Raw)`n$(Get-Content $result.errFile -Raw)" }.GetNewClosure()
+
+    $result.dispose = {
+        $result.stop.Invoke()
+
+        Write-Host "Server stdout:" -ForegroundColor Yellow
+        $stdout = Get-Content $result.outFile -Raw
+        Write-Host $stdout
+
+        Write-Host "Server stderr:" -ForegroundColor Yellow
+        $stderr = Get-Content $result.errFile -Raw
+        Write-Host $stderr
+
+        Remove-Item $result.outFile -ErrorAction Continue
+        Remove-Item $result.errFile -ErrorAction Continue
+        return "$stdout`n$stderr"
+    }.GetNewClosure()
 
     $result.stop = {
-        $uri = "http://localhost:8000"
         # Stop the HTTP server
-        Write-Host "Stopping the dummy API server ... " -NoNewline
+        Write-Host "Stopping the $ServerScript ... " -NoNewline
         try
         {
-            (Invoke-WebRequest -Uri "$uri/STOP").StatusDescription
+            Write-Host (Invoke-WebRequest -Uri "$Uri/STOP").StatusDescription
         }
         catch
         {
@@ -24,13 +42,14 @@ function RunApiServer()
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
+        $result.stop = {}
     }.GetNewClosure()
 
     # The process shouldn't finish by itself, if it did, there was an error, so let's check that
     Start-Sleep -Second 1
     if ($result.process.HasExited)
     {
-        Write-Host "Couldn't start the HTTP server" -ForegroundColor Red
+        Write-Host "Couldn't start the $ServerScript" -ForegroundColor Red
         Write-Host "Standard Output:" -ForegroundColor Yellow
         Get-Content $result.outFile
         Write-Host "Standard Error:" -ForegroundColor Yellow
@@ -71,7 +90,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         }
 
         # start the server
-        $httpServer = RunApiServer
+        $httpServer = RunApiServer "crash-test-server"
 
         # run the test
         try
@@ -96,32 +115,22 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         for ($i = $timeout; $i -gt 0; $i--)
         {
             Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
-            $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
-            if ("$output".Contains($SuccessString))
+            if ("$($httpServer.output.Invoke())".Contains($SuccessString))
             {
                 break
             }
             Start-Sleep -Milliseconds 1000
         }
 
-        $httpServer.stop.Invoke()
-
-        Write-Host "Server stdout:" -ForegroundColor Yellow
-        Get-Content $httpServer.outFile -Raw
-
-        Write-Host "Server stderr:" -ForegroundColor Yellow
-        Get-Content $httpServer.errFile -Raw
-
-        $output = (Get-Content $httpServer.outFile -Raw) + (Get-Content $httpServer.errFile -Raw)
-        Remove-Item $httpServer.outFile -ErrorAction Continue
-        Remove-Item $httpServer.errFile -ErrorAction Continue
-
-        if ($output.Contains($SuccessString))
+        $output = $httpServer.dispose.Invoke()
+        Write-Host "Looking for the SuccessString ($SuccessString) in the server output..."
+        if ("$output".Contains($SuccessString))
         {
             Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
             break
         }
-        elseif ($run -eq $runs)
+        Write-Host "SuccessString ($SuccessString) not found..." -ForegroundColor Red
+        if ($run -eq $runs)
         {
             throw "crash test $run/$runs : FAILED"
         }
@@ -129,5 +138,123 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         {
             Write-Warning "crash test $run/$runs : FAILED, retrying"
         }
+    }
+}
+
+function SymbolServerUrlFor([string] $UnityPath, [string] $Platform = "")
+{
+    # Note: iOS has special handling - it's the "update-sentry" script runs elsewhere than the actual build & upload.
+    ($UnityPath.StartsWith("docker ") -and ($Platform -ne "iOS")) ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
+}
+
+function RunWithSymbolServer([ScriptBlock] $Callback)
+{
+    # start the server
+    $httpServer = RunApiServer "symbol-upload-server" (SymbolServerUrlFor $UnityPath)
+
+    # run the test
+    try
+    {
+        $Callback.Invoke()
+    }
+    finally
+    {
+        $httpServer.stop.Invoke()
+    }
+
+    return $httpServer.dispose.Invoke()
+}
+
+function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput)
+{
+    $expectedFiles = @()
+    If ($buildMethod.contains('Mac'))
+    {
+        $expectedFiles = @(
+            'IntegrationTest',
+            'UnityPlayer.dylib',
+            'GameAssembly.dylib',
+            'Sentry.dylib',
+            'Sentry.dylib.dSYM'
+        )
+    }
+    ElseIf ($buildMethod.contains('Windows'))
+    {
+        $expectedFiles = @(
+            'test.exe',
+            'GameAssembly.dll',
+            'GameAssembly.pdb',
+            'UnityPlayer.dll',
+            'sentry.pdb',
+            'sentry.dll'
+        )
+    }
+    ElseIf ($buildMethod.contains('Linux'))
+    {
+        $expectedFiles = @(
+            'test',
+            'test_s.debug',
+            'GameAssembly.so',
+            'UnityPlayer.so',
+            'UnityPlayer_s.debug',
+            'libsentry.dbg.so'
+        )
+    }
+    ElseIf ($buildMethod.contains('Android'))
+    {
+        $expectedFiles = @(
+            'libmain.so',
+            'libunity.so',
+            @('libunity.dbg.so', 'libunity.sym.so'),
+            'libil2cpp.so',
+            @('libil2cpp.dbg.so', 'libil2cpp.sym.so'),
+            'libsentry.so',
+            'libsentry-android.so'
+        )
+    }
+    ElseIf ($buildMethod.contains('IOS'))
+    {
+        $expectedFiles = @(
+            'IntegrationTest',
+            'UnityFramework',
+            'libiPhone-lib.dylib',
+            'Sentry'
+        )
+    }
+    ElseIf ($buildMethod.contains('WebGL'))
+    {
+        Write-Host 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
+        return
+    }
+    Else
+    {
+        Throw "Cannot CheckSymbolServerOutput() for an unknown buildMethod: '$buildMethod'"
+    }
+
+    Write-Host 'Verifying debug symbol upload...'
+    $successful = $true
+    :nextExpectedFile foreach ($name in $expectedFiles)
+    {
+        $alternatives = ($name -is [array]) ? $name : @($name)
+        foreach ($name in $alternatives)
+        {
+            # It's enough if a single symbol alternative is found
+            if ($symbolServerOutput -match "Received: .* $([Regex]::Escape($name))\b")
+            {
+                Write-Host "  $name - OK"
+                continue nextExpectedFile
+            }
+        }
+        # Note: control only gets here if none of the alternatives match...
+        $successful = $false
+        Write-Host "  $name - MISSING" -ForegroundColor Red
+    }
+    if ($successful)
+    {
+        Write-Host 'All expected debug symbols have been uploaded' -ForegroundColor Green
+    }
+    else
+    {
+        exit 1
     }
 }

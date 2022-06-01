@@ -41,6 +41,8 @@ $projectSettings = Get-Content $projectSettingsPath
 $projectSettings = $projectSettings -replace "m_StackTraceTypes: ?[01]+", "m_StackTraceTypes: 010000000000000000000000000000000100000001000000"
 # Build Android for x86_64 - for the emulator
 $projectSettings = $projectSettings -replace "AndroidTargetArchitectures: ?[0-9]+", "AndroidTargetArchitectures: 4"
+# Build for iOS Simulator
+$projectSettings = $projectSettings -replace "iPhoneSdkVersion: ?[0-9]+", "iPhoneSdkVersion: 989"
 $projectSettings | Out-File $projectSettingsPath
 
 Write-Host "`nProject created!!"

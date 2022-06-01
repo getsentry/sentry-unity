@@ -128,7 +128,7 @@ if ($Crash) {
     }
     else
     {
-        CrashTestWithServer -SuccessString = "POST /api/12345/minidump/" -CrashTestCallback { RunTest "crash" }
+        CrashTestWithServer -SuccessString "POST /api/12345/minidump/" -CrashTestCallback { RunTest "crash" }
         RunTest "has-crashed"
     }
 }

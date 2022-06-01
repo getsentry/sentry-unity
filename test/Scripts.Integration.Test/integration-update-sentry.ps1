@@ -4,6 +4,7 @@ param(
 )
 
 . ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+. ./test/Scripts.Integration.Test/common.ps1
 
 $UnityPath = FormatUnityPath $UnityPath
 
@@ -33,12 +34,17 @@ Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$N
 Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs.meta" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/CppPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/ObjectiveCPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
 
 RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
-        "-quit", "-batchmode", "-nographics", "-projectPath ", "$NewProjectPath", `
+        "-quit", "-batchmode", "-nographics", "-projectPath ", $NewProjectPath, `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
-        "-sentryOptions.Dsn", "$(TestDsnFor $Platform)", `
+        "-sentryOptions.Dsn", (TestDsnFor $Platform), `
         "-sentryOptionsScript", "SmokeTestOptions", `
-        "-attachScreenshot", "true")
+        "-attachScreenshot", "true", `
+        "-cliOptions.Org", "sentry-sdks", `
+        "-cliOptions.Project", "sentry-unity", `
+        "-cliOptions.Auth", "dummy-token", `
+        "-cliOptions.UrlOverride", (SymbolServerUrlFor $UnityPath $Platform))
 
 Write-Host " Unity configuration finished successfully" -ForegroundColor Green

@@ -32,8 +32,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 cliOptions.Project);
 
             cliOptions.UrlOverride = EditorGUILayout.TextField(
-                new GUIContent("Override Sentry URL", "Fully qualified URL to the Sentry server " +
-                                                      "(defaults to https://sentry.io/)"),
+                new GUIContent("Override Sentry URL", "Fully qualified URL to the Sentry server (defaults to " +
+                                                      "the server configured in DSN, e.g. https://sentry.io)"),
                 cliOptions.UrlOverride);
         }
     }

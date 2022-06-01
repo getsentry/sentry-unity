@@ -47,7 +47,7 @@ namespace Sentry.Unity.Editor
             var validated = true;
             if (string.IsNullOrWhiteSpace(Auth))
             {
-                MissingFieldWarning(logger, "Auth name");
+                MissingFieldWarning(logger, "Auth Token");
                 validated = false;
             }
 
