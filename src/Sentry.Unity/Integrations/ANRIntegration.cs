@@ -33,11 +33,11 @@ namespace Sentry.Unity
         // Note 2: if this is higher than _checkIntervalMilliseconds, the lower value is used.
         private const int sleepInterval = 1000;
 
-        private CancellationTokenSource _cancel = new CancellationTokenSource();
         private IDiagnosticLogger? _logger;
         private SentryMonoBehaviour _monoBehaviour = null!;
         private bool _uiIsResponsive = false;
         private bool _reported = false; // don't report the same ANR instance multiple times
+        private bool _stop = false;
         private Thread _thread = null!;
         internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
 
@@ -49,7 +49,7 @@ namespace Sentry.Unity
         internal void StartOnce(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour)
         {
             // Start the thread, if not yet running.
-            lock (_cancel)
+            lock (OnApplicationNotResponding)
             {
                 if (_thread is null)
                 {
@@ -64,7 +64,7 @@ namespace Sentry.Unity
                     // Stop the thread when the app is being shut down.
                     _monoBehaviour.Application.Quitting += () =>
                     {
-                        _cancel.Cancel();
+                        _stop = true;
                         _thread.Join();
                     };
 
@@ -76,10 +76,10 @@ namespace Sentry.Unity
 
         private IEnumerator UpdateUiStatus()
         {
-            var waitForSeconds = new WaitForSeconds((float)Math.Min(sleepInterval, _checkIntervalMilliseconds) / 1000);
+            var waitForSeconds = new WaitForSeconds((float)Math.Min(sleepInterval, _checkIntervalMilliseconds / 2) / 1000);
 
             yield return waitForSeconds;
-            while (!_cancel.IsCancellationRequested)
+            while (!_stop)
             {
                 _uiIsResponsive = true;
                 _reported = false;
@@ -94,7 +94,7 @@ namespace Sentry.Unity
                 long msUntilCheck; // avoiding allocs in the loop
                 var watch = Stopwatch.StartNew();
 
-                while (!_cancel.IsCancellationRequested)
+                while (!_stop)
                 {
                     msUntilCheck = _checkIntervalMilliseconds - watch.ElapsedMilliseconds;
                     if (msUntilCheck > 0)
@@ -118,9 +118,13 @@ namespace Sentry.Unity
                     }
                 }
             }
-            catch (Exception e)
+            catch (ThreadAbortException e)
             {
                 _logger?.Log(SentryLevel.Warning, "Exception in the ANR watchdog.", e);
+            }
+            catch (Exception e)
+            {
+                _logger?.Log(SentryLevel.Error, "Exception in the ANR watchdog.", e);
             }
         }
     }
