@@ -313,12 +313,12 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
   this solution without using the sample project which depends on the output of this build. -->
-  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" AfterTargets="FindUnity">
-    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
+  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" DependsOnTargets="FindUnity">
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Create Packages."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -createProject $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -createProject $(UnityPackageProject)" />
     <PropertyGroup>
       <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
       <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
@@ -333,7 +333,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity Restore Packages."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnityPackageProject)" />
 
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
@@ -344,8 +344,9 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
-
+    <!-- Unity exits with a non-zero exit code when running tests. We ignore it and manually check the test results instead. -->
+    <Delete Files="$(UnityTestPlayModeResultFilePath)" />
+    <Exec EnvironmentVariables="IgnoreExitCode=true" Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)" />
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
@@ -355,8 +356,10 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
     <Message Importance="High" Text="Running Unity EditMode tests."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
-
+    <!-- Unity exits with a non-zero exit code when running tests. We ignore it and manually check the test results instead. -->
+    <!-- IgnoreStandardErrorWarningFormat="true" because of the intentional compilation error printed in GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile(). -->
+    <Delete Files="$(UnityTestEditModeResultFilePath)" />
+    <Exec EnvironmentVariables="IgnoreExitCode=true" IgnoreStandardErrorWarningFormat="true" Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)"/>
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
 
@@ -461,15 +464,12 @@ if (total == "0")
 }
 
 var result = testRun.Attribute("result").Value;
-var failed = testRun.Attribute("failed").Value;
-var message = $@"Result: {result.Replace("(Child)", "")} in {testRun.Attribute("duration").Value}s
 
--- Passed: {testRun.Attribute("passed").Value}
--- Failed: {failed}
--- Inconclusive: {testRun.Attribute("inconclusive").Value}
--- Skipped: {testRun.Attribute("skipped").Value}";
-
-Log.LogMessage(message);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "{0} in {1}s", result.Replace("(Child)", ""), testRun.Attribute("duration").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "        Passed: {0,3}", testRun.Attribute("passed").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "        Failed: {0,3}", testRun.Attribute("failed").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "       Skipped: {0,3}", testRun.Attribute("skipped").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "  Inconclusive: {0,3}", testRun.Attribute("inconclusive").Value);
 
 if (result == "Passed")
 {
@@ -478,6 +478,7 @@ if (result == "Passed")
 
 PrintFailedTests(testRun);
 
+var failed = testRun.Attribute("failed").Value;
 var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
 Log.LogError(errorMessage);
 
