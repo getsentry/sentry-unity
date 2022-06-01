@@ -25,8 +25,7 @@ namespace Sentry.Unity
 
             // Unity by definition only builds a single library/image,
             // which we add once to our list of debug images.
-            var debugImages = sentryEvent.DebugImages ?? new List<DebugImage>();
-            sentryEvent.DebugImages = debugImages;
+            var debugImages = (sentryEvent.DebugImages ??= new List<DebugImage>());
             // The il2cpp APIs give us image-relative instruction addresses, not
             // absolute ones, and we also do not get the image addr.
             // For this reason we will use the "rel:N" AddressMode, giving the
@@ -56,7 +55,7 @@ namespace Sentry.Unity
                         CodeFile = nativeStackTrace.ImageName,
                         DebugId = nativeStackTrace.ImageUuid,
                     });
-                    addrMode = String.Format("rel:{0}", imageIdx);
+                    addrMode = "rel:" + imageIdx;
                 }
 
                 var nativeLen = nativeStackTrace.Frames.Length;
@@ -67,7 +66,7 @@ namespace Sentry.Unity
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    frame.InstructionAddress = String.Format("0x{0}", nativeFrame.ToString("X8"));
+                    frame.InstructionAddress = $"0x{nativeFrame:X8}");
                     frame.AddressMode = addrMode;
                 }
             }
@@ -98,25 +97,31 @@ namespace Sentry.Unity
         {
             // Create a `GCHandle` for the exception, which we can then use to
             // essentially get a pointer to the underlying `Il2CppException` C++ object.
-            GCHandle gch = GCHandle.Alloc(e);
-            var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
-            IntPtr addr = il2cpp_gchandle_get_target(gchandle);
-
+            var gch = GCHandle.Alloc(e);
             // The `il2cpp_native_stack_trace` allocates and writes the native
             // instruction pointers to the `addresses`/`numFrames` out-parameters.
-            IntPtr addresses = IntPtr.Zero;
-            int numFrames = 0;
-            string? imageUUID = null;
-            string? imageName = null;
-            il2cpp_native_stack_trace(addr, out addresses, out numFrames, out imageUUID, out imageName);
+            var addresses = IntPtr.Zero;
+            try
+            {
+	              var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
+	              var addr = il2cpp_gchandle_get_target(gchandle);
+	  
+	              var numFrames = 0;
+	              string? imageUUID = null;
+	              string? imageName = null;
+	              il2cpp_native_stack_trace(addr, out addresses, out numFrames, out imageUUID, out imageName);
+	  
+	              // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
+	              var frames = new IntPtr[numFrames];
+	              Marshal.Copy(addresses, frames, 0, numFrames);
+              }
+              finally
+              {
+	              // We are done with the `GCHandle`.
+	              gch.Free();
 
-            // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
-            IntPtr[] frames = new IntPtr[numFrames];
-            Marshal.Copy(addresses, frames, 0, numFrames);
-            il2cpp_free(addresses);
-
-            // We are done with the `GCHandle`.
-            gch.Free();
+	              il2cpp_free(addresses);
+              }
 
             return new NativeStackTrace
             {
@@ -144,8 +149,8 @@ namespace Sentry.Unity
 
     internal class NativeStackTrace
     {
-        public IntPtr[] Frames = Array.Empty<IntPtr>();
-        public string? ImageUuid;
-        public string? ImageName;
+        public IntPtr[] Frames { get; set; } = Array.Empty<IntPtr>();
+        public string? ImageUuid { get; set; };
+        public string? ImageName { get; set; };
     }
 }

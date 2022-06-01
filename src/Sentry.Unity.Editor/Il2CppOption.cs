@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-    class Il2CppOption : IPreprocessBuildWithReport
+    internal class Il2CppOption : IPreprocessBuildWithReport
     {
         public int callbackOrder => 0;
 
