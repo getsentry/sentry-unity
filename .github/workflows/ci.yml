@@ -168,9 +168,6 @@ jobs:
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
       - name: Run Unity tests (playmode)
-        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
-        # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
-        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: |
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn= /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
@@ -183,9 +180,6 @@ jobs:
           path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
-        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
-        # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
-        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
