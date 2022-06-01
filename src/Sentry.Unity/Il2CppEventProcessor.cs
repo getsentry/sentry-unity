@@ -66,7 +66,7 @@ namespace Sentry.Unity
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    frame.InstructionAddress = $"0x{nativeFrame:X8}");
+                    frame.InstructionAddress = $"0x{nativeFrame:X8}";
                     frame.AddressMode = addrMode;
                 }
             }
@@ -103,32 +103,35 @@ namespace Sentry.Unity
             var addresses = IntPtr.Zero;
             try
             {
-	              var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
-	              var addr = il2cpp_gchandle_get_target(gchandle);
-	  
-	              var numFrames = 0;
-	              string? imageUUID = null;
-	              string? imageName = null;
-	              il2cpp_native_stack_trace(addr, out addresses, out numFrames, out imageUUID, out imageName);
-	  
-	              // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
-	              var frames = new IntPtr[numFrames];
-	              Marshal.Copy(addresses, frames, 0, numFrames);
-              }
-              finally
-              {
-	              // We are done with the `GCHandle`.
-	              gch.Free();
+                var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
+                var addr = il2cpp_gchandle_get_target(gchandle);
 
-	              il2cpp_free(addresses);
-              }
+                var numFrames = 0;
+                string? imageUUID = null;
+                string? imageName = null;
+                il2cpp_native_stack_trace(addr, out addresses, out numFrames, out imageUUID, out imageName);
 
-            return new NativeStackTrace
+                // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
+                var frames = new IntPtr[numFrames];
+                Marshal.Copy(addresses, frames, 0, numFrames);
+
+                return new NativeStackTrace
+                {
+                    Frames = frames,
+                    ImageUuid = imageUUID,
+                    ImageName = imageName,
+                };
+            }
+            finally
             {
-                Frames = frames,
-                ImageUuid = imageUUID,
-                ImageName = imageName,
-            };
+                // We are done with the `GCHandle`.
+                gch.Free();
+
+                if (addresses != IntPtr.Zero)
+                {
+                    il2cpp_free(addresses);
+                }
+            }
         }
 
         // NOTE: fn is available in Unity `2019.4.34f1` (and later)
@@ -150,7 +153,7 @@ namespace Sentry.Unity
     internal class NativeStackTrace
     {
         public IntPtr[] Frames { get; set; } = Array.Empty<IntPtr>();
-        public string? ImageUuid { get; set; };
-        public string? ImageName { get; set; };
+        public string? ImageUuid { get; set; }
+        public string? ImageName { get; set; }
     }
 }
