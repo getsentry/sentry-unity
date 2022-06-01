@@ -151,6 +151,13 @@ namespace Sentry.Unity.Editor.Native
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
             }
 
+            var cliArgs = "upload-dif ";
+            if (cliOptions.UploadSources)
+            {
+                cliArgs += "--include-sources ";
+            }
+            cliArgs += paths;
+
             // Configure the process using the StartInfo properties.
             var process = new Process
             {
@@ -158,7 +165,7 @@ namespace Sentry.Unity.Editor.Native
                 {
                     FileName = SentryCli.SetupSentryCli(),
                     WorkingDirectory = projectDir,
-                    Arguments = "upload-dif " + paths,
+                    Arguments = cliArgs,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

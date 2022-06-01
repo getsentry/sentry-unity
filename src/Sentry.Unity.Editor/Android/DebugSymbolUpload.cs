@@ -21,6 +21,7 @@ namespace Sentry.Unity.Editor.Android
         private readonly string _unityProjectPath;
         private readonly string _gradleProjectPath;
 
+        private readonly SentryCliOptions? _cliOptions;
         internal string[] _symbolUploadPaths;
 
         private string _symbolUploadTask = @"
@@ -37,6 +38,7 @@ gradle.taskGraph.whenReady {{
 }}";
 
         public DebugSymbolUpload(IDiagnosticLogger logger,
+            SentryCliOptions? cliOptions,
             string unityProjectPath,
             string gradleProjectPath,
             bool isExporting = false,
@@ -47,6 +49,7 @@ gradle.taskGraph.whenReady {{
             _unityProjectPath = unityProjectPath;
             _gradleProjectPath = gradleProjectPath;
 
+            _cliOptions = cliOptions;
             _symbolUploadPaths = GetSymbolUploadPaths(isExporting, application);
         }
 
@@ -72,12 +75,18 @@ gradle.taskGraph.whenReady {{
                 throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
             }
 
-            var symbolPathArgument = string.Empty;
+            var uploadDifArguments = string.Empty;
+
+            if (_cliOptions?.UploadSources ?? false)
+            {
+                uploadDifArguments += "\"--include-sources\",";
+            }
+
             foreach (var symbolUploadPath in _symbolUploadPaths)
             {
                 if (Directory.Exists(symbolUploadPath))
                 {
-                    symbolPathArgument += $"\"{ConvertSlashes(symbolUploadPath)}\",";
+                    uploadDifArguments += $"\"{ConvertSlashes(symbolUploadPath)}\",";
                 }
                 else
                 {
@@ -86,7 +95,7 @@ gradle.taskGraph.whenReady {{
             }
 
             using var streamWriter = File.AppendText(gradleFilePath);
-            streamWriter.Write(_symbolUploadTask, sentryCliPath, symbolPathArgument);
+            streamWriter.Write(_symbolUploadTask, sentryCliPath, uploadDifArguments);
         }
 
         public void RemoveUploadFromGradleFile()

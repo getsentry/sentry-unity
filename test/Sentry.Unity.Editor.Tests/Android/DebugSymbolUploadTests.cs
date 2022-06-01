@@ -35,7 +35,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             }
 
             public DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), LoggerInterceptor),
-                UnityProjectPath, GradleProjectPath, IsExporting, Application);
+                null, UnityProjectPath, GradleProjectPath, IsExporting, Application);
         }
 
         [SetUp]

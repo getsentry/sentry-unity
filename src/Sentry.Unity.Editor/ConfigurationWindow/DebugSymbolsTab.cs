@@ -17,6 +17,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                      "on development builds."),
                 cliOptions.UploadDevelopmentSymbols);
 
+            cliOptions.UploadSources = EditorGUILayout.Toggle(
+                new GUIContent("Upload Sources", "Whether source code should be uploaded."),
+                cliOptions.UploadSources);
+
             EditorGUILayout.EndToggleGroup();
 
             cliOptions.Auth = EditorGUILayout.TextField(
