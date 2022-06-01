@@ -144,7 +144,10 @@ namespace Sentry.Unity
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
-            this.AddExceptionProcessor(new UnityEventExceptionProcessor());
+
+            // TODO: conditionally use this only when compiling with il2cpp and targeting Unity >= 2020
+            this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor());
+
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());

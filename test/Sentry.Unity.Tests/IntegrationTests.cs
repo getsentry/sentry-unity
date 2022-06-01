@@ -170,7 +170,7 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
+        public IEnumerator DebugLogError_InTask_IsCapturedAndIsMainThreadIsFalse()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
