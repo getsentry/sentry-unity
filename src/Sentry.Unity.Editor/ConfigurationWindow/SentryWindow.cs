@@ -23,8 +23,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
         protected virtual string SentryCliAssetName { get; } = SentryCliOptions.ConfigName;
 
-        public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
-        public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
+        public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by Awake()
+        public SentryCliOptions CliOptions { get; private set; } = null!; // Set by Awake()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 

@@ -16,19 +16,19 @@ namespace Sentry.Unity.Editor
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string pathname, int mode);
 
-        public static string CreateSentryProperties(string propertiesPath, SentryCliOptions sentryCliOptions)
+        public static string CreateSentryProperties(string propertiesPath, SentryCliOptions cliOptions, SentryOptions options)
         {
             var propertiesFile = Path.Combine(propertiesPath, "sentry.properties");
             using var properties = File.CreateText(propertiesFile);
 
-            if (!string.IsNullOrEmpty(sentryCliOptions.UrlOverride))
+            if (UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
             {
-                properties.WriteLine($"defaults.url={sentryCliOptions.UrlOverride}");
+                properties.WriteLine($"defaults.url={urlOverride}");
             }
 
-            properties.WriteLine($"defaults.org={sentryCliOptions.Organization}");
-            properties.WriteLine($"defaults.project={sentryCliOptions.Project}");
-            properties.WriteLine($"auth.token={sentryCliOptions.Auth}");
+            properties.WriteLine($"defaults.org={cliOptions.Organization}");
+            properties.WriteLine($"defaults.project={cliOptions.Project}");
+            properties.WriteLine($"auth.token={cliOptions.Auth}");
             return propertiesFile;
         }
 
@@ -101,6 +101,22 @@ namespace Sentry.Unity.Editor
 
             File.Copy(executableSource, executableDestination);
             SetExecutePermission(executableDestination);
+        }
+
+        internal static string? UrlOverride(string? dsnOption, string? urlOverrideOption)
+        {
+            string? result = urlOverrideOption;
+            if (result is null && !string.IsNullOrEmpty(dsnOption))
+            {
+                var uri = new Uri(dsnOption);
+
+                // Override the URL if the DSN is configured to a non-default server
+                if (!uri.DnsSafeHost.Equals("sentry.io") && !uri.DnsSafeHost.EndsWith(".sentry.io"))
+                {
+                    result = new UriBuilder(uri.Scheme, uri.DnsSafeHost, uri.Port, "").Uri.AbsoluteUri.TrimEnd('/');
+                }
+            }
+            return result;
         }
     }
 }

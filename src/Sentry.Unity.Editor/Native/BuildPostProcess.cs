@@ -55,7 +55,7 @@ namespace Sentry.Unity.Editor.Native
                 var projectDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
                 AddCrashHandler(logger, target, projectDir, executableName);
-                UploadDebugSymbols(logger, target, projectDir, executableName);
+                UploadDebugSymbols(logger, target, projectDir, executableName, options);
             }
             catch (Exception e)
             {
@@ -100,7 +100,7 @@ namespace Sentry.Unity.Editor.Native
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options)
         {
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
@@ -162,9 +162,9 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            if (!string.IsNullOrEmpty(cliOptions.UrlOverride))
+            if (SentryCli.UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
             {
-                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = cliOptions.UrlOverride;
+                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = urlOverride;
             }
 
             process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;
