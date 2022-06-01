@@ -27,23 +27,23 @@ namespace Sentry.Unity
 
     internal class ANRWatchDog
     {
-        private int _checkIntervalMilliseconds;
+        private int _detectionTimeoutMs;
 
-        // Note: we don't sleep for the check interval duration to prevent the thread from blocking shutdown.
-        // Note 2: if this is higher than _checkIntervalMilliseconds, the lower value is used.
-        private const int sleepInterval = 1000;
+        // Note: we don't sleep for the whole detection timeout or we wouldn't capture if the ANR started later.
+        private int _sleepIntervalMs;
 
         private IDiagnosticLogger? _logger;
         private SentryMonoBehaviour _monoBehaviour = null!;
-        private bool _uiIsResponsive = false;
+        private int _ticksSinceUiUpdate = 0; // how many _sleepIntervalMs have elapsed since the UI updated last time
         private bool _reported = false; // don't report the same ANR instance multiple times
         private bool _stop = false;
         private Thread _thread = null!;
         internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
 
-        internal ANRWatchDog(int checkIntervalMilliseconds = 5000)
+        internal ANRWatchDog(int detectionTimeoutMilliseconds = 5000)
         {
-            _checkIntervalMilliseconds = checkIntervalMilliseconds;
+            _detectionTimeoutMs = detectionTimeoutMilliseconds;
+            _sleepIntervalMs = Math.Max(1, _detectionTimeoutMs / 5);
         }
 
         internal void StartOnce(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour)
@@ -57,16 +57,14 @@ namespace Sentry.Unity
                     _logger = logger;
                     _thread = new Thread(Run)
                     {
-                        Name = "Sentry-ANR-WatchDog"
+                        Name = "Sentry-ANR-WatchDog",
+                        IsBackground = true, // do not block on app shutdown
+                        Priority = System.Threading.ThreadPriority.BelowNormal,
                     };
                     _thread.Start();
 
                     // Stop the thread when the app is being shut down.
-                    _monoBehaviour.Application.Quitting += () =>
-                    {
-                        _stop = true;
-                        _thread.Join();
-                    };
+                    _monoBehaviour.Application.Quitting += () => Stop();
 
                     // Update the UI status periodically by running a couroutine on the UI thread
                     _monoBehaviour.StartCoroutine(UpdateUiStatus());
@@ -74,14 +72,24 @@ namespace Sentry.Unity
             }
         }
 
+        internal void Stop(bool joinThread = false)
+        {
+            _stop = true;
+            if (joinThread)
+            {
+                _thread.Join();
+            }
+        }
+
         private IEnumerator UpdateUiStatus()
         {
-            var waitForSeconds = new WaitForSeconds((float)Math.Min(sleepInterval, _checkIntervalMilliseconds / 2) / 1000);
+            var waitForSeconds = new WaitForSeconds((float)_sleepIntervalMs / 1000);
 
             yield return waitForSeconds;
             while (!_stop)
             {
-                _uiIsResponsive = true;
+                // _logger?.LogDebug("ANR WatchDog - notifying that UI is responsive");
+                _ticksSinceUiUpdate = 0;
                 _reported = false;
                 yield return waitForSeconds;
             }
@@ -91,36 +99,34 @@ namespace Sentry.Unity
         {
             try
             {
-                long msUntilCheck; // avoiding allocs in the loop
-                var watch = Stopwatch.StartNew();
+                int ticksSinceUiUpdate; // avoiding allocs in the loop
+                int reportTreshold = _detectionTimeoutMs / _sleepIntervalMs;
+
+                _logger?.Log(SentryLevel.Info,
+                    "Starting an ANR WatchDog - detection timeout: {0} ms, check every {1} ms => report after {2} failed checks",
+                    null, _detectionTimeoutMs, _sleepIntervalMs, reportTreshold);
 
                 while (!_stop)
                 {
-                    msUntilCheck = _checkIntervalMilliseconds - watch.ElapsedMilliseconds;
-                    if (msUntilCheck > 0)
-                    {
-                        // sleep for a bit
-                        Thread.Sleep(msUntilCheck < sleepInterval ? (int)msUntilCheck : sleepInterval);
-                    }
-                    else
-                    {
-                        // time to check
-                        if (!_uiIsResponsive && !_reported)
-                        {
-                            var message = $"Application not responding for at least {_checkIntervalMilliseconds} ms.";
-                            _logger?.LogInfo("Detected an ANR event: {0}", message);
-                            OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
-                            _reported = true;
-                        }
+                    _ticksSinceUiUpdate++;
+                    // sleep for a bit
+                    Thread.Sleep(_sleepIntervalMs);
 
-                        _uiIsResponsive = false;
-                        watch.Restart();
+                    // time to check
+                    ticksSinceUiUpdate = _ticksSinceUiUpdate;
+                    // _logger?.LogDebug("ANR status: {0} failed checks since last UI update", ticksSinceUiUpdate);
+                    if (ticksSinceUiUpdate >= reportTreshold && !_reported)
+                    {
+                        var message = $"Application not responding for at least {ticksSinceUiUpdate * _sleepIntervalMs} ms.";
+                        _logger?.LogInfo("Detected an ANR event: {0}", message);
+                        OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
+                        _reported = true;
                     }
                 }
             }
             catch (ThreadAbortException e)
             {
-                _logger?.Log(SentryLevel.Warning, "Exception in the ANR watchdog.", e);
+                _logger?.Log(SentryLevel.Debug, "ANR watchdog thread aborted.", e);
             }
             catch (Exception e)
             {

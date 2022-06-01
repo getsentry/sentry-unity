@@ -10,40 +10,46 @@ namespace Sentry.Unity.Tests
 {
     public class AnrDetectionTests
     {
-        private const int timeout = 1000;
+        private const int timeout = 500;
+        private ANRWatchDog sut = null!;
+        private GameObject _gameObject = null!;
+        private SentryMonoBehaviour _monoBehaviour = null!;
 
-        private ANRWatchDog StartWatchdog()
+
+        [SetUp]
+        public void SetUp()
         {
-            var gameObject = new GameObject("Tests");
-            var monoBehaviour = gameObject.AddComponent<SentryMonoBehaviour>();
+            _gameObject ??= new GameObject("Tests");
+            _monoBehaviour ??= _gameObject.AddComponent<SentryMonoBehaviour>();
 
-            var sut = new ANRWatchDog(timeout);
-            sut.StartOnce(new TestLogger(), monoBehaviour);
-            return sut;
+            UnityEngine.Debug.Log($"Preparing ANR watchdog. Timeout: {timeout}");
+            sut = new ANRWatchDog(timeout);
+            sut.StartOnce(new TestLogger(forwardToUnityLog: true), _monoBehaviour);
         }
 
-        [UnityTest]
-        public IEnumerator DetectsStuckUI()
-        {
-            yield return null;
+        [TearDown]
+        public void TearDown() => sut.Stop(joinThread: true);
 
-            var sut = StartWatchdog();
+        [Test]
+        public void DetectsStuckUI()
+        {
             ApplicationNotResponding? arn = null;
             sut.OnApplicationNotResponding += (_, e) => arn = e;
 
             // Thread.Sleep blocks the UI thread
-            Thread.Sleep(timeout * 2);
+            var watch = Stopwatch.StartNew();
+            while (watch.ElapsedMilliseconds < timeout * 2 && arn is null)
+            {
+                Thread.Sleep(10);
+            }
 
             Assert.IsNotNull(arn);
-            Assert.AreEqual(arn!.Message, $"Application not responding for at least {timeout} ms.");
+            Assert.That(arn!.Message, Does.StartWith("Application not responding "));
         }
 
         [UnityTest]
         public IEnumerator DoesntReportWorkingUI()
         {
-            yield return null;
-
-            var sut = StartWatchdog();
             ApplicationNotResponding? arn = null;
             sut.OnApplicationNotResponding += (_, e) => arn = e;
 
@@ -53,6 +59,18 @@ namespace Sentry.Unity.Tests
             {
                 yield return new WaitForSeconds(0.01f);
             }
+
+            Assert.IsNull(arn);
+        }
+
+        [Test]
+        public void DoesntReportShortlyStuckUI()
+        {
+            ApplicationNotResponding? arn = null;
+            sut.OnApplicationNotResponding += (_, e) => arn = e;
+
+            // Thread.Sleep blocks the UI thread
+            Thread.Sleep(timeout / 2);
 
             Assert.IsNull(arn);
         }
