@@ -133,7 +133,7 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
             if ($deviceApi -eq "21")
             {
                 Write-Warning "Issuing ENTER command twice to close the current window."
-                # sends "enter" - the first one focues the OK button, the second one taps it
+                # sends "enter" - the first one focus the OK button, the second one taps it
                 adb -s $deviceId shell input keyevent 66
                 adb -s $deviceId shell input keyevent 66
             }
