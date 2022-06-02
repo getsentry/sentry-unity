@@ -2,6 +2,7 @@
 
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlparse
 import sys
 import threading
 import binascii
@@ -31,19 +32,18 @@ class Handler(BaseHTTPRequestHandler):
         body = ""
         if self.command == "POST" and 'Content-Length' in self.headers:
             content_length = int(self.headers['Content-Length'])
-            content = self.rfile.read(min(1000, content_length))
+            content = self.rfile.read(content_length)
             try:
                 body = content.decode("utf-8")
             except:
                 body = binascii.hexlify(bytearray(content))
+            body = body[0:min(1000, len(body))]
         self.log_message('"%s" %s %s%s',
                          self.requestline, str(code), str(size), body)
 
 
-host = '127.0.0.1'
-port = 8000
-uri = 'http://{}:{}'.format(host, port)
-print("HTTP server listening on {}".format(uri))
-print("To stop the server, execute a GET request to {}/STOP".format(uri))
-httpd = ThreadingHTTPServer((host, port), Handler)
+uri = urlparse(sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8000')
+print("HTTP server listening on {}".format(uri.geturl()))
+print("To stop the server, execute a GET request to {}/STOP".format(uri.geturl()))
+httpd = ThreadingHTTPServer((uri.hostname, uri.port), Handler)
 target = httpd.serve_forever()

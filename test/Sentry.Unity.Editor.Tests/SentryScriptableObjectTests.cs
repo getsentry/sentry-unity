@@ -38,6 +38,8 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void Load_OptionsAssetDoesNotExist_ReturnsNull()
         {
+            Assert.IsFalse(File.Exists(_tempPath)); // Sanity check
+
             var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(_tempPath);
 
             Assert.IsNull(options);
@@ -55,7 +57,8 @@ namespace Sentry.Unity.Editor.Tests
 
             var actualOptions = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(_tempPath);
 
-            Assert.AreEqual(expectedDsn, actualOptions.Dsn);
+            Assert.NotNull(actualOptions);
+            Assert.AreEqual(expectedDsn, actualOptions!.Dsn);
         }
 
         [Test]
@@ -70,7 +73,8 @@ namespace Sentry.Unity.Editor.Tests
 
             var actualOptions = SentryScriptableObject.Load<SentryCliOptions>(_tempPath);
 
-            Assert.AreEqual(expectedAuth, actualOptions.Auth);
+            Assert.NotNull(actualOptions);
+            Assert.AreEqual(expectedAuth, actualOptions!.Auth);
         }
     }
 }

@@ -39,6 +39,12 @@ jobs:
       target: macOS
       runsOn: macos-latest
 
+  linux-sdk:
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: Linux
+      runsOn: ubuntu-latest
+
   windows-sdk:
     uses: ./.github/workflows/sdk.yml
     with:
@@ -76,7 +82,18 @@ jobs:
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Start the Unity docker container
-        run: docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity ghcr.io/getsentry/unity-docker:editor-ubuntu-${{ steps.env.outputs.unityVersion }}
+        # 1. We use the host dotnet installation - it's much faster than installing inside the docker container.
+        # 2. We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
+        #    Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
+        run: |
+          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-ios-1.0.1"
+          docker run -td --name unity \
+            -v ${{ github.workspace }}:/sentry-unity \
+            -v /usr/share/dotnet:/usr/share/dotnet \
+            -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
+            --workdir /sentry-unity $image
+          docker exec unity ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+          docker exec unity ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
 
       - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
@@ -104,6 +121,12 @@ jobs:
 
       - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
+          name: Linux-sdk
+          path: package-dev/Plugins/Linux
+          wait-timeout: 3600
+
+      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
           wait-timeout: 3600
@@ -121,7 +144,7 @@ jobs:
 
       - name: Assembly alias
         run: |
-          docker exec unity bash -c 'dotnet tool install --global Alias --version 0.2.0 && \
+          docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3 && \
           ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
       - name: Update .meta files before packaging
@@ -145,9 +168,6 @@ jobs:
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
       - name: Run Unity tests (playmode)
-        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
-        # System.MissingMethodException : Method not found: System.Text.Json.JsonDocument System.Text.Json.JsonDocument.Parse(System.ReadOnlyMemory`1<byte>,System.Text.Json.JsonDocumentOptions)
-        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: |
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn= /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
@@ -160,9 +180,6 @@ jobs:
           path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
-        # TODO: Run Play mode tests on 2021.2 or newer once S.T.J loading issue resolved.
-        # https://forum.unity.com/threads/unity-future-net-development-status.1092205/page-8#post-7602256
-        if: ${{ !(startsWith(steps.env.outputs.unityVersion, '2021')) && !(startsWith(steps.env.outputs.unityVersion, '2022')) }}
         run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
@@ -172,18 +189,7 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
-      - name: Build iOS Player
-        run: |
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn=http://publickey@localhost:8000/12345 /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          docker exec unity dotnet msbuild /t:UnityBuildPlayerIOS /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Upload Xcode project for smoke test.
-        uses: actions/upload-artifact@v2
-        with:
-          name: testapp-ios-project-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode
-          if-no-files-found: error
-
+  # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: ubuntu-latest
@@ -191,7 +197,10 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021']
-        platform: ['Android', 'WebGL']
+        platform: ['Android', 'WebGL', 'Linux', 'iOS']
+        include:
+          - platform: Linux
+            image-suffix: '-il2cpp'
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
@@ -206,7 +215,7 @@ jobs:
 
       - name: Start the Unity docker container
         run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-${{ matrix.platform }}-1"
+          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-${{ matrix.platform }}${{ matrix.image-suffix }}-1.0.1"
           image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
           echo "Starting up a docker container with $image"
           docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
@@ -235,7 +244,7 @@ jobs:
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }}
 
       - name: Prepare for upload
         run: |
@@ -249,6 +258,13 @@ jobs:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
           if-no-files-found: error
+
+      - name: Upload IntegrationTest project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: samples/IntegrationTest
 
   package-validation:
     needs: [build]
@@ -273,7 +289,7 @@ jobs:
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
   desktop-smoke-test:
-    name: Run  ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
+    name: Run ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
@@ -331,7 +347,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build Standalone Player Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
 
       - name: Run Player - Smoke Test
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
@@ -426,8 +442,8 @@ jobs:
           path: samples/IntegrationTest/Build/screen.png
 
   ios-smoke-test-build:
-    needs: [build]
-    name: Build iOS Unity ${{ matrix.unity-version }} Smoke Test
+    needs: [smoke-test-build]
+    name: Compile iOS Smoke Test - ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -440,26 +456,26 @@ jobs:
       - name: Download XCode app artifact
         uses: actions/download-artifact@v2
         with:
-          name: testapp-ios-project-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode
+          name: testapp-iOS-${{ matrix.unity-version }}
+          path: samples/IntegrationTest/Build
 
       - name: Build iOS package
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Build
+        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest
 
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
         with:
-          name: testapp-ios-${{ matrix.unity-version }}
+          name: testapp-iOS-compiled-${{ matrix.unity-version }}
           # Ignore the files that are not required for the test.
           path: |
-            samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
+            samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
             !**/Release-iphonesimulator/*.dSYM
             !**/Release-iphonesimulator/UnityFramework.framework/*
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Run iOS ${{ matrix.ios-runtime }} Unity ${{ matrix.unity-version }} Smoke Test
+    name: Run iOS ${{ matrix.ios-runtime }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -477,8 +493,8 @@ jobs:
       - name: Download app artifact
         uses: actions/download-artifact@v2
         with:
-          name: testapp-ios-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/iOS/Xcode/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
+          name: testapp-iOS-compiled-${{ matrix.unity-version }}
+          path: samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
 
       - name: Setup xcode-install
         # Github Virtual machine already sets the runtime and simulator for the latest release.
@@ -503,27 +519,35 @@ jobs:
           {
             $runtime = "iOS " + $runtime
           }
-          ./Scripts/smoke-test-ios.ps1 Test "$runtime"
+          ./Scripts/smoke-test-ios.ps1 Test "$runtime" -IsIntegrationTest
 
-  webgl-smoke-test:
+  smoke-test-run:
     needs: [smoke-test-build]
-    name: Run WebGL Unity ${{ matrix.unity-version }} Smoke Test
+    name: Run  ${{ matrix.platform }} Unity ${{ matrix.unity-version }} Smoke Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021']
+        platform: ['WebGL', 'Linux']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
       - name: Download test app artifact
         uses: actions/download-artifact@v2
+        id: download
         with:
-          name: testapp-WebGL-${{ matrix.unity-version }}
-          path: samples/artifacts/builds/WebGL
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: samples/IntegrationTest/Build
 
-      - run: pip3 install --upgrade --user selenium urllib3 requests
-
-      - run: python3 scripts/smoke-test-webgl.py
+      - name: Run (WebGL)
+        if: ${{ matrix.platform == 'WebGL' }}
         timeout-minutes: 10
+        run: |
+          pip3 install --upgrade --user selenium urllib3 requests
+          python3 scripts/smoke-test-webgl.py "${{steps.download.outputs.download-path}}"
+
+      - name: Run (Linux)
+        if: ${{ matrix.platform == 'Linux' }}
+        run: pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke -Crash

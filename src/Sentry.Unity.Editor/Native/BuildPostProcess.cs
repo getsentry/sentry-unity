@@ -18,21 +18,29 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                .ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = SentryScriptableObject
+                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
+                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
 
             try
             {
                 if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) != ScriptingImplementation.IL2CPP)
                 {
-                    logger.LogWarning("Failed to enable Native support - only availabile with IL2CPP scripting backend.");
+                    logger.LogWarning("Failed to enable Native support - only available with IL2CPP scripting backend.");
                     return;
                 }
 
-                if (options?.IsValid() is not true)
+                if (options is null)
                 {
-                    logger.LogWarning("Failed to validate Sentry Options. Native support disabled.");
+                    logger.LogWarning("Native support disabled. " +
+                                      "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                    return;
+                }
+
+                if (!options.IsValid())
+                {
+                    logger.LogDebug("Native support disabled.");
                     return;
                 }
 
@@ -42,11 +50,12 @@ namespace Sentry.Unity.Editor.Native
                     return;
                 }
 
+                logger.LogDebug("Adding native support.");
+
                 var projectDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
                 AddCrashHandler(logger, target, projectDir, executableName);
-                UploadDebugSymbols(logger, target, projectDir, executableName);
-
+                UploadDebugSymbols(logger, target, projectDir, executableName, options);
             }
             catch (Exception e)
             {
@@ -59,17 +68,21 @@ namespace Sentry.Unity.Editor.Native
         {
             BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
             BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
+            BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
             _ => false,
         };
 
         private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
         {
             string crashpadPath;
-            string targetPath;
             if (target is BuildTarget.StandaloneWindows64)
             {
                 crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
-                targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
+            }
+            else if (target is BuildTarget.StandaloneLinux64)
+            {
+                // No standalone crash handler for Linux - uses built-in breakpad.
+                return;
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
@@ -82,11 +95,12 @@ namespace Sentry.Unity.Editor.Native
             }
 
             crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
+            var targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
             logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options)
         {
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
@@ -122,6 +136,12 @@ namespace Sentry.Unity.Editor.Native
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
             }
+            else if (target is BuildTarget.StandaloneLinux64)
+            {
+                addPath("GameAssembly.so");
+                addPath("UnityPlayer.so");
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
+            }
             else if (target is BuildTarget.StandaloneOSX)
             {
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
@@ -142,9 +162,9 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            if (!string.IsNullOrEmpty(cliOptions.UrlOverride))
+            if (SentryCli.UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
             {
-                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = cliOptions.UrlOverride;
+                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = urlOverride;
             }
 
             process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;

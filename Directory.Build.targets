@@ -25,6 +25,7 @@
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)/Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
+    <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)/Linux/Sentry/</SentryLinuxArtifactsDestination>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)/Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
@@ -123,9 +124,17 @@ Expected to exist:
     <Delete Files="$(SentrymacOSArtifactsDestination)/Sentry.dylib.dSYM" ContinueOnError="true" />
   </Target>
 
+  <Target Name="CleanLinuxSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)/libsentry.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)/libsentry.dbg.so" ContinueOnError="true" />
+  </Target>
+
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryWindowsArtifactsDestination)" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/crashpad_handler.exe" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/sentry.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)/sentry.pdb" ContinueOnError="true" />
   </Target>
 
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
@@ -171,7 +180,7 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)."></Error>
     <Message Importance="High" Text="Building Sentry Android SDK."></Message>
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none"></Exec>
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none"></Exec>
 
     <ItemGroup>
       <!-- building snapshot based on version, i.e: sentry-5.0.0-beta.3-SNAPSHOT.jar -->
@@ -189,9 +198,14 @@ Expected to exist:
   <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
   <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
-          And !Exists('$(SentryWindowsArtifactsDestination)/sentry.dll')" DependsOnTargets="BuildNativeSDK" BeforeTargets="BeforeBuild">
+          And !Exists('$(SentryWindowsArtifactsDestination)/sentry.dll')" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
-    <Message Importance="High" Text="Copying artifacts of Sentry Native SDK for Windows to UPM package."></Message>
+
+    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
 
     <ItemGroup>
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
@@ -202,12 +216,23 @@ Expected to exist:
     <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')" />
   </Target>
 
-  <Target Name="BuildNativeSDK">
+  <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
+  <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And $([MSBuild]::IsOsPlatform('Linux'))
+          And !Exists('$(SentryLinuxArtifactsDestination)/libsentry.so')" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -S ."></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
+    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Linux." />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
+
+    <MakeDir Directories="$(SentryLinuxArtifactsDestination)"/>
+
+    <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArtifactsDestination)libsentry.so" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cp build/libsentry.so $(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
+    <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
@@ -221,7 +246,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- Setup Sentry options on Unity UI: dotnet msbuild /t:UnityConfigureSentryOptions src/Sentry.Unity -->
   <Target Name="UnityConfigureSentryOptions" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Message Importance="High" Text="Configuring Sentry options."></Message>
 
@@ -235,7 +260,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnityBuildStandalonePlayerIL2CPP" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
     <Error Condition="$(StandaloneBuildMethod) == ''" Text="StandaloneBuildMethod build variable not defined. Did FindUnity target fail?"></Error>
 
     <Message Importance="High" Text="Building Player with IL2CPP."></Message>
@@ -245,14 +270,14 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- Run smoke test on player: dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP src/Sentry.Unity -->
   <Target Name="UnitySmokeTestStandalonePlayerIL2CPP" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Exec Command="pwsh &quot;$(RepoRoot)/test/Scripts.Integration.Test/integration-run-smoke-test.ps1&quot; -Smoke -Crash &quot;$(StandaloneExecutablePath)&quot; -AppDataDir &quot;$(StandaloneDataPath)&quot;" />
   </Target>
 
   <!-- Build an Android player: dotnet msbuild /t:UnityBuildPlayerAndroid src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerAndroid" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Message Importance="High" Text="Building Android Player with IL2CPP."></Message>
 
@@ -263,7 +288,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerIOS" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Message Importance="High" Text="Building iOS Xcode project."></Message>
 
@@ -274,7 +299,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- Build a WebGL player: dotnet msbuild /t:UnityBuildPlayerWebGL src/Sentry.Unity -->
   <Target Name="UnityBuildPlayerWebGL" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Message Importance="High" Text="Building the sample player for WebGL." />
 
@@ -288,12 +313,12 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
   this solution without using the sample project which depends on the output of this build. -->
-  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" AfterTargets="FindUnity">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" DependsOnTargets="FindUnity">
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity."></Error>
 
     <Message Importance="High" Text="Running Unity Create Packages."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -createProject $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -createProject $(UnityPackageProject)" />
     <PropertyGroup>
       <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
       <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
@@ -304,34 +329,37 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- If Unity Libraries don't exist, load a Unity project to restore UPM packages -->
   <Target Name="UnityRestorePackages" DependsOnTargets="FindUnity;UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" BeforeTargets="BeforeBuild">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Message Importance="High" Text="Running Unity Restore Packages."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnityPackageProject) " IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnityPackageProject)" />
 
     <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityPlayModeTest" DependsOnTargets="Build" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
-
+    <!-- Unity exits with a non-zero exit code when running tests. We ignore it and manually check the test results instead. -->
+    <Delete Files="$(UnityTestPlayModeResultFilePath)" />
+    <Exec EnvironmentVariables="IgnoreExitCode=true" Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)" />
     <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
   </Target>
 
   <!-- Run EditMode tests with dotnet msbuild /t:UnityEditModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityEditModeTest" DependsOnTargets="Build" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
-    <Error Condition="$(UnityRoot) == ''" Text="Couldn't find Unity."></Error>
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
     <Message Importance="High" Text="Running Unity EditMode tests."></Message>
 
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)	" IgnoreStandardErrorWarningFormat="true" IgnoreExitCode="true"></Exec>
-
+    <!-- Unity exits with a non-zero exit code when running tests. We ignore it and manually check the test results instead. -->
+    <!-- IgnoreStandardErrorWarningFormat="true" because of the intentional compilation error printed in GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile(). -->
+    <Delete Files="$(UnityTestEditModeResultFilePath)" />
+    <Exec EnvironmentVariables="IgnoreExitCode=true" IgnoreStandardErrorWarningFormat="true" Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)"/>
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
 
@@ -436,15 +464,12 @@ if (total == "0")
 }
 
 var result = testRun.Attribute("result").Value;
-var failed = testRun.Attribute("failed").Value;
-var message = $@"Result: {result.Replace("(Child)", "")} in {testRun.Attribute("duration").Value}s
 
--- Passed: {testRun.Attribute("passed").Value}
--- Failed: {failed}
--- Inconclusive: {testRun.Attribute("inconclusive").Value}
--- Skipped: {testRun.Attribute("skipped").Value}";
-
-Log.LogMessage(message);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "{0} in {1}s", result.Replace("(Child)", ""), testRun.Attribute("duration").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "        Passed: {0,3}", testRun.Attribute("passed").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "        Failed: {0,3}", testRun.Attribute("failed").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "       Skipped: {0,3}", testRun.Attribute("skipped").Value);
+Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "  Inconclusive: {0,3}", testRun.Attribute("inconclusive").Value);
 
 if (result == "Passed")
 {
@@ -453,6 +478,7 @@ if (result == "Passed")
 
 PrintFailedTests(testRun);
 
+var failed = testRun.Attribute("failed").Value;
 var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
 Log.LogError(errorMessage);
 
@@ -521,6 +547,7 @@ void PrintFailedTests(XElement element)
       <SDK Include="iOS"/>
       <SDK Include="macOS"/>
       <SDK Include="Android"/>
+      <SDK Include="Linux"/>
     </ItemGroup>
     <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
     <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />

@@ -13,8 +13,8 @@ namespace Sentry.Unity.Editor.Android
     // https://github.com/getsentry/sentry-java/blob/d3764bfc97eed22564a1e23ba96fa73ad2685498/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L83-L217
     public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
     {
-        private readonly Func<SentryUnityOptions?> _getOptions;
-        private readonly Func<SentryCliOptions?> _getSentryCliOptions;
+        private readonly SentryUnityOptions? _options;
+        private readonly SentryCliOptions? _sentryCliOptions;
         private readonly IUnityLoggerInterceptor? _interceptor;
 
         private readonly bool _isDevelopmentBuild;
@@ -24,8 +24,9 @@ namespace Sentry.Unity.Editor.Android
         public int callbackOrder => 1;
 
         public AndroidManifestConfiguration()
-            : this(() => SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                    .ToSentryUnityOptions(BuildPipeline.isBuildingPlayer),
+            : this(
+                () => SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
+                    ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer),
                 () => SentryScriptableObject.Load<SentryCliOptions>(SentryCliOptions.GetConfigPath()),
                 isDevelopmentBuild: EditorUserBuildSettings.development,
                 scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
@@ -40,8 +41,9 @@ namespace Sentry.Unity.Editor.Android
             bool isDevelopmentBuild = false,
             ScriptingImplementation scriptingImplementation = ScriptingImplementation.IL2CPP)
         {
-            _getOptions = getOptions;
-            _getSentryCliOptions = getSentryCliOptions;
+            _options = getOptions();
+            _sentryCliOptions = getSentryCliOptions();
+
             _interceptor = interceptor;
 
             _isDevelopmentBuild = isDevelopmentBuild;
@@ -67,26 +69,26 @@ namespace Sentry.Unity.Editor.Android
             }
 
             var disableAutoInit = false;
-            var options = _getOptions();
-            if (options is null)
+            var logger = _options?.DiagnosticLogger ?? new UnityLogger(_options ?? new SentryUnityOptions(), _interceptor);
+
+            if (_options is null)
             {
-                var logger = new UnityLogger(new SentryOptions(), _interceptor);
-                logger.LogWarning("Couldn't load SentryOptions. Can't configure native Android SDK.");
+                logger.LogWarning("Android Native support disabled. " +
+                                  "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
                 disableAutoInit = true;
             }
-            else if (!options.IsValid())
+            else if (!_options.IsValid())
             {
-                options.DiagnosticLogger?.LogWarning(
-                    "Failed to validate Sentry Options. Android native support will not be configured.");
+                logger.LogDebug("Native support disabled.");
                 disableAutoInit = true;
             }
-            else if (!options.AndroidNativeSupportEnabled)
+            else if (!_options.AndroidNativeSupportEnabled)
             {
-                options.DiagnosticLogger?.LogDebug("Android Native support disabled via options.");
+                logger.LogDebug("Android Native support disabled through the options.");
                 disableAutoInit = true;
             }
 
-            var androidManifest = new AndroidManifest(manifestPath, options?.DiagnosticLogger);
+            var androidManifest = new AndroidManifest(manifestPath, _options?.DiagnosticLogger);
             androidManifest.RemovePreviousConfigurations();
             androidManifest.AddDisclaimerComment();
 
@@ -96,35 +98,35 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
-            options!.DiagnosticLogger?.LogDebug("Configuring Sentry options on AndroidManifest: {0}", basePath);
-
-            options.DiagnosticLogger?.LogDebug("Setting DSN: {0}", options.Dsn);
-            androidManifest.SetDsn(options.Dsn!);
-            if (options.Debug)
+            logger.LogDebug("Configuring Sentry options on AndroidManifest: {0}", basePath);
+            androidManifest.SetSDK("sentry.java.android.unity");
+            logger.LogDebug("Setting DSN: {0}", _options!.Dsn);
+            androidManifest.SetDsn(_options.Dsn!);
+            if (_options.Debug)
             {
-                options.DiagnosticLogger?.LogDebug("Setting Debug: {0}", options.Debug);
-                androidManifest.SetDebug(options.Debug);
+                logger.LogDebug("Setting Debug: {0}", _options.Debug);
+                androidManifest.SetDebug(_options.Debug);
             }
 
-            if (options.Release is not null)
+            if (_options.Release is not null)
             {
-                options.DiagnosticLogger?.LogDebug("Setting Release: {0}", options.Release);
-                androidManifest.SetRelease(options.Release);
+                logger.LogDebug("Setting Release: {0}", _options.Release);
+                androidManifest.SetRelease(_options.Release);
             }
 
-            if (options.Environment is not null)
+            if (_options.Environment is not null)
             {
-                options.DiagnosticLogger?.LogDebug("Setting Environment: {0}", options.Environment);
-                androidManifest.SetEnvironment(options.Environment);
+                logger.LogDebug("Setting Environment: {0}", _options.Environment);
+                androidManifest.SetEnvironment(_options.Environment);
             }
 
-            options.DiagnosticLogger?.LogDebug("Setting DiagnosticLevel: {0}", options.DiagnosticLevel);
-            androidManifest.SetLevel(options.DiagnosticLevel);
+            logger.LogDebug("Setting DiagnosticLevel: {0}", _options.DiagnosticLevel);
+            androidManifest.SetLevel(_options.DiagnosticLevel);
 
-            if (options.SampleRate.HasValue)
+            if (_options.SampleRate.HasValue)
             {
-                options.DiagnosticLogger?.LogDebug("Setting SampleRate: {0}", options.SampleRate);
-                androidManifest.SetSampleRate(options.SampleRate.Value);
+                logger.LogDebug("Setting SampleRate: {0}", _options.SampleRate);
+                androidManifest.SetSampleRate(_options.SampleRate.Value);
             }
 
             // TODO: Missing on AndroidManifest
@@ -147,27 +149,32 @@ namespace Sentry.Unity.Editor.Android
 
         internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
         {
-            var options = _getOptions();
-            var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
+            var disableSymbolsUpload = false;
+            var logger = _options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
+            var symbolsUpload = new DebugSymbolUpload(logger, unityProjectPath, gradleProjectPath,
+                EditorUserBuildSettings.exportAsGoogleAndroidProject);
 
-            if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
+            if (_options is null || !_options.Enabled || !_options.AndroidNativeSupportEnabled)
             {
-                logger.LogDebug("Automated symbols upload requires the IL2CPP scripting backend.");
-                return;
+                disableSymbolsUpload = true;
             }
 
-            var symbolsUpload = new DebugSymbolUpload(logger, unityProjectPath, gradleProjectPath, EditorUserBuildSettings.exportAsGoogleAndroidProject);
-
-            var sentryCliOptions = _getSentryCliOptions();
-            if (sentryCliOptions is null)
+            if (_sentryCliOptions is null)
             {
                 logger.LogWarning("Failed to load sentry-cli options.");
-                symbolsUpload.RemoveUploadFromGradleFile();
-
-                return;
+                disableSymbolsUpload = true;
+            }
+            else if (!_sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
+            {
+                disableSymbolsUpload = true;
+            }
+            else if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
+            {
+                logger.LogDebug("Automated symbols upload requires the IL2CPP scripting backend.");
+                disableSymbolsUpload = true;
             }
 
-            if (!sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
+            if (disableSymbolsUpload)
             {
                 symbolsUpload.RemoveUploadFromGradleFile();
                 return;
@@ -175,10 +182,10 @@ namespace Sentry.Unity.Editor.Android
 
             try
             {
-                logger.LogInfo("Adding automated debug symbol upload to the gradle project.");
+                logger.LogInfo("Adding automated debug symbols upload to the gradle project.");
 
                 var sentryCliPath = SentryCli.SetupSentryCli();
-                SentryCli.CreateSentryProperties(gradleProjectPath, sentryCliOptions);
+                SentryCli.CreateSentryProperties(gradleProjectPath, _sentryCliOptions!, _options!);
 
                 if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
                 {
@@ -263,7 +270,8 @@ namespace Sentry.Unity.Editor.Android
                 {
                     foreach (XmlAttribute attr in node.Attributes)
                     {
-                        if (attr.Prefix.Equals(AndroidNsPrefix) && attr.LocalName.Equals("name") && attr.Value.StartsWith(SentryPrefix))
+                        if (attr.Prefix.Equals(AndroidNsPrefix) && attr.LocalName.Equals("name") &&
+                            attr.Value.StartsWith(SentryPrefix))
                         {
                             _logger?.LogDebug("Removing AndroidManifest meta-data '{0}'", attr.Value);
                             nodesToRemove.Add(node);
@@ -272,13 +280,15 @@ namespace Sentry.Unity.Editor.Android
                     }
                 }
             }
+
             foreach (var node in nodesToRemove)
             {
                 _ = node.ParentNode.RemoveChild(node);
             }
         }
 
-        public void AddDisclaimerComment() => _applicationElement.AppendChild(_applicationElement.OwnerDocument.CreateComment(Disclaimer));
+        public void AddDisclaimerComment() =>
+            _applicationElement.AppendChild(_applicationElement.OwnerDocument.CreateComment(Disclaimer));
 
         // Without this we get:
         // Unable to get provider io.sentry.android.core.SentryInitProvider: java.lang.IllegalArgumentException: DSN is required. Use empty string to disable SDK.
@@ -289,9 +299,14 @@ namespace Sentry.Unity.Editor.Android
         }
 
         internal void SetDsn(string dsn) => SetMetaData($"{SentryPrefix}.dsn", dsn);
-        internal void SetSampleRate(float sampleRate) => SetMetaData($"{SentryPrefix}.sample-rate", sampleRate.ToString());
+
+        internal void SetSampleRate(float sampleRate) =>
+            SetMetaData($"{SentryPrefix}.sample-rate", sampleRate.ToString());
+
         internal void SetRelease(string release) => SetMetaData($"{SentryPrefix}.release", release);
         internal void SetEnvironment(string environment) => SetMetaData($"{SentryPrefix}.environment", environment);
+
+        internal void SetSDK(string name) => SetMetaData($"{SentryPrefix}.sdk.name", name);
 
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
             => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());

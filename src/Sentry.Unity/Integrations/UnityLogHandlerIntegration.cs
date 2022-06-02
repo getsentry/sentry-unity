@@ -1,27 +1,27 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations
 {
-    internal sealed class UnityApplicationLoggingIntegration : ISdkIntegration
+    internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     {
         internal readonly ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
         internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
 
-        // TODO: remove 'IEventCapture' in  further iteration
-        private readonly IEventCapture? _eventCapture;
         private readonly IApplication _application;
 
         private IHub? _hub;
         private SentryUnityOptions? _sentryOptions;
 
-        public UnityApplicationLoggingIntegration(IApplication? application = null, IEventCapture? eventCapture = null)
+        private ILogHandler _unityLogHandler = null!; // Set during register
+
+        public UnityLogHandlerIntegration(IApplication? application = null)
         {
             _application = application ?? ApplicationAdapter.Instance;
-            _eventCapture = eventCapture;
         }
 
         public void Register(IHub hub, SentryOptions sentryOptions)
@@ -29,26 +29,86 @@ namespace Sentry.Unity.Integrations
             _hub = hub;
             _sentryOptions = sentryOptions as SentryUnityOptions;
 
-            _application.LogMessageReceived += OnLogMessageReceived;
+            _unityLogHandler = Debug.unityLogger.logHandler;
+            Debug.unityLogger.logHandler = this;
+
             _application.Quitting += OnQuitting;
         }
 
-        // Internal for testability
-        internal void OnLogMessageReceived(string? condition, string? stackTrace, LogType type)
+        public void LogException(Exception exception, UnityEngine.Object context)
         {
-            if (condition is null || _hub?.IsEnabled != true)
+            try
+            {
+                CaptureException(exception, context);
+            }
+            finally
+            {
+                // Always pass the exception back to Unity
+                _unityLogHandler.LogException(exception, context);
+            }
+        }
+
+        internal void CaptureException(Exception exception, UnityEngine.Object? context)
+        {
+            if (_hub?.IsEnabled is not true)
             {
                 return;
             }
 
-            if (condition.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
+            // TODO: Capture the context (i.e. grab the name if != null and set it as context)
+
+            // NOTE: This might not be entirely true, as a user could as well call `Debug.LogException`
+            // and expect a handled exception but it is not possible for us to differentiate
+            // https://docs.sentry.io/platforms/unity/troubleshooting/#unhandled-exceptions---debuglogexception
+            exception.Data[Mechanism.HandledKey] = false;
+            exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
+            _ = _hub.CaptureException(exception);
+
+            // So the next event includes this error as a breadcrumb
+            _hub.AddBreadcrumb(message: $"{exception.GetType()}: {exception.Message}", category: "unity.logger", level: BreadcrumbLevel.Error);
+        }
+
+        public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
+        {
+            try
+            {
+                CaptureLogFormat(logType, context, format, args);
+            }
+            finally
+            {
+                // Always pass the log back to Unity
+                _unityLogHandler.LogFormat(logType, context, format, args);
+            }
+        }
+
+        internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
+        {
+            if (_hub?.IsEnabled is not true)
             {
                 return;
             }
 
-            if (_sentryOptions?.EnableLogDebouncing == true)
+            // TODO: Is format '{0}' and args.length == 1 guaranteed?
+            if (args.Length == 0 || !format.Contains("{0}"))
             {
-                var debounced = type switch
+                return;
+            }
+
+            if (args[0] is not string logMessage)
+            {
+                return;
+            }
+
+            // We're not capturing SDK internal logs
+            if (logMessage.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
+            {
+                // TODO: Maybe color Sentry internal logs (highlight 'Sentry'?)
+                return;
+            }
+
+            if (_sentryOptions?.EnableLogDebouncing is true)
+            {
+                var debounced = logType switch
                 {
                     LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
                     LogType.Log => LogTimeDebounce.Debounced(),
@@ -62,42 +122,26 @@ namespace Sentry.Unity.Integrations
                 }
             }
 
-            // TODO: to check against 'MinBreadcrumbLevel'
-            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+            // TODO: Capture the context (i.e. grab the name if != null and set it as context)
+
+            if (logType is LogType.Error or LogType.Assert)
             {
-                // TODO: MinBreadcrumbLevel
-                // options.MinBreadcrumbLevel
-                _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
-                return;
+                _hub.CaptureMessage(logMessage, ToEventTagType(logType));
             }
 
-            if (stackTrace is not null)
-            {
-                var sentryEvent = new SentryEvent(new UnityLogException(condition, stackTrace, _sentryOptions))
-                {
-                    Level = ToEventTagType(type)
-                };
-
-                _eventCapture?.Capture(sentryEvent); // TODO: remove, for current integration tests compatibility
-                _hub.CaptureEvent(sentryEvent);
-            }
-            else
-            {
-                _hub.CaptureMessage(condition, ToEventTagType(type));
-            }
-
-            // So the next event includes this error as a breadcrumb:
-            _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(type));
+            // So the next event includes this as a breadcrumb
+            _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
         }
 
         private void OnQuitting()
         {
             _sentryOptions?.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
+
             // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
             //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
             // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
             // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
-            _application.LogMessageReceived -= OnLogMessageReceived;
+
             // 'OnQuitting' is invoked even when an uncaught exception happens in the ART. To make sure the .NET
             // SDK checks with the native layer on restart if the previous run crashed (through the CrashedLastRun callback)
             // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.

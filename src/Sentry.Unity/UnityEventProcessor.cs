@@ -19,12 +19,12 @@ namespace Sentry.Unity
 
     internal class UnityEventProcessor : ISentryEventProcessor
     {
-        private readonly SentryOptions _sentryOptions;
+        private readonly SentryUnityOptions _sentryOptions;
         private readonly MainThreadData _mainThreadData;
         private readonly IApplication _application;
 
 
-        public UnityEventProcessor(SentryOptions sentryOptions, SentryMonoBehaviour sentryMonoBehaviour, IApplication? application = null)
+        public UnityEventProcessor(SentryUnityOptions sentryOptions, SentryMonoBehaviour sentryMonoBehaviour, IApplication? application = null)
         {
             _sentryOptions = sentryOptions;
             _mainThreadData = sentryMonoBehaviour.MainThreadData;
@@ -42,6 +42,7 @@ namespace Sentry.Unity
                 PopulateGpu(@event.Contexts.Gpu);
                 PopulateUnity((Protocol.Unity)@event.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity()));
                 PopulateTags(@event);
+                PopulateUser(@event);
             }
             catch (Exception ex)
             {
@@ -117,9 +118,7 @@ namespace Sentry.Unity
                 device.BatteryStatus = SystemInfo.batteryStatus.ToString(); // don't cache
 
                 var batteryLevel = SystemInfo.batteryLevel;
-#pragma warning disable RECS0018 // Value is exact when expressing no battery level
-                if (batteryLevel != -1.0)
-#pragma warning restore RECS0018
+                if (batteryLevel > 0.0)
                 {
                     device.BatteryLevel = (short?)(batteryLevel * 100); // don't cache
                 }
@@ -197,7 +196,7 @@ namespace Sentry.Unity
 
             if (_mainThreadData.SupportsDrawCallInstancing.HasValue)
             {
-                @event.SetTag("unity.gpu.supports_instancing", _mainThreadData.SupportsDrawCallInstancing.Value ? "true" : "false");
+                @event.SetTag("unity.gpu.supports_instancing", _mainThreadData.SupportsDrawCallInstancing.Value.ToTagValue());
             }
 
             if (_mainThreadData.DeviceType is not null && _mainThreadData.DeviceType.IsValueCreated)
@@ -210,7 +209,18 @@ namespace Sentry.Unity
                 @event.SetTag("unity.device.unique_identifier", _mainThreadData.DeviceUniqueIdentifier.Value);
             }
 
-            @event.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToString());
+            @event.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToTagValue());
+        }
+
+        private void PopulateUser(SentryEvent @event)
+        {
+            if (_sentryOptions.DefaultUserId is not null)
+            {
+                if (@event.User.Id is null)
+                {
+                    @event.User.Id = _sentryOptions.DefaultUserId;
+                }
+            }
         }
 
         /// <summary>
@@ -277,14 +287,11 @@ namespace Sentry.Unity
     {
         public void Process(Exception exception, SentryEvent sentryEvent)
         {
-            if (exception is UnityLogException ule)
-            {
-                // TODO: At this point the original (Mono+.NET stack trace factories already ran)
-                // Ideally this strategy would fit into the SDK hooks, even though this parse gives not only
-                // a stacktrace but also the exception message and type so currently can't be hooked into StackTraceFactory
-                sentryEvent.SentryExceptions = new[] { ule.ToSentryException() };
-                sentryEvent.SetTag("source", "log");
-            }
         }
+    }
+
+    internal static class TagValueNormalizer
+    {
+        internal static string ToTagValue(this Boolean value) => value ? "true" : "false";
     }
 }

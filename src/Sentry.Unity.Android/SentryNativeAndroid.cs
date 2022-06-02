@@ -51,6 +51,8 @@ namespace Sentry.Unity.Android
                     options.DiagnosticLogger?.LogDebug("Closing the sentry-java SDK");
                     SentryJava.Close();
                 };
+
+                options.DefaultUserId = SentryJava.GetInstallationId();
             }
         }
     }

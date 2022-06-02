@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
+using Sentry.Extensibility;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
@@ -106,6 +107,31 @@ namespace Sentry.Unity
         /// </summary>
         public bool MacosNativeSupportEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Whether the SDK should add native support for Linux
+        /// </summary>
+        public bool LinuxNativeSupportEnabled { get; set; } = true;
+
+
+        // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
+        internal string? _defaultUserId;
+        internal string? DefaultUserId
+        {
+            get => _defaultUserId;
+            set
+            {
+                _defaultUserId = value;
+                if (_defaultUserId is null)
+                {
+                    DiagnosticLogger?.LogWarning("Couldn't set the default user ID - the value is NULL.");
+                }
+                else
+                {
+                    DiagnosticLogger?.LogDebug("Setting '{0}' as the default user ID.", _defaultUserId);
+                }
+            }
+        }
+
         public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
         {
         }
@@ -119,7 +145,7 @@ namespace Sentry.Unity
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
-            this.AddIntegration(new UnityApplicationLoggingIntegration());
+            this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
             this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));

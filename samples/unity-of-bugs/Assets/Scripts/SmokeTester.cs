@@ -111,7 +111,7 @@ public class SmokeTester : MonoBehaviour
             var guid = Guid.NewGuid().ToString();
             Debug.LogError($"LogError(GUID)={guid}");
 
-            // Skip the session init requests (there may be multiple of othem). We can't skip them by a "positive"
+            // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
             // because they're also repeated with standard events (in an envelope).
             Debug.Log("Skipping all non-event requests");
             for (; currentMessage < 10; currentMessage++)
@@ -125,6 +125,7 @@ public class SmokeTester : MonoBehaviour
 
             t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
+            t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");
 
@@ -240,7 +241,10 @@ public class SmokeTester : MonoBehaviour
             var msgText = message.Content.ReadAsStringAsync().Result;
             lock (_requests)
             {
-                Debug.Log($"{name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+                // Adding "Sentry: " prefix to prevent the UnityLogHandlerIntegration from capturing this message and
+                // adding it as a breadcrumb, which in turn multiplies it on following (intercepted) HTTP requests...
+                // Note: remove the prefix once setting breadcrumb log level is possible - https://github.com/getsentry/sentry-unity/issues/60
+                Debug.Log($"Sentry: {name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
                 _requests.Add(msgText);
                 _requestReceived.Set();
             }

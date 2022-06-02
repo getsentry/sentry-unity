@@ -28,16 +28,6 @@ namespace Sentry.Unity.Tests
         public void SetUp() => _fixture = new Fixture();
 
         [Test]
-        public void Validate_OptionsIsNull_ReturnsFalse()
-        {
-            SentryUnityOptions? options = null;
-
-            var isValid = options.IsValid();
-
-            Assert.IsFalse(isValid);
-        }
-
-        [Test]
         public void Validate_OptionsDisabled_ReturnsFalse()
         {
             _fixture.Enabled = false;
@@ -67,6 +57,17 @@ namespace Sentry.Unity.Tests
             var shouldInitialize = options.ShouldInitializeSdk(_fixture.TestApplication);
 
             Assert.IsTrue(shouldInitialize);
+        }
+
+        [Test]
+        public void ShouldInitializeSdk_OptionsNull_ReturnsFalse()
+        {
+            _fixture.TestApplication = new TestApplication(false);
+            SentryUnityOptions? options = null;
+
+            var shouldInitialize = options.ShouldInitializeSdk(_fixture.TestApplication);
+
+            Assert.IsFalse(shouldInitialize);
         }
 
         [Test]

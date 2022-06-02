@@ -24,6 +24,7 @@ package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/*.dylib
 package-dev/**/*.dSYM
+package-dev/**/*.so
 package-dev/**/TestSentryOptions.json
 package-dev/Tests/Editor/TestFiles/
 package-dev/Plugins/*/Sentry/crashpad_handler*

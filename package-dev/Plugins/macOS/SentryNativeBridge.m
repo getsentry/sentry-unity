@@ -7,6 +7,7 @@ static Class SentrySDK;
 static Class SentryScope;
 static Class SentryBreadcrumb;
 static Class SentryUser;
+static Class PrivateSentrySDKOnly;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
@@ -32,6 +33,7 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryScope)
             LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
             LOAD_CLASS_OR_BREAK(SentryUser)
+            LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
 
             // everything above passed - mark as successfully loaded
             loadStatus = 1;
@@ -42,7 +44,9 @@ int SentryNativeBridgeLoadLibrary()
 
 const void *SentryNativeBridgeOptionsNew()
 {
-    return CFBridgingRetain([[NSMutableDictionary alloc] init]);
+    NSMutableDictionary *dictOptions = [[NSMutableDictionary alloc] init];
+    dictOptions[@"sdk"] = @ { @"name" : @"sentry.cocoa.unity" };
+    return CFBridgingRetain(dictOptions);
 }
 
 void SentryNativeBridgeOptionsSetString(const void *options, const char *name, const char *value)
@@ -222,4 +226,16 @@ void SentryNativeBridgeUnsetUser()
 {
     SentryConfigureScope(
         ^(id scope) { [scope performSelector:@selector(setUser:) withObject:nil]; });
+}
+
+char *SentryNativeBridgeGetInstallationId()
+{
+    // Create a null terminated C string on the heap as expected by marshalling.
+    // See Tips for iOS in https://docs.unity3d.com/Manual/PluginsForIOS.html
+    const char *nsStringUtf8 =
+        [[PrivateSentrySDKOnly performSelector:@selector(installationID)] UTF8String];
+    size_t len = strlen(nsStringUtf8) + 1;
+    char *cString = (char *)malloc(len);
+    memcpy(cString, nsStringUtf8, len);
+    return cString;
 }

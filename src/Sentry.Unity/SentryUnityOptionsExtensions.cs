@@ -9,6 +9,11 @@ namespace Sentry.Unity
 
         internal static bool ShouldInitializeSdk(this SentryUnityOptions? options, IApplication? application = null)
         {
+            if (options is null)
+            {
+                return false;
+            }
+
             if (!IsValid(options))
             {
                 return false;
@@ -24,15 +29,8 @@ namespace Sentry.Unity
             return true;
         }
 
-        internal static bool IsValid(this SentryUnityOptions? options)
+        internal static bool IsValid(this SentryUnityOptions options)
         {
-            if (options is null)
-            {
-                new UnityLogger(new SentryOptions()).LogWarning(
-                    "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
-                return false;
-            }
-
             if (!options.Enabled)
             {
                 options.DiagnosticLogger?.LogDebug("Sentry SDK has been disabled." +
@@ -66,10 +64,10 @@ namespace Sentry.Unity
         }
 
         /// <summary>
-        /// Disables the capture of errors through <see cref="UnityApplicationLoggingIntegration"/>.
+        /// Disables the capture of errors through <see cref="UnityLogHandlerIntegration"/>.
         /// </summary>
         /// <param name="options">The SentryUnityOptions to remove the integration from.</param>
         public static void DisableUnityApplicationLoggingIntegration(this SentryUnityOptions options) =>
-            options.RemoveIntegration<UnityApplicationLoggingIntegration>();
+            options.RemoveIntegration<UnityLogHandlerIntegration>();
     }
 }

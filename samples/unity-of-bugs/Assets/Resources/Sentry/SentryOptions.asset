@@ -39,6 +39,7 @@ MonoBehaviour:
   <AndroidNativeSupportEnabled>k__BackingField: 1
   <WindowsNativeSupportEnabled>k__BackingField: 1
   <MacosNativeSupportEnabled>k__BackingField: 1
+  <LinuxNativeSupportEnabled>k__BackingField: 1
   <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: bda1a724b0875436aade31393b0129c0,
     type: 2}
   <Debug>k__BackingField: 1

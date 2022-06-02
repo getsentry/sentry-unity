@@ -77,7 +77,8 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "Couldn't load SentryOptions. Can't configure native Android SDK.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "Android Native support disabled. " +
+                                                                              "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -122,7 +123,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Android Native support disabled via options.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Android Native support disabled through the options.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -279,10 +280,14 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void SetupSymbolsUpload_ScriptingBackendNotIL2CPP_LogsAndReturns()
         {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+
             _fixture.ScriptingImplementation = ScriptingImplementation.Mono2x;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", "gradle_project_path");
+            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
             _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload requires the IL2CPP scripting backend.");
         }
@@ -316,7 +321,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload has been disabled.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload has been disabled.");
 
             Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
@@ -333,7 +338,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "sentry-cli: Automated symbols upload for development builds has been disabled.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload for development builds has been disabled.");
 
             Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
         }
@@ -369,7 +374,8 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
 
-            Assert.True(File.ReadAllText(Path.Combine(gradleProjectPath, "build.gradle")).Contains("println 'Uploading symbols to Sentry'"));
+            StringAssert.Contains("println 'Uploading symbols to Sentry'",
+                File.ReadAllText(Path.Combine(gradleProjectPath, "build.gradle")));
             Assert.True(File.Exists(Path.Combine(gradleProjectPath, "sentry.properties")));
 
             Directory.Delete(Path.GetFullPath(fakeProjectPath), true);

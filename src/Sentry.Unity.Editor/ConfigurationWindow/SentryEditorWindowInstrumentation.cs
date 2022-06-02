@@ -24,8 +24,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             var optionsWindow = EditorWindow.GetWindow<SentryWindow>();
             var options = optionsWindow.Options;
+            var cliOptions = optionsWindow.CliOptions;
 
-            if (options is null)
+            if (options is null || cliOptions is null)
             {
                 throw new InvalidOperationException($"{functionName} failed: SentryOptions not found");
             }
@@ -55,6 +56,29 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.AttachScreenshot = boolValue;
             }
 
+            if (args.TryGetValue("cliOptions.Org", out value))
+            {
+                Debug.LogFormat("{0}: Configuring symbol-upload organization to {1}", functionName, value);
+                cliOptions.Organization = value;
+            }
+
+            if (args.TryGetValue("cliOptions.Project", out value))
+            {
+                Debug.LogFormat("{0}: Configuring symbol-upload project to {1}", functionName, value);
+                cliOptions.Project = value;
+            }
+
+            if (args.TryGetValue("cliOptions.Auth", out value))
+            {
+                Debug.LogFormat("{0}: Configuring symbol-upload auth token", functionName);
+                cliOptions.Auth = value;
+            }
+
+            if (args.TryGetValue("cliOptions.UrlOverride", out value))
+            {
+                Debug.LogFormat("{0}: Configuring symbol-upload UrlOverride to {1}", functionName, value);
+                cliOptions.UrlOverride = value;
+            }
             optionsWindow.Close();
             Debug.LogFormat("{0}: Sentry options Configured", functionName);
         }

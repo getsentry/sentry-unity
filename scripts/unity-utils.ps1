@@ -66,11 +66,13 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
             break
         }
     } while ($stopwatch.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
-    
-    if ($process.ExitCode -ne 0)
+
+    if ($process.ExitCode -ne 0 -and $env:IgnoreExitCode -ne "true")
     {
         Throw "Unity exited with code $($process.ExitCode)"
     }
+
+    Write-Host -ForegroundColor Green "Unity finished successfully. Time taken: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
     return $ReturnLogOutput ? $stdout : $null
 }
 
