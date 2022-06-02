@@ -374,7 +374,8 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
 
-            Assert.True(File.ReadAllText(Path.Combine(gradleProjectPath, "build.gradle")).Contains("println 'Uploading symbols to Sentry'"));
+            StringAssert.Contains("println 'Uploading symbols to Sentry'",
+                File.ReadAllText(Path.Combine(gradleProjectPath, "build.gradle")));
             Assert.True(File.Exists(Path.Combine(gradleProjectPath, "sentry.properties")));
 
             Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
