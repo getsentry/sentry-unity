@@ -79,17 +79,17 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
 {
     if ("$alert" -ne "")
     {
-        $splittedXml = $alert -split "<node"
+        $splitXml = $alert -split "<node"
         $alertTitle = ""
         $alertOption1Label = $null
         $alertOption1Coord = $null
         $alertOption2Label = $null
         $alertOption2Coord = $null
 
-        if ($splittedXml.Count -ne 1) {
+        if ($splitXml.Count -ne 1) {
             # We have a "valid" XML
             # Use Regex to get the message and the options labels + coordinates.
-            foreach ($iterator in $splittedXml) {
+            foreach ($iterator in $splitXml) {
                 if ($iterator.Contains("alertTitle")) {
                     $titleRegex = [regex]::Match($iterator, "text=\`"(?<text>.+)\`" resource-id")
                     $alertTitle = $titleRegex.Groups["text"].Value
@@ -128,7 +128,7 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
         }
         else
         {
-            # Fallback to the old method of closing Alerts.
+            # Fallback to the old method of closing Alerts. (Android API 21 to 27)
             Write-Warning "Active system alert found on $deviceId (API $deviceApi). Closing it. The alert was: '$alert'."
             if ($deviceApi -eq "21")
             {
