@@ -136,7 +136,7 @@ namespace Sentry.Unity
         {
         }
 
-        internal SentryUnityOptions(bool isBuilding,  ISentryUnityInfo? unityInfo, IApplication application)
+        internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
