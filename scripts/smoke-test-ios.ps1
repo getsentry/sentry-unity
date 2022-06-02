@@ -66,15 +66,15 @@ function Build()
         Write-Host "OK" -ForegroundColor Green
     }
 
-    $symbolServerOutput = RunWithSymbolServer -Callback {
-        Write-Host "Building iOS project"
+    Write-Host "Building iOS project"
 
-        # We need to manually switch the CLI executable, because the artifact that came through GH actions'
-        # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
-        # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
-        #             with the missing executable bit in the UPM package - it's fixed on build.
-        chmod +x "$XcodeArtifactPath/sentry-cli-Darwin-universal"
+    # We need to manually switch the CLI executable, because the artifact that came through GH actions'
+    # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
+    # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
+    #             with the missing executable bit in the UPM package - it's fixed on build.
+    chmod +x "$XcodeArtifactPath/sentry-cli-Darwin-universal"
 
+    $buildCallback = {
         xcodebuild `
             -project "$XcodeArtifactPath/$ProjectName.xcodeproj" `
             -scheme "Unity-iPhone" `
@@ -83,7 +83,16 @@ function Build()
             -derivedDataPath "$ArchivePath/$ProjectName" `
         | Write-Host
     }
-    CheckSymbolServerOutput 'IOS' $symbolServerOutput
+
+    if ($IsIntegrationTest)
+    {
+        $symbolServerOutput = RunWithSymbolServer -Callback $buildCallback
+        CheckSymbolServerOutput 'IOS' $symbolServerOutput
+    }
+    else
+    {
+        $buildCallback.Invoke()
+    }
 }
 
 function Test
