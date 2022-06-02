@@ -96,5 +96,6 @@ namespace Sentry.Unity.Android.Tests
     public class TestSentryUnityInfo : ISentryUnityInfo
     {
         public bool IL2CPP { get; set; }
+        public Il2CppMethods? Il2CppMethods { get; }
     }
 }

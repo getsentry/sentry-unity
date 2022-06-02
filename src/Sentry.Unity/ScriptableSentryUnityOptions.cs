@@ -76,22 +76,22 @@ namespace Sentry.Unity
         /// <remarks>
         /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
         /// </remarks>
-        public static SentryUnityOptions? LoadSentryUnityOptions()
+        public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
         {
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
-                return scriptableOptions.ToSentryUnityOptions(false);
+                return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
             }
 
             return null;
         }
 
-        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, IApplication? application = null)
+        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            var options = new SentryUnityOptions(application, isBuilding)
+            var options = new SentryUnityOptions(isBuilding, unityInfo, application)
             {
                 Enabled = Enabled,
                 Dsn = Dsn,

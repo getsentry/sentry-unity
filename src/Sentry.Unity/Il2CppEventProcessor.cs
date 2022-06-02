@@ -14,6 +14,10 @@ namespace Sentry.Unity
 
     internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
     {
+        private readonly Il2CppMethods _il2CppMethods;
+
+        public UnityIl2CppEventExceptionProcessor(Il2CppMethods il2CppMethods) => _il2CppMethods = il2CppMethods;
+
         public void Process(Exception incomingException, SentryEvent sentryEvent)
         {
             var sentryExceptions = sentryEvent.SentryExceptions;
@@ -104,12 +108,12 @@ namespace Sentry.Unity
             try
             {
                 var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
-                var addr = il2cpp_gchandle_get_target(gchandle);
+                var addr = _il2CppMethods.Il2CppGcHandleGetTarget(gchandle);
 
                 var numFrames = 0;
                 string? imageUUID = null;
                 string? imageName = null;
-                il2cpp_native_stack_trace(addr, out addresses, out numFrames, out imageUUID, out imageName);
+                _il2CppMethods.Il2CppNativeStackTrace(addr, out addresses, out numFrames, out imageUUID, out imageName);
 
                 // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
                 var frames = new IntPtr[numFrames];
@@ -129,25 +133,10 @@ namespace Sentry.Unity
 
                 if (addresses != IntPtr.Zero)
                 {
-                    il2cpp_free(addresses);
+                    _il2CppMethods.Il2CppFree(addresses);
                 }
             }
         }
-
-        // NOTE: fn is available in Unity `2019.4.34f1` (and later)
-        // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
-        [DllImport("__Internal")]
-        private static extern IntPtr il2cpp_gchandle_get_target(int gchandle);
-
-        // NOTE: fn is available in Unity `2020.3.30f1` (and later)
-        // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
-        [DllImport("__Internal")]
-        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
-
-        // NOTE: fn is available in Unity `2019.4.34f1` (and later)
-        // void il2cpp_free(void* ptr)
-        [DllImport("__Internal")]
-        private static extern void il2cpp_free(IntPtr ptr);
     }
 
     internal class NativeStackTrace

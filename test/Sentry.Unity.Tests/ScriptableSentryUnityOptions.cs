@@ -37,7 +37,7 @@ namespace Sentry.Unity.Tests
         [TestCase(false)]
         public void ToSentryOptions_OptionsCreated_AreEqualToNewOptions(bool isBuilding)
         {
-            var expectedOptions = new SentryUnityOptions(_fixture.Application, isBuilding);
+            var expectedOptions = new SentryUnityOptions(isBuilding, null, _fixture.Application);
 
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
 
@@ -46,7 +46,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = false;
             scriptableOptions.DiagnosticLevel = SentryLevel.Debug;
 
-            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
+            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding, null, _fixture.Application);
 
             AssertOptions(expectedOptions, actualOptions);
         }
@@ -115,7 +115,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = false; // Affects Debug otherwise
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
+            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, null, _fixture.Application);
 
             AssertOptions(expectedOptions, optionsActual);
         }

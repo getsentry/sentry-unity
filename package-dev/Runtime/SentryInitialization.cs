@@ -13,6 +13,7 @@
 #endif
 
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -37,11 +38,10 @@ namespace Sentry.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
+            var sentryUnityInfo = new SentryUnityInfo();
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(sentryUnityInfo);
             if (options.ShouldInitializeSdk())
             {
-                var sentryUnityInfo = new SentryUnityInfo();
-
                 Exception nativeInitException = null;
 
                 try
@@ -89,5 +89,35 @@ namespace Sentry.Unity
                false;
 #endif
         }
+
+        public Il2CppMethods Il2CppMethods
+        {
+            get { return _il2CppMethods; }
+        }
+
+        private Il2CppMethods _il2CppMethods
+#if !UNITY_2020_3_OR_NEWER // Lowest supported version to have all required methods below
+            ;
+#else
+            = new Il2CppMethods(
+                il2cpp_gchandle_get_target,
+                il2cpp_native_stack_trace,
+                il2cpp_free);
+
+        // Available in Unity `2019.4.34f1` (and later)
+        // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
+        [DllImport("__Internal")]
+        private static extern IntPtr il2cpp_gchandle_get_target(int gchandle);
+
+        // Available in Unity `2020.3.30f1` (and later)
+        // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
+        [DllImport("__Internal")]
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
+
+        // Available in Unity `2019.4.34f1` (and later)
+        // void il2cpp_free(void* ptr)
+        [DllImport("__Internal")]
+        private static extern void il2cpp_free(IntPtr ptr);
+#endif
     }
 }

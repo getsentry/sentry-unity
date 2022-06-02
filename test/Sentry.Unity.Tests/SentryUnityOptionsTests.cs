@@ -18,7 +18,7 @@ namespace Sentry.Unity.Tests
                 persistentDataPath: "test/persistent/data/path");
             public bool IsBuilding { get; set; }
 
-            public SentryUnityOptions GetSut() => new SentryUnityOptions(Application, IsBuilding);
+            public SentryUnityOptions GetSut() => new SentryUnityOptions(IsBuilding, null, Application);
         }
 
         [SetUp]

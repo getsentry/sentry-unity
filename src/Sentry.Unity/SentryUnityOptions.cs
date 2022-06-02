@@ -132,11 +132,11 @@ namespace Sentry.Unity
             }
         }
 
-        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
+        public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance)
         {
         }
 
-        internal SentryUnityOptions(IApplication application, bool isBuilding)
+        internal SentryUnityOptions(bool isBuilding,  ISentryUnityInfo? unityInfo, IApplication application)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
@@ -145,8 +145,10 @@ namespace Sentry.Unity
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
 
-            // TODO: conditionally use this only when compiling with il2cpp and targeting Unity >= 2020
-            this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor());
+            if (unityInfo?.Il2CppMethods is not null)
+            {
+                this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(unityInfo.Il2CppMethods));
+            }
 
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
