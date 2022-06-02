@@ -90,10 +90,7 @@ namespace Sentry.Unity
 #endif
         }
 
-        public Il2CppMethods Il2CppMethods
-        {
-            get { return _il2CppMethods; }
-        }
+        public Il2CppMethods Il2CppMethods => _il2CppMethods;
 
         private Il2CppMethods _il2CppMethods
 #if !UNITY_2020_3_OR_NEWER // Lowest supported version to have all required methods below
