@@ -2,9 +2,9 @@
   "dependencies": {
     "com.unity.ide.rider": "1.2.1",
     "com.unity.mobile.android-logcat": "1.2.3",
-    "com.unity.test-framework": "1.1.29",
-    "com.unity.toolchain.macos-x86_64-linux-x86_64": "0.1.22-preview",
-    "com.unity.toolchain.win-x86_64-linux-x86_64": "0.1.21-preview",
+    "com.unity.test-framework": "1.1.31",
+    "com.unity.toolchain.macos-x86_64-linux-x86_64": "2.0.0",
+    "com.unity.toolchain.win-x86_64-linux-x86_64": "2.0.1",
     "com.unity.ugui": "1.0.0",
     "io.sentry.unity.dev": "file:../../../package-dev",
     "com.unity.modules.androidjni": "1.0.0",
