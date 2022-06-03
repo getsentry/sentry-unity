@@ -38,7 +38,7 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
         }
         catch
         {
-            Write-Host "/STOP request failed, killing the server process"
+            Write-Host "/STOP request failed: $_ - killing the server process instead"
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
@@ -167,58 +167,64 @@ function RunWithSymbolServer([ScriptBlock] $Callback)
 
 function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput)
 {
+    # Server stats contains:
+    # filename
+    #    count = the number of occurrences of the same file name during upload,
+    #    chunks = the total number of chunks over all occurrences of a file.
+    # We don't check the number of chunks because it depends on the file size.
     $expectedFiles = @()
     If ($buildMethod.contains('Mac'))
     {
         $expectedFiles = @(
-            'IntegrationTest',
-            'UnityPlayer.dylib',
-            'GameAssembly.dylib',
-            'Sentry.dylib',
-            'Sentry.dylib.dSYM'
+            @('IntegrationTest: count=1', 'IntegrationTest: count=2'),
+            @('UnityPlayer.dylib: count=1', 'UnityPlayer.dylib: count=2'),
+            @('GameAssembly.dylib: count=2', 'GameAssembly.dylib: count=4'),
+            'Sentry.dylib: count=2',
+            'Sentry.dylib.dSYM: count=2'
         )
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
         $expectedFiles = @(
-            'test.exe',
-            'GameAssembly.dll',
-            'GameAssembly.pdb',
-            'UnityPlayer.dll',
-            'sentry.pdb',
-            'sentry.dll'
+            'test.exe: count=1',
+            'GameAssembly.dll: count=1',
+            'GameAssembly.pdb: count=1',
+            'UnityPlayer.dll: count=1',
+            'sentry.pdb: count=1',
+            'sentry.dll: count=1'
         )
     }
     ElseIf ($buildMethod.contains('Linux'))
     {
         $expectedFiles = @(
-            'test',
-            'test_s.debug',
-            'GameAssembly.so',
-            'UnityPlayer.so',
-            'UnityPlayer_s.debug',
-            'libsentry.dbg.so'
+            'test: count=1',
+            'test_s.debug: count=1',
+            'GameAssembly.so: count=1',
+            'UnityPlayer.so: count=1',
+            'UnityPlayer_s.debug: count=1',
+            'libsentry.dbg.so: count=1'
         )
     }
     ElseIf ($buildMethod.contains('Android'))
     {
+        # Unity 2021 has some different counts
         $expectedFiles = @(
-            'libmain.so',
-            'libunity.so',
-            @('libunity.dbg.so', 'libunity.sym.so'),
-            'libil2cpp.so',
-            @('libil2cpp.dbg.so', 'libil2cpp.sym.so'),
-            'libsentry.so',
-            'libsentry-android.so'
+            'libmain.so: count=1',
+            @('libunity.so: count=', 'libunity.so: count=2'),
+            @('libunity.dbg.so: count=1', 'libunity.sym.so: count=1'),
+            @('libil2cpp.so: count=1', 'libil2cpp.so: count=2'),
+            @('libil2cpp.dbg.so: count=2', 'libil2cpp.sym.so: count=1'),
+            @('libsentry.so: count=7', 'libsentry.so: count=4'),
+            @('libsentry-android.so: count=7', 'libsentry-android.so: count=4')
         )
     }
     ElseIf ($buildMethod.contains('IOS'))
     {
         $expectedFiles = @(
-            'IntegrationTest',
-            'UnityFramework',
-            'libiPhone-lib.dylib',
-            'Sentry'
+            'IntegrationTest: count=',
+            'UnityFramework: count=',
+            'libiPhone-lib.dylib: count=',
+            'Sentry: count='
         )
     }
     ElseIf ($buildMethod.contains('WebGL'))
@@ -239,7 +245,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         foreach ($name in $alternatives)
         {
             # It's enough if a single symbol alternative is found
-            if ($symbolServerOutput -match "Received: .* $([Regex]::Escape($name))\b")
+            if ($symbolServerOutput -match "  $([Regex]::Escape($name))\b")
             {
                 Write-Host "  $name - OK"
                 continue nextExpectedFile
@@ -247,7 +253,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         }
         # Note: control only gets here if none of the alternatives match...
         $successful = $false
-        Write-Host "  $name - MISSING" -ForegroundColor Red
+        Write-Host "  $alternatives - MISSING" -ForegroundColor Red
     }
     if ($successful)
     {
