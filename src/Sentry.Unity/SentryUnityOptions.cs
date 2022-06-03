@@ -132,6 +132,9 @@ namespace Sentry.Unity
             }
         }
 
+        // Whether components & integrations can use multi-threading.
+        internal bool MultiThreading = true;
+
         public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
         {
         }

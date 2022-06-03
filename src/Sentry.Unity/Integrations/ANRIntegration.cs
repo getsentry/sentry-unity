@@ -10,7 +10,8 @@ namespace Sentry.Unity
 {
     internal class ANRIntegration : ISdkIntegration
     {
-        private static ANRWatchDog _watchdog = new ANRWatchDog();
+        private static readonly object _lock = new object();
+        private static ANRWatchDog? _watchdog;
         private SentryMonoBehaviour _monoBehaviour;
 
         public ANRIntegration(SentryMonoBehaviour monoBehaviour)
@@ -18,64 +19,83 @@ namespace Sentry.Unity
             _monoBehaviour = monoBehaviour;
         }
 
-        public void Register(IHub hub, SentryOptions options)
+        public void Register(IHub hub, SentryOptions sentryOptions)
         {
-            _watchdog.StartOnce(options.DiagnosticLogger, _monoBehaviour);
+            var options = (SentryUnityOptions)sentryOptions;
+            lock (_lock)
+            {
+                if (_watchdog is null)
+                {
+                    if (options.MultiThreading)
+                    {
+                        _watchdog = new ANRWatchDogMultiThreaded(options.DiagnosticLogger, _monoBehaviour);
+                    }
+                    else
+                    {
+                        _watchdog = new ANRWatchDogSingleThreaded(options.DiagnosticLogger, _monoBehaviour);
+                    }
+                }
+            }
             _watchdog.OnApplicationNotResponding += (_, e) => hub.CaptureException(e);
         }
     }
 
-    internal class ANRWatchDog
+    internal abstract class ANRWatchDog
     {
-        private int _detectionTimeoutMs;
-
+        protected readonly int _detectionTimeoutMs;
         // Note: we don't sleep for the whole detection timeout or we wouldn't capture if the ANR started later.
-        private int _sleepIntervalMs;
+        protected readonly int _sleepIntervalMs;
+        protected readonly IDiagnosticLogger? _logger;
+        protected readonly SentryMonoBehaviour _monoBehaviour;
+        internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
 
-        private IDiagnosticLogger? _logger;
-        private SentryMonoBehaviour _monoBehaviour = null!;
+        internal ANRWatchDog(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, int detectionTimeoutMilliseconds = 5000)
+        {
+            _monoBehaviour = monoBehaviour;
+            _logger = logger;
+            _detectionTimeoutMs = detectionTimeoutMilliseconds;
+            _sleepIntervalMs = Math.Max(1, _detectionTimeoutMs / 5);
+
+            // Stop when the app is being shut down.
+            _monoBehaviour.Application.Quitting += () => Stop();
+        }
+
+        abstract internal void Stop(bool wait = false);
+
+        protected void Report()
+        {
+            var message = $"Application not responding for at least {_detectionTimeoutMs} ms.";
+            _logger?.LogInfo("Detected an ANR event: {0}", message);
+            OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
+        }
+    }
+
+    internal class ANRWatchDogMultiThreaded : ANRWatchDog
+    {
         private int _ticksSinceUiUpdate = 0; // how many _sleepIntervalMs have elapsed since the UI updated last time
         private bool _reported = false; // don't report the same ANR instance multiple times
         private bool _stop = false;
-        private Thread _thread = null!;
-        internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
+        private readonly Thread _thread = null!;
 
-        internal ANRWatchDog(int detectionTimeoutMilliseconds = 5000)
+        internal ANRWatchDogMultiThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, int detectionTimeoutMilliseconds = 5000)
+          : base(logger, monoBehaviour, detectionTimeoutMilliseconds)
         {
-            _detectionTimeoutMs = detectionTimeoutMilliseconds;
-            _sleepIntervalMs = Math.Max(1, _detectionTimeoutMs / 5);
-        }
-
-        internal void StartOnce(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour)
-        {
-            // Start the thread, if not yet running.
-            lock (OnApplicationNotResponding)
+            _thread = new Thread(Run)
             {
-                if (_thread is null)
-                {
-                    _monoBehaviour = monoBehaviour;
-                    _logger = logger;
-                    _thread = new Thread(Run)
-                    {
-                        Name = "Sentry-ANR-WatchDog",
-                        IsBackground = true, // do not block on app shutdown
-                        Priority = System.Threading.ThreadPriority.BelowNormal,
-                    };
-                    _thread.Start();
+                Name = "Sentry-ANR-WatchDog",
+                IsBackground = true, // do not block on app shutdown
+                Priority = System.Threading.ThreadPriority.BelowNormal,
+            };
+            _thread.Start();
 
-                    // Stop the thread when the app is being shut down.
-                    _monoBehaviour.Application.Quitting += () => Stop();
-
-                    // Update the UI status periodically by running a couroutine on the UI thread
-                    _monoBehaviour.StartCoroutine(UpdateUiStatus());
-                }
-            }
+            // Update the UI status periodically by running a couroutine on the UI thread
+            _monoBehaviour.StartCoroutine(UpdateUiStatus());
         }
 
-        internal void Stop(bool joinThread = false)
+        override internal void Stop(bool wait = false)
         {
             _stop = true;
-            if (joinThread)
+            if (wait)
             {
                 _thread.Join();
             }
@@ -109,7 +129,6 @@ namespace Sentry.Unity
                 while (!_stop)
                 {
                     _ticksSinceUiUpdate++;
-                    // sleep for a bit
                     Thread.Sleep(_sleepIntervalMs);
 
                     // time to check
@@ -117,9 +136,7 @@ namespace Sentry.Unity
                     // _logger?.LogDebug("ANR status: {0} failed checks since last UI update", ticksSinceUiUpdate);
                     if (ticksSinceUiUpdate >= reportTreshold && !_reported)
                     {
-                        var message = $"Application not responding for at least {ticksSinceUiUpdate * _sleepIntervalMs} ms.";
-                        _logger?.LogInfo("Detected an ANR event: {0}", message);
-                        OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
+                        Report();
                         _reported = true;
                     }
                 }
@@ -131,6 +148,38 @@ namespace Sentry.Unity
             catch (Exception e)
             {
                 _logger?.Log(SentryLevel.Error, "Exception in the ANR watchdog.", e);
+            }
+        }
+    }
+
+    internal class ANRWatchDogSingleThreaded : ANRWatchDog
+    {
+        private Stopwatch _watch = new Stopwatch();
+        private bool _stop = false;
+
+        internal ANRWatchDogSingleThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, int detectionTimeoutMilliseconds = 5000)
+         : base(logger, monoBehaviour, detectionTimeoutMilliseconds)
+        {
+            // Check the UI status periodically by running a couroutine on the UI thread and checking the elapsed time
+            //
+            _watch.Start();
+            _monoBehaviour.StartCoroutine(UpdateUiStatus());
+        }
+
+        override internal void Stop(bool wait = false) =>
+            _stop = true;
+
+        private IEnumerator UpdateUiStatus()
+        {
+            var waitForSeconds = new WaitForSeconds((float)_sleepIntervalMs / 1000);
+            while (!_stop)
+            {
+                if (_watch.ElapsedMilliseconds >= _detectionTimeoutMs)
+                {
+                    Report();
+                }
+                _watch.Restart();
+                yield return waitForSeconds;
             }
         }
     }
