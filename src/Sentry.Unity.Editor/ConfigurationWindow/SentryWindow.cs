@@ -1,4 +1,5 @@
 using System;
+using System.Data.Common;
 using System.IO;
 using Sentry.Extensibility;
 using UnityEditor;
@@ -39,18 +40,58 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             "Debug Symbols"
         };
 
+        private bool? _isFirstLoad = true;
         private void Awake()
         {
             SetTitle();
+            var optionsPath = ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName);
+            var optionsCliPath = SentryCliOptions.GetConfigPath(SentryCliAssetName);
 
-            Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(
-                ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName));
-            CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(
-                SentryCliOptions.GetConfigPath(SentryCliAssetName));
+            _isFirstLoad ??= !File.Exists(optionsPath) && !File.Exists(optionsCliPath);
+
+            Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(optionsPath);
+            CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(optionsCliPath);
         }
 
+        private Wizard? _wizard;
         // ReSharper disable once UnusedMember.Local
         private void OnGUI()
+        {
+            // EditorGUI.BeginDisabledGroup(false);
+            //
+            // _dropDownOption = EditorGUILayout.Popup("bla", _dropDownOption, new[] { "asd", "dsa" });
+            //
+            // if (GUILayout.Button("Create"))
+            // {
+            //     EditorGUILayout.LabelField("Selected: " + _dropDownOption);
+            //     Debug.Log("CLICKED !!!");
+            // }
+            // EditorGUILayout.LabelField("BLA: " + _dropDownOption);
+            // EditorGUI.EndDisabledGroup();
+            if (_isFirstLoad is true)
+            {
+                _wizard ??= new Wizard();
+                var config = _wizard.Show().GetAwaiter().GetResult();
+
+                if (config is not null)
+                {
+                    Options.Dsn = config.Dsn;
+                    CliOptions.Auth = config.Token;
+                    CliOptions.Organization = config.OrgSlug;
+                    CliOptions.Project = config.ProjectSlug;
+                    _isFirstLoad = false;
+                    Debug.Log("_isFirstLoad is true now yey");
+                    ShowOptions();
+                }
+                // Repaint();
+            }
+            else
+            {
+                ShowOptions();
+            }
+        }
+
+        private void ShowOptions()
         {
             EditorGUILayout.Space();
             GUILayout.Label("SDK Options", EditorStyles.boldLabel);
