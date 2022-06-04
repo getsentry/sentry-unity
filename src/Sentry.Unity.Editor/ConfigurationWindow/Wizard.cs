@@ -66,7 +66,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             {
                 var serializeOptions = new JsonSerializerOptions
                 {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
                 };
                 var http = new HttpClient();
                 var resp = await http.GetAsync("https://sentry.io/api/0/wizard/").ConfigureAwait(false);
