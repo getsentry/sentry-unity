@@ -73,8 +73,8 @@ namespace Sentry.Unity.Android.Tests
 
         [Test]
         [TestCase(true, true)]
-        [TestCase(false, false)]
-        public void Configure_IL2CPP_ReInitializesNativeBackendOnlyOnIL2CPP(bool il2cpp, bool expectedReinstall)
+        [TestCase(false, true)]
+        public void Configure_IL2CPP_ReInitializesNativeBackend(bool il2cpp, bool expectedReinstall)
         {
             _sentryUnityInfo.IL2CPP = il2cpp;
             Assert.False(_reinstallCalled); // Sanity check

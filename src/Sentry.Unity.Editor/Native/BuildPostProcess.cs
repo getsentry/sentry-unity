@@ -25,13 +25,7 @@ namespace Sentry.Unity.Editor.Native
 
             try
             {
-                if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) != ScriptingImplementation.IL2CPP)
-                {
-                    logger.LogWarning("Failed to enable Native support - only available with IL2CPP scripting backend.");
-                    return;
-                }
-
-                if (options is null)
+                if (options?.IsValid() is not true)
                 {
                     logger.LogWarning("Native support disabled. " +
                                       "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
@@ -100,6 +94,8 @@ namespace Sentry.Unity.Editor.Native
             File.Copy(crashpadPath, targetPath, true);
         }
 
+        private static bool IsMono => PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) == ScriptingImplementation.Mono2x;
+
         private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options)
         {
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
@@ -135,12 +131,20 @@ namespace Sentry.Unity.Editor.Native
                 addPath("UnityPlayer.dll");
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+                if (IsMono)
+                {
+                    addPath("MonoBleedingEdge/EmbedRuntime");
+                }
             }
             else if (target is BuildTarget.StandaloneLinux64)
             {
                 addPath("GameAssembly.so");
                 addPath("UnityPlayer.so");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
+                if (IsMono)
+                {
+                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
+                }
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
