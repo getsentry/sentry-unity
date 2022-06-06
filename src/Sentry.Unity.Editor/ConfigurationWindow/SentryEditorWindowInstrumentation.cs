@@ -52,6 +52,20 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.AttachScreenshot = boolValue;
             }
 
+            if (args.TryGetValue("diagnosticLevel", out value))
+            {
+                Debug.LogFormat("{0}: Configuring DiagnosticLevel to {1}", functionName, value);
+                options.DiagnosticLevel = value switch
+                {
+                    "debug" => SentryLevel.Debug,
+                    "info" => SentryLevel.Info,
+                    "warning" => SentryLevel.Warning,
+                    "error" => SentryLevel.Error,
+                    "fatal" => SentryLevel.Fatal,
+                    _ => throw new ArgumentException($"Invalid DiagnosticLevel value: {value}")
+                };
+            }
+
             if (args.TryGetValue("cliOptions.Org", out value))
             {
                 Debug.LogFormat("{0}: Configuring symbol-upload organization to {1}", functionName, value);

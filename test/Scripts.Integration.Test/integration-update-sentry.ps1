@@ -42,6 +42,7 @@ RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Con
         "-sentryOptions.Dsn", (TestDsnFor $Platform), `
         "-sentryOptionsScript", "SmokeTestOptions", `
         "-attachScreenshot", "true", `
+        "-diagnosticLevel", "debug", `
         # "-cliOptions.UploadSources", "true", `
         "-cliOptions.Org", "sentry-sdks", `
         "-cliOptions.Project", "sentry-unity", `
