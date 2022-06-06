@@ -39,11 +39,11 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
-
+    $stdout = ""
     do
     {
         ClearUnityLog $logFilePath
-        New-Item $logFilePath
+        New-Item $logFilePath > $null
 
         Write-Host "Running $unityPath $arguments"
         $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru

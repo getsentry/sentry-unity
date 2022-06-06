@@ -165,7 +165,7 @@ function RunWithSymbolServer([ScriptBlock] $Callback)
     return $httpServer.dispose.Invoke()
 }
 
-function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput)
+function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput, [string] $unityVersion)
 {
     # Server stats contains:
     # filename
@@ -173,58 +173,89 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     #    chunks = the total number of chunks over all occurrences of a file.
     # We don't check the number of chunks because it depends on the file size.
     $expectedFiles = @()
+    $unity2020OrHigher = $unityVersion -match "202[0-9]+"
+    $unity2021OrHigher = $unityVersion -match "202[1-9]+"
     If ($buildMethod.contains('Mac'))
     {
-        $expectedFiles = @(
-            @('IntegrationTest: count=1', 'IntegrationTest: count=2'),
-            @('UnityPlayer.dylib: count=1', 'UnityPlayer.dylib: count=2'),
-            @('GameAssembly.dylib: count=2', 'GameAssembly.dylib: count=4'),
-            'Sentry.dylib: count=2',
-            'Sentry.dylib.dSYM: count=2'
-        )
+        if ($unity2020OrHigher)
+        {
+            $expectedFiles = @(
+                'GameAssembly.dylib: count=4',
+                'IntegrationTest: count=2',
+                'Sentry.dylib: count=2',
+                'Sentry.dylib.dSYM: count=2',
+                'UnityPlayer.dylib: count=2'
+            )
+        }
+        else
+        {
+            $expectedFiles = @(
+                'GameAssembly.dylib: count=2',
+                'IntegrationTest: count=1',
+                'Sentry.dylib: count=2',
+                'Sentry.dylib.dSYM: count=2',
+                'UnityPlayer.dylib: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
         $expectedFiles = @(
-            'test.exe: count=1',
             'GameAssembly.dll: count=1',
             'GameAssembly.pdb: count=1',
-            'UnityPlayer.dll: count=1',
+            'sentry.dll: count=1',
             'sentry.pdb: count=1',
-            'sentry.dll: count=1'
+            'test.exe: count=1',
+            'UnityPlayer.dll: count=1'
         )
     }
     ElseIf ($buildMethod.contains('Linux'))
     {
         $expectedFiles = @(
-            'test: count=1',
-            'test_s.debug: count=1',
             'GameAssembly.so: count=1',
-            'UnityPlayer.so: count=1',
+            'libsentry.dbg.so: count=1',
+            'test_s.debug: count=1',
+            'test: count=1',
             'UnityPlayer_s.debug: count=1',
-            'libsentry.dbg.so: count=1'
+            'UnityPlayer.so: count=1'
         )
     }
     ElseIf ($buildMethod.contains('Android'))
     {
-        # Unity 2021 has some different counts
-        $expectedFiles = @(
-            'libmain.so: count=1',
-            @('libunity.so: count=', 'libunity.so: count=2'),
-            @('libunity.dbg.so: count=1', 'libunity.sym.so: count=1'),
-            @('libil2cpp.so: count=1', 'libil2cpp.so: count=2'),
-            @('libil2cpp.dbg.so: count=2', 'libil2cpp.sym.so: count=1'),
-            @('libsentry.so: count=7', 'libsentry.so: count=4'),
-            @('libsentry-android.so: count=7', 'libsentry-android.so: count=4')
-        )
+        if ($unity2021OrHigher)
+        {
+            $expectedFiles = @(
+                'libil2cpp.so: count=2',
+                'libil2cpp.sym.so: count=1',
+                'libmain.so: count=1',
+                'libsentry-android.so: count=4',
+                'libsentry.so: count=4',
+                'libunity.dbg.so: count=1',
+                'libunity.so: count=3',
+                'libunity.sym.so: count=1'
+            )
+        }
+        else
+        {
+            $expectedFiles = @(
+                'libil2cpp.dbg.so: count=1',
+                'libil2cpp.so: count=1',
+                'libil2cpp.sym.so: count=1',
+                'libmain.so: count=1',
+                'libsentry-android.so: count=7',
+                'libsentry.so: count=7',
+                'libunity.so: count=1',
+                'libunity.sym.so: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('IOS'))
     {
         $expectedFiles = @(
-            'IntegrationTest: count=',
-            'UnityFramework: count=',
-            'libiPhone-lib.dylib: count=',
-            'Sentry: count='
+            'IntegrationTest: count=2',
+            'Sentry: count=3',
+            'UnityFramework: count=3',
+            'libiPhone-lib.dylib: count=1'
         )
     }
     ElseIf ($buildMethod.contains('WebGL'))
