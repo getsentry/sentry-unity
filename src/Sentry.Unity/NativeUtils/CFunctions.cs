@@ -1,10 +1,6 @@
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
-using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
 
-namespace Sentry.Unity.Native
+namespace Sentry.Unity.NativeUtils
 {
     internal static class C
     {
@@ -12,7 +8,7 @@ namespace Sentry.Unity.Native
         {
             if (value is not null)
             {
-                sentry_value_set_by_key(obj, key, sentry_value_new_string(value));
+                _ = sentry_value_set_by_key(obj, key, sentry_value_new_string(value));
             }
         }
 
@@ -20,7 +16,7 @@ namespace Sentry.Unity.Native
         {
             if (value.HasValue)
             {
-                sentry_value_set_by_key(obj, key, sentry_value_new_int32(value.Value));
+                _ = sentry_value_set_by_key(obj, key, sentry_value_new_int32(value.Value));
             }
         }
 
@@ -28,7 +24,7 @@ namespace Sentry.Unity.Native
         {
             if (value.HasValue)
             {
-                sentry_value_set_by_key(obj, key, sentry_value_new_bool(value.Value ? 1 : 0));
+                _ = sentry_value_set_by_key(obj, key, sentry_value_new_bool(value.Value ? 1 : 0));
             }
         }
 
@@ -36,7 +32,7 @@ namespace Sentry.Unity.Native
         {
             if (value.HasValue)
             {
-                sentry_value_set_by_key(obj, key, sentry_value_new_double(value.Value));
+                _ = sentry_value_set_by_key(obj, key, sentry_value_new_double(value.Value));
             }
         }
 

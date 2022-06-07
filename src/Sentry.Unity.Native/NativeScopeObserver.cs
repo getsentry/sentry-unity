@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using C = Sentry.Unity.NativeUtils.C;
 
 namespace Sentry.Unity.Native
 {

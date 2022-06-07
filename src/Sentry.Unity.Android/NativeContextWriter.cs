@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
+using CWUtil = Sentry.Unity.NativeUtils.ContextWriter;
 
 namespace Sentry.Unity.Android
 {
@@ -62,6 +58,29 @@ namespace Sentry.Unity.Android
                 GpuVendorId,
                 GpuMultiThreadedRendering,
                 GpuGraphicsShaderLevel);
+
+            CWUtil.WriteGpu(
+                GpuId,
+                GpuName,
+                GpuVendorName,
+                GpuMemorySize,
+                GpuNpotSupport,
+                GpuVersion,
+                GpuApiType,
+                GpuMaxTextureSize,
+                GpuSupportsDrawCallInstancing,
+                GpuSupportsRayTracing,
+                GpuSupportsComputeShaders,
+                GpuSupportsGeometryShaders,
+                GpuVendorId,
+                GpuMultiThreadedRendering,
+                GpuGraphicsShaderLevel);
+
+            CWUtil.WriteUnity(
+                UnityInstallMode,
+                UnityTargetFrameRate,
+                UnityCopyTextureSupport,
+                UnityRenderingThreadingMode);
         }
     }
 }
