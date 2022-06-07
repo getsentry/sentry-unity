@@ -39,11 +39,11 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
-
+    $stdout = ""
     do
     {
         ClearUnityLog $logFilePath
-        New-Item $logFilePath
+        New-Item $logFilePath > $null
 
         Write-Host "Running $unityPath $arguments"
         $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
@@ -78,13 +78,12 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
 function ClearUnityLog([string] $logFilePath)
 {
-    Write-Host -NoNewline "Removing Unity log:"
+    Write-Host "Removing Unity log $logFilePath"
     If (Test-Path -Path $logFilePath)
     {
         #Force is required if it's opened by another process.
         Remove-Item -Path $logFilePath -Force
     }
-    Write-Host " OK"
 }
 
 function WaitForUnityExit([string] $RunUnityLogFile, [System.Diagnostics.Process] $unityProcess)

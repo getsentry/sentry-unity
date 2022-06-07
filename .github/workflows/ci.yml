@@ -244,7 +244,7 @@ jobs:
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }}
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Prepare for upload
         run: |
@@ -330,7 +330,7 @@ jobs:
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      - name: Build Standalone Player without Sentry SDK
+      - name: Build without Sentry SDK
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
@@ -346,8 +346,8 @@ jobs:
       - name: Add Sentry to test project
         run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      - name: Build Standalone Player Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
+      - name: Build with Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Run Player - Smoke Test
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
@@ -391,7 +391,7 @@ jobs:
         run : |
           # Setup API Level
           $apiLevel = '${{ matrix.api-level }}'
-          if ( $apiLevel -eq 'latest') 
+          if ( $apiLevel -eq 'latest')
           {
             # Gets the latest API level that isn't in Beta/Alpha
             $response = (Invoke-WebRequest -UseBasicParsing -Uri "https://developer.android.com/studio/releases/platforms").Content
@@ -401,17 +401,17 @@ jobs:
             echo "::set-output name=api-level::$apiLevel"
             echo "::set-output name=version-label::$apiLevel (latest)"
           }
-          else 
+          else
           {
             Write-Output "Current API is $apiLevel"
             echo "::set-output name=api-level::$apiLevel"
             echo "::set-output name=version-label::$arch"
-          }          
+          }
           # Setup Arch and Target
           $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
           Write-Output "Current Target is $target"
           echo "::set-output name=target::$target"
-          
+
       - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator  setup  + Smoke test
         id: smoke-test
         continue-on-error: true
