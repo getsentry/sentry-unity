@@ -229,6 +229,8 @@ jobs:
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
@@ -331,6 +333,8 @@ jobs:
         run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
