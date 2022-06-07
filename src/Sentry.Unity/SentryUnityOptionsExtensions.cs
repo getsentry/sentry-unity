@@ -74,6 +74,6 @@ namespace Sentry.Unity
         /// Disables the application-not-responding detection.
         /// </summary>
         public static void DisableAnrIntegration(this SentryUnityOptions options) =>
-            options.RemoveIntegration<ANRIntegration>();
+            options.RemoveIntegration<AnrIntegration>();
     }
 }
