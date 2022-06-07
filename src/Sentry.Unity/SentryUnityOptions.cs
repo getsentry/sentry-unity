@@ -180,7 +180,7 @@ namespace Sentry.Unity
                 ? "editor"
                 : "production";
 
-            CacheDirectoryPath = application.PersistentDataPath;
+            CacheDirectoryPath = application.PersistentDataPath.Trim();
         }
 
         public override string ToString()
