@@ -76,7 +76,6 @@ gradle.taskGraph.whenReady {{
             }
 
             var uploadDifArguments = string.Empty;
-
             if (_cliOptions?.UploadSources ?? false)
             {
                 uploadDifArguments += "\"--include-sources\",";
