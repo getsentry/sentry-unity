@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Enable native crash support with Mono scripting backend on Android, Windows and Linux ([#751](https://github.com/getsentry/sentry-unity/pull/751))
+- Application-Not-Responding detection ([#771](https://github.com/getsentry/sentry-unity/pull/771))
+
 ## 0.17.0
 
 ### Features

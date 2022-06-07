@@ -132,6 +132,9 @@ namespace Sentry.Unity
             }
         }
 
+        // Whether components & integrations can use multi-threading.
+        internal bool MultiThreading = true;
+
         public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
         {
         }
@@ -146,6 +149,7 @@ namespace Sentry.Unity
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityLogHandlerIntegration());
+            this.AddIntegration(new ANRIntegration(SentryMonoBehaviour.Instance));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
             this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));

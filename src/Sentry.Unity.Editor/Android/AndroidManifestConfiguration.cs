@@ -37,9 +37,9 @@ namespace Sentry.Unity.Editor.Android
         internal AndroidManifestConfiguration(
             Func<SentryUnityOptions?> getOptions,
             Func<SentryCliOptions?> getSentryCliOptions,
-            IUnityLoggerInterceptor? interceptor = null,
-            bool isDevelopmentBuild = false,
-            ScriptingImplementation scriptingImplementation = ScriptingImplementation.IL2CPP)
+            bool isDevelopmentBuild,
+            ScriptingImplementation scriptingImplementation,
+            IUnityLoggerInterceptor? interceptor = null)
         {
             _options = getOptions();
             _sentryCliOptions = getSentryCliOptions();
@@ -166,11 +166,6 @@ namespace Sentry.Unity.Editor.Android
             }
             else if (!_sentryCliOptions.IsValid(logger, _isDevelopmentBuild))
             {
-                disableSymbolsUpload = true;
-            }
-            else if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
-            {
-                logger.LogDebug("Automated symbols upload requires the IL2CPP scripting backend.");
                 disableSymbolsUpload = true;
             }
 

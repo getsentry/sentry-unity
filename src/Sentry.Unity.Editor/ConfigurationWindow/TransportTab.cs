@@ -50,7 +50,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             options.SampleRate = (sampleRate < 1.0f) ? sampleRate : null;
 
             options.ShutdownTimeout = EditorGUILayout.IntField(
-                new GUIContent("Shut Down Timeout [ms]", "How many seconds to wait before shutting down to " +
+                new GUIContent("Shut Down Timeout [ms]", "How many milliseconds to wait before shutting down to " +
                                                          "give Sentry time to send events from the background queue."),
                 options.ShutdownTimeout);
             options.ShutdownTimeout = Mathf.Clamp(options.ShutdownTimeout, 0, int.MaxValue);

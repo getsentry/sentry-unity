@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Sentry.Extensibility;
@@ -12,6 +13,7 @@ namespace Sentry.Unity.Editor.Android
         private readonly IDiagnosticLogger _logger;
 
         internal const string RelativeBuildOutputPathOld = "Temp/StagingArea/symbols";
+        internal const string RelativeBuildOutputPathOldMono = "Temp/StagingArea/symbols";
         internal const string RelativeGradlePathOld = "Temp/gradleOut";
         internal const string RelativeBuildOutputPathNew = "Library/Bee/artifacts/Android";
         internal const string RelativeAndroidPathNew = "Library/Bee/Android";
@@ -147,22 +149,26 @@ gradle.taskGraph.whenReady {{
                 return new[] { _gradleProjectPath };
             }
 
+            var paths = new List<string>();
             if (IsNewBuildingBackend(application))
             {
                 _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
-                return new[]
+                if (!IsMono)
                 {
-                    Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew),
-                    Path.Combine(_unityProjectPath, RelativeAndroidPathNew)
-                };
+                    paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew));
+                }
+                paths.Add(Path.Combine(_unityProjectPath, RelativeAndroidPathNew));
             }
-
-            _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbols upload: 'Temp'.");
-            return new[]
+            else
             {
-                Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld),
-                Path.Combine(_unityProjectPath, RelativeGradlePathOld)
-            };
+                _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbols upload: 'Temp'.");
+                if (!IsMono)
+                {
+                    paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld));
+                }
+                paths.Add(Path.Combine(_unityProjectPath, RelativeGradlePathOld));
+            }
+            return paths.ToArray();
         }
 
         internal static bool IsNewBuildingBackend(IApplication? application = null)
@@ -181,5 +187,7 @@ gradle.taskGraph.whenReady {{
 
         // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
         internal static string ConvertSlashes(string path) => path.Replace(@"\", "/");
+
+        private static bool IsMono => PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) == ScriptingImplementation.Mono2x;
     }
 }

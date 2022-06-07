@@ -45,9 +45,9 @@ namespace Sentry.Unity.Editor.Tests.Android
             public AndroidManifestConfiguration GetSut() =>
                 new(GetSentryUnityOptions,
                     GetSentryCliOptions,
-                    LoggerInterceptor,
                     IsDevelopmentBuild,
-                    ScriptingImplementation);
+                    ScriptingImplementation,
+                    LoggerInterceptor);
         }
 
         [SetUp]
@@ -278,21 +278,6 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void SetupSymbolsUpload_ScriptingBackendNotIL2CPP_LogsAndReturns()
-        {
-            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
-            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
-
-            _fixture.ScriptingImplementation = ScriptingImplementation.Mono2x;
-            var sut = _fixture.GetSut();
-
-            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
-
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload requires the IL2CPP scripting backend.");
-        }
-
-        [Test]
         public void SetupSymbolsUpload_SentryCliOptionsNull_LogsWarningAndReturns()
         {
             var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -363,11 +348,14 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void SetupSymbolsUpload_ValidConfiguration_AppendsUploadTaskToGradleAndCreatesSentryProperties()
+        [TestCase(ScriptingImplementation.IL2CPP)]
+        [TestCase(ScriptingImplementation.Mono2x)]
+        public void SetupSymbolsUpload_ValidConfiguration_AppendsUploadTaskToGradleAndCreatesSentryProperties(ScriptingImplementation scriptingImplementation)
         {
             var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
 
+            _fixture.ScriptingImplementation = scriptingImplementation;
             var sut = _fixture.GetSut();
             var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
             var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
