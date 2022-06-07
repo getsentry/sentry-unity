@@ -18,7 +18,7 @@ namespace Sentry.Unity
             var crumb = sentry_value_new_breadcrumb(breadcrumb.Type, breadcrumb.Message);
             sentry_value_set_by_key(crumb, "level", sentry_value_new_string(breadcrumb.Level.ToString().ToLower()));
             sentry_value_set_by_key(crumb, "timestamp", sentry_value_new_string(GetTimestamp(breadcrumb.Timestamp)));
-            nativeSetValueIfNotNull(crumb, "category", breadcrumb.Category);
+            NativeSetValueIfNotNull(crumb, "category", breadcrumb.Category);
             sentry_add_breadcrumb(crumb);
         }
 
@@ -33,10 +33,10 @@ namespace Sentry.Unity
         {
             // see https://develop.sentry.dev/sdk/event-payloads/user/
             var cUser = sentry_value_new_object();
-            nativeSetValueIfNotNull(cUser, "id", user.Id);
-            nativeSetValueIfNotNull(cUser, "username", user.Username);
-            nativeSetValueIfNotNull(cUser, "email", user.Email);
-            nativeSetValueIfNotNull(cUser, "ip_address", user.IpAddress);
+            NativeSetValueIfNotNull(cUser, "id", user.Id);
+            NativeSetValueIfNotNull(cUser, "username", user.Username);
+            NativeSetValueIfNotNull(cUser, "email", user.Email);
+            NativeSetValueIfNotNull(cUser, "ip_address", user.IpAddress);
             sentry_set_user(cUser);
         }
 
@@ -57,7 +57,7 @@ namespace Sentry.Unity
         [DllImport("sentry")]
         private static extern int sentry_value_set_by_key(SentryValueU value, string k, SentryValueU v);
 
-        private static void nativeSetValueIfNotNull(SentryValueU obj, string key, string? value)
+        private static void NativeSetValueIfNotNull(SentryValueU obj, string key, string? value)
         {
             if (value is not null)
             {
