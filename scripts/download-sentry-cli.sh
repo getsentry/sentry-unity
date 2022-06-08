@@ -1,7 +1,7 @@
 #!/bin/bash
 cd $(dirname "$0")
 REPO=getsentry/sentry-cli
-VERSION=1.71.0
+VERSION=2.2.0
 PLATFORMS="Darwin-universal Linux-x86_64 Windows-x86_64"
 TARGETDIR="../package-dev/Editor/sentry-cli/"
 

@@ -16,6 +16,10 @@
 - Bump Native SDK to v0.4.17 ([#810](https://github.com/getsentry/sentry-unity/pull/810))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0417)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.17)
+- Bump Sentry CLI 2.2.0 ([#790](https://github.com/getsentry/sentry-unity/pull/790))
+  - [changelog](https://github.com/getsentry/sentry-cli/releases/tag/2.2.0)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/1.72.0...2.2.0)
+- Generate and upload il2cpp line mappings alongside debug files. ([#790](https://github.com/getsentry/sentry-unity/pull/790))
 
 ## 0.19.0
 
