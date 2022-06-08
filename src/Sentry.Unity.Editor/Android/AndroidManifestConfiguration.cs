@@ -152,7 +152,7 @@ namespace Sentry.Unity.Editor.Android
             var disableSymbolsUpload = false;
             var logger = _options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
             var symbolsUpload = new DebugSymbolUpload(logger, _sentryCliOptions, unityProjectPath, gradleProjectPath,
-                EditorUserBuildSettings.exportAsGoogleAndroidProject);
+                PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android), EditorUserBuildSettings.exportAsGoogleAndroidProject);
 
             if (_options is null || !_options.Enabled || !_options.AndroidNativeSupportEnabled)
             {

@@ -29,6 +29,8 @@ namespace Sentry.Unity.Editor
             properties.WriteLine($"defaults.org={cliOptions.Organization}");
             properties.WriteLine($"defaults.project={cliOptions.Project}");
             properties.WriteLine($"auth.token={cliOptions.Auth}");
+            properties.WriteLine($"log.level=info");
+
             return propertiesFile;
         }
 

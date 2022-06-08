@@ -14,6 +14,7 @@ public class Builder
         ValidateArguments(args);
 
         // Make sure the configuration is right.
+        EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
 
         if (args.ContainsKey("sentryOptions.configure"))
