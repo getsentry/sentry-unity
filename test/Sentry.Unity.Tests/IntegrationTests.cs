@@ -20,6 +20,9 @@ namespace Sentry.Unity.Tests
         [SetUp]
         public void Setup()
         {
+            // don't fail test if exception is thrown via 'SendMessage', we want to continue
+            LogAssert.ignoreFailingMessages = true;
+
             _testHttpClientHandler = new TestHttpClientHandler();
             _eventMessage = Guid.NewGuid() + " Test Event";
             _identifyingEventValueAttribute = CreateAttribute("value", _eventMessage);
@@ -194,14 +197,20 @@ namespace Sentry.Unity.Tests
         [UnityTest]
         public IEnumerator DebugLogException_IsMarkedUnhandled()
         {
+            Debug.Log("Test 'DebugLogException_IsMarkedUnhandled'");
+
             yield return SetupSceneCoroutine("1_BugFarm");
 
             var expectedMechanism = "\"mechanism\":{\"type\":\"Unity.LogException\",\"handled\":false}}]}";
+
+            Debug.Log("Init SDK");
             using var _ = InitSentrySdk();
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
+            Debug.Log("Sending message");
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
 
+            Debug.Log("Getting event");
             var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedMechanism));
@@ -302,9 +311,6 @@ namespace Sentry.Unity.Tests
 
         internal static IEnumerator SetupSceneCoroutine(string sceneName)
         {
-            // don't fail test if exception is thrown via 'SendMessage', we want to continue
-            LogAssert.ignoreFailingMessages = true;
-
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);
             SceneManager.LoadScene(sceneName);
 
