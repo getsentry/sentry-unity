@@ -302,14 +302,14 @@ namespace Sentry.Unity.Tests
 
         internal static IEnumerator SetupSceneCoroutine(string sceneName)
         {
+            // don't fail test if exception is thrown via 'SendMessage', we want to continue
+            LogAssert.ignoreFailingMessages = true;
+
             // load scene with initialized Sentry, SceneManager.LoadSceneAsync(sceneName);
             SceneManager.LoadScene(sceneName);
 
             // skip a frame for a Unity to properly load a scene
             yield return null;
-
-            // don't fail test if exception is thrown via 'SendMessage', we want to continue
-            LogAssert.ignoreFailingMessages = true;
         }
 
         internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
