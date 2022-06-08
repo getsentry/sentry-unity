@@ -6,6 +6,7 @@
 
 - Enable native crash support with Mono scripting backend on Android, Windows and Linux ([#751](https://github.com/getsentry/sentry-unity/pull/751))
 - Application-Not-Responding detection ([#771](https://github.com/getsentry/sentry-unity/pull/771))
+- Allow uploading sources for debug files ([#773](https://github.com/getsentry/sentry-unity/pull/773))
 - Bump Sentry Java SDK to v6.0.0 ([#787](https://github.com/getsentry/sentry-unity/pull/787))
   - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0/CHANGELOG.md?plain=1#L3..L73)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-rc.1...6.0.0)
@@ -69,7 +70,7 @@
 ### Fixes
 
 - Refactor InApp logic from Stack Traces ([#661](https://github.com/getsentry/sentry-unity/pull/661))
-- Whitespaces no longer cause issues when uploading symbols for Windows native  ([#655](https://github.com/getsentry/sentry-unity/pull/655))
+- Whitespaces no longer cause issues when uploading symbols for Windows native ([#655](https://github.com/getsentry/sentry-unity/pull/655))
 - AndroidManifest update removes previous `io.sentry` entries ([#652](https://github.com/getsentry/sentry-unity/pull/652))
 - Bump Sentry .NET SDK 3.16.0 ([#678](https://github.com/getsentry/sentry-unity/pull/678))
   - [changelog 3.16.0](https://github.com/getsentry/sentry-dotnet/blob/3.16.0/CHANGELOG.md)
@@ -137,7 +138,7 @@
 
 ### Fixes
 
-- Sentry.Unity.Editor.iOS.dll no longer breaks builds on Windows when the iOS module has not been installed  ([#559](https://github.com/getsentry/sentry-unity/pull/559))
+- Sentry.Unity.Editor.iOS.dll no longer breaks builds on Windows when the iOS module has not been installed ([#559](https://github.com/getsentry/sentry-unity/pull/559))
 - Importing the link.xml when opening the config window no longer causes an infinite loop ([#539](https://github.com/getsentry/sentry-unity/pull/539))
 - Bump Sentry .NET SDK 3.14.0 ([#561](https://github.com/getsentry/sentry-unity/pull/561))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.14.0/CHANGELOG.md)
