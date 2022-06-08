@@ -280,71 +280,67 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void SetupSymbolsUpload_SentryCliOptionsNull_LogsWarningAndReturns()
         {
-            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
-            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            var dsuFixture = new DebugSymbolUploadTests.Fixture();
+            DebugSymbolUploadTests.SetupFakeProject(dsuFixture.FakeProjectPath);
 
             _fixture.SentryCliOptions = null;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
+            sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
             _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "Failed to load sentry-cli options.");
 
-            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
+            Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
 
         [Test]
         public void SetupSymbolsUpload_SymbolsUploadDisabled_LogsAndReturns()
         {
-            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
-            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            var dsuFixture = new DebugSymbolUploadTests.Fixture();
+            DebugSymbolUploadTests.SetupFakeProject(dsuFixture.FakeProjectPath);
 
             _fixture.SentryCliOptions!.UploadSymbols = false;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
+            sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
             _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload has been disabled.");
 
-            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
+            Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
 
         [Test]
         public void SetupSymbolsUpload_DevelopmentBuildDevUploadDisabled_LogsAndReturns()
         {
-            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
-            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            var dsuFixture = new DebugSymbolUploadTests.Fixture();
+            DebugSymbolUploadTests.SetupFakeProject(dsuFixture.FakeProjectPath);
 
             _fixture.IsDevelopmentBuild = true;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
+            sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
             _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload for development builds has been disabled.");
 
-            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
+            Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
 
         [Test]
         public void SetupSymbolsUpload_SentryCliOptionsInvalid_LogsAndReturns()
         {
-            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
-            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            var dsuFixture = new DebugSymbolUploadTests.Fixture();
+            DebugSymbolUploadTests.SetupFakeProject(dsuFixture.FakeProjectPath);
 
             _fixture.SentryCliOptions!.Auth = string.Empty;
             var sut = _fixture.GetSut();
 
-            sut.SetupSymbolsUpload("unity_project_path", gradleProjectPath);
+            sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
             _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
                                                    "\nYou can disable this warning by disabling the automated symbols upload under " +
                                                    SentryCliOptions.EditorMenuPath);
 
-            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
+            Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
 
         [Test]
@@ -352,21 +348,19 @@ namespace Sentry.Unity.Editor.Tests.Android
         [TestCase(ScriptingImplementation.Mono2x)]
         public void SetupSymbolsUpload_ValidConfiguration_AppendsUploadTaskToGradleAndCreatesSentryProperties(ScriptingImplementation scriptingImplementation)
         {
-            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var dsuFixture = new DebugSymbolUploadTests.Fixture();
+            DebugSymbolUploadTests.SetupFakeProject(dsuFixture.FakeProjectPath);
 
             _fixture.ScriptingImplementation = scriptingImplementation;
             var sut = _fixture.GetSut();
-            var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
-            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
 
-            sut.SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
+            sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
-            StringAssert.Contains("println 'Uploading symbols to Sentry'",
-                File.ReadAllText(Path.Combine(gradleProjectPath, "build.gradle")));
-            Assert.True(File.Exists(Path.Combine(gradleProjectPath, "sentry.properties")));
+            StringAssert.Contains("println 'Uploading symbols to Sentry",
+                File.ReadAllText(Path.Combine(dsuFixture.GradleProjectPath, "build.gradle")));
+            Assert.True(File.Exists(Path.Combine(dsuFixture.GradleProjectPath, "sentry.properties")));
 
-            Directory.Delete(Path.GetFullPath(fakeProjectPath), true);
+            Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
 
         private string WithAndroidManifest(Action<string> callback)
