@@ -201,7 +201,6 @@ namespace Sentry.Unity.Tests
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
-            LogAssert.Expect(LogType.Exception, _eventMessage); // Not sure why this is needed? We set `LogAssert.ignoreFailingMessages = true;` in the SetupSceneCoroutine
 
             var triggeredEvent = _testHttpClientHandler.GetEvent(_eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
