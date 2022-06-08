@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Sentry.Extensibility;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,110 +18,101 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         // can't be static
         private int ProjectSelected = 0;
         private int OrgSelected = 0;
-        public WizardStep2Response? Response { get; set; }
-        public WizardConfiguration? WizardConfiguration { get; set; }
+        internal WizardStep2Response? Response { get; set; }
+        private WizardConfiguration? WizardConfiguration { get; set; }
+        private IDiagnosticLogger _logger;
+        private WizardTask? _task;
 
-        public async Task<WizardConfiguration?> Show()
+        public Wizard(IDiagnosticLogger logger)
         {
-            if (WizardConfiguration is not null)
-            {
-                // We're done with the wizard flow
-                return WizardConfiguration;
-            }
+            _logger = logger;
+        }
 
-            if (Response is not null)
+        public WizardConfiguration? Show()
+        {
+            if (WizardConfiguration is null)
             {
-                var firstEntry = new string('-', 60);
-                var orgsAndProjects = Response.Projects.GroupBy(k => k.Organization!.Name, v => v).ToArray();
-                if (orgsAndProjects.Length == 1)
+                if (Response is not null)
                 {
-                    OrgSelected = 1;
-                    ProjectSelected = EditorGUILayout.Popup("Select the Sentry project", ProjectSelected, Response.Projects.Select(p => p.Slug)
-                        .Prepend(firstEntry).ToArray());
-                }
-                else
-                {
-                    if (OrgSelected == 0)
+                    var firstEntry = new string('-', 60);
+                    var orgsAndProjects = Response.Projects.GroupBy(k => k.Organization!.Name, v => v).ToArray();
+                    if (orgsAndProjects.Length == 1)
                     {
-                        OrgSelected = EditorGUILayout.Popup("Select Sentry Organization", OrgSelected, orgsAndProjects.Select(k => k.Key)
+                        OrgSelected = 1;
+                        ProjectSelected = EditorGUILayout.Popup("Select the Sentry project", ProjectSelected, Response.Projects.Select(p => p.Slug)
                             .Prepend(firstEntry).ToArray());
                     }
                     else
                     {
-                        ProjectSelected = EditorGUILayout.Popup("Select Sentry Project", ProjectSelected, orgsAndProjects[OrgSelected - 1].Select(v => $"{v.Name} - ({v.Slug})").ToArray()
-                            .Prepend(firstEntry).ToArray());
+                        if (OrgSelected == 0)
+                        {
+                            OrgSelected = EditorGUILayout.Popup("Select Sentry Organization", OrgSelected, orgsAndProjects.Select(k => k.Key)
+                                .Prepend(firstEntry).ToArray());
+                        }
+                        else
+                        {
+                            ProjectSelected = EditorGUILayout.Popup("Select Sentry Project", ProjectSelected, orgsAndProjects[OrgSelected - 1].Select(v => $"{v.Name} - ({v.Slug})").ToArray()
+                                .Prepend(firstEntry).ToArray());
+                        }
+                    }
+
+                    if (ProjectSelected != 0)
+                    {
+                        var proj = orgsAndProjects[OrgSelected - 1].ToArray()[ProjectSelected - 1];
+                        WizardConfiguration = new WizardConfiguration
+                        {
+                            Token = Response.ApiKeys!.Token,
+                            Dsn = proj.Keys.First().Dsn!.Public,
+                            OrgSlug = proj.Organization!.Slug,
+                            ProjectSlug = proj.Slug
+                        };
+                        return WizardConfiguration;
                     }
                 }
-
-                if (ProjectSelected != 0)
+                else if (GUILayout.Button("Start setup wizard for sentry.io") && _task is null)
                 {
-                    var proj = orgsAndProjects[OrgSelected - 1].ToArray()[ProjectSelected - 1];
-                    WizardConfiguration = new WizardConfiguration
-                    {
-                        Token = Response.ApiKeys!.Token,
-                        Dsn = proj.Keys.First().Dsn!.Public,
-                        OrgSlug = proj.Organization!.Slug,
-                        ProjectSlug = proj.Slug
-                    };
+                    _task = new WizardTask(this, _logger);
+                    Task.Run(_task.Run);
                 }
             }
-            else if (GUILayout.Button("Start Wizard Process"))
+
+            return WizardConfiguration;
+        }
+
+        // called multiple times per second to update status on the UI thread.
+        internal void Update()
+        {
+            if (_task is null)
             {
-                var serializeOptions = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    WriteIndented = true
-                };
-                var http = new HttpClient();
-                var resp = await http.GetAsync("https://sentry.io/api/0/wizard/").ConfigureAwait(false);
-                resp.EnsureSuccessStatusCode();
-                var wizardHashResponse = await JsonSerializer.DeserializeAsync<WizardStep1Response>(
-                    await resp.Content.ReadAsStreamAsync(), serializeOptions).ConfigureAwait(false);
-
-                var urlToOpenOnBrowser = $"https://sentry.io/account/settings/wizard/{wizardHashResponse!.Hash}/";
-                // TODO: On Windows it's 'start' instead of 'open':
-                try
-                {
-                    var proc = Process.Start(
-                        new ProcessStartInfo("open", urlToOpenOnBrowser) { UseShellExecute = true });
-                }
-                catch
-                {
-                    // TODO: Log here but continue, user can browse manually the URL (see below):
-                }
-
-                // TODO: Print URL we just tried to load (can we show a clickable link?) and tell the user to open manually if somehow the
-                // browser didn't open
-
-                // Poll https://sentry.io/api/0/wizard/hash/
-                var pollingUrl = $"https://sentry.io/api/0/wizard/{wizardHashResponse.Hash}/";
-                var i = 0;
-                do
-                {
-                    try
-                    {
-                        resp = await http.GetAsync(pollingUrl).ConfigureAwait(false);
-                        resp.EnsureSuccessStatusCode();
-                        var completedWizardResponse = await JsonSerializer.DeserializeAsync<WizardStep2Response>(
-                            await resp.Content.ReadAsStreamAsync().ConfigureAwait(false), serializeOptions).ConfigureAwait(false);
-
-                        Response = completedWizardResponse;
-
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        await Task.Delay(1000).ConfigureAwait(false);
-                    }
-                } while (i++ < 10);
-
-                // We're done, so fire and forget delete the wizard token and dispose the client at the end
-                var deleteTask = http.DeleteAsync(pollingUrl);
-                _ = deleteTask.ContinueWith(_ => http.Dispose());
+                return;
             }
 
-            return null;
+            if (_task._done || _task._cancelled)
+            {
+                _task = null;
+                EditorUtility.ClearProgressBar();
+                return;
+            }
+
+            if (_task._progress > 0.0f)
+            {
+                _task._cancelled = EditorUtility.DisplayCancelableProgressBar(
+                    "Sentry setup wizard", _task._progressText, _task._progress);
+            }
+
+            _task._uiAction?.Invoke();
+        }
+
+        internal static void OpenUrl(string url)
+        {
+            // Verify that the URL is a valid HTTP/HTTPS - we don't want to launch just about any process ()
+            var parsedUri = new Uri(url);
+            if (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps)
+            {
+                throw new Exception($"Can't open given URL - only HTTP/HTTPS scheme is allowed, but got: {url}");
+            }
+
+            Application.OpenURL(parsedUri.ToString());
         }
 
         internal class WizardStep1Response
@@ -167,5 +161,137 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         public string? Dsn { get; set; }
         public string? OrgSlug { get; set; }
         public string? ProjectSlug { get; set; }
+    }
+
+    internal class WizardCancelled : Exception
+    {
+        internal WizardCancelled() : base() { }
+        internal WizardCancelled(string message) : base(message) { }
+        internal WizardCancelled(string message, Exception innerException) : base(message, innerException) { }
+    }
+
+    internal class WizardTask
+    {
+        private Wizard _wizard;
+        private IDiagnosticLogger _logger;
+        internal float _progress = 0.0f;
+        internal string _progressText = "";
+        internal bool _done = false;
+        internal bool _cancelled = false;
+        internal Action? _uiAction = null;
+        private const int StepCount = 5;
+
+        private readonly JsonSerializerOptions _serializeOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        };
+
+        public WizardTask(Wizard wizard, IDiagnosticLogger logger)
+        {
+            _wizard = wizard;
+            _logger = logger;
+        }
+
+        private void Progress(string status, int step) => Progress(status, (float)step / StepCount);
+        private void Done(string status) => Progress(status, 1.0f);
+
+        private void Progress(string status, float current)
+        {
+            if (_cancelled)
+            {
+                throw new WizardCancelled();
+            }
+
+            _logger.LogDebug("Wizard: {0,3} % - {1}", (int)Math.Floor(100 * current), status);
+            _progressText = status;
+            _progress = current;
+        }
+
+        internal async void Run()
+        {
+            try
+            {
+                Progress("Started", 1);
+
+                Progress("Connecting to sentry.io settings wizard...", 2);
+                var http = new HttpClient();
+                var resp = await http.GetAsync("https://sentry.io/api/0/wizard/").ConfigureAwait(false);
+                var wizardHashResponse = await DeserializeJson<Wizard.WizardStep1Response>(resp);
+
+                Progress("Opening sentry.io in the default browser...", 3);
+                await RunOnUiThread(() => Wizard.OpenUrl($"https://sentry.io/account/settings/wizard/{wizardHashResponse.Hash}/"));
+
+                // Poll https://sentry.io/api/0/wizard/hash/
+                var pollingUrl = $"https://sentry.io/api/0/wizard/{wizardHashResponse.Hash}/";
+
+                Progress("Waiting for the the response from the browser session...", 4);
+
+                while (!_cancelled)
+                {
+                    try
+                    {
+                        resp = await http.GetAsync(pollingUrl).ConfigureAwait(false);
+                        if (resp.StatusCode != HttpStatusCode.BadRequest) // not ready yet
+                        {
+                            var response = await DeserializeJson<Wizard.WizardStep2Response>(resp).ConfigureAwait(false);
+                            // Set on UI thread to make sure it's serialized properly with other UI updates.
+                            await RunOnUiThread(() => _wizard.Response = response);
+                            break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Log(SentryLevel.Warning, "Wizard polling error", e);
+                    }
+                    await Task.Delay(1000).ConfigureAwait(false);
+                }
+
+                await http.DeleteAsync(pollingUrl);
+                http.Dispose();
+                Done("Finished");
+            }
+            catch (WizardCancelled)
+            {
+                _logger.Log(SentryLevel.Info, "Wizard cancelled");
+            }
+            catch (Exception e)
+            {
+                _logger.Log(SentryLevel.Warning, "Wizard failed", e);
+                Done("Failed");
+            }
+            finally
+            {
+                _done = true;
+            }
+        }
+
+        private async Task<T> DeserializeJson<T>(HttpResponseMessage response)
+        {
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            return JsonSerializer.Deserialize<T>(content, _serializeOptions)!;
+        }
+
+        private Task RunOnUiThread(Action callback)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            _uiAction = () =>
+            {
+                try
+                {
+                    callback.Invoke();
+                    tcs.TrySetResult(true);
+                }
+                catch (Exception e)
+                {
+                    tcs.TrySetException(e);
+                }
+                finally
+                {
+                    _uiAction = null;
+                }
+            };
+            return tcs.Task;
+        }
     }
 }

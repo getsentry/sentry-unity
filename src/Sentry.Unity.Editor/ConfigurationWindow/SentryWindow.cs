@@ -24,8 +24,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
         protected virtual string SentryCliAssetName { get; } = SentryCliOptions.ConfigName;
 
-        public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by Awake()
-        public SentryCliOptions CliOptions { get; private set; } = null!; // Set by Awake()
+        public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
+        public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
@@ -40,38 +40,40 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             "Debug Symbols"
         };
 
-        private bool? _isFirstLoad = true;
-        private void Awake()
+        private IDiagnosticLogger _logger = null!; // Set by OnEnable()
+        private bool _isFirstLoad = false; // Set by OnEnable()
+        private Wizard? _wizard;
+
+        // Using OnEnable() instead of Awake() so that this is called also when the .dll is reloaded during development.
+        // Otherwise, Awake() wouldn't be called at all again and the fields would be null.
+        private void OnEnable()
         {
+            _logger = new UnityLogger(new SentryOptions() { Debug = SentryPackageInfo.IsDevPackage });
+            _logger.LogDebug("SentryWindow.OnEnable() called.");
+
             SetTitle();
             var optionsPath = ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName);
             var optionsCliPath = SentryCliOptions.GetConfigPath(SentryCliAssetName);
 
-            _isFirstLoad ??= !File.Exists(optionsPath) && !File.Exists(optionsCliPath);
-
             Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(optionsPath);
             CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(optionsCliPath);
+
+            _isFirstLoad = !File.Exists(optionsPath) && !File.Exists(optionsCliPath);
+            _isFirstLoad = true; // xxx temporary
+
+            if (_isFirstLoad)
+            {
+                _logger.LogDebug("Configuration window opened for the first time - starting a setup wizard.");
+            }
         }
 
-        private Wizard? _wizard;
         // ReSharper disable once UnusedMember.Local
         private void OnGUI()
         {
-            // EditorGUI.BeginDisabledGroup(false);
-            //
-            // _dropDownOption = EditorGUILayout.Popup("bla", _dropDownOption, new[] { "asd", "dsa" });
-            //
-            // if (GUILayout.Button("Create"))
-            // {
-            //     EditorGUILayout.LabelField("Selected: " + _dropDownOption);
-            //     Debug.Log("CLICKED !!!");
-            // }
-            // EditorGUILayout.LabelField("BLA: " + _dropDownOption);
-            // EditorGUI.EndDisabledGroup();
-            if (_isFirstLoad is true)
+            if (_isFirstLoad)
             {
-                _wizard ??= new Wizard();
-                var config = _wizard.Show().GetAwaiter().GetResult();
+                _wizard ??= new Wizard(_logger);
+                var config = _wizard.Show();
 
                 if (config is not null)
                 {
@@ -80,7 +82,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     CliOptions.Organization = config.OrgSlug;
                     CliOptions.Project = config.ProjectSlug;
                     _isFirstLoad = false;
-                    Debug.Log("_isFirstLoad is true now yey");
                     ShowOptions();
                 }
                 // Repaint();
@@ -90,6 +91,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 ShowOptions();
             }
         }
+
+        // called multiple times per second to update status on the UI thread.
+        private void Update() => _wizard?.Update();
 
         private void ShowOptions()
         {
@@ -147,8 +151,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             // Make sure the actual config asset exists before validating/saving. Crashes the editor otherwise.
             if (!File.Exists(ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName)))
             {
-                new UnityLogger(new SentryOptions()).LogWarning("Sentry option could not been saved. " +
-                                                                "The configuration asset is missing.");
+                _logger.LogWarning("Options could not been saved. The configuration asset is missing.");
                 return;
             }
 
@@ -185,7 +188,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             var validationError = new ValidationError(fullFieldName, "Invalid DSN format. Expected a URL.");
             OnValidationError(validationError);
 
-            new UnityLogger(new SentryOptions()).LogWarning(validationError.ToString());
+            _logger.LogWarning(validationError.ToString());
         }
 
         private void SetTitle()
