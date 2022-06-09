@@ -13,70 +13,151 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
-    internal class Wizard
+    internal class Wizard : EditorWindow
     {
-        // can't be static
-        private int ProjectSelected = 0;
-        private int OrgSelected = 0;
-        internal WizardStep2Response? Response { get; set; }
-        private WizardConfiguration? WizardConfiguration { get; set; }
-        private IDiagnosticLogger _logger;
-        private WizardTask? _task;
+        private int _projectSelected = 0;
+        private int _orgSelected = 0;
+        private bool _uploadSymbols = false;
 
-        public Wizard(IDiagnosticLogger logger)
+        private static Wizard? Instance;
+        internal WizardStep2Response? Response { get; set; }
+        private IDiagnosticLogger _logger = null!;
+        private WizardLoader? _task;
+
+        public static void Start(IDiagnosticLogger logger)
         {
-            _logger = logger;
+            if (Instance is null)
+            {
+                Instance = ScriptableObject.CreateInstance<Wizard>();
+                Instance._logger = logger;
+
+                SentryWindow.SetTitle(Instance, description: "Setup wizard");
+
+                Instance.ShowUtility();
+                Instance.minSize = new Vector2(600, 200);
+                Instance.StartLoder();
+            }
         }
 
-        public WizardConfiguration? Show()
+        private void StartLoder()
         {
-            if (WizardConfiguration is null)
+            _task = new WizardLoader(this, _logger);
+            Task.Run(async () => Response = await _task.Load());
+        }
+
+        public static bool InProgress => Instance is not null;
+
+        private void OnGUI()
+        {
+            if (Response is null)
             {
-                if (Response is not null)
+                return;
+            }
+
+            WizardConfiguration? wizardConfiguration = null;
+
+            EditorGUILayout.Space();
+
+            if (Response.Projects.Count == 0)
+            {
+                wizardConfiguration = new WizardConfiguration
                 {
-                    var firstEntry = new string('-', 60);
-                    var orgsAndProjects = Response.Projects.GroupBy(k => k.Organization!.Name, v => v).ToArray();
-                    if (orgsAndProjects.Length == 1)
+                    Token = Response.ApiKeys!.Token
+                };
+
+                EditorGUILayout.LabelField("There don't seem to be any projects in your sentry.io account.");
+            }
+            else
+            {
+                EditorGUILayout.LabelField("Please select the organization and project you'd like to use.");
+                EditorGUILayout.Space();
+
+                var firstEntry = new string(' ', 60);
+
+                // sort "unity" projects first
+                Response.Projects.Sort((a, b) =>
+                {
+                    if (a.IsUnity == b.IsUnity)
                     {
-                        OrgSelected = 1;
-                        ProjectSelected = EditorGUILayout.Popup("Select the Sentry project", ProjectSelected, Response.Projects.Select(p => p.Slug)
-                            .Prepend(firstEntry).ToArray());
+                        return (a.Name ?? "").CompareTo(b.Name ?? "");
+                    }
+                    else if (a.IsUnity)
+                    {
+                        return -1;
                     }
                     else
                     {
-                        if (OrgSelected == 0)
-                        {
-                            OrgSelected = EditorGUILayout.Popup("Select Sentry Organization", OrgSelected, orgsAndProjects.Select(k => k.Key)
-                                .Prepend(firstEntry).ToArray());
-                        }
-                        else
-                        {
-                            ProjectSelected = EditorGUILayout.Popup("Select Sentry Project", ProjectSelected, orgsAndProjects[OrgSelected - 1].Select(v => $"{v.Name} - ({v.Slug})").ToArray()
-                                .Prepend(firstEntry).ToArray());
-                        }
+                        return 1;
                     }
+                });
 
-                    if (ProjectSelected != 0)
-                    {
-                        var proj = orgsAndProjects[OrgSelected - 1].ToArray()[ProjectSelected - 1];
-                        WizardConfiguration = new WizardConfiguration
-                        {
-                            Token = Response.ApiKeys!.Token,
-                            Dsn = proj.Keys.First().Dsn!.Public,
-                            OrgSlug = proj.Organization!.Slug,
-                            ProjectSlug = proj.Slug
-                        };
-                        return WizardConfiguration;
-                    }
-                }
-                else if (GUILayout.Button("Start setup wizard for sentry.io") && _task is null)
+                var orgsAndProjects = Response.Projects.GroupBy(k => k.Organization!.Name, v => v).ToArray();
+
+                // if only one org
+                if (orgsAndProjects.Length == 1)
                 {
-                    _task = new WizardTask(this, _logger);
-                    Task.Run(_task.Run);
+                    _orgSelected = 1 + EditorGUILayout.Popup("Organization", _orgSelected - 1, orgsAndProjects.Select(k => k.Key).ToArray());
+                }
+                else
+                {
+                    _orgSelected = EditorGUILayout.Popup("Organization", _orgSelected, orgsAndProjects.Select(k => k.Key)
+                        .Prepend(firstEntry).ToArray());
+                }
+
+                if (_orgSelected > 0)
+                {
+                    _projectSelected = EditorGUILayout.Popup("Project", _projectSelected, orgsAndProjects[_orgSelected - 1].Select(v => $"{v.Name} - ({v.Slug})").ToArray()
+                        .Prepend(firstEntry).ToArray());
+                }
+
+                if (_projectSelected != 0)
+                {
+                    _uploadSymbols = EditorGUILayout.Toggle(new GUIContent("Upload debug symbols",
+                        "Should we upload debug symbols to sentry.io to improve stack traces on errors"), _uploadSymbols);
+                }
+
+                if (_projectSelected != 0)
+                {
+                    var proj = orgsAndProjects[_orgSelected - 1].ToArray()[_projectSelected - 1];
+                    wizardConfiguration = new WizardConfiguration
+                    {
+                        Token = Response.ApiKeys!.Token,
+                        Dsn = proj.Keys.First().Dsn!.Public,
+                        OrgSlug = proj.Organization!.Slug,
+                        ProjectSlug = proj.Slug,
+                        UploadSymbols = _uploadSymbols
+                    };
                 }
             }
 
-            return WizardConfiguration;
+            if (wizardConfiguration != null)
+            {
+                GUILayout.FlexibleSpace();
+
+                EditorGUILayout.LabelField("Would you like to inspect the settings or leave at defaults for now? ");
+                EditorGUILayout.LabelField("You can always make changes later in the Tools/Sentry menu.");
+                EditorGUILayout.Space();
+
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("I want to see all the options!", GUILayout.ExpandWidth(false)))
+                {
+                    SentryWindow.SaveWizardResult(wizardConfiguration);
+                    Close();
+                    SentryWindow.OpenSentryWindow();
+                }
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("I'm fine with the defaults, take me back to Unity!", GUILayout.ExpandWidth(false)))
+                {
+                    SentryWindow.SaveWizardResult(wizardConfiguration);
+                    Close();
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
+
+        void OnDestroy()
+        {
+            Instance = null;
         }
 
         // called multiple times per second to update status on the UI thread.
@@ -87,10 +168,22 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 return;
             }
 
-            if (_task._done || _task._cancelled)
+            if (_task._cancelled)
             {
-                _task = null;
                 EditorUtility.ClearProgressBar();
+                Close();
+                return;
+            }
+
+            if (_task._done)
+            {
+                EditorUtility.ClearProgressBar();
+                if (_task._exception is not null && EditorUtility.DisplayDialog("Wizard error",
+                    $"Couldn't launch the wizard. Would you like to try again? The error was:\n\n{_task._exception.Message}",
+                    "Retry wizard", "I'll set it up manually"))
+                {
+                    StartLoder();
+                }
                 return;
             }
 
@@ -105,11 +198,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
         internal static void OpenUrl(string url)
         {
-            // Verify that the URL is a valid HTTP/HTTPS - we don't want to launch just about any process ()
+            // Verify that the URL is a valid HTTPS - we don't want to launch just about any process (say... malware.exe)
             var parsedUri = new Uri(url);
-            if (parsedUri.Scheme != Uri.UriSchemeHttp && parsedUri.Scheme != Uri.UriSchemeHttps)
+            if (parsedUri.Scheme != Uri.UriSchemeHttps)
             {
-                throw new Exception($"Can't open given URL - only HTTP/HTTPS scheme is allowed, but got: {url}");
+                throw new Exception($"Can't open given URL - only HTTPS scheme is allowed, but got: {url}");
             }
 
             Application.OpenURL(parsedUri.ToString());
@@ -122,7 +215,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal class WizardStep2Response
         {
             public ApiKeys? ApiKeys { get; set; }
-            public IList<Project> Projects { get; set; } = new List<Project>(0);
+            public List<Project> Projects { get; set; } = new List<Project>(0);
         }
 
         internal class ApiKeys
@@ -135,7 +228,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             public Organization? Organization { get; set; }
             public string? Slug { get; set; }
             public string? Name { get; set; }
+            public string? Platform { get; set; }
             public IEnumerable<Key> Keys { get; set; } = Enumerable.Empty<Key>();
+
+            public bool IsUnity => string.Equals(Platform, "unity", StringComparison.InvariantCultureIgnoreCase);
         }
 
         internal class Key
@@ -161,6 +257,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         public string? Dsn { get; set; }
         public string? OrgSlug { get; set; }
         public string? ProjectSlug { get; set; }
+        public bool UploadSymbols { get; set; } = false;
     }
 
     internal class WizardCancelled : Exception
@@ -170,7 +267,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal WizardCancelled(string message, Exception innerException) : base(message, innerException) { }
     }
 
-    internal class WizardTask
+    internal class WizardLoader
     {
         private Wizard _wizard;
         private IDiagnosticLogger _logger;
@@ -178,6 +275,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal string _progressText = "";
         internal bool _done = false;
         internal bool _cancelled = false;
+        internal Exception? _exception = null;
         internal Action? _uiAction = null;
         private const int StepCount = 5;
 
@@ -187,7 +285,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             WriteIndented = true
         };
 
-        public WizardTask(Wizard wizard, IDiagnosticLogger logger)
+        public WizardLoader(Wizard wizard, IDiagnosticLogger logger)
         {
             _wizard = wizard;
             _logger = logger;
@@ -208,8 +306,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             _progress = current;
         }
 
-        internal async void Run()
+        internal async Task<Wizard.WizardStep2Response?> Load()
         {
+            Wizard.WizardStep2Response? response = null;
             try
             {
                 Progress("Started", 1);
@@ -234,9 +333,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                         resp = await http.GetAsync(pollingUrl).ConfigureAwait(false);
                         if (resp.StatusCode != HttpStatusCode.BadRequest) // not ready yet
                         {
-                            var response = await DeserializeJson<Wizard.WizardStep2Response>(resp).ConfigureAwait(false);
-                            // Set on UI thread to make sure it's serialized properly with other UI updates.
-                            await RunOnUiThread(() => _wizard.Response = response);
+                            response = await DeserializeJson<Wizard.WizardStep2Response>(resp).ConfigureAwait(false);
                             break;
                         }
                     }
@@ -258,12 +355,14 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             catch (Exception e)
             {
                 _logger.Log(SentryLevel.Warning, "Wizard failed", e);
+                _exception = e;
                 Done("Failed");
             }
             finally
             {
                 _done = true;
             }
+            return response;
         }
 
         private async Task<T> DeserializeJson<T>(HttpResponseMessage response)

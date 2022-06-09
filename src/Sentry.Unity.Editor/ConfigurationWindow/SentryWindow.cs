@@ -12,17 +12,35 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         private const string LinkXmlPath = "Assets/Plugins/Sentry/link.xml";
 
         [MenuItem("Tools/Sentry")]
-        public static SentryWindow OpenSentryWindow()
+        public static void OnMenuClick()
         {
-            var window = (SentryWindow)GetWindow(typeof(SentryWindow));
-            window.minSize = new Vector2(600, 420);
-            return window;
+            if (Wizard.InProgress)
+            {
+                Debug.Log("Wizard in progress, ignoring Tools/Sentry menu click");
+                return;
+            }
+            if (Instance is null && IsFirstLoad && EditorUtility.DisplayDialog("Start a setup wizard?",
+                "It looks like you're setting up Sentry for the first time in this project.\n\n" +
+                "Would you like to start a setup wizard to connect to sentry.io?", "Start wizard", "I'll set it up manually"))
+            {
+                Wizard.Start(CreateLogger());
+            }
+            else
+            {
+                OpenSentryWindow();
+            }
         }
 
-        public static SentryWindow Instance => GetWindow<SentryWindow>();
+        public static void OpenSentryWindow()
+        {
+            Instance = GetWindow<SentryWindow>();
+            Instance.minSize = new Vector2(600, 420);
+        }
 
-        protected virtual string SentryOptionsAssetName { get; } = ScriptableSentryUnityOptions.ConfigName;
-        protected virtual string SentryCliAssetName { get; } = SentryCliOptions.ConfigName;
+        public static SentryWindow? Instance;
+
+        protected static string SentryOptionsAssetName { get; set; } = ScriptableSentryUnityOptions.ConfigName;
+        protected static string SentryCliAssetName { get; } = SentryCliOptions.ConfigName;
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
         public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
@@ -40,62 +58,53 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             "Debug Symbols"
         };
 
-        private IDiagnosticLogger _logger = null!; // Set by OnEnable()
-        private bool _isFirstLoad = false; // Set by OnEnable()
-        private Wizard? _wizard;
+        private IDiagnosticLogger _logger;
 
-        // Using OnEnable() instead of Awake() so that this is called also when the .dll is reloaded during development.
-        // Otherwise, Awake() wouldn't be called at all again and the fields would be null.
+        private static string OptionsPath => ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName);
+        private static string CliOptionsPath => SentryCliOptions.GetConfigPath(SentryCliAssetName);
+
+        public SentryWindow()
+        {
+            _logger = CreateLogger();
+        }
+
+        private static IDiagnosticLogger CreateLogger() =>
+            new UnityLogger(new SentryOptions() { Debug = SentryPackageInfo.IsDevPackage });
+
+        void OnDestroy()
+        {
+            Instance = null;
+        }
+
         private void OnEnable()
         {
-            _logger = new UnityLogger(new SentryOptions() { Debug = SentryPackageInfo.IsDevPackage });
-            _logger.LogDebug("SentryWindow.OnEnable() called.");
-
-            SetTitle();
-            var optionsPath = ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName);
-            var optionsCliPath = SentryCliOptions.GetConfigPath(SentryCliAssetName);
-
-            Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(optionsPath);
-            CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(optionsCliPath);
-
-            _isFirstLoad = !File.Exists(optionsPath) && !File.Exists(optionsCliPath);
-            _isFirstLoad = true; // xxx temporary
-
-            if (_isFirstLoad)
-            {
-                _logger.LogDebug("Configuration window opened for the first time - starting a setup wizard.");
-            }
+            // Note: these are not allowed to be called in constructors
+            SetTitle(this);
+            Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(OptionsPath);
+            CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(CliOptionsPath);
         }
+
+        internal static void SaveWizardResult(WizardConfiguration config)
+        {
+            var options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(OptionsPath);
+            var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(CliOptionsPath);
+            options.Dsn = config.Dsn;
+            cliOptions.UploadSymbols = config.UploadSymbols;
+            cliOptions.Auth = config.Token;
+            cliOptions.Organization = config.OrgSlug;
+            cliOptions.Project = config.ProjectSlug;
+
+            EditorUtility.SetDirty(options);
+            EditorUtility.SetDirty(cliOptions);
+            AssetDatabase.SaveAssets();
+        }
+
+        private static bool IsFirstLoad =>
+          !File.Exists(ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName)) &&
+          !File.Exists(SentryCliOptions.GetConfigPath(SentryCliAssetName));
 
         // ReSharper disable once UnusedMember.Local
         private void OnGUI()
-        {
-            if (_isFirstLoad)
-            {
-                _wizard ??= new Wizard(_logger);
-                var config = _wizard.Show();
-
-                if (config is not null)
-                {
-                    Options.Dsn = config.Dsn;
-                    CliOptions.Auth = config.Token;
-                    CliOptions.Organization = config.OrgSlug;
-                    CliOptions.Project = config.ProjectSlug;
-                    _isFirstLoad = false;
-                    ShowOptions();
-                }
-                // Repaint();
-            }
-            else
-            {
-                ShowOptions();
-            }
-        }
-
-        // called multiple times per second to update status on the UI thread.
-        private void Update() => _wizard?.Update();
-
-        private void ShowOptions()
         {
             EditorGUILayout.Space();
             GUILayout.Label("SDK Options", EditorStyles.boldLabel);
@@ -191,12 +200,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             _logger.LogWarning(validationError.ToString());
         }
 
-        private void SetTitle()
+        internal static void SetTitle(EditorWindow window, string title = "Sentry", string description = "Sentry SDK options")
         {
             var isDarkMode = EditorGUIUtility.isProSkin;
             var texture = new Texture2D(16, 16);
             using var memStream = new MemoryStream();
-            using var stream = GetType().Assembly
+            using var stream = window.GetType().Assembly
                 .GetManifestResourceStream(
                     $"Sentry.Unity.Editor.Resources.SentryLogo{(isDarkMode ? "Light" : "Dark")}.png");
             stream.CopyTo(memStream);
@@ -204,7 +213,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             memStream.Position = 0;
             texture.LoadImage(memStream.ToArray());
 
-            titleContent = new GUIContent("Sentry", texture, "Sentry SDK Options");
+            window.titleContent = new GUIContent(title, texture, description);
         }
     }
 
