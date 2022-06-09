@@ -70,7 +70,10 @@ namespace Sentry.Unity
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    frame.InstructionAddress = $"0x{nativeFrame:X8}";
+                    // NOTE: we absolutely need to use `ToString(X8)` here as a separate
+                    // call, otherwise C# will not format this as a hex number.
+                    frame.InstructionAddress = String.Format("0x{0}", nativeFrame.ToString("X8"));
+                    ;
                     frame.AddressMode = addrMode;
                 }
             }
