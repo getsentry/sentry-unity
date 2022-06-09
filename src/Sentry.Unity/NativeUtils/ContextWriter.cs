@@ -5,15 +5,15 @@ namespace Sentry.Unity.NativeUtils
         internal static void WriteApp(string? AppStartTime, string? AppBuildType)
         {
             var obj = C.sentry_value_new_object();
-            C.setValueIfNotNull(obj, "app_start_time", AppStartTime);
-            C.setValueIfNotNull(obj, "build_type", AppBuildType);
+            C.SetValueIfNotNull(obj, "app_start_time", AppStartTime);
+            C.SetValueIfNotNull(obj, "build_type", AppBuildType);
             C.sentry_set_context(Sentry.Protocol.App.Type, obj);
         }
 
         internal static void WriteOS(string? OperatingSystemRawDescription)
         {
             var obj = C.sentry_value_new_object();
-            C.setValueIfNotNull(obj, "raw_description", OperatingSystemRawDescription);
+            C.SetValueIfNotNull(obj, "raw_description", OperatingSystemRawDescription);
             C.sentry_set_context(Sentry.Protocol.OperatingSystem.Type, obj);
         }
 
@@ -30,16 +30,16 @@ namespace Sentry.Unity.NativeUtils
             long? DeviceMemorySize)
         {
             var obj = C.sentry_value_new_object();
-            C.setValueIfNotNull(obj, "processor_count", DeviceProcessorCount);
-            C.setValueIfNotNull(obj, "cpu_description", DeviceCpuDescription);
-            C.setValueIfNotNull(obj, "timezone", DeviceTimezone);
-            C.setValueIfNotNull(obj, "supports_vibration", DeviceSupportsVibration);
-            C.setValueIfNotNull(obj, "name", DeviceName);
-            C.setValueIfNotNull(obj, "simulator", DeviceSimulator);
-            C.setValueIfNotNull(obj, "device_unique_identifier", DeviceDeviceUniqueIdentifier);
-            C.setValueIfNotNull(obj, "device_type", DeviceDeviceType);
-            C.setValueIfNotNull(obj, "model", DeviceModel);
-            C.setValueIfNotNull(obj, "memory_size", DeviceMemorySize);
+            C.SetValueIfNotNull(obj, "processor_count", DeviceProcessorCount);
+            C.SetValueIfNotNull(obj, "cpu_description", DeviceCpuDescription);
+            C.SetValueIfNotNull(obj, "timezone", DeviceTimezone);
+            C.SetValueIfNotNull(obj, "supports_vibration", DeviceSupportsVibration);
+            C.SetValueIfNotNull(obj, "name", DeviceName);
+            C.SetValueIfNotNull(obj, "simulator", DeviceSimulator);
+            C.SetValueIfNotNull(obj, "device_unique_identifier", DeviceDeviceUniqueIdentifier);
+            C.SetValueIfNotNull(obj, "device_type", DeviceDeviceType);
+            C.SetValueIfNotNull(obj, "model", DeviceModel);
+            C.SetValueIfNotNull(obj, "memory_size", DeviceMemorySize);
             C.sentry_set_context(Sentry.Protocol.Device.Type, obj);
         }
 
@@ -61,21 +61,21 @@ namespace Sentry.Unity.NativeUtils
             string? GpuGraphicsShaderLevel)
         {
             var obj = C.sentry_value_new_object();
-            C.setValueIfNotNull(obj, "id", GpuId);
-            C.setValueIfNotNull(obj, "name", GpuName);
-            C.setValueIfNotNull(obj, "vendor_name", GpuVendorName);
-            C.setValueIfNotNull(obj, "memory_size", GpuMemorySize);
-            C.setValueIfNotNull(obj, "npot_support", GpuNpotSupport);
-            C.setValueIfNotNull(obj, "version", GpuVersion);
-            C.setValueIfNotNull(obj, "api_type", GpuApiType);
-            C.setValueIfNotNull(obj, "max_texture_size", GpuMaxTextureSize);
-            C.setValueIfNotNull(obj, "supports_draw_call_instancing", GpuSupportsDrawCallInstancing);
-            C.setValueIfNotNull(obj, "supports_ray_tracing", GpuSupportsRayTracing);
-            C.setValueIfNotNull(obj, "supports_compute_shaders", GpuSupportsComputeShaders);
-            C.setValueIfNotNull(obj, "supports_geometry_shaders", GpuSupportsGeometryShaders);
-            C.setValueIfNotNull(obj, "vendor_id", GpuVendorId);
-            C.setValueIfNotNull(obj, "multi_threaded_rendering", GpuMultiThreadedRendering);
-            C.setValueIfNotNull(obj, "graphics_shader_level", GpuGraphicsShaderLevel);
+            C.SetValueIfNotNull(obj, "id", GpuId);
+            C.SetValueIfNotNull(obj, "name", GpuName);
+            C.SetValueIfNotNull(obj, "vendor_name", GpuVendorName);
+            C.SetValueIfNotNull(obj, "memory_size", GpuMemorySize);
+            C.SetValueIfNotNull(obj, "npot_support", GpuNpotSupport);
+            C.SetValueIfNotNull(obj, "version", GpuVersion);
+            C.SetValueIfNotNull(obj, "api_type", GpuApiType);
+            C.SetValueIfNotNull(obj, "max_texture_size", GpuMaxTextureSize);
+            C.SetValueIfNotNull(obj, "supports_draw_call_instancing", GpuSupportsDrawCallInstancing);
+            C.SetValueIfNotNull(obj, "supports_ray_tracing", GpuSupportsRayTracing);
+            C.SetValueIfNotNull(obj, "supports_compute_shaders", GpuSupportsComputeShaders);
+            C.SetValueIfNotNull(obj, "supports_geometry_shaders", GpuSupportsGeometryShaders);
+            C.SetValueIfNotNull(obj, "vendor_id", GpuVendorId);
+            C.SetValueIfNotNull(obj, "multi_threaded_rendering", GpuMultiThreadedRendering);
+            C.SetValueIfNotNull(obj, "graphics_shader_level", GpuGraphicsShaderLevel);
             C.sentry_set_context(Sentry.Protocol.Gpu.Type, obj);
         }
 
@@ -86,10 +86,10 @@ namespace Sentry.Unity.NativeUtils
             string? UnityRenderingThreadingMode)
         {
             var obj = C.sentry_value_new_object();
-            C.setValueIfNotNull(obj, "install_mode", UnityInstallMode);
-            C.setValueIfNotNull(obj, "target_frame_rate", UnityTargetFrameRate);
-            C.setValueIfNotNull(obj, "copy_texture_support", UnityCopyTextureSupport);
-            C.setValueIfNotNull(obj, "rendering_threading_mode", UnityRenderingThreadingMode);
+            C.SetValueIfNotNull(obj, "install_mode", UnityInstallMode);
+            C.SetValueIfNotNull(obj, "target_frame_rate", UnityTargetFrameRate);
+            C.SetValueIfNotNull(obj, "copy_texture_support", UnityCopyTextureSupport);
+            C.SetValueIfNotNull(obj, "rendering_threading_mode", UnityRenderingThreadingMode);
             C.sentry_set_context(Sentry.Unity.Protocol.Unity.Type, obj);
         }
     }

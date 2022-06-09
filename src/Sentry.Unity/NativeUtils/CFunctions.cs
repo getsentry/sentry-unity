@@ -4,7 +4,7 @@ namespace Sentry.Unity.NativeUtils
 {
     internal static class C
     {
-        internal static void setValueIfNotNull(sentry_value_t obj, string key, string? value)
+        internal static void SetValueIfNotNull(sentry_value_t obj, string key, string? value)
         {
             if (value is not null)
             {
@@ -12,7 +12,7 @@ namespace Sentry.Unity.NativeUtils
             }
         }
 
-        internal static void setValueIfNotNull(sentry_value_t obj, string key, int? value)
+        internal static void SetValueIfNotNull(sentry_value_t obj, string key, int? value)
         {
             if (value.HasValue)
             {
@@ -20,7 +20,7 @@ namespace Sentry.Unity.NativeUtils
             }
         }
 
-        internal static void setValueIfNotNull(sentry_value_t obj, string key, bool? value)
+        internal static void SetValueIfNotNull(sentry_value_t obj, string key, bool? value)
         {
             if (value.HasValue)
             {
@@ -28,7 +28,7 @@ namespace Sentry.Unity.NativeUtils
             }
         }
 
-        internal static void setValueIfNotNull(sentry_value_t obj, string key, double? value)
+        internal static void SetValueIfNotNull(sentry_value_t obj, string key, double? value)
         {
             if (value.HasValue)
             {

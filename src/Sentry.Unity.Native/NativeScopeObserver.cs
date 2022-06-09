@@ -19,7 +19,7 @@ namespace Sentry.Unity.Native
             var crumb = C.sentry_value_new_breadcrumb(breadcrumb.Type, breadcrumb.Message);
             C.sentry_value_set_by_key(crumb, "level", C.sentry_value_new_string(breadcrumb.Level.ToString().ToLower()));
             C.sentry_value_set_by_key(crumb, "timestamp", C.sentry_value_new_string(GetTimestamp(breadcrumb.Timestamp)));
-            C.setValueIfNotNull(crumb, "category", breadcrumb.Category);
+            C.SetValueIfNotNull(crumb, "category", breadcrumb.Category);
             C.sentry_add_breadcrumb(crumb);
         }
 
@@ -34,10 +34,10 @@ namespace Sentry.Unity.Native
         {
             // see https://develop.sentry.dev/sdk/event-payloads/user/
             var cUser = C.sentry_value_new_object();
-            C.setValueIfNotNull(cUser, "id", user.Id);
-            C.setValueIfNotNull(cUser, "username", user.Username);
-            C.setValueIfNotNull(cUser, "email", user.Email);
-            C.setValueIfNotNull(cUser, "ip_address", user.IpAddress);
+            C.SetValueIfNotNull(cUser, "id", user.Id);
+            C.SetValueIfNotNull(cUser, "username", user.Username);
+            C.SetValueIfNotNull(cUser, "email", user.Email);
+            C.SetValueIfNotNull(cUser, "ip_address", user.IpAddress);
             C.sentry_set_user(cUser);
         }
 

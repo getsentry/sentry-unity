@@ -13,7 +13,8 @@ namespace Sentry.Unity.Editor.Native
         [PostProcessBuild(1)]
         public static void OnPostProcessBuild(BuildTarget target, string executablePath)
         {
-            if (EditorUserBuildSettings.selectedBuildTargetGroup is not BuildTargetGroup.Standalone)
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
+            if (targetGroup is not BuildTargetGroup.Standalone)
             {
                 return;
             }
@@ -22,6 +23,7 @@ namespace Sentry.Unity.Editor.Native
                 .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
                 ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
+            var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 
             try
             {
@@ -49,7 +51,7 @@ namespace Sentry.Unity.Editor.Native
                 var projectDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
                 AddCrashHandler(logger, target, projectDir, executableName);
-                UploadDebugSymbols(logger, target, projectDir, executableName, options);
+                UploadDebugSymbols(logger, target, projectDir, executableName, options, isMono);
             }
             catch (Exception e)
             {
@@ -94,9 +96,7 @@ namespace Sentry.Unity.Editor.Native
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static bool IsMono => PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) == ScriptingImplementation.Mono2x;
-
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, bool isMono)
         {
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
@@ -131,7 +131,7 @@ namespace Sentry.Unity.Editor.Native
                 addPath("UnityPlayer.dll");
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
-                if (IsMono)
+                if (isMono)
                 {
                     addPath("MonoBleedingEdge/EmbedRuntime");
                 }
@@ -141,7 +141,7 @@ namespace Sentry.Unity.Editor.Native
                 addPath("GameAssembly.so");
                 addPath("UnityPlayer.so");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
-                if (IsMono)
+                if (isMono)
                 {
                     addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
                 }
@@ -151,6 +151,13 @@ namespace Sentry.Unity.Editor.Native
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
             }
 
+            var cliArgs = "upload-dif ";
+            if (cliOptions.UploadSources)
+            {
+                cliArgs += "--include-sources ";
+            }
+            cliArgs += paths;
+
             // Configure the process using the StartInfo properties.
             var process = new Process
             {
@@ -158,7 +165,7 @@ namespace Sentry.Unity.Editor.Native
                 {
                     FileName = SentryCli.SetupSentryCli(),
                     WorkingDirectory = projectDir,
-                    Arguments = "upload-dif " + paths,
+                    Arguments = cliArgs,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,

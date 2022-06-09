@@ -155,7 +155,7 @@ namespace Sentry.Unity
             this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityLogHandlerIntegration());
-            this.AddIntegration(new ANRIntegration(behaviour));
+            this.AddIntegration(new AnrIntegration(behaviour));
             this.AddIntegration(new UnityScopeIntegration(behaviour, application));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
@@ -187,7 +187,7 @@ namespace Sentry.Unity
                 ? "editor"
                 : "production";
 
-            CacheDirectoryPath = application.PersistentDataPath;
+            CacheDirectoryPath = application.PersistentDataPath.Trim();
         }
 
         public override string ToString()

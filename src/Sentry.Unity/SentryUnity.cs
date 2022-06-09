@@ -13,7 +13,7 @@ namespace Sentry.Unity
     /// </summary>
     public static class SentryUnity
     {
-        private static FileStream? _lockFile;
+        private static FileStream? LockFile;
 
         /// <summary>
         /// Initializes Sentry Unity SDK while configuring the options.
@@ -43,7 +43,7 @@ namespace Sentry.Unity
                 {
                     try
                     {
-                        _lockFile = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
+                        LockFile = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
                                 FileAccess.ReadWrite, FileShare.None);
                     }
                     catch (Exception ex)
@@ -89,7 +89,7 @@ namespace Sentry.Unity
                         try
                         {
                             // We don't really need to close, Windows would release the lock anyway, but let's be nice.
-                            _lockFile?.Close();
+                            LockFile?.Close();
                         }
                         catch (Exception ex)
                         {

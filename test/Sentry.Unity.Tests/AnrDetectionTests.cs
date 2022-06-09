@@ -11,45 +11,45 @@ namespace Sentry.Unity.Tests
 {
     public class AnrDetectionTests
     {
-        private const int timeout = 500;
-        private IDiagnosticLogger _logger = new TestLogger(forwardToUnityLog: true);
+        private const int Timeout = 500;
+        private readonly IDiagnosticLogger _logger = new TestLogger(forwardToUnityLog: true);
         private GameObject _gameObject = null!;
         private SentryMonoBehaviour _monoBehaviour = null!;
-        private ANRWatchDog sut = null!;
+        private AnrWatchDog _sut = null!;
 
 
         [SetUp]
         public void SetUp()
         {
-            _gameObject ??= new GameObject("Tests");
-            _monoBehaviour ??= _gameObject.AddComponent<SentryMonoBehaviour>();
+            _gameObject = new GameObject("Tests");
+            _monoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
         }
 
         [TearDown]
-        public void TearDown() => sut.Stop(wait: true);
+        public void TearDown() => _sut.Stop(wait: true);
 
-        private ANRWatchDog CreateWatchDog(bool multiThreaded)
+        private AnrWatchDog CreateWatchDog(bool multiThreaded)
         {
-            UnityEngine.Debug.Log($"Preparing ANR watchdog: timeout={timeout} multiThreaded={multiThreaded}");
+            UnityEngine.Debug.Log($"Preparing ANR watchdog: timeout={Timeout} multiThreaded={multiThreaded}");
             return multiThreaded
-                ? new ANRWatchDogMultiThreaded(_logger, _monoBehaviour, timeout)
-                : new ANRWatchDogSingleThreaded(_logger, _monoBehaviour, timeout);
+                ? new AnrWatchDogMultiThreaded(_logger, _monoBehaviour, Timeout)
+                : new AnrWatchDogSingleThreaded(_logger, _monoBehaviour, Timeout);
         }
 
         // Needed for [UnityTest] - IEnumerator return value
         // https://docs.unity3d.com/Packages/com.unity.test-framework@2.0/manual/reference-tests-parameterized.html
-        static bool[] multiThreadingTestValues = new bool[] { true, false };
+        private static bool[] MultiThreadingTestValues = { true, false };
 
         [UnityTest]
-        public IEnumerator DetectsStuckUI([ValueSource(nameof(multiThreadingTestValues))] bool multiThreaded)
+        public IEnumerator DetectsStuckUI([ValueSource(nameof(MultiThreadingTestValues))] bool multiThreaded)
         {
             ApplicationNotResponding? arn = null;
-            sut = CreateWatchDog(multiThreaded);
-            sut.OnApplicationNotResponding += (_, e) => arn = e;
+            _sut = CreateWatchDog(multiThreaded);
+            _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
             // Thread.Sleep blocks the UI thread
             var watch = Stopwatch.StartNew();
-            while (watch.ElapsedMilliseconds < timeout * 2 && arn is null)
+            while (watch.ElapsedMilliseconds < Timeout * 2 && arn is null)
             {
                 Thread.Sleep(10);
             }
@@ -58,7 +58,7 @@ namespace Sentry.Unity.Tests
             if (!multiThreaded)
             {
                 watch.Restart();
-                while (watch.ElapsedMilliseconds < timeout && arn is null)
+                while (watch.ElapsedMilliseconds < Timeout && arn is null)
                 {
                     yield return null;
                 }
@@ -69,15 +69,15 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator DoesntReportWorkingUI([ValueSource(nameof(multiThreadingTestValues))] bool multiThreaded)
+        public IEnumerator DoesntReportWorkingUI([ValueSource(nameof(MultiThreadingTestValues))] bool multiThreaded)
         {
             ApplicationNotResponding? arn = null;
-            sut = CreateWatchDog(multiThreaded);
-            sut.OnApplicationNotResponding += (_, e) => arn = e;
+            _sut = CreateWatchDog(multiThreaded);
+            _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
             // yield WaitForSeconds doesn't block the UI thread
             var watch = Stopwatch.StartNew();
-            while (watch.ElapsedMilliseconds < timeout * 3)
+            while (watch.ElapsedMilliseconds < Timeout * 3)
             {
                 yield return new WaitForSeconds(0.01f);
             }
@@ -91,11 +91,11 @@ namespace Sentry.Unity.Tests
         public void DoesntReportShortlyStuckUI(bool multiThreaded)
         {
             ApplicationNotResponding? arn = null;
-            sut = CreateWatchDog(multiThreaded);
-            sut.OnApplicationNotResponding += (_, e) => arn = e;
+            _sut = CreateWatchDog(multiThreaded);
+            _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
             // Thread.Sleep blocks the UI thread
-            Thread.Sleep(timeout / 2);
+            Thread.Sleep(Timeout / 2);
 
             Assert.IsNull(arn);
         }

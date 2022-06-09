@@ -11,7 +11,7 @@ namespace Sentry.Unity.Native
     /// </summary>
     public static class SentryNative
     {
-        private static Dictionary<string, bool> _perDirectoryCrashInfo = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, bool> PerDirectoryCrashInfo = new();
 
         /// <summary>
         /// Configures the native SDK.
@@ -53,16 +53,16 @@ namespace Sentry.Unity.Native
                 // Additionally, we cannot call this multiple times for the same directory, because the result changes
                 // on subsequent runs. Therefore, we cache the value during the whole runtime of the application.
                 var cacheDirectory = SentryNativeBridge.GetCacheDirectory(options);
-                bool crashedLastRun = false;
+                var crashedLastRun = false;
                 // In the event the SDK is re-initialized with a different path on disk, we need to track which ones were already read
                 // Similarly we need to cache the value of each call since a subsequent call would return a different value
                 // as the file used on disk to mark it as crashed is deleted after we read it.
-                lock (_perDirectoryCrashInfo)
+                lock (PerDirectoryCrashInfo)
                 {
-                    if (!_perDirectoryCrashInfo.TryGetValue(cacheDirectory, out crashedLastRun))
+                    if (!PerDirectoryCrashInfo.TryGetValue(cacheDirectory, out crashedLastRun))
                     {
                         crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
-                        _perDirectoryCrashInfo.Add(cacheDirectory, crashedLastRun);
+                        PerDirectoryCrashInfo.Add(cacheDirectory, crashedLastRun);
 
                         options.DiagnosticLogger?
                             .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
