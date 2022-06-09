@@ -37,14 +37,12 @@ namespace Sentry.Unity.Android
                     return crashedLastRun.Value;
                 };
 
-                // When running on Mono, we shouldn't take over the signal handler because its used to propagate exceptions into the VM.
-                // If we take over, a C# null reference ends up crashing the app.
-                if (sentryUnityInfo.IL2CPP)
-                {
-                    // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
-                    // So we register our backend once more to make sure user-defined data is available in the crash report.
-                    SentryNative.ReinstallBackend();
-                }
+                options.DiagnosticLogger?.LogDebug("Reinstalling native backend.");
+
+                // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
+                // So we register our backend once more to make sure user-defined data is available in the crash report.
+                SentryNative.ReinstallBackend();
+
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
                     // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly

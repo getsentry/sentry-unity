@@ -79,19 +79,70 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
 {
     if ("$alert" -ne "")
     {
-        Write-Warning "Active system alert found on $deviceId (API $deviceApi). Closing it. The alert was: '$alert'."
-        if ($deviceApi -eq "21")
-        {
-            Write-Warning "Issuing ENTER command twice to close the current window."
-            # sends "enter" - the first one focues the OK button, the second one taps it
-            adb -s $deviceId shell input keyevent 66
-            adb -s $deviceId shell input keyevent 66
+        $splitXml = $alert -split "<node"
+        $alertTitle = ""
+        $alertOption1Label = $null
+        $alertOption1Coord = $null
+        $alertOption2Label = $null
+        $alertOption2Coord = $null
+
+        if ($splitXml.Count -ne 1) {
+            # We have a "valid" XML
+            # Use Regex to get the message and the options labels + coordinates.
+            foreach ($iterator in $splitXml) {
+                if ($iterator.Contains("alertTitle")) {
+                    $titleRegex = [regex]::Match($iterator, "text=\`"(?<text>.+)\`" resource-id")
+                    $alertTitle = $titleRegex.Groups["text"].Value
+                }
+                elseif ($iterator.Contains("Button")) {
+                    $buttonRegex = [regex]::Match($iterator, "text=\`"(?<text>.+)\`" resource-id.* bounds=\`"\[(?<horStart>\d+),(?<verStart>\d+)\]\[(?<horEnd>\d+),(?<verEnd>\d+)\]\`"")
+                    if ($null -eq $alertOption1Label) {
+                        $alertOption1Label = $buttonRegex.Groups["text"].Value
+                        $alertOption1Coord = ($buttonRegex.Groups["horStart"].Value, $buttonRegex.Groups["verStart"].Value, $buttonRegex.Groups["horEnd"].Value, $buttonRegex.Groups["verEnd"].Value)
+                    }
+                    else {
+                        $alertOption2Label = $buttonRegex.Groups["text"].Value
+                        $alertOption2Coord = ($buttonRegex.Groups["horStart"].Value, $buttonRegex.Groups["verStart"].Value, $buttonRegex.Groups["horEnd"].Value, $buttonRegex.Groups["verEnd"].Value)
+                    }
+                }
+            }
+
+            if ($null -ne $alertTitle) {
+                Write-Warning "Found Alert on Screen, TITLE: $alertTitle `n Options: `n $alertOption1Label at $alertOption1Coord `n $alertOption2Label at $alertOption2Coord "
+
+                if ($null -eq $alertOption2Label)
+                {
+                    $tapX = [int]([int]$alertOption1Coord[0] + [int]$alertOption1Coord[2] ) / 2
+                    $tapY = [int]([int]$alertOption1Coord[1] + [int]$alertOption1Coord[3] ) / 2
+                    $tapLabel = $alertOption1Label
+                }
+                else 
+                {
+                    $tapX = [int]([int]$alertOption2Coord[0] + [int]$alertOption2Coord[2] ) / 2
+                    $tapY = [int]([int]$alertOption2Coord[1] + [int]$alertOption2Coord[3] ) / 2
+                    $tapLabel = $alertOption2Label
+                }
+                Write-Host "Tapping on $tapLabel at [$tapX, $tapY]"
+                adb -s $deviceId shell input tap $tapX $tapY
+            }
         }
         else
         {
-            # sends "back" action
-            Write-Warning "Issuing BACK command to close the current window."
-            adb -s $deviceId shell input keyevent 4
+            # Fallback to the old method of closing Alerts. (Android API 21 to 27)
+            Write-Warning "Active system alert found on $deviceId (API $deviceApi). Closing it. The alert was: '$alert'."
+            if ($deviceApi -eq "21")
+            {
+                Write-Warning "Issuing ENTER command twice to close the current window."
+                # sends "enter" - the first one focus the OK button, the second one taps it
+                adb -s $deviceId shell input keyevent 66
+                adb -s $deviceId shell input keyevent 66
+            }
+            else
+            {
+                # sends "back" action
+                Write-Warning "Issuing BACK command to close the current window."
+                adb -s $deviceId shell input keyevent 4
+            }
         }
     }
 }
@@ -162,8 +213,20 @@ foreach ($device in $DeviceList)
     # Move device to home screen
     $stdout = adb -s $device shell input keyevent KEYCODE_HOME
 
-    Write-Host "Installing test app..."
-    $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
+    $adbInstallRetry = 5
+    do
+    {
+        Write-Host "Installing test app..."
+        $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
+
+        if ($stdout.Contains("Broken pipe"))
+        {
+            Write-Warning "Failed to comunicate with the Device, retrying..."
+            Start-Sleep 3
+            $adbInstallRetry--
+        }
+    } while ($adbInstallRetry -gt 1 -and $stdout.Contains("Broken pipe"))
+
     If ($stdout -notcontains "Success")
     {
         SignalActionSmokeStatus("Failed")

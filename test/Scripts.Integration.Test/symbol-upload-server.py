@@ -11,6 +11,7 @@ import json
 apiOrg = 'sentry-sdks'
 apiProject = 'sentry-unity'
 uri = urlparse(sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8000')
+uploads = {}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -22,7 +23,6 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/STOP":
             print("HTTP server stopping!")
             threading.Thread(target=self.server.shutdown).start()
-            return
 
         if self.isApi('api/0/organizations/{}/chunk-upload/'.format(apiOrg)):
             self.writeJSON('{"url":"' + uri.geturl() + self.path + '",'
@@ -53,8 +53,12 @@ class Handler(BaseHTTPRequestHandler):
             for key, value in jsonRequest.items():
                 jsonResponse += '"{}":{{"state":"ok","missingChunks":[]}},'.format(
                     key)
-                self.log_message('Received: %40s %40s %s', key,
-                                 value['debug_id'], value['name'])
+                if value['name'] not in uploads:
+                    uploads[value['name']] = \
+                        {'count': 1, 'chunks': len(value['chunks'])}
+                else:
+                    uploads[value['name']]['count'] += 1
+                    uploads[value['name']]['chunks'] += len(value['chunks'])
             jsonResponse = jsonResponse.rstrip(',') + '}'
             self.writeJSON(jsonResponse)
         else:
@@ -105,5 +109,14 @@ class Handler(BaseHTTPRequestHandler):
 
 print("HTTP server listening on {}".format(uri.geturl()))
 print("To stop the server, execute a GET request to {}/STOP".format(uri.geturl()))
-httpd = ThreadingHTTPServer((uri.hostname, uri.port), Handler)
-target = httpd.serve_forever()
+
+try:
+    httpd = ThreadingHTTPServer((uri.hostname, uri.port), Handler)
+    target = httpd.serve_forever()
+except KeyboardInterrupt:
+    pass
+finally:
+    print('Upload stats:')
+    for k in sorted(uploads):
+        v = uploads[k]
+        print('  {}: count={} chunks={}'.format(k, v['count'], v['chunks']))

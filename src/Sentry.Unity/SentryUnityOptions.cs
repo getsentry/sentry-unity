@@ -132,6 +132,9 @@ namespace Sentry.Unity
             }
         }
 
+        // Whether components & integrations can use multi-threading.
+        internal bool MultiThreading = true;
+
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance)
         {
         }
@@ -151,6 +154,7 @@ namespace Sentry.Unity
             }
 
             this.AddIntegration(new UnityLogHandlerIntegration());
+            this.AddIntegration(new AnrIntegration(SentryMonoBehaviour.Instance));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
             this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));
@@ -181,7 +185,7 @@ namespace Sentry.Unity
                 ? "editor"
                 : "production";
 
-            CacheDirectoryPath = application.PersistentDataPath;
+            CacheDirectoryPath = application.PersistentDataPath.Trim();
         }
 
         public override string ToString()

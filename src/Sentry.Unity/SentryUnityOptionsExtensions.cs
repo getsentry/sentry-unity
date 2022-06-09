@@ -69,5 +69,11 @@ namespace Sentry.Unity
         /// <param name="options">The SentryUnityOptions to remove the integration from.</param>
         public static void DisableUnityApplicationLoggingIntegration(this SentryUnityOptions options) =>
             options.RemoveIntegration<UnityLogHandlerIntegration>();
+
+        /// <summary>
+        /// Disables the application-not-responding detection.
+        /// </summary>
+        public static void DisableAnrIntegration(this SentryUnityOptions options) =>
+            options.RemoveIntegration<AnrIntegration>();
     }
 }

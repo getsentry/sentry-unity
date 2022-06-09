@@ -229,6 +229,8 @@ jobs:
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
@@ -244,7 +246,7 @@ jobs:
         run: sudo pwsh ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }}
+        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Prepare for upload
         run: |
@@ -330,7 +332,9 @@ jobs:
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      - name: Build Standalone Player without Sentry SDK
+      - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
@@ -346,8 +350,8 @@ jobs:
       - name: Add Sentry to test project
         run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      - name: Build Standalone Player Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
+      - name: Build with Sentry SDK
+        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Run Player - Smoke Test
         run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
@@ -384,19 +388,48 @@ jobs:
           name: testapp-Android-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
 
-      - name: Android emulator setup + Smoke test
+      # outputs variables: version-label, api-level, target, arch
+      - name: Configure Android Settings
+        id: droid-settings
+        shell: pwsh
+        run : |
+          # Setup API Level
+          $apiLevel = '${{ matrix.api-level }}'
+          if ( $apiLevel -eq 'latest')
+          {
+            # Gets the latest API level that isn't in Beta/Alpha
+            $response = (Invoke-WebRequest -UseBasicParsing -Uri "https://developer.android.com/studio/releases/platforms").Content
+            $result = [regex]::Match($response, " \(API level (?<model>\d+)\)")
+            $apiLevel = $result.Groups["model"].Value
+            Write-Output "Latest API is $apiLevel"
+            echo "::set-output name=api-level::$apiLevel"
+            echo "::set-output name=version-label::$apiLevel (latest)"
+          }
+          else
+          {
+            Write-Output "Current API is $apiLevel"
+            echo "::set-output name=api-level::$apiLevel"
+            echo "::set-output name=version-label::$arch"
+          }
+          # Setup Arch and Target
+          $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
+          Write-Output "Current Target is $target"
+          echo "::set-output name=target::$target"
+
+      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator  setup  + Smoke test
         id: smoke-test
         continue-on-error: true
         timeout-minutes: 30
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
-          api-level: ${{ matrix.api-level }}
+          api-level: ${{ steps.droid-settings.outputs.api-level }}
           #api-level 30 image is only available with google services.
-          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
+          target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86
           cores: 2
+          disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI -IsIntegrationTest
@@ -408,20 +441,21 @@ jobs:
           adb emu kill
           sleep 7
 
-      - name: Android emulator setup + Smoke test (Retry)
+      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
         timeout-minutes: 30
         # Retry the tests if the previous fail happened on the emulator startup.
         if: ${{ steps.smoke-test.outputs.smoke-status == 'Flaky' }}
-        uses: reactivecircus/android-emulator-runner@2b2ebf2e518e38a17180117fc2b677006db27330
+        uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.api-level == 30 && 'google_apis' || 'default' }}
+          api-level: ${{ steps.droid-settings.outputs.api-level }}
+          target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86
           cores: 2
+          disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI -IsIntegrationTest

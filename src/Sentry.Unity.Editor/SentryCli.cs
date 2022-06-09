@@ -29,6 +29,8 @@ namespace Sentry.Unity.Editor
             properties.WriteLine($"defaults.org={cliOptions.Organization}");
             properties.WriteLine($"defaults.project={cliOptions.Project}");
             properties.WriteLine($"auth.token={cliOptions.Auth}");
+            properties.WriteLine($"log.level=info");
+
             return propertiesFile;
         }
 
@@ -106,7 +108,7 @@ namespace Sentry.Unity.Editor
         internal static string? UrlOverride(string? dsnOption, string? urlOverrideOption)
         {
             string? result = urlOverrideOption;
-            if (result is null && !string.IsNullOrEmpty(dsnOption))
+            if (string.IsNullOrEmpty(result) && !string.IsNullOrEmpty(dsnOption))
             {
                 var uri = new Uri(dsnOption);
 
@@ -116,7 +118,7 @@ namespace Sentry.Unity.Editor
                     result = new UriBuilder(uri.Scheme, uri.DnsSafeHost, uri.Port, "").Uri.AbsoluteUri.TrimEnd('/');
                 }
             }
-            return result;
+            return string.IsNullOrEmpty(result) ? null : result;
         }
     }
 }

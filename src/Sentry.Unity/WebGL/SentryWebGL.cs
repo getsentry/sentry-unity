@@ -40,6 +40,9 @@ namespace Sentry.Unity.WebGL
 
             // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
             options.DefaultUserId = AnalyticsSessionInfo.userId;
+
+            // Indicate that this platform doesn't support running background threads.
+            options.MultiThreading = false;
         }
     }
 }

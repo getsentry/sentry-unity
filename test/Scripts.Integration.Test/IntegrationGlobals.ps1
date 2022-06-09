@@ -164,7 +164,6 @@ function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $Re
         # Fix paths (they're supposed to be the current working directory in the docker container)
         Write-Host "Replacing project root ($(ProjectRoot)) in docker arguments: $arguments"
         $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)", "/sentry-unity") }
-
     }
 
     return RunUnity $unityPath $arguments -ReturnLogOutput:$ReturnLogOutput

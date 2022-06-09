@@ -5,14 +5,15 @@ using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
 using Sentry.Unity.Tests.Stubs;
+using UnityEditor;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
     public class DebugSymbolUploadTests
     {
-        private class Fixture
+        public class Fixture
         {
-            public TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
+            internal TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
             public string FakeProjectPath { get; set; }
             public string UnityProjectPath { get; set; }
             public string GradleProjectPath { get; set; }
@@ -34,8 +35,8 @@ namespace Sentry.Unity.Editor.Tests.Android
                 Application = new TestApplication(unityVersion: "2019.4");
             }
 
-            public DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), LoggerInterceptor),
-                UnityProjectPath, GradleProjectPath, IsExporting, Application);
+            internal DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), LoggerInterceptor),
+                null, UnityProjectPath, GradleProjectPath, ScriptingImplementation.IL2CPP, IsExporting, Application);
         }
 
         [SetUp]
