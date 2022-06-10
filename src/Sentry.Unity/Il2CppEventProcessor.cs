@@ -55,9 +55,12 @@ namespace Sentry.Unity
                     {
                         // NOTE: This obviously is not wasm, but that type is used for
                         // images that do not have a `image_addr` but are rather used with "rel:N" AddressMode.
-                        Type = "wasm",
+                        // TODO: put the correct platform here, because otherwise symbolicator will not find/fetch the
+                        // necessary debug files
+                        Type = "macho",
                         CodeFile = nativeStackTrace.ImageName,
                         DebugId = nativeStackTrace.ImageUuid,
+                        ImageAddress = "0x1000",
                     });
                     addrMode = "rel:" + imageIdx;
                 }
@@ -70,11 +73,15 @@ namespace Sentry.Unity
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    // NOTE: we absolutely need to use `ToString(X8)` here as a separate
-                    // call, otherwise C# will not format this as a hex number.
-                    frame.InstructionAddress = String.Format("0x{0}", nativeFrame.ToString("X8"));
-                    ;
-                    frame.AddressMode = addrMode;
+
+                    // The instructions in the stack trace generally have "return addresses"
+                    // in them. But for symbolication, we want to symbolicate the address of
+                    // the "call instruction", which in almost all cases happens to be
+                    // the instruction right in front of the return address.
+                    // A good heuristic to use in that case is to just subtract 1.
+                    var instructionAddr = 0x1000 + nativeFrame.ToInt64() - 1;
+                    frame.InstructionAddress = $"0x{instructionAddr:X8}";
+                    //frame.AddressMode = addrMode;
                 }
             }
         }
