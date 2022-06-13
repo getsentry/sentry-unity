@@ -5,7 +5,7 @@
     [Switch] $CheckSymbols
 )
 
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+. ./test/Scripts.Integration.Test/globals.ps1
 . ./test/Scripts.Integration.Test/common.ps1
 
 $unityPath = FormatUnityPath $UnityPath

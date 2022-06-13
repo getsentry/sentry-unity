@@ -1,5 +1,5 @@
-# Note: this is currently used by "integration-*.ps1" scripts as well as "smoke-test-*.ps1" scripts.
-# If/when those are merged to some extent, maybe this file could be merged into `IntegrationGlobals.ps1`.
+# Note: this is currently used by "*.ps1" scripts as well as "smoke-test-*.ps1" scripts.
+# If/when those are merged to some extent, maybe this file could be merged into `globals.ps1`.
 
 function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:8000")
 {
