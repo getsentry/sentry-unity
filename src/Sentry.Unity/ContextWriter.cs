@@ -3,7 +3,7 @@ namespace Sentry.Unity
     /// <summary>
     /// Allows synchronizing Context from .NET to native layers.
     /// We're providing a single method that the implementations should override.
-    /// They can chose to either have the single method directl in native using p/invoke,
+    /// They can choose to either have the single method directly in native using p/invoke,
     /// or use a more fine-grained interface, whatever is best for the platform.
     /// </summary>
     /// <remarks>
