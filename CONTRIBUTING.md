@@ -25,7 +25,7 @@ You'll need the following modules to be added in order to use Sentry Unity:
 * Install Java 11
   * [Using sdkman](https://sdkman.io/) which manage versions for you.
   * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
-* Instal Git and ensure is accessible from the path
+* Install Git and ensure is accessible from the path
 * Add JAVA_HOME to your environment variables (if not using sdkman):
   * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
 * Install [Android Studio](https://developer.android.com/studio)
