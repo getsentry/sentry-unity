@@ -99,5 +99,34 @@ namespace Sentry.Unity.Tests
 
             Assert.IsNull(arn);
         }
+
+        [UnityTest]
+        public IEnumerator DoesntReportWhilePaused([ValueSource(nameof(MultiThreadingTestValues))] bool multiThreaded)
+        {
+            ApplicationNotResponding? arn = null;
+            _sut = CreateWatchDog(multiThreaded);
+            _sut.OnApplicationNotResponding += (_, e) => arn = e;
+
+            // mark the app as paused
+            _monoBehaviour.UpdatePauseStatus(true);
+
+            // Thread.Sleep blocks the UI thread
+            Thread.Sleep(Timeout * 2);
+
+            // We need to let the single-threaded watchdog populate `arn` after UI became responsive again.
+            if (!multiThreaded)
+            {
+                var watch = Stopwatch.StartNew();
+                while (watch.ElapsedMilliseconds < Timeout && arn is null)
+                {
+                    yield return null;
+                }
+            }
+
+            // mark as resumed
+            _monoBehaviour.UpdatePauseStatus(false);
+
+            Assert.IsNull(arn);
+        }
     }
 }

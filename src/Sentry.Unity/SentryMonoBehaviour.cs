@@ -64,6 +64,20 @@ namespace Sentry.Unity
             set => _application = value;
         }
 
+        internal void UpdatePauseStatus(bool paused)
+        {
+            if (paused && _isRunning)
+            {
+                _isRunning = false;
+                ApplicationPausing?.Invoke();
+            }
+            else if (!paused && !_isRunning)
+            {
+                _isRunning = true;
+                ApplicationResuming?.Invoke();
+            }
+        }
+
         /// <summary>
         /// To receive Leaving/Resuming events on Android.
         /// <remarks>
@@ -75,20 +89,9 @@ namespace Sentry.Unity
         /// </summary>
         internal void OnApplicationPause(bool pauseStatus)
         {
-            if (Application.Platform != RuntimePlatform.Android)
+            if (Application.Platform == RuntimePlatform.Android)
             {
-                return;
-            }
-
-            if (pauseStatus && _isRunning)
-            {
-                _isRunning = false;
-                ApplicationPausing?.Invoke();
-            }
-            else if (!pauseStatus && !_isRunning)
-            {
-                _isRunning = true;
-                ApplicationResuming?.Invoke();
+                UpdatePauseStatus(pauseStatus);
             }
         }
 
@@ -99,20 +102,9 @@ namespace Sentry.Unity
         internal void OnApplicationFocus(bool hasFocus)
         {
             // To avoid event duplication on Android since the pause event will be handled via OnApplicationPause
-            if (Application.Platform == RuntimePlatform.Android)
+            if (Application.Platform != RuntimePlatform.Android)
             {
-                return;
-            }
-
-            if (hasFocus && !_isRunning)
-            {
-                _isRunning = true;
-                ApplicationResuming?.Invoke();
-            }
-            else if (!hasFocus && _isRunning)
-            {
-                _isRunning = false;
-                ApplicationPausing?.Invoke();
+                UpdatePauseStatus(!hasFocus);
             }
         }
 

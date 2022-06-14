@@ -6,6 +6,10 @@
 
 - Include build ID in an event release info ([#795](https://github.com/getsentry/sentry-unity/pull/795))
 
+### Fixes
+
+- Don't report Aplication-Not-Responding while the app is in the background ([#796](https://github.com/getsentry/sentry-unity/pull/796))
+
 ## 0.18.0
 
 ### Features
