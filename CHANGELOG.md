@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Include build ID in an event release info ([#795](https://github.com/getsentry/sentry-unity/pull/795))
+
 ## 0.18.0
 
 ### Features
