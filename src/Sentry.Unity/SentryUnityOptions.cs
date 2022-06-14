@@ -143,7 +143,8 @@ namespace Sentry.Unity
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
         internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
-            this(SentryMonoBehaviour.Instance, application, unityInfo, isBuilding) { }
+            this(SentryMonoBehaviour.Instance, application, unityInfo, isBuilding)
+        { }
 
         internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, ISentryUnityInfo? unityInfo, bool isBuilding)
         {
