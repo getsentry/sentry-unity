@@ -7,16 +7,16 @@ using Sentry.Protocol;
 
 namespace Sentry.Unity
 {
-    // TODO: Make sure this whole functionality/class is only compiled when:
-    // * Compiling for the il2cpp backend.
-    // * Using Unity 2020 or later, as we use internal `libil2cpp` APIs that are
-    //   only available there.
-
     internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
     {
+        private readonly ISentryUnityInfo _sentryUnityInfo;
         private readonly Il2CppMethods _il2CppMethods;
 
-        public UnityIl2CppEventExceptionProcessor(Il2CppMethods il2CppMethods) => _il2CppMethods = il2CppMethods;
+        public UnityIl2CppEventExceptionProcessor(ISentryUnityInfo sentryUnityInfo, Il2CppMethods il2CppMethods)
+        {
+            _sentryUnityInfo = sentryUnityInfo;
+            _il2CppMethods = il2CppMethods;
+        }
 
         public void Process(Exception incomingException, SentryEvent sentryEvent)
         {
@@ -31,10 +31,13 @@ namespace Sentry.Unity
             // which we add once to our list of debug images.
             var debugImages = (sentryEvent.DebugImages ??= new List<DebugImage>());
             // The il2cpp APIs give us image-relative instruction addresses, not
-            // absolute ones, and we also do not get the image addr.
-            // For this reason we will use the "rel:N" AddressMode, giving the
-            // index of the image in the list of all debug images.
-            string? addressMode = null;
+            // absolute ones. When processing events via symbolicator, we do want
+            // to have absolute addresses. For this reason, we just add a sentinel
+            // value to the `DebugImage` and `InstructionAddress`, which makes
+            // addresses absolute and still associates the address with the one
+            // and only `GameAssembly` image.
+            var imageAddress = 0x1000;
+            var didAddImage = false;
 
             foreach (var (sentryException, exception) in sentryExceptions.Zip(exceptions, (se, ex) => (se, ex)))
             {
@@ -48,18 +51,21 @@ namespace Sentry.Unity
 
                 var nativeStackTrace = GetNativeStackTrace(exception);
 
-                if (addressMode == null)
+                if (!didAddImage)
                 {
-                    var imageIdx = debugImages.Count;
                     debugImages.Add(new DebugImage
                     {
-                        // NOTE: This obviously is not wasm, but that type is used for
-                        // images that do not have a `image_addr` but are rather used with "rel:N" AddressMode.
-                        Type = "wasm",
-                        CodeFile = nativeStackTrace.ImageName,
+                        Type = _sentryUnityInfo.Platform,
+                        // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
+                        // A null/missing `CodeFile` however would lead to a processing error in sentry.
+                        // Since the code file is not strictly necessary for processing, we just fall back to
+                        // a sentinel value here.
+                        CodeFile = nativeStackTrace.ImageName ?? "GameAssembly.fallback",
                         DebugId = nativeStackTrace.ImageUuid,
+                        ImageAddress = $"0x{imageAddress:X8}",
                     });
-                    addressMode = "rel:" + imageIdx;
+
+                    didAddImage = true;
                 }
 
                 var nativeLen = nativeStackTrace.Frames.Length;
@@ -70,8 +76,14 @@ namespace Sentry.Unity
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    frame.InstructionAddress = $"0x{nativeFrame:X8}";
-                    frame.AddressMode = addressMode;
+
+                    // The instructions in the stack trace generally have "return addresses"
+                    // in them. But for symbolication, we want to symbolicate the address of
+                    // the "call instruction", which in almost all cases happens to be
+                    // the instruction right in front of the return address.
+                    // A good heuristic to use in that case is to just subtract 1.
+                    var instructionAddr = imageAddress + nativeFrame.ToInt64() - 1;
+                    frame.InstructionAddress = $"0x{instructionAddr:X8}";
                 }
             }
         }
