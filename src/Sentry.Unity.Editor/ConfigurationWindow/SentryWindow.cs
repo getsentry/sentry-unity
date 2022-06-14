@@ -89,7 +89,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             var options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(OptionsPath);
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(CliOptionsPath);
             options.Dsn = config.Dsn;
-            cliOptions.UploadSymbols = config.UploadSymbols;
+            cliOptions.UploadSymbols = !string.IsNullOrWhiteSpace(config.Token);
             cliOptions.Auth = config.Token;
             cliOptions.Organization = config.OrgSlug;
             cliOptions.Project = config.ProjectSlug;

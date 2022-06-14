@@ -17,7 +17,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
     {
         private int _projectSelected = 0;
         private int _orgSelected = 0;
-        private bool _uploadSymbols = false;
 
         private static Wizard? Instance;
         internal WizardStep2Response? Response { get; set; }
@@ -42,7 +41,13 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         private void StartLoder()
         {
             _task = new WizardLoader(this, _logger);
-            Task.Run(async () => Response = await _task.Load());
+            Task.Run(async () => Response = await _task.Load()).ContinueWith(t =>
+            {
+                if (t.Exception is not null)
+                {
+                    _logger.Log(SentryLevel.Warning, "Wizard loader failed", t.Exception);
+                }
+            });
         }
 
         public static bool InProgress => Instance is not null;
@@ -112,12 +117,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
                 if (_projectSelected != 0)
                 {
-                    _uploadSymbols = EditorGUILayout.Toggle(new GUIContent("Upload debug symbols",
-                        "Should we upload debug symbols to sentry.io to improve stack traces on errors"), _uploadSymbols);
-                }
-
-                if (_projectSelected != 0)
-                {
                     var proj = orgsAndProjects[_orgSelected - 1].ToArray()[_projectSelected - 1];
                     wizardConfiguration = new WizardConfiguration
                     {
@@ -125,13 +124,25 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                         Dsn = proj.Keys.First().Dsn!.Public,
                         OrgSlug = proj.Organization!.Slug,
                         ProjectSlug = proj.Slug,
-                        UploadSymbols = _uploadSymbols
                     };
                 }
             }
 
             if (wizardConfiguration != null)
             {
+                GUILayout.FlexibleSpace();
+
+                EditorGUILayout.LabelField("We have updated the default options with your selection.");
+
+                EditorGUILayout.HelpBox(
+                    "Sentry options persist in two assets in your project directory:\n" +
+                    "  Resources/Sentry/SentryOptions.asset contains the main configuration,\n" +
+                    "  Plugins/Sentry/SentryCliOptions.asset contains the settings for debug symbol upload.",
+                    MessageType.Info);
+                EditorGUILayout.HelpBox(
+                    "Make sure to keep the SentryCliOptions.asset private because it contains an API authentication token linked to your account.",
+                    MessageType.Warning);
+
                 GUILayout.FlexibleSpace();
 
                 EditorGUILayout.LabelField("Would you like to inspect the settings or leave at defaults for now? ");
@@ -257,7 +268,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         public string? Dsn { get; set; }
         public string? OrgSlug { get; set; }
         public string? ProjectSlug { get; set; }
-        public bool UploadSymbols { get; set; } = false;
     }
 
     internal class WizardCancelled : Exception
