@@ -4,6 +4,7 @@
 
 ### Features
 
+- Add rich context info to native crashes ([#747](https://github.com/getsentry/sentry-unity/pull/747))
 - Include build ID in an event release info ([#795](https://github.com/getsentry/sentry-unity/pull/795))
 
 ### Fixes

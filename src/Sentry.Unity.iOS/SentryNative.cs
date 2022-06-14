@@ -45,6 +45,7 @@ namespace Sentry.Unity.iOS
                     return;
             }
 
+            options.NativeContextWriter = new NativeContextWriter();
             options.EnableScopeSync = true;
             options.CrashedLastRun = () =>
             {

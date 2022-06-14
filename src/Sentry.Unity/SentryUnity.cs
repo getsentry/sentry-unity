@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
@@ -63,6 +64,22 @@ namespace Sentry.Unity
                         s.AddAttachment(new ScreenshotAttachment(
                             new ScreenshotAttachmentContent(options, SentryMonoBehaviour.Instance))));
                 }
+
+                if (options.NativeContextWriter is { } contextWriter)
+                {
+                    SentrySdk.ConfigureScope((scope) =>
+                    {
+                        var task = Task.Run(() => contextWriter.Write(scope)).ContinueWith(t =>
+                        {
+                            if (t.Exception is not null)
+                            {
+                                options.DiagnosticLogger?.LogWarning(
+                                    "Failed to synchronize scope to the native SDK: {0}", t.Exception);
+                            }
+                        });
+                    });
+                }
+
 
                 ApplicationAdapter.Instance.Quitting += () =>
                 {

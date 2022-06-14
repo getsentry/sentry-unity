@@ -113,7 +113,6 @@ namespace Sentry.Unity
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
 
-
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
         internal string? DefaultUserId
@@ -136,24 +135,32 @@ namespace Sentry.Unity
         // Whether components & integrations can use multi-threading.
         internal bool MultiThreading = true;
 
-        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
-        {
-        }
+        /// <summary>
+        /// Used to synchronize context from .NET to the native SDK
+        /// </summary>
+        internal ContextWriter? NativeContextWriter { get; set; } = null;
 
-        internal SentryUnityOptions(IApplication application, bool isBuilding)
+        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false) { }
+
+        internal SentryUnityOptions(IApplication application, bool isBuilding) :
+            this(SentryMonoBehaviour.Instance, application, isBuilding)
+        { }
+
+        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
+            this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
             this.AddExceptionProcessor(new UnityEventExceptionProcessor());
             this.AddIntegration(new UnityLogHandlerIntegration());
-            this.AddIntegration(new AnrIntegration(SentryMonoBehaviour.Instance));
+            this.AddIntegration(new AnrIntegration(behaviour));
+            this.AddIntegration(new UnityScopeIntegration(behaviour, application));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));
+            this.AddIntegration(new SessionIntegration(behaviour));
 
             IsGlobalModeEnabled = true;
 
