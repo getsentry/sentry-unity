@@ -4,9 +4,19 @@
 
 ### Features
 
+- Add rich context info to native crashes ([#747](https://github.com/getsentry/sentry-unity/pull/747))
+- Include build ID in an event release info ([#795](https://github.com/getsentry/sentry-unity/pull/795))
+
+### Fixes
+
+- Don't report Aplication-Not-Responding while the app is in the background ([#796](https://github.com/getsentry/sentry-unity/pull/796))
+
+## 0.18.0
+
+### Features
+
 - Enable native crash support with Mono scripting backend on Android, Windows and Linux ([#751](https://github.com/getsentry/sentry-unity/pull/751))
 - Application-Not-Responding detection ([#771](https://github.com/getsentry/sentry-unity/pull/771))
-- Add rich context info to native crashes ([#747](https://github.com/getsentry/sentry-unity/pull/747))
 - Allow uploading sources for debug files ([#773](https://github.com/getsentry/sentry-unity/pull/773))
 - Bump Sentry Java SDK to v6.0.0 ([#787](https://github.com/getsentry/sentry-unity/pull/787))
   - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0/CHANGELOG.md?plain=1#L3..L73)
