@@ -31,10 +31,13 @@ namespace Sentry.Unity
             // which we add once to our list of debug images.
             var debugImages = (sentryEvent.DebugImages ??= new List<DebugImage>());
             // The il2cpp APIs give us image-relative instruction addresses, not
-            // absolute ones, and we also do not get the image addr.
-            // For this reason we will use the "rel:N" AddressMode, giving the
-            // index of the image in the list of all debug images.
-            string? addrMode = null;
+            // absolute ones. When processing events via symbolicator, we do want
+            // to have absolute addresses. For this reason, we just add a sentinel
+            // value to the `DebugImage` and `InstructionAddress`, which makes
+            // addresses absolute and still associates the address with the one
+            // and only `GameAssembly` image.
+            var imageAddress = 0x1000;
+            var didAddImage = false;
 
             foreach (var (sentryException, exception) in sentryExceptions.Zip(exceptions, (se, ex) => (se, ex)))
             {
@@ -48,21 +51,22 @@ namespace Sentry.Unity
 
                 var nativeStackTrace = GetNativeStackTrace(exception);
 
-                if (addrMode == null)
+                if (!didAddImage)
                 {
-                    var imageIdx = debugImages.Count;
                     debugImages.Add(new DebugImage
                     {
-                        // NOTE: This obviously is not wasm, but that type is used for
-                        // images that do not have a `image_addr` but are rather used with "rel:N" AddressMode.
                         // TODO: put the correct platform here, because otherwise symbolicator will not find/fetch the
                         // necessary debug files
                         Type = "macho",
-                        CodeFile = nativeStackTrace.ImageName,
+                        // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
+                        // A null/missing `CodeFile` however would lead to a processing error in sentry.
+                        // Since the code file is not strictly necessary for processing, we just fall back to
+                        // a sentinel value here.
+                        CodeFile = nativeStackTrace.ImageName ?? "GameAssembly.fallback",
                         DebugId = nativeStackTrace.ImageUuid,
-                        ImageAddress = "0x1000",
+                        ImageAddress = $"0x{imageAddress:X8}",
                     });
-                    addrMode = "rel:" + imageIdx;
+                    didAddImage = true;
                 }
 
                 var nativeLen = nativeStackTrace.Frames.Length;
@@ -79,9 +83,8 @@ namespace Sentry.Unity
                     // the "call instruction", which in almost all cases happens to be
                     // the instruction right in front of the return address.
                     // A good heuristic to use in that case is to just subtract 1.
-                    var instructionAddr = 0x1000 + nativeFrame.ToInt64() - 1;
+                    var instructionAddr = imageAddress + nativeFrame.ToInt64() - 1;
                     frame.InstructionAddress = $"0x{instructionAddr:X8}";
-                    //frame.AddressMode = addrMode;
                 }
             }
         }
