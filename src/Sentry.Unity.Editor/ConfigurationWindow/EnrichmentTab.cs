@@ -11,9 +11,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             GUILayout.Label("Tag Overrides", EditorStyles.boldLabel);
 
             options.ReleaseOverride = EditorGUILayout.TextField(
-                new GUIContent("Override Release", "By default release is built from " +
-                                                   "'Application.productName'@'Application.version'. " +
-                                                   "This option is an override."),
+                new GUIContent("Override Release", "By default release is built from the Application info as: " +
+                                                   "\"{productName}@{version}+{buildGUID}\". " +
+                                                   "\nThis option is an override."),
                 options.ReleaseOverride);
 
             options.EnvironmentOverride = EditorGUILayout.TextField(

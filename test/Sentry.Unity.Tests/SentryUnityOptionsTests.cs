@@ -15,6 +15,7 @@ namespace Sentry.Unity.Tests
             public TestApplication Application { get; set; } = new(
                 productName: "TestApplication",
                 version: "0.1.0",
+                buildGUID: "12345",
                 persistentDataPath: "test/persistent/data/path");
             public bool IsBuilding { get; set; }
 
@@ -37,19 +38,20 @@ namespace Sentry.Unity.Tests
 
             var sut = _fixture.GetSut();
 
-            StringAssert.IsMatch(expectedEnvironment, sut.Environment);
+            Assert.AreEqual(expectedEnvironment, sut.Environment);
         }
 
         [Test]
         public void Ctor_CacheDirectoryPath_IsApplicationPersistentDataPath() =>
-            StringAssert.IsMatch(_fixture.Application.PersistentDataPath, _fixture.GetSut().CacheDirectoryPath);
+            Assert.AreEqual(_fixture.Application.PersistentDataPath, _fixture.GetSut().CacheDirectoryPath);
 
         [Test]
         public void Ctor_IsGlobalModeEnabled_IsTrue() => Assert.IsTrue(_fixture.GetSut().IsGlobalModeEnabled);
 
         [Test]
-        public void Ctor_Release_IsProductNameAtVersion() =>
-            StringAssert.IsMatch($"{_fixture.Application.ProductName}@{_fixture.Application.Version}",
+        public void Ctor_Release_IsProductNameAtVersionPlusBuild() =>
+            Assert.AreEqual(
+                $"{_fixture.Application.ProductName}@{_fixture.Application.Version}+{_fixture.Application.BuildGUID}",
                 _fixture.GetSut().Release);
 
         [Test]

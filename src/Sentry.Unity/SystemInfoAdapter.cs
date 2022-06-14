@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
+    /// <summary>
+    /// Warning: The `Lazy<>` properties may only be evaluated on the main (UI) thread.
+    /// </summary>
     internal interface ISentrySystemInfo
     {
         int? MainThreadId { get; }
@@ -36,6 +39,7 @@ namespace Sentry.Unity
         Lazy<string>? TargetFrameRate { get; }
         Lazy<string>? CopyTextureSupport { get; }
         Lazy<string>? RenderingThreadingMode { get; }
+        Lazy<DateTimeOffset>? StartTime { get; }
     }
 
     internal sealed class SentrySystemInfoAdapter : ISentrySystemInfo
@@ -79,5 +83,6 @@ namespace Sentry.Unity
         public Lazy<string> TargetFrameRate => new(() => Application.targetFrameRate.ToString());
         public Lazy<string> CopyTextureSupport => new(() => SystemInfo.copyTextureSupport.ToString());
         public Lazy<string> RenderingThreadingMode => new(() => SystemInfo.renderingThreadingMode.ToString());
+        public Lazy<DateTimeOffset>? StartTime => new(() => DateTimeOffset.UtcNow.AddSeconds(-Time.realtimeSinceStartup));
     }
 }
