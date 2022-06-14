@@ -9,7 +9,6 @@ namespace Sentry.Unity
     /// <remarks>
     /// WriteScope() is called in a new Task (background thread from a pool).
     /// </remarks>
-
     internal abstract class ContextWriter
     {
         public void Write(Scope scope)
@@ -50,6 +49,7 @@ namespace Sentry.Unity
                 unityContext.RenderingThreadingMode
             );
         }
+
         protected abstract void WriteScope(
             string? AppStartTime,
             string? AppBuildType,

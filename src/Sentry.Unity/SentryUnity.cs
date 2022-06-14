@@ -67,15 +67,19 @@ namespace Sentry.Unity
 
                 if (options.NativeContextWriter is { } contextWriter)
                 {
-                    try
+                    SentrySdk.ConfigureScope((scope) =>
                     {
-                        SentrySdk.ConfigureScopeAsync((scope) => Task.Run(() => contextWriter.Write(scope)));
-                    }
-                    catch (Exception e)
-                    {
-                        options.DiagnosticLogger?.LogWarning("Failed to synchronize scope to the native SDK: {0}", e);
-                    }
+                        var task = Task.Run(() => contextWriter.Write(scope)).ContinueWith(t =>
+                        {
+                            if (t.Exception is not null)
+                            {
+                                options.DiagnosticLogger?.LogWarning(
+                                    "Failed to synchronize scope to the native SDK: {0}", t.Exception);
+                            }
+                        });
+                    });
                 }
+
 
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
