@@ -15,6 +15,12 @@ $outputPath = "$NewProjectBuildPath/$(GetTestAppName $buildMethod)"
 Write-Host "Executing ${buildMethod}:"
 $unityArgs = @("-batchmode", "-projectPath ", "$NewProjectPath", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
 
+# The iOS symbol upload gets validated as part of the actual Xcode build
+if($Platform -eq "iOS")
+{
+    $unityArgs += "-uploadSymbols"
+    RunUnityCustom $unityPath $unityArgs
+}
 if ($CheckSymbols)
 {
     $unityArgs += "-uploadSymbols"

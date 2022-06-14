@@ -17,16 +17,22 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
 
+        var cliOptions = AssetDatabase.LoadAssetAtPath<SentryCliOptions>(Path.Combine("Assets", "Plugins", "Sentry", "SentryCliOptions.asset"));
+
         // 'build-project.ps1' explicitely calls for uploading symbols
-        if(!args.ContainsKey("uploadSymbols"))
+        if(args.ContainsKey("uploadSymbols"))
+        {
+            Debug.Log("Enabling automated debug symbol upload.");
+            cliOptions.UploadSymbols = true;
+        }
+        else
         {
             Debug.Log("Disabling automated debug symbol upload.");
-
-            var cliOptions= AssetDatabase.LoadAssetAtPath<SentryCliOptions>(Path.Combine("Assets", "Plugins", "Sentry", "SentryCliOptions.asset"));
             cliOptions.UploadSymbols = false;
-            EditorUtility.SetDirty(cliOptions);
-            AssetDatabase.SaveAssets();
         }
+
+        EditorUtility.SetDirty(cliOptions);
+        AssetDatabase.SaveAssets();
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
@@ -68,7 +74,6 @@ public class Builder
             Debug.Log($"Build succeeded with {summary.totalWarnings} warning{(summary.totalWarnings > 1 ? "s" : "")}.");
         }
     }
-
     public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone);
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
     public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
