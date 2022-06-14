@@ -17,6 +17,7 @@ $unityArgs = @("-batchmode", "-projectPath ", "$NewProjectPath", "-executeMethod
 
 if ($CheckSymbols)
 {
+    $unityArgs += "-uploadSymbols"
     $symbolServerOutput = RunWithSymbolServer -Callback { RunUnityCustom $unityPath $unityArgs }
     CheckSymbolServerOutput $buildMethod $symbolServerOutput $UnityVersion
 }
@@ -24,5 +25,6 @@ else
 {
     RunUnityCustom $unityPath $unityArgs
 }
+
 Write-Host "Project built successfully" -ForegroundColor Green
 Get-ChildItem $NewProjectBuildPath

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using Sentry.Unity.Editor;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -17,9 +17,15 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
 
-        if (args.ContainsKey("sentryOptions.configure"))
+        // 'build-project.ps1' explicitely calls for uploading symbols
+        if(!args.ContainsKey("uploadSymbols"))
         {
-            SetupSentryOptions(args);
+            Debug.Log("Disabling automated debug symbol upload.");
+
+            var cliOptions= AssetDatabase.LoadAssetAtPath<SentryCliOptions>(Path.Combine("Assets", "Plugins", "Sentry", "SentryCliOptions.asset"));
+            cliOptions.UploadSymbols = false;
+            EditorUtility.SetDirty(cliOptions);
+            AssetDatabase.SaveAssets();
         }
 
         var buildPlayerOptions = new BuildPlayerOptions
@@ -69,53 +75,6 @@ public class Builder
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
     public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
     public static void BuildWebGLPlayer() => BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL);
-
-    private static void SetupSentryOptions(Dictionary<string, string> args)
-    {
-        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Invoking SentryOptions");
-
-        if (!EditorApplication.ExecuteMenuItem("Tools/Sentry"))
-        {
-            throw new Exception("SetupSentryOptions: Menu item Tools -> Sentry was not found.");
-        }
-
-        var sentryWindowType = AppDomain.CurrentDomain.GetAssemblies()
-            ?.FirstOrDefault(assembly => assembly.FullName.StartsWith("Sentry.Unity.Editor,"))
-            ?.GetTypes()?.FirstOrDefault(type => type.FullName == "Sentry.Unity.Editor.SentryWindow");
-        if (sentryWindowType is null)
-        {
-            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(name => name.FullName.Contains("Sentry")))
-            {
-                foreach (var type in asm.GetTypes())
-                {
-                    Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Asm {0} Type {1}", asm.FullName, type.FullName);
-                }
-            }
-            throw new EntryPointNotFoundException("SetupSentryOptions: Type SentryWindow not found");
-        }
-
-        var optionsWindow = EditorWindow.GetWindow(sentryWindowType);
-        var options = optionsWindow.GetType().GetProperty("Options").GetValue(optionsWindow);
-
-        if (options is null)
-        {
-            throw new EntryPointNotFoundException("SetupSentryOptions: Method SentryOptions not found");
-        }
-        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Found SentryOptions");
-
-        var dsn = args["sentryOptions.Dsn"];
-        if (dsn != null)
-        {
-            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null,
-                "SetupSentryOptions: Configuring Dsn to {0}", dsn);
-
-            var dnsPropertyInfo = options.GetType().GetProperty("Dsn");
-            dnsPropertyInfo.SetValue(options, dsn, null);
-        }
-
-        optionsWindow.Close();
-        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "SetupSentryOptions: Sentry options Configured");
-    }
 
     public static Dictionary<string, string> ParseCommandLineArguments()
     {

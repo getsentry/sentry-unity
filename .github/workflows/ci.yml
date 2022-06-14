@@ -226,12 +226,12 @@ jobs:
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Create new Project
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
         if: ${{ github.ref_name == 'main' }}
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -240,13 +240,13 @@ jobs:
           wait-timeout: 3600
 
       - name: Extract UPM package
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-extract-package.ps1
+        run: sudo pwsh ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Prepare for upload
         run: |
@@ -330,12 +330,12 @@ jobs:
           Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Create new Project
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
         if: ${{ github.ref_name == 'main' }}
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -345,19 +345,19 @@ jobs:
           wait-timeout: 3600
 
       - name: Extract UPM package
-        run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to test project
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Run Player - Smoke Test
-        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
       - name: Run Player - Crash Test
-        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Crash
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
 
   android-smoke-test:
     needs: [smoke-test-build]
@@ -584,4 +584,4 @@ jobs:
 
       - name: Run (Linux)
         if: ${{ matrix.platform == 'Linux' }}
-        run: pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke -Crash
+        run: pwsh ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash

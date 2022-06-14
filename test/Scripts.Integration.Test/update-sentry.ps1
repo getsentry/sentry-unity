@@ -21,20 +21,23 @@ function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $f
     }
 }
 
+Write-Host -NoNewline "Copying Setup Script"
+New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
+Copy-Item "$IntegrationScriptsPath/SentrySetup.cs" -Destination "$NewProjectAssetsPath/Editor/SentrySetup.cs"
+Write-Host " OK"
+
 RunUnityAndExpect "AddSentryPackage" "Sentry Package Installation:" "Sentry setup: FAILED" @( `
         "-batchmode", "-projectPath ", "$NewProjectPath", "-installSentry", "Disk")
 
-Write-Host -NoNewline "Updating test files "
-# We were previously using an empty SmokeTester to not generate Build errors.
-# It was only required to not cause build errors since the new project did't have Sentry installed.
-Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs"
-Remove-Item -Path "$NewProjectAssetsPath/Scripts/SmokeTester.cs.meta"
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTester.cs.meta" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item "$UnityOfBugsPath/Assets/Scripts/SmokeTestOptions.cs.meta" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/CppPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item "$PackageReleaseAssetsPath/Scripts/NativeSupport/ObjectiveCPlugin.*" -Destination "$NewProjectAssetsPath/Scripts/"
+Write-Host -NoNewline "Copying Test Files"
+# TODO: Replace copying from sample project with actually importing the package samples
+New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
+New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
+Copy-Item -Recurse "$IntegrationScriptsPath/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
+Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
+Write-Host " OK"
 
 RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
         "-quit", "-batchmode", "-nographics", "-projectPath ", $NewProjectPath, `
