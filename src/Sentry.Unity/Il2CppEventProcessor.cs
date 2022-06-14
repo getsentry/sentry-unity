@@ -34,7 +34,7 @@ namespace Sentry.Unity
             // absolute ones, and we also do not get the image addr.
             // For this reason we will use the "rel:N" AddressMode, giving the
             // index of the image in the list of all debug images.
-            string? addrMode = null;
+            string? addressMode = null;
 
             foreach (var (sentryException, exception) in sentryExceptions.Zip(exceptions, (se, ex) => (se, ex)))
             {
@@ -48,7 +48,7 @@ namespace Sentry.Unity
 
                 var nativeStackTrace = GetNativeStackTrace(exception);
 
-                if (addrMode == null)
+                if (addressMode == null)
                 {
                     var imageIdx = debugImages.Count;
                     debugImages.Add(new DebugImage
@@ -59,26 +59,26 @@ namespace Sentry.Unity
                         CodeFile = nativeStackTrace.ImageName,
                         DebugId = nativeStackTrace.ImageUuid,
                     });
-                    addrMode = "rel:" + imageIdx;
+                    addressMode = "rel:" + imageIdx;
                 }
 
                 var nativeLen = nativeStackTrace.Frames.Length;
                 var len = Math.Min(sentryStacktrace.Frames.Count, nativeLen);
-                for (int i = 0; i < len; i++)
+                for (var i = 0; i < len; i++)
                 {
                     // The sentry stack trace is sorted parent (caller) to child (callee),
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
                     frame.InstructionAddress = $"0x{nativeFrame:X8}";
-                    frame.AddressMode = addrMode;
+                    frame.AddressMode = addressMode;
                 }
             }
         }
 
         // This is the same logic as `MainExceptionProcessor` uses to create the `SentryEvent.SentryExceptions` list.
         // It yields chained Exceptions in innermost to outer Exception order.
-        internal IEnumerable<Exception> EnumerateChainedExceptions(Exception exception)
+        private IEnumerable<Exception> EnumerateChainedExceptions(Exception exception)
         {
             if (exception is AggregateException ae)
             {
@@ -110,10 +110,7 @@ namespace Sentry.Unity
                 var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
                 var addr = _il2CppMethods.Il2CppGcHandleGetTarget(gchandle);
 
-                var numFrames = 0;
-                string? imageUUID = null;
-                string? imageName = null;
-                _il2CppMethods.Il2CppNativeStackTrace(addr, out addresses, out numFrames, out imageUUID, out imageName);
+                _il2CppMethods.Il2CppNativeStackTrace(addr, out addresses, out var numFrames, out var imageUuid, out var imageName);
 
                 // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
                 var frames = new IntPtr[numFrames];
@@ -122,13 +119,12 @@ namespace Sentry.Unity
                 return new NativeStackTrace
                 {
                     Frames = frames,
-                    ImageUuid = imageUUID,
+                    ImageUuid = imageUuid,
                     ImageName = imageName,
                 };
             }
             finally
             {
-                // We are done with the `GCHandle`.
                 gch.Free();
 
                 if (addresses != IntPtr.Zero)
