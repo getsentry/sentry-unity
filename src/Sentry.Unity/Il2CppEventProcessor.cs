@@ -7,16 +7,16 @@ using Sentry.Protocol;
 
 namespace Sentry.Unity
 {
-    // TODO: Make sure this whole functionality/class is only compiled when:
-    // * Compiling for the il2cpp backend.
-    // * Using Unity 2020 or later, as we use internal `libil2cpp` APIs that are
-    //   only available there.
-
     internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
     {
+        private readonly ISentryUnityInfo _sentryUnityInfo;
         private readonly Il2CppMethods _il2CppMethods;
 
-        public UnityIl2CppEventExceptionProcessor(Il2CppMethods il2CppMethods) => _il2CppMethods = il2CppMethods;
+        public UnityIl2CppEventExceptionProcessor(ISentryUnityInfo sentryUnityInfo, Il2CppMethods il2CppMethods)
+        {
+            _sentryUnityInfo = sentryUnityInfo;
+            _il2CppMethods = il2CppMethods;
+        }
 
         public void Process(Exception incomingException, SentryEvent sentryEvent)
         {
@@ -55,9 +55,7 @@ namespace Sentry.Unity
                 {
                     debugImages.Add(new DebugImage
                     {
-                        // TODO: put the correct platform here, because otherwise symbolicator will not find/fetch the
-                        // necessary debug files
-                        Type = "macho",
+                        Type = _sentryUnityInfo.Platform,
                         // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
                         // A null/missing `CodeFile` however would lead to a processing error in sentry.
                         // Since the code file is not strictly necessary for processing, we just fall back to
