@@ -156,7 +156,7 @@ namespace Sentry.Unity
 
             if (unityInfo?.Il2CppMethods is not null)
             {
-                this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(unityInfo, unityInfo.Il2CppMethods));
+                this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(this, unityInfo, unityInfo.Il2CppMethods));
             }
 
             this.AddIntegration(new UnityLogHandlerIntegration());

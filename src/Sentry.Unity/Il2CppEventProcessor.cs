@@ -4,22 +4,27 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Protocol;
+using UnityEngine;
 
 namespace Sentry.Unity
 {
     internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
     {
+        private readonly SentryUnityOptions _options;
         private readonly ISentryUnityInfo _sentryUnityInfo;
         private readonly Il2CppMethods _il2CppMethods;
 
-        public UnityIl2CppEventExceptionProcessor(ISentryUnityInfo sentryUnityInfo, Il2CppMethods il2CppMethods)
+        public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, Il2CppMethods il2CppMethods)
         {
+            _options = options;
             _sentryUnityInfo = sentryUnityInfo;
             _il2CppMethods = il2CppMethods;
         }
 
         public void Process(Exception incomingException, SentryEvent sentryEvent)
         {
+            _options.DiagnosticLogger?.LogDebug("Running Unity IL2CPP event exception processor on: Event {0}", sentryEvent.EventId);
+
             var sentryExceptions = sentryEvent.SentryExceptions;
             if (sentryExceptions == null)
             {
