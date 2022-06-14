@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
@@ -174,6 +175,10 @@ namespace Sentry.Unity
             else
             {
                 Release = application.Version;
+            }
+            if (!string.IsNullOrWhiteSpace(application.BuildGUID))
+            {
+                Release += $"+{application.BuildGUID}";
             }
 
             Environment = (application.IsEditor && !isBuilding)
