@@ -124,7 +124,7 @@ namespace Sentry.Unity
         // Available in Unity `2020.3.30f1` (and later)
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
         [DllImport("__Internal")]
-        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string imageUUID, out string imageName);
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
 
         // Available in Unity `2019.4.34f1` (and later)
         // void il2cpp_free(void* ptr)

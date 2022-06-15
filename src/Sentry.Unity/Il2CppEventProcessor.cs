@@ -127,7 +127,10 @@ namespace Sentry.Unity
                 var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
                 var addr = _il2CppMethods.Il2CppGcHandleGetTarget(gchandle);
 
-                _il2CppMethods.Il2CppNativeStackTrace(addr, out addresses, out var numFrames, out var imageUuid, out var imageName);
+                var numFrames = 0;
+                string? imageUuid = null;
+                string? imageName = null;
+                _il2CppMethods.Il2CppNativeStackTrace(addr, out addresses, out numFrames, out imageUuid, out imageName);
 
                 // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
                 var frames = new IntPtr[numFrames];
@@ -142,6 +145,7 @@ namespace Sentry.Unity
             }
             finally
             {
+                // We are done with the `GCHandle`.
                 gch.Free();
 
                 if (addresses != IntPtr.Zero)
