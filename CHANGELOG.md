@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Bump Cocoa SDK to v7.16.1 ([#](https://github.com/getsentry/sentry-unity/pull/))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7161)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.16.1)
+
 ## 0.19.0
 
 ### Features
