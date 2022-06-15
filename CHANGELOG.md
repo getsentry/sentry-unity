@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Bump Cocoa SDK to 0.19.0 (TODO)
+  - [changelog](https://github.com/getsentry/sentry-unity/blob/0.19.0/CHANGELOG.md)
+  - [diff](https://github.com/getsentry/sentry-unity/compare/21364330cfc8dc559c6510b9954a73b8dfd2ed1f...0.19.0)
+
 ## 0.19.0
 
 ### Features
