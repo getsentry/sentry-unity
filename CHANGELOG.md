@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Bump .NET SDK to v3.17.1 ([#805](https://github.com/getsentry/sentry-unity/pull/805))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3171)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.17.0...3.17.1)
+
 ## 0.19.0
 
 ### Features
