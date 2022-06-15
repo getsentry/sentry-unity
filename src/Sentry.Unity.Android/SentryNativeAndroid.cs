@@ -16,6 +16,7 @@ namespace Sentry.Unity.Android
         {
             if (options.AndroidNativeSupportEnabled)
             {
+                options.NativeContextWriter = new NativeContextWriter();
                 options.ScopeObserver = new AndroidJavaScopeObserver(options);
                 options.EnableScopeSync = true;
                 options.CrashedLastRun = () =>

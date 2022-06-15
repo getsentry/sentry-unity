@@ -6,7 +6,7 @@ using Sentry.Unity.Integrations;
 using UnityEngine;
 using AOT;
 
-namespace Sentry.Unity
+namespace Sentry.Unity.Native
 {
     /// <summary>
     /// P/Invoke to `sentry-native` functions.

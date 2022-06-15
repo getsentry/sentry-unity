@@ -142,7 +142,7 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
             t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
             t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
-            t.ExpectMessage(currentMessage, "'tags':{'tag-key':'tag-value'");
+            t.ExpectMessage(currentMessage, "'tag-key':'tag-value'");
             t.ExpectMessage(currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}");
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");

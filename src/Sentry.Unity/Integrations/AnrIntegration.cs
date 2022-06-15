@@ -48,6 +48,7 @@ namespace Sentry.Unity
         protected readonly IDiagnosticLogger? Logger;
         protected readonly SentryMonoBehaviour MonoBehaviour;
         internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
+        protected bool Paused { get; private set; } = false;
 
         internal AnrWatchDog(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, int detectionTimeoutMilliseconds = 5000)
         {
@@ -55,6 +56,9 @@ namespace Sentry.Unity
             Logger = logger;
             DetectionTimeoutMs = detectionTimeoutMilliseconds;
             SleepIntervalMs = Math.Max(1, DetectionTimeoutMs / 5);
+
+            MonoBehaviour.ApplicationPausing += () => Paused = true;
+            MonoBehaviour.ApplicationResuming += () => Paused = false;
 
             // Stop when the app is being shut down.
             MonoBehaviour.Application.Quitting += () => Stop();
@@ -64,9 +68,13 @@ namespace Sentry.Unity
 
         protected void Report()
         {
-            var message = $"Application not responding for at least {DetectionTimeoutMs} ms.";
-            Logger?.LogInfo("Detected an ANR event: {0}", message);
-            OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
+            // Don't report events while in the background.
+            if (!Paused)
+            {
+                var message = $"Application not responding for at least {DetectionTimeoutMs} ms.";
+                Logger?.LogInfo("Detected an ANR event: {0}", message);
+                OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
+            }
         }
     }
 
@@ -129,7 +137,11 @@ namespace Sentry.Unity
                     _ticksSinceUiUpdate++;
                     Thread.Sleep(SleepIntervalMs);
 
-                    if (_ticksSinceUiUpdate >= reportThreshold && !_reported)
+                    if (Paused)
+                    {
+                        _ticksSinceUiUpdate = 0;
+                    }
+                    else if (_ticksSinceUiUpdate >= reportThreshold && !_reported)
                     {
                         Report();
                         _reported = true;
