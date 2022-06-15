@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Sentry.Unity.Editor;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -17,31 +17,43 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
 
-        var cliOptions = AssetDatabase.LoadAssetAtPath<SentryCliOptions>(Path.Combine("Assets", "Plugins", "Sentry", "SentryCliOptions.asset"));
+        var sentryCliOptionsType = AppDomain.CurrentDomain.GetAssemblies()
+            ?.FirstOrDefault(assembly => assembly.FullName.StartsWith("Sentry.Unity.Editor,"))
+            ?.GetTypes()?.FirstOrDefault(type => type.FullName == "Sentry.Unity.Editor.SentryCliOptions");
 
-        // 'build-project.ps1' explicitely calls for uploading symbols
-        if(args.ContainsKey("uploadSymbols"))
+        if (sentryCliOptionsType != null)
         {
-            Debug.Log("Enabling automated debug symbol upload.");
-            cliOptions.UploadSymbols = true;
-        }
-        else
-        {
-            Debug.Log("Disabling automated debug symbol upload.");
-            cliOptions.UploadSymbols = false;
-        }
+            var cliOptions = AssetDatabase.LoadAssetAtPath(Path.Combine("Assets", "Plugins", "Sentry", "SentryCliOptions.asset"), sentryCliOptionsType);
+            var uploadSymbolsProperty = cliOptions.GetType().GetProperty("UploadSymbols");
 
-        EditorUtility.SetDirty(cliOptions);
-        AssetDatabase.SaveAssets();
+            // 'build-project.ps1' explicitly calls for uploading symbols
+            if(args.ContainsKey("uploadSymbols"))
+            {
+                Debug.Log("Enabling automated debug symbol upload.");
+                uploadSymbolsProperty.SetValue(cliOptions, true, null);
+            }
+            else
+            {
+                Debug.Log("Disabling automated debug symbol upload.");
+                uploadSymbolsProperty.SetValue(cliOptions, false, null);
+            }
+
+            EditorUtility.SetDirty(cliOptions);
+            AssetDatabase.SaveAssets();
+        }
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
-            scenes = new[] { "Assets/Scenes/1_Bugfarm.unity" },
             locationPathName = args["buildPath"],
             target = target,
             targetGroup = group,
             options = BuildOptions.StrictMode,
         };
+
+        if(File.Exists("Assets/Scenes/1_Bugfarm.unity"))
+        {
+            buildPlayerOptions.scenes = new[] { "Assets/Scenes/1_Bugfarm.unity" };
+        }
 
         var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
         var summary = report.summary;

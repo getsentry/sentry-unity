@@ -21,6 +21,11 @@ Write-Host " OK"
 Write-Host "Creating integration project:"
 RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "-quit")
 
+Write-Host "Copying Editor scripts to integration project:"
+New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
+Copy-Item -Recurse "$IntegrationScriptsPath/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
+Write-Host " OK"
+
 # Update ProjectSettings
 $projectSettingsPath = "$NewProjectPath/ProjectSettings/ProjectSettings.asset"
 $projectSettings = Get-Content $projectSettingsPath

@@ -21,11 +21,6 @@ function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $f
     }
 }
 
-Write-Host -NoNewline "Copying Setup Script"
-New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
-Copy-Item "$IntegrationScriptsPath/SentrySetup.cs" -Destination "$NewProjectAssetsPath/Editor/SentrySetup.cs"
-Write-Host " OK"
-
 RunUnityAndExpect "AddSentryPackage" "Sentry Package Installation:" "Sentry setup: FAILED" @( `
         "-batchmode", "-projectPath ", "$NewProjectPath", "-installSentry", "Disk")
 
@@ -33,9 +28,8 @@ Write-Host -NoNewline "Copying Test Files"
 # TODO: Replace copying from sample project with actually importing the package samples
 New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
-Copy-Item -Recurse "$IntegrationScriptsPath/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
 Write-Host " OK"
 
