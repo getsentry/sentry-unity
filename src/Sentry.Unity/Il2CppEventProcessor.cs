@@ -58,14 +58,20 @@ namespace Sentry.Unity
 
                 if (!didAddImage)
                 {
+                    var codeFile = nativeStackTrace.ImageName;
+                    // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
+                    // A null/missing `CodeFile` however would lead to a processing error in sentry.
+                    // Since the code file is not strictly necessary for processing, we just fall back to
+                    // a sentinel value here.
+                    if (String.IsNullOrEmpty(codeFile))
+                    {
+                        codeFile = "GameAssembly.fallback";
+                    }
                     debugImages.Add(new DebugImage
                     {
                         Type = _sentryUnityInfo.Platform,
-                        // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
-                        // A null/missing `CodeFile` however would lead to a processing error in sentry.
-                        // Since the code file is not strictly necessary for processing, we just fall back to
-                        // a sentinel value here.
-                        CodeFile = nativeStackTrace.ImageName ?? "GameAssembly.fallback",
+
+                        CodeFile = codeFile,
                         DebugId = nativeStackTrace.ImageUuid,
                         ImageAddress = $"0x{imageAddress:X8}",
                     });
