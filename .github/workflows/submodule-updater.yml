@@ -1,0 +1,184 @@
+# Note: we're using a reusable workflow instead of a custom action to have a clean checkout on every run.
+on:
+  workflow_call:
+    inputs:
+      path: # submodule path in the source repository
+        type: string
+        required: true
+      name: # Name used for a changelog entry
+        type: string
+        required: true
+      # prerelease:
+      #   type: boolean
+      #   required: false
+      #   default: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
+
+      - run: git submodule update --init --no-fetch --single-branch '${{ inputs.path }}'
+
+      - name: Get the main branch info
+        id: root
+        run: |
+          git fetch
+          Write-Host "::set-output name=mainBranch::$($(git rev-parse --abbrev-ref HEAD).Replace('origin/', ''))"
+
+      - name: Check out the latest version
+        id: submodule
+        working-directory: ${{ inputs.path }}
+        run: |
+          git fetch --tags
+          $originalTag = $(git describe --tags)
+          $latestTagCommit = $(git rev-list --tags --max-count=1)
+          $latestTag = $(git describe --tags $latestTagCommit)
+          $latestTagNice = ($latestTag -match "^[0-9]") ? "v$latestTag" : $latestTag
+          git checkout '$latestTagCommit'
+          Write-Host '::echo::on'
+          Write-Host "::set-output name=originalTag::$originalTag"
+          Write-Host "::set-output name=latestTag::$latestTag"
+          Write-Host "::set-output name=latestTagNice::$latestTagNice"
+          Write-Host "::set-output name=url::$(git remote get-url origin)"
+          Write-Host "::set-output name=mainBranch::$($(git rev-parse --abbrev-ref origin/HEAD).Replace('origin/', ''))"
+
+      # - name: Commit the submodule update
+      #   if: steps.submodule.outputs.latestTag != steps.submodule.outputs.originalTag
+      #   run: |
+      #     git add '${{ inputs.path }}'
+      #     # git commit -m 'chore: update ${{ inputs.path }} to ${{ steps.submodule.outputs.latestTag }}'
+      #     git status
+
+      - name: Create a PR
+        id: pr
+        uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
+        if: steps.submodule.outputs.latestTag != steps.submodule.outputs.originalTag
+        with:
+          add-paths: '${{ inputs.path }}'
+          branch: deps/${{ inputs.path }}/${{ steps.submodule.outputs.latestTag }}
+          commit-message: 'chore: update ${{ inputs.path }} to ${{ steps.submodule.outputs.latestTag }}'
+          title: 'chore(deps): update ${{ inputs.name }} to ${{ steps.submodule.outputs.latestTagNice }}'
+          base: ${{ steps.root.outputs.mainBranch }}
+          body: |
+            Bumps ${{ inputs.path }} from ${{ steps.submodule.outputs.originalTag }} to ${{ steps.submodule.outputs.latestTag }}.
+          labels: dependencies
+          draft: true
+
+      - uses: actions/checkout@v3
+        if: steps.submodule.outputs.latestTag != steps.submodule.outputs.originalTag
+        with:
+          ref: 'deps/${{ inputs.path }}/${{ steps.submodule.outputs.latestTag }}'
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
+
+      - name: Update Changelog
+        if: steps.submodule.outputs.latestTag != steps.submodule.outputs.originalTag
+        run: |
+          Set-StrictMode -Version latest
+
+          $file = $(Get-ChildItem | Where-Object { $_.Name -match '^changelog(\.md|\.txt|)$' } )
+          if ("$file" -eq "")
+          {
+              throw "Couldn't find a changelog"
+          }
+          elseif ($file -is [Array])
+          {
+              throw "Multiple changelogs found: $file"
+          }
+          Write-Host "Found changelog: $file"
+
+          [string[]]$lines = Get-Content $file
+
+          # Make sure that there's an `Unreleased` header
+          for ($i = 0; $i -lt $lines.Count; $i++)
+          {
+              $line = $lines[$i]
+
+              # Skip the "Changelog" header and empty lines at the beginning.
+              if ($line -match "changelog" -or $line.Trim().Length -eq 0)
+              {
+                  continue
+              }
+
+              # Next, we expect a header for the current version or "Unreleased".
+              if (-not $line.StartsWith("#"))
+              {
+                  throw "Unexpected changelog line: $line"
+              }
+
+              # If it's an existing version instead of "Unreleased".
+              if (-not ($line -match "unreleased"))
+              {
+                  Write-Host "Adding a new '## Unreleased' section"
+                  $lines = $lines[0..($i - 1)] + @("## Unreleased", "") + $lines[$i..($lines.Count - 1)]
+              }
+              break
+          }
+
+          # Make sure that there's a `Features` header
+          for ($i = 0; $i -lt $lines.Count; $i++)
+          {
+              $line = $lines[$i]
+
+              # Skip the "Changelog" header and empty lines at the beginning.
+              if ($line -match "changelog" -or $line -match "unreleased" -or $line.Trim().Length -eq 0)
+              {
+                  continue
+              }
+
+              # Next, we expect a header
+              if (-not $line.StartsWith("#"))
+              {
+                  throw "Unexpected changelog line: $line"
+              }
+
+              # add Features as the first sub-header
+              if (-not ($line -match "features"))
+              {
+                  Write-Host "Adding a new '### Features' section"
+                  $lines = $lines[0..($i - 1)] + @("### Features", "", "") + $lines[$i..($lines.Count - 1)]
+              }
+              break
+          }
+
+          # Find the last point in the first `Features` header
+          for ($i = 0; $i -lt $lines.Count; $i++)
+          {
+              $line = $lines[$i]
+              if ($line -match "Features")
+              {
+                  # Find the next header and then go backward until we find a non-empty line
+                  for ($i++; $i -lt $lines.Count -and -not $lines[$i].StartsWith("#"); $i++) {}
+                  for ($i--; $i -gt 0 -and $lines[$i].Trim().Length -eq 0; $i++) {}
+                  break
+              }
+          }
+
+          $pr = "${{ steps.pr.outputs.pull-request-number }}"
+          $entry = @("- Bump ${{ inputs.name }} to ${{ steps.submodule.outputs.latestTagNice }} ([#$pr](https://github.com/getsentry/sentry-unity/pull/$pr))",
+              "  - [changelog](${{ steps.submodule.outputs.url }}/blob/${{ steps.submodule.outputs.mainBranch }}/CHANGELOG.md#$('${{ steps.submodule.outputs.latestTag }}'.Replace('.', '')))",
+              "  - [diff](${{ steps.submodule.outputs.url }}/compare/${{ steps.submodule.outputs.originalTag }}...${{ steps.submodule.outputs.latestTag }})",
+              "")
+
+          Write-Host "Adding a changelog entry at line $($i):"
+          foreach ($line in $entry) {
+              Write-Host $line
+          }
+
+          $lines = $lines[0..($i - 2)] + $entry + $lines[$i..($lines.Count - 1)]
+          $lines | Out-File $file
+          git add $file
+
+      - name: Add changelog update to the PR
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "GitHub"
+          git commit -m 'chore: update changelog'
+          git push
