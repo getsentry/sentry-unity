@@ -39,7 +39,7 @@
       <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
       <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
-      <UnityLibcache>$(UnityRoot)Data/Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
+      <UnityLibcache>$(UnityRoot)/Data/Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
       <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
       <UnityExec>&quot;$(UnityRoot)\Unity.exe&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
@@ -83,7 +83,7 @@ or
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
       <UnityRoot Condition="Exists('$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor/Data/Managed/UnityEngine.dll')">$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor</UnityRoot>
       <UnityRoot Condition="$(UNITY_PATH) != ''">$(UNITY_PATH)/Editor</UnityRoot>
-      <UnityLibcache>$(UnityRoot)Data/Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
+      <UnityLibcache>$(UnityRoot)/Data/Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
       <UnityManagedPath>$(UnityRoot)/Data/Managed</UnityManagedPath>
       <UnityExec>xvfb-run -ae /dev/stdout &quot;$(UnityRoot)/Unity&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildLinuxIl2CPPPlayer</StandaloneBuildMethod>
