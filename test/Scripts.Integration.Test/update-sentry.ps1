@@ -29,8 +29,8 @@ Write-Host -NoNewline "Copying Test Files"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
+Copy-Item -Recurse "$IntegrationScriptsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/NativeSupport/CppPlugin.cpp" -Destination "$NewProjectAssetsPath/Scripts/CppPlugin.cpp"
 Write-Host " OK"
 
 RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `

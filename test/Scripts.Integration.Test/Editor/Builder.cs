@@ -50,9 +50,9 @@ public class Builder
             options = BuildOptions.StrictMode,
         };
 
-        if(File.Exists("Assets/Scenes/1_Bugfarm.unity"))
+        if(File.Exists("Assets/Scenes/SmokeTest.unity"))
         {
-            buildPlayerOptions.scenes = new[] { "Assets/Scenes/1_Bugfarm.unity" };
+            buildPlayerOptions.scenes = new[] { "Assets/Scenes/SmokeTest.unity" };
         }
 
         var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
