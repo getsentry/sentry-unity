@@ -1,6 +1,7 @@
 param(
     [string] $UnityPath,
-    [string] $Platform = ""
+    [string] $Platform = "",
+    [Switch] $CheckSymbols
 )
 
 . ./test/Scripts.Integration.Test/globals.ps1
@@ -31,19 +32,27 @@ New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
 Copy-Item "$UnityOfBugsPath/Assets/Scripts/NativeSupport/CppPlugin.cpp" -Destination "$NewProjectAssetsPath/Scripts/CppPlugin.cpp"
+Copy-Item "$UnityOfBugsPath/Assets/Scripts/NativeSupport/ObjectiveCPlugin.m" -Destination "$NewProjectAssetsPath/Scripts/ObjectiveCPlugin.m"
 Write-Host " OK"
 
-RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" @( `
-        "-quit", "-batchmode", "-nographics", "-projectPath ", $NewProjectPath, `
-        "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
-        "-sentryOptions.Dsn", (TestDsnFor $Platform), `
-        "-sentryOptionsScript", "SmokeTestOptions", `
-        "-attachScreenshot", "true", `
-        "-diagnosticLevel", "debug", `
+$unityArgs = @( `
+    "-quit", "-batchmode", "-nographics", "-projectPath ", $NewProjectPath, `
+    "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
+    "-sentryOptions.Dsn", (TestDsnFor $Platform), `
+    "-sentryOptionsScript", "SmokeTestOptions", `
+    "-attachScreenshot", "true", `
+    "-diagnosticLevel", "debug")
+
+if($CheckSymbols)
+{
+    $unityArgs += @( `
         "-cliOptions.UploadSources", "true", `
         "-cliOptions.Org", "sentry-sdks", `
         "-cliOptions.Project", "sentry-unity", `
         "-cliOptions.Auth", "dummy-token", `
         "-cliOptions.UrlOverride", (SymbolServerUrlFor $UnityPath $Platform))
+}
+
+RunUnityAndExpect "ConfigureSentryOptions" "ConfigureOptions: Sentry options Configured" "ConfigureOptions failed" $unityArgs
 
 Write-Host " Unity configuration finished successfully" -ForegroundColor Green

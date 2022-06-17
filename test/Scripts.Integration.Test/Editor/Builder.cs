@@ -17,31 +17,6 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
 
-        var sentryCliOptionsType = AppDomain.CurrentDomain.GetAssemblies()
-            ?.FirstOrDefault(assembly => assembly.FullName.StartsWith("Sentry.Unity.Editor,"))
-            ?.GetTypes()?.FirstOrDefault(type => type.FullName == "Sentry.Unity.Editor.SentryCliOptions");
-
-        if (sentryCliOptionsType != null)
-        {
-            var cliOptions = AssetDatabase.LoadAssetAtPath(Path.Combine("Assets", "Plugins", "Sentry", "SentryCliOptions.asset"), sentryCliOptionsType);
-            var uploadSymbolsProperty = cliOptions.GetType().GetProperty("UploadSymbols");
-
-            // 'build-project.ps1' explicitly calls for uploading symbols
-            if(args.ContainsKey("uploadSymbols"))
-            {
-                Debug.Log("Enabling automated debug symbol upload.");
-                uploadSymbolsProperty.SetValue(cliOptions, true, null);
-            }
-            else
-            {
-                Debug.Log("Disabling automated debug symbol upload.");
-                uploadSymbolsProperty.SetValue(cliOptions, false, null);
-            }
-
-            EditorUtility.SetDirty(cliOptions);
-            AssetDatabase.SaveAssets();
-        }
-
         var buildPlayerOptions = new BuildPlayerOptions
         {
             locationPathName = args["buildPath"],
