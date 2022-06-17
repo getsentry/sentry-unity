@@ -125,7 +125,7 @@ namespace Sentry.Unity.Android
         private static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool? value) =>
             SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
 
-        /// Implements the io.sentry.ScopeCallback interface.
+        // Implements the io.sentry.ScopeCallback interface.
         internal class ScopeCallback : AndroidJavaProxy
         {
             private readonly Action<AndroidJavaObject> _callback;
