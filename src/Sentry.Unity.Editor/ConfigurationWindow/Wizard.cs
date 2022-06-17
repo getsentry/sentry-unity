@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
+using Sentry.Unity.Editor.WizardApi;
 using UnityEditor;
 using UnityEngine;
 
@@ -40,7 +41,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
         private void StartLoder()
         {
-            _task = new WizardLoader(this, _logger);
+            _task = new WizardLoader(_logger);
             Task.Run(async () => Response = await _task.Load()).ContinueWith(t =>
             {
                 if (t.Exception is not null)
@@ -63,11 +64,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             EditorGUILayout.Space();
 
-            if (Response.Projects.Count == 0)
+            if (Response.projects.Count == 0)
             {
                 wizardConfiguration = new WizardConfiguration
                 {
-                    Token = Response.ApiKeys!.Token
+                    Token = Response.apiKeys!.token
                 };
 
                 EditorGUILayout.LabelField("There don't seem to be any projects in your sentry.io account.");
@@ -80,11 +81,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 var firstEntry = new string(' ', 60);
 
                 // sort "unity" projects first
-                Response.Projects.Sort((a, b) =>
+                Response.projects.Sort((a, b) =>
                 {
                     if (a.IsUnity == b.IsUnity)
                     {
-                        return (a.Name ?? "").CompareTo(b.Name ?? "");
+                        return (a.name ?? "").CompareTo(b.name ?? "");
                     }
                     else if (a.IsUnity)
                     {
@@ -96,7 +97,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     }
                 });
 
-                var orgsAndProjects = Response.Projects.GroupBy(k => k.Organization!.Name, v => v).ToArray();
+                var orgsAndProjects = Response.projects.GroupBy(k => k.organization!.name, v => v).ToArray();
 
                 // if only one org
                 if (orgsAndProjects.Length == 1)
@@ -111,7 +112,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
                 if (_orgSelected > 0)
                 {
-                    _projectSelected = EditorGUILayout.Popup("Project", _projectSelected, orgsAndProjects[_orgSelected - 1].Select(v => $"{v.Name} - ({v.Slug})").ToArray()
+                    _projectSelected = EditorGUILayout.Popup("Project", _projectSelected, orgsAndProjects[_orgSelected - 1].Select(v => $"{v.name} - ({v.slug})").ToArray()
                         .Prepend(firstEntry).ToArray());
                 }
 
@@ -120,10 +121,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     var proj = orgsAndProjects[_orgSelected - 1].ToArray()[_projectSelected - 1];
                     wizardConfiguration = new WizardConfiguration
                     {
-                        Token = Response.ApiKeys!.Token,
-                        Dsn = proj.Keys.First().Dsn!.Public,
-                        OrgSlug = proj.Organization!.Slug,
-                        ProjectSlug = proj.Slug,
+                        Token = Response.apiKeys!.token,
+                        Dsn = proj.keys.First().dsn!.@public,
+                        OrgSlug = proj.organization!.slug,
+                        ProjectSlug = proj.slug,
                     };
                 }
             }
@@ -218,48 +219,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             Application.OpenURL(parsedUri.ToString());
         }
-
-        internal class WizardStep1Response
-        {
-            public string? Hash { get; set; }
-        }
-        internal class WizardStep2Response
-        {
-            public ApiKeys? ApiKeys { get; set; }
-            public List<Project> Projects { get; set; } = new List<Project>(0);
-        }
-
-        internal class ApiKeys
-        {
-            public string? Token { get; set; }
-        }
-
-        internal class Project
-        {
-            public Organization? Organization { get; set; }
-            public string? Slug { get; set; }
-            public string? Name { get; set; }
-            public string? Platform { get; set; }
-            public IEnumerable<Key> Keys { get; set; } = Enumerable.Empty<Key>();
-
-            public bool IsUnity => string.Equals(Platform, "unity", StringComparison.InvariantCultureIgnoreCase);
-        }
-
-        internal class Key
-        {
-            public Dsn? Dsn { get; set; }
-        }
-
-        internal class Dsn
-        {
-            public string? Public { get; set; }
-        }
-
-        internal class Organization
-        {
-            public string? Name { get; set; }
-            public string? Slug { get; set; }
-        }
     }
 
     internal class WizardConfiguration
@@ -279,7 +238,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
     internal class WizardLoader
     {
-        private Wizard _wizard;
         private IDiagnosticLogger _logger;
         internal float _progress = 0.0f;
         internal string _progressText = "";
@@ -289,15 +247,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal Action? _uiAction = null;
         private const int StepCount = 5;
 
-        private readonly JsonSerializerOptions _serializeOptions = new()
+        public WizardLoader(IDiagnosticLogger logger)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
-
-        public WizardLoader(Wizard wizard, IDiagnosticLogger logger)
-        {
-            _wizard = wizard;
             _logger = logger;
         }
 
@@ -316,9 +267,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             _progress = current;
         }
 
-        internal async Task<Wizard.WizardStep2Response?> Load()
+        internal async Task<WizardStep2Response?> Load()
         {
-            Wizard.WizardStep2Response? response = null;
+            WizardStep2Response? response = null;
             try
             {
                 Progress("Started", 1);
@@ -326,13 +277,13 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 Progress("Connecting to sentry.io settings wizard...", 2);
                 var http = new HttpClient();
                 var resp = await http.GetAsync("https://sentry.io/api/0/wizard/").ConfigureAwait(false);
-                var wizardHashResponse = await DeserializeJson<Wizard.WizardStep1Response>(resp);
+                var wizardHashResponse = await DeserializeJson<WizardStep1Response>(resp);
 
                 Progress("Opening sentry.io in the default browser...", 3);
-                await RunOnUiThread(() => Wizard.OpenUrl($"https://sentry.io/account/settings/wizard/{wizardHashResponse.Hash}/"));
+                await RunOnUiThread(() => Wizard.OpenUrl($"https://sentry.io/account/settings/wizard/{wizardHashResponse.hash}/"));
 
                 // Poll https://sentry.io/api/0/wizard/hash/
-                var pollingUrl = $"https://sentry.io/api/0/wizard/{wizardHashResponse.Hash}/";
+                var pollingUrl = $"https://sentry.io/api/0/wizard/{wizardHashResponse.hash}/";
 
                 Progress("Waiting for the the response from the browser session...", 4);
 
@@ -343,7 +294,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                         resp = await http.GetAsync(pollingUrl).ConfigureAwait(false);
                         if (resp.StatusCode != HttpStatusCode.BadRequest) // not ready yet
                         {
-                            response = await DeserializeJson<Wizard.WizardStep2Response>(resp).ConfigureAwait(false);
+                            response = await DeserializeJson<WizardStep2Response>(resp).ConfigureAwait(false);
                             break;
                         }
                     }
@@ -378,8 +329,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         private async Task<T> DeserializeJson<T>(HttpResponseMessage response)
         {
             var content = await response.EnsureSuccessStatusCode().Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-            return JsonSerializer.Deserialize<T>(content, _serializeOptions)!;
+            return DeserializeJson<T>(System.Text.Encoding.UTF8.GetString(content));
         }
+
+        internal T DeserializeJson<T>(string json) => JsonUtility.FromJson<T>(json);
 
         private Task RunOnUiThread(Action callback)
         {
