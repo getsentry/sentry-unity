@@ -4,6 +4,8 @@
 
 ### Features
 
+- Capture Native Instruction Addrs for Exceptions ([#683](https://github.com/getsentry/sentry-unity/pull/683))
+
 - Bump Cocoa SDK to v7.16.1 ([#802](https://github.com/getsentry/sentry-unity/pull/802))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7161)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.16.1)
@@ -32,7 +34,6 @@
 
 ### Features
 
-- Capture Native Instruction Addrs for Exceptions ([#683](https://github.com/getsentry/sentry-unity/pull/683))
 - Enable native crash support with Mono scripting backend on Android, Windows and Linux ([#751](https://github.com/getsentry/sentry-unity/pull/751))
 - Application-Not-Responding detection ([#771](https://github.com/getsentry/sentry-unity/pull/771))
 - Allow uploading sources for debug files ([#773](https://github.com/getsentry/sentry-unity/pull/773))
