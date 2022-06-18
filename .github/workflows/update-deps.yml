@@ -1,11 +1,48 @@
 name: Update Dependencies
 
 on:
+  # Run every day.
   schedule:
     - cron: '0 3 * * *'
+  # And on on every PR merge so we get the updated dependencies ASAP, and to make sure the changelog doesn't conflict.
+  push:
+    branches:
+      - main
 
 jobs:
-  update-dep:
+  cocoa:
+    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    with:
+      path: modules/sentry-cocoa
+      name: Cocoa SDK
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  java:
+    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    with:
+      path: modules/sentry-java
+      name: Java SDK
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  native:
+    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    with:
+      path: modules/sentry-native
+      name: Native SDK
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  dotnet:
+    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    with:
+      path: src/sentry-dotnet
+      name: .NET SDK
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  unity:
     name: Unity ${{ matrix.unity-prefix }} PR
     runs-on: ubuntu-latest
     defaults:
