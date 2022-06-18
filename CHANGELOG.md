@@ -16,6 +16,9 @@
 - Bump Native SDK to v0.4.17 ([#810](https://github.com/getsentry/sentry-unity/pull/810))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0417)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.17)
+- Bump Cocoa SDK to v7.17.0 ([#821](https://github.com/getsentry/sentry-unity/pull/821))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7170)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.1...7.17.0)
 
 ## 0.19.0
 
