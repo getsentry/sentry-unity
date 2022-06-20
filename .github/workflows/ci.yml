@@ -95,6 +95,9 @@ jobs:
           docker exec unity ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
           docker exec unity ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
 
+      - name: Download CLI
+        run: pwsh ./scripts/download-sentry-cli.ps1
+
       - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
         with:
           name: Android-sdk
