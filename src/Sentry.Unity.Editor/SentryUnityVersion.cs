@@ -17,7 +17,7 @@ namespace Sentry.Unity.Editor
             // The Unity version format looks like this: '2019.4.38f1', '2022.1.0a17' or '2022.1.1b4'
             // We're trimming going from the back to the first letter
             var unityVersion = application.UnityVersion;
-            for (var i = unityVersion.Length -1; i > 0; i--)
+            for (var i = unityVersion.Length - 1; i > 0; i--)
             {
                 if (!char.IsLetter(unityVersion, i))
                 {
