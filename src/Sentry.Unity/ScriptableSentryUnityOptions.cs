@@ -63,6 +63,8 @@ namespace Sentry.Unity
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
@@ -136,6 +138,7 @@ namespace Sentry.Unity
             options.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
             options.MacosNativeSupportEnabled = MacosNativeSupportEnabled;
             options.LinuxNativeSupportEnabled = LinuxNativeSupportEnabled;
+            options.Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled;
 
             // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
             // need to set it here directly.

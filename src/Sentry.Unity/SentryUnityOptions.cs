@@ -113,6 +113,11 @@ namespace Sentry.Unity
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Whether the SDK should add an exception processor to provide line number support for IL2CPP
+        /// </summary>
+        public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
+
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
         internal string? DefaultUserId
@@ -155,7 +160,7 @@ namespace Sentry.Unity
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
 
-            if (unityInfo?.Il2CppMethods is not null)
+            if (Il2CppLineNumberSupportEnabled && unityInfo?.Il2CppMethods is not null)
             {
                 this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(this, unityInfo, unityInfo.Il2CppMethods));
             }
