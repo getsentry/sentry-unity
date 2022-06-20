@@ -46,6 +46,7 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("WindowsNativeSupportEnabled", optionsAsString);
             StringAssert.Contains("MacosNativeSupportEnabled", optionsAsString);
             StringAssert.Contains("LinuxNativeSupportEnabled", optionsAsString);
+            StringAssert.Contains("Il2CppLineNumberSupportEnabled", optionsAsString);
             StringAssert.Contains("OptionsConfiguration", optionsAsString);
             StringAssert.Contains("Debug", optionsAsString);
             StringAssert.Contains("DebugOnlyInEditor", optionsAsString);

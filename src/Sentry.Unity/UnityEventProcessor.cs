@@ -68,13 +68,6 @@ namespace Sentry.Unity
 
     }
 
-    internal class UnityEventExceptionProcessor : ISentryEventExceptionProcessor
-    {
-        public void Process(Exception exception, SentryEvent sentryEvent)
-        {
-        }
-    }
-
     internal static class TagValueNormalizer
     {
         internal static string ToTagValue(this Boolean value) => value ? "true" : "false";

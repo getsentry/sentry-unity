@@ -32,6 +32,7 @@
 
 ### Features
 
+- Capture Native Instruction Addrs for Exceptions ([#683](https://github.com/getsentry/sentry-unity/pull/683))
 - Enable native crash support with Mono scripting backend on Android, Windows and Linux ([#751](https://github.com/getsentry/sentry-unity/pull/751))
 - Application-Not-Responding detection ([#771](https://github.com/getsentry/sentry-unity/pull/771))
 - Allow uploading sources for debug files ([#773](https://github.com/getsentry/sentry-unity/pull/773))

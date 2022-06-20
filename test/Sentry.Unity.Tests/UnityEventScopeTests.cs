@@ -106,7 +106,7 @@ namespace Sentry.Unity.Tests
                 RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
                 StartTime = new(() => DateTimeOffset.UtcNow),
             };
-            var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+            var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, null, false)
             {
                 Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
                 Enabled = true,

@@ -63,6 +63,8 @@ namespace Sentry.Unity
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
@@ -76,22 +78,22 @@ namespace Sentry.Unity
         /// <remarks>
         /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
         /// </remarks>
-        public static SentryUnityOptions? LoadSentryUnityOptions()
+        public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
         {
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
-                return scriptableOptions.ToSentryUnityOptions(false);
+                return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
             }
 
             return null;
         }
 
-        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, IApplication? application = null)
+        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            var options = new SentryUnityOptions(application, isBuilding)
+            var options = new SentryUnityOptions(isBuilding, unityInfo, application)
             {
                 Enabled = Enabled,
                 Dsn = Dsn,
@@ -136,6 +138,7 @@ namespace Sentry.Unity
             options.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
             options.MacosNativeSupportEnabled = MacosNativeSupportEnabled;
             options.LinuxNativeSupportEnabled = LinuxNativeSupportEnabled;
+            options.Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled;
 
             // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
             // need to set it here directly.

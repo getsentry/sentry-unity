@@ -113,6 +113,11 @@ namespace Sentry.Unity
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Whether the SDK should add an exception processor to provide line number support for IL2CPP
+        /// </summary>
+        public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
+
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
         internal string? DefaultUserId
@@ -140,21 +145,26 @@ namespace Sentry.Unity
         /// </summary>
         internal ContextWriter? NativeContextWriter { get; set; } = null;
 
-        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false) { }
+        public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
-        internal SentryUnityOptions(IApplication application, bool isBuilding) :
-            this(SentryMonoBehaviour.Instance, application, isBuilding)
+        internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
+            this(SentryMonoBehaviour.Instance, application, unityInfo, isBuilding)
         { }
 
-        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding)
+        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, ISentryUnityInfo? unityInfo, bool isBuilding)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
-            this.AddExceptionProcessor(new UnityEventExceptionProcessor());
+            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
+
+            if (Il2CppLineNumberSupportEnabled && unityInfo?.Il2CppMethods is not null)
+            {
+                this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(this, unityInfo, unityInfo.Il2CppMethods));
+            }
+
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new AnrIntegration(behaviour));
             this.AddIntegration(new UnityScopeIntegration(behaviour, application));
