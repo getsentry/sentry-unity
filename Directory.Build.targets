@@ -145,6 +145,10 @@ Expected to exist:
     <Delete Files="$(SentryWindowsArtifactsDestination)/sentry.pdb" ContinueOnError="true" />
   </Target>
 
+  <Target Name="DownloadCLI" BeforeTargets="BeforeBuild" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND !Exists('$(RepoRoot)package-dev/Editor/sentry-cli')">
+    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/download-sentry-cli.ps1&quot;"></Exec>
+  </Target>
+
   <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
   <Target Name="BuildiOSSDK" Condition="$([MSBuild]::IsOSPlatform('OSX'))
           And '$(MSBuildProjectName)' == 'Sentry.Unity'
