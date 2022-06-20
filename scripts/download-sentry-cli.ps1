@@ -1,6 +1,6 @@
 Set-StrictMode -Version latest
 
-$version = '1.71.0'
+$version = '2.2.0'
 $platforms = @('Darwin-universal', 'Linux-x86_64', 'Windows-x86_64')
 $targetDir = "$PSScriptRoot/../package-dev/Editor/sentry-cli"
 $baseUrl = "https://github.com/getsentry/sentry-cli/releases/download/$version/sentry-cli-"
