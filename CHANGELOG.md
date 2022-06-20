@@ -16,6 +16,9 @@
 - Bump Native SDK to v0.4.17 ([#810](https://github.com/getsentry/sentry-unity/pull/810))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0417)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.17)
+- Bump Java SDK to v6.1.1 ([#820](https://github.com/getsentry/sentry-unity/pull/820))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#611)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.1.0...6.1.1)
 
 ## 0.19.0
 
