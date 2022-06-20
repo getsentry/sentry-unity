@@ -4,6 +4,7 @@
 
 ### Features
 
+- Generate and upload IL2CPP line mappings alongside debug files ([#790](https://github.com/getsentry/sentry-unity/pull/790))
 - Bump Cocoa SDK to v7.17.0 ([#802](https://github.com/getsentry/sentry-unity/pull/802) & [#821](https://github.com/getsentry/sentry-unity/pull/821))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7170)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.17.0)
@@ -16,10 +17,9 @@
 - Bump Native SDK to v0.4.18 ([#810](https://github.com/getsentry/sentry-unity/pull/810) & [#824](https://github.com/getsentry/sentry-unity/pull/824))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0418)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.18)
-- Bump Sentry CLI 2.2.0 ([#790](https://github.com/getsentry/sentry-unity/pull/790))
-  - [changelog](https://github.com/getsentry/sentry-cli/releases/tag/2.2.0)
+- Bump Sentry CLI 2.2.0 ([#826](https://github.com/getsentry/sentry-unity/pull/826))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#220)
   - [diff](https://github.com/getsentry/sentry-cli/compare/1.72.0...2.2.0)
-- Generate and upload IL2CPP line mappings alongside debug files ([#790](https://github.com/getsentry/sentry-unity/pull/790))
 
 ## 0.19.0
 
