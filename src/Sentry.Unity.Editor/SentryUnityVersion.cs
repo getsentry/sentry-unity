@@ -1,7 +1,5 @@
 using System;
 using Sentry.Unity.Integrations;
-using UnityEditor;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
