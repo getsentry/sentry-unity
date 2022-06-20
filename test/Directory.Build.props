@@ -23,15 +23,15 @@
         <Private>false</Private>
       </Reference>
       <Reference Include="UnityEditor.TestRunner">
-        <HintPath>$(UnityTestPath)/UnityEditor.TestRunner.dll</HintPath>
+        <HintPath>$(UnityTemplateAssemblyPath)/UnityEditor.TestRunner.dll</HintPath>
         <Private>false</Private>
       </Reference>
       <Reference Include="UnityEngine.TestRunner">
-        <HintPath>$(UnityTestPath)/UnityEngine.TestRunner.dll</HintPath>
+        <HintPath>$(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll</HintPath>
         <Private>false</Private>
       </Reference>
     </ItemGroup>
-    <Error Condition="!Exists('$(UnityTestPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTestPath)/UnityEngine.TestRunner.dll"></Error>
+    <Error Condition="!Exists('$(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll"></Error>
   </Target>
 
   <PropertyGroup>

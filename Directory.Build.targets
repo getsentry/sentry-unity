@@ -9,8 +9,6 @@
     <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
-    <UnityPackageProject>$(RepoRoot)temp/unity-packages</UnityPackageProject>
-    <UnityTestPath>$(UnityPackageProject)/Library/ScriptAssemblies</UnityTestPath>
     <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
@@ -41,6 +39,7 @@
       <UnityRoot Condition="Exists('C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Hub\Editor\$(UnityVersion)\Editor</UnityRoot>
       <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll')">C:\Program Files\Unity\Editor</UnityRoot>
+      <UnityLibcache>$(UnityRoot)/Data/Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
       <UnityManagedPath>$(UnityRoot)\Data\Managed</UnityManagedPath>
       <UnityExec>&quot;$(UnityRoot)\Unity.exe&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildWindowsIl2CPPPlayer</StandaloneBuildMethod>
@@ -63,6 +62,7 @@ or
       <UnityRoot Condition="Exists('/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Hub/Editor/$(UnityVersion)/Unity.app/</UnityRoot>
       <!--If not using Unity Hub, tries to pick whatever Unity version is installed on the machine-->
       <UnityRoot Condition="$(UnityRoot) == '' AND Exists('/Applications/Unity/Unity.app/Contents/Managed/UnityEngine.dll')">/Applications/Unity/Unity.app/</UnityRoot>
+      <UnityLibcache>$(UnityRoot)Contents/Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
       <UnityManagedPath>$(UnityRoot)/Contents/Managed</UnityManagedPath>
       <UnityExec>&quot;$(UnityRoot)/Contents/MacOS/Unity&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildMacIl2CPPPlayer</StandaloneBuildMethod>
@@ -83,6 +83,7 @@ or
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
       <UnityRoot Condition="Exists('$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor/Data/Managed/UnityEngine.dll')">$(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor</UnityRoot>
       <UnityRoot Condition="$(UNITY_PATH) != ''">$(UNITY_PATH)/Editor</UnityRoot>
+      <UnityLibcache>$(UnityRoot)/Data/Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
       <UnityManagedPath>$(UnityRoot)/Data/Managed</UnityManagedPath>
       <UnityExec>xvfb-run -ae /dev/stdout &quot;$(UnityRoot)/Unity&quot;</UnityExec>
       <StandaloneBuildMethod>Builder.BuildLinuxIl2CPPPlayer</StandaloneBuildMethod>
@@ -97,13 +98,20 @@ Resolved directory: '$(UnityRoot)'
 Expected to exist:
  * $(Home)/Unity/Hub/Editor/$(UnityVersion)/Editor/Data/Managed/UnityEngine.dll" />
 
+    <LocateTestRunner UnityLibcache="$(UnityLibcache)">
+      <Output PropertyName="TestRunnerPath" TaskParameter="TestRunnerPath" />
+    </LocateTestRunner>
+
+    <PropertyGroup>
+      <UnityTemplateAssemblyPath>$(TestRunnerPath)</UnityTemplateAssemblyPath>
+    </PropertyGroup>
+
   </Target>
 
   <Target Name="CleanUnityTestResults" AfterTargets="Clean">
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
     <RemoveDir Directories="$(PlayerBuildPath)" />
-    <RemoveDir Condition="Exists('$(UnityPackageProject)')" Directories="$(UnityPackageProject)" />
   </Target>
 
   <Target Name="CleaniOSSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -309,33 +317,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec Command="python3 -X utf8 &quot;$(RepoRoot)/scripts/smoke-test-webgl.py&quot;" IgnoreStandardErrorWarningFormat="true"/>
   </Target>
 
-  <!-- If Unity Library Project doesn't exist, create a Unity project. We use this project to restore packages needed to build
-  this solution without using the sample project which depends on the output of this build. -->
-  <Target Name="UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" DependsOnTargets="FindUnity">
-    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity."></Error>
-
-    <Message Importance="High" Text="Running Unity Create Packages."></Message>
-
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -createProject $(UnityPackageProject)" />
-    <PropertyGroup>
-      <SourceManifestFile>$(UnitySampleProjectPath)/Packages/manifest.json</SourceManifestFile>
-      <DestinationManifestFile>$(UnityPackageProject)/Packages/manifest.json</DestinationManifestFile>
-    </PropertyGroup>
-    <Copy SourceFiles="$(SourceManifestFile)" DestinationFiles="$(DestinationManifestFile)" />
-    <ExcludePackage PackageManifestFile="$(DestinationManifestFile)" PackageToRemove="io.sentry.unity.dev" />
-  </Target>
-
-  <!-- If Unity Libraries don't exist, load a Unity project to restore UPM packages -->
-  <Target Name="UnityRestorePackages" DependsOnTargets="FindUnity;UnityCreatePackages" Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll') AND '$(MSBuildProjectName)' == 'Sentry.Unity'" BeforeTargets="BeforeBuild">
-    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
-
-    <Message Importance="High" Text="Running Unity Restore Packages."></Message>
-
-    <Exec Command="pwsh &quot;$(RepoRoot)/scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnityPackageProject)" />
-
-    <Error Condition="!Exists('$(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityPackageProject)/Library/ScriptAssemblies/UnityEngine.TestRunner.dll"></Error>
-  </Target>
-
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
   <Target Name="UnityPlayModeTest" DependsOnTargets="Build" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
     <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
@@ -402,6 +383,32 @@ if (version == null)
 UnityVersion = version.Substring("m_EditorVersion: ".Length);
 
 Log.LogMessage("Unity Version: " + version);
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+    <!-- Locate the TestRunner.dlls by filling the wildcard with the template version number. 3d is the default template -->
+  <UsingTask TaskName="LocateTestRunner" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <UnityLibcache ParameterType="System.String" Required="true" />
+      <TestRunnerPath ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+var directories = Directory.GetDirectories(UnityLibcache, "com.unity.template.3d-*");
+if (directories.Length == 1)
+{
+    TestRunnerPath = Path.Combine(directories[0], "ScriptAssemblies");
+    Log.LogMessage("Found TestRunner path at: " + TestRunnerPath);
+    return true;
+}
+
+Log.LogError("Failed to resolve 'com.unity.template.3d-*' for TestRunner at: " + UnityLibcache);
 ]]>
       </Code>
     </Task>
