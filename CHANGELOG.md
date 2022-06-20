@@ -4,7 +4,7 @@
 
 ### Features
 
-- Bump Cocoa SDK to v7.17.1 ([#802](https://github.com/getsentry/sentry-unity/pull/802) & [#821](https://github.com/getsentry/sentry-unity/pull/821))
+- Bump Cocoa SDK to v7.17.0 ([#802](https://github.com/getsentry/sentry-unity/pull/802) & [#821](https://github.com/getsentry/sentry-unity/pull/821))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7170)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.17.0)
 - Bump .NET SDK to v3.18.0 ([#807](https://github.com/getsentry/sentry-unity/pull/807))
