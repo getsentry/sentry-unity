@@ -30,5 +30,20 @@ namespace Sentry.Unity.Editor.Tests
 
             Assert.Throws<FormatException>(() => SentryUnityVersion.GetVersion(application));
         }
+
+        [Test]
+        [TestCase("2019.4.39f1", "2019.4.39", true)]    // are equal
+        [TestCase("2020.1.1f1", "2022.1.2", false)]     // is older
+        [TestCase("2020.1.1f1", "2022.2", false)]       // is older
+        [TestCase("2020.1.1f1", "2019.4", true)]        // is newer
+        [TestCase("2021.1.1f1", "2020.3", true)]        // is newer
+        public void IsNewerOrEqual(string currentUnityVersion, string versionToCheck, bool expected)
+        {
+            var application = new TestApplication(unityVersion: currentUnityVersion);
+
+            var actual = SentryUnityVersion.IsNewerOrEqualThan(versionToCheck, application);
+
+            Assert.AreEqual(expected, actual);
+        }
     }
 }
