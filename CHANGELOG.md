@@ -19,7 +19,7 @@
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.18)
 - Bump Sentry CLI 2.2.0 ([#826](https://github.com/getsentry/sentry-unity/pull/826))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#220)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/1.72.0...2.2.0)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/1.71.0...2.2.0)
 
 ## 0.19.0
 
