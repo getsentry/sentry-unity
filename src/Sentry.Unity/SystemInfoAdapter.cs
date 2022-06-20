@@ -4,9 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
-    /// <summary>
-    /// Warning: The `Lazy<>` properties may only be evaluated on the main (UI) thread.
-    /// </summary>
+    // Warning: The `Lazy<>` properties may only be evaluated on the main (UI) thread.
     internal interface ISentrySystemInfo
     {
         int? MainThreadId { get; }

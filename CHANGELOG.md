@@ -4,18 +4,18 @@
 
 ### Features
 
-- Bump Cocoa SDK to v7.16.1 ([#802](https://github.com/getsentry/sentry-unity/pull/802))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7161)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.16.1)
+- Bump Cocoa SDK to v7.17.0 ([#802](https://github.com/getsentry/sentry-unity/pull/802) & [#821](https://github.com/getsentry/sentry-unity/pull/821))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7170)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.17.0)
 - Bump .NET SDK to v3.18.0 ([#807](https://github.com/getsentry/sentry-unity/pull/807))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3180)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.17.0...3.18.0)
-- Bump Java SDK to v6.1.0 ([#811](https://github.com/getsentry/sentry-unity/pull/811))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#610)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-1-gc62a9f7a...6.1.0)
-- Bump Native SDK to v0.4.17 ([#810](https://github.com/getsentry/sentry-unity/pull/810))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0417)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.17)
+- Bump Java SDK to v6.1.1 ([#811](https://github.com/getsentry/sentry-unity/pull/811) & [#820](https://github.com/getsentry/sentry-unity/pull/820))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#611)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-1-gc62a9f7a...6.1.1)
+- Bump Native SDK to v0.4.18 ([#810](https://github.com/getsentry/sentry-unity/pull/810) & [#824](https://github.com/getsentry/sentry-unity/pull/824))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0418)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.18)
 
 ## 0.19.0
 

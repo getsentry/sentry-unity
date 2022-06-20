@@ -41,6 +41,9 @@ package-dev/Plugins/*/Sentry/crashpad_handler*
 # Android SDK files
 package-dev/Plugins/Android/Sentry/*
 
+# CLI
+package-dev/Editor/sentry-cli
+
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/
 sentry-unity/Assets/Editor/Sentry/
