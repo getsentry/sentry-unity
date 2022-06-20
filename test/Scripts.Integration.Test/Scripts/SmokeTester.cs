@@ -309,7 +309,9 @@ public class SmokeTester : MonoBehaviour
             }
             lock (_requests)
             {
-                return _requests[index];
+                var message = _requests[index];
+                Debug.Log($"Sentry: TestHandler returning message: {message}");
+                return message;
             }
         }
 
