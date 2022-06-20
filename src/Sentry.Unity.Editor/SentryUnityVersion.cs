@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity.Editor
