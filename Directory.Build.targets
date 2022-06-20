@@ -200,7 +200,9 @@ Expected to exist:
     </ItemGroup>
 
     <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp sentry/build/libs/sentry*.jar $(SentryAndroidArtifactsDestination)sentry.jar" />
+
+    <Copy SourceFiles="$(SentryAndroidRoot)/sentry/build/libs/sentry*.jar"
+          DestinationFiles="$(SentryAndroidArtifactsDestination)sentry.jar" />
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK."></Error>
   </Target>
