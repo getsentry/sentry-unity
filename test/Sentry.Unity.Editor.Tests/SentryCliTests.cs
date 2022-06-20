@@ -12,7 +12,7 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void GetSentryCliPlatformName_UnrecognizedPlatform_ThrowsInvalidOperationException()
         {
-            var application = new TestApplication(platform: RuntimePlatform.CloudRendering);
+            var application = new TestApplication(platform: RuntimePlatform.LinuxPlayer);
 
             Assert.Throws<InvalidOperationException>(() => SentryCli.GetSentryCliPlatformName(application));
         }

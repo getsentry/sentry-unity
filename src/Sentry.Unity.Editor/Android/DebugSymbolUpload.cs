@@ -186,19 +186,8 @@ gradle.taskGraph.whenReady {{
             return paths.ToArray();
         }
 
-        internal static bool IsNewBuildingBackend(IApplication? application = null)
-        {
-            application ??= ApplicationAdapter.Instance;
-
-            // Starting from 2021.2 Unity caches the build output inside 'Library' instead of 'Temp'
-            var version = new Version(application.UnityVersion.Substring(0, 6)); // year.version
-            if (version >= new Version("2021.2"))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        // Starting from 2021.2 Unity caches the build output inside 'Library' instead of 'Temp'
+        internal static bool IsNewBuildingBackend(IApplication? application = null) => SentryUnityVersion.IsNewerOrEqualThan("2021.2", application);
 
         // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
         internal static string ConvertSlashes(string path) => path.Replace(@"\", "/");
