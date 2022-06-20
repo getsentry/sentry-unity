@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;
@@ -181,8 +182,30 @@ namespace Sentry.Unity.Editor.Native
             process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;
             process.StartInfo.EnvironmentVariables["SENTRY_PROJECT"] = cliOptions.Project;
             process.StartInfo.EnvironmentVariables["SENTRY_AUTH_TOKEN"] = cliOptions.Auth;
-            process.OutputDataReceived += (sender, args) => logger.LogDebug($"sentry-cli: {args.Data.ToString()}");
-            process.ErrorDataReceived += (sender, args) => logger.LogError($"sentry-cli: {args.Data.ToString()}");
+            process.StartInfo.EnvironmentVariables["SENTRY_LOG_LEVEL"] = "info";
+
+            DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
+            {
+                var msg = e.Data.ToString().Trim();
+                var msgLower = msg.ToLowerInvariant();
+                var level = SentryLevel.Info;
+                if (msgLower.StartsWith("error"))
+                {
+                    level = SentryLevel.Error;
+                }
+                else if (msgLower.StartsWith("warn"))
+                {
+                    level = SentryLevel.Warning;
+                }
+
+                // Remove the level and timestamp from the beginning of the message.
+                // INFO    2022-06-20 15:10:03.613794800 +02:00
+                msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
+                logger.Log(level, "sentry-cli: {0}", null, msg);
+            };
+
+            process.OutputDataReceived += logForwarder;
+            process.ErrorDataReceived += logForwarder;
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
