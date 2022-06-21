@@ -63,7 +63,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
 
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
