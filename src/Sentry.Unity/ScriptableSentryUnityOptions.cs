@@ -92,10 +92,7 @@ namespace Sentry.Unity
         internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
-
-            UnityEngine.Debug.Log("creating new sentry unity options");
-            UnityEngine.Debug.Log("il2cpp enabled: " + Il2CppLineNumberSupportEnabled);
-
+            
             var options = new SentryUnityOptions(isBuilding, unityInfo, application)
             {
                 Enabled = Enabled,
@@ -149,7 +146,7 @@ namespace Sentry.Unity
 
             OptionsConfiguration?.Configure(options);
 
-            // Doing this after the configure callback
+            // Doing this after the configure callback to allow users to programmatically opt out
             if (Il2CppLineNumberSupportEnabled)
             {
                 options.AddIl2CppExceptionProcessor(unityInfo);
