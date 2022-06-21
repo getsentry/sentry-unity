@@ -22,16 +22,6 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        [TestCase("asdf.asdf")]
-        [TestCase("2019.4.1f1a3")]
-        public void GetUnityVersion_MalformedVersion_Throws(string unityVersion)
-        {
-            var application = new TestApplication(unityVersion: unityVersion);
-
-            Assert.Throws<FormatException>(() => SentryUnityVersion.GetVersion(application));
-        }
-
-        [Test]
         [TestCase("2019.4.39f1", "2019.4.39", true)]    // are equal
         [TestCase("2020.1.1f1", "2022.1.2", false)]     // is older
         [TestCase("2020.1.1f1", "2022.2", false)]       // is older
