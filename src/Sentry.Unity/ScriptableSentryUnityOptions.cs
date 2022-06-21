@@ -92,7 +92,7 @@ namespace Sentry.Unity
         internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
-            
+
             var options = new SentryUnityOptions(isBuilding, unityInfo, application)
             {
                 Enabled = Enabled,
