@@ -20,10 +20,6 @@
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#220)
   - [diff](https://github.com/getsentry/sentry-cli/compare/1.71.0...2.2.0)
 
-### Fixes
-
-- Correctly get native stack trace on Unity 2020 ([#836](https://github.com/getsentry/sentry-unity/pull/836))
-
 ## 0.19.0
 
 ### Features
