@@ -17,6 +17,8 @@ public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
+        Debug.Log("SmokeTester.Start() running")
+
         var arg = GetTestArg();
         if (arg == "smoke")
         {
@@ -78,13 +80,15 @@ public class SmokeTester : MonoBehaviour
     // Forwarded from SmokeTestOptions.Configure()
     public static void Configure(SentryUnityOptions options)
     {
+        Debug.Log("SmokeTester.Configure() running");
+
         if (GetTestArg() == null)
         {
             Debug.Log("SmokeTester.Configure() called but skipped because this is not a SmokeTest (no arg)");
             return;
         }
 
-        Debug.Log("SmokeTester.Configure() running");
+        Debug.Log("SmokeTester setting up");
         options.CreateHttpClientHandler = () => t;
         _crashedLastRun = () =>
         {
