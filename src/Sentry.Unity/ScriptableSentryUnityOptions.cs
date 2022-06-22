@@ -63,7 +63,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
 
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
@@ -115,7 +115,16 @@ namespace Sentry.Unity
                 InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
                 SampleRate = SampleRate,
                 ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
-                MaxQueueItems = MaxQueueItems
+                MaxQueueItems = MaxQueueItems,
+                // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
+                // need to set it here directly.
+                Debug = ShouldDebug(application.IsEditor && !isBuilding),
+                DiagnosticLevel = DiagnosticLevel,
+                IosNativeSupportEnabled = IosNativeSupportEnabled,
+                AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
+                WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
+                MacosNativeSupportEnabled = MacosNativeSupportEnabled,
+                LinuxNativeSupportEnabled = LinuxNativeSupportEnabled
             };
 
             if (!string.IsNullOrWhiteSpace(ReleaseOverride))
@@ -133,21 +142,15 @@ namespace Sentry.Unity
                 options.CacheDirectoryPath = null;
             }
 
-            options.IosNativeSupportEnabled = IosNativeSupportEnabled;
-            options.AndroidNativeSupportEnabled = AndroidNativeSupportEnabled;
-            options.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
-            options.MacosNativeSupportEnabled = MacosNativeSupportEnabled;
-            options.LinuxNativeSupportEnabled = LinuxNativeSupportEnabled;
-            options.Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled;
-
-            // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
-            // need to set it here directly.
-            options.Debug = ShouldDebug(application.IsEditor && !isBuilding);
-            options.DiagnosticLevel = DiagnosticLevel;
-
             options.SetupLogging();
 
             OptionsConfiguration?.Configure(options);
+
+            // Doing this after the configure callback to allow users to programmatically opt out
+            if (Il2CppLineNumberSupportEnabled)
+            {
+                options.AddIl2CppExceptionProcessor(unityInfo);
+            }
 
             return options;
         }
