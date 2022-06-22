@@ -289,12 +289,24 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('IOS'))
     {
-        $expectedFiles = @(
-            "IntegrationTest: count=$($withSources ? 3 : 2)",
-            'Sentry: count=3',
-            "UnityFramework: count=$($withSources ? 4 : 3)",
-            'libiPhone-lib.dylib: count=1'
-        )
+        if ($unity2020OrHigher)
+        {
+            $expectedFiles = @(
+                "IntegrationTest: count=$($withSources ? 3 : 2)",
+                'Sentry: count=3',
+                "UnityFramework: count=$($withSources ? 5 : 4)",
+                'libiPhone-lib.dylib: count=1'
+            )
+        }
+        else
+        {
+            $expectedFiles = @(
+                "IntegrationTest: count=$($withSources ? 3 : 2)",
+                'Sentry: count=3',
+                "UnityFramework: count=$($withSources ? 4 : 3)",
+                'libiPhone-lib.dylib: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('WebGL'))
     {
