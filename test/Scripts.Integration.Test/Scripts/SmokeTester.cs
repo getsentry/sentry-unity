@@ -17,7 +17,7 @@ public class SmokeTester : MonoBehaviour
 {
     public void Start()
     {
-        Debug.Log("SmokeTester.Start() running")
+        Debug.Log("SmokeTester.Start() running");
 
         var arg = GetTestArg();
         if (arg == "smoke")

@@ -10,7 +10,7 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
         // NOTE: Native support is already initialized by the time this method runs, so Unity bugs are captured.
         // That means changes done to the 'options' here will only affect events from C# scripts.
 
-        Debug.Log("Sentry: SmokeTestOptions - Configure called")
+        Debug.Log("Sentry: SmokeTestOptions - Configure called");
         SmokeTester.Configure(options);
     }
 }
