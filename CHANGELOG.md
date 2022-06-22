@@ -4,6 +4,7 @@
 
 ### Features
 
+- Launch a setup wizard after installation ([#780](https://github.com/getsentry/sentry-unity/pull/780))
 - Bump Cocoa SDK to v7.17.0 ([#802](https://github.com/getsentry/sentry-unity/pull/802) & [#821](https://github.com/getsentry/sentry-unity/pull/821))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7170)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.17.0)
