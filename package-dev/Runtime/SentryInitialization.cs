@@ -114,7 +114,11 @@ namespace Sentry.Unity
 #else
             = new Il2CppMethods(
                 il2cpp_gchandle_get_target,
+#if UNITY_2021_3_OR_NEWER
                 il2cpp_native_stack_trace,
+#else
+                Il2CppNativeStackTraceShim,
+#endif
                 il2cpp_free);
 
         // Available in Unity `2019.4.34f1` (and later)
@@ -122,15 +126,29 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern IntPtr il2cpp_gchandle_get_target(int gchandle);
 
-        // Available in Unity `2020.3.30f1` (and later)
-        // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
-        [DllImport("__Internal")]
-        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
-
         // Available in Unity `2019.4.34f1` (and later)
         // void il2cpp_free(void* ptr)
         [DllImport("__Internal")]
         private static extern void il2cpp_free(IntPtr ptr);
+
+#if UNITY_2021_3_OR_NEWER
+        // Definition from Unity `2021.3` (and later):
+        // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
+        [DllImport("__Internal")]
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
+#else
+        private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
+        {
+            imageName = null;
+            il2cpp_native_stack_trace(exc, out addresses, out numFrames, out imageUUID);
+        }
+
+        // Definition from Unity `2020.3`:
+        // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char* imageUUID)
+        [DllImport("__Internal")]
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID);
+#endif
+
 #endif
     }
 }
