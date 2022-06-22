@@ -199,7 +199,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         else
         {
             $expectedFiles = @(
-                "GameAssembly.dylib: count=$($withSources ? 4 : 3)",
+                "GameAssembly.dylib: count=$($withSources ? 3 : 2)",
                 'IntegrationTest: count=1',
                 'Sentry.dylib: count=2',
                 "Sentry.dylib.dSYM: count=$($withSources ? 4 : 2)",
@@ -209,14 +209,28 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
-        $expectedFiles = @(
-            'GameAssembly.dll: count=1',
-            "GameAssembly.pdb: count=$($withSources ? 3 : 2)",
-            'sentry.dll: count=1',
-            "sentry.pdb: count=$($withSources ? 2 : 1)",
-            'test.exe: count=1',
-            'UnityPlayer.dll: count=1'
-        )
+        if ($unity2020OrHigher)
+        {
+            $expectedFiles = @(
+                'GameAssembly.dll: count=1',
+                "GameAssembly.pdb: count=$($withSources ? 3 : 2)",
+                'sentry.dll: count=1',
+                "sentry.pdb: count=$($withSources ? 2 : 1)",
+                'test.exe: count=1',
+                'UnityPlayer.dll: count=1'
+            )
+        }
+        else
+        {
+            $expectedFiles = @(
+                'GameAssembly.dll: count=1',
+                "GameAssembly.pdb: count=$($withSources ? 2 : 1)",
+                'sentry.dll: count=1',
+                "sentry.pdb: count=$($withSources ? 2 : 1)",
+                'test.exe: count=1',
+                'UnityPlayer.dll: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('Linux'))
     {
@@ -251,15 +265,26 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         else
         {
             $expectedFiles = @(
-                "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)",
+                "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)",
                 'libil2cpp.so: count=1',
-                "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
                 'libmain.so: count=1',
                 'libsentry-android.so: count=7',
                 'libsentry.so: count=7',
                 'libunity.so: count=1',
                 'libunity.sym.so: count=1'
             )
+            if ($unity2020OrHigher)
+            {
+                $expectedFiles = @(
+                    "libil2cpp.sym.so: count=$($withSources ? 3 : 2)"
+                ) + $expectedFiles
+            }
+            else
+            {
+                $expectedFiles = @(
+                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)"
+                ) + $expectedFiles
+            }
         }
     }
     ElseIf ($buildMethod.contains('IOS'))
