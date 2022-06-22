@@ -35,11 +35,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
                 Instance.ShowUtility();
                 Instance.minSize = new Vector2(600, 200);
-                Instance.StartLoder();
+                Instance.StartLoader();
             }
         }
 
-        private void StartLoder()
+        private void StartLoader()
         {
             _task = new WizardLoader(_logger);
             Task.Run(async () => Response = await _task.Load()).ContinueWith(t =>
@@ -194,7 +194,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     $"Couldn't launch the wizard. Would you like to try again? The error was:\n\n{_task._exception.Message}",
                     "Retry wizard", "I'll set it up manually"))
                 {
-                    StartLoder();
+                    StartLoader();
                 }
                 return;
             }

@@ -61,9 +61,4 @@ namespace Sentry.Unity.Editor.WizardApi
         public string? name;
         public string? slug;
     }
-
-    interface WizardApi
-    {
-
-    }
 }
