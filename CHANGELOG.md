@@ -5,6 +5,7 @@
 ### Features
 
 - Launch a setup wizard after installation ([#780](https://github.com/getsentry/sentry-unity/pull/780))
+- Reduced automated screenshot attachment controls to a simple toggle ([#784](https://github.com/getsentry/sentry-unity/pull/784))
 - Disable AutoSessionTracking on unknown platforms ([#840](https://github.com/getsentry/sentry-unity/pull/840))
 - Support Android apps minified with Proguard ([#844](https://github.com/getsentry/sentry-unity/pull/844))
 - Bump Cocoa SDK to v7.17.0 ([#802](https://github.com/getsentry/sentry-unity/pull/802) & [#821](https://github.com/getsentry/sentry-unity/pull/821))
