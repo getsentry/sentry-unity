@@ -56,6 +56,7 @@ namespace Sentry.Unity.Editor.Android
             var unityProjectPath = Directory.GetParent(Application.dataPath).FullName;
             var gradleProjectPath = Directory.GetParent(basePath).FullName;
             SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
+            SetupProguard(gradleProjectPath);
         }
 
         internal void ModifyManifest(string basePath)
@@ -188,6 +189,28 @@ namespace Sentry.Unity.Editor.Android
             catch (Exception e)
             {
                 _logger.LogError("Failed to add the automatic symbols upload to the gradle project", e);
+            }
+        }
+
+        internal void SetupProguard(string gradleProjectPath)
+        {
+            var tool = new ProguardSetup(_logger, gradleProjectPath);
+            var pluginEnabled = _options is not null && _options.Enabled && _options.AndroidNativeSupportEnabled;
+
+            try
+            {
+                if (pluginEnabled)
+                {
+                    tool.AddToGradleProject();
+                }
+                else
+                {
+                    tool.RemoveFromGradleProject();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Failed to {(pluginEnabled ? "add" : "remove")} Proguard rules in the gradle project", e);
             }
         }
 
