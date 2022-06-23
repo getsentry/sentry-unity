@@ -159,15 +159,15 @@ function Test
 
         function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "Launching $Name test on $($device.Name)" -ForegroundColor Green
-            $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
+            Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
+            $consoleOut = xcrun simctl launch log stream --console-pty $($device.UUID) $AppName "--test" $Name
 
             if ("$SuccessString" -eq "")
             {
                 $SuccessString = "${$Name.ToUpper()} TEST: PASS"
             }
 
-            Write-Host -NoNewline "$Name test STATUS: "
+            Write-Host -NoNewline "'$Name' test STATUS: "
             $stdout = $consoleOut  | Select-String $SuccessString
             If ($null -ne $stdout)
             {
@@ -177,7 +177,7 @@ function Test
             {
                 $device.TestFailed = $True
                 Write-Host "FAILED" -ForegroundColor Red
-                Write-Host "$($device.Name) Console"
+                Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
                 foreach ($consoleLine in $consoleOut)
                 {
                     Write-Host $consoleLine
