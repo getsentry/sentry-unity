@@ -51,7 +51,7 @@ namespace Sentry.Unity.Tests
         public void CaptureLogFormat_LogTypeError_CaptureEvent()
         {
             var sut = _fixture.GetSut();
-            var message = "Test Message";
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
             sut.CaptureLogFormat(LogType.Error, null, "{0}", message);
 
@@ -68,7 +68,7 @@ namespace Sentry.Unity.Tests
         {
             _fixture.SentryOptions.EnableLogDebouncing = true;
             var sut = _fixture.GetSut();
-            var message = "message";
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
             sut.CaptureLogFormat(unityLogType, null, "{0}", message);
             sut.CaptureLogFormat(unityLogType, null, "{0}", message);
@@ -86,7 +86,7 @@ namespace Sentry.Unity.Tests
         public void CaptureLogFormat_UnityErrorLogTypes_CapturedAndCorrespondToSentryLevel(LogType unityLogType, SentryLevel sentryLevel, BreadcrumbLevel breadcrumbLevel)
         {
             var sut = _fixture.GetSut();
-            var message = "Test Message";
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
             sut.CaptureLogFormat(unityLogType, null, "{0}", message);
 
@@ -110,7 +110,7 @@ namespace Sentry.Unity.Tests
         public void CaptureLogFormat_UnityNotErrorLogTypes_NotCaptured(LogType unityLogType, BreadcrumbLevel breadcrumbLevel)
         {
             var sut = _fixture.GetSut();
-            var message = "Test Message";
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
             sut.CaptureLogFormat(unityLogType, null, "{0}", message);
 
@@ -128,7 +128,7 @@ namespace Sentry.Unity.Tests
         public void CaptureException_ExceptionCapturedAndMechanismSet()
         {
             var sut = _fixture.GetSut();
-            var message = "Test Exception";
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
             sut.CaptureException(new Exception(message), null);
 
@@ -151,7 +151,7 @@ namespace Sentry.Unity.Tests
         public void CaptureException_CapturedExceptionAddedAsBreadcrumb()
         {
             var sut = _fixture.GetSut();
-            var message = "Test Message";
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
             var exception = new Exception(message);
 
             sut.CaptureException(exception, null);
