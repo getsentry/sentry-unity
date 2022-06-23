@@ -133,4 +133,88 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
+inline NSString *_NSStringOrNil(const char *value)
+{
+    return value ? [NSString stringWithUTF8String:value] : nil;
+}
+
+inline NSString *_NSNumberOrNil(int32_t value) { return value == 0 ? nil : @(value); }
+
+inline NSNumber *_NSBoolOrNil(int8_t value)
+{
+    if (value == 0) {
+        return @NO;
+    }
+    if (value == 1) {
+        return @YES;
+    }
+    return nil;
+}
+
+void SentryNativeBridgeWriteScope( // clang-format off
+    // // const char *AppStartTime,
+    // const char *AppBuildType,
+    // // const char *OperatingSystemRawDescription,
+    // int DeviceProcessorCount,
+    // const char *DeviceCpuDescription,
+    // const char *DeviceTimezone,
+    // int8_t DeviceSupportsVibration,
+    // const char *DeviceName,
+    // int8_t DeviceSimulator,
+    // const char *DeviceDeviceUniqueIdentifier,
+    // const char *DeviceDeviceType,
+    // // const char *DeviceModel,
+    // // long DeviceMemorySize,
+    int32_t GpuId,
+    const char *GpuName,
+    const char *GpuVendorName,
+    int32_t GpuMemorySize,
+    const char *GpuNpotSupport,
+    const char *GpuVersion,
+    const char *GpuApiType,
+    int32_t GpuMaxTextureSize,
+    int8_t GpuSupportsDrawCallInstancing,
+    int8_t GpuSupportsRayTracing,
+    int8_t GpuSupportsComputeShaders,
+    int8_t GpuSupportsGeometryShaders,
+    const char *GpuVendorId,
+    int8_t GpuMultiThreadedRendering,
+    const char *GpuGraphicsShaderLevel,
+    const char *UnityInstallMode,
+    const char *UnityTargetFrameRate,
+    const char *UnityCopyTextureSupport,
+    const char *UnityRenderingThreadingMode
+) // clang-format on
+{
+    // Note: we're using a NSMutableDictionary because it will skip fields with nil values.
+    [SentrySDK configureScope:^(SentryScope *scope) {
+        NSMutableDictionary *gpu = [[NSMutableDictionary alloc] init];
+        gpu[@"id"] = _NSNumberOrNil(GpuId);
+        gpu[@"name"] = _NSStringOrNil(GpuName);
+        gpu[@"vendor_name"] = _NSStringOrNil(GpuVendorName);
+        gpu[@"memory_size"] = _NSNumberOrNil(GpuMemorySize);
+        gpu[@"npot_support"] = _NSStringOrNil(GpuNpotSupport);
+        gpu[@"version"] = _NSStringOrNil(GpuVersion);
+        gpu[@"api_type"] = _NSStringOrNil(GpuApiType);
+        gpu[@"max_texture_size"] = _NSNumberOrNil(GpuMaxTextureSize);
+        gpu[@"supports_draw_call_instancing"] = _NSBoolOrNil(GpuSupportsDrawCallInstancing);
+        gpu[@"supports_ray_tracing"] = _NSBoolOrNil(GpuSupportsRayTracing);
+        gpu[@"supports_compute_shaders"] = _NSBoolOrNil(GpuSupportsComputeShaders);
+        gpu[@"supports_geometry_shaders"] = _NSBoolOrNil(GpuSupportsGeometryShaders);
+        gpu[@"vendor_id"] = _NSStringOrNil(GpuVendorId);
+        gpu[@"multi_threaded_rendering"] = _NSBoolOrNil(GpuMultiThreadedRendering);
+        gpu[@"graphics_shader_level"] = _NSStringOrNil(GpuGraphicsShaderLevel);
+        [scope performSelector:@selector(setContextValue:forKey:) withObject:gpu withObject:@"gpu"];
+
+        NSMutableDictionary *unity = [[NSMutableDictionary alloc] init];
+        unity[@"install_mode"] = _NSStringOrNil(UnityInstallMode);
+        unity[@"target_frame_rate"] = _NSStringOrNil(UnityTargetFrameRate);
+        unity[@"copy_texture_support"] = _NSStringOrNil(UnityCopyTextureSupport);
+        unity[@"rendering_threading_mode"] = _NSStringOrNil(UnityRenderingThreadingMode);
+        [scope performSelector:@selector(setContextValue:forKey:)
+                    withObject:unity
+                    withObject:@"unity"];
+    }];
+}
+
 NS_ASSUME_NONNULL_END

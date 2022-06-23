@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
 using UnityEngine;
@@ -43,6 +44,13 @@ public class AdditionalButtons : MonoBehaviour
     }
 
     public void CaptureMessageWithScreenshot() => StartCoroutine(CaptureScreenshot());
+
+    public void ApplicationNotResponding()
+    {
+        Debug.Log("Running Thread.Sleep() on the UI thread to trigger an ANR event.");
+        Thread.Sleep(6 * 1000); // ANR detection currently defaults to 5 seconds
+        Debug.Log("Thread.Sleep() finished.");
+    }
 
     private IEnumerator CaptureScreenshot()
     {

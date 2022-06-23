@@ -38,7 +38,7 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
         }
         catch
         {
-            Write-Host "/STOP request failed, killing the server process"
+            Write-Host "/STOP request failed: $_ - killing the server process instead"
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
@@ -165,60 +165,103 @@ function RunWithSymbolServer([ScriptBlock] $Callback)
     return $httpServer.dispose.Invoke()
 }
 
-function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput)
+function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput, [string] $unityVersion)
 {
+    # Server stats contains:
+    # filename
+    #    count = the number of occurrences of the same file name during upload,
+    #    chunks = the total number of chunks over all occurrences of a file.
+    # We don't check the number of chunks because it depends on the file size.
     $expectedFiles = @()
+    $unity2020OrHigher = $unityVersion -match "202[0-9]+"
+    $unity2021OrHigher = $unityVersion -match "202[1-9]+"
+    # Currently we only test symbol upload with sources, but we want to keep the values below if to also test without in the future.
+    $withSources = $true
     If ($buildMethod.contains('Mac'))
     {
-        $expectedFiles = @(
-            'IntegrationTest',
-            'UnityPlayer.dylib',
-            'GameAssembly.dylib',
-            'Sentry.dylib',
-            'Sentry.dylib.dSYM'
-        )
+        if ($unity2020OrHigher)
+        {
+            $expectedFiles = @(
+                "GameAssembly.dylib: count=$($withSources ? 6 : 4)",
+                'IntegrationTest: count=2',
+                'Sentry.dylib: count=2',
+                "Sentry.dylib.dSYM: count=$($withSources ? 4 : 2)",
+                'UnityPlayer.dylib: count=2'
+            )
+        }
+        else
+        {
+            $expectedFiles = @(
+                "GameAssembly.dylib: count=$($withSources ? 3 : 2)",
+                'IntegrationTest: count=1',
+                'Sentry.dylib: count=2',
+                "Sentry.dylib.dSYM: count=$($withSources ? 4 : 2)",
+                'UnityPlayer.dylib: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
         $expectedFiles = @(
-            'test.exe',
-            'GameAssembly.dll',
-            'GameAssembly.pdb',
-            'UnityPlayer.dll',
-            'sentry.pdb',
-            'sentry.dll'
+            'GameAssembly.dll: count=1',
+            "GameAssembly.pdb: count=$($withSources ? 2 : 1)",
+            'sentry.dll: count=1',
+            "sentry.pdb: count=$($withSources ? 2 : 1)",
+            'test.exe: count=1',
+            'UnityPlayer.dll: count=1'
         )
     }
     ElseIf ($buildMethod.contains('Linux'))
     {
         $expectedFiles = @(
-            'test',
-            'test_s.debug',
-            'GameAssembly.so',
-            'UnityPlayer.so',
-            'UnityPlayer_s.debug',
-            'libsentry.dbg.so'
+            'GameAssembly.so: count=1',
+            'UnityPlayer.so: count=1',
+            'UnityPlayer_s.debug: count=1',
+            "libsentry.dbg.so: count=$($withSources ? 2 : 1)",
+            'test: count=1',
+            'test_s.debug: count=1'
         )
     }
     ElseIf ($buildMethod.contains('Android'))
     {
-        $expectedFiles = @(
-            'libmain.so',
-            'libunity.so',
-            @('libunity.dbg.so', 'libunity.sym.so'),
-            'libil2cpp.so',
-            @('libil2cpp.dbg.so', 'libil2cpp.sym.so'),
-            'libsentry.so',
-            'libsentry-android.so'
-        )
+        if ($unity2021OrHigher)
+        {
+            $expectedFiles = @(
+                "libil2cpp.so: count=$($withSources ? 3 : 2)",
+                'libil2cpp.sym.so: count=1',
+                'libmain.so: count=1',
+                'libsentry-android.so: count=4',
+                'libsentry.so: count=4',
+                "libunity.dbg.so: count=$($withSources ? 2 : 1)",
+                "libunity.so: count=$($withSources ? 4 : 3)",
+                'libunity.sym.so: count=1'
+            )
+            if ($withSources)
+            {
+                $expectedFiles = @('libil2cpp.dbg.so: count=1') + $expectedFiles
+            }
+        }
+        else
+        {
+            $expectedFiles = @(
+                "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)",
+                'libil2cpp.so: count=1',
+                "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
+                'libmain.so: count=1',
+                'libsentry-android.so: count=7',
+                'libsentry.so: count=7',
+                'libunity.so: count=1',
+                'libunity.sym.so: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('IOS'))
     {
         $expectedFiles = @(
-            'IntegrationTest',
-            'UnityFramework',
-            'libiPhone-lib.dylib',
-            'Sentry'
+            "IntegrationTest: count=$($withSources ? 3 : 2)",
+            'Sentry: count=3',
+            "UnityFramework: count=$($withSources ? 4 : 3)",
+            'libiPhone-lib.dylib: count=1'
         )
     }
     ElseIf ($buildMethod.contains('WebGL'))
@@ -239,7 +282,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         foreach ($name in $alternatives)
         {
             # It's enough if a single symbol alternative is found
-            if ($symbolServerOutput -match "Received: .* $([Regex]::Escape($name))\b")
+            if ($symbolServerOutput -match "  $([Regex]::Escape($name))\b")
             {
                 Write-Host "  $name - OK"
                 continue nextExpectedFile
@@ -247,7 +290,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         }
         # Note: control only gets here if none of the alternatives match...
         $successful = $false
-        Write-Host "  $name - MISSING" -ForegroundColor Red
+        Write-Host "  $alternatives - MISSING" -ForegroundColor Red
     }
     if ($successful)
     {

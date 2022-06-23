@@ -14,7 +14,7 @@ namespace Sentry.Unity
     {
         private static DateTimeOffset Now => DateTimeOffset.UtcNow;
 
-        protected TimeSpan _debounceOffset;
+        protected TimeSpan DebounceOffset;
 
         private DateTimeOffset? _barrierOffset;
 
@@ -25,7 +25,7 @@ namespace Sentry.Unity
                 return false;
             }
 
-            _barrierOffset = Now.Add(_debounceOffset);
+            _barrierOffset = Now.Add(DebounceOffset);
             return true;
         }
     }
@@ -35,7 +35,7 @@ namespace Sentry.Unity
     /// </summary>
     internal sealed class LogTimeDebounce : TimeDebounceBase
     {
-        public LogTimeDebounce(TimeSpan debounceOffset) => _debounceOffset = debounceOffset;
+        public LogTimeDebounce(TimeSpan debounceOffset) => DebounceOffset = debounceOffset;
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ namespace Sentry.Unity
     /// </summary>
     internal sealed class ErrorTimeDebounce : TimeDebounceBase
     {
-        public ErrorTimeDebounce(TimeSpan debounceOffset) => _debounceOffset = debounceOffset;
+        public ErrorTimeDebounce(TimeSpan debounceOffset) => DebounceOffset = debounceOffset;
     }
 
     /// <summary>
@@ -51,6 +51,6 @@ namespace Sentry.Unity
     /// </summary>
     internal sealed class WarningTimeDebounce : TimeDebounceBase
     {
-        public WarningTimeDebounce(TimeSpan debounceOffset) => _debounceOffset = debounceOffset;
+        public WarningTimeDebounce(TimeSpan debounceOffset) => DebounceOffset = debounceOffset;
     }
 }

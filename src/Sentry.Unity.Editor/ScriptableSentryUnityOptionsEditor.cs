@@ -64,6 +64,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Toggle("Windows Native Support", options.WindowsNativeSupportEnabled);
             EditorGUILayout.Toggle("macOS Native Support", options.MacosNativeSupportEnabled);
             EditorGUILayout.Toggle("Linux Native Support", options.LinuxNativeSupportEnabled);
+            EditorGUILayout.Toggle("IL2CPP line numbers", options.Il2CppLineNumberSupportEnabled);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);

@@ -12,7 +12,7 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void GetSentryCliPlatformName_UnrecognizedPlatform_ThrowsInvalidOperationException()
         {
-            var application = new TestApplication(platform: RuntimePlatform.CloudRendering);
+            var application = new TestApplication(platform: RuntimePlatform.LinuxPlayer);
 
             Assert.Throws<InvalidOperationException>(() => SentryCli.GetSentryCliPlatformName(application));
         }
@@ -129,6 +129,9 @@ namespace Sentry.Unity.Editor.Tests
         public void UrlOverride()
         {
             Assert.IsNull(SentryCli.UrlOverride(null, null));
+            Assert.IsNull(SentryCli.UrlOverride("", null));
+            Assert.IsNull(SentryCli.UrlOverride(null, ""));
+            Assert.IsNull(SentryCli.UrlOverride("", ""));
             Assert.IsNull(SentryCli.UrlOverride("https://key@o447951.ingest.sentry.io/5439417", null));
             Assert.IsNull(SentryCli.UrlOverride("https://foo.sentry.io/5439417", null));
             Assert.IsNull(SentryCli.UrlOverride("http://sentry.io", null));

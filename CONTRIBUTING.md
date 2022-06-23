@@ -6,9 +6,7 @@
 
 # Basics
 
-## Get the code
-
-Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
+## Machine Setup
 
 ### Install Unity
 
@@ -20,12 +18,18 @@ You'll need the following modules to be added in order to use Sentry Unity:
  * Linux Build Support (ILCPP) for Linux.
  * Windows Build Support (ILCPP) for Windows.
 
+### Install PowerShell Global tool
+
+```
+dotnet tool install --global PowerShell
+```
+
 ### Setup for building the Java SDK
 
 * Install Java 11
   * [Using sdkman](https://sdkman.io/) which manage versions for you.
   * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
-* Instal Git and ensure is accessible from the path
+* Install Git and ensure is accessible from the path
 * Add JAVA_HOME to your environment variables (if not using sdkman):
   * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
 * Install [Android Studio](https://developer.android.com/studio)
@@ -46,6 +50,10 @@ Sentry Native is a sub module from Sentry Unity and for building it, currently r
 
 * Install [CMake](https://cmake.org/download/).
 * A supported C/C++ compiler.
+
+## Get the code
+
+Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
 
 ## Build the project
 

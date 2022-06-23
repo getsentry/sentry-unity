@@ -21,10 +21,10 @@ namespace Sentry.Unity.Editor.iOS
 
         private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
-        private readonly string _uploadScript = $@"
+        private readonly string _uploadScript = @"
 
 process_upload_symbols() {{
-    ./{SentryCli.SentryCliMacOS} --log-level=info upload-dif $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
+    ./{0} --log-level=info upload-dif {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
 }}
 
 export SENTRY_PROPERTIES=sentry.properties
@@ -142,7 +142,7 @@ fi
                 .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
-        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger)
+        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger, SentryCliOptions sentryCliOptions)
         {
             if (MainTargetContainsSymbolUploadBuildPhase())
             {
@@ -150,8 +150,15 @@ fi
                 return;
             }
 
+            var uploadDifArguments = string.Empty;
+            if (sentryCliOptions.UploadSources)
+            {
+                uploadDifArguments += "--include-sources";
+            }
+            var uploadScript = string.Format(_uploadScript, SentryCli.SentryCliMacOS, uploadDifArguments);
+
             _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
-                .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
+                .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", uploadScript });
         }
 
         public void AddNativeOptions(SentryUnityOptions options)
