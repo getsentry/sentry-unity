@@ -145,9 +145,14 @@ namespace Sentry.Unity
             imageName = null;
             // Unity 2020 does not *return* a newly allocated string as out-parameter,
             // but rather expects a pre-allocated buffer it writes into.
+            // That buffer needs to have space for the hex-encoded uuid (32) plus
+            // terminating nul-byte.
             char[] uuidBuffer = new char[32 + 1];
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
-            imageUUID = new string(uuidBuffer);
+            // C-strings are nul-terminated, but the conversion here would
+            // normally keep that terminating nul-byte in the string, which
+            // we don't want.
+            imageUUID = new string(uuidBuffer).TrimEnd('\0');
         }
 
         // Definition from Unity `2020.3`:
