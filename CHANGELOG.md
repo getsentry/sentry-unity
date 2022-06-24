@@ -4,6 +4,7 @@
 
 ### Features
 
+- Generate and upload IL2CPP line mappings alongside debug files ([#790](https://github.com/getsentry/sentry-unity/pull/790))
 - Launch a setup wizard after installation ([#780](https://github.com/getsentry/sentry-unity/pull/780))
 - Reduced automated screenshot attachment controls to a simple toggle ([#784](https://github.com/getsentry/sentry-unity/pull/784))
 - Disable AutoSessionTracking on unknown platforms ([#840](https://github.com/getsentry/sentry-unity/pull/840))

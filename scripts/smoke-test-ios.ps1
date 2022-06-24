@@ -2,7 +2,8 @@ param (
     [string] $Action,
     [string] $SelectedRuntime,
     [Int32] $DevicesToRun = 3,
-    [Switch] $IsIntegrationTest
+    [Switch] $IsIntegrationTest,
+    [string] $UnityVersion = ""
 )
 Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIntegrationTest=$IsIntegrationTest"
 # $Action: 'Build' for build only
@@ -87,7 +88,7 @@ function Build()
     if ($IsIntegrationTest)
     {
         $symbolServerOutput = RunWithSymbolServer -Callback $buildCallback
-        CheckSymbolServerOutput 'IOS' $symbolServerOutput
+        CheckSymbolServerOutput 'IOS' $symbolServerOutput $UnityVersion
     }
     else
     {
