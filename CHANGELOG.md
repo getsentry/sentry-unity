@@ -27,7 +27,7 @@
 
 ### Fixes
 
-- Instead of the native Android layer sending additional ANR events, we solely rely on the C# layer instead ([#852](https://github.com/getsentry/sentry-unity/pull/852))
+- Only use application-not-responding detection in C#, disable in native plugins ([#852](https://github.com/getsentry/sentry-unity/pull/852))
 
 ## 0.19.0
 
