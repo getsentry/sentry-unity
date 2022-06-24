@@ -25,6 +25,10 @@
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#220)
   - [diff](https://github.com/getsentry/sentry-cli/compare/1.71.0...2.2.0)
 
+### Fixes
+
+- Instead of the native Android layer sending additional ANR events, we solely rely on the C# layer instead ([#852](https://github.com/getsentry/sentry-unity/pull/852))
+
 ## 0.19.0
 
 ### Features
