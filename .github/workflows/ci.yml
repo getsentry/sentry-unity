@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     paths-ignore:
-      - "**.md"
-      - "**.txt"
+      - '**.md'
+      - '**.txt'
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
@@ -58,7 +58,7 @@ jobs:
       fail-fast: false
       matrix:
         # 2022.1.0a12 removed until S.T.J issues fixed
-        unity-version: ["2019", "2020", "2021"]
+        unity-version: ['2019', '2020', '2021']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -196,11 +196,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021"]
-        platform: ["Android", "WebGL", "Linux", "iOS"]
+        unity-version: ['2019', '2020', '2021']
+        platform: ['Android', 'WebGL', 'Linux', 'iOS']
         include:
           - platform: Linux
-            image-suffix: "-il2cpp"
+            image-suffix: '-il2cpp'
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
@@ -296,8 +296,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021"]
-        os: ["windows", "macos"]
+        unity-version: ['2019', '2020', '2021']
+        os: ['windows', 'macos']
         include:
           - os: windows
             unity-modules: windows-il2cpp
@@ -367,14 +367,14 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [21, 27, 29, 30]
-        unity-version: ["2019", "2020", "2021"]
+        unity-version: ['2019', '2020', '2021']
         exclude:
           # API 21 is no longer supported since Unity 2021.2.10f1
           - api-level: 21
-            unity-version: "2021"
+            unity-version: '2021'
           # Smoke test currently crashes on API 30 with Unity 2021 build on CI, see issue #719
           - api-level: 30
-            unity-version: "2021"
+            unity-version: '2021'
     defaults:
       run:
         shell: pwsh
@@ -482,7 +482,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021"]
+        unity-version: ['2019', '2020', '2021']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -495,7 +495,8 @@ jobs:
 
       - name: Build iOS package
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersi
+on "${{ matrix.unity-version }}"
 
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
@@ -514,9 +515,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021"]
+        unity-version: ['2019', '2020', '2021']
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-        ios-runtime: ["12.0", "12.4", "13.0", "14.1", latest]
+        ios-runtime: ['12.0', '12.4', '13.0', '14.1', latest]
     defaults:
       run:
         shell: pwsh
@@ -562,8 +563,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021"]
-        platform: ["WebGL", "Linux"]
+        unity-version: ['2019', '2020', '2021']
+        platform: ['WebGL', 'Linux']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
