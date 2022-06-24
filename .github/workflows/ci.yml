@@ -495,8 +495,7 @@ jobs:
 
       - name: Build iOS package
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersi
-on "${{ matrix.unity-version }}"
+        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2
