@@ -13,6 +13,9 @@
 #endif
 
 using System;
+#if !UNITY_2021_3_OR_NEWER
+using System.Buffers;
+#endif
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -140,13 +143,17 @@ namespace Sentry.Unity
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
             imageName = null;
-            il2cpp_native_stack_trace(exc, out addresses, out numFrames, out imageUUID);
+            // Unity 2020 does not *return* a newly allocated string as out-parameter,
+            // but rather expects a pre-allocated buffer it writes into.
+            char[] uuidBuffer = new char[32 + 1];
+            il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
+            imageUUID = new string(uuidBuffer);
         }
 
         // Definition from Unity `2020.3`:
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char* imageUUID)
         [DllImport("__Internal")]
-        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID);
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, [Out] char[] imageUUID);
 #endif
 
 #endif
