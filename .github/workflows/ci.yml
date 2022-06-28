@@ -392,7 +392,7 @@ jobs:
       - name: Configure Android Settings
         id: droid-settings
         shell: pwsh
-        run : |
+        run: |
           # Setup API Level
           $apiLevel = '${{ matrix.api-level }}'
           if ( $apiLevel -eq 'latest')
@@ -495,7 +495,7 @@ jobs:
 
       - name: Build iOS package
         shell: pwsh
-        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest
+        run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Upload iOS test app for smoke test.
         uses: actions/upload-artifact@v2

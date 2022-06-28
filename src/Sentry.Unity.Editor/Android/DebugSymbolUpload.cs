@@ -20,6 +20,7 @@ namespace Sentry.Unity.Editor.Android
 
         private readonly string _unityProjectPath;
         private readonly string _gradleProjectPath;
+        private readonly string _gradleScriptPath;
         private readonly ScriptingImplementation _scriptingBackend;
 
         private readonly SentryCliOptions? _cliOptions;
@@ -56,6 +57,7 @@ gradle.taskGraph.whenReady {{
 
             _unityProjectPath = unityProjectPath;
             _gradleProjectPath = gradleProjectPath;
+            _gradleScriptPath = Path.Combine(_gradleProjectPath, "build.gradle");
             _scriptingBackend = scriptingBackend;
 
             _cliOptions = cliOptions;
@@ -64,13 +66,7 @@ gradle.taskGraph.whenReady {{
 
         public void AppendUploadToGradleFile(string sentryCliPath)
         {
-            var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
-            if (!File.Exists(gradleFilePath))
-            {
-                throw new FileNotFoundException("Failed to find 'build.gradle'.", _gradleProjectPath);
-            }
-
-            if (File.ReadAllText(gradleFilePath).Contains("sentry.properties"))
+            if (LoadGradleScript().Contains("sentry.properties"))
             {
                 _logger.LogDebug("Symbol upload has already been added in a previous build.");
                 return;
@@ -84,7 +80,7 @@ gradle.taskGraph.whenReady {{
                 throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
             }
 
-            var uploadDifArguments = string.Empty;
+            var uploadDifArguments = "\"--il2cpp-mapping\",";
             if (_cliOptions?.UploadSources ?? false)
             {
                 uploadDifArguments += "\"--include-sources\",";
@@ -102,23 +98,25 @@ gradle.taskGraph.whenReady {{
                 }
             }
 
-            using var streamWriter = File.AppendText(gradleFilePath);
+            using var streamWriter = File.AppendText(_gradleScriptPath);
             streamWriter.WriteLine(SymbolUploadTaskStartComment);
             streamWriter.WriteLine(_symbolUploadTask.Trim(), sentryCliPath, uploadDifArguments, ConvertSlashes(_unityProjectPath));
             streamWriter.WriteLine(SymbolUploadTaskEndComment);
         }
 
+        private string LoadGradleScript()
+        {
+            if (!File.Exists(_gradleScriptPath))
+            {
+                throw new FileNotFoundException($"Failed to find the gradle config.", _gradleScriptPath);
+            }
+            return File.ReadAllText(_gradleScriptPath);
+        }
+
         public void RemoveUploadFromGradleFile()
         {
             _logger.LogDebug("Removing the upload task from the gradle project.");
-
-            var gradleFilePath = Path.Combine(_gradleProjectPath, "build.gradle");
-            if (!File.Exists(gradleFilePath))
-            {
-                throw new FileNotFoundException($"Failed to find 'build.gradle'.", _gradleProjectPath);
-            }
-
-            var gradleBuildFile = File.ReadAllText(gradleFilePath);
+            var gradleBuildFile = LoadGradleScript();
             if (!gradleBuildFile.Contains("sentry.properties"))
             {
                 _logger.LogDebug("No previous upload task found.");
@@ -128,7 +126,7 @@ gradle.taskGraph.whenReady {{
             var regex = new Regex(Regex.Escape(SymbolUploadTaskStartComment) + ".*" + Regex.Escape(SymbolUploadTaskEndComment), RegexOptions.Singleline);
             gradleBuildFile = regex.Replace(gradleBuildFile, "");
 
-            using var streamWriter = File.CreateText(gradleFilePath);
+            using var streamWriter = File.CreateText(_gradleScriptPath);
             streamWriter.Write(gradleBuildFile);
         }
 
@@ -151,7 +149,7 @@ gradle.taskGraph.whenReady {{
                 var targetPath = sourcePath.Replace(buildOutputPath, targetRoot);
                 _logger.LogDebug("Copying '{0}' to '{1}'", sourcePath, targetPath);
 
-                Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
                 FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
             }
         }

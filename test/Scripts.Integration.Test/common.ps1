@@ -175,14 +175,21 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     $expectedFiles = @()
     $unity2020OrHigher = $unityVersion -match "202[0-9]+"
     $unity2021OrHigher = $unityVersion -match "202[1-9]+"
-    # Currently we only test symbol upload with sources, but we want to keep the values below if to also test without in the future.
+    # Currently we only test symbol upload with sources, but we want to keep the values below to also test without in the future.
+    # We can have up to 4 different types of files grouped under one name:
+    # * the executable itself
+    # * the corresponding debug file
+    # * the sources if requested
+    # * the resolved il2cpp line mapping file
+    # For Platforms that pack two different architectures (x64 and arm64 for example)
+    # into one file, these numbers are doubled.
     $withSources = $true
     If ($buildMethod.contains('Mac'))
     {
         if ($unity2020OrHigher)
         {
             $expectedFiles = @(
-                "GameAssembly.dylib: count=$($withSources ? 6 : 4)",
+                "GameAssembly.dylib: count=$($withSources ? 8 : 6)",
                 'IntegrationTest: count=2',
                 'Sentry.dylib: count=2',
                 "Sentry.dylib.dSYM: count=$($withSources ? 4 : 2)",
@@ -202,14 +209,28 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
-        $expectedFiles = @(
-            'GameAssembly.dll: count=1',
-            "GameAssembly.pdb: count=$($withSources ? 2 : 1)",
-            'sentry.dll: count=1',
-            "sentry.pdb: count=$($withSources ? 2 : 1)",
-            'test.exe: count=1',
-            'UnityPlayer.dll: count=1'
-        )
+        if ($unity2020OrHigher)
+        {
+            $expectedFiles = @(
+                'GameAssembly.dll: count=1',
+                "GameAssembly.pdb: count=$($withSources ? 3 : 2)",
+                'sentry.dll: count=1',
+                "sentry.pdb: count=$($withSources ? 2 : 1)",
+                'test.exe: count=1',
+                'UnityPlayer.dll: count=1'
+            )
+        }
+        else
+        {
+            $expectedFiles = @(
+                'GameAssembly.dll: count=1',
+                "GameAssembly.pdb: count=$($withSources ? 2 : 1)",
+                'sentry.dll: count=1',
+                "sentry.pdb: count=$($withSources ? 2 : 1)",
+                'test.exe: count=1',
+                'UnityPlayer.dll: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('Linux'))
     {
@@ -227,7 +248,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         if ($unity2021OrHigher)
         {
             $expectedFiles = @(
-                "libil2cpp.so: count=$($withSources ? 3 : 2)",
+                "libil2cpp.so: count=$($withSources ? 4 : 3)",
                 'libil2cpp.sym.so: count=1',
                 'libmain.so: count=1',
                 'libsentry-android.so: count=4',
@@ -246,23 +267,46 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             $expectedFiles = @(
                 "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)",
                 'libil2cpp.so: count=1',
-                "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
                 'libmain.so: count=1',
                 'libsentry-android.so: count=7',
                 'libsentry.so: count=7',
                 'libunity.so: count=1',
                 'libunity.sym.so: count=1'
             )
+            if ($unity2020OrHigher)
+            {
+                $expectedFiles = @(
+                    "libil2cpp.sym.so: count=$($withSources ? 3 : 2)"
+                ) + $expectedFiles
+            }
+            else
+            {
+                $expectedFiles = @(
+                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)"
+                ) + $expectedFiles
+            }
         }
     }
     ElseIf ($buildMethod.contains('IOS'))
     {
-        $expectedFiles = @(
-            "IntegrationTest: count=$($withSources ? 3 : 2)",
-            'Sentry: count=3',
-            "UnityFramework: count=$($withSources ? 4 : 3)",
-            'libiPhone-lib.dylib: count=1'
-        )
+        if ($unity2020OrHigher)
+        {
+            $expectedFiles = @(
+                "IntegrationTest: count=$($withSources ? 3 : 2)",
+                'Sentry: count=3',
+                "UnityFramework: count=$($withSources ? 5 : 4)",
+                'libiPhone-lib.dylib: count=1'
+            )
+        }
+        else
+        {
+            $expectedFiles = @(
+                "IntegrationTest: count=$($withSources ? 3 : 2)",
+                'Sentry: count=3',
+                "UnityFramework: count=$($withSources ? 4 : 3)",
+                'libiPhone-lib.dylib: count=1'
+            )
+        }
     }
     ElseIf ($buildMethod.contains('WebGL'))
     {

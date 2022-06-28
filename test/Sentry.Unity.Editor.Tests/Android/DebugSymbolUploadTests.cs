@@ -108,7 +108,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
 
             var ex = Assert.Throws<FileNotFoundException>(() => sut.AppendUploadToGradleFile(_fixture.SentryCliPath));
-            Assert.AreEqual(_fixture.GradleProjectPath, ex.FileName);
+            Assert.AreEqual(Path.Combine(_fixture.GradleProjectPath, "build.gradle"), ex.FileName);
         }
 
         [Test]
@@ -138,7 +138,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
 
             var ex = Assert.Throws<FileNotFoundException>(() => sut.RemoveUploadFromGradleFile());
-            Assert.AreEqual(_fixture.GradleProjectPath, ex.FileName);
+            Assert.AreEqual(Path.Combine(_fixture.GradleProjectPath, "build.gradle"), ex.FileName);
         }
 
         [Test]

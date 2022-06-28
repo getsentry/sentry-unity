@@ -1,10 +1,8 @@
 using System;
 using System.IO;
-using Sentry;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Sentry.Unity
 {
@@ -16,6 +14,9 @@ namespace Sentry.Unity
 
     internal class ScreenshotAttachmentContent : IAttachmentContent
     {
+        private const int Quality = 75;
+        private const int MaxSize = 1920;
+
         private readonly SentryMonoBehaviour _behaviour;
         private readonly SentryUnityOptions _options;
 
@@ -42,17 +43,17 @@ namespace Sentry.Unity
 
         private byte[] CaptureScreenshot()
         {
-            // Calculate the desired size by calculating the ratio between the desired height/width and the actual one,
-            // and than resizing based on the smaller of the two ratios.
+            // Make sure the screenshot size does not exceed MaxSize by scaling the image while conserving the
+            // original ratio based on which, width or height, is the smaller
             var width = Screen.width;
             var height = Screen.height;
-            var ratioW = _options.ScreenshotMaxWidth <= 0 ? 1.0f : (float)_options.ScreenshotMaxWidth / (float)width;
-            var ratioH = _options.ScreenshotMaxHeight <= 0 ? 1.0f : (float)_options.ScreenshotMaxHeight / (float)height;
+            var ratioW = width <= MaxSize ? 1.0f : MaxSize / (float)width;
+            var ratioH = height <= MaxSize ? 1.0f : MaxSize / (float)height;
             var ratio = Mathf.Min(ratioH, ratioW);
-            if (ratio > 0.0f && ratio < 1.0f)
+            if (ratio is > 0.0f and < 1.0f)
             {
-                width = Mathf.FloorToInt((float)width * ratio);
-                height = Mathf.FloorToInt((float)height * ratio);
+                width = Mathf.FloorToInt(width * ratio);
+                height = Mathf.FloorToInt(height * ratio);
             }
 
             // Captures the current screenshot synchronously.
@@ -71,11 +72,9 @@ namespace Sentry.Unity
                 Graphics.Blit(rtFull, rtResized, new Vector2(1, -1), new Vector2(0, 1));
             }
             RenderTexture.ReleaseTemporary(rtFull);
-
             // Remember the previous render target and change it to our target texture.
             var previousRT = RenderTexture.active;
             RenderTexture.active = rtResized;
-
             try
             {
                 // actually copy from the current render target a texture & read data from the active RenderTexture
@@ -88,7 +87,7 @@ namespace Sentry.Unity
                 RenderTexture.active = previousRT;
             }
 
-            var bytes = screenshot.EncodeToJPG(_options.ScreenshotQuality);
+            var bytes = screenshot.EncodeToJPG(Quality);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
                     "Screenshot captured at {0}x{1}: {0} bytes", null, width, height, bytes.Length);
             return bytes;

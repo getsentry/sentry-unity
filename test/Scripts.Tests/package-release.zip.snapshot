@@ -266,6 +266,8 @@ Plugins/iOS/Device/Sentry.framework/Headers/SentryUserFeedback.h
 Plugins/iOS/Device/Sentry.framework/Headers/SentryUserFeedback.h.meta
 Plugins/iOS/Device/Sentry.framework/Modules/module.modulemap
 Plugins/iOS/Device/Sentry.framework/Modules/module.modulemap.meta
+Plugins/Android/proguard-sentry-unity.pro
+Plugins/Android/proguard-sentry-unity.pro.meta
 Plugins/Android/Sentry.meta
 Plugins/Android/Sentry/sentry.jar
 Plugins/Android/Sentry/sentry.jar.meta

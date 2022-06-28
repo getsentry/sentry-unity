@@ -72,23 +72,6 @@ namespace Sentry.Unity
         public bool AttachScreenshot { get; set; } = false;
 
         /// <summary>
-        /// Maximum width of the screenshot or 0 to keep the original size.
-        /// If the application window is larger, the screenshot will be resized proportionally.
-        /// </summary>
-        public int ScreenshotMaxWidth { get; set; } = 0;
-
-        /// <summary>
-        /// Maximum height of the screenshot or 0 to keep the original size.
-        /// If the application window is larger, the screenshot will be resized proportionally.
-        /// </summary>
-        public int ScreenshotMaxHeight { get; set; } = 0;
-
-        /// <summary>
-        /// Quality of the JPG screenshot: 0 - 100, where 100 is the best quality and highest size.
-        /// </summary>
-        public int ScreenshotQuality { get; set; } = 75;
-
-        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;

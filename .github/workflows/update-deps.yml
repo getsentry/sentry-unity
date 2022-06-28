@@ -11,7 +11,7 @@ on:
 
 jobs:
   cocoa:
-    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
       path: modules/sentry-cocoa
       name: Cocoa SDK
@@ -19,7 +19,7 @@ jobs:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   java:
-    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
       path: modules/sentry-java
       name: Java SDK
@@ -27,7 +27,7 @@ jobs:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   native:
-    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
       path: modules/sentry-native
       name: Native SDK
@@ -35,10 +35,18 @@ jobs:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
   dotnet:
-    uses: getsentry/github-workflows/.github/workflows/submodule-updater.yml@923a6414d7e37c07fdd743b2a6ccb40198ead7d3
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:
       path: src/sentry-dotnet
       name: .NET SDK
+    secrets:
+      api_token: ${{ secrets.CI_DEPLOY_KEY }}
+
+  cli:
+    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
+    with:
+      path: modules/sentry-cli.properties
+      name: CLI
     secrets:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
