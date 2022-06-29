@@ -99,6 +99,12 @@ namespace Sentry.Unity.Tests
                 writer.Flush();
                 Debug.Log($"  {(Encoding.UTF8.GetString(stream.ToArray()))}");
             }
+
+            // Sentry captured frame must be cleaned up - the return type removed from the module (method name)
+            Assert.AreEqual("System.Threading.Tasks.Task`1", framesSentry[0].Module);
+
+            // Sanity check - the manually captured stack frame must contain the wrong format method
+            Assert.IsTrue(framesManual[1].GetMethod()?.DeclaringType?.FullName?.StartsWith("System.Threading.Tasks.Task`1[[System.Int32"));
         }
 
         [Test]
