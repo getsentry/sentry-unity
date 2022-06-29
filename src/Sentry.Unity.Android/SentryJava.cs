@@ -151,7 +151,7 @@ namespace Sentry.Unity.Android
                 }
                 catch (Exception e)
                 {
-                    UnityEngine.Debug.LogError($"Error in SentryJava.ScopeCallback: {e}");
+                    UnityEngine.Debug.LogWarning($"Error in SentryJava.ScopeCallback: {e}");
                 }
                 return null;
             }
