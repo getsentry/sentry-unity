@@ -91,9 +91,15 @@ jobs:
             -v ${{ github.workspace }}:/sentry-unity \
             -v /usr/share/dotnet:/usr/share/dotnet \
             -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
+            -v $ANDROID_HOME:$ANDROID_HOME \
+            -v $JAVA_HOME_11_X64:$JAVA_HOME_11_X64 \
             --workdir /sentry-unity $image
           docker exec unity ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
           docker exec unity ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+
+      # Required by sentry-dotnet since 3.19.0
+      - name: Install Android dotnet workflow
+        run: dotnet workload install android --temp-dir "${{ runner.temp }}"
 
       - name: Download CLI
         run: pwsh ./scripts/download-sentry-cli.ps1
@@ -140,7 +146,7 @@ jobs:
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build -c Release
+        run: docker exec unity dotnet build /p:AndroidSdkDirectory=$ANDROID_HOME /p:JavaSdkDirectory=$JAVA_HOME_11_X64 -c Release
 
       - name: Assembly alias
         run: |
