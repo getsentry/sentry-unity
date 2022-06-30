@@ -43,10 +43,63 @@
     <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll."></Error>
     <Error Condition="!Exists('$(UnityManagedPath)/UnityEngine.dll')" Text="Couldn't find UnityEngine at $(UnityManagedPath)/UnityEngine.dll."></Error>
     <ItemGroup>
+<!--      <Reference Include="UnityEngine">-->
+<!--        <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>-->
+<!--        <Private>false</Private>-->
+<!--      </Reference>-->
       <Reference Include="UnityEngine">
-        <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.dll</HintPath>
         <Private>false</Private>
       </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.CoreModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.IMGUIModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.IMGUIModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.ImageConversionModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.ImageConversionModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.JSONSerializeModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.JSONSerializeModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.ScreenCaptureModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.ScreenCaptureModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+      <Reference Include="UnityEngine.UnityWebRequestModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.UnityWebRequestModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+
+      <Reference Include="UnityEngine.AndroidJNIModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.AndroidJNIModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+
+      <Reference Include="UnityEngine.UnityAnalyticsModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.UnityAnalyticsModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+
+      <Reference Include="UnityEngine.InputLegacyModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.InputLegacyModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+
+      <Reference Include="UnityEngine.ProfilerModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.ProfilerModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
+
+<!--      <Reference Include="UnityEngine.UI">-->
+<!--        <HintPath>$(UnityTemplateAssemblyPath)/UnityEngine.UI.dll</HintPath>-->
+<!--        <Private>false</Private>-->
+<!--      </Reference>-->
     </ItemGroup>
   </Target>
 </Project>

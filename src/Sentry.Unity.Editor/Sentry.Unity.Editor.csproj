@@ -20,6 +20,10 @@
         <HintPath>$(UnityManagedPath)/UnityEditor.dll</HintPath>
         <Private>false</Private>
       </Reference>
+      <Reference Include="UnityEngine.UI">
+        <HintPath>$(UnityTemplateAssemblyPath)/UnityEngine.UI.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
     </ItemGroup>
   </Target>
 </Project>
