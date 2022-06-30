@@ -29,4 +29,8 @@
       <_Parameter1>Sentry.Unity.Native</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Sentry" Version="3.19.0" />
+  </ItemGroup>
 </Project>
