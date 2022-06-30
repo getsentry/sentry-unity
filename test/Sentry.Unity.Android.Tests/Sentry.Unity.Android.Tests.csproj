@@ -3,7 +3,7 @@
     <OutDir>$(PackageRuntimeTestsPath)</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
+    <PackageReference Include="Sentry" Version="3.19.0" />
     <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Android/Sentry.Unity.Android.csproj" Private="false" />
   </ItemGroup>

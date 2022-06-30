@@ -17,7 +17,7 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" />
+    <PackageReference Include="Sentry" Version="3.19.0" />
   </ItemGroup>
 
   <Target Name="alias-references" AfterTargets="AfterCompile">
@@ -28,9 +28,5 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>Sentry.Unity.Native</_Parameter1>
     </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Sentry" Version="3.19.0" />
   </ItemGroup>
 </Project>
