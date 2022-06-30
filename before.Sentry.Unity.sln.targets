@@ -1,7 +1,7 @@
 <Project InitialTargets="RestoreSubmodules">
   <!-- If files within submodules are not found, restore git submodules -->
   <Target Name="RestoreSubmodules"
-    Condition="!Exists('src/sentry-dotnet/src/Sentry/Sentry.csproj')">
+    Condition="!Exists('modules/sentry-java/README.md')">
     <Message Importance="High" Text="Restoring git submodules."></Message>
     <Exec Command="git submodule update --init --recursive"></Exec>
   </Target>
