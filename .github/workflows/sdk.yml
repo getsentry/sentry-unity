@@ -48,7 +48,7 @@ jobs:
           else
             submodules="modules/sentry-native"
           fi
-          ./scripts/init-submodules.sh src/sentry-dotnet $submodules
+          ./scripts/init-submodules.sh $submodules
 
       - name: Installing Linux Dependencies
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}

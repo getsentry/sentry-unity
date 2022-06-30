@@ -34,14 +34,6 @@ jobs:
     secrets:
       api_token: ${{ secrets.CI_DEPLOY_KEY }}
 
-  dotnet:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
-    with:
-      path: src/sentry-dotnet
-      name: .NET SDK
-    secrets:
-      api_token: ${{ secrets.CI_DEPLOY_KEY }}
-
   cli:
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v1
     with:

@@ -24,7 +24,7 @@ jobs:
           | xargs clang-format -i -style=file
 
       - name: Format C# Code Whitespace
-        run: dotnet format whitespace Sentry.Unity.sln --exclude src/sentry-dotnet --verbosity diag
+        run: dotnet format whitespace Sentry.Unity.sln --verbosity diag
 
       # actions/checkout fetches only a single commit in a detached HEAD state. Therefore
       # we need to pass the current branch, otherwise we can't commit the changes.

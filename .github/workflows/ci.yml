@@ -63,9 +63,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.3
 
-      - name: Checkout submodules
-        run: ./scripts/init-submodules.sh src/sentry-dotnet
-
       - name: Load env
         id: env
         shell: pwsh
@@ -96,10 +93,6 @@ jobs:
             --workdir /sentry-unity $image
           docker exec unity ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
           docker exec unity ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
-
-      # Required by sentry-dotnet since 3.19.0
-      - name: Install Android dotnet workflow
-        run: dotnet workload install android --temp-dir "${{ runner.temp }}"
 
       - name: Download CLI
         run: pwsh ./scripts/download-sentry-cli.ps1
