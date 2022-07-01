@@ -18,6 +18,7 @@ namespace Sentry.Unity.Editor
 
         [field: SerializeField] public bool UploadSymbols { get; set; } = true;
         [field: SerializeField] public bool UploadDevelopmentSymbols { get; set; } = false;
+        [field: SerializeField] public bool UploadSources { get; set; } = false;
         [field: SerializeField] public string? UrlOverride { get; set; }
         [field: SerializeField] public string? Auth { get; set; }
         [field: SerializeField] public string? Organization { get; set; }
@@ -46,7 +47,7 @@ namespace Sentry.Unity.Editor
             var validated = true;
             if (string.IsNullOrWhiteSpace(Auth))
             {
-                MissingFieldWarning(logger, "Auth name");
+                MissingFieldWarning(logger, "Auth Token");
                 validated = false;
             }
 

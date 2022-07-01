@@ -39,9 +39,6 @@ namespace Sentry.Unity
         [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
         [field: SerializeField] public bool AttachStacktrace { get; set; }
         [field: SerializeField] public bool AttachScreenshot { get; set; }
-        [field: SerializeField] public int ScreenshotMaxWidth { get; set; }
-        [field: SerializeField] public int ScreenshotMaxHeight { get; set; }
-        [field: SerializeField] public int ScreenshotQuality { get; set; } = 75;
         [field: SerializeField] public int MaxBreadcrumbs { get; set; } = Constants.DefaultMaxBreadcrumbs;
 
         [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
@@ -63,6 +60,8 @@ namespace Sentry.Unity
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
+
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
@@ -76,22 +75,22 @@ namespace Sentry.Unity
         /// <remarks>
         /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
         /// </remarks>
-        public static SentryUnityOptions? LoadSentryUnityOptions()
+        public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
         {
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
-                return scriptableOptions.ToSentryUnityOptions(false);
+                return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
             }
 
             return null;
         }
 
-        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, IApplication? application = null)
+        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            var options = new SentryUnityOptions(application, isBuilding)
+            var options = new SentryUnityOptions(isBuilding, unityInfo, application)
             {
                 Enabled = Enabled,
                 Dsn = Dsn,
@@ -102,9 +101,6 @@ namespace Sentry.Unity
                 AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
                 AttachStacktrace = AttachStacktrace,
                 AttachScreenshot = AttachScreenshot,
-                ScreenshotMaxWidth = ScreenshotMaxWidth,
-                ScreenshotMaxHeight = ScreenshotMaxHeight,
-                ScreenshotQuality = ScreenshotQuality,
                 MaxBreadcrumbs = MaxBreadcrumbs,
                 ReportAssembliesMode = ReportAssembliesMode,
                 SendDefaultPii = SendDefaultPii,
@@ -113,7 +109,16 @@ namespace Sentry.Unity
                 InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
                 SampleRate = SampleRate,
                 ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
-                MaxQueueItems = MaxQueueItems
+                MaxQueueItems = MaxQueueItems,
+                // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
+                // need to set it here directly.
+                Debug = ShouldDebug(application.IsEditor && !isBuilding),
+                DiagnosticLevel = DiagnosticLevel,
+                IosNativeSupportEnabled = IosNativeSupportEnabled,
+                AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
+                WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
+                MacosNativeSupportEnabled = MacosNativeSupportEnabled,
+                LinuxNativeSupportEnabled = LinuxNativeSupportEnabled
             };
 
             if (!string.IsNullOrWhiteSpace(ReleaseOverride))
@@ -131,20 +136,15 @@ namespace Sentry.Unity
                 options.CacheDirectoryPath = null;
             }
 
-            options.IosNativeSupportEnabled = IosNativeSupportEnabled;
-            options.AndroidNativeSupportEnabled = AndroidNativeSupportEnabled;
-            options.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
-            options.MacosNativeSupportEnabled = MacosNativeSupportEnabled;
-            options.LinuxNativeSupportEnabled = LinuxNativeSupportEnabled;
-
-            // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
-            // need to set it here directly.
-            options.Debug = ShouldDebug(application.IsEditor && !isBuilding);
-            options.DiagnosticLevel = DiagnosticLevel;
-
             options.SetupLogging();
 
             OptionsConfiguration?.Configure(options);
+
+            // Doing this after the configure callback to allow users to programmatically opt out
+            if (Il2CppLineNumberSupportEnabled)
+            {
+                options.AddIl2CppExceptionProcessor(unityInfo);
+            }
 
             return options;
         }

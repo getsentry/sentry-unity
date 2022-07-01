@@ -1,5 +1,11 @@
-param($Action, $SelectedRuntime, $DevicesToRun)
-Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime"
+param (
+    [string] $Action,
+    [string] $SelectedRuntime,
+    [Int32] $DevicesToRun = 3,
+    [Switch] $IsIntegrationTest,
+    [string] $UnityVersion = ""
+)
+Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIntegrationTest=$IsIntegrationTest"
 # $Action: 'Build' for build only
 #          'Test' for Smoke test only
 #          null for building and testing
@@ -12,11 +18,21 @@ $ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
-$XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
-$ArchivePath = "$XcodeArtifactPath/archive"
 $ProjectName = "Unity-iPhone"
-$AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
-$AppName = "io.sentry.samples.unityofbugs"
+if ($IsIntegrationTest)
+{
+    $XcodeArtifactPath = "samples/IntegrationTest/Build"
+    $ArchivePath = "$XcodeArtifactPath/archive"
+    $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/IntegrationTest.app"
+    $AppName = "com.DefaultCompany.IntegrationTest"
+}
+else
+{
+    $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
+    $ArchivePath = "$XcodeArtifactPath/archive"
+    $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
+    $AppName = "io.sentry.samples.unityofbugs"
+}
 
 Class AppleDevice
 {
@@ -43,26 +59,41 @@ Class AppleDevice
 function Build()
 {
     $mapFileParser = "MapFileParser.sh"
-    Write-Host -NoNewline "Fixing permission for $mapFileParser : "
     If (Test-Path -Path "$XcodeArtifactPath/$mapFileParser")
     {
+        Write-Host -NoNewline "Fixing permission for $mapFileParser : "
         # We need to allow the execution of this script, otherwise Xcode will throw permission denied.
         chmod +x "$XcodeArtifactPath/$mapFileParser"
         Write-Host "OK" -ForegroundColor Green
     }
-    Else
-    {
-        Write-Host "NOT FOUND" -ForegroundColor Gray
-    }
 
     Write-Host "Building iOS project"
-    $xCodeBuild = Start-Process -FilePath "xcodebuild" -ArgumentList "-project", "$XcodeArtifactPath/$ProjectName.xcodeproj", "-scheme", "Unity-iPhone", "-configuration", "Release", "-sdk", "iphonesimulator", "-derivedDataPath", "$ArchivePath/$ProjectName" -PassThru
-    $xCodeBuild.WaitForExit()
-    If ($xCodeBuild.ExitCode -ne 0)
-    {
-        Throw "Xcode build exited with code $($xCodeBuild.ExitCode)."
+
+    # We need to manually switch the CLI executable, because the artifact that came through GH actions'
+    # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
+    # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
+    #             with the missing executable bit in the UPM package - it's fixed on build.
+    chmod +x "$XcodeArtifactPath/sentry-cli-Darwin-universal"
+
+    $buildCallback = {
+        xcodebuild `
+            -project "$XcodeArtifactPath/$ProjectName.xcodeproj" `
+            -scheme "Unity-iPhone" `
+            -configuration "Release" `
+            -sdk "iphonesimulator" `
+            -derivedDataPath "$ArchivePath/$ProjectName" `
+        | Write-Host
     }
-    Write-Host "OK" -ForegroundColor Green
+
+    if ($IsIntegrationTest)
+    {
+        $symbolServerOutput = RunWithSymbolServer -Callback $buildCallback
+        CheckSymbolServerOutput 'IOS' $symbolServerOutput $UnityVersion
+    }
+    else
+    {
+        $buildCallback.Invoke()
+    }
 }
 
 function Test
@@ -101,10 +132,6 @@ function Test
     }
 
     $devicesRan = 0
-    If (0 -eq $DevicesToRun -Or $null -eq $DevicesToRun)
-    {
-        $DevicesToRun = 3
-    }
     ForEach ($device in $deviceList)
     {
         If ($skippedItems -lt $skipCount)

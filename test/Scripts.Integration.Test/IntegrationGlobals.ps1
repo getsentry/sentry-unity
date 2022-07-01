@@ -32,13 +32,17 @@ function GetTestAppName
     {
         return "test.apk"
     }
+    ElseIf ($buildMethod.contains("IOS"))
+    {
+        return ""
+    }
     ElseIf ($buildMethod.contains("WebGL"))
     {
         return ""
     }
     Else
     {
-        Throw "Cannot find Test App name for the given buildMethod: '$buildMethod'"
+        Throw "Cannot determine Test App name for the given buildMethod: '$buildMethod'"
     }
 }
 
@@ -116,7 +120,8 @@ function BuildMethodFor([string] $platform)
         "Windows" { return "Builder.BuildWindowsIl2CPPPlayer" }
         "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
         "WebGL" { return "Builder.BuildWebGLPlayer" }
-        Default
+        "iOS" { return "Builder.BuildIOSPlayer" }
+        ""
         {
             If ($IsMacOS)
             {
@@ -135,6 +140,7 @@ function BuildMethodFor([string] $platform)
                 Throw "Unsupported build platform"
             }
         }
+        Default { Throw "Unsupported build platform: '$platform'" }
     }
 }
 
@@ -158,7 +164,6 @@ function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $Re
         # Fix paths (they're supposed to be the current working directory in the docker container)
         Write-Host "Replacing project root ($(ProjectRoot)) in docker arguments: $arguments"
         $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)", "/sentry-unity") }
-
     }
 
     return RunUnity $unityPath $arguments -ReturnLogOutput:$ReturnLogOutput

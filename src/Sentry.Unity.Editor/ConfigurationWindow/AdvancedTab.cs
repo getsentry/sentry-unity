@@ -69,6 +69,19 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             options.LinuxNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("Linux Native Support", "Whether to enable native crashes support on Linux."),
                 options.LinuxNativeSupportEnabled);
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            GUILayout.Label("Experimental", EditorStyles.boldLabel);
+
+
+
+            options.Il2CppLineNumberSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("IL2CPP line numbers", "Whether the SDK should try to to provide line " +
+                                                      "numbers for exceptions in IL2CPP builds."),
+                options.Il2CppLineNumberSupportEnabled);
         }
     }
 }

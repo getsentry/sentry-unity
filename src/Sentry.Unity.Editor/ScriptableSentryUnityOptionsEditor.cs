@@ -30,9 +30,6 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.TextField("Environment Override", options.EnvironmentOverride);
             EditorGUILayout.Toggle("Attach Stacktrace", options.AttachStacktrace);
             EditorGUILayout.Toggle("Attach Screenshot", options.AttachScreenshot);
-            EditorGUILayout.IntField("Screenshot Max Height", options.ScreenshotMaxHeight);
-            EditorGUILayout.IntField("Screenshot Max Width", options.ScreenshotMaxWidth);
-            EditorGUILayout.IntField("Screenshot Quality", options.ScreenshotQuality);
             EditorGUILayout.IntField("Max Breadcrumbs", options.MaxBreadcrumbs);
             EditorGUILayout.EnumPopup("Report Assemblies Mode", options.ReportAssembliesMode);
             EditorGUILayout.Toggle("Send Default Pii", options.SendDefaultPii);
@@ -67,6 +64,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Toggle("Windows Native Support", options.WindowsNativeSupportEnabled);
             EditorGUILayout.Toggle("macOS Native Support", options.MacosNativeSupportEnabled);
             EditorGUILayout.Toggle("Linux Native Support", options.LinuxNativeSupportEnabled);
+            EditorGUILayout.Toggle("IL2CPP line numbers", options.Il2CppLineNumberSupportEnabled);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);

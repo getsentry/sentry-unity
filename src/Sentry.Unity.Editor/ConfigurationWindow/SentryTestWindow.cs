@@ -6,7 +6,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     public sealed class SentryTestWindow : SentryWindow, IDisposable
     {
-        protected override string SentryOptionsAssetName { get; } = Path.GetRandomFileName();
+        public SentryTestWindow()
+        {
+            // static
+            SentryWindow.SentryOptionsAssetName = Path.GetRandomFileName();
+        }
 
         public static SentryTestWindow Open()
             => (SentryTestWindow)GetWindow(typeof(SentryTestWindow));

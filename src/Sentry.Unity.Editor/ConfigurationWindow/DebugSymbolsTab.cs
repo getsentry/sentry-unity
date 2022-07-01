@@ -17,6 +17,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                      "on development builds."),
                 cliOptions.UploadDevelopmentSymbols);
 
+            cliOptions.UploadSources = EditorGUILayout.Toggle(
+                new GUIContent("Upload Sources", "Whether your source code should be uploaded to Sentry, so the stack trace in Sentry has the relevant code next to it."),
+                cliOptions.UploadSources);
+
             EditorGUILayout.EndToggleGroup();
 
             cliOptions.Auth = EditorGUILayout.TextField(
@@ -32,8 +36,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 cliOptions.Project);
 
             cliOptions.UrlOverride = EditorGUILayout.TextField(
-                new GUIContent("Override Sentry URL", "Fully qualified URL to the Sentry server " +
-                                                      "(defaults to https://sentry.io/)"),
+                new GUIContent("Override Sentry URL", "Fully qualified URL to the Sentry server (defaults to " +
+                                                      "the server configured in DSN, e.g. https://sentry.io)"),
                 cliOptions.UrlOverride);
         }
     }

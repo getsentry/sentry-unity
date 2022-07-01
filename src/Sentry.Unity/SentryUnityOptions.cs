@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
@@ -71,23 +72,6 @@ namespace Sentry.Unity
         public bool AttachScreenshot { get; set; } = false;
 
         /// <summary>
-        /// Maximum width of the screenshot or 0 to keep the original size.
-        /// If the application window is larger, the screenshot will be resized proportionally.
-        /// </summary>
-        public int ScreenshotMaxWidth { get; set; } = 0;
-
-        /// <summary>
-        /// Maximum height of the screenshot or 0 to keep the original size.
-        /// If the application window is larger, the screenshot will be resized proportionally.
-        /// </summary>
-        public int ScreenshotMaxHeight { get; set; } = 0;
-
-        /// <summary>
-        /// Quality of the JPG screenshot: 0 - 100, where 100 is the best quality and highest size.
-        /// </summary>
-        public int ScreenshotQuality { get; set; } = 75;
-
-        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;
@@ -112,7 +96,6 @@ namespace Sentry.Unity
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
 
-
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
         internal string? DefaultUserId
@@ -132,11 +115,21 @@ namespace Sentry.Unity
             }
         }
 
-        public SentryUnityOptions() : this(ApplicationAdapter.Instance, false)
-        {
-        }
+        // Whether components & integrations can use multi-threading.
+        internal bool MultiThreading = true;
 
-        internal SentryUnityOptions(IApplication application, bool isBuilding)
+        /// <summary>
+        /// Used to synchronize context from .NET to the native SDK
+        /// </summary>
+        internal ContextWriter? NativeContextWriter { get; set; } = null;
+
+        public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
+
+        internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
+            this(SentryMonoBehaviour.Instance, application, unityInfo, isBuilding)
+        { }
+
+        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, ISentryUnityInfo? unityInfo, bool isBuilding)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
@@ -144,11 +137,13 @@ namespace Sentry.Unity
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
-            this.AddExceptionProcessor(new UnityEventExceptionProcessor());
-            this.AddIntegration(new UnityApplicationLoggingIntegration());
+
+            this.AddIntegration(new UnityLogHandlerIntegration());
+            this.AddIntegration(new AnrIntegration(behaviour));
+            this.AddIntegration(new UnityScopeIntegration(behaviour, application));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
-            this.AddIntegration(new SessionIntegration(SentryMonoBehaviour.Instance));
+            this.AddIntegration(new SessionIntegration(behaviour));
 
             IsGlobalModeEnabled = true;
 
@@ -171,12 +166,16 @@ namespace Sentry.Unity
             {
                 Release = application.Version;
             }
+            if (!string.IsNullOrWhiteSpace(application.BuildGUID))
+            {
+                Release += $"+{application.BuildGUID}";
+            }
 
             Environment = (application.IsEditor && !isBuilding)
                 ? "editor"
                 : "production";
 
-            CacheDirectoryPath = application.PersistentDataPath;
+            CacheDirectoryPath = application.PersistentDataPath.Trim();
         }
 
         public override string ToString()

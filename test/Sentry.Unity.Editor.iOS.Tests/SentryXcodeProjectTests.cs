@@ -129,7 +129,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             xcodeProject.ReadFromProjectFile();
 
             var didContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
-            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger, new SentryCliOptions());
             var doesContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
 
             Assert.IsFalse(didContainUploadPhase);
@@ -143,8 +143,8 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
 
-            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
-            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger);
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger, new SentryCliOptions());
+            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger, new SentryCliOptions());
 
             var actualBuildPhaseOccurence = Regex.Matches(xcodeProject.ProjectToString(),
                 Regex.Escape(SentryXcodeProject.SymbolUploadPhaseName)).Count;

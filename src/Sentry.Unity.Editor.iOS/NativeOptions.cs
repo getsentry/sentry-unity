@@ -23,6 +23,7 @@ namespace Sentry.Unity.Editor.iOS
 static NSDictionary* getSentryOptions()
 {{
     NSDictionary* options = @{{
+        @""sdk"" : @{{ @""name"": @""sentry.cocoa.unity"" }},
         @""dsn"" : @""{options.Dsn}"",
         @""debug"" : @{ToObjCString(options.Debug)},
         @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.DiagnosticLevel)}"",

@@ -118,7 +118,7 @@ public class {scriptName} : ScriptableOptionsConfiguration
             AssetDatabase.Refresh();
 
             // Don't overwrite already set OptionsConfiguration
-            var options = SentryWindow.Instance.Options;
+            var options = SentryWindow.Instance!.Options;
             if (options.OptionsConfiguration == null)
             {
                 options.OptionsConfiguration = (ScriptableOptionsConfiguration)optionsConfigurationObject;

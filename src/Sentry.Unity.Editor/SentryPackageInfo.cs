@@ -23,5 +23,7 @@ namespace Sentry.Unity.Editor
 
             throw new FileNotFoundException("Failed to locate the Sentry package");
         }
+
+        internal static bool IsDevPackage => GetName() == PackageNameDev;
     }
 }

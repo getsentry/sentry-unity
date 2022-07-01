@@ -37,7 +37,7 @@ namespace Sentry.Unity.Tests
         [TestCase(false)]
         public void ToSentryOptions_OptionsCreated_AreEqualToNewOptions(bool isBuilding)
         {
-            var expectedOptions = new SentryUnityOptions(_fixture.Application, isBuilding);
+            var expectedOptions = new SentryUnityOptions(isBuilding, null, _fixture.Application);
 
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
 
@@ -46,7 +46,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = false;
             scriptableOptions.DiagnosticLevel = SentryLevel.Debug;
 
-            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
+            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding, null, _fixture.Application);
 
             AssertOptions(expectedOptions, actualOptions);
         }
@@ -67,9 +67,6 @@ namespace Sentry.Unity.Tests
                 AutoSessionTrackingInterval = TimeSpan.FromSeconds(1),
                 AttachStacktrace = true,
                 AttachScreenshot = true,
-                ScreenshotMaxWidth = 1,
-                ScreenshotMaxHeight = 1,
-                ScreenshotQuality = 1,
                 MaxBreadcrumbs = 1,
                 ReportAssembliesMode = ReportAssembliesMode.None,
                 SendDefaultPii = true,
@@ -96,9 +93,6 @@ namespace Sentry.Unity.Tests
             scriptableOptions.AutoSessionTrackingInterval = (int)expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
             scriptableOptions.AttachStacktrace = expectedOptions.AttachStacktrace;
             scriptableOptions.AttachScreenshot = expectedOptions.AttachScreenshot;
-            scriptableOptions.ScreenshotMaxWidth = expectedOptions.ScreenshotMaxWidth;
-            scriptableOptions.ScreenshotMaxHeight = expectedOptions.ScreenshotMaxHeight;
-            scriptableOptions.ScreenshotQuality = expectedOptions.ScreenshotQuality;
             scriptableOptions.MaxBreadcrumbs = expectedOptions.MaxBreadcrumbs;
             scriptableOptions.ReportAssembliesMode = expectedOptions.ReportAssembliesMode;
             scriptableOptions.SendDefaultPii = expectedOptions.SendDefaultPii;
@@ -115,7 +109,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = false; // Affects Debug otherwise
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.Application);
+            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, null, _fixture.Application);
 
             AssertOptions(expectedOptions, optionsActual);
         }
@@ -159,9 +153,6 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(expected.AutoSessionTrackingInterval, actual.AutoSessionTrackingInterval);
             Assert.AreEqual(expected.AttachStacktrace, actual.AttachStacktrace);
             Assert.AreEqual(expected.AttachScreenshot, actual.AttachScreenshot);
-            Assert.AreEqual(expected.ScreenshotMaxWidth, actual.ScreenshotMaxWidth);
-            Assert.AreEqual(expected.ScreenshotMaxHeight, actual.ScreenshotMaxHeight);
-            Assert.AreEqual(expected.ScreenshotQuality, actual.ScreenshotQuality);
             Assert.AreEqual(expected.MaxBreadcrumbs, actual.MaxBreadcrumbs);
             Assert.AreEqual(expected.ReportAssembliesMode, actual.ReportAssembliesMode);
             Assert.AreEqual(expected.SendDefaultPii, actual.SendDefaultPii);

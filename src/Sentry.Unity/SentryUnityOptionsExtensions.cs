@@ -63,11 +63,29 @@ namespace Sentry.Unity
             }
         }
 
+        internal static void AddIl2CppExceptionProcessor(this SentryUnityOptions options, ISentryUnityInfo? unityInfo)
+        {
+            if (unityInfo?.Il2CppMethods is not null)
+            {
+                options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options, unityInfo, unityInfo.Il2CppMethods));
+            }
+            else
+            {
+                options.DiagnosticLogger?.LogWarning("Failed to find required IL2CPP methods - Skipping line number support");
+            }
+        }
+
         /// <summary>
-        /// Disables the capture of errors through <see cref="UnityApplicationLoggingIntegration"/>.
+        /// Disables the capture of errors through <see cref="UnityLogHandlerIntegration"/>.
         /// </summary>
         /// <param name="options">The SentryUnityOptions to remove the integration from.</param>
         public static void DisableUnityApplicationLoggingIntegration(this SentryUnityOptions options) =>
-            options.RemoveIntegration<UnityApplicationLoggingIntegration>();
+            options.RemoveIntegration<UnityLogHandlerIntegration>();
+
+        /// <summary>
+        /// Disables the application-not-responding detection.
+        /// </summary>
+        public static void DisableAnrIntegration(this SentryUnityOptions options) =>
+            options.RemoveIntegration<AnrIntegration>();
     }
 }

@@ -4,11 +4,70 @@
 
 ### Features
 
+- Generate and upload IL2CPP line mappings alongside debug files ([#790](https://github.com/getsentry/sentry-unity/pull/790))
+- Launch a setup wizard after installation ([#780](https://github.com/getsentry/sentry-unity/pull/780))
+- Reduced automated screenshot attachment controls to a simple toggle ([#784](https://github.com/getsentry/sentry-unity/pull/784))
+- Disable AutoSessionTracking on unknown platforms ([#840](https://github.com/getsentry/sentry-unity/pull/840))
+- Support Android apps minified with Proguard ([#844](https://github.com/getsentry/sentry-unity/pull/844))
+- Bump Cocoa SDK to v7.18.1 ([#802](https://github.com/getsentry/sentry-unity/pull/802), [#821](https://github.com/getsentry/sentry-unity/pull/821), [#835](https://github.com/getsentry/sentry-unity/pull/835), [#854](https://github.com/getsentry/sentry-unity/pull/854))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7181)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.18.1)
+- Bump .NET SDK to v3.19.0 ([#807](https://github.com/getsentry/sentry-unity/pull/807), [#860](https://github.com/getsentry/sentry-unity/pull/860))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3190)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.17.0...3.19.0)
+- Bump Java SDK to v6.1.4 ([#811](https://github.com/getsentry/sentry-unity/pull/811), [#820](https://github.com/getsentry/sentry-unity/pull/820), [#828](https://github.com/getsentry/sentry-unity/pull/828), [#847](https://github.com/getsentry/sentry-unity/pull/847), [#857](https://github.com/getsentry/sentry-unity/pull/857))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#614)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-1-gc62a9f7a...6.1.4)
+- Bump Native SDK to v0.4.18 ([#810](https://github.com/getsentry/sentry-unity/pull/810), [#824](https://github.com/getsentry/sentry-unity/pull/824))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0418)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.18)
+- Bump CLI to v2.2.0 ([#826](https://github.com/getsentry/sentry-unity/pull/826))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#220)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/1.71.0...2.2.0)
+
+### Fixes
+
+- Only use application-not-responding detection in C#, disable in native plugins ([#852](https://github.com/getsentry/sentry-unity/pull/852))
+
+## 0.19.0
+
+### Features
+
+- Add rich context info to native crashes ([#747](https://github.com/getsentry/sentry-unity/pull/747))
+- Include build ID in an event release info ([#795](https://github.com/getsentry/sentry-unity/pull/795))
+
+### Fixes
+
+- Don't report Aplication-Not-Responding while the app is in the background ([#796](https://github.com/getsentry/sentry-unity/pull/796))
+
+## 0.18.0
+
+### Features
+
+- Capture Native Instruction Addrs for Exceptions ([#683](https://github.com/getsentry/sentry-unity/pull/683))
+- Enable native crash support with Mono scripting backend on Android, Windows and Linux ([#751](https://github.com/getsentry/sentry-unity/pull/751))
+- Application-Not-Responding detection ([#771](https://github.com/getsentry/sentry-unity/pull/771))
+- Allow uploading sources for debug files ([#773](https://github.com/getsentry/sentry-unity/pull/773))
+- Bump Sentry Java SDK to v6.0.0 ([#787](https://github.com/getsentry/sentry-unity/pull/787))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0/CHANGELOG.md?plain=1#L3..L73)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-rc.1...6.0.0)
+
+## 0.17.0
+
+### Features
+
+- The SDK now uses the Unity Log Handler to capture errors, instead of manually parsing events received on Application.logMessageReceived ([#731](https://github.com/getsentry/sentry-unity/pull/731))
 - Linux native crash support ([#734](https://github.com/getsentry/sentry-unity/pull/734))
 - Collect context information synchronously during init to capture it for very early events ([#744](https://github.com/getsentry/sentry-unity/pull/744))
 - Automatic user IDs on native crashes & .NET events ([#728](https://github.com/getsentry/sentry-unity/pull/728))
 - Use single-threaded HTTP transport on unknown platforms ([#756](https://github.com/getsentry/sentry-unity/pull/756))
 - Disable offline caching on unknown platforms ([#770](https://github.com/getsentry/sentry-unity/pull/770))
+- Bump Sentry Cocoa SDK to v7.16.0 ([#725](https://github.com/getsentry/sentry-unity/pull/725))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/7.16.0/CHANGELOG.md?plain=1#L3..L38)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.13.0...7.16.0)
+- Bump Sentry Java SDK to v6.0.0-rc.1 ([#725](https://github.com/getsentry/sentry-unity/pull/725))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/6.0.0-rc.1/CHANGELOG.md?plain=1#L3..L79)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-alpha.4...6.0.0-rc.1)
 
 ## 0.16.0
 
@@ -52,7 +111,7 @@
 ### Fixes
 
 - Refactor InApp logic from Stack Traces ([#661](https://github.com/getsentry/sentry-unity/pull/661))
-- Whitespaces no longer cause issues when uploading symbols for Windows native  ([#655](https://github.com/getsentry/sentry-unity/pull/655))
+- Whitespaces no longer cause issues when uploading symbols for Windows native ([#655](https://github.com/getsentry/sentry-unity/pull/655))
 - AndroidManifest update removes previous `io.sentry` entries ([#652](https://github.com/getsentry/sentry-unity/pull/652))
 - Bump Sentry .NET SDK 3.16.0 ([#678](https://github.com/getsentry/sentry-unity/pull/678))
   - [changelog 3.16.0](https://github.com/getsentry/sentry-dotnet/blob/3.16.0/CHANGELOG.md)
@@ -120,7 +179,7 @@
 
 ### Fixes
 
-- Sentry.Unity.Editor.iOS.dll no longer breaks builds on Windows when the iOS module has not been installed  ([#559](https://github.com/getsentry/sentry-unity/pull/559))
+- Sentry.Unity.Editor.iOS.dll no longer breaks builds on Windows when the iOS module has not been installed ([#559](https://github.com/getsentry/sentry-unity/pull/559))
 - Importing the link.xml when opening the config window no longer causes an infinite loop ([#539](https://github.com/getsentry/sentry-unity/pull/539))
 - Bump Sentry .NET SDK 3.14.0 ([#561](https://github.com/getsentry/sentry-unity/pull/561))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/3.14.0/CHANGELOG.md)

@@ -21,28 +21,26 @@ namespace Sentry.Unity.Editor.iOS
 
         private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
-        private readonly string _uploadScript = $@"process_upload_symbols()
-{{
-    ERROR=$(./{SentryCli.SentryCliMacOS} upload-dif $BUILT_PRODUCTS_DIR > ./sentry-symbols-upload.log 2>&1 &)
-    if [ ! $? -eq 0 ] ; then
-        echo ""warning: sentry-cli - $ERROR""
-    fi
+        private readonly string _uploadScript = @"
+
+process_upload_symbols() {{
+    ./{0} --log-level=info upload-dif {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
 }}
 
 export SENTRY_PROPERTIES=sentry.properties
 if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
-    echo ""Bitcode is disabled""
-    echo ""Uploading symbols""
+    echo ""note: Uploading debug symbols (Bitcode disabled).""
     process_upload_symbols
 else
     echo ""Bitcode is enabled""
     if [ ""$ACTION"" = ""install"" ] ; then
-        echo ""Uploading symbols and bcsymbolmaps""
+        echo ""note: Uploading debug symbols and bcsymbolmaps (Bitcode enabled).""
         process_upload_symbols
     else
-        echo ""Skipping symbol upload on bitcode enabled and non-install builds""
+        echo ""note: Skipping debug symbol upload because Bitcode is enabled and this is a non-install build.""
     fi
-fi";
+fi
+";
 
         private readonly Type _pbxProjectType = null!;               // Set in constructor or throws
         private readonly Type _pbxProjectExtensionsType = null!;     // Set in constructor or throws
@@ -144,7 +142,7 @@ fi";
                 .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
-        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger)
+        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger, SentryCliOptions sentryCliOptions)
         {
             if (MainTargetContainsSymbolUploadBuildPhase())
             {
@@ -152,8 +150,15 @@ fi";
                 return;
             }
 
+            var uploadDifArguments = "--il2cpp-mapping";
+            if (sentryCliOptions.UploadSources)
+            {
+                uploadDifArguments += " --include-sources";
+            }
+            var uploadScript = string.Format(_uploadScript, SentryCli.SentryCliMacOS, uploadDifArguments);
+
             _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
-                .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
+                .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", uploadScript });
         }
 
         public void AddNativeOptions(SentryUnityOptions options)

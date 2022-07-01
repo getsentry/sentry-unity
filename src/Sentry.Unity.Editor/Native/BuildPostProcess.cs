@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;
@@ -13,7 +14,8 @@ namespace Sentry.Unity.Editor.Native
         [PostProcessBuild(1)]
         public static void OnPostProcessBuild(BuildTarget target, string executablePath)
         {
-            if (EditorUserBuildSettings.selectedBuildTargetGroup is not BuildTargetGroup.Standalone)
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
+            if (targetGroup is not BuildTargetGroup.Standalone)
             {
                 return;
             }
@@ -22,16 +24,11 @@ namespace Sentry.Unity.Editor.Native
                 .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
                 ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
+            var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 
             try
             {
-                if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) != ScriptingImplementation.IL2CPP)
-                {
-                    logger.LogWarning("Failed to enable Native support - only available with IL2CPP scripting backend.");
-                    return;
-                }
-
-                if (options is null)
+                if (options?.IsValid() is not true)
                 {
                     logger.LogWarning("Native support disabled. " +
                                       "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
@@ -55,7 +52,7 @@ namespace Sentry.Unity.Editor.Native
                 var projectDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
                 AddCrashHandler(logger, target, projectDir, executableName);
-                UploadDebugSymbols(logger, target, projectDir, executableName);
+                UploadDebugSymbols(logger, target, projectDir, executableName, options, isMono);
             }
             catch (Exception e)
             {
@@ -100,7 +97,7 @@ namespace Sentry.Unity.Editor.Native
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, bool isMono)
         {
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
@@ -135,17 +132,32 @@ namespace Sentry.Unity.Editor.Native
                 addPath("UnityPlayer.dll");
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+                if (isMono)
+                {
+                    addPath("MonoBleedingEdge/EmbedRuntime");
+                }
             }
             else if (target is BuildTarget.StandaloneLinux64)
             {
                 addPath("GameAssembly.so");
                 addPath("UnityPlayer.so");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
+                if (isMono)
+                {
+                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
+                }
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
             }
+
+            var cliArgs = "upload-dif --il2cpp-mapping ";
+            if (cliOptions.UploadSources)
+            {
+                cliArgs += "--include-sources ";
+            }
+            cliArgs += paths;
 
             // Configure the process using the StartInfo properties.
             var process = new Process
@@ -154,7 +166,7 @@ namespace Sentry.Unity.Editor.Native
                 {
                     FileName = SentryCli.SetupSentryCli(),
                     WorkingDirectory = projectDir,
-                    Arguments = "upload-dif " + paths,
+                    Arguments = cliArgs,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -162,16 +174,38 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            if (!string.IsNullOrEmpty(cliOptions.UrlOverride))
+            if (SentryCli.UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
             {
-                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = cliOptions.UrlOverride;
+                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = urlOverride;
             }
 
             process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;
             process.StartInfo.EnvironmentVariables["SENTRY_PROJECT"] = cliOptions.Project;
             process.StartInfo.EnvironmentVariables["SENTRY_AUTH_TOKEN"] = cliOptions.Auth;
-            process.OutputDataReceived += (sender, args) => logger.LogDebug($"sentry-cli: {args.Data.ToString()}");
-            process.ErrorDataReceived += (sender, args) => logger.LogError($"sentry-cli: {args.Data.ToString()}");
+            process.StartInfo.EnvironmentVariables["SENTRY_LOG_LEVEL"] = "info";
+
+            DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
+            {
+                var msg = e.Data.ToString().Trim();
+                var msgLower = msg.ToLowerInvariant();
+                var level = SentryLevel.Info;
+                if (msgLower.StartsWith("error"))
+                {
+                    level = SentryLevel.Error;
+                }
+                else if (msgLower.StartsWith("warn"))
+                {
+                    level = SentryLevel.Warning;
+                }
+
+                // Remove the level and timestamp from the beginning of the message.
+                // INFO    2022-06-20 15:10:03.613794800 +02:00
+                msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
+                logger.Log(level, "sentry-cli: {0}", null, msg);
+            };
+
+            process.OutputDataReceived += logForwarder;
+            process.ErrorDataReceived += logForwarder;
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
