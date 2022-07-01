@@ -72,23 +72,6 @@ namespace Sentry.Unity
         public bool AttachScreenshot { get; set; } = false;
 
         /// <summary>
-        /// Maximum width of the screenshot or 0 to keep the original size.
-        /// If the application window is larger, the screenshot will be resized proportionally.
-        /// </summary>
-        public int ScreenshotMaxWidth { get; set; } = 0;
-
-        /// <summary>
-        /// Maximum height of the screenshot or 0 to keep the original size.
-        /// If the application window is larger, the screenshot will be resized proportionally.
-        /// </summary>
-        public int ScreenshotMaxHeight { get; set; } = 0;
-
-        /// <summary>
-        /// Quality of the JPG screenshot: 0 - 100, where 100 is the best quality and highest size.
-        /// </summary>
-        public int ScreenshotQuality { get; set; } = 75;
-
-        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;
@@ -112,11 +95,6 @@ namespace Sentry.Unity
         /// Whether the SDK should add native support for Linux
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
-
-        /// <summary>
-        /// Whether the SDK should add an exception processor to provide line number support for IL2CPP
-        /// </summary>
-        public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
 
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
@@ -159,11 +137,6 @@ namespace Sentry.Unity
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
             this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
-
-            if (Il2CppLineNumberSupportEnabled && unityInfo?.Il2CppMethods is not null)
-            {
-                this.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(this, unityInfo, unityInfo.Il2CppMethods));
-            }
 
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new AnrIntegration(behaviour));

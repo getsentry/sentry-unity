@@ -4,21 +4,30 @@
 
 ### Features
 
-- Bump Cocoa SDK to v7.17.0 ([#802](https://github.com/getsentry/sentry-unity/pull/802) & [#821](https://github.com/getsentry/sentry-unity/pull/821))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7170)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.17.0)
-- Bump .NET SDK to v3.18.0 ([#807](https://github.com/getsentry/sentry-unity/pull/807))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3180)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.17.0...3.18.0)
-- Bump Java SDK to v6.1.2 ([#811](https://github.com/getsentry/sentry-unity/pull/811) & [#820](https://github.com/getsentry/sentry-unity/pull/820) & [#828](https://github.com/getsentry/sentry-unity/pull/828))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#612)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-1-gc62a9f7a...6.1.2)
-- Bump Native SDK to v0.4.18 ([#810](https://github.com/getsentry/sentry-unity/pull/810) & [#824](https://github.com/getsentry/sentry-unity/pull/824))
+- Generate and upload IL2CPP line mappings alongside debug files ([#790](https://github.com/getsentry/sentry-unity/pull/790))
+- Launch a setup wizard after installation ([#780](https://github.com/getsentry/sentry-unity/pull/780))
+- Reduced automated screenshot attachment controls to a simple toggle ([#784](https://github.com/getsentry/sentry-unity/pull/784))
+- Disable AutoSessionTracking on unknown platforms ([#840](https://github.com/getsentry/sentry-unity/pull/840))
+- Support Android apps minified with Proguard ([#844](https://github.com/getsentry/sentry-unity/pull/844))
+- Bump Cocoa SDK to v7.18.1 ([#802](https://github.com/getsentry/sentry-unity/pull/802), [#821](https://github.com/getsentry/sentry-unity/pull/821), [#835](https://github.com/getsentry/sentry-unity/pull/835), [#854](https://github.com/getsentry/sentry-unity/pull/854))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7181)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.16.0...7.18.1)
+- Bump .NET SDK to v3.19.0 ([#807](https://github.com/getsentry/sentry-unity/pull/807), [#860](https://github.com/getsentry/sentry-unity/pull/860))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3190)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.17.0...3.19.0)
+- Bump Java SDK to v6.1.4 ([#811](https://github.com/getsentry/sentry-unity/pull/811), [#820](https://github.com/getsentry/sentry-unity/pull/820), [#828](https://github.com/getsentry/sentry-unity/pull/828), [#847](https://github.com/getsentry/sentry-unity/pull/847), [#857](https://github.com/getsentry/sentry-unity/pull/857))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#614)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.0.0-1-gc62a9f7a...6.1.4)
+- Bump Native SDK to v0.4.18 ([#810](https://github.com/getsentry/sentry-unity/pull/810), [#824](https://github.com/getsentry/sentry-unity/pull/824))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0418)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.4.15-7-g9eecb1b...0.4.18)
 - Bump CLI to v2.2.0 ([#826](https://github.com/getsentry/sentry-unity/pull/826))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#220)
   - [diff](https://github.com/getsentry/sentry-cli/compare/1.71.0...2.2.0)
+
+### Fixes
+
+- Only use application-not-responding detection in C#, disable in native plugins ([#852](https://github.com/getsentry/sentry-unity/pull/852))
 
 ## 0.19.0
 

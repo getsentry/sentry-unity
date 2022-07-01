@@ -150,10 +150,10 @@ fi
                 return;
             }
 
-            var uploadDifArguments = string.Empty;
+            var uploadDifArguments = "--il2cpp-mapping";
             if (sentryCliOptions.UploadSources)
             {
-                uploadDifArguments += "--include-sources";
+                uploadDifArguments += " --include-sources";
             }
             var uploadScript = string.Format(_uploadScript, SentryCli.SentryCliMacOS, uploadDifArguments);
 

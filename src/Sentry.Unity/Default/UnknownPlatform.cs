@@ -27,6 +27,14 @@ namespace Sentry.Unity.Default
                     "Platform support for offline caching is unknown - disabling it.");
                 options.CacheDirectoryPath = null;
             }
+
+            // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
+            if (options.AutoSessionTracking)
+            {
+                options.DiagnosticLogger?.Log(SentryLevel.Debug,
+                    "Platform support for automatic session tracking is unknown: disabling.");
+                options.AutoSessionTracking = false;
+            }
         }
     }
 }

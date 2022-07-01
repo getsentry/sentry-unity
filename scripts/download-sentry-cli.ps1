@@ -1,9 +1,9 @@
 Set-StrictMode -Version latest
 
-$version = '2.2.0'
+$conf = Get-Content "$PSScriptRoot/../modules/sentry-cli.properties" -Raw | ConvertFrom-StringData
 $platforms = @('Darwin-universal', 'Linux-x86_64', 'Windows-x86_64')
 $targetDir = "$PSScriptRoot/../package-dev/Editor/sentry-cli"
-$baseUrl = "https://github.com/getsentry/sentry-cli/releases/download/$version/sentry-cli-"
+$baseUrl = "$($conf.repo)/releases/download/$($conf.version)/sentry-cli-"
 
 if (Test-Path $targetDir)
 {
