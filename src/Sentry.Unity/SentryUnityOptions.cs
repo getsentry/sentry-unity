@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
@@ -175,7 +176,10 @@ namespace Sentry.Unity
                 ? "editor"
                 : "production";
 
-            CacheDirectoryPath = application.PersistentDataPath.Trim();
+            if (application.Platform is not RuntimePlatform.Switch)
+            {
+                CacheDirectoryPath = application.PersistentDataPath.Trim();
+            }
         }
 
         public override string ToString()
