@@ -1,6 +1,8 @@
 using System;
+using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace Sentry.Unity
 {
@@ -131,12 +133,36 @@ namespace Sentry.Unity
                 options.Environment = EnvironmentOverride;
             }
 
-            if (!EnableOfflineCaching)
-            {
-                options.CacheDirectoryPath = null;
-            }
-
             options.SetupLogging();
+
+            if (IsKnownPlatform(application))
+            {
+                options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
+            }
+            else
+            {
+                options.DefaultUserId = AnalyticsSessionInfo.userId;
+
+                // This is only provided on a best-effort basis for other than the explicitly supported platforms.
+                if (options.BackgroundWorker is null)
+                {
+                    options.DiagnosticLogger?.LogDebug("Platform support for background thread execution is unknown: using WebBackgroundWorker.");
+                    options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
+                }
+
+                if (EnableOfflineCaching)
+                {
+                    options.DiagnosticLogger?.LogDebug("Platform support for offline caching is unknown: disabling.");
+                    options.CacheDirectoryPath = null;
+                }
+
+                // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
+                if (options.AutoSessionTracking)
+                {
+                    options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
+                    options.AutoSessionTracking = false;
+                }
+            }
 
             OptionsConfiguration?.Configure(options);
 
@@ -157,6 +183,21 @@ namespace Sentry.Unity
             }
 
             return Debug;
+        }
+
+        internal bool IsKnownPlatform(IApplication? application = null)
+        {
+            application ??= ApplicationAdapter.Instance;
+            return application.Platform
+                is RuntimePlatform.Android
+                or RuntimePlatform.IPhonePlayer
+                or RuntimePlatform.WindowsEditor
+                or RuntimePlatform.WindowsPlayer
+                or RuntimePlatform.OSXEditor
+                or RuntimePlatform.OSXPlayer
+                or RuntimePlatform.LinuxEditor
+                or RuntimePlatform.LinuxPlayer
+                or RuntimePlatform.WebGLPlayer;
         }
     }
 }

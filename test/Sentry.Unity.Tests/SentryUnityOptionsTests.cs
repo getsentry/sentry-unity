@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-using System.Reflection;
 using NUnit.Framework;
-using Sentry.Unity.Json;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 
@@ -42,8 +38,7 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void Ctor_CacheDirectoryPath_IsApplicationPersistentDataPath() =>
-            Assert.AreEqual(_fixture.Application.PersistentDataPath, _fixture.GetSut().CacheDirectoryPath);
+        public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(_fixture.GetSut().CacheDirectoryPath);
 
         [Test]
         public void Ctor_IsGlobalModeEnabled_IsTrue() => Assert.IsTrue(_fixture.GetSut().IsGlobalModeEnabled);
