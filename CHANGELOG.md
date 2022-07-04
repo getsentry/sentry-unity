@@ -28,7 +28,7 @@
 ### Fixes
 
 - Only use application-not-responding detection in C#, disable in native plugins ([#852](https://github.com/getsentry/sentry-unity/pull/852))
-- The SDK no longer requests the persistent data path on the Switch ([#865](https://github.com/getsentry/sentry-unity/pull/865))
+- The SDK no longer accesses the disk on unknown platforms (i.e. Switch) ([#865](https://github.com/getsentry/sentry-unity/pull/865))
 
 ## 0.19.0
 
