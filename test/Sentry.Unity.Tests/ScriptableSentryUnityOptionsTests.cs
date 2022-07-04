@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using NUnit.Framework;
-using Sentry.Extensibility;
-using Sentry.Unity.Json;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 
@@ -31,25 +29,6 @@ namespace Sentry.Unity.Tests
         [SetUp]
         public void Setup() => _fixture = new Fixture();
         private Fixture _fixture = null!;
-
-        [Test]
-        [TestCase(true)]
-        [TestCase(false)]
-        public void ToSentryOptions_OptionsCreated_AreEqualToNewOptions(bool isBuilding)
-        {
-            var expectedOptions = new SentryUnityOptions(isBuilding, null, _fixture.Application);
-
-            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-
-            // These are config window specific differences in default values we actually want
-            scriptableOptions.Debug = false;
-            scriptableOptions.DebugOnlyInEditor = false;
-            scriptableOptions.DiagnosticLevel = SentryLevel.Debug;
-
-            var actualOptions = scriptableOptions.ToSentryUnityOptions(isBuilding, null, _fixture.Application);
-
-            AssertOptions(expectedOptions, actualOptions);
-        }
 
         [Test]
         [TestCase(true, true)]
@@ -140,6 +119,22 @@ namespace Sentry.Unity.Tests
             scriptableOptions.ToSentryUnityOptions(isBuilding);
 
             Assert.IsTrue(optionsConfiguration.GotCalled);
+        }
+
+        [Test]
+        [TestCase(RuntimePlatform.Switch)]
+        [TestCase(RuntimePlatform.PS4)]
+        [TestCase(RuntimePlatform.PS5)]
+        [TestCase(RuntimePlatform.XboxOne)]
+        public void ToSentryUnityOptions_UnknownPlatforms_DoesNotAccessDisk(RuntimePlatform targetPlatform)
+        {
+            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+            _fixture.Application.Platform = targetPlatform;
+
+            var options = scriptableOptions.ToSentryUnityOptions(false, null, _fixture.Application);
+
+            Assert.IsNull(options.CacheDirectoryPath);
+            Assert.IsFalse(options.AutoSessionTracking);
         }
 
         public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)

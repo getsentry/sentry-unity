@@ -1,9 +1,7 @@
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
-using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
@@ -137,7 +135,7 @@ namespace Sentry.Unity
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
+            this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
 
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new AnrIntegration(behaviour));
@@ -172,14 +170,9 @@ namespace Sentry.Unity
                 Release += $"+{application.BuildGUID}";
             }
 
-            Environment = (application.IsEditor && !isBuilding)
+            Environment = application.IsEditor && !isBuilding
                 ? "editor"
                 : "production";
-
-            if (application.Platform is not RuntimePlatform.Switch)
-            {
-                CacheDirectoryPath = application.PersistentDataPath.Trim();
-            }
         }
 
         public override string ToString()

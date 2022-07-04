@@ -7,8 +7,6 @@
 #define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
-#else
-#define SENTRY_DEFAULT
 #endif
 #endif
 
@@ -57,8 +55,6 @@ namespace Sentry.Unity
                     SentryNative.Configure(options);
 #elif SENTRY_WEBGL
                     SentryWebGL.Configure(options);
-#elif SENTRY_DEFAULT
-                    SentryUnknownPlatform.Configure(options);
 #endif
                 }
                 catch (DllNotFoundException e)
