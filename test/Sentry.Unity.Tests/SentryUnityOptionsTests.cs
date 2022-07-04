@@ -41,13 +41,6 @@ namespace Sentry.Unity.Tests
         public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(_fixture.GetSut().CacheDirectoryPath);
 
         [Test]
-        public void Ctor_CacheDirectory_IsNullOnPlatformSwitch()
-        {
-            _fixture.Application.Platform = RuntimePlatform.Switch;
-            Assert.IsNull(_fixture.GetSut().CacheDirectoryPath);
-        }
-
-        [Test]
         public void Ctor_IsGlobalModeEnabled_IsTrue() => Assert.IsTrue(_fixture.GetSut().IsGlobalModeEnabled);
 
         [Test]
