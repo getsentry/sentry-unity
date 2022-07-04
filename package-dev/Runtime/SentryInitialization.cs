@@ -14,7 +14,6 @@ using System;
 #if !UNITY_2021_3_OR_NEWER
 using System.Buffers;
 #endif
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -26,8 +25,6 @@ using Sentry.Unity.Android;
 using Sentry.Unity.Native;
 #elif SENTRY_WEBGL
 using Sentry.Unity.WebGL;
-#elif SENTRY_DEFAULT
-using Sentry.Unity.Default;
 #endif
 
 [assembly: AlwaysLinkAssembly]
@@ -139,15 +136,12 @@ namespace Sentry.Unity
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
             imageName = null;
-            // Unity 2020 does not *return* a newly allocated string as out-parameter,
-            // but rather expects a pre-allocated buffer it writes into.
-            // That buffer needs to have space for the hex-encoded uuid (32) plus
-            // terminating nul-byte.
+            // Unity 2020 does not *return* a newly allocated string as out-parameter, but rather expects a pre-allocated
+            // buffer it writes into. That buffer needs to have space for the hex-encoded uuid (32) plus terminating nul-byte.
             char[] uuidBuffer = new char[32 + 1];
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
-            // C-strings are nul-terminated, but the conversion here would
-            // normally keep that terminating nul-byte in the string, which
-            // we don't want.
+            // C-strings are nul-terminated, but the conversion here would normally keep that terminating nul-byte in
+            // the string, which we don't want.
             imageUUID = new string(uuidBuffer).TrimEnd('\0');
         }
 
