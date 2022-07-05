@@ -11,8 +11,9 @@
 #endif
 
 using System;
-#if !UNITY_2021_3_OR_NEWER
+#if UNITY_2020_3_OR_NEWER
 using System.Buffers;
+using System.Runtime.InteropServices;
 #endif
 using UnityEngine;
 using UnityEngine.Scripting;
@@ -25,6 +26,8 @@ using Sentry.Unity.Android;
 using Sentry.Unity.Native;
 #elif SENTRY_WEBGL
 using Sentry.Unity.WebGL;
+#elif SENTRY_DEFAULT
+using Sentry.Unity.Default;
 #endif
 
 [assembly: AlwaysLinkAssembly]
@@ -82,7 +85,7 @@ namespace Sentry.Unity
 #if ENABLE_IL2CPP
                true;
 #else
-               false;
+                false;
 #endif
         }
 
@@ -104,10 +107,11 @@ namespace Sentry.Unity
         public Il2CppMethods Il2CppMethods => _il2CppMethods;
 
         private Il2CppMethods _il2CppMethods
-        // Lowest supported version to have all required methods below
+            // Lowest supported version to have all required methods below
 #if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER
             ;
 #else
+#nullable enable
             = new Il2CppMethods(
                 il2cpp_gchandle_get_target,
 #if UNITY_2021_3_OR_NEWER
@@ -136,12 +140,11 @@ namespace Sentry.Unity
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
             imageName = null;
-            // Unity 2020 does not *return* a newly allocated string as out-parameter, but rather expects a pre-allocated
-            // buffer it writes into. That buffer needs to have space for the hex-encoded uuid (32) plus terminating nul-byte.
-            char[] uuidBuffer = new char[32 + 1];
+            // Unity 2020 does not *return* a newly allocated string as out-parameter, but rather expects a pre-allocated buffer it writes into.
+            // That buffer needs to have space for the hex-encoded uuid (32) plus terminating nul-byte.
+            var uuidBuffer = new char[32 + 1];
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
-            // C-strings are nul-terminated, but the conversion here would normally keep that terminating nul-byte in
-            // the string, which we don't want.
+            // C-strings are nul-terminated, but the conversion here would normally keep that terminating nul-byte in the string, which we don't want.
             imageUUID = new string(uuidBuffer).TrimEnd('\0');
         }
 
@@ -149,6 +152,7 @@ namespace Sentry.Unity
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char* imageUUID)
         [DllImport("__Internal")]
         private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, [Out] char[] imageUUID);
+#nullable disable
 #endif
 
 #endif
