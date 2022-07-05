@@ -30,6 +30,7 @@ static NSDictionary* getSentryOptions()
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
+        @""enableAppHangTracking"": @NO,
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}""
