@@ -85,7 +85,7 @@ namespace Sentry.Unity
 #if ENABLE_IL2CPP
                true;
 #else
-                false;
+               false;
 #endif
         }
 
@@ -111,7 +111,7 @@ namespace Sentry.Unity
 #if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER
             ;
 #else
-#nullable enable
+// #nullable enable
             = new Il2CppMethods(
                 il2cpp_gchandle_get_target,
 #if UNITY_2021_3_OR_NEWER
@@ -152,7 +152,7 @@ namespace Sentry.Unity
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char* imageUUID)
         [DllImport("__Internal")]
         private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, [Out] char[] imageUUID);
-#nullable disable
+// #nullable disable
 #endif
 
 #endif
