@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fixed linker issues for x86 IL2CPP builds on 2020.3 and newer ([#871](https://github.com/getsentry/sentry-unity/pull/871))
+
 ## 0.20.0
 
 ### Features
