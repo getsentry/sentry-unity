@@ -3,7 +3,7 @@
 #define SENTRY_NATIVE_COCOA
 #elif UNITY_ANDROID
 #define SENTRY_NATIVE_ANDROID
-#elif UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+#elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
 #define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
@@ -108,7 +108,7 @@ namespace Sentry.Unity
 
         private Il2CppMethods _il2CppMethods
 // Lowest supported version to have all required methods below
-#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER
+#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER || !UNITY_64
             ;
 #else
             = new Il2CppMethods(
