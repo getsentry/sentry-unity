@@ -107,18 +107,44 @@ namespace Sentry.Unity
         public Il2CppMethods Il2CppMethods => _il2CppMethods;
 
         private Il2CppMethods _il2CppMethods
-// Lowest supported version to have all required methods below
+            // Lowest supported version to have all required methods below
 #if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER || !UNITY_64
             ;
 #else
             = new Il2CppMethods(
                 il2cpp_gchandle_get_target,
-#if UNITY_2021_3_OR_NEWER
-                il2cpp_native_stack_trace,
-#else
                 Il2CppNativeStackTraceShim,
-#endif
                 il2cpp_free);
+
+        private static string SanitizeDebugId(string debugId)
+        {
+#if UNITY_ANDROID || UNITY_STANDALONE_LINUX
+            // For ELF platforms, the 20-byte `NT_GNU_BUILD_ID` needs to be
+            // turned into a "little-endian GUID", which means the first three
+            // components need to be byte-swapped appropriately.
+            // See: https://getsentry.github.io/symbolicator/advanced/symbol-server-compatibility/#identifiers
+
+            // As our id is already stringified, we will use substrings here,
+            // and we unconditionally byte-flip those as we assume that we only
+            // ever run on little-endian platforms. Additionally, we truncate
+            // this down from a 40-char build-id to a 32-char debug-id as well.
+            var a1 = debugId.Substring(0, 2);
+            var a2 = debugId.Substring(2, 2);
+            var a3 = debugId.Substring(4, 2);
+            var a4 = debugId.Substring(6, 2);
+            var b1 = debugId.Substring(8, 2);
+            var b2 = debugId.Substring(10, 2);
+            var c1 = debugId.Substring(12, 2);
+            var c2 = debugId.Substring(14, 2);
+            var d = debugId.Substring(16, 16);
+            return a4 + a3 + a2 + a1 + b2 + b1 + c2 + c1 + d;
+#else
+            // All other platforms we care about (Windows, macOS) already have
+            // an appropriate debug-id format for that platform so no modifications
+            // are needed.
+            return debugId;
+#endif
+        }
 
         // Available in Unity `2019.4.34f1` (and later)
         // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
@@ -132,6 +158,16 @@ namespace Sentry.Unity
 
 #if UNITY_2021_3_OR_NEWER
 #pragma warning disable 8632
+        private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
+        {
+            il2cpp_native_stack_trace(exc, out addresses, out numFrames, out imageUUID, out imageName);
+
+            if (imageUUID != null)
+            {
+                imageUUID = SanitizeDebugId(imageUUID);
+            }
+        }
+
         // Definition from Unity `2021.3` (and later):
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
         [DllImport("__Internal")]
@@ -142,12 +178,20 @@ namespace Sentry.Unity
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
             imageName = null;
-            // Unity 2020 does not *return* a newly allocated string as out-parameter, but rather expects a pre-allocated buffer it writes into.
-            // That buffer needs to have space for the hex-encoded uuid (32) plus terminating nul-byte.
-            var uuidBuffer = new char[32 + 1];
+            // Unity 2020 does not *return* a newly allocated string as out-parameter,
+            // but rather expects a pre-allocated buffer it writes into.
+            // That buffer needs to have space for either:
+            // - A hex-encoded `LC_UUID` on MacOS (32)
+            // - A hex-encoded GUID + Age on Windows (40)
+            // - A hex-encoded `NT_GNU_BUILD_ID` on ELF (Android/Linux) (40)
+            // plus a terminating nul-byte.
+            var uuidBuffer = new char[40 + 1];
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
-            // C-strings are nul-terminated, but the conversion here would normally keep that terminating nul-byte in the string, which we don't want.
-            imageUUID = new string(uuidBuffer).TrimEnd('\0');
+            // C-strings are nul-terminated, and we need to handle those specifically,
+            // as otherwise directly converting the `char[]` would preserve those nul-bytes.
+            imageUUID = new String(uuidBuffer, 0, Array.IndexOf(uuidBuffer, '\0'));
+
+            imageUUID = SanitizeDebugId(imageUUID);
         }
 #pragma warning restore 8632
 

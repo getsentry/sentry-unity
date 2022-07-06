@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
 - Explicitly disable Windows x86 native-error tracking and IL2CPP processing integration ([#871](https://github.com/getsentry/sentry-unity/pull/871))
+- Correctly byte-swap ELF build-ids ([#872](https://github.com/getsentry/sentry-unity/pull/872))
 
 ## 0.20.0
 
@@ -43,7 +46,7 @@
 
 ### Fixes
 
-- Don't report Aplication-Not-Responding while the app is in the background ([#796](https://github.com/getsentry/sentry-unity/pull/796))
+- Don't report Application-Not-Responding while the app is in the background ([#796](https://github.com/getsentry/sentry-unity/pull/796))
 
 ## 0.18.0
 
