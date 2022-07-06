@@ -11,7 +11,7 @@
 #endif
 
 using System;
-#if UNITY_2020_3_36_OR_NEWER
+#if UNITY_2020_3_OR_NEWER
 using System.Buffers;
 using System.Runtime.InteropServices;
 #endif
@@ -108,12 +108,12 @@ namespace Sentry.Unity
 
         private Il2CppMethods _il2CppMethods
 // Lowest supported version to have all required methods below
-#if !ENABLE_IL2CPP || !UNITY_2020_3_36_OR_NEWER
+#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER || !UNITY_64
             ;
 #else
             = new Il2CppMethods(
                 il2cpp_gchandle_get_target,
-#if UNITY_2021_3_5_OR_NEWER
+#if UNITY_2021_5_OR_NEWER
                 il2cpp_native_stack_trace,
 #else
                 Il2CppNativeStackTraceShim,
@@ -130,7 +130,7 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern void il2cpp_free(IntPtr ptr);
 
-#if UNITY_2021_3_5_OR_NEWER
+#if UNITY_2021_3_OR_NEWER
 #pragma warning disable 8632
         // Definition from Unity `2021.3` (and later):
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
