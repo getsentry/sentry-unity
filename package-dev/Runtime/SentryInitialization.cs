@@ -108,7 +108,7 @@ namespace Sentry.Unity
 
         private Il2CppMethods _il2CppMethods
 // Lowest supported version to have all required methods below
-#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER
+#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER || !UNITY_64
             ;
 #else
             = new Il2CppMethods(
@@ -125,7 +125,7 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern IntPtr il2cpp_gchandle_get_target(int gchandle);
 
-        // Available in Unity `2019.4.34f1` (and later)f
+        // Available in Unity `2019.4.34f1` (and later)
         // void il2cpp_free(void* ptr)
         [DllImport("__Internal")]
         private static extern void il2cpp_free(IntPtr ptr);
