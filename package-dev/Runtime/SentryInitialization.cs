@@ -113,7 +113,7 @@ namespace Sentry.Unity
 #else
             = new Il2CppMethods(
                 il2cpp_gchandle_get_target,
-#if UNITY_2021_5_OR_NEWER
+#if UNITY_2021_3_OR_NEWER
                 il2cpp_native_stack_trace,
 #else
                 Il2CppNativeStackTraceShim,
