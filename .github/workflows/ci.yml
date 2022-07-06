@@ -146,7 +146,7 @@ jobs:
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build /p:AndroidSdkDirectory=$ANDROID_HOME /p:JavaSdkDirectory=$JAVA_HOME_11_X64 -c Release
+        run: docker exec unity dotnet build /p=TargetFrameworks=netstandard2.0 /p:AndroidSdkDirectory=$ANDROID_HOME /p:JavaSdkDirectory=$JAVA_HOME_11_X64 -c Release
 
       - name: Assembly alias
         run: |
