@@ -46,6 +46,8 @@ const void *SentryNativeBridgeOptionsNew()
 {
     NSMutableDictionary *dictOptions = [[NSMutableDictionary alloc] init];
     dictOptions[@"sdk"] = @ { @"name" : @"sentry.cocoa.unity" };
+    dictOptions[@"enableAutoSessionTracking"] = @NO;
+    dictOptions[@"enableAppHangTracking"] = @NO;
     return CFBridgingRetain(dictOptions);
 }
 
