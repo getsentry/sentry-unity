@@ -116,8 +116,16 @@ namespace Sentry.Unity
                 Il2CppNativeStackTraceShim,
                 il2cpp_free);
 
-        private static string SanitizeDebugId(string debugId)
+#pragma warning disable 8632
+        // The incoming `ItrPtr` is a native `char*`, a pointer to a
+        // nul-terminated C string.
+        private static string? SanitizeDebugId(IntPtr debugIdPtr)
         {
+            if (debugIdPtr == IntPtr.Zero)
+            {
+                return null;
+            }
+
 #if UNITY_ANDROID || UNITY_STANDALONE_LINUX
             // For ELF platforms, the 20-byte `NT_GNU_BUILD_ID` needs to be
             // turned into a "little-endian GUID", which means the first three
@@ -128,22 +136,29 @@ namespace Sentry.Unity
             // and we unconditionally byte-flip those as we assume that we only
             // ever run on little-endian platforms. Additionally, we truncate
             // this down from a 40-char build-id to a 32-char debug-id as well.
-            var a1 = debugId.Substring(0, 2);
-            var a2 = debugId.Substring(2, 2);
-            var a3 = debugId.Substring(4, 2);
-            var a4 = debugId.Substring(6, 2);
-            var b1 = debugId.Substring(8, 2);
-            var b2 = debugId.Substring(10, 2);
-            var c1 = debugId.Substring(12, 2);
-            var c2 = debugId.Substring(14, 2);
-            var d = debugId.Substring(16, 16);
-            return a4 + a3 + a2 + a1 + b2 + b1 + c2 + c1 + d;
-#else
+            SwapHexByte(debugIdPtr, 0, 3);
+            SwapHexByte(debugIdPtr, 1, 2);
+            SwapHexByte(debugIdPtr, 4, 5);
+            SwapHexByte(debugIdPtr, 6, 7);
+            Marshal.WriteByte(debugIdPtr, 32, 0);
+
+            // This will swap the two hex-encoded bytes at offsets 1 and 2.
+            // Internally, it treats these as Int16, as the hex-encoding means they
+            // occupy 2 bytes each.
+            void SwapHexByte(IntPtr buffer, Int32 offset1, Int32 offset2)
+            {
+                var a = Marshal.ReadInt16(buffer, offset1 * 2);
+                var b = Marshal.ReadInt16(buffer, offset2 * 2);
+                Marshal.WriteInt16(buffer, offset2 * 2, a);
+                Marshal.WriteInt16(buffer, offset1 * 2, b);
+            }
+
             // All other platforms we care about (Windows, macOS) already have
             // an appropriate debug-id format for that platform so no modifications
             // are needed.
-            return debugId;
 #endif
+
+            return Marshal.PtrToStringAnsi(debugIdPtr);
         }
 
         // Available in Unity `2019.4.34f1` (and later)
@@ -157,24 +172,20 @@ namespace Sentry.Unity
         private static extern void il2cpp_free(IntPtr ptr);
 
 #if UNITY_2021_3_OR_NEWER
-#pragma warning disable 8632
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
-            il2cpp_native_stack_trace(exc, out addresses, out numFrames, out imageUUID, out imageName);
+            var uuidBuffer = IntPtr.Zero;
+            il2cpp_native_stack_trace(exc, out addresses, out numFrames, out uuidBuffer, out imageName);
 
-            if (imageUUID != null)
-            {
-                imageUUID = SanitizeDebugId(imageUUID);
-            }
+            imageUUID = SanitizeDebugId(uuidBuffer);
+            il2cpp_free(uuidBuffer);
         }
 
         // Definition from Unity `2021.3` (and later):
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
         [DllImport("__Internal")]
-        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
-#pragma warning restore 8632
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out IntPtr imageUUID, out string? imageName);
 #else
-#pragma warning disable 8632
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
             imageName = null;
@@ -185,22 +196,24 @@ namespace Sentry.Unity
             // - A hex-encoded GUID + Age on Windows (40)
             // - A hex-encoded `NT_GNU_BUILD_ID` on ELF (Android/Linux) (40)
             // plus a terminating nul-byte.
-            var uuidBuffer = new char[40 + 1];
+            var uuidBuffer = il2cpp_alloc(40 + 1);
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
-            // C-strings are nul-terminated, and we need to handle those specifically,
-            // as otherwise directly converting the `char[]` would preserve those nul-bytes.
-            imageUUID = new String(uuidBuffer, 0, Array.IndexOf(uuidBuffer, '\0'));
 
-            imageUUID = SanitizeDebugId(imageUUID);
+            imageUUID = SanitizeDebugId(uuidBuffer);
+            il2cpp_free(uuidBuffer);
         }
-#pragma warning restore 8632
+
+        // Available in Unity `2020.3` (possibly even sooner)
+        // void* il2cpp_alloc(size_t size)
+        [DllImport("__Internal")]
+        private static extern IntPtr il2cpp_alloc(uint size);
 
         // Definition from Unity `2020.3`:
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char* imageUUID)
         [DllImport("__Internal")]
-        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, [Out] char[] imageUUID);
+        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, IntPtr imageUUID);
 #endif
-
+#pragma warning restore 8632
 #endif
     }
 }
