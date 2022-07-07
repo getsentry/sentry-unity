@@ -117,8 +117,9 @@ namespace Sentry.Unity
                 il2cpp_free);
 
 #pragma warning disable 8632
-        // The incoming `ItrPtr` is a native `char*`, a pointer to a
-        // nul-terminated C string.
+        // The incoming `IntPtr` is a native `char*`, a pointer to a
+        // nul-terminated C string. This function converts it to a C# string,
+        // and also byte-swaps/truncates on ELF platforms.
         private static string? SanitizeDebugId(IntPtr debugIdPtr)
         {
             if (debugIdPtr == IntPtr.Zero)
@@ -132,8 +133,7 @@ namespace Sentry.Unity
             // components need to be byte-swapped appropriately.
             // See: https://getsentry.github.io/symbolicator/advanced/symbol-server-compatibility/#identifiers
 
-            // As our id is already stringified, we will use substrings here,
-            // and we unconditionally byte-flip those as we assume that we only
+            // We unconditionally byte-flip these as we assume that we only
             // ever run on little-endian platforms. Additionally, we truncate
             // this down from a 40-char build-id to a 32-char debug-id as well.
             SwapHexByte(debugIdPtr, 0, 3);
@@ -143,8 +143,8 @@ namespace Sentry.Unity
             Marshal.WriteByte(debugIdPtr, 32, 0);
 
             // This will swap the two hex-encoded bytes at offsets 1 and 2.
-            // Internally, it treats these as Int16, as the hex-encoding means they
-            // occupy 2 bytes each.
+            // Internally, it treats these as Int16, as the hex-encoding means
+            // they occupy 2 bytes each.
             void SwapHexByte(IntPtr buffer, Int32 offset1, Int32 offset2)
             {
                 var a = Marshal.ReadInt16(buffer, offset1 * 2);
