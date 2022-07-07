@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Fixes
+
 - Explicitly disable Windows x86 native-error tracking and IL2CPP processing integration ([#871](https://github.com/getsentry/sentry-unity/pull/871))
 
 ## 0.20.0
