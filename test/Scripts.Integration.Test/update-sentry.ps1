@@ -30,8 +30,9 @@ New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/NativeSupport/ObjectiveCPlugin*" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/NativeSupport/CppPlugin*" -Destination "$NewProjectAssetsPath/Scripts/"
+
+$NativePlugin = "extern ""C"" { void throw_cpp() { throw ""exception text""; } }"
+Out-File -FilePath "$NewProjectAssetsPath/Scripts/CppPlugin.cpp" -InputObject $NativePlugin
 
 Write-Host " OK"
 
