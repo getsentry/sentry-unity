@@ -157,13 +157,6 @@ function Test
             Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
             $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
-            Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
-            foreach ($consoleLine in $consoleOut)
-            {
-                Write-Host $consoleLine
-            }
-            Write-Host " ===== END OF CONSOLE ====="
-
             if ("$SuccessString" -eq "")
             {
                 $SuccessString = "${$Name.ToUpper()} TEST: PASS"
