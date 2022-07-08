@@ -15,6 +15,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
         private static void ConfigureOptions(Dictionary<string, string> args, [CallerMemberName] string functionName = "")
         {
+            var audioManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/AudioManager.asset")[0];
+            var serializedManager = new SerializedObject(audioManager);
+            var prop = serializedManager.FindProperty("m_DisableAudio");
+            prop.boolValue = true;
+            serializedManager.ApplyModifiedProperties();
+
             Debug.LogFormat("{0}: Invoking SentryOptions", functionName);
 
             if (!EditorApplication.ExecuteMenuItem("Tools/Sentry"))
