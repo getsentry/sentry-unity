@@ -335,7 +335,7 @@ namespace Sentry.Unity.Editor.Android
             => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
 
         internal void SetAnr(bool enableAnr)
-            => SetMetaData($"{SentryPrefix}.io.sentry.anr.enable", enableAnr.ToString());
+            => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr.ToString());
 
         internal void SetNdkScopeSync(bool enableNdkScopeSync)
             => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
