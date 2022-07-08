@@ -48,6 +48,9 @@ namespace Sentry.Unity.iOS
             options.DiagnosticLogger?.LogDebug("Setting SendDefaultPii: {0}", options.SendDefaultPii);
             OptionsSetInt(cOptions, "sendDefaultPii", options.SendDefaultPii ? 1 : 0);
 
+            options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
+            OptionsSetInt(cOptions, "attachScreenshot", options.AttachScreenshot ? 1 : 0);
+
             options.DiagnosticLogger?.LogDebug("Setting MaxBreadcrumbs: {0}", options.MaxBreadcrumbs);
             OptionsSetInt(cOptions, "maxBreadcrumbs", options.MaxBreadcrumbs);
 
