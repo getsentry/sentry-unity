@@ -3,20 +3,18 @@
 #define SENTRY_NATIVE_COCOA
 #elif UNITY_ANDROID
 #define SENTRY_NATIVE_ANDROID
-#elif UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+#elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
 #define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
-#else
-#define SENTRY_DEFAULT
 #endif
 #endif
 
 using System;
-#if !UNITY_2021_3_OR_NEWER
+#if UNITY_2020_3_OR_NEWER
 using System.Buffers;
-#endif
 using System.Runtime.InteropServices;
+#endif
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -57,8 +55,6 @@ namespace Sentry.Unity
                     SentryNative.Configure(options);
 #elif SENTRY_WEBGL
                     SentryWebGL.Configure(options);
-#elif SENTRY_DEFAULT
-                    SentryUnknownPlatform.Configure(options);
 #endif
                 }
                 catch (DllNotFoundException e)
@@ -111,8 +107,8 @@ namespace Sentry.Unity
         public Il2CppMethods Il2CppMethods => _il2CppMethods;
 
         private Il2CppMethods _il2CppMethods
-        // Lowest supported version to have all required methods below
-#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER
+// Lowest supported version to have all required methods below
+#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER || !UNITY_64
             ;
 #else
             = new Il2CppMethods(
@@ -135,25 +131,25 @@ namespace Sentry.Unity
         private static extern void il2cpp_free(IntPtr ptr);
 
 #if UNITY_2021_3_OR_NEWER
+#pragma warning disable 8632
         // Definition from Unity `2021.3` (and later):
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
         [DllImport("__Internal")]
         private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName);
+#pragma warning restore 8632
 #else
+#pragma warning disable 8632
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
             imageName = null;
-            // Unity 2020 does not *return* a newly allocated string as out-parameter,
-            // but rather expects a pre-allocated buffer it writes into.
-            // That buffer needs to have space for the hex-encoded uuid (32) plus
-            // terminating nul-byte.
-            char[] uuidBuffer = new char[32 + 1];
+            // Unity 2020 does not *return* a newly allocated string as out-parameter, but rather expects a pre-allocated buffer it writes into.
+            // That buffer needs to have space for the hex-encoded uuid (32) plus terminating nul-byte.
+            var uuidBuffer = new char[32 + 1];
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
-            // C-strings are nul-terminated, but the conversion here would
-            // normally keep that terminating nul-byte in the string, which
-            // we don't want.
+            // C-strings are nul-terminated, but the conversion here would normally keep that terminating nul-byte in the string, which we don't want.
             imageUUID = new string(uuidBuffer).TrimEnd('\0');
         }
+#pragma warning restore 8632
 
         // Definition from Unity `2020.3`:
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char* imageUUID)

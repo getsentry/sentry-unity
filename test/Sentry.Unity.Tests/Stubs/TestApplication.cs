@@ -33,7 +33,7 @@ namespace Sentry.Unity.Tests.Stubs
         public string BuildGUID { get; }
         public string UnityVersion { get; }
         public string PersistentDataPath { get; }
-        public RuntimePlatform Platform { get; }
+        public RuntimePlatform Platform { get; set; }
         private void OnQuitting() => Quitting?.Invoke();
 
         private void OnLogMessageReceived(string condition, string stacktrace, LogType type)

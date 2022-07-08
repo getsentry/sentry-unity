@@ -186,22 +186,25 @@ namespace Sentry.Unity.Editor.Native
 
             DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
             {
-                var msg = e.Data.ToString().Trim();
-                var msgLower = msg.ToLowerInvariant();
-                var level = SentryLevel.Info;
-                if (msgLower.StartsWith("error"))
+                if (!string.IsNullOrEmpty(e.Data))
                 {
-                    level = SentryLevel.Error;
-                }
-                else if (msgLower.StartsWith("warn"))
-                {
-                    level = SentryLevel.Warning;
-                }
+                    var msg = e.Data.Trim();
+                    var msgLower = msg.ToLowerInvariant();
+                    var level = SentryLevel.Info;
+                    if (msgLower.StartsWith("error"))
+                    {
+                        level = SentryLevel.Error;
+                    }
+                    else if (msgLower.StartsWith("warn"))
+                    {
+                        level = SentryLevel.Warning;
+                    }
 
-                // Remove the level and timestamp from the beginning of the message.
-                // INFO    2022-06-20 15:10:03.613794800 +02:00
-                msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
-                logger.Log(level, "sentry-cli: {0}", null, msg);
+                    // Remove the level and timestamp from the beginning of the message.
+                    // INFO    2022-06-20 15:10:03.613794800 +02:00
+                    msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
+                    logger.Log(level, "sentry-cli: {0}", null, msg);
+                }
             };
 
             process.OutputDataReceived += logForwarder;
