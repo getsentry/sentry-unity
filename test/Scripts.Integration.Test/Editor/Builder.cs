@@ -16,6 +16,7 @@ public class Builder
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
+        DisableUnityAudio();
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
@@ -96,5 +97,15 @@ public class Builder
         {
             throw new Exception("No valid '-buildPath' has been provided.");
         }
+    }
+
+    // Audio created issues, especially for iOS simulator so we disable it.
+    private static void DisableUnityAudio()
+    {
+        var audioManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/AudioManager.asset")[0];
+        var serializedManager = new SerializedObject(audioManager);
+        var prop = serializedManager.FindProperty("m_DisableAudio");
+        prop.boolValue = true;
+        serializedManager.ApplyModifiedProperties();
     }
 }

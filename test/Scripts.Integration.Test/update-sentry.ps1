@@ -25,14 +25,14 @@ function RunUnityAndExpect([string] $name, [string] $successMessage, [string] $f
 RunUnityAndExpect "AddSentryPackage" "Sentry Package Installation:" "Sentry setup: FAILED" @( `
         "-batchmode", "-projectPath ", "$NewProjectPath", "-installSentry", "Disk")
 
-Write-Host -NoNewline "Copying Test Files"
-# TODO: Replace copying from sample project with actually importing the package samples
+Write-Host -NoNewline "Copying Integration Test Files"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
+Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/NativeSupport/ObjectiveCPlugin*" -Destination "$NewProjectAssetsPath/Scripts/"
+Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scripts/NativeSupport/CppPlugin*" -Destination "$NewProjectAssetsPath/Scripts/"
+
 Write-Host " OK"
 
 $unityArgs = @( `
