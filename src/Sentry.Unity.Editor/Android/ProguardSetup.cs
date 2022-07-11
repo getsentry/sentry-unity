@@ -66,7 +66,7 @@ namespace Sentry.Unity.Editor.Android
             }
             else
             {
-                var gradleNew = Regex.Replace(gradle, @"(\s+consumerProguardFiles .*)", "$1, '" + RuleFileName + "'");
+                var gradleNew = Regex.Replace(gradle, @"(\s+consumerProguardFiles [^\r\n]*)", "$1, '" + RuleFileName + "'");
                 if (gradle.Length == gradleNew.Length)
                 {
                     throw new Exception($"Couldn't add Proguard rule {RuleFileName} to {_gradleScriptPath} - no `consumerProguardFiles` found.");
