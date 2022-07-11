@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
 using UnityEngine;
@@ -36,6 +37,10 @@ public class ThreadingSamples : MonoBehaviour
             case 3:
                 name = "Background: Coroutine";
                 _executor = fn => StartCoroutine(Coroutine(fn));
+                break;
+            case 4:
+                name = "Background: Thread";
+                _executor = fn => new Thread(() => fn()).Start();
                 break;
             default:
                 throw new ArgumentException($"Invalid threading dropdown value: {value}");
