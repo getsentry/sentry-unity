@@ -89,7 +89,7 @@ namespace Sentry.Unity
 
             var bytes = screenshot.EncodeToJPG(Quality);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                    "Screenshot captured at {0}x{1}: {0} bytes", null, width, height, bytes.Length);
+                    "Screenshot captured at {0}x{1}: {2} bytes", null, width, height, bytes.Length);
             return bytes;
         }
     }
