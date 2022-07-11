@@ -218,6 +218,8 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: 'BG: Coroutine'
       m_Image: {fileID: 0}
+    - m_Text: 'BG: Thread'
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
