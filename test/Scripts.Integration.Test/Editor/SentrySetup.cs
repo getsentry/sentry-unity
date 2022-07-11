@@ -8,6 +8,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
+public static class CommandLineArguments
+{
+    public static Dictionary<string, string> Parse()
+    {
+        var commandLineArguments = new Dictionary<string, string>();
+        var args = Environment.GetCommandLineArgs();
+
+        for (int current = 0, next = 1; current < args.Length; current++, next++)
+        {
+            if (!args[current].StartsWith("-"))
+            {
+                continue;
+            }
+
+            var flag = args[current].TrimStart('-');
+            var flagHasValue = next < args.Length && !args[next].StartsWith("-");
+            var flagValue = flagHasValue ? args[next].TrimStart('-') : "";
+
+            commandLineArguments.Add(flag, flagValue);
+        }
+
+        return commandLineArguments;
+    }
+}
 public class SentrySetup
 {
     enum SentryInstallOrigin
@@ -21,11 +45,11 @@ public class SentrySetup
 
     static void LogError(string message)
         => Debug.LogFormat(LogType.Error, LogOption.NoStacktrace, null, "Sentry Package Installation: {0}", message);
-    
+
     [InitializeOnLoadMethod]
     static void InstallSentry()
     {
-        var installOrigin = GetInstallOriginFromEnvironment(Builder.ParseCommandLineArguments());
+        var installOrigin = GetInstallOriginFromEnvironment(CommandLineArguments.Parse());
 
         if (installOrigin == SentryInstallOrigin.None)
         {
@@ -52,7 +76,7 @@ public class SentrySetup
             else
             {
                 LogDebug("Project contains Sentry.");
-            }        
+            }
 
             LogDebug($"Installing Sentry from {installOrigin}");
             var installCommand = GetInstallCommand(installOrigin);
@@ -87,7 +111,7 @@ public class SentrySetup
         LogError(errorMessage);
         EditorApplication.Exit(-1);
         // Throw since we will not return any value here.
-        throw new NotImplementedException(errorMessage);        
+        throw new NotImplementedException(errorMessage);
     }
 
     static SentryInstallOrigin GetInstallOriginFromEnvironment(Dictionary<string, string> args)

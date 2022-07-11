@@ -5,7 +5,7 @@
     [Switch] $CheckSymbols
 )
 
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+. ./test/Scripts.Integration.Test/globals.ps1
 . ./test/Scripts.Integration.Test/common.ps1
 
 $unityPath = FormatUnityPath $UnityPath
@@ -24,5 +24,6 @@ else
 {
     RunUnityCustom $unityPath $unityArgs
 }
+
 Write-Host "Project built successfully" -ForegroundColor Green
 Get-ChildItem $NewProjectBuildPath
