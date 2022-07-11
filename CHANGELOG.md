@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix ProGuard setup if build.gradle uses CRLF (Windows) line breaks ([#885](https://github.com/getsentry/sentry-unity/pull/885))
+
 ### Features
 
 - Bump CLI to v2.3.1 ([#875](https://github.com/getsentry/sentry-unity/pull/875))
