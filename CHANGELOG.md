@@ -4,7 +4,7 @@
 
 ### Features
 
-- Attach screenshots to native errors on iOS/macOS ([#878](https://github.com/getsentry/sentry-unity/pull/878))
+- Attach screenshots to native errors on iOS ([#878](https://github.com/getsentry/sentry-unity/pull/878))
 - Bump CLI to v2.3.1 ([#875](https://github.com/getsentry/sentry-unity/pull/875))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#231)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.3.0...2.3.1)
