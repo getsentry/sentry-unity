@@ -55,6 +55,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (args.TryGetValue("diagnosticLevel", out value))
             {
                 Debug.LogFormat("{0}: Configuring DiagnosticLevel to {1}", functionName, value);
+                options.DebugOnlyInEditor = false;
                 options.DiagnosticLevel = value switch
                 {
                     "debug" => SentryLevel.Debug,

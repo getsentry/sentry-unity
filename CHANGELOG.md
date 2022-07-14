@@ -4,6 +4,19 @@
 
 ### Features
 
+- Bump Java SDK to v6.2.1 ([#887](https://github.com/getsentry/sentry-unity/pull/887))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#621)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.1.4...6.2.1)
+
+## 0.21.0
+
+### Fixes
+
+- Fix ProGuard setup if build.gradle uses CRLF (Windows) line breaks ([#885](https://github.com/getsentry/sentry-unity/pull/885))
+
+### Features
+
+- Attach screenshots to native errors on iOS ([#878](https://github.com/getsentry/sentry-unity/pull/878))
 - Bump CLI to v2.3.1 ([#875](https://github.com/getsentry/sentry-unity/pull/875))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#231)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.3.0...2.3.1)

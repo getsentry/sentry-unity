@@ -11,7 +11,7 @@
     [Parameter()]
     [switch] $Crash
 )
-. $PSScriptRoot/IntegrationGlobals.ps1
+. $PSScriptRoot/globals.ps1
 . $PSScriptRoot/common.ps1
 
 Write-Host "Given parameters:"

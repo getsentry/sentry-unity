@@ -19,20 +19,10 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
 $ProjectName = "Unity-iPhone"
-if ($IsIntegrationTest)
-{
-    $XcodeArtifactPath = "samples/IntegrationTest/Build"
-    $ArchivePath = "$XcodeArtifactPath/archive"
-    $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/IntegrationTest.app"
-    $AppName = "com.DefaultCompany.IntegrationTest"
-}
-else
-{
-    $XcodeArtifactPath = "samples/artifacts/builds/iOS/Xcode"
-    $ArchivePath = "$XcodeArtifactPath/archive"
-    $AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/unity-of-bugs.app"
-    $AppName = "io.sentry.samples.unityofbugs"
-}
+$XcodeArtifactPath = "samples/IntegrationTest/Build"
+$ArchivePath = "$XcodeArtifactPath/archive"
+$AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/IntegrationTest.app"
+$AppName = "com.DefaultCompany.IntegrationTest"
 
 Class AppleDevice
 {
@@ -69,11 +59,15 @@ function Build()
 
     Write-Host "Building iOS project"
 
-    # We need to manually switch the CLI executable, because the artifact that came through GH actions'
-    # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
-    # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
-    #             with the missing executable bit in the UPM package - it's fixed on build.
-    chmod +x "$XcodeArtifactPath/sentry-cli-Darwin-universal"
+    $sentryCli = "sentry-cli-Darwin-universal"
+    if(Test-Path -Path "$XcodeArtifactPath/$sentryCli")
+    {
+        # We need to manually switch the CLI executable, because the artifact that came through GH actions'
+        # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
+        # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
+        #             with the missing executable bit in the UPM package - it's fixed on build.
+        chmod +x "$XcodeArtifactPath/$sentryCli"
+    }
 
     $buildCallback = {
         xcodebuild `
@@ -160,7 +154,7 @@ function Test
 
         function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "Launching $Name test on $($device.Name)" -ForegroundColor Green
+            Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
             $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
             if ("$SuccessString" -eq "")
@@ -168,7 +162,7 @@ function Test
                 $SuccessString = "${$Name.ToUpper()} TEST: PASS"
             }
 
-            Write-Host -NoNewline "$Name test STATUS: "
+            Write-Host -NoNewline "'$Name' test STATUS: "
             $stdout = $consoleOut  | Select-String $SuccessString
             If ($null -ne $stdout)
             {
@@ -178,7 +172,7 @@ function Test
             {
                 $device.TestFailed = $True
                 Write-Host "FAILED" -ForegroundColor Red
-                Write-Host "$($device.Name) Console"
+                Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
                 foreach ($consoleLine in $consoleOut)
                 {
                     Write-Host $consoleLine

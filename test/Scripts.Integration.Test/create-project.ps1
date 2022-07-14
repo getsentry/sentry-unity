@@ -2,11 +2,11 @@
     [string] $UnityPath
 )
 
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+. ./test/Scripts.Integration.Test/globals.ps1
 
 $UnityPath = FormatUnityPath $UnityPath
 
-# # Delete Previous Integration Project Folder if found
+# Delete previous integration test project folder if found
 If (Test-Path -Path "$NewProjectPath" )
 {
     Write-Host -NoNewline "Removing previous integration test:"
@@ -21,17 +21,9 @@ Write-Host " OK"
 Write-Host "Creating integration project:"
 RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "-quit")
 
-Write-Host -NoNewline "Copying Test scene"
-New-Item -Path "$NewProjectAssetsPath/Scenes" -Name $NewProjectName -ItemType "directory"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
-Write-Host " OK"
-
-Write-Host -NoNewline "Copying Scripts"
-$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
-$stdout = New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
-Copy-Item -Recurse "$IntegrationScriptsPath/SmokeTester.*" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item -Recurse "$UnityOfBugsPath/Assets/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
-Copy-Item -Recurse "$IntegrationScriptsPath/SentrySetup.*" -Destination "$NewProjectAssetsPath/Editor/"
+Write-Host "Copying Editor scripts to integration project:"
+New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
+Copy-Item -Recurse "$IntegrationScriptsPath/Editor/*" -Destination "$NewProjectAssetsPath/Editor/"
 Write-Host " OK"
 
 # Update ProjectSettings

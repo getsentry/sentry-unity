@@ -16,7 +16,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
         private class NativeOptionsTest : INativeOptions
         {
-            public void CreateFile(string path, SentryOptions options) { }
+            public void CreateFile(string path, SentryUnityOptions options) { }
         }
 
         private class Fixture

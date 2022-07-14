@@ -4,14 +4,14 @@ namespace Sentry.Unity.Editor.iOS
 {
     internal interface INativeOptions
     {
-        public void CreateFile(string path, SentryOptions options);
+        public void CreateFile(string path, SentryUnityOptions options);
     }
 
     internal class NativeOptions : INativeOptions
     {
-        public void CreateFile(string path, SentryOptions options) => File.WriteAllText(path, Generate(options));
+        public void CreateFile(string path, SentryUnityOptions options) => File.WriteAllText(path, Generate(options));
 
-        internal string Generate(SentryOptions options)
+        internal string Generate(SentryUnityOptions options)
         {
             var nativeOptions = $@"#import <Foundation/Foundation.h>
 
@@ -32,6 +32,7 @@ static NSDictionary* getSentryOptions()
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @NO,
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
+        @""attachScreenshot"" : @""{options.AttachScreenshot}"",
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}""
     }};
