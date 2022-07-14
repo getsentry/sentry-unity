@@ -177,8 +177,14 @@ namespace Sentry.Unity
             var uuidBuffer = IntPtr.Zero;
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, out uuidBuffer, out imageName);
 
-            imageUUID = SanitizeDebugId(uuidBuffer);
-            il2cpp_free(uuidBuffer);
+            try
+            {
+                imageUUID = SanitizeDebugId(uuidBuffer);
+            }
+            finally
+            {
+                il2cpp_free(uuidBuffer);
+            }
         }
 
         // Definition from Unity `2021.3` (and later):
@@ -199,8 +205,14 @@ namespace Sentry.Unity
             var uuidBuffer = il2cpp_alloc(40 + 1);
             il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
 
-            imageUUID = SanitizeDebugId(uuidBuffer);
-            il2cpp_free(uuidBuffer);
+            try
+            {
+                imageUUID = SanitizeDebugId(uuidBuffer);
+            }
+            finally
+            {
+                il2cpp_free(uuidBuffer);
+            }
         }
 
         // Available in Unity `2020.3` (possibly even sooner)

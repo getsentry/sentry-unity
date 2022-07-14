@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Correctly byte-swap ELF build-ids ([#872](https://github.com/getsentry/sentry-unity/pull/872))
+
 ### Features
 
 - Bump Java SDK to v6.2.1 ([#887](https://github.com/getsentry/sentry-unity/pull/887))
@@ -23,10 +27,6 @@
 - Bump Cocoa SDK to v7.20.0 ([#877](https://github.com/getsentry/sentry-unity/pull/877))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7200)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.19.0...7.20.0)
-
-### Fixes
-
-- Correctly byte-swap ELF build-ids ([#872](https://github.com/getsentry/sentry-unity/pull/872))
 
 ## 0.20.1
 
