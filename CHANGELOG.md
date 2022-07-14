@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Correctly byte-swap ELF build-ids ([#872](https://github.com/getsentry/sentry-unity/pull/872))
+
 ### Features
 
 - Bump Java SDK to v6.2.1 ([#887](https://github.com/getsentry/sentry-unity/pull/887))
@@ -69,7 +73,7 @@
 
 ### Fixes
 
-- Don't report Aplication-Not-Responding while the app is in the background ([#796](https://github.com/getsentry/sentry-unity/pull/796))
+- Don't report Application-Not-Responding while the app is in the background ([#796](https://github.com/getsentry/sentry-unity/pull/796))
 
 ## 0.18.0
 
