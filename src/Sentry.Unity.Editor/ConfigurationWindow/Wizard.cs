@@ -1,17 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.WizardApi;
 using UnityEditor;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
