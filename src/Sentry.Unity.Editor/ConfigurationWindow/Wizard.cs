@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.WizardApi;
@@ -28,7 +24,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         {
             if (Instance is null)
             {
-                Instance = ScriptableObject.CreateInstance<Wizard>();
+                Instance = CreateInstance<Wizard>();
                 Instance._logger = logger;
 
                 SentryWindow.SetTitle(Instance, description: "Setup wizard");
@@ -78,7 +74,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 EditorGUILayout.LabelField("Please select the organization and project you'd like to use.");
                 EditorGUILayout.Space();
 
-                var firstEntry = new string(' ', 60);
+                var blankEntry = new string(' ', 60);
 
                 // sort "unity" projects first
                 Response.projects.Sort((a, b) =>
@@ -97,35 +93,37 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     }
                 });
 
-                var orgsAndProjects = Response.projects.GroupBy(k => k.organization!.name, v => v).ToArray();
-
-                // if only one org
-                if (orgsAndProjects.Length == 1)
+                var orgsAndProjects = Response.projects.GroupBy(k => k.organization!.name, v => v);
+                var orgs = orgsAndProjects.Select(k => k.Key).ToArray();
+                if (orgs.Length > 1)
                 {
-                    _orgSelected = 1 + EditorGUILayout.Popup("Organization", _orgSelected - 1, orgsAndProjects.Select(k => k.Key).ToArray());
-                }
-                else
-                {
-                    _orgSelected = EditorGUILayout.Popup("Organization", _orgSelected, orgsAndProjects.Select(k => k.Key)
-                        .Prepend(firstEntry).ToArray());
+                    orgs = orgs.Prepend(blankEntry).ToArray();
                 }
 
-                if (_orgSelected > 0)
-                {
-                    _projectSelected = EditorGUILayout.Popup("Project", _projectSelected, orgsAndProjects[_orgSelected - 1].Select(v => $"{v.name} - ({v.slug})").ToArray()
-                        .Prepend(firstEntry).ToArray());
-                }
+                _orgSelected = EditorGUILayout.Popup("Organization", _orgSelected, orgs);
 
-                if (_projectSelected != 0)
+                if (orgs.Length == 1 || _orgSelected > 0)
                 {
-                    var proj = orgsAndProjects[_orgSelected - 1].ToArray()[_projectSelected - 1];
-                    wizardConfiguration = new WizardConfiguration
+                    var projects = orgsAndProjects.Where(k => k.Key == orgs[_orgSelected]).SelectMany(p => p).ToArray();
+                    var projectNames = projects.Select(v => v.name).ToArray();
+                    if (projectNames.Length > 1)
                     {
-                        Token = Response.apiKeys!.token,
-                        Dsn = proj.keys.First().dsn!.@public,
-                        OrgSlug = proj.organization!.slug,
-                        ProjectSlug = proj.slug,
-                    };
+                        projectNames = projectNames.Prepend(blankEntry).ToArray();
+                    }
+
+                    _projectSelected = EditorGUILayout.Popup("Project", _projectSelected, projectNames);
+
+                    if (projects.Length == 1 || _projectSelected > 0)
+                    {
+                        var project = projects.Where(p => p.name == projectNames[_projectSelected]).ToArray()[0];
+                        wizardConfiguration = new WizardConfiguration
+                        {
+                            Token = Response.apiKeys!.token,
+                            Dsn = project.keys.First().dsn!.@public,
+                            OrgSlug = project.organization!.slug,
+                            ProjectSlug = project.slug,
+                        };
+                    }
                 }
             }
 
