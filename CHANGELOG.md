@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fix ProGuard setup if build.gradle uses CRLF (Windows) line breaks ([#885](https://github.com/getsentry/sentry-unity/pull/885))
+- Wizard autoselects with only one options available ([#891](https://github.com/getsentry/sentry-unity/pull/891))
 
 ### Features
 
