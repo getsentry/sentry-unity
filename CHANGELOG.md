@@ -5,7 +5,7 @@
 ### Fixes
 
 - Correctly byte-swap ELF build-ids ([#872](https://github.com/getsentry/sentry-unity/pull/872))
-- Wizard autoselects with only one options available ([#891](https://github.com/getsentry/sentry-unity/pull/891))
+- Wizard autoselects with only one option available ([#891](https://github.com/getsentry/sentry-unity/pull/891))
 
 ### Features
 
