@@ -146,43 +146,50 @@ namespace Sentry.Unity.NativeUtils
 
         private static IEnumerable<DebugImage> LoadDebugImages()
         {
-            var cList = sentry_get_modules_list();
+            var result = new List<DebugImage>();
             try
             {
-                var result = new List<DebugImage>();
-
-                if (!IsNull(cList))
+                var cList = sentry_get_modules_list();
+                try
                 {
-                    var len = sentry_value_get_length(cList).ToUInt32();
-                    for (uint i = 0; i < len; i++)
+                    if (!IsNull(cList))
                     {
-                        var cItem = sentry_value_get_by_index(cList, (UIntPtr)i);
-                        if (!IsNull(cItem))
+                        var len = sentry_value_get_length(cList).ToUInt32();
+                        for (uint i = 0; i < len; i++)
                         {
-                            var image = new DebugImage();
+                            var cItem = sentry_value_get_by_index(cList, (UIntPtr)i);
+                            if (!IsNull(cItem))
+                            {
+                                var image = new DebugImage();
 
-                            // See possible values in
-                            // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L81
-                            // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L24
-                            // * https://github.com/getsentry/sentry-native/blob/c5c31e56d36bed37fa5422750a591f44502edb41/src/modulefinder/sentry_modulefinder_linux.c#L465
-                            image.CodeFile = GetValueString(cItem, "code_file");
-                            image.ImageAddress = GetValueString(cItem, "image_addr");
-                            image.ImageSize = GetValueLong(cItem, "image_size");
-                            image.DebugFile = GetValueString(cItem, "debug_file");
-                            image.DebugId = GetValueString(cItem, "debug_id");
-                            image.CodeId = GetValueString(cItem, "code_id");
-                            image.Type = GetValueString(cItem, "type");
+                                // See possible values in
+                                // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L81
+                                // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L24
+                                // * https://github.com/getsentry/sentry-native/blob/c5c31e56d36bed37fa5422750a591f44502edb41/src/modulefinder/sentry_modulefinder_linux.c#L465
+                                image.CodeFile = GetValueString(cItem, "code_file");
+                                image.ImageAddress = GetValueString(cItem, "image_addr");
+                                image.ImageSize = GetValueLong(cItem, "image_size");
+                                image.DebugFile = GetValueString(cItem, "debug_file");
+                                image.DebugId = GetValueString(cItem, "debug_id");
+                                image.CodeId = GetValueString(cItem, "code_id");
+                                image.Type = GetValueString(cItem, "type");
 
-                            result.Add(image);
+                                result.Add(image);
+                            }
                         }
                     }
                 }
-                return result;
+                finally
+                {
+                    sentry_value_decref(cList);
+                }
             }
-            finally
+            catch (Exception e)
             {
-                sentry_value_decref(cList);
+                // Adding the Sentry logger prefix ensures we don't send this error to Sentry.
+                UnityEngine.Debug.LogError($"{UnityLogger.LogPrefix}Error loading the list of debug images: {e}");
             }
+            return result;
         }
 
         // Returns a new reference to an immutable, frozen list.

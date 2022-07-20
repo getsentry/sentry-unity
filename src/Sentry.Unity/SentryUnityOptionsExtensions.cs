@@ -63,9 +63,9 @@ namespace Sentry.Unity
             }
         }
 
-        internal static void AddIl2CppExceptionProcessor(this SentryUnityOptions options, ISentryUnityInfo? unityInfo)
+        internal static void AddIl2CppExceptionProcessor(this SentryUnityOptions options, ISentryUnityInfo unityInfo)
         {
-            if (unityInfo?.Il2CppMethods is not null)
+            if (unityInfo.Il2CppMethods is not null)
             {
                 options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options, unityInfo, unityInfo.Il2CppMethods));
             }
