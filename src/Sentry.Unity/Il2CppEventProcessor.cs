@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Protocol;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity
@@ -32,9 +33,13 @@ namespace Sentry.Unity
             }
             var exceptions = EnumerateChainedExceptions(incomingException);
 
+            var debugImages = (sentryEvent.DebugImages ??= new List<DebugImage>());
+
+            // TODO maybe filter only images needed for the current stack trace instead of adding all of them?
+            debugImages.AddRange(C.DebugImages.Value);
+
             // Unity by definition only builds a single library/image,
             // which we add once to our list of debug images.
-            var debugImages = (sentryEvent.DebugImages ??= new List<DebugImage>());
             // The il2cpp APIs give us image-relative instruction addresses, not
             // absolute ones. When processing events via symbolicator, we do want
             // to have absolute addresses. For this reason, we just add a sentinel
