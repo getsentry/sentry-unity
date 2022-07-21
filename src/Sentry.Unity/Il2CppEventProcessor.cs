@@ -38,15 +38,12 @@ namespace Sentry.Unity
             // TODO maybe filter only images needed for the current stack trace instead of adding all of them?
             debugImages.AddRange(C.DebugImages.Value);
 
-            // Unity by definition only builds a single library/image,
-            // which we add once to our list of debug images.
-            // The il2cpp APIs give us image-relative instruction addresses, not
-            // absolute ones. When processing events via symbolicator, we do want
-            // to have absolute addresses. For this reason, we just add a sentinel
-            // value to the `DebugImage` and `InstructionAddress`, which makes
-            // addresses absolute and still associates the address with the one
-            // and only `GameAssembly` image.
-            var imageAddress = 0x1000;
+            // Unity by definition only builds a single library which we add once to our list of debug images.
+            // We want to use an address that is definitely outside of any address range used by real libraries.
+            // Canonical addresses on x64 leave a gap in the middle of the address space, which is unused.
+            // This is a range of addresses that we should be able to safely use.
+            // See https://en.wikipedia.org/wiki/X86-64#Virtual_address_space_details
+            long imageAddress = (long)1 << 63;
             var didAddImage = false;
 
             foreach (var (sentryException, exception) in sentryExceptions.Zip(exceptions, (se, ex) => (se, ex)))
@@ -96,7 +93,7 @@ namespace Sentry.Unity
                     // The instructions in the stack trace generally have "return addresses"
                     // in them. But for symbolication, we want to symbolicate the address of
                     // the "call instruction", which in almost all cases happens to be
-                    // the instruction right in front of the return address.
+                    // the instruction right in front of the return address .
                     // A good heuristic to use in that case is to just subtract 1.
                     var instructionAddr = imageAddress + nativeFrame.ToInt64() - 1;
                     frame.InstructionAddress = $"0x{instructionAddr:X8}";
