@@ -277,7 +277,6 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             )
             if ($unity2020OrHigher)
             {
-                Write-Host "Unity 2020 or higher"
                 $expectedFiles = @(
                     "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
                     "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)"
