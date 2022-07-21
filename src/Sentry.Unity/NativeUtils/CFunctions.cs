@@ -48,7 +48,11 @@ namespace Sentry.Unity.NativeUtils
         {
             if (GetValueOrNul(obj, key) is { } cValue)
             {
-                return sentry_value_as_string(cValue);
+                var cString = sentry_value_as_string(cValue);
+                if (cString != IntPtr.Zero)
+                {
+                    return Marshal.PtrToStringAnsi(cString);
+                }
             }
             return null;
         }
@@ -107,7 +111,7 @@ namespace Sentry.Unity.NativeUtils
         internal static extern double sentry_value_as_double(sentry_value_t value);
 
         [DllImport("sentry")]
-        internal static extern string sentry_value_as_string(sentry_value_t value);
+        internal static extern IntPtr sentry_value_as_string(sentry_value_t value);
 
         [DllImport("sentry")]
         internal static extern UIntPtr sentry_value_get_length(sentry_value_t value);
