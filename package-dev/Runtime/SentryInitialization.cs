@@ -10,6 +10,10 @@
 #endif
 #endif
 
+#if ENABLE_IL2CPP && UNITY_2020_3_OR_NEWER && (SENTRY_NATIVE_COCOA || SENTRY_NATIVE_ANDROID || SENTRY_NATIVE)
+#define IL2CPP_LINENUMBER_SUPPORT
+#endif
+
 using System;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
@@ -108,7 +112,7 @@ namespace Sentry.Unity
 
         private Il2CppMethods _il2CppMethods
             // Lowest supported version to have all required methods below
-#if !ENABLE_IL2CPP || !UNITY_2020_3_OR_NEWER || !UNITY_64
+#if !IL2CPP_LINENUMBER_SUPPORT
             ;
 #else
             = new Il2CppMethods(
