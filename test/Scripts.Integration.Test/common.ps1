@@ -167,6 +167,8 @@ function RunWithSymbolServer([ScriptBlock] $Callback)
 
 function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput, [string] $unityVersion)
 {
+    Write-Host "Checking symbol server output" -ForegroundColor Yellow
+
     # Server stats contains:
     # filename
     #    count = the number of occurrences of the same file name during upload,
@@ -175,6 +177,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     $expectedFiles = @()
     $unity2020OrHigher = $unityVersion -match "202[0-9]+"
     $unity2021OrHigher = $unityVersion -match "202[1-9]+"
+
     # Currently we only test symbol upload with sources, but we want to keep the values below to also test without in the future.
     # We can have up to 4 different types of files grouped under one name:
     # * the executable itself
@@ -265,7 +268,6 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         else
         {
             $expectedFiles = @(
-                "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)",
                 'libil2cpp.so: count=1',
                 'libmain.so: count=1',
                 'libsentry-android.so: count=7',
@@ -276,13 +278,15 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             if ($unity2020OrHigher)
             {
                 $expectedFiles = @(
-                    "libil2cpp.sym.so: count=$($withSources ? 3 : 2)"
+                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
+                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)"
                 ) + $expectedFiles
             }
             else
             {
                 $expectedFiles = @(
-                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)"
+                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
+                    "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)"
                 ) + $expectedFiles
             }
         }
@@ -320,21 +324,25 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
 
     Write-Host 'Verifying debug symbol upload...'
     $successful = $true
-    :nextExpectedFile foreach ($name in $expectedFiles)
+    :nextExpectedFile foreach ($file in $expectedFiles)
     {
-        $alternatives = ($name -is [array]) ? $name : @($name)
-        foreach ($name in $alternatives)
+        $alternatives = ($file -is [array]) ? $file : @($file)
+        foreach ($file in $alternatives)
         {
             # It's enough if a single symbol alternative is found
-            if ($symbolServerOutput -match "  $([Regex]::Escape($name))\b")
+            if ($symbolServerOutput -match "  $([Regex]::Escape($file))\b")
             {
-                Write-Host "  $name - OK"
+                Write-Host "  $file - OK"
                 continue nextExpectedFile
             }
         }
         # Note: control only gets here if none of the alternatives match...
         $successful = $false
-        Write-Host "  $alternatives - MISSING" -ForegroundColor Red
+        $fileWithoutCount = $file.Substring(0, $file.Length-1)
+        $filePattern = [Regex]::new('(?<=' + "$([Regex]::Escape($fileWithoutCount))" + ')[\w]+')
+        $actualCount = $filePattern.Matches($symbolServerOutput)
+
+        Write-Host "  $alternatives - MISSING `n    Server received '$actualCount' instead." -ForegroundColor Red
     }
     if ($successful)
     {
