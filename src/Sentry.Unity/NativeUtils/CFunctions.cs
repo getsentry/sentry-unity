@@ -53,7 +53,7 @@ namespace Sentry.Unity.NativeUtils
             return null;
         }
 
-        internal static long? GetValueLong(sentry_value_t obj, string key)
+        internal static int? GetValueInt(sentry_value_t obj, string key)
         {
             if (GetValueOrNul(obj, key) is { } cValue)
             {
@@ -168,7 +168,7 @@ namespace Sentry.Unity.NativeUtils
                                 // * https://github.com/getsentry/sentry-native/blob/c5c31e56d36bed37fa5422750a591f44502edb41/src/modulefinder/sentry_modulefinder_linux.c#L465
                                 image.CodeFile = GetValueString(cItem, "code_file");
                                 image.ImageAddress = GetValueString(cItem, "image_addr");
-                                image.ImageSize = GetValueLong(cItem, "image_size");
+                                image.ImageSize = GetValueInt(cItem, "image_size");
                                 image.DebugFile = GetValueString(cItem, "debug_file");
                                 image.DebugId = GetValueString(cItem, "debug_id");
                                 image.CodeId = GetValueString(cItem, "code_id");
