@@ -175,6 +175,12 @@ namespace Sentry.Unity.Editor.Android
             if (disableSymbolsUpload)
             {
                 symbolsUpload.RemoveUploadFromGradleFile();
+
+                if (_options!.Il2CppLineNumberSupportEnabled)
+                {
+                    _logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
+                }
+
                 return;
             }
 
@@ -190,7 +196,7 @@ namespace Sentry.Unity.Editor.Android
                     symbolsUpload.TryCopySymbolsToGradleProject();
                 }
 
-                symbolsUpload.AppendUploadToGradleFile(sentryCliPath);
+                symbolsUpload.AppendUploadToGradleFile(sentryCliPath, _options!.Il2CppLineNumberSupportEnabled);
             }
             catch (Exception e)
             {

@@ -120,7 +120,8 @@ namespace Sentry.Unity
                 AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
                 WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
                 MacosNativeSupportEnabled = MacosNativeSupportEnabled,
-                LinuxNativeSupportEnabled = LinuxNativeSupportEnabled
+                LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
+                Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled
             };
 
             if (!string.IsNullOrWhiteSpace(ReleaseOverride))
@@ -167,7 +168,7 @@ namespace Sentry.Unity
             OptionsConfiguration?.Configure(options);
 
             // Doing this after the configure callback to allow users to programmatically opt out
-            if (!isBuilding && Il2CppLineNumberSupportEnabled)
+            if (!isBuilding && options.Il2CppLineNumberSupportEnabled)
             {
                 options.AddIl2CppExceptionProcessor(unityInfo);
             }

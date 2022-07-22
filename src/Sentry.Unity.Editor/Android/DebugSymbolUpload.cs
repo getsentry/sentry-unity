@@ -64,7 +64,7 @@ gradle.taskGraph.whenReady {{
             _symbolUploadPaths = GetSymbolUploadPaths(isExporting, application);
         }
 
-        public void AppendUploadToGradleFile(string sentryCliPath)
+        public void AppendUploadToGradleFile(string sentryCliPath, bool il2cppMappingUpload)
         {
             if (LoadGradleScript().Contains("sentry.properties"))
             {
@@ -80,7 +80,11 @@ gradle.taskGraph.whenReady {{
                 throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
             }
 
-            var uploadDifArguments = "\"--il2cpp-mapping\",";
+            var uploadDifArguments = string.Empty;
+            if (il2cppMappingUpload)
+            {
+                uploadDifArguments = "\"--il2cpp-mapping\",";
+            }
             if (_cliOptions?.UploadSources ?? false)
             {
                 uploadDifArguments += "\"--include-sources\",";

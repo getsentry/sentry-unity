@@ -95,6 +95,11 @@ namespace Sentry.Unity
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Whether the SDK should add IL2CPP line number support
+        /// </summary>
+        public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
+
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
         internal string? DefaultUserId
