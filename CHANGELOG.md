@@ -10,6 +10,7 @@
 
 ### Features
 
+- Added programmatic access to enable the experimental IL2CPP line numbers support ([#905](https://github.com/getsentry/sentry-unity/pull/905))
 - Bump Java SDK to v6.3.0 ([#887](https://github.com/getsentry/sentry-unity/pull/887), [#894](https://github.com/getsentry/sentry-unity/pull/894))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#630)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.1.4...6.3.0)
