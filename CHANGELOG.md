@@ -10,9 +10,9 @@
 
 ### Features
 
-- Bump Java SDK to v6.2.1 ([#887](https://github.com/getsentry/sentry-unity/pull/887))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#621)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.1.4...6.2.1)
+- Bump Java SDK to v6.3.0 ([#887](https://github.com/getsentry/sentry-unity/pull/887), [#894](https://github.com/getsentry/sentry-unity/pull/894))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#630)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.1.4...6.3.0)
 - Bump CLI to v2.5.0 ([#889](https://github.com/getsentry/sentry-unity/pull/889), [#898](https://github.com/getsentry/sentry-unity/pull/898))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#250)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.3.1...2.5.0)
