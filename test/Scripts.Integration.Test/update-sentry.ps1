@@ -27,9 +27,7 @@ RunUnityAndExpect "AddSentryPackage" "Sentry Package Installation:" "Sentry setu
 
 Write-Host -NoNewline "Copying Integration Test Files"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
-New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
-Copy-Item -Recurse "$IntegrationScriptsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
 
 Write-Host " OK"
 
