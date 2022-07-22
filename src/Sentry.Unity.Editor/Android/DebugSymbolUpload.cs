@@ -64,7 +64,7 @@ gradle.taskGraph.whenReady {{
             _symbolUploadPaths = GetSymbolUploadPaths(isExporting, application);
         }
 
-        public void AppendUploadToGradleFile(string sentryCliPath, bool il2cppMappingUpload)
+        public void AppendUploadToGradleFile(string sentryCliPath, bool il2cppMappingUpload = false)
         {
             if (LoadGradleScript().Contains("sentry.properties"))
             {

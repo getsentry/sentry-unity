@@ -142,7 +142,7 @@ fi
                 .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
-        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger, SentryCliOptions sentryCliOptions, bool il2cppMappingUpload)
+        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger, SentryCliOptions sentryCliOptions, bool il2cppMappingUpload = false)
         {
             if (MainTargetContainsSymbolUploadBuildPhase())
             {
