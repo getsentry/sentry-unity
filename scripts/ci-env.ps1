@@ -8,7 +8,7 @@ switch ($name) {
         return "2019.4.39f1"
     }
     "unity2020" {
-        return "2020.3.36f1"
+        return "2020.3.37f1"
     }
     "unity2021" {
         return "2021.3.6f1"
