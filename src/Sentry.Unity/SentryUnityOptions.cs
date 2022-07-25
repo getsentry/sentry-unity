@@ -98,6 +98,11 @@ namespace Sentry.Unity
         /// <summary>
         /// Whether the SDK should add IL2CPP line number support
         /// </summary>
+        /// <remarks>
+        /// To give line numbers, Sentry requires the debug symbols Unity generates during build
+        /// For that reason, uploading debug information files must be enabled. 
+        /// For that, Org Slut, Project Slug and Auth token are required.
+        /// </remarks>
         public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
 
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
