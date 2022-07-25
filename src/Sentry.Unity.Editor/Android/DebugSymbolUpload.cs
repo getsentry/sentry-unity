@@ -80,11 +80,7 @@ gradle.taskGraph.whenReady {{
                 throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
             }
 
-            var uploadDifArguments = string.Empty;
-            if (il2cppMappingUpload)
-            {
-                uploadDifArguments = "\"--il2cpp-mapping\",";
-            }
+            var uploadDifArguments = "--il2cpp-mapping";
             if (_cliOptions?.UploadSources ?? false)
             {
                 uploadDifArguments += "\"--include-sources\",";
