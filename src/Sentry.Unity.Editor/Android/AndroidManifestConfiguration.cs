@@ -196,7 +196,7 @@ namespace Sentry.Unity.Editor.Android
                     symbolsUpload.TryCopySymbolsToGradleProject();
                 }
 
-                symbolsUpload.AppendUploadToGradleFile(sentryCliPath, _options!.Il2CppLineNumberSupportEnabled);
+                symbolsUpload.AppendUploadToGradleFile(sentryCliPath);
             }
             catch (Exception e)
             {
