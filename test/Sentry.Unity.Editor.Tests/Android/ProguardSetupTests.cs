@@ -1,12 +1,8 @@
 using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
-using Sentry.Unity.Tests.Stubs;
-using UnityEditor;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
