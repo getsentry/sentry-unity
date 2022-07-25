@@ -142,7 +142,7 @@ fi
                 .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
-        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger, SentryCliOptions sentryCliOptions, bool il2cppMappingUpload = false)
+        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger, SentryCliOptions sentryCliOptions)
         {
             if (MainTargetContainsSymbolUploadBuildPhase())
             {
@@ -150,14 +150,10 @@ fi
                 return;
             }
 
-            var uploadDifArguments = string.Empty;
-            if (il2cppMappingUpload)
-            {
-                uploadDifArguments += "--il2cpp-mapping ";
-            }
+            var uploadDifArguments = "--il2cpp-mapping";
             if (sentryCliOptions.UploadSources)
             {
-                uploadDifArguments += "--include-sources ";
+                uploadDifArguments += " --include-sources";
             }
             var uploadScript = string.Format(_uploadScript, SentryCli.SentryCliMacOS, uploadDifArguments);
 

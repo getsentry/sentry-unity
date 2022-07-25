@@ -157,11 +157,7 @@ namespace Sentry.Unity.Editor.Native
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
             }
 
-            var cliArgs = "upload-dif ";
-            if (options.Il2CppLineNumberSupportEnabled)
-            {
-                cliArgs += "--il2cpp-mapping ";
-            }
+            var cliArgs = "upload-dif --il2cpp-mapping ";
             if (cliOptions.UploadSources)
             {
                 cliArgs += "--include-sources ";
