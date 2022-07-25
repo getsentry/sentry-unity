@@ -102,6 +102,11 @@ namespace Sentry.Unity.Editor.Native
             var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
             if (!cliOptions.IsValid(logger))
             {
+                if (options.Il2CppLineNumberSupportEnabled)
+                {
+                    logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
+                }
+
                 return;
             }
 

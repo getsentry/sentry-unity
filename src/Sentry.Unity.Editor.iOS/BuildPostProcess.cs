@@ -64,6 +64,10 @@ namespace Sentry.Unity.Editor.iOS
                     SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
                     sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, sentryCliOptions);
                 }
+                else if (options.Il2CppLineNumberSupportEnabled)
+                {
+                    logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
+                }
             }
             catch (Exception e)
             {

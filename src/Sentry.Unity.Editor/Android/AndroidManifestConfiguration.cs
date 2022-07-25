@@ -157,7 +157,7 @@ namespace Sentry.Unity.Editor.Android
             var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath,
                 PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android), EditorUserBuildSettings.exportAsGoogleAndroidProject);
 
-            if (_options is null || !_options.Enabled || !_options.AndroidNativeSupportEnabled)
+            if (_options is not { Enabled: true, AndroidNativeSupportEnabled: true })
             {
                 disableSymbolsUpload = true;
             }
@@ -175,6 +175,12 @@ namespace Sentry.Unity.Editor.Android
             if (disableSymbolsUpload)
             {
                 symbolsUpload.RemoveUploadFromGradleFile();
+
+                if (_options is { Il2CppLineNumberSupportEnabled: true })
+                {
+                    _logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
+                }
+
                 return;
             }
 
