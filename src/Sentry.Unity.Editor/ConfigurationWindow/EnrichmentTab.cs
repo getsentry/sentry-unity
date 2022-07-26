@@ -84,6 +84,14 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                     "Additionally, the screenshot is captured mid-frame, when an event happens, so it may be incomplete.\n" +
                                                     "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
                 options.AttachScreenshot);
+
+            options.ScreenshotQuality = (ScreenshotQuality)EditorGUILayout.EnumPopup(
+                new GUIContent("Quality", "The resolution quality of the screenshot."),
+                options.ScreenshotQuality);
+
+            options.ScreenshotCompression = EditorGUILayout.IntSlider(
+                new GUIContent("Compression", "The compression of the screenshot."),
+                options.ScreenshotCompression, 1, 100);
         }
     }
 }

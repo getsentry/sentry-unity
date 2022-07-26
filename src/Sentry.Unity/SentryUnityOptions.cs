@@ -71,6 +71,13 @@ namespace Sentry.Unity
         public bool AttachScreenshot { get; set; } = false;
 
         /// <summary>
+        /// The quality of the attached screenshot
+        /// </summary>
+        public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
+
+        public int ScreenshotCompression { get; set; } = 75;
+
+        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;
@@ -100,7 +107,7 @@ namespace Sentry.Unity
         /// </summary>
         /// <remarks>
         /// To give line numbers, Sentry requires the debug symbols Unity generates during build
-        /// For that reason, uploading debug information files must be enabled. 
+        /// For that reason, uploading debug information files must be enabled.
         /// For that, Org Slut, Project Slug and Auth token are required.
         /// </remarks>
         public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
@@ -219,5 +226,28 @@ Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
         /// No compression should be performed.
         /// </summary>
         NoCompression = CompressionLevel.NoCompression,
+    }
+
+    /// <summary>
+    /// Controls for the JPEG compression quality of the attached screenshot
+    /// </summary>
+    public enum ScreenshotQuality
+    {
+        /// <summary>
+        /// Low quality
+        /// </summary>
+        Native,
+        /// <summary>
+        /// High quality
+        /// </summary>
+        High,
+        /// <summary>
+        /// Medium quality
+        /// </summary>
+        Medium,
+        /// <summary>
+        /// Low quality
+        /// </summary>
+        Low
     }
 }
