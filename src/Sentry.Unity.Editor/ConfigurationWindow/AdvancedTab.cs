@@ -83,7 +83,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             if (options.Il2CppLineNumberSupportEnabled)
             {
-                if(!SentryUnityVersion.IsNewerOrEqualThan("2020.3"))
+                if (!SentryUnityVersion.IsNewerOrEqualThan("2020.3"))
                 {
                     EditorGUILayout.HelpBox("The IL2CPP line number feature is supported from Unity version 2020.3 or newer and 2021.3  or newer onwards", MessageType.Warning);
                 }
