@@ -141,7 +141,7 @@ namespace Sentry.Unity
         // On Linux, the image also has shorter UUID coming from Unity, e.g. 3028cb80b0712541,
         // while native image UUID we get is 3028cb80-b071-2541-0000-000000000000.
         private static string? NormalizeUUID(string? value) =>
-            value?.ToLowerInvariant().Replace("-", "").TrimEnd(new char[]{'0'});
+            value?.ToLowerInvariant().Replace("-", "").TrimEnd(new char[] { '0' });
 
         private class DebugImageInfo
         {
