@@ -164,21 +164,20 @@ namespace Sentry.Unity.NativeUtils
                             var cItem = sentry_value_get_by_index(cList, (UIntPtr)i);
                             if (!IsNull(cItem))
                             {
-                                var image = new DebugImage();
-
-                                // See possible values in
+                                // See possible values present in `cItem` in the following files (or their latest versions)
                                 // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L81
                                 // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L24
                                 // * https://github.com/getsentry/sentry-native/blob/c5c31e56d36bed37fa5422750a591f44502edb41/src/modulefinder/sentry_modulefinder_linux.c#L465
-                                image.CodeFile = GetValueString(cItem, "code_file");
-                                image.ImageAddress = GetValueString(cItem, "image_addr");
-                                image.ImageSize = GetValueInt(cItem, "image_size");
-                                image.DebugFile = GetValueString(cItem, "debug_file");
-                                image.DebugId = GetValueString(cItem, "debug_id");
-                                image.CodeId = GetValueString(cItem, "code_id");
-                                image.Type = GetValueString(cItem, "type");
-
-                                result.Add(image);
+                                result.Add(new DebugImage()
+                                {
+                                    CodeFile = GetValueString(cItem, "code_file"),
+                                    ImageAddress = GetValueString(cItem, "image_addr"),
+                                    ImageSize = GetValueInt(cItem, "image_size"),
+                                    DebugFile = GetValueString(cItem, "debug_file"),
+                                    DebugId = GetValueString(cItem, "debug_id"),
+                                    CodeId = GetValueString(cItem, "code_id"),
+                                    Type = GetValueString(cItem, "type"),
+                                });
                             }
                         }
                     }
