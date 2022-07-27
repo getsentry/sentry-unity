@@ -14,8 +14,7 @@ namespace Sentry.Unity
 
     internal class ScreenshotAttachmentContent : IAttachmentContent
     {
-        private const int MaxSize = 1920;
-        private readonly int[] _resolutionQuality = { 1, 2, 3, 4 }; // Native, half, third, quarter
+        private readonly int[] _resolutionModifiers = { 1, 2, 3, 4 }; // Native, half, third, quarter
 
         private readonly SentryMonoBehaviour _behaviour;
         private readonly SentryUnityOptions _options;
@@ -43,20 +42,12 @@ namespace Sentry.Unity
 
         private byte[] CaptureScreenshot()
         {
-            var resolutionModifier = _resolutionQuality[(int)_options.ScreenshotQuality];
+            var resolutionModifier = _resolutionModifiers[(int)_options.ScreenshotQuality];
 
             // Make sure the screenshot size does not exceed MaxSize by scaling the image while conserving the
             // original ratio based on which, width or height, is the smaller
             var targetWidth = Screen.width / resolutionModifier;
             var targetHeight = Screen.height / resolutionModifier;
-            var ratioW = targetWidth <= MaxSize ? 1.0f : MaxSize / (float)targetWidth;
-            var ratioH = targetHeight <= MaxSize ? 1.0f : MaxSize / (float)targetHeight;
-            var ratio = Mathf.Min(ratioH, ratioW);
-            if (ratio is > 0.0f and < 1.0f)
-            {
-                targetWidth = Mathf.FloorToInt(targetWidth * ratio);
-                targetHeight = Mathf.FloorToInt(targetHeight * ratio);
-            }
 
             // Captures the current screenshot synchronously.
             var screenshot = new Texture2D(targetWidth, targetHeight, TextureFormat.RGB24, false);
@@ -89,7 +80,7 @@ namespace Sentry.Unity
                 RenderTexture.active = previousRT;
             }
 
-            var bytes = screenshot.EncodeToJPG(_resolutionQuality[_options.ScreenshotCompression]);
+            var bytes = screenshot.EncodeToJPG(_resolutionModifiers[_options.ScreenshotCompression]);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
                     "Screenshot captured at {0}x{1}: {2} bytes", null, targetWidth, targetHeight, bytes.Length);
             return bytes;

@@ -78,7 +78,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            options.AttachScreenshot = EditorGUILayout.Toggle(
+            options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Attach Screenshot", "Try to attach current screenshot on events.\n" +
                                                     "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
                                                     "Additionally, the screenshot is captured mid-frame, when an event happens, so it may be incomplete.\n" +
@@ -92,6 +92,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             options.ScreenshotCompression = EditorGUILayout.IntSlider(
                 new GUIContent("Compression", "The compression of the screenshot."),
                 options.ScreenshotCompression, 1, 100);
+
+            EditorGUILayout.EndToggleGroup();
         }
     }
 }

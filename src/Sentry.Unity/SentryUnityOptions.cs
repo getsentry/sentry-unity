@@ -234,9 +234,9 @@ Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
     public enum ScreenshotQuality
     {
         /// <summary>
-        /// Low quality
+        /// Full quality
         /// </summary>
-        Native,
+        Full,
         /// <summary>
         /// High quality
         /// </summary>
