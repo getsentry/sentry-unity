@@ -75,58 +75,100 @@ namespace Sentry.Unity
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    var nativeImageUUID = NormalizeUUID(nativeStackTrace.ImageUuid);
+                    var mainImageUUID = NormalizeUUID(nativeStackTrace.ImageUuid);
+
+                    // _options.DiagnosticLogger?.Log(SentryLevel.Debug, "Processing stack frame '{0}' image address: {1:X8}, packge: {2}",
+                    //     null, frame.Function, frame.ImageAddress, frame.Package);
 
                     // The instructions in the stack trace generally have "return addresses"
                     // in them. But for symbolication, we want to symbolicate the address of
                     // the "call instruction", which in almost all cases happens to be
                     // the instruction right in front of the return address.
                     // A good heuristic to use in that case is to just subtract 1.
+                    // TODO should we do this for all addresses or only relative ones?
+                    //      If the former, we should also update `frame.InstructionAddress` down below.
                     var instructionAddress = (ulong)nativeFrame.ToInt64() - 1;
-                    var image = FindDebugImageContainingAddress(instructionAddress);
 
-                    if (image is not null)
-                    {
-                        _options.DiagnosticLogger?.Log(SentryLevel.Debug, "Stack frame '{0}' at {1:X8} belonging to debug image {2} based on instruction address.",
-                            null, frame.Function, nativeFrame.ToInt64(), image.CodeFile);
-                    }
-                    else
-                    {
-                        // First, try to find the image by UUID.
-                        var notes = "";
-                        if (nativeImageUUID is not null)
-                        {
-                            image = DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUUID(info.Image.DebugId), nativeImageUUID))?.Image;
-                            if (image is not null)
-                            {
-                                notes = " as determined by NativeStackTrace image UUID";
-                            }
-                        }
+                    // We cannot determine whether this frame is a main library frame just from the address
+                    // because even relative address on the frame may correspond to an absolute addres of a loaded library.
+                    // Therefore, if the frame package matches known prefixes, we assume it's a GameAssembly frame.
+                    var isMainLibFrame = frame.Package is not null && (
+                        frame.Package.StartsWith("UnityEngine.", StringComparison.InvariantCultureIgnoreCase) ||
+                        frame.Package.StartsWith("Assembly-CSharp", StringComparison.InvariantCultureIgnoreCase)
+                    );
 
+                    string? notes = null;
+                    DebugImage? image = null;
+                    bool? isRelativeAddress = null;
+                    if (!isMainLibFrame)
+                    {
+                        image = FindDebugImageContainingAddress(instructionAddress);
                         if (image is null)
                         {
-                            mainLibImage ??= new DebugImage
-                            {
-                                Type = _sentryUnityInfo.Platform,
-                                // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
-                                // A null/missing `CodeFile` however would lead to a processing error in sentry.
-                                // Since the code file is not strictly necessary for processing, we just fall back to
-                                // a sentinel value here.
-                                CodeFile = string.IsNullOrEmpty(nativeStackTrace.ImageName) ? "GameAssembly.fallback" : nativeStackTrace.ImageName,
-                                DebugId = nativeStackTrace.ImageUuid,
-                                ImageAddress = $"0x{mainLibOffset:X8}",
-                            };
-                            image = mainLibImage;
+                            isRelativeAddress = true;
+                            notes = "because it looks like a relative address.";
+                            // falls through to the next `if (image is null)`
+                        }
+                        else
+                        {
+                            isRelativeAddress = false;
+                            notes = "because it looks like an absolute address inside the range of this debug image.";
+                        }
+                    }
+
+                    if (image is null)
+                    {
+                        if (mainImageUUID is null)
+                        {
+                            _options.DiagnosticLogger?.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
+                            continue;
                         }
 
-                        _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                            "Found stack frame '{0}' with a relative address {1:X8} inside debug image {2}{3}",
-                            null, frame.Function, nativeFrame.ToInt64(), image.CodeFile, notes);
+                        // First, try to find the image among loaded one, otherwise create a dummy one.
+                        mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUUID(info.Image.DebugId), mainImageUUID))?.Image;
+                        mainLibImage ??= new DebugImage
+                        {
+                            Type = _sentryUnityInfo.Platform,
+                            // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
+                            // A null/missing `CodeFile` however would lead to a processing error in sentry.
+                            // Since the code file is not strictly necessary for processing, we just fall back to
+                            // a sentinel value here.
+                            CodeFile = string.IsNullOrEmpty(nativeStackTrace.ImageName) ? "GameAssembly.fallback" : nativeStackTrace.ImageName,
+                            DebugId = mainImageUUID,
+                            ImageAddress = $"0x{mainLibOffset:X8}",
+                        };
 
+                        image = mainLibImage;
+                        if (isMainLibFrame)
+                        {
+                            notes ??= $"based on frame package name ({frame.Package}).";
+                        }
+                    }
+
+                    var imageAddress = Convert.ToUInt64(image.ImageAddress, 16);
+                    isRelativeAddress ??= instructionAddress < imageAddress;
+
+                    if (isRelativeAddress is true)
+                    {
                         // Shift the instruction address to be absolute.
-                        instructionAddress += Convert.ToUInt64(image.ImageAddress, 16);
+                        instructionAddress += imageAddress;
                         frame.InstructionAddress = $"0x{instructionAddress:X8}";
                     }
+
+                    // sanity check that the instruction fits inside the range
+                    var logLevel = SentryLevel.Debug;
+                    if (image.ImageSize is not null)
+                    {
+                        if (instructionAddress < imageAddress || instructionAddress > imageAddress + (ulong)image.ImageSize)
+                        {
+                            logLevel = SentryLevel.Warning;
+                            notes ??= ".";
+                            notes += " However, the instruction address falls out of the range of the debug image.";
+                        }
+                    }
+
+                    _options.DiagnosticLogger?.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
+                        null, frame.Function, instructionAddress, nativeFrame.ToInt64(), image.CodeFile, notes ?? "");
 
                     _ = usedImages.Add(image);
                 }
@@ -155,11 +197,13 @@ namespace Sentry.Unity
                 StartAddress = Convert.ToUInt64(image.ImageAddress, 16);
                 EndAddress = StartAddress + (ulong)image.ImageSize!;
             }
+
+            public bool ContainsAddress(ulong address) => StartAddress <= address && address <= EndAddress;
         }
 
         private static IDiagnosticLogger? _logger;
 
-        private static Lazy<List<DebugImageInfo>> DebugImagesSorted = new(() =>
+        private static readonly Lazy<List<DebugImageInfo>> DebugImagesSorted = new(() =>
         {
             var result = new List<DebugImageInfo>();
             var nativeDebugImages = C.DebugImages.Value;
@@ -195,19 +239,26 @@ namespace Sentry.Unity
         private static DebugImage? FindDebugImageContainingAddress(ulong instructionAddress)
         {
             var list = DebugImagesSorted.Value;
-            foreach (var info in list)
+
+            // Manual binary search implementation on "value in range".
+            int lowerBound = 0;
+            int upperBound = list.Count - 1;
+            while (lowerBound <= upperBound)
             {
+                int mid = (lowerBound + upperBound) / 2;
+                var info = list[mid];
+
                 if (info.StartAddress <= instructionAddress)
                 {
-                    if (info.EndAddress >= instructionAddress)
+                    if (instructionAddress <= info.EndAddress)
                     {
                         return info.Image;
                     }
+                    lowerBound = mid + 1;
                 }
                 else
                 {
-                    // no more images could match, because they're sorted by the StartAddress
-                    break;
+                    upperBound = mid - 1;
                 }
             }
             return null;

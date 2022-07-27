@@ -146,7 +146,7 @@ namespace Sentry.Unity.NativeUtils
         [DllImport("sentry")]
         internal static extern void sentry_remove_extra(string key);
 
-        internal static Lazy<IEnumerable<DebugImage>> DebugImages = new(LoadDebugImages);
+        internal static readonly Lazy<IEnumerable<DebugImage>> DebugImages = new(LoadDebugImages);
 
         private static IEnumerable<DebugImage> LoadDebugImages()
         {
