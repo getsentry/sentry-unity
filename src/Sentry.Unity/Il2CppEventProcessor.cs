@@ -19,6 +19,8 @@ namespace Sentry.Unity
             _options = options;
             _sentryUnityInfo = sentryUnityInfo;
             _il2CppMethods = il2CppMethods;
+
+            _options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
         }
 
         public void Process(Exception incomingException, SentryEvent sentryEvent)

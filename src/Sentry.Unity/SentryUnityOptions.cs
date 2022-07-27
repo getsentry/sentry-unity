@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
@@ -141,6 +142,8 @@ namespace Sentry.Unity
         /// Used to synchronize context from .NET to the native SDK
         /// </summary>
         internal ContextWriter? NativeContextWriter { get; set; } = null;
+
+        internal List<string> SdkIntegrationNames { get; set; } = new();
 
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
