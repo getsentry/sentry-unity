@@ -14,8 +14,7 @@ namespace Sentry.Unity
 
     internal class ScreenshotAttachmentContent : IAttachmentContent
     {
-        private const int Quality = 75;
-        private const int MaxSize = 1920;
+        private readonly int[] _resolutionModifiers = { 1, 2, 3, 4 }; // Full, half, third, quarter
 
         private readonly SentryMonoBehaviour _behaviour;
         private readonly SentryUnityOptions _options;
@@ -41,26 +40,31 @@ namespace Sentry.Unity
             return new MemoryStream(CaptureScreenshot());
         }
 
-        private byte[] CaptureScreenshot()
+        private int GetResolutionModifier(ScreenshotQuality quality)
         {
-            // Make sure the screenshot size does not exceed MaxSize by scaling the image while conserving the
-            // original ratio based on which, width or height, is the smaller
-            var width = Screen.width;
-            var height = Screen.height;
-            var ratioW = width <= MaxSize ? 1.0f : MaxSize / (float)width;
-            var ratioH = height <= MaxSize ? 1.0f : MaxSize / (float)height;
-            var ratio = Mathf.Min(ratioH, ratioW);
-            if (ratio is > 0.0f and < 1.0f)
+            var index = (int)quality;
+            if (index < _resolutionModifiers.Length)
             {
-                width = Mathf.FloorToInt(width * ratio);
-                height = Mathf.FloorToInt(height * ratio);
+                return _resolutionModifiers[index];
             }
 
+            return 1;
+        }
+
+        private byte[] CaptureScreenshot()
+        {
+            var resolutionModifier = GetResolutionModifier(_options.ScreenshotQuality);
+
+            // Make sure the screenshot size does not exceed MaxSize by scaling the image while conserving the
+            // original ratio based on which, width or height, is the smaller
+            var targetWidth = Screen.width / resolutionModifier;
+            var targetHeight = Screen.height / resolutionModifier;
+
             // Captures the current screenshot synchronously.
-            var screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
+            var screenshot = new Texture2D(targetWidth, targetHeight, TextureFormat.RGB24, false);
             var rtFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
             ScreenCapture.CaptureScreenshotIntoRenderTexture(rtFull);
-            var rtResized = RenderTexture.GetTemporary(width, height);
+            var rtResized = RenderTexture.GetTemporary(targetWidth, targetHeight);
             // On all (currently supported) platforms except Android, the image is mirrored horizontally & vertically.
             // So we must mirror it back.
             if (ApplicationAdapter.Instance.Platform is (RuntimePlatform.Android or RuntimePlatform.LinuxPlayer))
@@ -78,7 +82,7 @@ namespace Sentry.Unity
             try
             {
                 // actually copy from the current render target a texture & read data from the active RenderTexture
-                screenshot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                screenshot.ReadPixels(new Rect(0, 0, targetWidth, targetHeight), 0, 0);
                 screenshot.Apply();
             }
             finally
@@ -87,9 +91,9 @@ namespace Sentry.Unity
                 RenderTexture.active = previousRT;
             }
 
-            var bytes = screenshot.EncodeToJPG(Quality);
+            var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                    "Screenshot captured at {0}x{1}: {2} bytes", null, width, height, bytes.Length);
+                    "Screenshot captured at {0}x{1}: {2} bytes", null, targetWidth, targetHeight, bytes.Length);
             return bytes;
         }
     }

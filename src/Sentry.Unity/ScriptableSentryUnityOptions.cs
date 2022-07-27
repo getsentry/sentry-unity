@@ -41,6 +41,9 @@ namespace Sentry.Unity
         [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
         [field: SerializeField] public bool AttachStacktrace { get; set; }
         [field: SerializeField] public bool AttachScreenshot { get; set; }
+        [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
+        [field: SerializeField] public int ScreenshotCompression { get; set; } = 75;
+
         [field: SerializeField] public int MaxBreadcrumbs { get; set; } = Constants.DefaultMaxBreadcrumbs;
 
         [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
@@ -103,6 +106,8 @@ namespace Sentry.Unity
                 AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
                 AttachStacktrace = AttachStacktrace,
                 AttachScreenshot = AttachScreenshot,
+                ScreenshotQuality = ScreenshotQuality,
+                ScreenshotCompression = ScreenshotCompression,
                 MaxBreadcrumbs = MaxBreadcrumbs,
                 ReportAssembliesMode = ReportAssembliesMode,
                 SendDefaultPii = SendDefaultPii,
