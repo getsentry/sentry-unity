@@ -24,8 +24,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUILayout.EndToggleGroup();
 
             cliOptions.Auth = EditorGUILayout.TextField(
-                new GUIContent(
-                    "Auth Token", "The authorization token from your user settings in Sentry"),
+                new GUIContent("Auth Token", "The authorization token from your user settings in Sentry"),
                 cliOptions.Auth);
 
             cliOptions.Organization = EditorGUILayout.TextField(
@@ -33,8 +32,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 cliOptions.Organization);
 
             cliOptions.Project = EditorGUILayout.TextField(
-                new GUIContent(
-                    "Project Name", "The project name in Sentry"),
+                new GUIContent("Project Name", "The project name in Sentry"),
                 cliOptions.Project);
 
             cliOptions.UrlOverride = EditorGUILayout.TextField(
