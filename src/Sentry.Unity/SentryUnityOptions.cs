@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
@@ -100,7 +101,7 @@ namespace Sentry.Unity
         /// </summary>
         /// <remarks>
         /// To give line numbers, Sentry requires the debug symbols Unity generates during build
-        /// For that reason, uploading debug information files must be enabled. 
+        /// For that reason, uploading debug information files must be enabled.
         /// For that, Org Slut, Project Slug and Auth token are required.
         /// </remarks>
         public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
@@ -131,6 +132,8 @@ namespace Sentry.Unity
         /// Used to synchronize context from .NET to the native SDK
         /// </summary>
         internal ContextWriter? NativeContextWriter { get; set; } = null;
+
+        internal List<string> SdkIntegrationNames { get; set; } = new();
 
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
