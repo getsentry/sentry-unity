@@ -86,7 +86,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.AttachScreenshot);
 
             options.ScreenshotQuality = (ScreenshotQuality)EditorGUILayout.EnumPopup(
-                new GUIContent("Quality", "The resolution quality of the screenshot."),
+                new GUIContent("Quality", "The resolution quality of the screenshot.\n" +
+                                          "'Full': Fully of the current resolution\n" +
+                                          "'High': Half of the current resolution\n" +
+                                          "'Medium': Third of the current resolution\n" +
+                                          "'Low': Quarter of the current resolution"),
                 options.ScreenshotQuality);
 
             options.ScreenshotCompression = EditorGUILayout.IntSlider(

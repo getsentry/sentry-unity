@@ -14,7 +14,7 @@ namespace Sentry.Unity
 
     internal class ScreenshotAttachmentContent : IAttachmentContent
     {
-        private readonly int[] _resolutionModifiers = { 1, 2, 3, 4 }; // Native, half, third, quarter
+        private readonly int[] _resolutionModifiers = { 1, 2, 3, 4 }; // Full, half, third, quarter
 
         private readonly SentryMonoBehaviour _behaviour;
         private readonly SentryUnityOptions _options;
@@ -40,9 +40,20 @@ namespace Sentry.Unity
             return new MemoryStream(CaptureScreenshot());
         }
 
+        private int GetResolutionModifier(ScreenshotQuality quality)
+        {
+            var index = (int)quality;
+            if (index < _resolutionModifiers.Length)
+            {
+                return _resolutionModifiers[index];
+            }
+
+            return 1;
+        }
+
         private byte[] CaptureScreenshot()
         {
-            var resolutionModifier = _resolutionModifiers[(int)_options.ScreenshotQuality];
+            var resolutionModifier = GetResolutionModifier(_options.ScreenshotQuality);
 
             // Make sure the screenshot size does not exceed MaxSize by scaling the image while conserving the
             // original ratio based on which, width or height, is the smaller
@@ -80,7 +91,7 @@ namespace Sentry.Unity
                 RenderTexture.active = previousRT;
             }
 
-            var bytes = screenshot.EncodeToJPG(_resolutionModifiers[_options.ScreenshotCompression]);
+            var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
                     "Screenshot captured at {0}x{1}: {2} bytes", null, targetWidth, targetHeight, bytes.Length);
             return bytes;
