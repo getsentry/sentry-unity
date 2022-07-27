@@ -75,6 +75,9 @@ namespace Sentry.Unity
         /// </summary>
         public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
 
+        /// <summary>
+        /// The JPG compression quality of the attached screenshot
+        /// </summary>
         public int ScreenshotCompression { get; set; } = 75;
 
         /// <summary>
