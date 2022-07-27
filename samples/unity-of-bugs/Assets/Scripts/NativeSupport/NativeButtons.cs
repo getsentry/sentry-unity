@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Sentry;
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Diagnostics;
@@ -37,4 +39,26 @@ public class NativeButtons : MonoBehaviour
     // CPlugin.c
     [DllImport("__Internal")]
     private static extern void crash_in_c();
+
+    public void CatchViaCallback() => call_into_csharp(new callback_t(csharpCallback));
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void callback_t(int code);
+
+    [DllImport("__Internal")]
+    private static extern void call_into_csharp(callback_t callback);
+
+    // This method is called from the C library.
+    [AOT.MonoPInvokeCallback(typeof(callback_t))]
+    private static void csharpCallback(int code)
+    {
+        try
+        {
+            throw new Exception($"C# exception triggered via native callback. Code = {code}");
+        }
+        catch (Exception e)
+        {
+            SentrySdk.CaptureException(e);
+        }
+    }
 }
