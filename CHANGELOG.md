@@ -10,7 +10,7 @@
 
 ### Features
 
-- Added highlights and info messages to editor configuration window ([#910](https://github.com/getsentry/sentry-unity/pull/910))
+- Added parameters to the options to control screenshot quality ([#911](https://github.com/getsentry/sentry-unity/pull/911))
 - Added programmatic access to enable the experimental IL2CPP line numbers support ([#905](https://github.com/getsentry/sentry-unity/pull/905))
 - Bump Java SDK to v6.3.0 ([#887](https://github.com/getsentry/sentry-unity/pull/887), [#894](https://github.com/getsentry/sentry-unity/pull/894))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#630)
