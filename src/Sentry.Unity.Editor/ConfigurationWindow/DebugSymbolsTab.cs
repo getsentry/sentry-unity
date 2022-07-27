@@ -25,23 +25,16 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             cliOptions.Auth = EditorGUILayout.TextField(
                 new GUIContent(
-                    "Auth Token",
-                    cliOptions.UploadSymbols && string.IsNullOrWhiteSpace(cliOptions.Auth) ? SentryWindow.ErrorIcon : null,
-                    "The authorization token from your user settings in Sentry"),
+                    "Auth Token", "The authorization token from your user settings in Sentry"),
                 cliOptions.Auth);
 
             cliOptions.Organization = EditorGUILayout.TextField(
-                new GUIContent(
-                    "Org Slug",
-                    cliOptions.UploadSymbols && string.IsNullOrWhiteSpace(cliOptions.Organization) ? SentryWindow.ErrorIcon : null,
-                    "The organization slug in Sentry"),
+                new GUIContent("Org Slug", "The organization slug in Sentry"),
                 cliOptions.Organization);
 
             cliOptions.Project = EditorGUILayout.TextField(
                 new GUIContent(
-                    "Project Name",
-                    cliOptions.UploadSymbols && string.IsNullOrWhiteSpace(cliOptions.Project) ? SentryWindow.ErrorIcon : null,
-                    "The project name in Sentry"),
+                    "Project Name", "The project name in Sentry"),
                 cliOptions.Project);
 
             cliOptions.UrlOverride = EditorGUILayout.TextField(

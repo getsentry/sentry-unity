@@ -44,7 +44,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
         public ScriptableSentryUnityOptions Options { get; private set; } = null!; // Set by OnEnable()
         public SentryCliOptions CliOptions { get; private set; } = null!; // Set by OnEnable()
-        public static Texture2D? ErrorIcon { get; private set; }
 
         public event Action<ValidationError> OnValidationError = _ => { };
 
@@ -83,7 +82,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             SetTitle(this);
             Options = SentryScriptableObject.CreateOrLoad<ScriptableSentryUnityOptions>(OptionsPath);
             CliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(CliOptionsPath);
-            ErrorIcon = EditorGUIUtility.Load("icons/console.erroricon.png") as Texture2D;
         }
 
         internal static void SaveWizardResult(WizardConfiguration config)
@@ -142,7 +140,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     TransportTab.Display(Options);
                     break;
                 case 3:
-                    AdvancedTab.Display(Options, CliOptions);
+                    AdvancedTab.Display(Options);
                     break;
                 case 4:
                     OptionsConfigurationTab.Display(Options);
