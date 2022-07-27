@@ -14,11 +14,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                       "Get yours on sentry.io -> Project Settings."),
                 options.Dsn)?.Trim();
 
-            if (string.IsNullOrWhiteSpace(options.Dsn))
-            {
-                EditorGUILayout.HelpBox("The SDK requires a DSN.", MessageType.Error);
-            }
-
             options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
                 options.CaptureInEditor);
