@@ -67,6 +67,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 };
             }
 
+            if (args.TryGetValue("il2cppLineNumbers", out boolValue))
+            {
+                Debug.LogFormat("{0}: Configuring Il2CppLineNumberSupportEnabled to {1}", functionName, boolValue);
+                options.Il2CppLineNumberSupportEnabled = boolValue;
+            }
+
             if (args.TryGetValue("cliOptions.Org", out value))
             {
                 Debug.LogFormat("{0}: Configuring symbol-upload organization to {1}", functionName, value);
