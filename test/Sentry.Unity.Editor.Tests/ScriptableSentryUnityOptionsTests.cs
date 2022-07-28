@@ -29,6 +29,8 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("EnvironmentOverride", optionsAsString);
             StringAssert.Contains("AttachStacktrace", optionsAsString);
             StringAssert.Contains("AttachScreenshot", optionsAsString);
+            StringAssert.Contains("ScreenshotQuality", optionsAsString);
+            StringAssert.Contains("ScreenshotCompression", optionsAsString);
             StringAssert.Contains("MaxBreadcrumbs", optionsAsString);
             StringAssert.Contains("ReportAssembliesMode", optionsAsString);
             StringAssert.Contains("SendDefaultPii", optionsAsString);
@@ -36,6 +38,7 @@ namespace Sentry.Unity.Editor.Tests
             StringAssert.Contains("EnableOfflineCaching", optionsAsString);
             StringAssert.Contains("MaxCacheItems", optionsAsString);
             StringAssert.Contains("InitCacheFlushTimeout", optionsAsString);
+            StringAssert.Contains("SampleRate", optionsAsString);
             StringAssert.Contains("ShutdownTimeout", optionsAsString);
             StringAssert.Contains("MaxQueueItems", optionsAsString);
             StringAssert.Contains("IosNativeSupportEnabled", optionsAsString);

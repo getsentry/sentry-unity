@@ -79,7 +79,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.MaxCacheItems = expectedOptions.MaxCacheItems;
             scriptableOptions.EnableOfflineCaching = enableOfflineCaching;
             scriptableOptions.InitCacheFlushTimeout = (int)expectedOptions.InitCacheFlushTimeout.TotalMilliseconds;
-            scriptableOptions.SampleRate = expectedOptions.SampleRate;
+            scriptableOptions.SampleRate = (float)expectedOptions.SampleRate;
             scriptableOptions.ShutdownTimeout = (int)expectedOptions.ShutdownTimeout.TotalMilliseconds;
             scriptableOptions.MaxQueueItems = expectedOptions.MaxQueueItems;
             scriptableOptions.ReleaseOverride = expectedOptions.Release;
