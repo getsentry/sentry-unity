@@ -68,13 +68,12 @@ namespace Sentry.Unity.Tests
             {
                 Message = new SentryMessage
                 {
-                    Message = "Test message"
+                    Message = NUnit.Framework.TestContext.CurrentContext.Test.Name
                 }
             };
 
             // act
-            Task.Run(() => SentrySdk.CaptureEvent(sentryEvent))
-                .Wait();
+            Task.Run(() => SentrySdk.CaptureEvent(sentryEvent)).Wait();
 
             SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
@@ -136,7 +135,7 @@ namespace Sentry.Unity.Tests
             {
                 var @event = new SentryEvent()
                 {
-                    Message = "Test message"
+                    Message = NUnit.Framework.TestContext.CurrentContext.Test.Name
                 };
 
                 // Events should have the same context, regardless of the thread they were issued on.
