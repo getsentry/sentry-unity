@@ -15,7 +15,7 @@ We recommend using [Unity Hub](https://unity3d.com/get-unity/download). The spec
 You'll need the following modules to be added in order to use Sentry Unity:
  * Android Build Support.
  * iOS Build Support.
- * ILCPP Build Support for your platform.
+ * IL2CPP Build Support for your platform.
  * (optional) WebGL Build Support
 
 ### Install PowerShell Global tool
