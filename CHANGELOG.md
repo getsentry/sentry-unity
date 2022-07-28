@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+### Fixes
+
 - Save SampleRate to Options.asset ([#916](https://github.com/getsentry/sentry-unity/pull/916))
 
 ## 0.22.0
