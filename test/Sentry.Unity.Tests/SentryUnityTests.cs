@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using System.IO;
 using System.Text;
-using System.Text.Json;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -77,7 +76,7 @@ namespace Sentry.Unity.Tests
             Debug.Log("Manually captured stack trace:");
             foreach (var frame in framesManual)
             {
-                Debug.Log($"  {frame.GetMethod()?.DeclaringType?.FullName} in {frame}");
+                Debug.Log($"  {frame} in {frame.GetMethod()?.DeclaringType?.FullName}");
             }
 
             Debug.Log("");
@@ -85,19 +84,7 @@ namespace Sentry.Unity.Tests
             Debug.Log("Sentry captured stack trace:");
             foreach (var frame in framesSentry)
             {
-                Debug.Log($"  {frame.Module} in {frame.Function}");
-            }
-
-            Debug.Log("");
-
-            Debug.Log("Sentry captured stack trace (JSON):");
-            foreach (var frame in framesSentry)
-            {
-                using var stream = new MemoryStream();
-                using var writer = new Utf8JsonWriter(stream);
-                frame.WriteTo(writer, null);
-                writer.Flush();
-                Debug.Log($"  {(Encoding.UTF8.GetString(stream.ToArray()))}");
+                Debug.Log($"  {frame.Function} in {frame.Module} from ({frame.Package})");
             }
 
             // Sentry captured frame must be cleaned up - the return type removed from the module (method name)
