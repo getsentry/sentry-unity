@@ -57,7 +57,6 @@ namespace Sentry.Unity
         /// Time in milliseconds for flushing the cache at startup
         /// </summary>
         [field: SerializeField] public int InitCacheFlushTimeout { get; set; } = (int)TimeSpan.Zero.TotalMilliseconds;
-
         [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
         [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
         [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
