@@ -15,8 +15,8 @@ We recommend using [Unity Hub](https://unity3d.com/get-unity/download). The spec
 You'll need the following modules to be added in order to use Sentry Unity:
  * Android Build Support.
  * iOS Build Support.
- * Linux Build Support (ILCPP) for Linux.
- * Windows Build Support (ILCPP) for Windows.
+ * ILCPP Build Support for your platform.
+ * (optional) WebGL Build Support
 
 ### Install PowerShell Global tool
 
@@ -26,16 +26,17 @@ dotnet tool install --global PowerShell
 
 ### Setup for building the Java SDK
 
+* Install Git and ensure is accessible from the PATH
 * Install Java 11
-  * [Using sdkman](https://sdkman.io/) which manage versions for you.
+  * [Using sdkman](https://sdkman.io/) which manage versions for you. (i.e. `sdk install java 11.0.15-ms`)
   * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
-* Install Git and ensure is accessible from the path
 * Add JAVA_HOME to your environment variables (if not using sdkman):
   * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-11.0.11"`
 * Install [Android Studio](https://developer.android.com/studio)
   * Open Android Studio and go to Customize -> All settings...
   * Search for "SDK" in the Seachbar
   * Select System Settings -> Android SDK
+  * Install the Android SDK
   * Swap tab to SDK Tools
   * Check "Show Package Details"
   * Under Android SDK Build-Tools check "30.0.2"
@@ -43,6 +44,11 @@ dotnet tool install --global PowerShell
 * Add ANDROID_SDK_ROOT to your environment variables
   * macOS zsh: `export ANDROID_SDK_ROOT="$HOME/Library/Android/sdk"`
   * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"` for a machine wide install, `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
+
+### Setup for building the Cocoa SDK
+
+* Install Xcode
+* Install Carthage (i.e. `brew install carthage`)
 
 ### Setup for building Sentry Native
 
