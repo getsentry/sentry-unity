@@ -57,7 +57,7 @@ namespace Sentry.Unity
         /// Time in milliseconds for flushing the cache at startup
         /// </summary>
         [field: SerializeField] public int InitCacheFlushTimeout { get; set; } = (int)TimeSpan.Zero.TotalMilliseconds;
-        [field: SerializeField] public float? SampleRate { get; set; }
+        [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
         [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
         [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
@@ -114,7 +114,7 @@ namespace Sentry.Unity
                 IsEnvironmentUser = IsEnvironmentUser,
                 MaxCacheItems = MaxCacheItems,
                 InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
-                SampleRate = SampleRate,
+                SampleRate = SampleRate == 1.0f ? null : SampleRate, // To skip the random check for dropping events
                 ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
                 MaxQueueItems = MaxQueueItems,
                 // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we

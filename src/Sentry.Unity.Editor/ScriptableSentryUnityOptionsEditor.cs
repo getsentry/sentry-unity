@@ -43,7 +43,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Toggle("Enable Offline Caching", options.EnableOfflineCaching);
             EditorGUILayout.IntField("Max Cache Items", options.MaxCacheItems);
             EditorGUILayout.IntField("Init Flush Timeout [ms]", options.InitCacheFlushTimeout);
-            EditorGUILayout.FloatField("Event Sample Rate", options.SampleRate ?? 1.0f);
+            EditorGUILayout.FloatField("Event Sample Rate", options.SampleRate);
             EditorGUILayout.IntField("Shut Down Timeout [ms]", options.ShutdownTimeout);
             EditorGUILayout.IntField("Max Queue Items", options.MaxQueueItems);
 
