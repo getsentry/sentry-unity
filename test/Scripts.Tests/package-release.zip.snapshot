@@ -368,6 +368,8 @@ Samples~/unity-of-bugs/Scripts/NativeSupport/NativeButtons.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/NativeButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/NativeSupportScene.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/NativeSupportScene.cs.meta
+Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m
+Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs.meta
 CHANGELOG.md
