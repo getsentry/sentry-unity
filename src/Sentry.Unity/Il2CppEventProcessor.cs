@@ -72,6 +72,14 @@ namespace Sentry.Unity
                 //      Wouldn't it cause invalid frame info?
                 var nativeLen = nativeStackTrace.Frames.Length;
                 var len = Math.Min(sentryStacktrace.Frames.Count, nativeLen);
+
+                if (nativeLen != len)
+                {
+                    _options.DiagnosticLogger?.LogWarning(
+                        "Native and sentry stack trace lenghs don't match ({0} != {1}) - this may cause invalid stack traces.",
+                        nativeLen, sentryStacktrace.Frames.Count);
+                }
+
                 for (var i = 0; i < len; i++)
                 {
                     // The sentry stack trace is sorted parent->child (caller->callee),
