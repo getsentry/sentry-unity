@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-
 ### Fixes
 
+- iOS samples were missing the Objective-C plugin ([#921](https://github.com/getsentry/sentry-unity/pull/921))
 - Save SampleRate to Options.asset ([#916](https://github.com/getsentry/sentry-unity/pull/916))
 
 ### Features
