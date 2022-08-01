@@ -29,6 +29,7 @@ namespace Sentry.Unity.Editor
             properties.WriteLine($"defaults.org={cliOptions.Organization}");
             properties.WriteLine($"defaults.project={cliOptions.Project}");
             properties.WriteLine($"auth.token={cliOptions.Auth}");
+            properties.WriteLine($"dif.max_item_size=10485760"); // 10 MiB
             properties.WriteLine($"log.level=info");
 
             return propertiesFile;

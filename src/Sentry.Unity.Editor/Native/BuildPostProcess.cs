@@ -179,15 +179,8 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            if (SentryCli.UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
-            {
-                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = urlOverride;
-            }
-
-            process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;
-            process.StartInfo.EnvironmentVariables["SENTRY_PROJECT"] = cliOptions.Project;
-            process.StartInfo.EnvironmentVariables["SENTRY_AUTH_TOKEN"] = cliOptions.Auth;
-            process.StartInfo.EnvironmentVariables["SENTRY_LOG_LEVEL"] = "info";
+            var propertiesFile = SentryCli.CreateSentryProperties(projectDir, cliOptions, options);
+            process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
 
             DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
             {
