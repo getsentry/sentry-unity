@@ -76,7 +76,7 @@ namespace Sentry.Unity
                 if (nativeLen != len)
                 {
                     _options.DiagnosticLogger?.LogWarning(
-                        "Native and sentry stack trace lenghs don't match ({0} != {1}) - this may cause invalid stack traces.",
+                        "Native and sentry stack trace lengths don't match '({0} != {1})' - this may cause invalid stack traces.",
                         nativeLen, sentryStacktrace.Frames.Count);
                 }
 
