@@ -179,45 +179,45 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            if (SentryCli.UrlOverride(options.Dsn, cliOptions.UrlOverride) is { } urlOverride)
+            var propertiesFile = SentryCli.CreateSentryProperties(projectDir, cliOptions, options);
+            try
             {
-                process.StartInfo.EnvironmentVariables["SENTRY_URL"] = urlOverride;
-            }
+                process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
 
-            process.StartInfo.EnvironmentVariables["SENTRY_ORG"] = cliOptions.Organization;
-            process.StartInfo.EnvironmentVariables["SENTRY_PROJECT"] = cliOptions.Project;
-            process.StartInfo.EnvironmentVariables["SENTRY_AUTH_TOKEN"] = cliOptions.Auth;
-            process.StartInfo.EnvironmentVariables["SENTRY_LOG_LEVEL"] = "info";
-
-            DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
+                DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
                 {
-                    var msg = e.Data.Trim();
-                    var msgLower = msg.ToLowerInvariant();
-                    var level = SentryLevel.Info;
-                    if (msgLower.StartsWith("error"))
+                    if (!string.IsNullOrEmpty(e.Data))
                     {
-                        level = SentryLevel.Error;
-                    }
-                    else if (msgLower.StartsWith("warn"))
-                    {
-                        level = SentryLevel.Warning;
-                    }
+                        var msg = e.Data.Trim();
+                        var msgLower = msg.ToLowerInvariant();
+                        var level = SentryLevel.Info;
+                        if (msgLower.StartsWith("error"))
+                        {
+                            level = SentryLevel.Error;
+                        }
+                        else if (msgLower.StartsWith("warn"))
+                        {
+                            level = SentryLevel.Warning;
+                        }
 
-                    // Remove the level and timestamp from the beginning of the message.
-                    // INFO    2022-06-20 15:10:03.613794800 +02:00
-                    msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
-                    logger.Log(level, "sentry-cli: {0}", null, msg);
-                }
-            };
+                        // Remove the level and timestamp from the beginning of the message.
+                        // INFO    2022-06-20 15:10:03.613794800 +02:00
+                        msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
+                        logger.Log(level, "sentry-cli: {0}", null, msg);
+                    }
+                };
 
-            process.OutputDataReceived += logForwarder;
-            process.ErrorDataReceived += logForwarder;
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
+                process.OutputDataReceived += logForwarder;
+                process.ErrorDataReceived += logForwarder;
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+            }
+            finally
+            {
+                File.Delete(propertiesFile);
+            }
         }
     }
 }
