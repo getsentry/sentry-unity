@@ -57,8 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 2022.1.0a12 removed until S.T.J issues fixed
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -202,7 +201,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         platform: ['Android', 'WebGL', 'Linux', 'iOS']
         include:
           - platform: Linux
@@ -302,7 +301,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         os: ['windows', 'macos']
         include:
           - os: windows
@@ -373,14 +372,14 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [21, 27, 29, 30]
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         exclude:
           # API 21 is no longer supported since Unity 2021.2.10f1
           - api-level: 21
-            unity-version: '2021'
+            unity-version: ['2021', '2022']
           # Smoke test currently crashes on API 30 with Unity 2021 build on CI, see issue #719
           - api-level: 30
-            unity-version: '2021'
+            unity-version: ['2021', '2022']
     defaults:
       run:
         shell: pwsh
@@ -488,7 +487,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -520,7 +519,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         ios-runtime: ['12.0', '12.4', '13.0', '14.1', latest]
     defaults:
@@ -568,7 +567,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         platform: ['WebGL', 'Linux']
     steps:
       - name: Checkout
