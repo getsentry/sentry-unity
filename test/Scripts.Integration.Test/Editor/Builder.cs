@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using UnityEditor.iOS.Xcode;
 using UnityEngine;
 
 public class Builder
@@ -107,5 +108,34 @@ public class Builder
         var prop = serializedManager.FindProperty("m_DisableAudio");
         prop.boolValue = true;
         serializedManager.ApplyModifiedProperties();
+    }
+}
+
+// This started being necessary with Unity 2022 and older iOS versions (12.0 - 14.1)
+// Message: App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
+public class iOSCleartextHTTP : IPostprocessBuildWithReport
+{
+    public int callbackOrder { get; }
+
+    public void OnPostprocessBuild(BuildReport report)
+    {
+        var pathToBuiltProject = report.summary.outputPath;
+        if (report.summary.platform == BuildTarget.iOS)
+        {
+            var plistPath = pathToBuiltProject + "/Info.plist";
+            var plist = new PlistDocument();
+            plist.ReadFromString(File.ReadAllText(plistPath));
+
+            var allowsDict = plist.root.CreateDict("NSAppTransportSecurity");
+            allowsDict.SetBoolean("NSAllowsArbitraryLoads", true);
+
+            var exceptionsDict = allowsDict.CreateDict("NSExceptionDomains");
+
+            var domainDict = exceptionsDict.CreateDict("localhost.exception");
+            domainDict.SetBoolean("NSExceptionAllowsInsecureHTTPLoads", true);
+            domainDict.SetBoolean("NSIncludesSubdomains", true);
+
+            File.WriteAllText(plistPath, plist.WriteToString());
+        }
     }
 }
