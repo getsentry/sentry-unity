@@ -17,7 +17,6 @@ public class Builder
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
-        PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
         DisableUnityAudio();
 
         var buildPlayerOptions = new BuildPlayerOptions
@@ -112,10 +111,18 @@ public class Builder
     }
 }
 
-public class iOSCleartextHTTP : IPostprocessBuildWithReport
+public class AllowInsecureHttp : IPostprocessBuildWithReport, IPreprocessBuildWithReport
 {
     public int callbackOrder { get; }
+    public void OnPreprocessBuild(BuildReport report)
+    {
+#if UNITY_2022_1_OR_NEWER
+        PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
+#endif
+    }
 
+    // The `allow insecure http always` options don't seem to work. This is why we modify the info.plist directly.
+    // Using reflection to get around the iOS module requirement on non-iOS platforms
     public void OnPostprocessBuild(BuildReport report)
     {
         var pathToBuiltProject = report.summary.outputPath;
