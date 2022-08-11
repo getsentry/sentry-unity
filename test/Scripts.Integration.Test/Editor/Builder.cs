@@ -17,6 +17,7 @@ public class Builder
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
+        PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
         DisableUnityAudio();
 
         var buildPlayerOptions = new BuildPlayerOptions
