@@ -57,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-prefix: ['2019.', '2020.', '2021.']
+        unity-prefix: ['2019.', '2020.', '2021.', '2022.']
     steps:
       - name: Find the latest Unity version
         id: version-select
