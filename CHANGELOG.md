@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed an 'Undefined symbols' issue within the Sentry Native Bridge when building for iOS ([#932](https://github.com/getsentry/sentry-unity/pull/932))
+
 ### Features
 
 - Bump CLI from v2.5.0 to v2.5.1 ([#936](https://github.com/getsentry/sentry-unity/pull/936))
