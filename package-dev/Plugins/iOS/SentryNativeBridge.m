@@ -5,7 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // macOS only
 int SentryNativeBridgeLoadLibrary() { return 0; }
-void *SentryNativeBridgeOptionsNew() { return nil; }
+void *_Nullable SentryNativeBridgeOptionsNew() { return nil; }
 void SentryNativeBridgeOptionsSetString(void *options, const char *name, const char *value) { }
 void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }
 void SentryNativeBridgeStartWithOptions(void *options) { }
@@ -133,14 +133,17 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
-inline NSString *_NSStringOrNil(const char *value)
+static inline NSString *_NSStringOrNil(const char *value)
 {
     return value ? [NSString stringWithUTF8String:value] : nil;
 }
 
-inline NSString *_NSNumberOrNil(int32_t value) { return value == 0 ? nil : @(value); }
+static inline NSNumber *_NSNumberOrNil(int32_t value) 
+{
+    return value == 0 ? nil : @(value);
+}
 
-inline NSNumber *_NSBoolOrNil(int8_t value)
+static inline NSNumber *_NSBoolOrNil(int8_t value)
 {
     if (value == 0) {
         return @NO;
