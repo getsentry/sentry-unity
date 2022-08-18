@@ -6,16 +6,30 @@ using UnityEngine.Assertions;
 
 public class BugFarmButtons : MonoBehaviour
 {
+    private DateTime _now;
+
     private void Start()
     {
         Debug.Log("Sample Start 🦋");
         Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            var start = DateTime.Now;
+            while ((DateTime.Now - start).Seconds < 6)
+            {
+
+            }
+        }
+    }
+
     public void AssertFalse() => Assert.AreEqual(true, false);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void ThrowNull() => throw null;
+    public void ThrowNull() => throw new NullReferenceException();
 
     public void ThrowExceptionAndCatch()
     {
