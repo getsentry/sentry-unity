@@ -56,7 +56,7 @@ namespace Sentry.Unity
 
             // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
             // original ratio based on which, width or height, is the smaller
-            if(_options.ScreenshotQuality is not ScreenshotQuality.Full)
+            if (_options.ScreenshotQuality is not ScreenshotQuality.Full)
             {
                 var targetResolution = GetTargetResolution(_options.ScreenshotQuality);
                 var ratioW = targetResolution / (float)width;
