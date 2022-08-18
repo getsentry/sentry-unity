@@ -32,7 +32,7 @@ namespace Sentry.Unity
             if (!_behaviour.MainThreadData.IsMainThread())
             {
                 _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
-                return new MemoryStream();
+                return Stream.Null;
             }
 
             return new MemoryStream(CaptureScreenshot());
