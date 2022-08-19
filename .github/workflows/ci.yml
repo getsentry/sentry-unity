@@ -526,7 +526,8 @@ jobs:
       matrix:
         unity-version: ['2019', '2020', '2021', '2022']
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-        ios-runtime: ['12.0', '12.4', '13.0', '14.1', latest]
+        # TODO: put 12.0 back
+        ios-runtime: ['12.4', '13.0', '14.1', latest]
     defaults:
       run:
         shell: pwsh
