@@ -1,5 +1,26 @@
+// e.g. "feat" if PR title is "Feat : add more useful stuff"
+// or  "ci" if PR branch is "ci/update-danger"
+function getPrFlavor() {
+  if (danger.github && danger.github.pr) {
+    var separator = undefined;
+    if (danger.github.pr.title) {
+      const parts = danger.github.pr.title.split(":");
+      if (parts.length > 1) {
+        return parts[0].toLowerCase().trim();
+      }
+    }
+    if (danger.github.pr.head && danger.github.pr.head.ref) {
+      const parts = danger.github.pr.head.ref.split("/");
+      if (parts.length > 1) {
+        return parts[0].toLowerCase();
+      }
+    }
+  }
+  return "";
+}
+
 async function checkDocs() {
-  if (danger.github.pr.title.startsWith("feat:")) {
+  if (getPrFlavor().startsWith("feat")) {
     message(
       'Do not forget to update <a href="https://github.com/getsentry/sentry-docs">Sentry-docs</a> with your feature once the pull request gets approved.'
     );
@@ -10,11 +31,13 @@ async function checkChangelog() {
   const changelogFile = "CHANGELOG.md";
 
   // Check if skipped
-  const skipChangelog =
-    danger.github && (danger.github.pr.body + "").includes("#skip-changelog");
-
-  if (skipChangelog) {
-    return;
+  if (danger.github && danger.github.pr) {
+    if (
+      ["ci", "chore(deps)"].includes(getPrFlavor()) ||
+      (danger.github.pr.body + "").includes("#skip-changelog")
+    ) {
+      return;
+    }
   }
 
   // Check if current PR has an entry in changelog
@@ -61,13 +84,6 @@ If none of the above apply, you can opt out of this check by adding \`#skip-chan
 }
 
 async function checkAll() {
-  // See: https://spectrum.chat/danger/javascript/support-for-github-draft-prs~82948576-ce84-40e7-a043-7675e5bf5690
-  const isDraft = danger.github.pr.mergeable_state === "draft";
-
-  if (isDraft) {
-    return;
-  }
-
   await checkDocs();
   await checkChangelog();
 }
