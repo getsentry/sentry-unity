@@ -31,10 +31,8 @@ namespace Sentry.Unity
             // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
             if (!_behaviour.MainThreadData.IsMainThread())
             {
-                _options.DiagnosticLogger?.LogDebug("Won't capture screenshot because we're not on the main thread");
-                // Throwing here to avoid empty attachment being sent to Sentry.
-                // return new MemoryStream();
-                throw new Exception("Sentry: cannot capture screenshot attachment on other than the main (UI) thread.");
+                _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
+                return Stream.Null;
             }
 
             return new MemoryStream(CaptureScreenshot());
