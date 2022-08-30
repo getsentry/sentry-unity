@@ -100,6 +100,7 @@ namespace Sentry.Unity.Editor.Android
             androidManifest.SetSDK("sentry.java.android.unity");
             _logger.LogDebug("Setting DSN: {0}", _options!.Dsn);
             androidManifest.SetDsn(_options.Dsn!);
+
             if (_options.Debug)
             {
                 _logger.LogDebug("Setting Debug: {0}", _options.Debug);
@@ -142,6 +143,7 @@ namespace Sentry.Unity.Editor.Android
 
             // Disabling the native in favor of the C# layer for now
             androidManifest.SetAutoSessionTracking(false);
+            androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
             androidManifest.SetAnr(false);
             // TODO: We need an opt-out for this:
             androidManifest.SetNdkScopeSync(true);
@@ -339,6 +341,9 @@ namespace Sentry.Unity.Editor.Android
 
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
             => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
+
+        public void SetAutoAppLifecycleBreadcrumbs(bool enableAutoAppLifeCycleBreadcrumbs)
+            => SetMetaData($"{SentryPrefix}.bbreadcrumbs.app-lifecycle", enableAutoAppLifeCycleBreadcrumbs.ToString());
 
         internal void SetAnr(bool enableAnr)
             => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr.ToString());
