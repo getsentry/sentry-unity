@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed a crash during startup due in connection to the Google Ads Unity package ([#953](https://github.com/getsentry/sentry-unity/pull/953))
 - Fixed an 'Undefined symbols' issue within the Sentry Native Bridge when building for iOS ([#932](https://github.com/getsentry/sentry-unity/pull/932))
 - ANR detection no longer creates an error by trying to capture a screenshot from a background thread ([#937](https://github.com/getsentry/sentry-unity/pull/937))
 - Screenshots quality no longer scales off of current resolution but tries match thresholds instead ([#939](https://github.com/getsentry/sentry-unity/pull/939))
