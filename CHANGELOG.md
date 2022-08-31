@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Bump Java SDK from v6.4.0 to v6.4.1 ([#954](https://github.com/getsentry/sentry-unity/pull/954))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#641)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.4.0...6.4.1)
+
 ## 0.22.2
 
 ### Fixes
