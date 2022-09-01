@@ -39,15 +39,13 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             //                                        "before sending to Sentry."),
             //     Options.RequestBodyCompressionLevel);
 
-            var sampleRate = options.SampleRate ??= 1.0f;
-            sampleRate = EditorGUILayout.Slider(
+            options.SampleRate = EditorGUILayout.Slider(
                 new GUIContent("Event Sample Rate", "Indicates the percentage of events that are " +
                                                     "captured. Setting this to 0.1 captures 10% of events. " +
                                                     "Setting this to 1.0 captures all events." +
                                                     "\nThis affects only errors and logs, not performance " +
                                                     "(transactions) data. See TraceSampleRate for that."),
-                sampleRate, 0.01f, 1);
-            options.SampleRate = (sampleRate < 1.0f) ? sampleRate : null;
+                options.SampleRate, 0.01f, 1);
 
             options.ShutdownTimeout = EditorGUILayout.IntField(
                 new GUIContent("Shut Down Timeout [ms]", "How many milliseconds to wait before shutting down to " +

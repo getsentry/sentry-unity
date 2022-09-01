@@ -5,7 +5,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     internal static class AdvancedTab
     {
-        internal static void Display(ScriptableSentryUnityOptions options)
+        internal static void Display(ScriptableSentryUnityOptions options, SentryCliOptions? cliOptions)
         {
             options.Debug = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Debug Output", "Whether the Sentry SDK should print its " +
@@ -76,12 +76,22 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             GUILayout.Label("Experimental", EditorStyles.boldLabel);
 
-
-
             options.Il2CppLineNumberSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("IL2CPP line numbers", "Whether the SDK should try to to provide line " +
                                                       "numbers for exceptions in IL2CPP builds."),
                 options.Il2CppLineNumberSupportEnabled);
+
+            if (options.Il2CppLineNumberSupportEnabled)
+            {
+                if (!SentryUnityVersion.IsNewerOrEqualThan("2020.3"))
+                {
+                    EditorGUILayout.HelpBox("The IL2CPP line number feature is supported from Unity version 2020.3 or newer and 2021.3  or newer onwards", MessageType.Warning);
+                }
+                else if (cliOptions is not null && !cliOptions.IsValid(null))
+                {
+                    EditorGUILayout.HelpBox("The IL2CPP line number support relies on the Debug Symbol Upload to be properly set up.", MessageType.Error);
+                }
+            }
         }
     }
 }

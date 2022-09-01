@@ -1,4 +1,4 @@
-. ./test/Scripts.Integration.Test/IntegrationGlobals.ps1
+. ./test/Scripts.Integration.Test/globals.ps1
 
 # Check if SDK is packed.
 $packageFile = "package-release.zip"
@@ -22,5 +22,5 @@ Write-Host "OK"
 
 If (-not(Test-Path -Path "$PackageReleaseOutput"))
 {
-    Throw "Path $PackageReleaseOutput does not exist. Be sure to run ./test/Scripts.Integration.Test/integration-create-project."
+    Throw "Path $PackageReleaseOutput does not exist. Be sure to run ./test/Scripts.Integration.Test/create-project."
 }

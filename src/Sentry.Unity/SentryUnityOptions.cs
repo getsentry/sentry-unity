@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
@@ -72,6 +72,16 @@ namespace Sentry.Unity
         public bool AttachScreenshot { get; set; } = false;
 
         /// <summary>
+        /// The quality of the attached screenshot
+        /// </summary>
+        public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
+
+        /// <summary>
+        /// The JPG compression quality of the attached screenshot
+        /// </summary>
+        public int ScreenshotCompression { get; set; } = 75;
+
+        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;
@@ -95,6 +105,16 @@ namespace Sentry.Unity
         /// Whether the SDK should add native support for Linux
         /// </summary>
         public bool LinuxNativeSupportEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Whether the SDK should add IL2CPP line number support
+        /// </summary>
+        /// <remarks>
+        /// To give line numbers, Sentry requires the debug symbols Unity generates during build
+        /// For that reason, uploading debug information files must be enabled.
+        /// For that, Org Slut, Project Slug and Auth token are required.
+        /// </remarks>
+        public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
 
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
@@ -123,6 +143,8 @@ namespace Sentry.Unity
         /// </summary>
         internal ContextWriter? NativeContextWriter { get; set; } = null;
 
+        internal List<string> SdkIntegrationNames { get; set; } = new();
+
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
         internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
@@ -136,7 +158,7 @@ namespace Sentry.Unity
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, SentryMonoBehaviour.Instance));
+            this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
 
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new AnrIntegration(behaviour));
@@ -171,11 +193,9 @@ namespace Sentry.Unity
                 Release += $"+{application.BuildGUID}";
             }
 
-            Environment = (application.IsEditor && !isBuilding)
+            Environment = application.IsEditor && !isBuilding
                 ? "editor"
                 : "production";
-
-            CacheDirectoryPath = application.PersistentDataPath.Trim();
         }
 
         public override string ToString()
@@ -212,5 +232,28 @@ Offline Caching: {(CacheDirectoryPath is null ? "disabled" : "enabled")}
         /// No compression should be performed.
         /// </summary>
         NoCompression = CompressionLevel.NoCompression,
+    }
+
+    /// <summary>
+    /// Controls for the JPEG compression quality of the attached screenshot
+    /// </summary>
+    public enum ScreenshotQuality
+    {
+        /// <summary>
+        /// Full quality
+        /// </summary>
+        Full,
+        /// <summary>
+        /// High quality
+        /// </summary>
+        High,
+        /// <summary>
+        /// Medium quality
+        /// </summary>
+        Medium,
+        /// <summary>
+        /// Low quality
+        /// </summary>
+        Low
     }
 }

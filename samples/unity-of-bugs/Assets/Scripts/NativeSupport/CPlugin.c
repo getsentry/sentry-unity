@@ -1,11 +1,15 @@
 #ifdef _WIN32
-__declspec(noinline)
+#    define NOINLINE __declspec(noinline)
 #else
-__attribute__((noinline))
+#    define NOINLINE __attribute__((noinline))
 #endif
 
-    void crash_in_c()
+NOINLINE void crash_in_c()
 {
     char *ptr = 0;
     *ptr += 1;
 }
+
+typedef void (*callback_t)(int code);
+
+NOINLINE void call_into_csharp(callback_t fn) { fn(42); }

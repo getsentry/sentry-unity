@@ -100,6 +100,7 @@ namespace Sentry.Unity.Editor.Android
             androidManifest.SetSDK("sentry.java.android.unity");
             _logger.LogDebug("Setting DSN: {0}", _options!.Dsn);
             androidManifest.SetDsn(_options.Dsn!);
+
             if (_options.Debug)
             {
                 _logger.LogDebug("Setting Debug: {0}", _options.Debug);
@@ -135,8 +136,14 @@ namespace Sentry.Unity.Editor.Android
             // _logger.LogDebug("Setting SendDefaultPii: {0}", options.SendDefaultPii);
             // // androidManifest.SetSendDefaultPii(options.SendDefaultPii);
 
+            // Note: doesn't work - produces a blank (white) screenshot
+            // _logger.LogDebug("Setting AttachScreenshot: {0}", _options.AttachScreenshot);
+            // androidManifest.SetAttachScreenshot(_options.AttachScreenshot);
+            androidManifest.SetAttachScreenshot(false);
+
             // Disabling the native in favor of the C# layer for now
             androidManifest.SetAutoSessionTracking(false);
+            androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
             androidManifest.SetAnr(false);
             // TODO: We need an opt-out for this:
             androidManifest.SetNdkScopeSync(true);
@@ -152,7 +159,7 @@ namespace Sentry.Unity.Editor.Android
             var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath,
                 PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android), EditorUserBuildSettings.exportAsGoogleAndroidProject);
 
-            if (_options is null || !_options.Enabled || !_options.AndroidNativeSupportEnabled)
+            if (_options is not { Enabled: true, AndroidNativeSupportEnabled: true })
             {
                 disableSymbolsUpload = true;
             }
@@ -170,6 +177,12 @@ namespace Sentry.Unity.Editor.Android
             if (disableSymbolsUpload)
             {
                 symbolsUpload.RemoveUploadFromGradleFile();
+
+                if (_options is { Il2CppLineNumberSupportEnabled: true })
+                {
+                    _logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
+                }
+
                 return;
             }
 
@@ -319,6 +332,9 @@ namespace Sentry.Unity.Editor.Android
             SetMetaData($"{SentryPrefix}.sample-rate", sampleRate.ToString());
 
         internal void SetRelease(string release) => SetMetaData($"{SentryPrefix}.release", release);
+
+        internal void SetAttachScreenshot(bool value) => SetMetaData($"{SentryPrefix}.attach-screenshot", value.ToString());
+
         internal void SetEnvironment(string environment) => SetMetaData($"{SentryPrefix}.environment", environment);
 
         internal void SetSDK(string name) => SetMetaData($"{SentryPrefix}.sdk.name", name);
@@ -326,8 +342,11 @@ namespace Sentry.Unity.Editor.Android
         internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
             => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
 
+        public void SetAutoAppLifecycleBreadcrumbs(bool enableAutoAppLifeCycleBreadcrumbs)
+            => SetMetaData($"{SentryPrefix}.bbreadcrumbs.app-lifecycle", enableAutoAppLifeCycleBreadcrumbs.ToString());
+
         internal void SetAnr(bool enableAnr)
-            => SetMetaData($"{SentryPrefix}.io.sentry.anr.enable", enableAnr.ToString());
+            => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr.ToString());
 
         internal void SetNdkScopeSync(bool enableNdkScopeSync)
             => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());

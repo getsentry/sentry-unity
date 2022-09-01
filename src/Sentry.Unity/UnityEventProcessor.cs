@@ -23,6 +23,9 @@ namespace Sentry.Unity
             try
             {
                 PopulateDevice(@event.Contexts.Device);
+                // Populating the SDK Integrations here (for now) instead of UnityScopeIntegration because it cannot be guaranteed
+                // that it got added last or that there was not an integration added at a later point
+                PopulateSdkIntegrations(@event.Sdk);
                 // TODO revisit which tags we should be adding by default
                 @event.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToTagValue());
             }
@@ -66,6 +69,13 @@ namespace Sentry.Unity
             }
         }
 
+        private void PopulateSdkIntegrations(SdkVersion sdkVersion)
+        {
+            foreach (var integrationName in _sentryOptions.SdkIntegrationNames)
+            {
+                sdkVersion.AddIntegration(integrationName);
+            }
+        }
     }
 
     internal static class TagValueNormalizer

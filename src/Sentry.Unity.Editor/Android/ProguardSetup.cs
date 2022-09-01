@@ -60,12 +60,19 @@ namespace Sentry.Unity.Editor.Android
             _logger.LogDebug("Writing proguard rule file to {0}.", ruleFile);
             File.Copy(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Android/{RuleFileName}"), ruleFile, true);
 
-            var gradleNew = Regex.Replace(gradle, @"(\s+consumerProguardFiles .*)", "$1, '" + RuleFileName + "'");
-            if (gradle.Length == gradleNew.Length)
+            if (gradle.Contains(RuleFileName))
             {
-                throw new Exception($"Couldn't add Proguard rule {RuleFileName} to {_gradleScriptPath} - no `consumerProguardFiles` found.");
+                _logger.LogDebug($"Proguard rule {RuleFileName} has already been added to {_gradleScriptPath} `consumerProguardFiles` in a previous build.");
             }
-            File.WriteAllText(_gradleScriptPath, gradleNew);
+            else
+            {
+                var gradleNew = Regex.Replace(gradle, @"(\s+consumerProguardFiles [^\r\n]*)", "$1, '" + RuleFileName + "'");
+                if (gradle.Length == gradleNew.Length)
+                {
+                    throw new Exception($"Couldn't add Proguard rule {RuleFileName} to {_gradleScriptPath} - no `consumerProguardFiles` found.");
+                }
+                File.WriteAllText(_gradleScriptPath, gradleNew);
+            }
         }
 
         private string LoadGradleScript()

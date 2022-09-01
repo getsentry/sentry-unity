@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Protocol;
+using Sentry.Unity.Integrations;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Sentry.Unity
 {
@@ -19,6 +23,8 @@ namespace Sentry.Unity
             _options = options;
             _sentryUnityInfo = sentryUnityInfo;
             _il2CppMethods = il2CppMethods;
+
+            _options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
         }
 
         public void Process(Exception incomingException, SentryEvent sentryEvent)
@@ -30,20 +36,15 @@ namespace Sentry.Unity
             {
                 return;
             }
+
             var exceptions = EnumerateChainedExceptions(incomingException);
+            var usedImages = new HashSet<DebugImage>();
+            _logger = _options.DiagnosticLogger;
 
-            // Unity by definition only builds a single library/image,
-            // which we add once to our list of debug images.
-            var debugImages = (sentryEvent.DebugImages ??= new List<DebugImage>());
-            // The il2cpp APIs give us image-relative instruction addresses, not
-            // absolute ones. When processing events via symbolicator, we do want
-            // to have absolute addresses. For this reason, we just add a sentinel
-            // value to the `DebugImage` and `InstructionAddress`, which makes
-            // addresses absolute and still associates the address with the one
-            // and only `GameAssembly` image.
-            var imageAddress = 0x1000;
-            var didAddImage = false;
-
+            // Unity usually produces stack traces with relative offsets in the GameAssembly library.
+            // However, at least on Unity 2020 built Windows player, the offsets seem to be absolute.
+            // Therefore, we try to determine which one it is, depending on whether they match the loaded libraries.
+            // In case they don't we update the offsets to match the GameAssembly library.
             foreach (var (sentryException, exception) in sentryExceptions.Zip(exceptions, (se, ex) => (se, ex)))
             {
                 var sentryStacktrace = sentryException.Stacktrace;
@@ -56,47 +57,228 @@ namespace Sentry.Unity
 
                 var nativeStackTrace = GetNativeStackTrace(exception);
 
-                if (!didAddImage)
-                {
-                    var codeFile = nativeStackTrace.ImageName;
-                    // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
-                    // A null/missing `CodeFile` however would lead to a processing error in sentry.
-                    // Since the code file is not strictly necessary for processing, we just fall back to
-                    // a sentinel value here.
-                    if (String.IsNullOrEmpty(codeFile))
-                    {
-                        codeFile = "GameAssembly.fallback";
-                    }
-                    debugImages.Add(new DebugImage
-                    {
-                        Type = _sentryUnityInfo.Platform,
+                _options.DiagnosticLogger?.LogDebug("NativeStackTrace Image: '{0}' (UUID: {1})", nativeStackTrace.ImageName, nativeStackTrace.ImageUuid);
 
-                        CodeFile = codeFile,
-                        DebugId = nativeStackTrace.ImageUuid,
-                        ImageAddress = $"0x{imageAddress:X8}",
-                    });
+                // Unity by definition only builds a single library which we add once to our list of debug images.
+                // We use this when we encounter stack frames with relative addresses.
+                // We want to use an address that is definitely outside of any address range used by real libraries.
+                // Canonical addresses on x64 leave a gap in the middle of the address space, which is unused.
+                // This is a range of addresses that we should be able to safely use.
+                // See https://en.wikipedia.org/wiki/X86-64#Virtual_address_space_details
+                var mainLibOffset = (ulong)1 << 63;
+                DebugImage? mainLibImage = null;
 
-                    didAddImage = true;
-                }
-
+                // TODO do we really want to continue if these two don't match?
+                //      Wouldn't it cause invalid frame info?
                 var nativeLen = nativeStackTrace.Frames.Length;
                 var len = Math.Min(sentryStacktrace.Frames.Count, nativeLen);
+
+                if (nativeLen != len)
+                {
+                    _options.DiagnosticLogger?.LogWarning(
+                        "Native and sentry stack trace lengths don't match '({0} != {1})' - this may cause invalid stack traces.",
+                        nativeLen, sentryStacktrace.Frames.Count);
+                }
+
                 for (var i = 0; i < len; i++)
                 {
-                    // The sentry stack trace is sorted parent (caller) to child (callee),
+                    // The sentry stack trace is sorted parent->child (caller->callee),
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
+                    var mainImageUUID = NormalizeUUID(nativeStackTrace.ImageUuid);
+
+                    // _options.DiagnosticLogger?.Log(SentryLevel.Debug, "Processing stack frame '{0}' image address: {1:X8}, packge: {2}",
+                    //     null, frame.Function, frame.ImageAddress, frame.Package);
 
                     // The instructions in the stack trace generally have "return addresses"
                     // in them. But for symbolication, we want to symbolicate the address of
                     // the "call instruction", which in almost all cases happens to be
                     // the instruction right in front of the return address.
                     // A good heuristic to use in that case is to just subtract 1.
-                    var instructionAddr = imageAddress + nativeFrame.ToInt64() - 1;
-                    frame.InstructionAddress = $"0x{instructionAddr:X8}";
+                    // TODO should we do this for all addresses or only relative ones?
+                    //      If the former, we should also update `frame.InstructionAddress` down below.
+                    var instructionAddress = (ulong)nativeFrame.ToInt64() - 1;
+
+                    // We cannot determine whether this frame is a main library frame just from the address
+                    // because even relative address on the frame may correspond to an absolute addres of a loaded library.
+                    // Therefore, if the frame package matches known prefixes, we assume it's a GameAssembly frame.
+                    var isMainLibFrame = frame.Package is not null && (
+                        frame.Package.StartsWith("UnityEngine.", StringComparison.InvariantCultureIgnoreCase) ||
+                        frame.Package.StartsWith("Assembly-CSharp", StringComparison.InvariantCultureIgnoreCase)
+                    );
+
+                    string? notes = null;
+                    DebugImage? image = null;
+                    bool? isRelativeAddress = null;
+                    if (!isMainLibFrame)
+                    {
+                        image = FindDebugImageContainingAddress(instructionAddress);
+                        if (image is null)
+                        {
+                            isRelativeAddress = true;
+                            notes = "because it looks like a relative address.";
+                            // falls through to the next `if (image is null)`
+                        }
+                        else
+                        {
+                            isRelativeAddress = false;
+                            notes = "because it looks like an absolute address inside the range of this debug image.";
+                        }
+                    }
+
+                    if (image is null)
+                    {
+                        if (mainImageUUID is null)
+                        {
+                            _options.DiagnosticLogger?.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
+                            continue;
+                        }
+
+                        // First, try to find the image among loaded one, otherwise create a dummy one.
+                        mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUUID(info.Image.DebugId), mainImageUUID))?.Image;
+                        mainLibImage ??= new DebugImage
+                        {
+                            Type = _sentryUnityInfo.Platform,
+                            // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
+                            // A null/missing `CodeFile` however would lead to a processing error in sentry.
+                            // Since the code file is not strictly necessary for processing, we just fall back to
+                            // a sentinel value here.
+                            CodeFile = string.IsNullOrEmpty(nativeStackTrace.ImageName) ? "GameAssembly.fallback" : nativeStackTrace.ImageName,
+                            DebugId = mainImageUUID,
+                            ImageAddress = $"0x{mainLibOffset:X8}",
+                        };
+
+                        image = mainLibImage;
+                        if (isMainLibFrame)
+                        {
+                            notes ??= $"based on frame package name ({frame.Package}).";
+                        }
+                    }
+
+                    var imageAddress = Convert.ToUInt64(image.ImageAddress, 16);
+                    isRelativeAddress ??= instructionAddress < imageAddress;
+
+                    if (isRelativeAddress is true)
+                    {
+                        // Shift the instruction address to be absolute.
+                        instructionAddress += imageAddress;
+                        frame.InstructionAddress = $"0x{instructionAddress:X8}";
+                    }
+
+                    // sanity check that the instruction fits inside the range
+                    var logLevel = SentryLevel.Debug;
+                    if (image.ImageSize is not null)
+                    {
+                        if (instructionAddress < imageAddress || instructionAddress > imageAddress + (ulong)image.ImageSize)
+                        {
+                            logLevel = SentryLevel.Warning;
+                            notes ??= ".";
+                            notes += " However, the instruction address falls out of the range of the debug image.";
+                        }
+                    }
+
+                    _options.DiagnosticLogger?.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
+                        null, frame.Function, instructionAddress, nativeFrame.ToInt64(), image.CodeFile, notes ?? "");
+
+                    _ = usedImages.Add(image);
                 }
             }
+
+            sentryEvent.DebugImages ??= new List<DebugImage>();
+            sentryEvent.DebugImages.AddRange(usedImages);
+        }
+
+        // Normalizes Debug Image UUID so that we can compare the ones coming from
+        // native (contains dashes, all lower-case) & what Unity gives us (no dashes, uppercase).
+        // On Linux, the image also has shorter UUID coming from Unity, e.g. 3028cb80b0712541,
+        // while native image UUID we get is 3028cb80-b071-2541-0000-000000000000.
+        private static string? NormalizeUUID(string? value) =>
+            value?.ToLowerInvariant().Replace("-", "").TrimEnd(new char[] { '0' });
+
+        private class DebugImageInfo
+        {
+            public readonly DebugImage Image;
+            public readonly ulong StartAddress;
+            public readonly ulong EndAddress;
+
+            public DebugImageInfo(DebugImage image)
+            {
+                Image = image;
+                StartAddress = Convert.ToUInt64(image.ImageAddress, 16);
+                EndAddress = StartAddress + (ulong)image.ImageSize!;
+            }
+
+            public bool ContainsAddress(ulong address) => StartAddress <= address && address <= EndAddress;
+        }
+
+        private static IDiagnosticLogger? _logger;
+
+        private static readonly Lazy<List<DebugImageInfo>> DebugImagesSorted = new(() =>
+        {
+            var result = new List<DebugImageInfo>();
+
+            // Only on platforms where we actually use sentry-native.
+            if (ApplicationAdapter.Instance.Platform
+                is RuntimePlatform.WindowsPlayer or RuntimePlatform.Android or RuntimePlatform.LinuxPlayer)
+            {
+                var nativeDebugImages = C.DebugImages.Value;
+                foreach (var image in nativeDebugImages)
+                {
+                    if (image.ImageSize is null)
+                    {
+                        _logger?.Log(SentryLevel.Debug,
+                            "Skipping debug image '{0}' (CodeId {1} | DebugId: {2}) because its size is NULL",
+                            null, image.CodeFile, image.CodeId, image.DebugId);
+                        continue;
+                    }
+
+                    var info = new DebugImageInfo(image);
+                    int i = 0;
+                    for (; i < result.Count; i++)
+                    {
+                        if (info.StartAddress < result[i].StartAddress)
+                        {
+                            // insert at index `i`, all the rest have a larger start address
+                            break;
+                        }
+                    }
+                    result.Insert(i, info);
+
+                    _logger?.Log(SentryLevel.Debug,
+                        "Found debug image '{0}' (CodeId {1} | DebugId: {2}) with addresses between {3:X8} and {4:X8}",
+                        null, image.CodeFile, image.CodeId, image.DebugId, info.StartAddress, info.EndAddress);
+                }
+            }
+            return result;
+        });
+
+        private static DebugImage? FindDebugImageContainingAddress(ulong instructionAddress)
+        {
+            var list = DebugImagesSorted.Value;
+
+            // Manual binary search implementation on "value in range".
+            int lowerBound = 0;
+            int upperBound = list.Count - 1;
+            while (lowerBound <= upperBound)
+            {
+                int mid = (lowerBound + upperBound) / 2;
+                var info = list[mid];
+
+                if (info.StartAddress <= instructionAddress)
+                {
+                    if (instructionAddress <= info.EndAddress)
+                    {
+                        return info.Image;
+                    }
+                    lowerBound = mid + 1;
+                }
+                else
+                {
+                    upperBound = mid - 1;
+                }
+            }
+            return null;
         }
 
         // This is the same logic as `MainExceptionProcessor` uses to create the `SentryEvent.SentryExceptions` list.

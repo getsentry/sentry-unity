@@ -15,7 +15,7 @@ public class BugFarmButtons : MonoBehaviour
     public void AssertFalse() => Assert.AreEqual(true, false);
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void ThrowNull() => throw null;
+    public void ThrowNull() => throw new NullReferenceException();
 
     public void ThrowExceptionAndCatch()
     {

@@ -1,12 +1,8 @@
 using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
-using Sentry.Unity.Tests.Stubs;
-using UnityEditor;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -72,18 +68,32 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void AddsRuleToGradleScript()
+        [TestCase("\n")]
+        [TestCase("\r\n")]
+        public void AddsRuleToGradleScript(string lineSeparator)
         {
             var gradleScript = Path.Combine(_outputPath, "build.gradle");
-            var regex = new Regex($"consumerProguardFiles .*, '{ProguardSetup.RuleFileName}'");
+
+            // Update the file to have the expected separators for this test case.
+            File.WriteAllText(gradleScript, Regex.Replace(File.ReadAllText(gradleScript), "\r?\n", lineSeparator));
+
+            // Sanity check that the previous replacement worked.
+            StringAssert.Contains(lineSeparator, File.ReadAllText(gradleScript));
+            Assert.AreEqual(49, Regex.Matches(File.ReadAllText(gradleScript), lineSeparator).Count);
 
             var sut = GetSut();
 
-            Assert.False(regex.Match(File.ReadAllText(gradleScript)).Success);
+            var regex = $"consumerProguardFiles [^\r\n]*, '{ProguardSetup.RuleFileName}'";
+            StringAssert.DoesNotMatch(regex, File.ReadAllText(gradleScript));
 
             sut.AddToGradleProject();
 
-            Assert.True(regex.Match(File.ReadAllText(gradleScript)).Success);
+            var newContent = File.ReadAllText(gradleScript);
+            StringAssert.IsMatch(regex, newContent);
+
+            // Doesn't add again on the second run.
+            sut.AddToGradleProject();
+            Assert.AreEqual(File.ReadAllText(gradleScript), newContent);
         }
 
         [Test]

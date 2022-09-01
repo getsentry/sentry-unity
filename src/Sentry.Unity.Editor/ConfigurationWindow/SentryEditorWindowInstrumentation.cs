@@ -55,6 +55,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (args.TryGetValue("diagnosticLevel", out value))
             {
                 Debug.LogFormat("{0}: Configuring DiagnosticLevel to {1}", functionName, value);
+                options.DebugOnlyInEditor = false;
                 options.DiagnosticLevel = value switch
                 {
                     "debug" => SentryLevel.Debug,
@@ -64,6 +65,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     "fatal" => SentryLevel.Fatal,
                     _ => throw new ArgumentException($"Invalid DiagnosticLevel value: {value}")
                 };
+            }
+
+            if (args.TryGetValue("il2cppLineNumbers", out boolValue))
+            {
+                Debug.LogFormat("{0}: Configuring Il2CppLineNumberSupportEnabled to {1}", functionName, boolValue);
+                options.Il2CppLineNumberSupportEnabled = boolValue;
             }
 
             if (args.TryGetValue("cliOptions.Org", out value))

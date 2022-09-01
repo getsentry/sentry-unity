@@ -57,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 2022.1.0a12 removed until S.T.J issues fixed
+        # Building the SDK with Unity 2022 requires ns2.1 - skipping for now
         unity-version: ['2019', '2020', '2021']
     steps:
       - name: Checkout
@@ -202,7 +202,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         platform: ['Android', 'WebGL', 'Linux', 'iOS']
         include:
           - platform: Linux
@@ -232,12 +232,12 @@ jobs:
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Create new Project
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
         if: ${{ github.ref_name == 'main' }}
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -246,13 +246,13 @@ jobs:
           wait-timeout: 3600
 
       - name: Extract UPM package
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-extract-package.ps1
+        run: sudo pwsh ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Prepare for upload
         run: |
@@ -302,7 +302,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         os: ['windows', 'macos']
         include:
           - os: windows
@@ -336,12 +336,12 @@ jobs:
           Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Create new Project
-        run: ./test/Scripts.Integration.Test/integration-create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
         if: ${{ github.ref_name == 'main' }}
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
@@ -351,19 +351,19 @@ jobs:
           wait-timeout: 3600
 
       - name: Extract UPM package
-        run: ./test/Scripts.Integration.Test/integration-extract-package.ps1
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to test project
-        run: ./test/Scripts.Integration.Test/integration-update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/integration-build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Run Player - Smoke Test
-        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
       - name: Run Player - Crash Test
-        run: ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Crash
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
 
   android-smoke-test:
     needs: [smoke-test-build]
@@ -373,14 +373,18 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [21, 27, 29, 30]
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         exclude:
           # API 21 is no longer supported since Unity 2021.2.10f1
           - api-level: 21
             unity-version: '2021'
-          # Smoke test currently crashes on API 30 with Unity 2021 build on CI, see issue #719
+          - api-level: 21
+            unity-version: '2022'
+          # Smoke test currently crashes on API 30 with Unity 2021 & 2022 build on CI, see issue #719
           - api-level: 30
             unity-version: '2021'
+          - api-level: 30
+            unity-version: '2022'
     defaults:
       run:
         shell: pwsh
@@ -488,7 +492,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.3
@@ -520,9 +524,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-        ios-runtime: ['12.0', '12.4', '13.0', '14.1', latest]
+        # TODO: put 12.0 back
+        ios-runtime: ['12.4', '13.0', '14.1', latest]
     defaults:
       run:
         shell: pwsh
@@ -568,7 +573,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021']
+        unity-version: ['2019', '2020', '2021', '2022']
         platform: ['WebGL', 'Linux']
     steps:
       - name: Checkout
@@ -590,4 +595,4 @@ jobs:
 
       - name: Run (Linux)
         if: ${{ matrix.platform == 'Linux' }}
-        run: pwsh ./test/Scripts.Integration.Test/integration-run-smoke-test.ps1 -Smoke -Crash
+        run: pwsh ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash

@@ -78,12 +78,26 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            options.AttachScreenshot = EditorGUILayout.Toggle(
+            options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Attach Screenshot", "Try to attach current screenshot on events.\n" +
                                                     "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
                                                     "Additionally, the screenshot is captured mid-frame, when an event happens, so it may be incomplete.\n" +
                                                     "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
                 options.AttachScreenshot);
+
+            options.ScreenshotQuality = (ScreenshotQuality)EditorGUILayout.EnumPopup(
+                new GUIContent("Quality", "The resolution quality of the screenshot.\n" +
+                                          "'Full': Fully of the current resolution\n" +
+                                          "'High': 1080p\n" +
+                                          "'Medium': 720p\n" +
+                                          "'Low': 480p"),
+                options.ScreenshotQuality);
+
+            options.ScreenshotCompression = EditorGUILayout.IntSlider(
+                new GUIContent("Compression", "The compression of the screenshot."),
+                options.ScreenshotCompression, 1, 100);
+
+            EditorGUILayout.EndToggleGroup();
         }
     }
 }

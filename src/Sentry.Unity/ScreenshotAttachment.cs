@@ -14,9 +14,6 @@ namespace Sentry.Unity
 
     internal class ScreenshotAttachmentContent : IAttachmentContent
     {
-        private const int Quality = 75;
-        private const int MaxSize = 1920;
-
         private readonly SentryMonoBehaviour _behaviour;
         private readonly SentryUnityOptions _options;
 
@@ -32,28 +29,42 @@ namespace Sentry.Unity
             // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
             if (!_behaviour.MainThreadData.IsMainThread())
             {
-                _options.DiagnosticLogger?.LogDebug("Won't capture screenshot because we're not on the main thread");
-                // Throwing here to avoid empty attachment being sent to Sentry.
-                // return new MemoryStream();
-                throw new Exception("Sentry: cannot capture screenshot attachment on other than the main (UI) thread.");
+                _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
+                return Stream.Null;
             }
 
             return new MemoryStream(CaptureScreenshot());
         }
 
+        private int GetTargetResolution(ScreenshotQuality quality)
+        {
+            return quality switch
+            {
+                ScreenshotQuality.High => 1920,     // 1080p
+                ScreenshotQuality.Medium => 1280,   // 720p
+                ScreenshotQuality.Low => 854,       // 480p
+                _ => 854                            // Fallback
+            };
+        }
+
         private byte[] CaptureScreenshot()
         {
-            // Make sure the screenshot size does not exceed MaxSize by scaling the image while conserving the
-            // original ratio based on which, width or height, is the smaller
             var width = Screen.width;
             var height = Screen.height;
-            var ratioW = width <= MaxSize ? 1.0f : MaxSize / (float)width;
-            var ratioH = height <= MaxSize ? 1.0f : MaxSize / (float)height;
-            var ratio = Mathf.Min(ratioH, ratioW);
-            if (ratio is > 0.0f and < 1.0f)
+
+            // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
+            // original ratio based on which, width or height, is the smaller
+            if (_options.ScreenshotQuality is not ScreenshotQuality.Full)
             {
-                width = Mathf.FloorToInt(width * ratio);
-                height = Mathf.FloorToInt(height * ratio);
+                var targetResolution = GetTargetResolution(_options.ScreenshotQuality);
+                var ratioW = targetResolution / (float)width;
+                var ratioH = targetResolution / (float)height;
+                var ratio = Mathf.Min(ratioH, ratioW);
+                if (ratio is > 0.0f and < 1.0f)
+                {
+                    width = Mathf.FloorToInt(width * ratio);
+                    height = Mathf.FloorToInt(height * ratio);
+                }
             }
 
             // Captures the current screenshot synchronously.
@@ -87,9 +98,9 @@ namespace Sentry.Unity
                 RenderTexture.active = previousRT;
             }
 
-            var bytes = screenshot.EncodeToJPG(Quality);
+            var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                    "Screenshot captured at {0}x{1}: {0} bytes", null, width, height, bytes.Length);
+                    "Screenshot captured at {0}x{1}: {2} bytes", null, width, height, bytes.Length);
             return bytes;
         }
     }
