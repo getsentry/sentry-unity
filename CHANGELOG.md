@@ -8,6 +8,12 @@
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#641)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.4.0...6.4.1)
 
+### Dependencies
+
+- Bump .NET SDK from v3.20.1-33-g76b13448 to v3.20.1 ([#915](https://github.com/getsentry/sentry-unity/pull/915))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3201)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.20.1-33-g76b13448...3.20.1)
+
 ## 0.22.2
 
 ### Fixes
