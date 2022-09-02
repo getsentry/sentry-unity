@@ -2,11 +2,14 @@
 
 ## Unreleased
 
-### Features
+### Dependencies
 
 - Bump Java SDK from v6.4.0 to v6.4.1 ([#954](https://github.com/getsentry/sentry-unity/pull/954))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#641)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.4.0...6.4.1)
+- Bump Cocoa SDK from v7.23.0 to v7.24.0 ([#957](https://github.com/getsentry/sentry-unity/pull/957))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7240)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.23.0...7.24.0)
 
 ## 0.22.2
 
