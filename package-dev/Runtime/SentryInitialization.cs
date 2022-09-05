@@ -40,6 +40,8 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
+        public static bool IsAutoInitializing { get; private set; }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init()
         {
@@ -73,12 +75,16 @@ namespace Sentry.Unity
                     nativeInitException = new Exception("Sentry native error capture configuration failed.", e);
                 }
 
+                IsAutoInitializing = true;
                 SentryUnity.Init(options);
+
                 if (nativeInitException != null)
                 {
                     SentrySdk.CaptureException(nativeInitException);
                 }
             }
+
+            IsAutoInitializing = false;
         }
     }
 
