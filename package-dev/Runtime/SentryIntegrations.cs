@@ -1,25 +1,22 @@
-#if true
+#if UNITY_2020_3_OR_NEWER
 #define SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
 #endif
 
-using System;
-using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
-using UnityEngine.Scripting;
 using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity
 {
     public static class SentryIntegrations
     {
-        public static void Configure(SentryUnityOptions options)
+        public static void Configure(SentryUnityOptions options, bool isSelfInitializing = false)
         {
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
             if (options.TracesSampleRate > 0.0)
             {
-                options.AddIntegration(new SceneManagerTracingIntegration());
+                options.AddIntegration(new SceneManagerTracingIntegration(isSelfInitializing));
             }
             else
             {
@@ -33,54 +30,68 @@ namespace Sentry.Unity
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
     internal class SceneManagerTracingIntegration : ISdkIntegration
     {
-        private SentryOptions _options;
+        private IDiagnosticLogger _logger;
 
-        private ISpan _autoInitSpan;
-        private ITransaction _autoInitTransaction;
+        private readonly bool _isSelfInitializing;
+        private ISpan _startupSpan;
+        private ITransaction _startupTransaction;
+
+        public SceneManagerTracingIntegration(bool isSelfInitializing)
+        {
+            _isSelfInitializing = isSelfInitializing;
+        }
 
         public void Register(IHub hub, SentryOptions options)
         {
-            _options = options;
+            _logger = options.DiagnosticLogger;
 
             if (SceneManagerAPI.overrideAPI != null)
             {
                 // TODO: Add a place to put a custom 'SceneManagerAPI' on the editor window so we can "decorate" it.
-                options.DiagnosticLogger?.Log(SentryLevel.Warning,
+                _logger?.Log(SentryLevel.Warning,
                     "Registering SceneManagerTracing integration - overwriting the previous SceneManagerAPI.overrideAPI.");
             }
 
-            SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI();
+            SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI(_logger);
 
-            // We have to start the transaction manually to capture the initial scene loading during startup
-            if (SentryInitialization.IsAutoInitializing)
+            // In case of self-initialization during startup there is no callback for the load event. We have to start the
+            // transaction manually to capture the initial scene loading.
+            if (_isSelfInitializing)
             {
-                options.DiagnosticLogger?.LogDebug("Sentry is self-initializing. Starting startup scene load transaction.");
+                _logger?.LogInfo("Sentry self initialized. Starting startup scene load transaction.");
 
-                SceneManager.sceneLoaded += EndInitTransaction;
+                _startupTransaction = SentrySdk.StartTransaction("transaction-from-startup-scene-load", $"Loading '{SceneManager.GetSceneAt(0).name}'");
+                SentrySdk.ConfigureScope(scope => scope.Transaction = _startupTransaction);
 
-                _autoInitTransaction = SentrySdk.StartTransaction("transaction-from-startup-scene-load", $"Loading '{SceneManager.GetSceneAt(0).name}'");
-                SentrySdk.ConfigureScope(scope => scope.Transaction = _autoInitTransaction);
+                _startupSpan = SentrySdk.GetSpan()?.StartChild("scene.load");
 
-                _autoInitSpan = SentrySdk.GetSpan()?.StartChild("scene.load");
+                SceneManager.sceneLoaded += EndStartupSceneLoadTransaction;
             }
         }
 
-        private void EndInitTransaction(Scene scene, LoadSceneMode mode)
+        private void EndStartupSceneLoadTransaction(Scene scene, LoadSceneMode mode)
         {
-            _options.DiagnosticLogger?.LogDebug("Ending startup scene load transaction.");
+            _logger?.LogInfo("Finishing startup scene load transaction.");
 
-            _autoInitSpan?.Finish(SpanStatus.Ok);
-            _autoInitTransaction.Finish(SpanStatus.Ok);
+            _startupSpan?.Finish(SpanStatus.Ok);
+            _startupTransaction.Finish(SpanStatus.Ok);
 
-            // Only run once
-            SceneManager.sceneLoaded -= EndInitTransaction;
+            // Only run once - Letting the SceneManagerAPI take over
+            SceneManager.sceneLoaded -= EndStartupSceneLoadTransaction;
         }
 
         internal class SceneManagerTracingAPI : SceneManagerAPI
         {
+            private readonly IDiagnosticLogger _logger;
+
+            public SceneManagerTracingAPI(IDiagnosticLogger logger)
+            {
+                _logger = logger;
+            }
+
             protected override AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
             {
-                Debug.Log("Scene load start");
+                _logger.LogInfo("Starting scene load transaction for '{0}'.", sceneName);
 
                 var transaction = SentrySdk.StartTransaction("transaction-from-scene-load", sceneName ?? $"buildIndex:{sceneBuildIndex}");
                 SentrySdk.ConfigureScope(scope => scope.Transaction = transaction);
@@ -94,17 +105,11 @@ namespace Sentry.Unity
                 // https://docs.unity3d.com/2020.3/Documentation/ScriptReference/AsyncOperation-completed.html
                 asyncOp.completed += (_) =>
                 {
-                    Debug.Log("Scene load finished");
+                    _logger.LogInfo("Finishing scene load transaction for {0}.", sceneName);
+
                     span?.Finish(SpanStatus.Ok);
                     transaction.Finish(SpanStatus.Ok);
                 };
-
-                // Task.Run(async () =>
-                // {
-                //     await Task.Delay(3000);
-                //     Debug.Log("Finishing transaction");
-                //     transaction.Finish(SpanStatus.Ok);
-                // }).ConfigureAwait(false);
 
                 return asyncOp;
             }
