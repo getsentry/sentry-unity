@@ -114,7 +114,7 @@ namespace Sentry.Unity
         /// For that reason, uploading debug information files must be enabled.
         /// For that, Org Slut, Project Slug and Auth token are required.
         /// </remarks>
-        public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
+        public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
