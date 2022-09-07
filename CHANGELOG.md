@@ -6,6 +6,10 @@
 
 - Fixed a crash during startup due in connection to the Google Ads Unity package ([#953](https://github.com/getsentry/sentry-unity/pull/953))
 
+### Features
+
+- IL2CPP line number support is enabled by default ([#963](https://github.com/getsentry/sentry-unity/pull/963))
+
 ### Dependencies
 
 - Bump Java SDK from v6.4.0 to v6.4.1 ([#954](https://github.com/getsentry/sentry-unity/pull/954))

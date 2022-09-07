@@ -74,8 +74,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            GUILayout.Label("Experimental", EditorStyles.boldLabel);
-
             options.Il2CppLineNumberSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("IL2CPP line numbers", "Whether the SDK should try to to provide line " +
                                                       "numbers for exceptions in IL2CPP builds."),
