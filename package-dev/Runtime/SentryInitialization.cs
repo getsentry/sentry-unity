@@ -40,14 +40,14 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void Init()
         {
             var sentryUnityInfo = new SentryUnityInfo();
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(sentryUnityInfo);
             if (options.ShouldInitializeSdk())
             {
-                SentryIntegrations.Configure(options, true);
+                SentryIntegrations.Configure(options);
                 Exception nativeInitException = null;
 
                 try
