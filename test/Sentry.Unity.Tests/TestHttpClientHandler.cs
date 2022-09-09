@@ -9,9 +9,15 @@ using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Tests
 {
+    public enum TestEventType
+    {
+        SentryEvent,
+        SentryTransaction
+    }
+
     public class TestHttpClientHandler : HttpClientHandler
     {
-        private const string EventQualifier = "\"type\":\"event\"";
+        private readonly string[] EventQualifiers = { "\"type\":\"event\"", "\"type\":\"transaction\"" };
 
         private readonly List<string> _requests = new();
         private readonly AutoResetEvent _requestReceived = new(false);
@@ -33,12 +39,12 @@ namespace Sentry.Unity.Tests
             }
         }
 
-        public string GetEvent(TimeSpan timeout)
+        public string GetEvent(TestEventType type, TimeSpan timeout)
         {
             // Check all the already received requests
             lock (_requests)
             {
-                var eventRequest = _requests.Find(r => r.Contains(EventQualifier));
+                var eventRequest = _requests.Find(r => r.Contains(EventQualifiers[(int)type]));
                 if (!string.IsNullOrEmpty(eventRequest))
                 {
                     Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n" + eventRequest);
@@ -54,7 +60,7 @@ namespace Sentry.Unity.Tests
                 {
                     lock (_requests)
                     {
-                        if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(EventQualifier))
+                        if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(EventQualifiers[(int)type]))
                         {
                             var eventRequest = _requests[_requests.Count - 1];
                             Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n" + eventRequest);
