@@ -2,6 +2,7 @@
 #define SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
 #endif
 
+using JetBrains.Annotations;
 using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
@@ -30,106 +31,124 @@ namespace Sentry.Unity
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
     public class SceneManagerTracingIntegration : ISdkIntegration
     {
-        private static ITransaction StartupTransaction;
-        private static ISpan SplashAndAssembliesSpan;
-        private static ISpan SceneLoadSpan;
+        [CanBeNull] private static ISpan AfterAssembliesSpan;
+        private const string AfterAssembliesSpanName = "after.assemblies";
+        [CanBeNull] private static ISpan SplashScreenSpan;
+        private const string SplashScreenSpanName = "splashscreen";
+        [CanBeNull] private static ISpan FirstSceneLoadSpan;
+        private const string FirstSceneLoadSpanName = "first.scene.load";
 
-        private static bool ShouldCaptureStartup;
+        // Flag to make sure we create spans through the runtime initialization only once
+        private static bool ShouldCreateSpans = true;
 
-        private IDiagnosticLogger _logger;
+        [CanBeNull] private static IDiagnosticLogger Logger;
 
         public void Register(IHub hub, SentryOptions options)
         {
-            _logger = options.DiagnosticLogger;
+            Logger = options.DiagnosticLogger;
 
             if (SceneManagerAPI.overrideAPI != null)
             {
                 // TODO: Add a place to put a custom 'SceneManagerAPI' on the editor window so we can "decorate" it.
-                _logger?.Log(SentryLevel.Warning,
+                Logger?.Log(SentryLevel.Warning,
                     "Registering SceneManagerTracing integration - overwriting the previous SceneManagerAPI.overrideAPI.");
             }
 
-            SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI(_logger);
-            ShouldCaptureStartup = true;
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void SubsystemRegistration()
-        {
-            // Sentry inits here
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
-        public static void BeforeSplashScreen()
-        {
-            if (!ShouldCaptureStartup)
-            {
-                return;
-            }
-
-            StartupTransaction = SentrySdk.StartTransaction("transaction-from-startup", "Splash Screen");
-            SentrySdk.ConfigureScope(scope => scope.Transaction = StartupTransaction);
-
-            SplashAndAssembliesSpan = SentrySdk.GetSpan()?.StartChild("startup.splashscreen");
+            SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI(Logger);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         public static void AfterAssembliesLoaded()
         {
-            // There is not really anything here for use to measure/capture?
+            if (!ShouldCreateSpans)
+            {
+                return;
+            }
+
+            SentryInitialization.AssembliesLoadSpan?.Finish(SpanStatus.Ok);
+            SentryInitialization.AssembliesLoadSpan = null;
+
+            Logger?.LogDebug("Creating '{0}' span.", AfterAssembliesSpanName);
+            AfterAssembliesSpan = SentryInitialization.InitializationSpan?.StartChild(AfterAssembliesSpanName);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        public static void BeforeSplashScreen()
+        {
+            if (!ShouldCreateSpans)
+            {
+                return;
+            }
+
+            AfterAssembliesSpan?.Finish(SpanStatus.Ok);
+            AfterAssembliesSpan = null;
+
+            Logger?.LogDebug("Creating '{0}' span.", SplashScreenSpanName);
+            SplashScreenSpan = SentryInitialization.InitializationSpan?.StartChild(SplashScreenSpanName);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void BeforeSceneLoad()
         {
-            if (!ShouldCaptureStartup)
+            if (!ShouldCreateSpans)
             {
                 return;
             }
 
-            SplashAndAssembliesSpan.Finish(SpanStatus.Ok);
-            SceneLoadSpan = SentrySdk.GetSpan()?.StartChild("startup.scene.load");
+            SplashScreenSpan?.Finish(SpanStatus.Ok);
+            SplashScreenSpan = null;
+
+            Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanName);
+            FirstSceneLoadSpan = SentryInitialization.InitializationSpan?.StartChild(FirstSceneLoadSpanName);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         public static void AfterSceneLoad()
         {
-            if (!ShouldCaptureStartup)
-            {
-                return;
-            }
+            FirstSceneLoadSpan?.Finish(SpanStatus.Ok);
+            FirstSceneLoadSpan = null;
 
-            SceneLoadSpan.Finish(SpanStatus.Ok);
-            StartupTransaction.Finish(SpanStatus.Ok);
+            SentryInitialization.InitializationSpan?.Finish(SpanStatus.Ok);
+            SentryInitialization.InitializationSpan = null;
+
+            Logger?.LogDebug("Finishing '{0}' transaction.", SentryInitialization.StartupTransactionName);
+            SentrySdk.ConfigureScope(s =>
+            {
+                s.Transaction?.Finish(SpanStatus.Ok);
+            });
+
+            ShouldCreateSpans = false;
         }
     }
 
     public class SceneManagerTracingAPI : SceneManagerAPI
     {
-        private readonly IDiagnosticLogger _logger;
+        public const string TransactionName = "scene.loading";
+        private const string SpanName = "scene.load";
+        [CanBeNull] private readonly IDiagnosticLogger _logger;
 
-        public SceneManagerTracingAPI(IDiagnosticLogger logger)
+        public SceneManagerTracingAPI([CanBeNull] IDiagnosticLogger logger)
         {
             _logger = logger;
         }
 
         protected override AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
         {
-            _logger.LogInfo("Starting scene load transaction for '{0}'.", sceneName);
+            _logger?.LogInfo("Creating '{0}' span for '{1}'.", SpanName, sceneName);
 
-            var transaction = SentrySdk.StartTransaction("transaction-from-scene-load", sceneName ?? $"buildIndex:{sceneBuildIndex}");
+            var transaction = SentrySdk.StartTransaction(TransactionName, sceneName ?? $"buildIndex:{sceneBuildIndex}");
             SentrySdk.ConfigureScope(scope => scope.Transaction = transaction);
+            var span = SentrySdk.GetSpan()?.StartChild(SpanName);
 
-            var span = SentrySdk.GetSpan()?.StartChild("scene.load");
             var asyncOp = base.LoadSceneAsyncByNameOrIndex(sceneName, sceneBuildIndex, parameters, mustCompleteNextFrame);
 
             // TODO: setExtra()? e.g. from the LoadSceneParameters:
             // https://github.com/Unity-Technologies/UnityCsReference/blob/02d565cf3dd0f6b15069ba976064c75dc2705b08/Runtime/Export/SceneManager/SceneManager.cs#L30
             // Note: asyncOp.completed triggers in the next frame after finishing (so the time isn't precise).
             // https://docs.unity3d.com/2020.3/Documentation/ScriptReference/AsyncOperation-completed.html
-            asyncOp.completed += (_) =>
+            asyncOp.completed += _ =>
             {
-                _logger.LogInfo("Finishing scene load transaction for '{0}'.", sceneName);
+                _logger?.LogInfo("Finishing '{0}' transaction for '{1}'.", TransactionName, sceneName);
 
                 span?.Finish(SpanStatus.Ok);
                 transaction.Finish(SpanStatus.Ok);

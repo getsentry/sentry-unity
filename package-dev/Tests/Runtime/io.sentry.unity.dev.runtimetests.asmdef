@@ -33,6 +33,7 @@
     "precompiledReferences": [
         "Sentry.dll",
         "Sentry.Unity.dll",
+        "Sentry.Unity.Tests.dll",
         "nunit.framework.dll"
     ],
     "autoReferenced": false,

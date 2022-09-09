@@ -15,6 +15,8 @@
 #endif
 
 using System;
+using JetBrains.Annotations;
+using Sentry.Extensibility;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -40,12 +42,18 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
+        public const string StartupTransactionName = "process.start";
+        [CanBeNull] public static ISpan InitializationSpan;
+        private const string InitializationSpanName = "runtime.initialization";
+        [CanBeNull] public static ISpan AssembliesLoadSpan;
+        private const string AssembliesLoadSpanName = "loading.assemblies";
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void Init()
         {
             var sentryUnityInfo = new SentryUnityInfo();
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(sentryUnityInfo);
-            if (options.ShouldInitializeSdk())
+            if (options != null && options.ShouldInitializeSdk())
             {
                 SentryIntegrations.Configure(options);
                 Exception nativeInitException = null;
@@ -78,6 +86,14 @@ namespace Sentry.Unity
                 {
                     SentrySdk.CaptureException(nativeInitException);
                 }
+
+                var processStartTransaction = SentrySdk.StartTransaction("startup", StartupTransactionName);
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitializationSpanName);
+                InitializationSpan = processStartTransaction.StartChild(InitializationSpanName);
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", AssembliesLoadSpanName);
+                AssembliesLoadSpan = InitializationSpan.StartChild(AssembliesLoadSpanName);
+
+                SentrySdk.ConfigureScope(scope => scope.Transaction = processStartTransaction);
             }
         }
     }
