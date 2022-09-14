@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Don't access Unity `AnalyticsSessionInfo.userId` on unknown platforms ([#971](https://github.com/getsentry/sentry-unity/pull/971))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v7.24.1 to v7.25.0 ([#967](https://github.com/getsentry/sentry-unity/pull/967))
@@ -14,6 +18,7 @@
 
 - Fixed a crash during startup due in connection to the Google Ads Unity package ([#953](https://github.com/getsentry/sentry-unity/pull/953))
 - The SDK failing to reinstall the backend will no longer lead to events being sent to Sentry ([#962](https://github.com/getsentry/sentry-unity/pull/962))
+- Don't access Unity `AnalyticsSessionInfo.userId` on unknown platforms ([#971](https://github.com/getsentry/sentry-unity/pull/971))
 
 ### Features
 
