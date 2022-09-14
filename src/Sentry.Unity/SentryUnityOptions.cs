@@ -177,6 +177,11 @@ namespace Sentry.Unity
             StackTraceMode = StackTraceMode.Original;
             IsEnvironmentUser = false;
 
+            if (unityInfo?.AnalyticsUserId is string userId && !string.IsNullOrWhiteSpace(userId))
+            {
+                DefaultUserId = userId;
+            }
+
             if (application.ProductName is string productName
                 && !string.IsNullOrWhiteSpace(productName)
                 && productName.Any(c => c != '.')) // productName consisting solely of '.'

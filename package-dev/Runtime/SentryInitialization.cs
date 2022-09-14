@@ -108,6 +108,17 @@ namespace Sentry.Unity
             ;
         }
 
+        public string AnalyticsUserId
+        {
+            get =>
+#if ENABLE_CLOUD_SERVICES_ANALYTICS
+                UnityEngine.Analytics.AnalyticsSessionInfo.userId
+#else
+                null
+#endif
+            ;
+        }
+
         public Il2CppMethods Il2CppMethods => _il2CppMethods;
 
         private Il2CppMethods _il2CppMethods

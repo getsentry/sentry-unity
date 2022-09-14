@@ -2,7 +2,6 @@ using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
-using UnityEngine.Analytics;
 
 namespace Sentry.Unity
 {
@@ -147,8 +146,6 @@ namespace Sentry.Unity
             }
             else
             {
-                options.DefaultUserId = AnalyticsSessionInfo.userId;
-
                 // This is only provided on a best-effort basis for other than the explicitly supported platforms.
                 if (options.BackgroundWorker is null)
                 {
