@@ -15,7 +15,7 @@ namespace Sentry.Unity
     {
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
         [UnityTest]
-        public IEnumerator SentryIntegrations_TranceSampleRateOne_AddsSceneManagerTracingIntegration()
+        public IEnumerator Configure_TranceSampleRateOne_AddsSceneManagerTracingIntegration()
         {
             var options = new SentryUnityOptions
             {
@@ -34,7 +34,7 @@ namespace Sentry.Unity
 
         // TODO: To be fixed: Currently fails if run after the integration has successfully been added. (because it doesn't get removed)
         // [UnityTest]
-        // public IEnumerator SentryIntegrations_TranceSampleRateZero_DoesNotAddSceneManagerTracingIntegration()
+        // public IEnumerator Configure_TranceSampleRateZero_DoesNotAddSceneManagerTracingIntegration()
         // {
         //     var options = new SentryUnityOptions
         //     {

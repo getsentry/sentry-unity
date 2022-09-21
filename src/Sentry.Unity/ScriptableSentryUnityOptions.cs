@@ -80,7 +80,7 @@ namespace Sentry.Unity
         /// <remarks>
         /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
         /// </remarks>
-        public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
+        public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo? unityInfo)
         {
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)

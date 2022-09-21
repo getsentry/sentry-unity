@@ -32,11 +32,11 @@ namespace Sentry.Unity
     public class SceneManagerTracingIntegration : ISdkIntegration
     {
         [CanBeNull] private static ISpan AfterAssembliesSpan;
-        private const string AfterAssembliesSpanName = "after.assemblies";
+        private const string AfterAssembliesSpanName = "unity.runtime.assemblies";
         [CanBeNull] private static ISpan SplashScreenSpan;
-        private const string SplashScreenSpanName = "splashscreen";
+        private const string SplashScreenSpanName = "unity.runtime.splashscreen";
         [CanBeNull] private static ISpan FirstSceneLoadSpan;
-        private const string FirstSceneLoadSpanName = "first.scene.load";
+        private const string FirstSceneLoadSpanName = "unity.runtime.firstscene";
 
         // Flag to make sure we create spans through the runtime initialization only once
         private static bool ShouldCreateSpans = true;
@@ -123,8 +123,8 @@ namespace Sentry.Unity
 
     public class SceneManagerTracingAPI : SceneManagerAPI
     {
-        public const string TransactionName = "scene.loading";
-        private const string SpanName = "scene.load";
+        public const string TransactionName = "unity.scene.loading";
+        private const string SpanName = "unity.scene.load";
         [CanBeNull] private readonly IDiagnosticLogger _logger;
 
         public SceneManagerTracingAPI([CanBeNull] IDiagnosticLogger logger)
