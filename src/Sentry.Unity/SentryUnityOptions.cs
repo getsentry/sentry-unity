@@ -148,17 +148,19 @@ namespace Sentry.Unity
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
         internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
-            this(SentryMonoBehaviour.Instance, application, unityInfo, isBuilding)
+            this(SentryMonoBehaviour.Instance, application, isBuilding)
         { }
 
-        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, ISentryUnityInfo? unityInfo, bool isBuilding)
+        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
+            var processor = new UnityEventProcessor(this, behaviour);
+            this.AddEventProcessor(processor);
+            this.AddTransactionProcessor(processor);
 
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new AnrIntegration(behaviour));

@@ -14,6 +14,7 @@
 
 - Don't access Unity `AnalyticsSessionInfo.userId` on unknown platforms ([#971](https://github.com/getsentry/sentry-unity/pull/971))
 - Keep previously set IL2CPP compiler arguments (i.e append instead of overwriting) ([#972](https://github.com/getsentry/sentry-unity/pull/972))
+- Add transaction processor ([#978](https://github.com/getsentry/sentry-unity/pull/978))
 
 ### Dependencies
 
