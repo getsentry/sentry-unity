@@ -21,8 +21,7 @@ namespace Sentry.Unity
             }
             else
             {
-                options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                    "Skipping SceneManagerTracing integration because performance tracing is disabled.");
+                options.DiagnosticLogger?.LogDebug("Skipping SceneManagerTracing integration because performance tracing is disabled.");
             }
 #endif
         }
@@ -50,8 +49,7 @@ namespace Sentry.Unity
             if (SceneManagerAPI.overrideAPI != null)
             {
                 // TODO: Add a place to put a custom 'SceneManagerAPI' on the editor window so we can "decorate" it.
-                Logger?.Log(SentryLevel.Warning,
-                    "Registering SceneManagerTracing integration - overwriting the previous SceneManagerAPI.overrideAPI.");
+                Logger?.LogWarning("Registering SceneManagerTracing integration - overwriting the previous SceneManagerAPI.overrideAPI.");
             }
 
             SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI(Logger);
