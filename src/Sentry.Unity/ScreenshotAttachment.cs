@@ -69,23 +69,24 @@ namespace Sentry.Unity
 
             // Captures the current screenshot synchronously.
             var screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
-            var rtFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
-            ScreenCapture.CaptureScreenshotIntoRenderTexture(rtFull);
-            var rtResized = RenderTexture.GetTemporary(width, height);
+            var renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
+            ScreenCapture.CaptureScreenshotIntoRenderTexture(renderTextureFull);
+            var renderTextureResized = RenderTexture.GetTemporary(width, height);
             // On all (currently supported) platforms except Android, the image is mirrored horizontally & vertically.
             // So we must mirror it back.
             if (ApplicationAdapter.Instance.Platform is (RuntimePlatform.Android or RuntimePlatform.LinuxPlayer))
             {
-                Graphics.Blit(rtFull, rtResized);
+                Graphics.Blit(renderTextureFull, renderTextureResized);
             }
             else
             {
-                Graphics.Blit(rtFull, rtResized, new Vector2(1, -1), new Vector2(0, 1));
+                Graphics.Blit(renderTextureFull, renderTextureResized, new Vector2(1, -1), new Vector2(0, 1));
             }
-            RenderTexture.ReleaseTemporary(rtFull);
+            RenderTexture.ReleaseTemporary(renderTextureFull);
             // Remember the previous render target and change it to our target texture.
-            var previousRT = RenderTexture.active;
-            RenderTexture.active = rtResized;
+            var previousRenderTexture = RenderTexture.active;
+            RenderTexture.active = renderTextureResized;
+
             try
             {
                 // actually copy from the current render target a texture & read data from the active RenderTexture
@@ -95,8 +96,10 @@ namespace Sentry.Unity
             finally
             {
                 // Restore the render target.
-                RenderTexture.active = previousRT;
+                RenderTexture.active = previousRenderTexture;
             }
+
+            RenderTexture.ReleaseTemporary(renderTextureResized);
 
             var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,

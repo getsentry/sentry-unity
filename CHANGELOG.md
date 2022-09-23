@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Releasing temp render texture after capturing a screenshot ([#983](https://github.com/getsentry/sentry-unity/pull/983))
+
 ### Dependencies
 
 - Bump Java SDK from v6.4.1 to v6.4.2 ([#980](https://github.com/getsentry/sentry-unity/pull/980))
