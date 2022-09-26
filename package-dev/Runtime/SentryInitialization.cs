@@ -48,7 +48,12 @@ namespace Sentry.Unity
         [CanBeNull] public static ISpan AssembliesLoadSpan;
         private const string AssembliesLoadSpanName = "loading.assemblies";
 
+#if SENTRY_WEBGL
+        // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#else
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#endif
         public static void Init()
         {
             var sentryUnityInfo = new SentryUnityInfo();
