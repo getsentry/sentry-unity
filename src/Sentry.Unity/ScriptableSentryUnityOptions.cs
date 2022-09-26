@@ -2,6 +2,7 @@ using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace Sentry.Unity
 {
@@ -64,7 +65,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
 
         [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
@@ -146,6 +147,8 @@ namespace Sentry.Unity
             }
             else
             {
+                options.DefaultUserId = AnalyticsSessionInfo.userId;
+
                 // This is only provided on a best-effort basis for other than the explicitly supported platforms.
                 if (options.BackgroundWorker is null)
                 {

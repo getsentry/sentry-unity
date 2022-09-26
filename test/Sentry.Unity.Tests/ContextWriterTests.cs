@@ -67,7 +67,7 @@ namespace Sentry.Unity.Tests
 
             };
             var context = new MockContextWriter();
-            var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+            var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, null, false)
             {
                 Dsn = "http://publickey@localhost/12345",
                 Enabled = true,

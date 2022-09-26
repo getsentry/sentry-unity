@@ -12,8 +12,8 @@ namespace Sentry.Unity.Editor
         public void OnPreprocessBuild(BuildReport report)
         {
             var arguments = "--emit-source-mapping";
-            Debug.Log($"Setting additional IL2CPP arguments '{arguments}' for platform {report.summary.platform}");
-            PlayerSettings.SetAdditionalIl2CppArgs(PlayerSettings.GetAdditionalIl2CppArgs() + $" {arguments}");
+            Debug.Log($"Setting additional IL2CPP arguments = '{arguments}' for platform {report.summary.platform}");
+            PlayerSettings.SetAdditionalIl2CppArgs(arguments);
         }
     }
 }

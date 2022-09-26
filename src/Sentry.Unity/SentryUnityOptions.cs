@@ -114,7 +114,7 @@ namespace Sentry.Unity
         /// For that reason, uploading debug information files must be enabled.
         /// For that, Org Slut, Project Slug and Auth token are required.
         /// </remarks>
-        public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+        public bool Il2CppLineNumberSupportEnabled { get; set; } = false;
 
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
@@ -148,19 +148,17 @@ namespace Sentry.Unity
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
         internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
-            this(SentryMonoBehaviour.Instance, application, isBuilding)
+            this(SentryMonoBehaviour.Instance, application, unityInfo, isBuilding)
         { }
 
-        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding)
+        internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, ISentryUnityInfo? unityInfo, bool isBuilding)
         {
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
             DetectStartupTime = StartupTimeDetectionMode.Fast;
 
             this.AddInAppExclude("UnityEngine");
             this.AddInAppExclude("UnityEditor");
-            var processor = new UnityEventProcessor(this, behaviour);
-            this.AddEventProcessor(processor);
-            this.AddTransactionProcessor(processor);
+            this.AddEventProcessor(new UnityEventProcessor(this, behaviour));
 
             this.AddIntegration(new UnityLogHandlerIntegration());
             this.AddIntegration(new AnrIntegration(behaviour));
