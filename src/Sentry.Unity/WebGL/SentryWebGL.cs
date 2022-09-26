@@ -43,6 +43,13 @@ namespace Sentry.Unity.WebGL
 
             // Indicate that this platform doesn't support running background threads.
             options.MultiThreading = false;
+
+            if (options.AutoSessionTracking)
+            {
+                options.AutoSessionTracking = false;
+                options.DiagnosticLogger?.LogWarning("Auto Session Tracking on WebGL is disabled - " +
+                                                     "it is currently not supported");
+            }
         }
     }
 }
