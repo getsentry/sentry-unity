@@ -182,8 +182,8 @@ finally:
 
 # Verify received API requests - see SmokeTester.cs - this is a copy-paste with minimal syntax changes
 currentMessage = 0
-t.ExpectMessage(currentMessage, "'type':'session'")
-currentMessage += 1
+# t.ExpectMessage(currentMessage, "'type':'session'")
+# currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(currentMessage, "LogError(GUID)")
 t.ExpectMessage(currentMessage, "'user':{'id':'")
