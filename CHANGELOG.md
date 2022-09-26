@@ -2,17 +2,58 @@
 
 ## Unreleased
 
+### Fixes
+
+- Releasing temp render texture after capturing a screenshot ([#983](https://github.com/getsentry/sentry-unity/pull/983))
+
+### Dependencies
+
+- Bump Java SDK from v6.4.1 to v6.4.2 ([#980](https://github.com/getsentry/sentry-unity/pull/980))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#642)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.4.2)
+
+## 0.23.1
+
+### Fixes
+
+- Don't access Unity `AnalyticsSessionInfo.userId` on unknown platforms ([#971](https://github.com/getsentry/sentry-unity/pull/971))
+- Keep previously set IL2CPP compiler arguments (i.e append instead of overwriting) ([#972](https://github.com/getsentry/sentry-unity/pull/972))
+- Add transaction processor ([#978](https://github.com/getsentry/sentry-unity/pull/978))
+
+### Dependencies
+
+- Bump Cocoa SDK from v7.24.1 to v7.25.1 ([#967](https://github.com/getsentry/sentry-unity/pull/967), [#974](https://github.com/getsentry/sentry-unity/pull/974))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7251)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.24.1...7.25.1)
+
+## 0.23.0
+
+### Fixes
+
+- Fixed a crash during startup due in connection to the Google Ads Unity package ([#953](https://github.com/getsentry/sentry-unity/pull/953))
+- The SDK failing to reinstall the backend will no longer lead to events being sent to Sentry ([#962](https://github.com/getsentry/sentry-unity/pull/962))
+- Don't access Unity `AnalyticsSessionInfo.userId` on unknown platforms ([#971](https://github.com/getsentry/sentry-unity/pull/971))
+
 ### Features
+
+- IL2CPP line number support is enabled by default ([#963](https://github.com/getsentry/sentry-unity/pull/963))
+
+### Dependencies
 
 - Bump Java SDK from v6.4.0 to v6.4.1 ([#954](https://github.com/getsentry/sentry-unity/pull/954))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#641)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.4.0...6.4.1)
+- Bump Cocoa SDK from v7.23.0 to v7.24.1 ([#957](https://github.com/getsentry/sentry-unity/pull/957), [#961](https://github.com/getsentry/sentry-unity/pull/961))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7241)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.23.0...7.24.1)
+- Bump .NET SDK from v3.20.1-33-g76b13448 to v3.21.0 ([#958](https://github.com/getsentry/sentry-unity/pull/958))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3210)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.20.1-33-g76b13448...3.21.0)
 
 ## 0.22.2
 
 ### Fixes
 
-- Fixed a crash during startup due in connection to the Google Ads Unity package ([#953](https://github.com/getsentry/sentry-unity/pull/953))
 - Fixed an 'Undefined symbols' issue within the Sentry Native Bridge when building for iOS ([#932](https://github.com/getsentry/sentry-unity/pull/932))
 - ANR detection no longer creates an error by trying to capture a screenshot from a background thread ([#937](https://github.com/getsentry/sentry-unity/pull/937))
 - Screenshots quality no longer scales off of current resolution but tries match thresholds instead ([#939](https://github.com/getsentry/sentry-unity/pull/939))
