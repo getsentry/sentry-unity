@@ -42,11 +42,11 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
-        public const string StartupTransactionName = "process.start";
+        public const string StartupTransactionName = "unity.runtime.start";
         [CanBeNull] public static ISpan InitializationSpan;
-        private const string InitializationSpanName = "runtime.initialization";
+        private const string InitializationSpanName = "unity.runtime.initialization";
         [CanBeNull] public static ISpan AssembliesLoadSpan;
-        private const string AssembliesLoadSpanName = "loading.assemblies";
+        private const string AssembliesLoadSpanName = "unity.runtime.assemblies";
 
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
