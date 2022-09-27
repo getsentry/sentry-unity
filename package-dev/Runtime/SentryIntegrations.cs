@@ -1,4 +1,4 @@
-#if UNITY_2020_3_OR_NEWER
+#if true
 #define SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
 #endif
 
@@ -8,7 +8,6 @@
 #endif
 #endif
 
-using JetBrains.Annotations;
 using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
@@ -36,17 +35,17 @@ namespace Sentry.Unity
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
     public class SceneManagerTracingIntegration : ISdkIntegration
     {
-        [CanBeNull] private static ISpan AfterAssembliesSpan;
+        private static ISpan AfterAssembliesSpan;
         private const string AfterAssembliesSpanName = "unity.runtime.assemblies";
-        [CanBeNull] private static ISpan SplashScreenSpan;
+        private static ISpan SplashScreenSpan;
         private const string SplashScreenSpanName = "unity.runtime.splashscreen";
-        [CanBeNull] private static ISpan FirstSceneLoadSpan;
+        private static ISpan FirstSceneLoadSpan;
         private const string FirstSceneLoadSpanName = "unity.runtime.firstscene";
 
         // Flag to make sure we create spans through the runtime initialization only once
         private static bool ShouldCreateSpans = true;
 
-        [CanBeNull] private static IDiagnosticLogger Logger;
+        private static IDiagnosticLogger Logger;
 
         public void Register(IHub hub, SentryOptions options)
         {
@@ -131,9 +130,9 @@ namespace Sentry.Unity
     {
         public const string TransactionName = "unity.scene.loading";
         private const string SpanName = "unity.scene.load";
-        [CanBeNull] private readonly IDiagnosticLogger _logger;
+        private readonly IDiagnosticLogger _logger;
 
-        public SceneManagerTracingAPI([CanBeNull] IDiagnosticLogger logger)
+        public SceneManagerTracingAPI(IDiagnosticLogger logger)
         {
             _logger = logger;
         }

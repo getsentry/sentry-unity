@@ -15,7 +15,6 @@
 #endif
 
 using System;
-using JetBrains.Annotations;
 using Sentry.Extensibility;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
@@ -43,9 +42,9 @@ namespace Sentry.Unity
     public static class SentryInitialization
     {
         public const string StartupTransactionName = "unity.runtime.start";
-        [CanBeNull] public static ISpan InitSpan;
+        public static ISpan InitSpan;
         private const string InitSpanName = "unity.runtime.init";
-        [CanBeNull] public static ISpan SubSystemRegistrationSpan;
+        public static ISpan SubSystemRegistrationSpan;
         private const string SubSystemSpanName = "unity.runtime.subsystem";
 
 #if SENTRY_WEBGL
