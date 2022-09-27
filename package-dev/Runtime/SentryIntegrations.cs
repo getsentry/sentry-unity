@@ -2,6 +2,12 @@
 #define SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
 #endif
 
+#if !UNITY_EDITOR
+#if UNITY_WEBGL
+#define SENTRY_WEBGL
+#endif
+#endif
+
 using JetBrains.Annotations;
 using Sentry.Extensibility;
 using Sentry.Integrations;
@@ -55,6 +61,7 @@ namespace Sentry.Unity
             SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI(Logger);
         }
 
+#if !SENTRY_WEBGL
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         public static void AfterAssembliesLoaded()
         {
@@ -117,6 +124,7 @@ namespace Sentry.Unity
 
             ShouldCreateSpans = false;
         }
+#endif
     }
 
     public class SceneManagerTracingAPI : SceneManagerAPI

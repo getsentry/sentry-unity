@@ -92,6 +92,7 @@ namespace Sentry.Unity
                     SentrySdk.CaptureException(nativeInitException);
                 }
 
+#if !SENTRY_WEBGL
                 var runtimeStartTransaction = SentrySdk.StartTransaction("unity.runtime.startup", StartupTransactionName);
                 options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanName);
                 InitSpan = runtimeStartTransaction.StartChild(InitSpanName);
@@ -99,6 +100,7 @@ namespace Sentry.Unity
                 SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanName);
 
                 SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
+#endif
             }
         }
     }
