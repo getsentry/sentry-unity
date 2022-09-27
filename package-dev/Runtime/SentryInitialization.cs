@@ -43,10 +43,10 @@ namespace Sentry.Unity
     public static class SentryInitialization
     {
         public const string StartupTransactionName = "unity.runtime.start";
-        [CanBeNull] public static ISpan InitializationSpan;
-        private const string InitializationSpanName = "unity.runtime.initialization";
-        [CanBeNull] public static ISpan AssembliesLoadSpan;
-        private const string AssembliesLoadSpanName = "unity.runtime.assemblies";
+        [CanBeNull] public static ISpan InitSpan;
+        private const string InitSpanName = "unity.runtime.init";
+        [CanBeNull] public static ISpan SubSystemRegistrationSpan;
+        private const string SubSystemSpanName = "unity.runtime.subsystem";
 
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
@@ -92,13 +92,13 @@ namespace Sentry.Unity
                     SentrySdk.CaptureException(nativeInitException);
                 }
 
-                var processStartTransaction = SentrySdk.StartTransaction("startup", StartupTransactionName);
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitializationSpanName);
-                InitializationSpan = processStartTransaction.StartChild(InitializationSpanName);
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", AssembliesLoadSpanName);
-                AssembliesLoadSpan = InitializationSpan.StartChild(AssembliesLoadSpanName);
+                var runtimeStartTransaction = SentrySdk.StartTransaction("unity.runtime.startup", StartupTransactionName);
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanName);
+                InitSpan = runtimeStartTransaction.StartChild(InitSpanName);
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanName);
+                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanName);
 
-                SentrySdk.ConfigureScope(scope => scope.Transaction = processStartTransaction);
+                SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
             }
         }
     }

@@ -63,11 +63,11 @@ namespace Sentry.Unity
                 return;
             }
 
-            SentryInitialization.AssembliesLoadSpan?.Finish(SpanStatus.Ok);
-            SentryInitialization.AssembliesLoadSpan = null;
+            SentryInitialization.SubSystemRegistrationSpan?.Finish(SpanStatus.Ok);
+            SentryInitialization.SubSystemRegistrationSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", AfterAssembliesSpanName);
-            AfterAssembliesSpan = SentryInitialization.InitializationSpan?.StartChild(AfterAssembliesSpanName);
+            AfterAssembliesSpan = SentryInitialization.InitSpan?.StartChild(AfterAssembliesSpanName);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
@@ -82,7 +82,7 @@ namespace Sentry.Unity
             AfterAssembliesSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", SplashScreenSpanName);
-            SplashScreenSpan = SentryInitialization.InitializationSpan?.StartChild(SplashScreenSpanName);
+            SplashScreenSpan = SentryInitialization.InitSpan?.StartChild(SplashScreenSpanName);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -97,7 +97,7 @@ namespace Sentry.Unity
             SplashScreenSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanName);
-            FirstSceneLoadSpan = SentryInitialization.InitializationSpan?.StartChild(FirstSceneLoadSpanName);
+            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanName);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -106,8 +106,8 @@ namespace Sentry.Unity
             FirstSceneLoadSpan?.Finish(SpanStatus.Ok);
             FirstSceneLoadSpan = null;
 
-            SentryInitialization.InitializationSpan?.Finish(SpanStatus.Ok);
-            SentryInitialization.InitializationSpan = null;
+            SentryInitialization.InitSpan?.Finish(SpanStatus.Ok);
+            SentryInitialization.InitSpan = null;
 
             Logger?.LogDebug("Finishing '{0}' transaction.", SentryInitialization.StartupTransactionName);
             SentrySdk.ConfigureScope(s =>
