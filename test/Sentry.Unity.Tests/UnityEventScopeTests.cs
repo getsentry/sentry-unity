@@ -342,6 +342,7 @@ namespace Sentry.Unity.Tests
             _sentryMonoBehaviour.CollectData();
             scopeUpdater.ConfigureScope(scope);
             scope.Apply(sentryEvent);
+            scope.Apply(transaction);
             unityEventProcessor.Process(sentryEvent);
             unityEventProcessor.Process(transaction);
 
