@@ -105,7 +105,7 @@ namespace Sentry.Unity.Tests
                 RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
                 StartTime = new(() => DateTimeOffset.UtcNow),
             };
-            var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, null, false)
+            var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
             {
                 Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
                 Enabled = true,
@@ -326,8 +326,8 @@ namespace Sentry.Unity.Tests
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
                 SupportsDrawCallInstancing = true,
-                DeviceType = new Lazy<string>(() => "test type"),
-                DeviceUniqueIdentifier = new Lazy<string>(() => "f810306c-68db-4ebe-89ba-13c457449339"),
+                DeviceType = new(() => "test type"),
+                DeviceUniqueIdentifier = new(() => "f810306c-68db-4ebe-89ba-13c457449339"),
                 InstallMode = ApplicationInstallMode.Store.ToString()
             };
 
@@ -336,16 +336,23 @@ namespace Sentry.Unity.Tests
             var unityEventProcessor = new UnityEventProcessor(sentryOptions, _sentryMonoBehaviour);
             var scope = new Scope(sentryOptions);
             var sentryEvent = new SentryEvent();
+            var transaction = new Transaction("name", "operation");
 
             // act
             _sentryMonoBehaviour.CollectData();
             scopeUpdater.ConfigureScope(scope);
             scope.Apply(sentryEvent);
+            scope.Apply(transaction);
             unityEventProcessor.Process(sentryEvent);
+            unityEventProcessor.Process(transaction);
 
             // assert
-            var tags = sentryEvent.Tags;
+            AssertEventProcessorTags(sentryEvent.Tags);
+            AssertEventProcessorTags(transaction.Tags);
+        }
 
+        private void AssertEventProcessorTags(IReadOnlyDictionary<string, string> tags)
+        {
             Assert.IsNotNull(tags);
             Assert.NotZero(tags.Count);
 

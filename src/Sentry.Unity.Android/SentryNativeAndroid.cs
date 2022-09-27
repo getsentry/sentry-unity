@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 
@@ -38,11 +39,19 @@ namespace Sentry.Unity.Android
                     return crashedLastRun.Value;
                 };
 
-                options.DiagnosticLogger?.LogDebug("Reinstalling native backend.");
+                try
+                {
+                    options.DiagnosticLogger?.LogDebug("Reinstalling native backend.");
 
-                // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
-                // So we register our backend once more to make sure user-defined data is available in the crash report.
-                SentryNative.ReinstallBackend();
+                    // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
+                    // So we register our backend once more to make sure user-defined data is available in the crash report.
+                    SentryNative.ReinstallBackend();
+                }
+                catch (Exception e)
+                {
+                    options.DiagnosticLogger?.LogError(
+                        "Failed to reinstall backend. Captured native crashes will miss scope data and tag.", e);
+                }
 
                 ApplicationAdapter.Instance.Quitting += () =>
                 {
