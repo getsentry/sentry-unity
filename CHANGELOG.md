@@ -6,6 +6,10 @@
 
 - Releasing temp render texture after capturing a screenshot ([#983](https://github.com/getsentry/sentry-unity/pull/983))
 
+### Features
+
+- Automated Performance Instrumentalisation for Startup and Scene Loading ([#768](https://github.com/getsentry/sentry-unity/pull/768))
+
 ### Dependencies
 
 - Bump Java SDK from v6.4.1 to v6.4.2 ([#980](https://github.com/getsentry/sentry-unity/pull/980))
