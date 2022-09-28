@@ -2,12 +2,6 @@
 #define SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
 #endif
 
-#if !UNITY_EDITOR
-#if UNITY_WEBGL
-#define SENTRY_WEBGL
-#endif
-#endif
-
 using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
