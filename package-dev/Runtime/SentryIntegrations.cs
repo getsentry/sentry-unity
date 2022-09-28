@@ -35,16 +35,6 @@ namespace Sentry.Unity
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
     public class SceneManagerTracingIntegration : ISdkIntegration
     {
-        private static ISpan AfterAssembliesSpan;
-        private const string AfterAssembliesSpanName = "unity.runtime.assemblies";
-        private static ISpan SplashScreenSpan;
-        private const string SplashScreenSpanName = "unity.runtime.splashscreen";
-        private static ISpan FirstSceneLoadSpan;
-        private const string FirstSceneLoadSpanName = "unity.runtime.firstscene";
-
-        // Flag to make sure we create spans through the runtime initialization only once
-        private static bool ShouldCreateSpans = true;
-
         private static IDiagnosticLogger Logger;
 
         public void Register(IHub hub, SentryOptions options)
@@ -59,71 +49,6 @@ namespace Sentry.Unity
 
             SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI(Logger);
         }
-
-#if !SENTRY_WEBGL
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        public static void AfterAssembliesLoaded()
-        {
-            if (!ShouldCreateSpans)
-            {
-                return;
-            }
-
-            SentryInitialization.SubSystemRegistrationSpan?.Finish(SpanStatus.Ok);
-            SentryInitialization.SubSystemRegistrationSpan = null;
-
-            Logger?.LogDebug("Creating '{0}' span.", AfterAssembliesSpanName);
-            AfterAssembliesSpan = SentryInitialization.InitSpan?.StartChild(AfterAssembliesSpanName);
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
-        public static void BeforeSplashScreen()
-        {
-            if (!ShouldCreateSpans)
-            {
-                return;
-            }
-
-            AfterAssembliesSpan?.Finish(SpanStatus.Ok);
-            AfterAssembliesSpan = null;
-
-            Logger?.LogDebug("Creating '{0}' span.", SplashScreenSpanName);
-            SplashScreenSpan = SentryInitialization.InitSpan?.StartChild(SplashScreenSpanName);
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        public static void BeforeSceneLoad()
-        {
-            if (!ShouldCreateSpans)
-            {
-                return;
-            }
-
-            SplashScreenSpan?.Finish(SpanStatus.Ok);
-            SplashScreenSpan = null;
-
-            Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanName);
-            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanName);
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        public static void AfterSceneLoad()
-        {
-            FirstSceneLoadSpan?.Finish(SpanStatus.Ok);
-            FirstSceneLoadSpan = null;
-
-            SentryInitialization.InitSpan?.Finish(SpanStatus.Ok);
-            SentryInitialization.InitSpan = null;
-
-            Logger?.LogDebug("Finishing '{0}' transaction.", SentryInitialization.StartupTransactionName);
-            SentrySdk.ConfigureScope(s =>
-            {
-                s.Transaction?.Finish(SpanStatus.Ok);
-            });
-
-            ShouldCreateSpans = false;
-        }
-#endif
     }
 
     public class SceneManagerTracingAPI : SceneManagerAPI

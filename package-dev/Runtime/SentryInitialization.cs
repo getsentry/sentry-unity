@@ -41,12 +41,6 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
-        public const string StartupTransactionName = "unity.runtime.start";
-        public static ISpan InitSpan;
-        private const string InitSpanName = "unity.runtime.init";
-        public static ISpan SubSystemRegistrationSpan;
-        private const string SubSystemSpanName = "unity.runtime.subsystem";
-
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -90,16 +84,6 @@ namespace Sentry.Unity
                 {
                     SentrySdk.CaptureException(nativeInitException);
                 }
-
-#if !SENTRY_WEBGL
-                var runtimeStartTransaction = SentrySdk.StartTransaction("unity.runtime.startup", StartupTransactionName);
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanName);
-                InitSpan = runtimeStartTransaction.StartChild(InitSpanName);
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanName);
-                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanName);
-
-                SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
-#endif
             }
         }
     }

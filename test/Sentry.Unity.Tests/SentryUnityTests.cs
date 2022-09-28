@@ -7,7 +7,7 @@ using Sentry.Extensibility;
 
 namespace Sentry.Unity.Tests
 {
-    public class SentryUnityTests : AutoInitDisabledTests
+    public class SentryUnitySelfInitializationTests : DisabledSelfInitializationTests
     {
         [TearDown]
         public void TearDown()

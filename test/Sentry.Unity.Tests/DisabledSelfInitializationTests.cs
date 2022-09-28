@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 namespace Sentry.Unity.Tests
 {
     [TestFixture]
-    public class AutoInitDisabledTests : IPrebuildSetup, IPostBuildCleanup
+    public class DisabledSelfInitializationTests : IPrebuildSetup, IPostBuildCleanup
     {
         // If an options scriptable object exists Sentry SDK initializes itself on 'BeforeSceneLoad'.
         // We check in prebuild if those options exist and are enabled, disable them and restore them on Cleanup
