@@ -2,6 +2,12 @@
 #define SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
 #endif
 
+#if !UNITY_EDITOR
+#if UNITY_WEBGL
+#define SENTRY_WEBGL
+#endif
+#endif
+
 using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
@@ -16,6 +22,9 @@ namespace Sentry.Unity
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
             if (options.TracesSampleRate > 0.0)
             {
+#if !SENTRY_WEBGL
+                options.AddIntegration(new StartupTracingIntegration());
+#endif
                 options.AddIntegration(new SceneManagerTracingIntegration());
             }
             else
@@ -25,6 +34,98 @@ namespace Sentry.Unity
 #endif
         }
     }
+
+#if !SENTRY_WEBGL
+    public class StartupTracingIntegration : ISdkIntegration
+    {
+        private static ISpan AfterAssembliesSpan;
+        private const string AfterAssembliesSpanName = "unity.init.afterassemblies";
+        private static ISpan SplashScreenSpan;
+        private const string SplashScreenSpanName = "unity.init.splashscreen";
+        private static ISpan FirstSceneLoadSpan;
+        private const string FirstSceneLoadSpanName = "unity.init.firstscene";
+
+        // Flag to make sure we create spans through the runtime initialization only once
+        private static bool StartupAlreadyCaptured = false;
+        private static bool IntegrationRegistered = false;
+
+        private static IDiagnosticLogger Logger;
+
+        public void Register(IHub hub, SentryOptions options)
+        {
+            Logger = options.DiagnosticLogger;
+            IntegrationRegistered = true;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        public static void AfterAssembliesLoaded()
+        {
+            if (!IntegrationRegistered || StartupAlreadyCaptured)
+            {
+                return;
+            }
+
+            SentryInitialization.SubSystemRegistrationSpan?.Finish(SpanStatus.Ok);
+            SentryInitialization.SubSystemRegistrationSpan = null;
+
+            Logger?.LogDebug("Creating '{0}' span.", AfterAssembliesSpanName);
+            AfterAssembliesSpan = SentryInitialization.InitSpan?.StartChild(AfterAssembliesSpanName);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+        public static void BeforeSplashScreen()
+        {
+            if (!IntegrationRegistered || StartupAlreadyCaptured)
+            {
+                return;
+            }
+
+            AfterAssembliesSpan?.Finish(SpanStatus.Ok);
+            AfterAssembliesSpan = null;
+
+            Logger?.LogDebug("Creating '{0}' span.", SplashScreenSpanName);
+            SplashScreenSpan = SentryInitialization.InitSpan?.StartChild(SplashScreenSpanName);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void BeforeSceneLoad()
+        {
+            if (!IntegrationRegistered || StartupAlreadyCaptured)
+            {
+                return;
+            }
+
+            SplashScreenSpan?.Finish(SpanStatus.Ok);
+            SplashScreenSpan = null;
+
+            Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanName);
+            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanName);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        public static void AfterSceneLoad()
+        {
+            if (!IntegrationRegistered || StartupAlreadyCaptured)
+            {
+                return;
+            }
+
+            FirstSceneLoadSpan?.Finish(SpanStatus.Ok);
+            FirstSceneLoadSpan = null;
+
+            SentryInitialization.InitSpan?.Finish(SpanStatus.Ok);
+            SentryInitialization.InitSpan = null;
+
+            Logger?.LogDebug("Finishing '{0}' transaction.", SentryInitialization.StartupTransactionName);
+            SentrySdk.ConfigureScope(s =>
+            {
+                s.Transaction?.Finish(SpanStatus.Ok);
+            });
+
+            StartupAlreadyCaptured = true;
+        }
+    }
+#endif
 
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
     public class SceneManagerTracingIntegration : ISdkIntegration
