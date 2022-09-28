@@ -12,8 +12,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install clang-format
-        run: brew install clang-format
       - name: Format C, C++, Objective-C and header files
         run: >
           find samples/. -type f

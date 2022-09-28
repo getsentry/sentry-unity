@@ -15,6 +15,12 @@
 - Bump Java SDK from v6.4.1 to v6.4.2 ([#980](https://github.com/getsentry/sentry-unity/pull/980))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#642)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.4.2)
+- Bump CLI from v2.5.2 to v2.6.0 ([#986](https://github.com/getsentry/sentry-unity/pull/986))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#260)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.6.0)
+- Bump Cocoa SDK from v7.25.1 to v7.26.0 ([#988](https://github.com/getsentry/sentry-unity/pull/988))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7260)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.25.1...7.26.0)
 
 ## 0.23.1
 
