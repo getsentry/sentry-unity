@@ -58,10 +58,12 @@ namespace Sentry.Unity
 
         protected override AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
         {
-            _logger?.LogInfo("Creating '{0}' span for '{1}'.", SpanName, sceneName);
+            _logger?.LogInfo("Creating '{0}' transaction for '{1}'.", TransactionName, sceneName);
 
             var transaction = SentrySdk.StartTransaction(TransactionName, sceneName ?? $"buildIndex:{sceneBuildIndex}");
             SentrySdk.ConfigureScope(scope => scope.Transaction = transaction);
+
+            _logger?.LogDebug("Creating '{0}' span.", SpanName);
             var span = SentrySdk.GetSpan()?.StartChild(SpanName);
 
             var asyncOp = base.LoadSceneAsyncByNameOrIndex(sceneName, sceneBuildIndex, parameters, mustCompleteNextFrame);
