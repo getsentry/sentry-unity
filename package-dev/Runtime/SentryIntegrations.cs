@@ -148,8 +148,8 @@ namespace Sentry.Unity
 
     public class SceneManagerTracingAPI : SceneManagerAPI
     {
-        public const string TransactionName = "unity.scene.loading";
-        private const string SpanName = "unity.scene.load";
+        public const string TransactionOperation = "scene.load";
+        private const string SpanOperation = "scene.load";
         private readonly IDiagnosticLogger _logger;
 
         public SceneManagerTracingAPI(IDiagnosticLogger logger)
@@ -159,13 +159,13 @@ namespace Sentry.Unity
 
         protected override AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
         {
-            _logger?.LogInfo("Creating '{0}' transaction for '{1}'.", TransactionName, sceneName);
+            _logger?.LogInfo("Creating '{0}' transaction for '{1}'.", TransactionOperation, sceneName);
 
-            var transaction = SentrySdk.StartTransaction(TransactionName, sceneName ?? $"buildIndex:{sceneBuildIndex}");
+            var transaction = SentrySdk.StartTransaction("scene.loading", TransactionOperation);
             SentrySdk.ConfigureScope(scope => scope.Transaction = transaction);
 
-            _logger?.LogDebug("Creating '{0}' span.", SpanName);
-            var span = SentrySdk.GetSpan()?.StartChild(SpanName);
+            _logger?.LogDebug("Creating '{0}' span.", SpanOperation);
+            var span = SentrySdk.GetSpan()?.StartChild(SpanOperation, sceneName ?? $"buildIndex:{sceneBuildIndex}");
 
             var asyncOp = base.LoadSceneAsyncByNameOrIndex(sceneName, sceneBuildIndex, parameters, mustCompleteNextFrame);
 
@@ -175,7 +175,7 @@ namespace Sentry.Unity
             // https://docs.unity3d.com/2020.3/Documentation/ScriptReference/AsyncOperation-completed.html
             asyncOp.completed += _ =>
             {
-                _logger?.LogInfo("Finishing '{0}' transaction for '{1}'.", TransactionName, sceneName);
+                _logger?.LogInfo("Finishing '{0}' transaction for '{1}'.", TransactionOperation, sceneName);
 
                 span?.Finish(SpanStatus.Ok);
                 transaction.Finish(SpanStatus.Ok);

@@ -19,7 +19,7 @@ namespace Sentry.Unity
         {
             var options = new SentryUnityOptions
             {
-                Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
+                Dsn = "http://publickey@localhost:8000/12345",
                 TracesSampleRate = 1.0f
             };
 

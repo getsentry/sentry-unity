@@ -25,7 +25,7 @@ namespace Sentry.Unity
             _testHttpClientHandler = new TestHttpClientHandler();
             _options = new SentryUnityOptions
             {
-                Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
+                Dsn = "http://publickey@localhost:8000/12345",
                 TracesSampleRate = 1.0f,
                 CreateHttpClientHandler = () => _testHttpClientHandler
             };
@@ -40,7 +40,8 @@ namespace Sentry.Unity
             yield return SetupSceneCoroutine("1_Bugfarm");
 
             var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryTransaction, _eventReceiveTimeout);
-            Assert.That(triggeredEvent, Does.Contain(SceneManagerTracingAPI.TransactionName));
+
+            Assert.That(triggeredEvent, Does.Contain(SceneManagerTracingAPI.TransactionOperation));
         }
 
         internal static IEnumerator SetupSceneCoroutine(string sceneName)
