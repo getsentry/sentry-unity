@@ -1,10 +1,4 @@
-using System;
 using NUnit.Framework;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.TestTools;
-using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -13,35 +7,8 @@ using Sentry.Extensibility;
 
 namespace Sentry.Unity.Tests
 {
-    [TestFixture]
-    public class SentryUnityTests : IPrebuildSetup, IPostBuildCleanup
+    public class SentryUnitySelfInitializationTests : DisabledSelfInitializationTests
     {
-        // If an options scriptable object exists Sentry SDK initializes itself on 'BeforeSceneLoad'.
-        // We check in prebuild if those options exist and are enabled, disable them and restore them on Cleanup
-        private ScriptableSentryUnityOptions? _optionsToRestore;
-
-        public void Setup()
-        {
-            var options = AssetDatabase.LoadAssetAtPath(ScriptableSentryUnityOptions.GetConfigPath(ScriptableSentryUnityOptions.ConfigName),
-                typeof(ScriptableSentryUnityOptions)) as ScriptableSentryUnityOptions;
-            if (options?.Enabled != true)
-            {
-                return;
-            }
-
-            Debug.Log("Disabling local options for the duration of the test.");
-            _optionsToRestore = options;
-            _optionsToRestore.Enabled = false;
-        }
-
-        public void Cleanup()
-        {
-            if (_optionsToRestore != null)
-            {
-                _optionsToRestore.Enabled = true;
-            }
-        }
-
         [TearDown]
         public void TearDown()
         {

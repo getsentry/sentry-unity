@@ -40,13 +40,19 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
+#if SENTRY_WEBGL
+        // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+#else
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+#endif
         public static void Init()
         {
             var sentryUnityInfo = new SentryUnityInfo();
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(sentryUnityInfo);
-            if (options.ShouldInitializeSdk())
+            if (options != null && options.ShouldInitializeSdk())
             {
+                SentryIntegrations.Configure(options);
                 Exception nativeInitException = null;
 
                 try

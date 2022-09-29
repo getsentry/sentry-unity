@@ -331,6 +331,8 @@ Runtime/Sentry.xml
 Runtime/Sentry.xml.meta
 Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
+Runtime/SentryIntegrations.cs
+Runtime/SentryIntegrations.cs.meta
 Samples~/unity-of-bugs/Scenes.meta
 Samples~/unity-of-bugs/Scripts.meta
 Samples~/unity-of-bugs/Scenes/1_Bugfarm.unity
