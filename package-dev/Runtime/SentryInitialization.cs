@@ -98,9 +98,9 @@ namespace Sentry.Unity
                 SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
 
                 options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
-                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation);
+                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
                 options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
-                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation);
+                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
 #endif
             }
         }

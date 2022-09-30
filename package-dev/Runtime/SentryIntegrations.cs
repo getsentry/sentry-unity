@@ -69,7 +69,7 @@ namespace Sentry.Unity
             SentryInitialization.SubSystemRegistrationSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", AfterAssembliesSpanOperation);
-            AfterAssembliesSpan = SentryInitialization.InitSpan?.StartChild(AfterAssembliesSpanOperation);
+            AfterAssembliesSpan = SentryInitialization.InitSpan?.StartChild(AfterAssembliesSpanOperation, "after assemblies");
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
@@ -84,7 +84,7 @@ namespace Sentry.Unity
             AfterAssembliesSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", SplashScreenSpanOperation);
-            SplashScreenSpan = SentryInitialization.InitSpan?.StartChild(SplashScreenSpanOperation);
+            SplashScreenSpan = SentryInitialization.InitSpan?.StartChild(SplashScreenSpanOperation, "splashscreen");
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -99,7 +99,7 @@ namespace Sentry.Unity
             SplashScreenSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanOperation);
-            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanOperation);
+            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanOperation, "first scene");
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
