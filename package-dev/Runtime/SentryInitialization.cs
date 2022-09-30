@@ -41,11 +41,11 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
-        public const string StartupTransactionName = "unity.runtime.init";
+        public const string StartupTransactionOperation = "app.start";
         public static ISpan InitSpan;
-        private const string InitSpanName = "unity.init";
+        private const string InitSpanOperation = "runtime.init";
         public static ISpan SubSystemRegistrationSpan;
-        private const string SubSystemSpanName = "unity.init.subsystem";
+        private const string SubSystemSpanOperation = "runtime.init.subsystem";
 
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
@@ -92,15 +92,15 @@ namespace Sentry.Unity
                 }
 
 #if !SENTRY_WEBGL
-                options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for 'Initialization'.", StartupTransactionName);
+                options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.", StartupTransactionOperation);
 
-                var runtimeStartTransaction = SentrySdk.StartTransaction(StartupTransactionName, "Initialization");
+                var runtimeStartTransaction = SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
                 SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
 
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanName);
-                InitSpan = runtimeStartTransaction.StartChild(InitSpanName);
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanName);
-                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanName);
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
+                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation);
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
+                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation);
 #endif
             }
         }
