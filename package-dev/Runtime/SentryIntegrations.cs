@@ -99,7 +99,7 @@ namespace Sentry.Unity
             SplashScreenSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanOperation);
-            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanOperation, "first scene");
+            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanOperation, "first scene load");
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
