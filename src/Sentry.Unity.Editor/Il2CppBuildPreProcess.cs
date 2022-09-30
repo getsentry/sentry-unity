@@ -7,9 +7,9 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
-    internal class Il2CppOption : IPreprocessBuildWithReport
+    internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
     {
-        private const string SourceMappingArgument = "--emit-source-mapping";
+        internal const string SourceMappingArgument = "--emit-source-mapping";
 
         public int callbackOrder => 0;
 
@@ -29,32 +29,37 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
+            SetAdditionalIl2CppArguments(options,
+                PlayerSettings.GetAdditionalIl2CppArgs,
+                PlayerSettings.SetAdditionalIl2CppArgs);
+        }
+
+        internal static void SetAdditionalIl2CppArguments(SentryUnityOptions options, Func<string> getArguments, Action<string> setArguments)
+        {
             if (options.Il2CppLineNumberSupportEnabled)
             {
                 options.DiagnosticLogger?.LogDebug("IL2CPP line number support enabled - Adding additional IL2CPP arguments.");
 
-                var arguments = PlayerSettings.GetAdditionalIl2CppArgs();
+                var arguments = getArguments.Invoke();
                 if (arguments.Contains(SourceMappingArgument))
                 {
                     options.DiagnosticLogger?.LogDebug("Additional argument '{0}' already present.", SourceMappingArgument);
                     return;
                 }
 
-                PlayerSettings.SetAdditionalIl2CppArgs(PlayerSettings.GetAdditionalIl2CppArgs() + $" {SourceMappingArgument}");
+                setArguments.Invoke(getArguments.Invoke() + $" {SourceMappingArgument}");
             }
             else
             {
-                var arguments = PlayerSettings.GetAdditionalIl2CppArgs();
+                var arguments = getArguments.Invoke();
                 if (arguments.Contains(SourceMappingArgument))
                 {
                     options.DiagnosticLogger?.LogDebug("IL2CPP line number support disabled - Removing additional IL2CPP arguments.");
 
-                    arguments = arguments.Remove(arguments.IndexOf(SourceMappingArgument, StringComparison.Ordinal),
-                        SourceMappingArgument.Length);
-                    PlayerSettings.SetAdditionalIl2CppArgs(arguments);
+                    arguments = arguments.Replace(SourceMappingArgument, "");
+                    setArguments.Invoke(arguments);
                 }
             }
-
         }
     }
 }
