@@ -83,7 +83,5 @@ namespace Sentry.Unity.Editor.Tests
             Assert.That(resultingArguments, Does.Contain(expectedArgument));
             Assert.That(resultingArguments, Does.Not.Contain(Il2CppBuildPreProcess.SourceMappingArgument));
         }
-
-
     }
 }
