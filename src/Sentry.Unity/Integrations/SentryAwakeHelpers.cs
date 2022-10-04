@@ -2,11 +2,11 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
-    public static class SentryAwakeIntegration
+    public static class SentryAwakeHelpers
     {
         public static void StartSpan(MonoBehaviour monoBehaviour)
         {
-            SentrySdk.GetSpan()?.StartChild("Awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.name}");
+            SentrySdk.GetSpan()?.StartChild("Awake", $"{monoBehaviour.GetType().FullName}.{monoBehaviour.gameObject.name}");
         }
 
         public static void FinishSpan()

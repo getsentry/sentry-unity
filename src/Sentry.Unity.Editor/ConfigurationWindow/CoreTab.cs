@@ -39,6 +39,15 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                      "captured. Setting this to 0 discards all trace data. " +
                                                      "Setting this to 1.0 captures all."),
                 (float)options.TracesSampleRate, 0.0f, 1.0f);
+
+            EditorGUI.BeginDisabledGroup(options.TracesSampleRate <= 0);
+
+            options.AutoInstrumentPerformance = EditorGUILayout.Toggle(
+                new GUIContent("Auto Instrumentation", "To create transaction and spans automatically, " +
+                                                       "the SDK will modify the compiled assembly during a post build step."),
+                options.AutoInstrumentPerformance);
+
+            EditorGUI.EndDisabledGroup();
         }
     }
 }

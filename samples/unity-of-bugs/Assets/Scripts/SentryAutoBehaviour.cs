@@ -6,22 +6,22 @@ public class SentryAutoBehaviour : MonoBehaviour
     private void Awake()
     {
         // SentrySdk.GetSpan()?.StartChild("Awake", $"{gameObject.name}.{name}");
-        SentryAwakeIntegration.StartSpan(this);
+        SentryAwakeHelpers.StartSpan(this);
 
         Debug.Log("Testing Awake");
-        
+
         if (enabled)
         {
             Debug.Log("HUEHUE");
 
-            SentryAwakeIntegration.FinishSpan();
+            SentryAwakeHelpers.FinishSpan();
             return;
         }
         else if (Time.deltaTime > 2.0f)
         {
             Debug.Log("sad noises");
 
-            SentryAwakeIntegration.FinishSpan();
+            SentryAwakeHelpers.FinishSpan();
             return;
         }
         else
@@ -31,7 +31,7 @@ public class SentryAutoBehaviour : MonoBehaviour
 
         Debug.Log("End of testing Awake");
 
-        SentryAwakeIntegration.FinishSpan();
+        SentryAwakeHelpers.FinishSpan();
         // SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
     }
 }
