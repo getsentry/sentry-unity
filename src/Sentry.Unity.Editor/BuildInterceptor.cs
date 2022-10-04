@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
@@ -58,39 +59,54 @@ namespace Sentry.Unity.Editor
 
             File.Copy(playerAssemblyPath, workingPlayerAssemblyPath);
 
-            ModifyAssembly(workingPlayerAssemblyPath, sentryAssemblyPath);
+            var success = false;
+            try
+            {
+                success = ModifyAssembly(workingPlayerAssemblyPath, sentryAssemblyPath);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            finally
+            {
+                Debug.Log(success
+                    ? "Successfully added the 'Awake Performance Instrumentation'."
+                    : "Failed to add the 'Awake Performance Instrumentation'.");
+            }
         }
 
-        private static void ModifyAssembly(string playerAssemblyPath, string sentryAssemblyPath)
+        private static bool ModifyAssembly(string playerAssemblyPath, string sentryAssemblyPath)
         {
             if (!File.Exists(playerAssemblyPath))
             {
-                Debug.Log($"Failed to find player assembly at: {playerAssemblyPath}");
-                return;
+                Debug.Log($"Failed to find player assembly at: '{playerAssemblyPath}'");
+                return false;
             }
 
             if (!File.Exists(sentryAssemblyPath))
             {
-                Debug.Log($"Failed to find Sentry assembly at: {sentryAssemblyPath}");
-                return;
+                Debug.Log($"Failed to find Sentry assembly at: '{sentryAssemblyPath}'");
+                return false;
             }
 
             var (sentryModule, _) = ModuleReaderWriter.Read(sentryAssemblyPath);
             var (gameModule, hasSymbols) = ModuleReaderWriter.Read(playerAssemblyPath);
-            // moduleToProcess.ModuleReferences.Add(sentryModule);
+            // gameModule.ModuleReferences.Add(sentryModule);
 
-            // var replacementTypeReference = moduleToProcess.ImportReference(typeof(SentryMonoBehaviour));
-            // if (replacementTypeReference is null)
-            // {
-            //     Debug.Log("Failed to find replacement type reference.");
-            //     return;
-            // }
+            var monoBehaviourReference = gameModule.ImportReference(typeof(MonoBehaviour));
+            if (monoBehaviourReference is null)
+            {
+                Debug.Log("Failed to import 'MonoBehaviour' type reference.");
+                return false;
+            }
 
             foreach (var type in gameModule.GetTypes())
             {
-                if (type.FullName == "SentryEmptyBehaviour")
+                // if (type.BaseType == monoBehaviourReference)
+                if(type.FullName == "SentryEmptyBehaviour")
                 {
-                    Debug.Log("Found 'SentryEmptyBehaviour'.");
+                    Debug.Log($"Modifying '{type.FullName}'");
 
                     foreach (var method in type.Methods)
                     {
@@ -101,7 +117,7 @@ namespace Sentry.Unity.Editor
                             if (sentryType is null)
                             {
                                 Debug.Log("Sentry type null. Aborting");
-                                return;
+                                return false;
                             }
 
                             var startSpanMethodReference = gameModule.ImportReference(GetMethod(sentryType, "StartSpan"));
@@ -122,8 +138,9 @@ namespace Sentry.Unity.Editor
 
                             // method.Body.Instructions.Insert(0, Instruction.Create(OpCodes.Call, spanMethodReference));
 
-                            var firstInstruction = method.Body.Instructions[0];
                             var processor = method.Body.GetILProcessor();
+
+                            var firstInstruction = method.Body.Instructions[0];
 
                             var thisInstruction = processor.Create(OpCodes.Ldarg_0);
                             processor.InsertBefore(firstInstruction, thisInstruction);
@@ -133,8 +150,13 @@ namespace Sentry.Unity.Editor
 
                             var finishSpanInstruction = processor.Create(OpCodes.Call, finishSpanMethodReference);
 
-                            var lastInstruction = method.Body.Instructions[method.Body.Instructions.Count - 1];
-                            processor.InsertBefore(lastInstruction, finishSpanInstruction);
+                            for (var i = instructions.Count - 1; i >= 0; i--)
+                            {
+                                if (instructions[i].OpCode == OpCodes.Ret)
+                                {
+                                    processor.InsertBefore(instructions[i], finishSpanInstruction);
+                                }
+                            }
                         }
                     }
                 }
@@ -165,6 +187,8 @@ namespace Sentry.Unity.Editor
 
             Debug.Log("Overwriting player assembly with modified assembly.");
             ModuleReaderWriter.Write(null, hasSymbols, gameModule, playerAssemblyPath);
+
+            return true;
         }
 
         private static MethodDefinition? GetMethod(TypeDefinition type, string name)
