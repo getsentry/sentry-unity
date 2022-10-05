@@ -1,7 +1,7 @@
-﻿# ┌───────────────────────────────────────────────────┐ #	
-# │    This script is for local use only,       	  │ #
+# ┌───────────────────────────────────────────────────┐ #
+# │    This script is for local use only,             │ #
 # │    utilizing the scripts locally we use in CI.    │ #
-# └───────────────────────────────────────────────────┘ #	
+# └───────────────────────────────────────────────────┘ #
 
 param(
 	[string] $UnityVersion,
