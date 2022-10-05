@@ -9,6 +9,7 @@
 
 ### Features
 
+- Automated Performance Instrumentation for Runtime Initialization ([#991](https://github.com/getsentry/sentry-unity/pull/991))
 - Automated Performance Instrumentation for Scene Loading ([#768](https://github.com/getsentry/sentry-unity/pull/768))
 
 ### Dependencies
