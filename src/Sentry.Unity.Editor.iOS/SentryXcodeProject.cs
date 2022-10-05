@@ -130,10 +130,10 @@ fi
                 .Invoke(_project, new object[] { _unityFrameworkTargetGuid, "ENABLE_BITCODE", "NO" });
 
             var getBuildPhaseMethod = _pbxProjectType.GetMethod("GetFrameworksBuildPhaseByTarget", new[] { typeof(string) });
-            var mainBuildPhaseGuid = (string) getBuildPhaseMethod.Invoke(_project, new object[] { _mainTargetGuid });
-            var unityFrameworkBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid});
+            var mainBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _mainTargetGuid });
+            var unityFrameworkBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid });
 
-            var addFileToBuildSectionMethod = _pbxProjectType.GetMethod("AddFileToBuildSection", new [] { typeof(string), typeof(string), typeof(string)});
+            var addFileToBuildSectionMethod = _pbxProjectType.GetMethod("AddFileToBuildSection", new[] { typeof(string), typeof(string), typeof(string) });
             addFileToBuildSectionMethod.Invoke(_project, new object[] { _mainTargetGuid, mainBuildPhaseGuid, frameworkGuid });
             addFileToBuildSectionMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, unityFrameworkBuildPhaseGuid, frameworkGuid });
         }
