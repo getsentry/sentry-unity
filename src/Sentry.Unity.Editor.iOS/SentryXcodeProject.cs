@@ -14,7 +14,7 @@ namespace Sentry.Unity.Editor.iOS
 {
     internal class SentryXcodeProject : IDisposable
     {
-        internal const string FrameworkName = "Sentry.framework";
+        internal const string FrameworkName = "Sentry.xcframework";
         internal const string BridgeName = "SentryNativeBridge.m";
         internal const string OptionsName = "SentryOptions.m";
         internal const string SymbolUploadPhaseName = "SymbolUpload";
@@ -42,9 +42,9 @@ else
 fi
 ";
 
-        private readonly Type _pbxProjectType = null!;               // Set in constructor or throws
-        private readonly Type _pbxProjectExtensionsType = null!;     // Set in constructor or throws
-        private readonly object _project = null!;           // Set in constructor or throws
+        private readonly Type _pbxProjectType = null!;              // Set in constructor or throws
+        private readonly Type _pbxProjectExtensionsType = null!;    // Set in constructor or throws
+        private readonly object _project = null!;                   // Set in constructor or throws
 
         private readonly string _projectRoot;
         private readonly string _projectPath;
@@ -123,6 +123,19 @@ fi
 
             _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
+
+            _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+                .Invoke(_project, new object[] { _mainTargetGuid, "ENABLE_BITCODE", "NO" });
+            _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+                .Invoke(_project, new object[] { _unityFrameworkTargetGuid, "ENABLE_BITCODE", "NO" });
+
+            var getBuildPhaseMethod = _pbxProjectType.GetMethod("GetFrameworksBuildPhaseByTarget", new[] { typeof(string) });
+            var mainBuildPhaseGuid = (string) getBuildPhaseMethod.Invoke(_project, new object[] { _mainTargetGuid });
+            var unityFrameworkBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid});
+
+            var addFileToBuildSectionMethod = _pbxProjectType.GetMethod("AddFileToBuildSection", new [] { typeof(string), typeof(string), typeof(string)});
+            addFileToBuildSectionMethod.Invoke(_project, new object[] { _mainTargetGuid, mainBuildPhaseGuid, frameworkGuid });
+            addFileToBuildSectionMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, unityFrameworkBuildPhaseGuid, frameworkGuid });
         }
 
         public void AddSentryNativeBridge()
