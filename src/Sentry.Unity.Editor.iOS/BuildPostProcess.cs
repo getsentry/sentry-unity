@@ -23,7 +23,9 @@ namespace Sentry.Unity.Editor.iOS
 
             try
             {
-                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "Sentry.xcframework"));
+                // The Sentry.xcframework ends in '~' to stop Unity from trying to import the .frameworks.
+                // Otherwise, Unity tries to export those with the XCode build.
+                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "Sentry.xcframework~"));
                 CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", "Sentry.xcframework"), options?.DiagnosticLogger);
 
                 var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "SentryNativeBridge.m"));
