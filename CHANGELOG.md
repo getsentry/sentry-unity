@@ -14,9 +14,9 @@
 
 ### Dependencies
 
-- Bump Java SDK from v6.4.1 to v6.4.2 ([#980](https://github.com/getsentry/sentry-unity/pull/980))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#642)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.4.2)
+- Bump Java SDK from v6.4.1 to v6.4.3 ([#980](https://github.com/getsentry/sentry-unity/pull/980), [#1005](https://github.com/getsentry/sentry-unity/pull/1005))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#643)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.4.3)
 - Bump CLI from v2.5.2 to v2.7.0 ([#986](https://github.com/getsentry/sentry-unity/pull/986), [#999](https://github.com/getsentry/sentry-unity/pull/999))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#270)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.7.0)
