@@ -20,9 +20,9 @@
 - Bump CLI from v2.5.2 to v2.7.0 ([#986](https://github.com/getsentry/sentry-unity/pull/986), [#999](https://github.com/getsentry/sentry-unity/pull/999))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#270)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.7.0)
-- Bump Cocoa SDK from v7.25.1 to v7.27.0 ([#988](https://github.com/getsentry/sentry-unity/pull/988), [#996](https://github.com/getsentry/sentry-unity/pull/996))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7270)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.25.1...7.27.0)
+- Bump Cocoa SDK from v7.25.1 to v7.27.1 ([#988](https://github.com/getsentry/sentry-unity/pull/988), [#996](https://github.com/getsentry/sentry-unity/pull/996), [#1004](https://github.com/getsentry/sentry-unity/pull/1004))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7271)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.25.1...7.27.1)
 
 ## 0.23.1
 
