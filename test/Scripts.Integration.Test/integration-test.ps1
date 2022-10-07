@@ -65,12 +65,16 @@ If (-not(Test-Path -Path "$NewProjectPath") -Or $Recreate) {
 # 	./Scripts/smoke-test-ios.ps1 Test "iOS 12.4" -IsIntegrationTest
 # }
 
+If(-not(Test-Path -Path "Samples/IntegrationTest/Build") -Or $Rebuild) {
+	Write-Host "Building Project"
+	./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
+}
+
+Write-Host "Running Smoke Test"
+If ($Platform -eq "macOS") {
+	./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
+}
+
 If ($Platform -eq "WebGL") {
-	If(-not(Test-Path -Path "Samples/IntegrationTest/Build") -Or $Rebuild) {
-		Write-Host "Building Project"
-		./test/Scripts.Integration.Test/build-project.ps1 "$UnityPath" -Platform "WebGL"
-	}
-	
-	Write-Host "Running Smoke Test"
 	Start-Process "python3" -ArgumentList @("./Scripts/smoke-test-webgl.py", "Samples/IntegrationTest/Build")
 }

@@ -109,7 +109,7 @@ public class SmokeTester : MonoBehaviour
 
             // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
             // because they're also repeated with standard events (in an envelope).
-            Debug.Log("Skipping all non-event requests");
+            Debug.Log("SMOKE TEST: Skipping all non-event requests");
             for (; currentMessage < 10; currentMessage++)
             {
                 if (t.CheckMessage(currentMessage, "'type':'event'"))
@@ -117,7 +117,7 @@ public class SmokeTester : MonoBehaviour
                     break;
                 }
             }
-            Debug.Log($"Done skipping non-event requests. Last one was: #{currentMessage}");
+            Debug.Log($"SMOKE TEST: Done skipping non-event requests. Last one was: #{currentMessage}");
 
             t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
@@ -139,7 +139,7 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
             t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
             t.ExpectMessage(currentMessage, "'tag-key':'tag-value'");
-            t.ExpectMessage(currentMessage, "'user':{'email':'email@example.com','id':'user-id','ip_address':'::1','username':'username','other':{'role':'admin'}}");
+            t.ExpectMessage(currentMessage, "'user':{'id':'user-id','username':'username','email':'email@example.com','ip_address':'::1','other':{'role':'admin'}}");
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");
 
@@ -283,7 +283,7 @@ public class SmokeTester : MonoBehaviour
             Debug.Log($"{name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"{name} TEST: FAIL - quitting due to a failed test case #{_testNumber} {message}");
+                Debug.Log($"{name} TEST: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
                 Exit(_testNumber);
             }
         }
