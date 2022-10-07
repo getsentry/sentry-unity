@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: iOS
-      runsOn: macos-12
+      runsOn: macos-12 # The .xcframework internals differ from macos-11 to 12
 
   macos-sdk:
     uses: ./.github/workflows/sdk.yml
