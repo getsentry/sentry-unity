@@ -41,7 +41,7 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
-        private const string StartupTransactionOperation = "app.start";
+        public const string StartupTransactionOperation = "app.start";
         public static ISpan InitSpan;
         private const string InitSpanOperation = "runtime.init";
         public static ISpan SubSystemRegistrationSpan;
