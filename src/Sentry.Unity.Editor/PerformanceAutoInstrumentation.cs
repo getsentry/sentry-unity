@@ -252,7 +252,7 @@ namespace Sentry.Unity.Editor
                     // Append original contents of 'Awake'
                     var firstOriginalInstruction = instructions[0];
                     processor.Append(firstOriginalInstruction);
-                    for (var i =1; i < instructions.Count; i++)
+                    for (var i = 1; i < instructions.Count; i++)
                     {
                         processor.Append(instructions[i]);
                     }
