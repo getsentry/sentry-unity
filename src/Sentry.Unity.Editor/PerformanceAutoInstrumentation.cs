@@ -9,6 +9,7 @@ using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor
 {
@@ -19,8 +20,8 @@ namespace Sentry.Unity.Editor
 
         private static readonly string PlayerAssemblyPath;
         private static readonly string SentryAssemblyPath;
-        private static readonly string CoreAssemblyPath;
-
+        private static readonly string CoreModulePath;
+        private static readonly string MscorlibPath;
 
         private static IDiagnosticLogger? Logger;
 
@@ -28,42 +29,44 @@ namespace Sentry.Unity.Editor
         {
             PlayerAssemblyPath = Path.Combine(Application.dataPath, "..", "Library", OutputDirectory, PlayerAssembly);
             SentryAssemblyPath = Path.Combine(Application.dataPath, "..", "Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.dll");
-            CoreAssemblyPath = Path.Combine(Application.dataPath, "..", "Library", OutputDirectory, "UnityEngine.CoreModule.dll");
+            CoreModulePath = Path.Combine(Application.dataPath, "..", "Temp", "StagingArea", "Data","Managed", "UnityEngine.CoreModule.dll");
+            MscorlibPath = Path.Combine(Application.dataPath, "..", "Temp", "StagingArea", "Data","Managed", "mscorlib.dll");
         }
 
         [InitializeOnLoadMethod]
         public static void InitializeCompilationCallback()
         {
-            // var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
-            // if (options == null || options.TracesSampleRate <= 0 && !options.AutoInstrumentPerformance)
-            // {
-            //     return;
-            // }
-            //
-            // Logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-            //
-            // CompilationPipeline.assemblyCompilationFinished += (assemblyPath, compilerMessages) =>
-            // {
-            //     if (assemblyPath.Contains(Path.Combine(OutputDirectory, PlayerAssembly)))
-            //     {
-            //         Logger?.LogInfo("Compilation of '{0}' finished. Attempting to adding performance auto instrumentation.", PlayerAssembly);
-            //         var stopwatch = new Stopwatch();
-            //         stopwatch.Start();
-            //
-            //         try
-            //         {
-            //             ModifyPlayerAssembly(PlayerAssemblyPath, SentryAssemblyPath);
-            //         }
-            //         catch (Exception e)
-            //         {
-            //             Logger?.LogError("Failed to add the performance auto instrumentation. " +
-            //                              "The player assembly has not been modified.", e);
-            //         }
-            //
-            //         stopwatch.Stop();
-            //         Logger?.LogInfo("Finished attempt in '{0}'", stopwatch.Elapsed);
-            //     }
-            // };
+            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+            if (options == null || options.TracesSampleRate <= 0 && !options.AutoInstrumentPerformance)
+            {
+                return;
+            }
+
+            Logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
+
+            CompilationPipeline.assemblyCompilationFinished += (assemblyPath, compilerMessages) =>
+            {
+                Debug.Log(assemblyPath);
+                // if (assemblyPath.Contains(Path.Combine(OutputDirectory, PlayerAssembly)))
+                // {
+                //     Logger?.LogInfo("Compilation of '{0}' finished. Attempting to adding performance auto instrumentation.", PlayerAssembly);
+                //     var stopwatch = new Stopwatch();
+                //     stopwatch.Start();
+                //
+                //     try
+                //     {
+                //         ModifyPlayerAssembly(PlayerAssemblyPath, SentryAssemblyPath, CoreModulePath, MscorlibPath);
+                //     }
+                //     catch (Exception e)
+                //     {
+                //         Logger?.LogError("Failed to add the performance auto instrumentation. " +
+                //                          "The player assembly has not been modified.", e);
+                //     }
+                //
+                //     stopwatch.Stop();
+                //     Logger?.LogInfo("Finished attempt in '{0}'", stopwatch.Elapsed);
+                // }
+            };
         }
 
         [MenuItem("Tools/Modify Assembly")]
@@ -78,8 +81,6 @@ namespace Sentry.Unity.Editor
                 "Test.app", "Contents", "Resources", "Data", "Managed", "Sentry.dll");
             var coreAssemblyPath = Path.Combine(Application.dataPath, "..", "Builds",
                 "Test.app", "Contents", "Resources", "Data", "Managed", "UnityEngine.CoreModule.dll");
-            var netstandardAssemblyPath = Path.Combine(Application.dataPath, "..", "Builds",
-                "Test.app", "Contents", "Resources", "Data", "Managed", "netstandard.dll");
             var mscorelibAssemblyPath = Path.Combine(Application.dataPath, "..", "Builds",
                 "Test.app", "Contents", "Resources", "Data", "Managed", "mscorlib.dll");
 
@@ -96,7 +97,7 @@ namespace Sentry.Unity.Editor
 
             try
             {
-                ModifyPlayerAssembly(workingPlayerAssemblyPath, sentryAssemblyPath, coreAssemblyPath, netstandardAssemblyPath, mscorelibAssemblyPath);
+                ModifyPlayerAssembly(workingPlayerAssemblyPath, sentryAssemblyPath, coreAssemblyPath, mscorelibAssemblyPath);
             }
             catch (Exception e)
             {
@@ -112,7 +113,6 @@ namespace Sentry.Unity.Editor
             string playerAssemblyPath,
             string sentryAssemblyPath,
             string coreAssemblyPath,
-            string netstandardAssemblyPath,
             string mscorelibAssemblyPath)
         {
             if (!File.Exists(playerAssemblyPath))
@@ -130,11 +130,6 @@ namespace Sentry.Unity.Editor
                 throw new FileNotFoundException($"Core assembly at '{coreAssemblyPath}' not found.");
             }
 
-            if (!File.Exists(netstandardAssemblyPath))
-            {
-                throw new FileNotFoundException($"netstandard assembly at '{netstandardAssemblyPath}' not found.");
-            }
-
             if (!File.Exists(mscorelibAssemblyPath))
             {
                 throw new FileNotFoundException($"mscorelib assembly at '{mscorelibAssemblyPath}' not found.");
@@ -143,7 +138,6 @@ namespace Sentry.Unity.Editor
             var (sentryModule, _) = ModuleReaderWriter.Read(sentryAssemblyPath);
             var (gameModule, hasSymbols) = ModuleReaderWriter.Read(playerAssemblyPath);
             var (coreModule, _) = ModuleReaderWriter.Read(coreAssemblyPath);
-            var (netstandardModule, _) = ModuleReaderWriter.Read(netstandardAssemblyPath);
             var (mscorelibModule, _) = ModuleReaderWriter.Read(mscorelibAssemblyPath);
 
             var sentryType = sentryModule.GetType(typeof(SentrySdk).FullName);
@@ -160,6 +154,12 @@ namespace Sentry.Unity.Editor
 
             var spanType = sentryModule.GetType(typeof(ISpan).FullName);
             if (spanType is null)
+            {
+                throw new Exception("Failed to find 'ISpan'");
+            }
+
+            var finishCodeType = sentryModule.GetType(typeof(SpanStatus).FullName);
+            if (finishCodeType is null)
             {
                 throw new Exception("Failed to find 'ISpan'");
             }
@@ -259,18 +259,18 @@ namespace Sentry.Unity.Editor
 
                     //
                     processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Call, getSpanReference));
-                    processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Dup));
-                    processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Brtrue_S, awakeInstruction));
-
-                    processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Pop));
-                    processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Brtrue_S, firstOriginalInstruction));
+                    // processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Dup));
+                    // processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Brtrue_S, awakeInstruction));
+                    //
+                    // processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Pop));
+                    // processor.InsertBefore(awakeInstruction, processor.Create(OpCodes.Br_S, firstOriginalInstruction));
 
 
 
                     // Finishing Span at all Returns
                     //
-                    var finishSpanReference = gameModule.ImportReference(GetMethod(spanType, "FinishSpan"));
-                    var finishSpanInstruction = processor.Create(OpCodes.Call, finishSpanReference);
+                    var finishSpanReference = gameModule.ImportReference(GetMethod(spanType, "Finish", 1, new ParameterDefinition(finishCodeType)));
+                    var finishSpanInstruction = processor.Create(OpCodes.Callvirt, finishSpanReference);
 
                     // We're checking the instructions for OpCode.Ret so we can insert the finish span instruction before it.
                     // Iterating over the collection backwards because we're modifying it's length
@@ -278,8 +278,9 @@ namespace Sentry.Unity.Editor
                     {
                         if (instructions[i].OpCode == OpCodes.Ret)
                         {
+                            processor.InsertBefore(instructions[i], processor.Create(OpCodes.Call, getSpanReference));
+                            processor.InsertBefore(instructions[i],processor.Create(OpCodes.Ldc_I4_0));
                             processor.InsertBefore(instructions[i], finishSpanInstruction);
-                            i++; // Because we inserted *before* the current call we set 'i' to currently checked instruction
                         }
                     }
                 }
@@ -289,13 +290,27 @@ namespace Sentry.Unity.Editor
             ModuleReaderWriter.Write(null, hasSymbols, gameModule, playerAssemblyPath);
         }
 
-        private static MethodDefinition? GetMethod(TypeDefinition type, string name, int paramscount = -1)
+        private static MethodDefinition? GetMethod(TypeDefinition type, string name, int paramscount = -1, ParameterDefinition? parameterDefinition = null)
         {
             foreach (var method in type.Methods)
             {
                 if (method.Name == name && (paramscount == -1 || method.Parameters.Count == paramscount))
                 {
-                    return method;
+                    if(parameterDefinition is null)
+                    {
+                        return method;
+                    }
+                    else
+                    {
+                        foreach (var parameter in method.Parameters)
+                        {
+                            if (parameter.ParameterType == parameterDefinition.ParameterType)
+                            {
+                                return method;
+                            }
+                        }
+                    }
+
                 }
             }
             return null;
