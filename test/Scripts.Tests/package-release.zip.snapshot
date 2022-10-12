@@ -149,6 +149,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryTransac
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryUser.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryUserFeedback.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/module.modulemap
+Plugins/iOS/Sentry.xcframework~/ios-arm64/BCSymbolMaps/*.bcsymbolmap
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Info.plist

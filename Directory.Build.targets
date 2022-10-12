@@ -171,6 +171,9 @@ Expected to exist:
     <Copy SourceFiles="@(iOSDeviceBuildPath)" DestinationFiles="@(iOSDeviceBuildPath->'$(SentryiOSArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
 
+    <Message Importance="High" Text="Deleting xcconfig file." />
+    <Delete Files="$(SentryCocoaRoot)unity.xcconfig" />
+
     <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to build the iOS SDK." />
   </Target>
 
