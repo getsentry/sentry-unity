@@ -140,7 +140,7 @@ namespace Sentry.Unity.Editor
                     {
                         var parameterDefinitions = method.Parameters.Where(p =>
                             string.Equals(p.ParameterType.FullName, parameter.FullName, StringComparison.CurrentCulture)).ToList();
-                        if(parameterDefinitions.Count == 0)
+                        if (parameterDefinitions.Count == 0)
                         {
                             hasMatchingParameters = false;
                             break;
@@ -179,7 +179,7 @@ namespace Sentry.Unity.Editor
             var monoBehaviourReference = playerModule.ImportReference(typeof(MonoBehaviour));
 
             var getInstanceMethod = playerModule.ImportReference(GetMethodDefinition(sentryMonoBehaviourDefinition, "get_Instance"));
-            var startAwakeSpanMethod = playerModule.ImportReference(GetMethodDefinition(sentryMonoBehaviourDefinition, "StartAwakeSpan", new [] { typeof(MonoBehaviour)}));
+            var startAwakeSpanMethod = playerModule.ImportReference(GetMethodDefinition(sentryMonoBehaviourDefinition, "StartAwakeSpan", new[] { typeof(MonoBehaviour) }));
             var finishAwakeSpanMethod = playerModule.ImportReference(GetMethodDefinition(sentryMonoBehaviourDefinition, "FinishAwakeSpan"));
 
             foreach (var type in playerModule.GetTypes())
@@ -221,7 +221,7 @@ namespace Sentry.Unity.Editor
                         if (method.Body.Instructions[i].OpCode == OpCodes.Ret)
                         {
                             processor.InsertBefore(method.Body.Instructions[i], processor.Create(OpCodes.Call, getInstanceMethod));
-                            processor.InsertBefore(method.Body.Instructions[i+1], processor.Create(OpCodes.Call, finishAwakeSpanMethod)); // +1 because return just moved one back
+                            processor.InsertBefore(method.Body.Instructions[i + 1], processor.Create(OpCodes.Call, finishAwakeSpanMethod)); // +1 because return just moved one back
                         }
                     }
                 }
