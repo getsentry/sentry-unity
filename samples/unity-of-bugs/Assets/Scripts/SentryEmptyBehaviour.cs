@@ -7,7 +7,7 @@ public class SentryEmptyBehaviour : MonoBehaviour
     private void Awake()
     {
         Debug.Log($"Testing simple Awake of '{typeof(SentryEmptyBehaviour).FullName}'");
-        throw new NullReferenceException("Ahahahah");
+        // throw new NullReferenceException("Ahahahah");
     }
 
     // private void Awake()

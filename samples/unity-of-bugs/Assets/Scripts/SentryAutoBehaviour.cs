@@ -1,14 +1,15 @@
 using System;
 using Sentry;
+using Sentry.Unity;
 using UnityEngine;
 
 public class SentryAutoBehaviour : MonoBehaviour
 {
     private void Awake()
     {
-        SentrySdk.GetSpan()?.StartChild("Awake", $"{gameObject.name}.{name}");
+        // SentryMonoBehaviour.Instance.StartAwakeSpan(this);
         Debug.Log($"Testing simple Awake of '{typeof(SentryAutoBehaviour).FullName}'");
-        SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
+        // SentryMonoBehaviour.Instance.FinishAwakeSpan();
     }
 
     // private void Awake()
