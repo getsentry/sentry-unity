@@ -15,6 +15,11 @@ using Debug = UnityEngine.Debug;
 
 public class SmokeTester : MonoBehaviour
 {
+    private void Awake()
+    {
+        Debug.Log("Sample 🐛");
+    }
+
     public void Start()
     {
         Debug.Log("SmokeTester.Start() running");
@@ -109,17 +114,26 @@ public class SmokeTester : MonoBehaviour
 
             // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
             // because they're also repeated with standard events (in an envelope).
-            Debug.Log("SMOKE TEST: Skipping all non-event requests");
+            Debug.Log("SMOKE TEST: Skipping all session requests");
             for (; currentMessage < 10; currentMessage++)
             {
-                if (t.CheckMessage(currentMessage, "'type':'event'"))
+                if (t.CheckMessage(currentMessage, "'type':'session'"))
+                {
+                    continue;
+                }
+                else
                 {
                     break;
                 }
             }
-            Debug.Log($"SMOKE TEST: Done skipping non-event requests. Last one was: #{currentMessage}");
+            Debug.Log($"SMOKE TEST: Done skipping session requests. Last one was: #{currentMessage}");
 
-            t.ExpectMessage(currentMessage, "'type':'event'");
+            t.ExpectMessage(currentMessage, "'type':'transaction");
+            t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
+            t.ExpectMessage(currentMessage, "'op':'awake','description':'Main Camera.SmokeTester'"); // auto instrumentation
+            t.ExpectMessageNot(currentMessage, "'length':0");
+
+            t.ExpectMessage(++currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
             t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");

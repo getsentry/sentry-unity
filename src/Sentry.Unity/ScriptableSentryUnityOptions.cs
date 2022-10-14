@@ -29,7 +29,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
         [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
         [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
-        [field: SerializeField] public bool AutoInstrumentPerformance { get; set; } = false;
+        [field: SerializeField] public bool PerformanceAutoInstrumentation { get; set; } = false;
 
         [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
 

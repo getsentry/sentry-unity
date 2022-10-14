@@ -34,7 +34,7 @@ namespace Sentry.Unity
     /// </summary>
     public partial class SentryMonoBehaviour
     {
-        public void StartAwakeSpan(MonoBehaviour monoBehaviour) => SentrySdk.GetSpan()?.StartChild("Awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().FullName}");
+        public void StartAwakeSpan(MonoBehaviour monoBehaviour) => SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
 
         public void FinishAwakeSpan() => SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
     }

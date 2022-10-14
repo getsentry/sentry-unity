@@ -6,6 +6,11 @@ using UnityEngine.Assertions;
 
 public class BugFarmButtons : MonoBehaviour
 {
+    private void Awake()
+    {
+        Debug.Log("Sample 🐛");
+    }
+
     private void Start()
     {
         Debug.Log("Sample Start 🦋");

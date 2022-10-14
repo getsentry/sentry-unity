@@ -73,6 +73,18 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.Il2CppLineNumberSupportEnabled = boolValue;
             }
 
+            if (args.TryGetValue("traceSampleRate", out boolValue))
+            {
+                Debug.LogFormat("{0}: Configuring TraceSampleRate to {1}", functionName, boolValue ? 1.0f : 0.0f);
+                options.TracesSampleRate = boolValue ? 1.0f : 0.0f;
+            }
+
+            if (args.TryGetValue("performanceAutoInstrumentation", out boolValue))
+            {
+                Debug.LogFormat("{0}: Configuring Performance Auto Instrumentation to {1}", functionName, boolValue);
+                options.PerformanceAutoInstrumentation = boolValue;
+            }
+
             if (args.TryGetValue("cliOptions.Org", out value))
             {
                 Debug.LogFormat("{0}: Configuring symbol-upload organization to {1}", functionName, value);
