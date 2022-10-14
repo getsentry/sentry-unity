@@ -26,7 +26,11 @@ Can't compare package contents against baseline."
 $zip = [IO.Compression.ZipFile]::OpenRead($packageFile)
 try {
     $snapshotContent = $zip.Entries.FullName.Replace("\", "/")
+    # Override the generated GUID as part of the .bcsymbolmap
+    $snapshotContent = $snapshotContent -replace "BCSymbolMaps\/.+?(\.)","BCSymbolMaps/*." 
+
     if ($args.Count -gt 0 -and $args[0] -eq "accept") {
+        Write-Host "Writing snapshot to file"
         # Override the snapshot file with the current package contents
         $snapshotContent | Out-File $snapshotFile
     }

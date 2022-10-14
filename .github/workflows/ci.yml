@@ -31,7 +31,7 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: iOS
-      runsOn: macos-latest
+      runsOn: macos-12 # To keep the .xcframework internal directory structure/naming consistent with the dev environment
 
   macos-sdk:
     uses: ./.github/workflows/sdk.yml

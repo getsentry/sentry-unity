@@ -92,15 +92,20 @@ namespace Sentry.Unity
                 }
 
 #if !SENTRY_WEBGL
-                options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.", StartupTransactionOperation);
+                if (options.TracesSampleRate > 0.0f)
+                {
+                    options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.",
+                        StartupTransactionOperation);
 
-                var runtimeStartTransaction = SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
-                SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
+                    var runtimeStartTransaction =
+                        SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
+                    SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
 
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
-                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
-                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
+                    options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
+                    InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
+                    options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
+                    SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
+                }
 #endif
             }
         }

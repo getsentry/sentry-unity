@@ -9,14 +9,15 @@
 
 ### Features
 
+- The Cocoa SDK is now bundled as `.xcframework` ([#1002](https://github.com/getsentry/sentry-unity/pull/1002))
 - Automated Performance Instrumentation for Runtime Initialization ([#991](https://github.com/getsentry/sentry-unity/pull/991))
 - Automated Performance Instrumentation for Scene Loading ([#768](https://github.com/getsentry/sentry-unity/pull/768))
 
 ### Dependencies
 
-- Bump Java SDK from v6.4.1 to v6.4.3 ([#980](https://github.com/getsentry/sentry-unity/pull/980), [#1005](https://github.com/getsentry/sentry-unity/pull/1005))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#643)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.4.3)
+- Bump Java SDK from v6.4.1 to v6.5.0 ([#980](https://github.com/getsentry/sentry-unity/pull/980), [#1005](https://github.com/getsentry/sentry-unity/pull/1005), [#1011](https://github.com/getsentry/sentry-unity/pull/1011))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#650)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.5.0)
 - Bump CLI from v2.5.2 to v2.7.0 ([#986](https://github.com/getsentry/sentry-unity/pull/986), [#999](https://github.com/getsentry/sentry-unity/pull/999))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#270)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.7.0)
