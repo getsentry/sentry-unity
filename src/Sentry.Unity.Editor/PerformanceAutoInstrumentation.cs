@@ -50,7 +50,7 @@ namespace Sentry.Unity.Editor
                 // Adding the output directory to the check because there are two directories involved in building. We specifically want 'PlayerScriptAssemblies'
                 if (assemblyPath.Contains(Path.Combine(OutputDirectory, PlayerAssembly)))
                 {
-                    Logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", PlayerAssembly);
+                    Logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
 
                     // We use this as part of the smoke test
                     var originalPath = assemblyPath + "_original";
