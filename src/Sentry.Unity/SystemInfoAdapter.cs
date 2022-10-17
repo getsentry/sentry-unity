@@ -32,6 +32,7 @@ namespace Sentry.Unity
         bool? SupportsComputeShaders { get; }
         bool? SupportsGeometryShaders { get; }
         int? GraphicsShaderLevel { get; }
+        bool? GraphicsUVStartsAtTop { get; }
         Lazy<bool>? IsDebugBuild { get; }
         string? InstallMode { get; }
         Lazy<string>? TargetFrameRate { get; }
@@ -76,6 +77,7 @@ namespace Sentry.Unity
         public bool? SupportsComputeShaders => SystemInfo.supportsComputeShaders;
         public bool? SupportsGeometryShaders => SystemInfo.supportsGeometryShaders;
         public int? GraphicsShaderLevel => SystemInfo.graphicsShaderLevel;
+        public bool? GraphicsUVStartsAtTop => SystemInfo.graphicsUVStartsAtTop;
         public Lazy<bool> IsDebugBuild => new(() => Debug.isDebugBuild);
         public string? InstallMode => Application.installMode.ToString();
         public Lazy<string> TargetFrameRate => new(() => Application.targetFrameRate.ToString());
