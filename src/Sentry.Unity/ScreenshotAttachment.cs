@@ -72,16 +72,22 @@ namespace Sentry.Unity
             var renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
             ScreenCapture.CaptureScreenshotIntoRenderTexture(renderTextureFull);
             var renderTextureResized = RenderTexture.GetTemporary(width, height);
-            // On all (currently supported) platforms except Android, the image is mirrored horizontally & vertically.
-            // So we must mirror it back.
-            if (ApplicationAdapter.Instance.Platform is (RuntimePlatform.Android or RuntimePlatform.LinuxPlayer))
+
+            // The image may be mirrored on some platforms - mirror it back.
+            // See https://docs.unity3d.com/2019.4/Documentation/Manual/SL-PlatformDifferences.html for more info.
+            if (_options.UnityInfo?.UvStartsAtTop is false)
             {
-                Graphics.Blit(renderTextureFull, renderTextureResized);
+                _options.DiagnosticLogger?.Log(SentryLevel.Debug,
+                        "UvStartsAtTop is false");
+                Graphics.Blit(renderTextureFull, renderTextureResized, new Vector2(1, -1), new Vector2(0, 1));
             }
             else
             {
-                Graphics.Blit(renderTextureFull, renderTextureResized, new Vector2(1, -1), new Vector2(0, 1));
+                _options.DiagnosticLogger?.Log(SentryLevel.Debug,
+                        "UvStartsAtTop is true");
+                Graphics.Blit(renderTextureFull, renderTextureResized);
             }
+
             RenderTexture.ReleaseTemporary(renderTextureFull);
             // Remember the previous render target and change it to our target texture.
             var previousRenderTexture = RenderTexture.active;

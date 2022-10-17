@@ -145,11 +145,13 @@ namespace Sentry.Unity
 
         internal List<string> SdkIntegrationNames { get; set; } = new();
 
+        internal ISentryUnityInfo? UnityInfo;
+
         public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
 
         internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
             this(SentryMonoBehaviour.Instance, application, isBuilding)
-        { }
+        { UnityInfo = unityInfo; }
 
         internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding)
         {

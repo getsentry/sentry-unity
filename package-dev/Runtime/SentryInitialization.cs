@@ -138,6 +138,15 @@ namespace Sentry.Unity
             ;
         }
 
+        public bool UvStartsAtTop
+        {
+#if UNITY_EDITOR
+            get => false;
+#else
+            get => UNITY_UV_STARTS_AT_TOP == 1;
+#endif
+        }
+
         public Il2CppMethods Il2CppMethods => _il2CppMethods;
 
         private Il2CppMethods _il2CppMethods

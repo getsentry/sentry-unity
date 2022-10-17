@@ -8,6 +8,7 @@ namespace Sentry.Unity.iOS.Tests
     {
         public bool IL2CPP { get; set; }
         public string? Platform { get; }
+        public bool UvStartsAtTop { get; }
         public Il2CppMethods? Il2CppMethods { get; }
     }
 

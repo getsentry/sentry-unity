@@ -6,6 +6,7 @@ namespace Sentry.Unity
     {
         public bool IL2CPP { get; }
         public string? Platform { get; }
+        public bool UvStartsAtTop { get; }
         public Il2CppMethods? Il2CppMethods { get; }
     }
 

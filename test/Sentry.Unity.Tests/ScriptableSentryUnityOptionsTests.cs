@@ -170,5 +170,24 @@ namespace Sentry.Unity.Tests
             Assert.NotNull(assemblyFolderPath);
             return Path.Combine(assemblyFolderPath!, TestSentryOptionsFileName);
         }
+
+        [Test]
+        public void ToSentryUnityOptions_Sets_UnityInfo()
+        {
+            var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+            var unityInfo = new TestSentryUnityInfo();
+            var options = scriptableOptions.ToSentryUnityOptions(false, unityInfo);
+
+            Assert.IsNotNull(options.UnityInfo);
+            Assert.AreEqual(options.UnityInfo, unityInfo);
+        }
+
+        private class TestSentryUnityInfo : ISentryUnityInfo
+        {
+            public bool IL2CPP { get; set; }
+            public string? Platform { get; }
+            public bool UvStartsAtTop { get; }
+            public Il2CppMethods? Il2CppMethods { get; }
+        }
     }
 }
