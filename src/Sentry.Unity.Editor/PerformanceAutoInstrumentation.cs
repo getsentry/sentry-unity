@@ -30,28 +30,26 @@ namespace Sentry.Unity.Editor
         [InitializeOnLoadMethod]
         public static void InitializeCompilationCallback()
         {
-            if (!BuildPipeline.isBuildingPlayer)
-            {
-                return;
-            }
-
             var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
             if (options == null)
             {
                 return;
             }
 
-            Logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-            if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
-            {
-                Logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
-                return;
-            }
-
-            Logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-
             CompilationPipeline.assemblyCompilationFinished += (assemblyPath, compilerMessages) =>
             {
+                if (!BuildPipeline.isBuildingPlayer)
+                {
+                    return;
+                }
+
+                Logger ??= options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
+                if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
+                {
+                    Logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
+                    return;
+                }
+
                 // Adding the output directory to the check because there are two directories involved in building. We specifically want 'PlayerScriptAssemblies'
                 if (assemblyPath.Contains(Path.Combine(OutputDirectory, PlayerAssembly)))
                 {
