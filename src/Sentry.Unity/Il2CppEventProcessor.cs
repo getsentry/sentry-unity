@@ -71,15 +71,16 @@ namespace Sentry.Unity
                 // TODO do we really want to continue if these two don't match?
                 //      Wouldn't it cause invalid frame info?
                 var nativeLen = nativeStackTrace.Frames.Length;
-                var len = Math.Min(sentryStacktrace.Frames.Count, nativeLen);
+                var eventLen = sentryStacktrace.Frames.Count;
 
-                if (nativeLen != len)
+                if (nativeLen != eventLen)
                 {
                     _options.DiagnosticLogger?.LogWarning(
                         "Native and sentry stack trace lengths don't match '({0} != {1})' - this may cause invalid stack traces.",
-                        nativeLen, sentryStacktrace.Frames.Count);
+                        nativeLen, eventLen);
                 }
 
+                var len = Math.Min(eventLen, nativeLen);
                 for (var i = 0; i < len; i++)
                 {
                     // The sentry stack trace is sorted parent->child (caller->callee),
