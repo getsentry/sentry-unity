@@ -30,6 +30,11 @@ namespace Sentry.Unity.Editor
         [InitializeOnLoadMethod]
         public static void InitializeCompilationCallback()
         {
+            if (!BuildPipeline.isBuildingPlayer)
+            {
+                return;
+            }
+
             var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
             if (options == null)
             {
