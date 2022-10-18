@@ -19,20 +19,23 @@ namespace Sentry.Unity
     {
         public static void Configure(SentryUnityOptions options)
         {
-#if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
             if (options.TracesSampleRate > 0.0)
             {
 // On WebGL the SDK initializes on BeforeScene so the Startup Tracing won't work properly. https://github.com/getsentry/sentry-unity/issues/1000
 #if !SENTRY_WEBGL
                 options.AddIntegration(new StartupTracingIntegration());
 #endif
+#if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
                 options.AddIntegration(new SceneManagerTracingIntegration());
+#endif
             }
             else
             {
+#if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
                 options.DiagnosticLogger?.LogDebug("Skipping SceneManagerTracing integration because performance tracing is disabled.");
-            }
 #endif
+            }
+
         }
     }
 
