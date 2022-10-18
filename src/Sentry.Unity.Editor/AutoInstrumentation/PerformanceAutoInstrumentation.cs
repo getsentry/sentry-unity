@@ -18,25 +18,14 @@ namespace Sentry.Unity.Editor
         private const string PlayerAssembly = "Assembly-CSharp.dll";
         private const string OutputDirectory = "PlayerScriptAssemblies"; // There are multiple directories involved - we want this one in particular
 
-        private static ScriptableSentryUnityOptions? Options;
-
         static PerformanceAutoInstrumentation()
         {
             var sentryUnityAssemblyPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.Unity.dll"));
-
-            CompilationPipeline.compilationStarted += _ =>
-            {
-                if (!BuildPipeline.isBuildingPlayer)
-                {
-                    return;
-                }
-
-                Options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
-            };
+            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
 
             CompilationPipeline.assemblyCompilationFinished += (assemblyPath, _) =>
             {
-                if (!BuildPipeline.isBuildingPlayer || Options == null)
+                if (!BuildPipeline.isBuildingPlayer || options == null)
                 {
                     return;
                 }
@@ -44,16 +33,16 @@ namespace Sentry.Unity.Editor
                 var fileInfo = new FileInfo(assemblyPath);
                 Debug.Log($"Finished compiling '{assemblyPath}' - '{fileInfo.Length}'");
 
-                var logger = Options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-                if (Options.TracesSampleRate <= 0.0f || !Options.PerformanceAutoInstrumentation)
-                {
-                    logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
-                    return;
-                }
-
                 // Adding the output directory to the check because there are two directories involved in building. We specifically want 'PlayerScriptAssemblies'
-                if (assemblyPath.Contains(Path.Combine(OutputDirectory, PlayerAssembly)))
+                if (assemblyPath.Contains(PlayerAssembly))
                 {
+                    var logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
+                    if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
+                    {
+                        logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
+                        return;
+                    }
+
                     logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
 
                     var stopwatch = new Stopwatch();
