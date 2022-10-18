@@ -71,7 +71,7 @@ jobs:
           "changeset=$changeset" >> $env:GITHUB_OUTPUT
           echo "Latest version: $version ($changeset)"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
