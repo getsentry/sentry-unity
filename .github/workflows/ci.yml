@@ -68,8 +68,7 @@ jobs:
 
       - name: Load env
         id: env
-        shell: pwsh
-        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -215,7 +214,7 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "::set-output name=unityVersion::$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -320,7 +319,7 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
@@ -398,7 +397,7 @@ jobs:
           name: testapp-Android-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
 
-      # outputs variables: version-label, api-level, target, arch
+      # outputs variables: api-level, label, target
       - name: Configure Android Settings
         id: droid-settings
         shell: pwsh
@@ -412,21 +411,20 @@ jobs:
             $result = [regex]::Match($response, " \(API level (?<model>\d+)\)")
             $apiLevel = $result.Groups["model"].Value
             Write-Output "Latest API is $apiLevel"
-            echo "::set-output name=api-level::$apiLevel"
-            echo "::set-output name=version-label::$apiLevel (latest)"
+            $label = "$apiLevel (latest)"
           }
           else
           {
             Write-Output "Current API is $apiLevel"
-            echo "::set-output name=api-level::$apiLevel"
-            echo "::set-output name=version-label::$arch"
           }
           # Setup Arch and Target
           $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
           Write-Output "Current Target is $target"
-          echo "::set-output name=target::$target"
+          "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
+          "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
+          "target=$target" >> $env:GITHUB_OUTPUT
 
-      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator  setup  + Smoke test
+      - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test
         id: smoke-test
         continue-on-error: true
         timeout-minutes: 30
@@ -451,7 +449,7 @@ jobs:
           adb emu kill
           sleep 7
 
-      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator setup + Smoke test (Retry)
+      - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
         timeout-minutes: 30

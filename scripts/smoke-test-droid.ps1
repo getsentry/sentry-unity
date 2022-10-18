@@ -86,28 +86,35 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
         $alertOption2Label = $null
         $alertOption2Coord = $null
 
-        if ($splitXml.Count -ne 1) {
+        if ($splitXml.Count -ne 1)
+        {
             # We have a "valid" XML
             # Use Regex to get the message and the options labels + coordinates.
-            foreach ($iterator in $splitXml) {
-                if ($iterator.Contains("alertTitle")) {
+            foreach ($iterator in $splitXml)
+            {
+                if ($iterator.Contains("alertTitle"))
+                {
                     $titleRegex = [regex]::Match($iterator, "text=\`"(?<text>.+)\`" resource-id")
                     $alertTitle = $titleRegex.Groups["text"].Value
                 }
-                elseif ($iterator.Contains("Button")) {
+                elseif ($iterator.Contains("Button"))
+                {
                     $buttonRegex = [regex]::Match($iterator, "text=\`"(?<text>.+)\`" resource-id.* bounds=\`"\[(?<horStart>\d+),(?<verStart>\d+)\]\[(?<horEnd>\d+),(?<verEnd>\d+)\]\`"")
-                    if ($null -eq $alertOption1Label) {
+                    if ($null -eq $alertOption1Label)
+                    {
                         $alertOption1Label = $buttonRegex.Groups["text"].Value
                         $alertOption1Coord = ($buttonRegex.Groups["horStart"].Value, $buttonRegex.Groups["verStart"].Value, $buttonRegex.Groups["horEnd"].Value, $buttonRegex.Groups["verEnd"].Value)
                     }
-                    else {
+                    else
+                    {
                         $alertOption2Label = $buttonRegex.Groups["text"].Value
                         $alertOption2Coord = ($buttonRegex.Groups["horStart"].Value, $buttonRegex.Groups["verStart"].Value, $buttonRegex.Groups["horEnd"].Value, $buttonRegex.Groups["verEnd"].Value)
                     }
                 }
             }
 
-            if ($null -ne $alertTitle) {
+            if ($null -ne $alertTitle)
+            {
                 Write-Warning "Found Alert on Screen, TITLE: $alertTitle `n Options: `n $alertOption1Label at $alertOption1Coord `n $alertOption2Label at $alertOption2Coord "
 
                 if ($null -eq $alertOption2Label)
@@ -116,7 +123,7 @@ function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $ale
                     $tapY = [int]([int]$alertOption1Coord[1] + [int]$alertOption1Coord[3] ) / 2
                     $tapLabel = $alertOption1Label
                 }
-                else 
+                else
                 {
                     $tapX = [int]([int]$alertOption2Coord[0] + [int]$alertOption2Coord[2] ) / 2
                     $tapY = [int]([int]$alertOption2Coord[1] + [int]$alertOption2Coord[3] ) / 2
@@ -163,7 +170,7 @@ function CheckAndCloseActiveSystemAlerts([string] $deviceId, [string] $deviceApi
 function SignalActionSmokeStatus
 {
     param ($smokeStatus)
-    echo "::set-output name=smoke-status::$smokeStatus"
+    "smoke-status=$smokeStatus" >> $env:GITHUB_OUTPUT
 }
 
 # Filter device List
