@@ -577,6 +577,7 @@ namespace Sentry.Unity.Tests
         public bool? SupportsComputeShaders { get; set; }
         public bool? SupportsGeometryShaders { get; set; }
         public int? GraphicsShaderLevel { get; set; }
+        public bool? GraphicsUVStartsAtTop { get; }
         public Lazy<bool>? IsDebugBuild { get; set; }
         public string? InstallMode { get; set; }
         public Lazy<string>? TargetFrameRate { get; set; }
