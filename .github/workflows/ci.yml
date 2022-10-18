@@ -440,7 +440,7 @@ jobs:
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI -IsIntegrationTest
+          script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Kill emulator if AVD failed.
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
@@ -466,7 +466,7 @@ jobs:
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI -IsIntegrationTest
+          script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Throw error if Smoke test failed
         run: |

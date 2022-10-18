@@ -1,6 +1,5 @@
 param (
     [Parameter(Position = 0)]
-    [Switch] $IsCI,
     [Switch] $IsIntegrationTest
 )
 
@@ -12,14 +11,6 @@ Write-Host "#   ANDROID                                     #"
 Write-Host "#            VALIDATOR                          #"
 Write-Host "#                       SCRIPT                  #"
 Write-Host "#################################################"
-
-# When launched from the CI android-emulator-runner the usual GH-actions' CI variable is missing.
-# We set it here manually because CrashTestWithServer uses it to determine some configuration.
-if ($IsCI)
-{
-    $env:CI = "true"
-}
-
 
 if ($IsIntegrationTest)
 {
