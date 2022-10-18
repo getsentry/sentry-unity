@@ -75,8 +75,8 @@ namespace Sentry.Unity
 
             // The image may be mirrored on some platforms - mirror it back.
             // See https://docs.unity3d.com/2019.4/Documentation/Manual/SL-PlatformDifferences.html for more info.
-            // Note, we can't use the `` macro because it's only available in shaders. Instead, there's
-            // https://docs.unity3d.com/2019.4/Documentation/ScriptReference/SystemInfo-graphicsUVStartsAtTop.html
+            // Note, we can't use the `UNITY_UV_STARTS_AT_TOP` macro because it's only available in shaders.
+            // Instead, there's https://docs.unity3d.com/2019.4/Documentation/ScriptReference/SystemInfo-graphicsUVStartsAtTop.html
             if (SentrySystemInfoAdapter.Instance.GraphicsUVStartsAtTop ?? true)
             {
                 Graphics.Blit(renderTextureFull, renderTextureResized, new Vector2(1, -1), new Vector2(0, 1));
