@@ -67,11 +67,11 @@ jobs:
           $items = $page.Links.Href | Select-String -Pattern $hubPrefix | ForEach-Object { $_.ToString().Substring($hubPrefix.Length) }
           $items = $items | Select-String -Pattern "${{ matrix.unity-prefix }}"
           $version,$changeset = $items[0].ToString().split("/")
-          echo "::set-output name=version::$version"
-          echo "::set-output name=changeset::$changeset"
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "changeset=$changeset" >> $env:GITHUB_OUTPUT
           echo "Latest version: $version ($changeset)"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
