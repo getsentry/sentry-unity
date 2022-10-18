@@ -170,7 +170,15 @@ function CheckAndCloseActiveSystemAlerts([string] $deviceId, [string] $deviceApi
 function SignalActionSmokeStatus
 {
     param ($smokeStatus)
-    "smoke-status=$smokeStatus" >> $env:GITHUB_OUTPUT
+    if (Test-Path env:GITHUB_OUTPUT)
+    {
+        Write-Host "Writing smoke-status=$smokeStatus to ${env:GITHUB_OUTPUT}"
+        "smoke-status=$smokeStatus" >> $env:GITHUB_OUTPUT
+    }
+    else
+    {
+        Write-Host "smoke-status=$smokeStatus"
+    }
 }
 
 # Filter device List
