@@ -8,75 +8,69 @@ using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor
 {
+    [InitializeOnLoad]
     public static class PerformanceAutoInstrumentation
     {
         private const string PlayerAssembly = "Assembly-CSharp.dll";
         private const string OutputDirectory = "PlayerScriptAssemblies"; // There are multiple directories involved - we want this one in particular
 
-        private static readonly string PlayerAssemblyPath;
-        private static readonly string SentryUnityAssemblyPath;
-
-        private static IDiagnosticLogger? Logger;
+        private static ScriptableSentryUnityOptions? Options;
 
         static PerformanceAutoInstrumentation()
         {
-            PlayerAssemblyPath = Path.Combine(Application.dataPath, "..", "Library", OutputDirectory, PlayerAssembly);
-            SentryUnityAssemblyPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.Unity.dll"));
-        }
+            var sentryUnityAssemblyPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.Unity.dll"));
 
-        [InitializeOnLoadMethod]
-        public static void InitializeCompilationCallback()
-        {
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
-            if (options == null)
-            {
-                return;
-            }
-
-            CompilationPipeline.assemblyCompilationFinished += (assemblyPath, compilerMessages) =>
+            CompilationPipeline.compilationStarted += _ =>
             {
                 if (!BuildPipeline.isBuildingPlayer)
                 {
                     return;
                 }
 
-                Logger ??= options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-                if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
+                Options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+            };
+
+            CompilationPipeline.assemblyCompilationFinished += (assemblyPath, _) =>
+            {
+                if (!BuildPipeline.isBuildingPlayer || Options == null)
                 {
-                    Logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
+                    return;
+                }
+
+                var fileInfo = new FileInfo(assemblyPath);
+                Debug.Log($"Finished compiling '{assemblyPath}' - '{fileInfo.Length}'");
+
+                var logger = Options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
+                if (Options.TracesSampleRate <= 0.0f || !Options.PerformanceAutoInstrumentation)
+                {
+                    logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
                     return;
                 }
 
                 // Adding the output directory to the check because there are two directories involved in building. We specifically want 'PlayerScriptAssemblies'
                 if (assemblyPath.Contains(Path.Combine(OutputDirectory, PlayerAssembly)))
                 {
-                    Logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
-
-                    // We use this as part of the smoke test
-                    var originalPath = assemblyPath + "_original";
-                    if (!File.Exists(originalPath))
-                    {
-                        File.Copy(assemblyPath, originalPath);
-                    }
+                    logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
 
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
 
                     try
                     {
-                        ModifyPlayerAssembly(PlayerAssemblyPath, SentryUnityAssemblyPath);
+                        ModifyPlayerAssembly(logger, assemblyPath, sentryUnityAssemblyPath);
                     }
                     catch (Exception e)
                     {
-                        Logger?.LogError("Failed to add the performance auto instrumentation. " +
+                        logger?.LogError("Failed to add the performance auto instrumentation. " +
                                          "The assembly has not been modified.", e);
                     }
 
                     stopwatch.Stop();
-                    Logger?.LogInfo("Auto Instrumentation finished in '{0}'.", stopwatch.Elapsed);
+                    logger?.LogInfo("Auto Instrumentation finished in '{0}'.", stopwatch.Elapsed);
                 }
             };
         }
@@ -92,12 +86,12 @@ namespace Sentry.Unity.Editor
             return typeDefinition;
         }
 
-        private static TypeReference ImportReference(ModuleDefinition module, Type type)
+        private static MethodReference ImportReference(ModuleDefinition module, MethodDefinition method)
         {
-            var reference = module.ImportReference(type);
+            var reference = module.ImportReference(method);
             if (reference is null)
             {
-                throw new Exception($"Failed to import '{type.FullName}' into '{module.Name}'");
+                throw new Exception($"Failed to import '{method.FullName}' into '{module.Name}");
             }
 
             return reference;
@@ -117,11 +111,22 @@ namespace Sentry.Unity.Editor
                             continue;
                     }
 
+                    if (method.Parameters.Count != requiredParameters.Length)
+                    {
+                        continue;
+                    }
+
+                    // We go over all the required parameters and compare them to the parameters found in the method.
                     var hasMatchingParameters = true;
                     foreach (var parameter in requiredParameters)
                     {
                         var parameterDefinitions = method.Parameters.Where(p =>
-                            string.Equals(p.ParameterType.FullName, parameter.FullName, StringComparison.CurrentCulture)).ToList();
+                            string.Equals(
+                                p.ParameterType.FullName,
+                                parameter.FullName,
+                                StringComparison.CurrentCulture))
+                            .ToList();
+
                         if (parameterDefinitions.Count == 0)
                         {
                             hasMatchingParameters = false;
@@ -142,11 +147,14 @@ namespace Sentry.Unity.Editor
                 $"with parameters: '{(requiredParameters is not null ? string.Join(",", requiredParameters.ToList()) : "none")}'");
         }
 
-        private static void ModifyPlayerAssembly(string playerAssemblyPath, string sentryUnityAssemblyPath)
+        private static void ModifyPlayerAssembly(
+            IDiagnosticLogger? logger,
+            string playerAssemblyPath,
+            string sentryUnityAssemblyPath)
         {
             if (!File.Exists(playerAssemblyPath))
             {
-                throw new FileNotFoundException($"Failed to find '' at '{playerAssemblyPath}' not found.");
+                throw new FileNotFoundException($"Failed to find '{PlayerAssembly}' at '{playerAssemblyPath}'.");
             }
 
             if (!File.Exists(sentryUnityAssemblyPath))
@@ -160,9 +168,9 @@ namespace Sentry.Unity.Editor
             var sentryMonoBehaviourDefinition = GetTypeDefinition(sentryModule, typeof(SentryMonoBehaviour));
             var monoBehaviourReference = playerModule.ImportReference(typeof(MonoBehaviour));
 
-            var getInstanceMethod = playerModule.ImportReference(GetMethodDefinition(sentryMonoBehaviourDefinition, "get_Instance"));
-            var startAwakeSpanMethod = playerModule.ImportReference(GetMethodDefinition(sentryMonoBehaviourDefinition, "StartAwakeSpan", new[] { typeof(MonoBehaviour) }));
-            var finishAwakeSpanMethod = playerModule.ImportReference(GetMethodDefinition(sentryMonoBehaviourDefinition, "FinishAwakeSpan"));
+            var getInstanceMethod = ImportReference(playerModule, GetMethodDefinition(sentryMonoBehaviourDefinition, "get_Instance"));
+            var startAwakeSpanMethod = ImportReference(playerModule, GetMethodDefinition(sentryMonoBehaviourDefinition, "StartAwakeSpan", new[] { typeof(MonoBehaviour) }));
+            var finishAwakeSpanMethod = ImportReference(playerModule, GetMethodDefinition(sentryMonoBehaviourDefinition, "FinishAwakeSpan"));
 
             foreach (var type in playerModule.GetTypes())
             {
@@ -171,25 +179,25 @@ namespace Sentry.Unity.Editor
                     continue;
                 }
 
-                Logger?.LogDebug("Checking: '{0}'", type.FullName);
+                logger?.LogDebug("\tChecking: '{0}'", type.FullName);
 
                 foreach (var method in type.Methods.Where(method => method.Name == "Awake"))
                 {
-                    Logger?.LogDebug("Detected 'Awake' method.");
+                    logger?.LogDebug("\tDetected 'Awake' method.");
 
                     if (method.Body is null)
                     {
-                        Logger?.LogDebug("Method body is null. Skipping.");
+                        logger?.LogDebug("\tMethod body is null. Skipping.");
                         continue;
                     }
 
                     if (method.Body.Instructions is null)
                     {
-                        Logger?.LogDebug("Instructions are null. Skipping.");
+                        logger?.LogDebug("\tInstructions are null. Skipping.");
                         continue;
                     }
 
-                    Logger?.LogDebug("\tAdding 'Start Awake Span'.");
+                    logger?.LogDebug("\t\tAdding 'Start Awake Span'.");
 
                     var processor = method.Body.GetILProcessor();
 
@@ -198,7 +206,7 @@ namespace Sentry.Unity.Editor
                     processor.InsertBefore(method.Body.Instructions[0], processor.Create(OpCodes.Ldarg_0));
                     processor.InsertBefore(method.Body.Instructions[0], processor.Create(OpCodes.Call, getInstanceMethod));
 
-                    Logger?.LogDebug("\tAdding 'Finish Awake Span'.");
+                    logger?.LogDebug("\t\tAdding 'Finish Awake Span'.");
 
                     // We're checking the instructions for OpCode.Ret so we can insert the finish span instruction before it.
                     // Iterating over the collection backwards because we're modifying it's length
@@ -213,7 +221,7 @@ namespace Sentry.Unity.Editor
                 }
             }
 
-            Logger?.LogInfo("Applying Auto Instrumentation by overwriting '{0}'.", Path.GetFileName(playerAssemblyPath));
+            logger?.LogInfo("Applying Auto Instrumentation by overwriting '{0}'.", Path.GetFileName(playerAssemblyPath));
             ModuleReaderWriter.Write(null, hasSymbols, playerModule, playerAssemblyPath);
         }
     }
