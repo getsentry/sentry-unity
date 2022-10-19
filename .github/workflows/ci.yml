@@ -251,7 +251,7 @@ jobs:
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Create new Project
-        run: sudo pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
@@ -262,11 +262,11 @@ jobs:
 
       - name: Extract UPM package
         if: ${{ github.ref_name != 'main' }}
-        run: sudo pwsh ./test/Scripts.Integration.Test/extract-package.ps1
+        run: pwsh ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
         if: ${{ github.ref_name != 'main' }}
-        run: sudo pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+        run: pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       # We create tar explicitly because upload-artifact is slow for many files located in Library
       - name: Create archive
