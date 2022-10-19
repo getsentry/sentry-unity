@@ -66,10 +66,6 @@ jobs:
       - name: Checkout submodules
         run: ./scripts/init-submodules.sh src/sentry-dotnet
 
-      - name: Load env
-        id: env
-        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
-
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Restore Unity Packages
@@ -81,20 +77,7 @@ jobs:
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Start the Unity docker container
-        # 1. We use the host dotnet installation - it's much faster than installing inside the docker container.
-        # 2. We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
-        #    Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
-        run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-ios-1.0.1"
-          docker run -td --name unity \
-            -v ${{ github.workspace }}:/sentry-unity \
-            -v /usr/share/dotnet:/usr/share/dotnet \
-            -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
-            -v $ANDROID_HOME:$ANDROID_HOME \
-            -v $JAVA_HOME_11_X64:$JAVA_HOME_11_X64 \
-            --workdir /sentry-unity $image
-          docker exec unity ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
-          docker exec unity ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       # Required by sentry-dotnet since 3.19.0
       - name: Install Android dotnet workflow
@@ -138,11 +121,6 @@ jobs:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
           wait-timeout: 3600
-
-      - name: Create Unity license config
-        run: |
-          docker exec unity mkdir -p /usr/share/unity3d/config/
-          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Build Sentry.Unity Solution
         run: docker exec unity dotnet build /p:AndroidSdkDirectory=$ANDROID_HOME /p:JavaSdkDirectory=$JAVA_HOME_11_X64 -c Release
@@ -236,29 +214,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Load env
-        id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
-
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
         shell: bash
-        run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-base-1.0.1"
-          echo "Starting up a docker container with $image"
-          docker run -td --name unity \
-            -v ${{ github.workspace }}:/sentry-unity \
-            --user $(id -u):$(id -g) \
-            --workdir /sentry-unity \
-            $image
-
-      - name: Create Unity license config
-        shell: bash
-        run: |
-          docker exec --user root unity mkdir -p /usr/share/unity3d/config/
-          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i --user root unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
-          docker exec --user root unity chown -R $(id -u) /usr/share/unity3d/config/
+        run: ./scripts/ci-docker.sh '${{ steps.env.outputs.unityVersion }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
@@ -317,16 +277,7 @@ jobs:
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
-        run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-${{ matrix.platform }}${{ matrix.image-suffix }}-1.0.1"
-          image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
-          echo "Starting up a docker container with $image"
-          docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
-
-      - name: Create Unity license config
-        run: |
-          docker exec unity mkdir -p /usr/share/unity3d/config/
-          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
+        run: ./scripts/ci-docker.sh '${{ steps.env.outputs.unityVersion }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
