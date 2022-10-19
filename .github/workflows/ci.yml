@@ -268,6 +268,10 @@ jobs:
         if: ${{ github.ref_name != 'main' }}
         run: sudo pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
+      # We create tar explicitly because upload-artifact is slow for many files located in Library
+      - name: Create archive
+        run: tar -cf test-project.tar samples/IntegrationTest
+
       - name: Upload project
         uses: actions/upload-artifact@v3
         with:
@@ -275,8 +279,7 @@ jobs:
           if-no-files-found: error
           path: |
             test-package-release
-            samples/IntegrationTest
-            !samples/IntegrationTest/Library
+            test-project.tar
 
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
@@ -319,6 +322,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: smoke-test-${{ matrix.unity-version }}
+
+      - name: Extract project archive
+        run: tar -xf test-project.tar
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
