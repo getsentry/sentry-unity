@@ -243,15 +243,22 @@ jobs:
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
+        shell: bash
         run: |
-          $image = "unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-base-1.0.1"
+          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-base-1.0.1"
           echo "Starting up a docker container with $image"
-          docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
+          docker run -td --name unity \
+            -v ${{ github.workspace }}:/sentry-unity \
+            --user $(id -u):$(id -g) \
+            --workdir /sentry-unity \
+            $image
 
       - name: Create Unity license config
+        shell: bash
         run: |
-          docker exec unity mkdir -p /usr/share/unity3d/config/
-          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
+          docker exec --user root unity mkdir -p /usr/share/unity3d/config/
+          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i --user root unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
+          docker exec --user root unity chown -R $(id -u) /usr/share/unity3d/config/
 
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
