@@ -194,9 +194,94 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
+  package-validation:
+    needs: [build]
+    name: UPM Package validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v3
+        with:
+          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
+          name: ${{ github.sha }}
+
+      - name: Verify package content against snapshot
+        shell: pwsh
+        # If this step fails, you can accept the new file content by
+        # running the following script locally with 'accept' as an argument
+        # and committing the new snapshot file to your branch. i.e:
+        # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
+        run: ./test/Scripts.Tests/test-pack-contents.ps1
+
+  # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`. If running on the `main`
+  # branch, the project doesn't include Sentry SDK because in that case we test building with & without it.
+  # We could just create the project later in `smoke-test-build` but then it's executed for each job in the matrix
+  # and reduces concurrency because of Unity licence limits.
+  smoke-test-create:
+    name: Prepare Smoke Test ${{ matrix.unity-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ['2019', '2020', '2021', '2022']
+    env:
+      UNITY_PATH: docker exec unity unity-editor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Load env
+        id: env
+        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Start the Unity docker container
+        run: |
+          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-base-1.0.1"
+          echo "Starting up a docker container with $image"
+          docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
+
+      - name: Create Unity license config
+        run: |
+          docker exec unity mkdir -p /usr/share/unity3d/config/
+          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
+
+      - name: Create new Project
+        run: sudo pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Download UPM package
+        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
+        if: ${{ github.ref_name != 'main' }}
+        with:
+          name: ${{ github.sha }}
+          wait-timeout: 3600
+
+      - name: Extract UPM package
+        if: ${{ github.ref_name != 'main' }}
+        run: sudo pwsh ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name != 'main' }}
+        run: sudo pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+
+      - name: Upload project
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-${{ matrix.unity-version }}
+          if-no-files-found: error
+          path: |
+            test-package-release
+            samples/IntegrationTest
+            !samples/IntegrationTest/Library
+
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    needs: [smoke-test-create]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -230,28 +315,32 @@ jobs:
           docker exec unity mkdir -p /usr/share/unity3d/config/
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
-      - name: Create new Project
-        run: sudo pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@v3
+        with:
+          name: smoke-test-${{ matrix.unity-version }}
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
         if: ${{ github.ref_name == 'main' }}
-        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
-        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
+        if: ${{ github.ref_name == 'main' }}
+        uses: actions/download-artifact@v3
         with:
           name: ${{ github.sha }}
-          wait-timeout: 3600
 
       - name: Extract UPM package
-        run: sudo pwsh ./test/Scripts.Integration.Test/extract-package.ps1
+        if: ${{ github.ref_name == 'main' }}
+        run: pwsh ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: sudo pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+        if: ${{ github.ref_name == 'main' }}
+        run: pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+        run: pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Prepare for upload
         run: |
@@ -273,30 +362,9 @@ jobs:
           name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}
           path: samples/IntegrationTest
 
-  package-validation:
-    needs: [build]
-    name: UPM Package validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download UPM package
-        uses: actions/download-artifact@v3
-        with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
-          name: ${{ github.sha }}
-
-      - name: Verify package content against snapshot
-        shell: pwsh
-        # If this step fails, you can accept the new file content by
-        # running the following script locally with 'accept' as an argument
-        # and committing the new snapshot file to your branch. i.e:
-        # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
-        run: ./test/Scripts.Tests/test-pack-contents.ps1
-
   desktop-smoke-test:
     name: Run ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
+    needs: [smoke-test-create]
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
@@ -334,8 +402,10 @@ jobs:
           New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
           Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
-      - name: Create new Project
-        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@v3
+        with:
+          name: smoke-test-${{ matrix.unity-version }}
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
@@ -343,16 +413,17 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
-        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
+        if: ${{ github.ref_name == 'main' }}
+        uses: actions/download-artifact@v3
         with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
-          wait-timeout: 3600
 
       - name: Extract UPM package
+        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to test project
+        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
 
       - name: Build with Sentry SDK
