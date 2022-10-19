@@ -345,7 +345,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         }
         # Note: control only gets here if none of the alternatives match...
         $successful = $false
-        $fileWithoutCount = $file.Substring(0, $file.Length-1)
+        $fileWithoutCount = $file.Substring(0, $file.Length - 1)
         $filePattern = [Regex]::new('(?<=' + "$([Regex]::Escape($fileWithoutCount))" + ')[\w]+')
         $actualCount = $filePattern.Matches($symbolServerOutput)
 
@@ -358,5 +358,19 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     else
     {
         exit 1
+    }
+}
+
+function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $successMessage, [string[]] $arguments)
+{
+    $stdout = RunUnityCustom $UnityPath $arguments -ReturnLogOutput
+    $lineWithSuccess = $stdout | Select-String $successMessage
+    If ($null -ne $lineWithSuccess)
+    {
+        Write-Host "`n$name | SUCCESS because the following text was found: '$lineWithSuccess'" -ForegroundColor Green
+    }
+    Else
+    {
+        Write-Error "$name | Unity exited without an error but the successMessage was not found in the output ('$successMessage')"
     }
 }
