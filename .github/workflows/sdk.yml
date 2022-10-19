@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ inputs.runsOn }}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get submodules status
         run: git submodule status | tee submodules-status
@@ -26,7 +26,7 @@ jobs:
         shell: bash
 
       - name: Restore from cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache
         with:
           # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
@@ -60,13 +60,13 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.target }}-sdk
           path: package-dev/Plugins/${{ inputs.target }}
           retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ inputs.target == 'Android' }}
         with:
           name: ${{ inputs.target }}-libraries

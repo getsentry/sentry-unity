@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@a40b8845c0683271d9f53dfcb887a7e181d3918b # Tag: 0.9.1
+        uses: styfle/cancel-workflow-action@b173b6ec0100793626c2d9e6b90435061f4fc3e5 # pin@0.11.0
         with:
           access_token: ${{ github.token }}
 
@@ -61,20 +61,19 @@ jobs:
         unity-version: ['2019', '2020', '2021']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Checkout submodules
         run: ./scripts/init-submodules.sh src/sentry-dotnet
 
       - name: Load env
         id: env
-        shell: pwsh
-        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Restore Unity Packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             samples/unity-of-bugs/Library/Packages
@@ -104,37 +103,37 @@ jobs:
       - name: Download CLI
         run: pwsh ./scripts/download-sentry-cli.ps1
 
-      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+      - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+      - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: Android-libraries
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+      - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+      - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: macOS-sdk
           path: package-dev/Plugins/macOS
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+      - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: Linux-sdk
           path: package-dev/Plugins/Linux
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+      - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
@@ -163,7 +162,7 @@ jobs:
         run: ./scripts/pack.ps1
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         with:
           name: ${{ github.sha }}
@@ -180,7 +179,7 @@ jobs:
 
       - name: Upload test artifacts (playmode)
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Test results (playmode)
           path: artifacts/test/playmode
@@ -190,7 +189,7 @@ jobs:
 
       - name: Upload test artifacts (editmode)
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Test results (editmode)
           path: artifacts/test/editmode
@@ -211,11 +210,11 @@ jobs:
       UNITY_PATH: docker exec unity unity-editor
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Load env
         id: env
-        run: echo "::set-output name=unityVersion::$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -240,7 +239,7 @@ jobs:
         run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
-        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: ${{ github.sha }}
           wait-timeout: 3600
@@ -261,7 +260,7 @@ jobs:
           sudo rm -rf *_BackUpThisFolder_ButDontShipItWithYourGame
 
       - name: Upload test app for smoke test
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
@@ -269,7 +268,7 @@ jobs:
 
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}
           path: samples/IntegrationTest
@@ -280,10 +279,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Download UPM package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
@@ -316,11 +315,11 @@ jobs:
         shell: pwsh
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Load env
         id: env
-        run: echo "::set-output name=unityVersion::$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")"
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
         uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
@@ -344,7 +343,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
-        uses: vaind/download-artifact@989a39a417730897d098ab11c34e49ac4e13ed70
+        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
@@ -390,15 +389,15 @@ jobs:
         shell: pwsh
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Download test app artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: testapp-Android-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
 
-      # outputs variables: version-label, api-level, target, arch
+      # outputs variables: api-level, label, target
       - name: Configure Android Settings
         id: droid-settings
         shell: pwsh
@@ -412,21 +411,20 @@ jobs:
             $result = [regex]::Match($response, " \(API level (?<model>\d+)\)")
             $apiLevel = $result.Groups["model"].Value
             Write-Output "Latest API is $apiLevel"
-            echo "::set-output name=api-level::$apiLevel"
-            echo "::set-output name=version-label::$apiLevel (latest)"
+            $label = "$apiLevel (latest)"
           }
           else
           {
             Write-Output "Current API is $apiLevel"
-            echo "::set-output name=api-level::$apiLevel"
-            echo "::set-output name=version-label::$arch"
           }
           # Setup Arch and Target
           $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
           Write-Output "Current Target is $target"
-          echo "::set-output name=target::$target"
+          "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
+          "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
+          "target=$target" >> $env:GITHUB_OUTPUT
 
-      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator  setup  + Smoke test
+      - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test
         id: smoke-test
         continue-on-error: true
         timeout-minutes: 30
@@ -442,7 +440,7 @@ jobs:
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI -IsIntegrationTest
+          script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Kill emulator if AVD failed.
         if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
@@ -451,7 +449,7 @@ jobs:
           adb emu kill
           sleep 7
 
-      - name: Android API ${{ steps.droid-settings.outputs.version-label }} emulator setup + Smoke test (Retry)
+      - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test (Retry)
         id: smoke-test-retry
         continue-on-error: true
         timeout-minutes: 30
@@ -468,7 +466,7 @@ jobs:
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: sudo pwsh ./scripts/smoke-test-droid.ps1 -IsCI -IsIntegrationTest
+          script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Throw error if Smoke test failed
         run: |
@@ -480,7 +478,7 @@ jobs:
 
       - name: Upload screenshot if smoke test failed
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: testapp-android-screenshot-${{ matrix.api-level }}-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build/screen.png
@@ -495,10 +493,10 @@ jobs:
         unity-version: ['2019', '2020', '2021', '2022']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Download XCode app artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: testapp-iOS-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
@@ -508,7 +506,7 @@ jobs:
         run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Upload iOS test app for smoke test.
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: testapp-iOS-compiled-${{ matrix.unity-version }}
           # Ignore the files that are not required for the test.
@@ -533,10 +531,10 @@ jobs:
         shell: pwsh
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Download app artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: testapp-iOS-compiled-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
@@ -577,10 +575,10 @@ jobs:
         platform: ['WebGL', 'Linux']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.3
+        uses: actions/checkout@v3
 
       - name: Download test app artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         id: download
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
