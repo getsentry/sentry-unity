@@ -103,7 +103,8 @@ public class SentrySetup
     {
         if (origin == SentryInstallOrigin.Disk)
         {
-            var sentryPackageLocal = "file:" + Application.dataPath.Replace("samples/IntegrationTest/Assets", "test-package-release/");
+            // Relative path allows reusing IntegrationTest project created inside a docker container.
+            var sentryPackageLocal = "file:../../../test-package-release";
             LogDebug("Sentry package Path is " + sentryPackageLocal);
             return sentryPackageLocal;
         }
