@@ -66,6 +66,10 @@ jobs:
       - name: Checkout submodules
         run: ./scripts/init-submodules.sh src/sentry-dotnet
 
+      - name: Load env
+        id: env
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
+
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Restore Unity Packages
@@ -77,6 +81,8 @@ jobs:
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Start the Unity docker container
+        # We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
+        # Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       # Required by sentry-dotnet since 3.19.0
@@ -218,7 +224,7 @@ jobs:
 
       - name: Start the Unity docker container
         shell: bash
-        run: ./scripts/ci-docker.sh '${{ steps.env.outputs.unityVersion }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
@@ -270,14 +276,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Load env
-        id: env
-        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
-
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ steps.env.outputs.unityVersion }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
@@ -307,7 +309,6 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        if: ${{ github.ref_name == 'main' }}
         run: pwsh ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       - name: Build with Sentry SDK
@@ -401,7 +402,6 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
 
       - name: Build with Sentry SDK
