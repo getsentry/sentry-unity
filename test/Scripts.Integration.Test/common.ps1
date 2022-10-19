@@ -353,3 +353,17 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         exit 1
     }
 }
+
+function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $successMessage, [string[]] $arguments)
+{
+    $stdout = RunUnityCustom $UnityPath $arguments -ReturnLogOutput
+    $lineWithSuccess = $stdout | Select-String $successMessage
+    If ($null -ne $lineWithSuccess)
+    {
+        Write-Host "`n$name | SUCCESS because the following text was found: '$lineWithSuccess'" -ForegroundColor Green
+    }
+    Else
+    {
+        Write-Error "$name | Unity exited without an error but the successMessage was not found in the output ('$successMessage')"
+    }
+}

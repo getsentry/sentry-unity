@@ -229,19 +229,22 @@ jobs:
         unity-version: ['2019', '2020', '2021', '2022']
     env:
       UNITY_PATH: docker exec unity unity-editor
+    defaults:
+      run:
+        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
         run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-base-1.0.1"
+          $image = "unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-base-1.0.1"
           echo "Starting up a docker container with $image"
           docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
 
@@ -251,7 +254,7 @@ jobs:
           echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
 
       - name: Create new Project
-        run: pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
@@ -262,11 +265,11 @@ jobs:
 
       - name: Extract UPM package
         if: ${{ github.ref_name != 'main' }}
-        run: pwsh ./test/Scripts.Integration.Test/extract-package.ps1
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
         if: ${{ github.ref_name != 'main' }}
-        run: pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       # We create tar explicitly because upload-artifact is slow for many files located in Library
       - name: Create archive
@@ -343,7 +346,11 @@ jobs:
 
       - name: Add Sentry to the project
         if: ${{ github.ref_name == 'main' }}
-        run: pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Configure Sentry
+        if: ${{ github.ref_name == 'main' }}
+        run: pwsh ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       - name: Build with Sentry SDK
         run: pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
@@ -431,7 +438,11 @@ jobs:
         if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
-      - name: Add Sentry to test project
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Configure Sentry
         if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
 
