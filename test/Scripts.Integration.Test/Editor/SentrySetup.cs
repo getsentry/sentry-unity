@@ -117,6 +117,8 @@ public class SentrySetup
 
     static SentryInstallOrigin GetInstallOriginFromEnvironment(Dictionary<string, string> args)
     {
-        return args.ContainsKey("installSentry") ? Enum.Parse<SentryInstallOrigin>(args["installSentry"]) : SentryInstallOrigin.None;
+        return args.ContainsKey("installSentry")
+            ? (SentryInstallOrigin)Enum.Parse(typeof(SentryInstallOrigin), args["installSentry"])
+            : SentryInstallOrigin.None;
     }
 }

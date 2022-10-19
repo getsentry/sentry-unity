@@ -1,20 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity$1")
-unityVersion="2019.4.40f1"
+unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity$1")
 imageVariant=$(echo "$2" | tr '[:upper:]' '[:lower:]')
 licenseConfig=$3
 
-# 1. We use the host dotnet installation - it's much faster than installing inside the docker container.
-# 2. We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
-#    Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
-
 container="unity"
 image="unityci/editor:ubuntu-$unityVersion-$imageVariant-1.0.1"
+cwd="${GITHUB_WORKSPACE:-$(pwd)}"
 user="gh"
 uid=$(id -u)
-gid=$(id -g)
+gid=0 # same as root so we have access to the whole of the unity installation
 
 if [[ $(docker ps --filter "name=^/$container$" --format '{{.Names}}') == "$container" ]]; then
     echo "Removing existing container '$container'"
@@ -24,19 +20,21 @@ fi
 
 echo "Starting up '$image' as '$container'"
 
+# We use the host dotnet installation - it's much faster than installing inside the docker container.
+set -x
 docker run -td --name $container \
     --user $uid:$gid \
-    -v $GITHUB_WORKSPACE:/sentry-unity \
+    -v "$cwd":/sentry-unity \
     -v /usr/share/dotnet:/usr/share/dotnet \
     -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
     --workdir /sentry-unity $image
+set +x
 
 # -v $ANDROID_HOME:$ANDROID_HOME \
 # -v $JAVA_HOME_11_X64:$JAVA_HOME_11_X64 \
 
 suexec="docker exec --user root"
 
-$suexec $container groupadd -g $gid $user
 $suexec $container useradd -u $uid -g $gid --create-home $user
 
 $suexec $container ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
