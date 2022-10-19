@@ -270,7 +270,7 @@ jobs:
 
       # We create tar explicitly because upload-artifact is slow for many files located in Library
       - name: Create archive
-        run: tar -cf test-project.tar samples/IntegrationTest
+        run: tar -cvzf test-project.tar.gz samples/IntegrationTest
 
       - name: Upload project
         uses: actions/upload-artifact@v3
@@ -279,7 +279,7 @@ jobs:
           if-no-files-found: error
           path: |
             test-package-release
-            test-project.tar
+            test-project.tar.gz
 
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
@@ -324,7 +324,7 @@ jobs:
           name: smoke-test-${{ matrix.unity-version }}
 
       - name: Extract project archive
-        run: tar -xf test-project.tar
+        run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
@@ -412,6 +412,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: smoke-test-${{ matrix.unity-version }}
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
