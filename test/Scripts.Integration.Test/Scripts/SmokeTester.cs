@@ -117,11 +117,7 @@ public class SmokeTester : MonoBehaviour
             Debug.Log("SMOKE TEST: Skipping all session requests");
             for (; currentMessage < 10; currentMessage++)
             {
-                if (t.CheckMessage(currentMessage, "'type':'session'"))
-                {
-                    continue;
-                }
-                else
+                if (t.CheckMessage(currentMessage, "'type':'transaction'"))
                 {
                     break;
                 }
