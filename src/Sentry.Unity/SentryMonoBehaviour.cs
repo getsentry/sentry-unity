@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ namespace Sentry.Unity
     [AddComponentMenu("")] // Hides it from being added as a component in the inspector
     public partial class SentryMonoBehaviour : MonoBehaviour
     {
+        internal static IDiagnosticLogger? Logger = null;
         private static SentryMonoBehaviour? _instance;
         public static SentryMonoBehaviour Instance
         {
@@ -34,9 +36,19 @@ namespace Sentry.Unity
     /// </summary>
     public partial class SentryMonoBehaviour
     {
-        public void StartAwakeSpan(MonoBehaviour monoBehaviour) => SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
+        public void StartAwakeSpan(MonoBehaviour monoBehaviour)
+        {
+            // Logger?.LogDebug("Creating awake span.");
+            Debug.Log("Creating awake span.");
+            SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
+        }
 
-        public void FinishAwakeSpan() => SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
+        public void FinishAwakeSpan()
+        {
+            // Logger?.LogDebug("Finishing awake span.");
+            Debug.Log("Finishing awake span.");
+            SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
+        }
     }
 
     /// <summary>

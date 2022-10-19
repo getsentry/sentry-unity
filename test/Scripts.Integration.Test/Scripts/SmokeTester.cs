@@ -17,7 +17,7 @@ public class SmokeTester : MonoBehaviour
 {
     private void Awake()
     {
-        Debug.Log("Sample 🐛");
+        Debug.Log("SmokeTester, awake!");
     }
 
     public void Start()
