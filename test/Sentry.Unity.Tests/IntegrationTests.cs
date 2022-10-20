@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
@@ -187,8 +188,6 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
             Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout));
-
-
             var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
         }
@@ -302,8 +301,10 @@ namespace Sentry.Unity.Tests
 
         private static string CreateAttribute(string name, string value) => $"\"{name}\":\"{value}\"";
 
-        internal static IEnumerator SetupSceneCoroutine(string sceneName)
+        internal static IEnumerator SetupSceneCoroutine(string sceneName, [CallerMemberName] string callerName = "")
         {
+            Debug.Log($"\n=== Running: '{callerName}' ===\n");
+
             // don't fail test if exception is thrown via 'SendMessage', we want to continue
             LogAssert.ignoreFailingMessages = true;
 
