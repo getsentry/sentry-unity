@@ -52,13 +52,18 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
         if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
         {
-            Write-Host -ForegroundColor Red "Unity failed because it couldn't acquire a license."
+            $msg = "Unity failed because it couldn't acquire a license."
             $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatch.Elapsed.TotalSeconds
             $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
             if ($timeToSleep -gt 0)
             {
-                Write-Host -ForegroundColor Yellow "Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
+                Write-Host -ForegroundColor Yellow "$msg Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
                 Start-Sleep -Seconds $timeToSleep
+            }
+            else
+            {
+                Write-Host "::error::$msg"
+                Throw $msg
             }
         }
         else
