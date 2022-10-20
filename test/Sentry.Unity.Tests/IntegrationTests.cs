@@ -175,10 +175,10 @@ namespace Sentry.Unity.Tests
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            var firstHttpClientHandler = new TestHttpClientHandler("NoopTestHttpClientHandler");
+            var firstHttpClientHandler = new TestHttpClientHandler("NotSupposedToBeCalled_TestHttpClientHandler");
             using var firstDisposable = InitSentrySdk(o =>
             {
-                // o.Dsn = "http://publickey@localhost:8000/12345";
+                o.Dsn = "http://publickey@localhost:8000/12345";
                 o.CreateHttpClientHandler = () => firstHttpClientHandler;
             });
 
