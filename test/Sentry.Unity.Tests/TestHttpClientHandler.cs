@@ -53,7 +53,7 @@ namespace Sentry.Unity.Tests
                 var eventRequest = _requests.Find(r => r.Contains(EventQualifiers[(int)type]));
                 if (!string.IsNullOrEmpty(eventRequest))
                 {
-                    Debug.Log($"{UnityLogger.LogPrefix}{name} returns event: \n" + eventRequest);
+                    Debug.Log($"{UnityLogger.LogPrefix}{name} returns event:\n" + eventRequest);
                     return eventRequest;
                 }
             }
@@ -69,7 +69,7 @@ namespace Sentry.Unity.Tests
                         if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(EventQualifiers[(int)type]))
                         {
                             var eventRequest = _requests[_requests.Count - 1];
-                            Debug.Log($"{UnityLogger.LogPrefix}{name} returns event: \n" + eventRequest);
+                            Debug.Log($"{UnityLogger.LogPrefix}{name} returns event:\n" + eventRequest);
 
                             return eventRequest;
                         }
