@@ -10,7 +10,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class IntegrationTests
+    public sealed class IntegrationTests : DisabledSelfInitializationTests
     {
         private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
         private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
@@ -19,9 +19,9 @@ namespace Sentry.Unity.Tests
         private string _identifyingEventValueAttribute = null!; // Set in setup
 
         [SetUp]
-        public void Setup()
+        public new void Setup()
         {
-            _testHttpClientHandler = new TestHttpClientHandler();
+            _testHttpClientHandler = new TestHttpClientHandler("SetupTestHttpClientHandler");
             _eventMessage = Guid.NewGuid() + " Test Event";
             _identifyingEventValueAttribute = CreateAttribute("value", _eventMessage);
         }
@@ -175,7 +175,7 @@ namespace Sentry.Unity.Tests
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            var firstHttpClientHandler = new TestHttpClientHandler();
+            var firstHttpClientHandler = new TestHttpClientHandler("NoopTestHttpClientHandler");
             using var firstDisposable = InitSentrySdk(o =>
             {
                 // o.Dsn = "http://publickey@localhost:8000/12345";
@@ -303,7 +303,7 @@ namespace Sentry.Unity.Tests
 
         internal static IEnumerator SetupSceneCoroutine(string sceneName, [CallerMemberName] string callerName = "")
         {
-            Debug.Log($"\n=== Running: '{callerName}' ===\n");
+            Debug.Log($"=== Running: '{callerName}' ===\n");
 
             // don't fail test if exception is thrown via 'SendMessage', we want to continue
             LogAssert.ignoreFailingMessages = true;
