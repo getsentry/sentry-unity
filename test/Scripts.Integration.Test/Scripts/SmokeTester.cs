@@ -90,6 +90,8 @@ public class SmokeTester : MonoBehaviour
             }
             return -2;
         };
+        // If an ANR triggers while the smoke test runs, the test would fail because we expect exact order of events.
+        options.DisableAnrIntegration();
     }
 
     public static void SmokeTest()
