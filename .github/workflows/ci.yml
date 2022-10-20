@@ -624,7 +624,9 @@ jobs:
           python3 scripts/smoke-test-webgl.py "${{steps.download.outputs.download-path}}"
 
       - name: Run Smoke Test (Linux)
+        if: ${{ matrix.platform == 'Linux' }}
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
       - name: Run Crash Test (Linux)
+        if: ${{ matrix.platform == 'Linux' }}
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
