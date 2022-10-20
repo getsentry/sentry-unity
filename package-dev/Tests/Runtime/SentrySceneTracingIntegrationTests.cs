@@ -39,7 +39,7 @@ namespace Sentry.Unity
 
             yield return SetupSceneCoroutine("1_Bugfarm");
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryTransaction, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent("\"type\":\"transaction\"", _eventReceiveTimeout);
 
             Assert.That(triggeredEvent, Does.Contain(SceneManagerTracingAPI.TransactionOperation));
         }
