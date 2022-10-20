@@ -177,7 +177,7 @@ namespace Sentry.Unity.Tests
             var firstHttpClientHandler = new TestHttpClientHandler();
             using var firstDisposable = InitSentrySdk(o =>
             {
-                o.Dsn = "http://publickey@localhost:8000/12345";
+                // o.Dsn = "http://publickey@localhost:8000/12345";
                 o.CreateHttpClientHandler = () => firstHttpClientHandler;
             });
 
@@ -187,6 +187,8 @@ namespace Sentry.Unity.Tests
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
             Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout));
+
+
             var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
         }
