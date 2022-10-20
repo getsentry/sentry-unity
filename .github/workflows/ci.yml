@@ -12,6 +12,10 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   cancel-previous-workflow:
     runs-on: ubuntu-latest
@@ -68,7 +72,7 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -90,7 +94,7 @@ jobs:
         run: dotnet workload install android --temp-dir "${{ runner.temp }}"
 
       - name: Download CLI
-        run: pwsh ./scripts/download-sentry-cli.ps1
+        run: ./scripts/download-sentry-cli.ps1
 
       - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
@@ -129,7 +133,7 @@ jobs:
           wait-timeout: 3600
 
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build /p:AndroidSdkDirectory=$ANDROID_HOME /p:JavaSdkDirectory=$JAVA_HOME_11_X64 -c Release
+        run: docker exec unity dotnet build /p:AndroidSdkDirectory=$env:ANDROID_HOME /p:JavaSdkDirectory=$env:JAVA_HOME_11_X64 -c Release
 
       - name: Assembly alias
         run: |
@@ -143,7 +147,6 @@ jobs:
         run: docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Prepare Sentry package for release
-        shell: pwsh
         run: ./scripts/pack.ps1
 
       - name: Upload release artifacts
@@ -196,8 +199,8 @@ jobs:
         # If this step fails, you can accept the new file content by
         # running the following script locally with 'accept' as an argument
         # and committing the new snapshot file to your branch. i.e:
-        # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
-        run: pwsh ./test/Scripts.Tests/test-pack-contents.ps1
+        # ./test/Scripts.Tests/test-pack-contents.ps1 accept
+        run: ./test/Scripts.Tests/test-pack-contents.ps1
 
   # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`. If running on the `main`
   # branch, the project doesn't include Sentry SDK because in that case we test building with & without it.
@@ -213,9 +216,6 @@ jobs:
         unity-version: ['2019', '2020', '2021', '2022']
     env:
       UNITY_PATH: docker exec unity unity-editor
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -289,7 +289,7 @@ jobs:
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
         if: ${{ github.ref_name == 'main' }}
-        run: pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
         uses: actions/download-artifact@v3
@@ -297,19 +297,19 @@ jobs:
           name: ${{ github.sha }}
 
       - name: Extract UPM package
-        run: pwsh ./test/Scripts.Integration.Test/extract-package.ps1
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
         if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        run: pwsh ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
-      - name: Upload test app for smoke test
+      - name: Upload test app
         uses: actions/upload-artifact@v3
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
@@ -343,9 +343,6 @@ jobs:
           - os: macos
             unity-modules: mac-il2cpp
             unity-config-path: /Library/Application Support/Unity/config/
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -398,10 +395,10 @@ jobs:
       - name: Build with Sentry SDK
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
 
-      - name: Run Player - Smoke Test
+      - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
-      - name: Run Player - Crash Test
+      - name: Run Crash Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
 
   android-smoke-test:
@@ -424,9 +421,6 @@ jobs:
             unity-version: '2021'
           - api-level: 30
             unity-version: '2022'
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -566,9 +560,6 @@ jobs:
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # TODO: put 12.0 back
         ios-runtime: ['12.4', '13.0', '14.1', latest]
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -631,6 +622,8 @@ jobs:
           pip3 install --upgrade --user selenium urllib3 requests
           python3 scripts/smoke-test-webgl.py "${{steps.download.outputs.download-path}}"
 
-      - name: Run (Linux)
-        if: ${{ matrix.platform == 'Linux' }}
-        run: pwsh ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
+      - name: Run Smoke Test (Linux)
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
+
+      - name: Run Crash Test (Linux)
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash

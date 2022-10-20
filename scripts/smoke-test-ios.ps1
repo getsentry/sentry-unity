@@ -1,7 +1,7 @@
 param (
     [string] $Action,
     [string] $SelectedRuntime,
-    [Int32] $DevicesToRun = 3,
+    [Int32] $DevicesToRun = 1,
     [Switch] $IsIntegrationTest,
     [string] $UnityVersion = ""
 )
@@ -13,7 +13,7 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIn
 #          'latest' for runing the test with the latest runtime
 #          'iOS <version>' to run on the specified runtime ex: iOS 12.4
 # $DevicesToRun: the amount of devices to run
-#          '0' or empty will run on 3 devices, otherwise on the specified amount.
+#          '0' or empty will run on 1 device, otherwise on the specified amount.
 $ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
@@ -60,7 +60,7 @@ function Build()
     Write-Host "Building iOS project"
 
     $sentryCli = "sentry-cli-Darwin-universal"
-    if(Test-Path -Path "$XcodeArtifactPath/$sentryCli")
+    if (Test-Path -Path "$XcodeArtifactPath/$sentryCli")
     {
         # We need to manually switch the CLI executable, because the artifact that came through GH actions'
         # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
