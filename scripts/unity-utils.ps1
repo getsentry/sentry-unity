@@ -17,7 +17,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         $arguments = $arguments | Where-Object { $_ –ne "-batchmode" }
         Write-Host "Updated arguments: $arguments"
     }
-    ElseIf ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "")
+    ElseIf ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and $unityPath -ne "xvfb-run")
     {
         $arguments = @("-ae", "/dev/stdout", "$unityPath") + $arguments
         $unityPath = "xvfb-run"
@@ -43,8 +43,8 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
     $try = 1
     do
     {
-        $retryInfo = ($try -gt 1) ? "(retry nr. $try)" : ''
-        Write-Host "::group::Run $retryInfo $unityPath $arguments"
+        $runInfo = ($try -gt 1) ? "Retry #$try run" : 'Run'
+        Write-Host "::group::$runInfo $unityPath $arguments"
         try
         {
             ClearUnityLog $logFilePath
@@ -86,7 +86,12 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         Throw "Unity exited with code $($process.ExitCode)"
     }
 
-    Write-Host -ForegroundColor Green "Unity finished successfully. Time taken: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+    $timeTaken = "Time taken: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+    Write-Host -ForegroundColor Green "Unity finished successfully. $timeTaken"
+    if ($try -gt 5)
+    {
+        Write-Host "::notice::It took $try tries to successfully aquire a Unity license. $timeTaken"
+    }
     return $ReturnLogOutput ? $stdout : $null
 }
 
