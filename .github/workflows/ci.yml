@@ -142,14 +142,13 @@ jobs:
           docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3 && \
           ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
-      - name: Update .meta files before packaging
+      - name: Package for release
         if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
-        # We need to open & close Unity on the sample project to update .meta files in package-dev.
-        # We could add a new custom target but reusing UnityConfigureSentryOptions is good enough.
-        run: docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Prepare Sentry package for release
-        run: ./scripts/pack.ps1
+        run: |
+          # Before packaging, we need to open & close Unity on the sample project to update .meta files in package-dev.
+          # We could add a new custom target but reusing UnityConfigureSentryOptions is good enough.
+          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          ./scripts/pack.ps1
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v3
