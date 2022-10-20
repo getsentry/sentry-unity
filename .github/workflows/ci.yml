@@ -68,7 +68,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Checkout submodules
-        run: ./scripts/init-submodules.sh src/sentry-dotnet
+        run: git submodule update --init --recursive src/sentry-dotnet
 
       - name: Load env
         id: env
