@@ -63,6 +63,13 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
+            options.AddLogsAsBreadcrumbs = EditorGUILayout.Toggle(
+                new GUIContent("Add Logs as Breadcrumbs", "Whether to capture 'LogType.Log' and " +
+                                                      "'LogType.Log' as breadcrumbs automatically.\n" +
+                                                      "'LogType.Error' will get captured in any case and added as " +
+                                                      "breadcrumb to subsequent events."),
+                options.AddLogsAsBreadcrumbs);
+
             options.MaxBreadcrumbs = EditorGUILayout.IntField(
                 new GUIContent("Max Breadcrumbs", "Maximum number of breadcrumbs that get captured." +
                                                   "\nDefault: 100"),

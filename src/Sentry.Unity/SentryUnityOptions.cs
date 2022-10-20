@@ -82,6 +82,11 @@ namespace Sentry.Unity
         public int ScreenshotCompression { get; set; } = 75;
 
         /// <summary>
+        /// Whether the SDK should automatically add LogType.Debug and LogType.Warning messages as breadcrumbs
+        /// </summary>
+        public bool addLogsAsBreadcrumbs { get; set; } = true;
+
+        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;

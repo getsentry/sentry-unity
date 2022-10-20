@@ -127,10 +127,15 @@ namespace Sentry.Unity.Integrations
             if (logType is LogType.Error or LogType.Assert)
             {
                 _hub.CaptureMessage(logMessage, ToEventTagType(logType));
+                // So the next event includes this as a breadcrumb
+                _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+                return;
             }
 
-            // So the next event includes this as a breadcrumb
-            _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+            if (_sentryOptions?.addLogsAsBreadcrumbs is true)
+            {
+                _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+            }
         }
 
         private void OnQuitting()

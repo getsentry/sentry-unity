@@ -125,6 +125,40 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        [TestCase(LogType.Log)]
+        [TestCase(LogType.Warning)]
+        public void CaptureLogFormat_AddLogsAsBreadcrumbsEnabled_AddedAsBreadcrumb(LogType logType)
+        {
+            _fixture.SentryOptions.addLogsAsBreadcrumbs = true;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureLogFormat(logType, null, "{0}", message);
+
+            var scope = new Scope(_fixture.SentryOptions);
+            _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
+
+            Assert.AreEqual(message, breadcrumb.Message);
+        }
+
+        [Test]
+        [TestCase(LogType.Log)]
+        [TestCase(LogType.Warning)]
+        public void CaptureLogFormat_AddLogsAsBreadcrumbsDisabled_NotAddedAsBreadcrumb(LogType logType)
+        {
+            _fixture.SentryOptions.addLogsAsBreadcrumbs = false;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureLogFormat(logType, null, "{0}", message);
+
+            var scope = new Scope(_fixture.SentryOptions);
+
+            Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
+        }
+
+        [Test]
         public void CaptureException_ExceptionCapturedAndMechanismSet()
         {
             var sut = _fixture.GetSut();
