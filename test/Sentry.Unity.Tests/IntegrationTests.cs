@@ -187,7 +187,10 @@ namespace Sentry.Unity.Tests
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout));
+            // Sanity check
+            var eventThatShouldNotExist = firstHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            Assert.That(eventThatShouldNotExist, Does.Not.Contain(_identifyingEventValueAttribute));
+
             var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
         }
