@@ -88,6 +88,7 @@ jobs:
         # We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
         # Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
 
       # Required by sentry-dotnet since 3.19.0
       - name: Install Android dotnet workflow
@@ -136,6 +137,7 @@ jobs:
         run: docker exec unity dotnet build /p:AndroidSdkDirectory=$env:ANDROID_HOME /p:JavaSdkDirectory=$env:JAVA_HOME_11_X64 -c Release
 
       - name: Assembly alias
+        shell: bash
         run: |
           docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3 && \
           ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
@@ -223,8 +225,8 @@ jobs:
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
-        shell: bash
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
 
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
@@ -277,6 +279,7 @@ jobs:
 
       - name: Start the Unity docker container
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
@@ -434,7 +437,6 @@ jobs:
       # outputs variables: api-level, label, target
       - name: Configure Android Settings
         id: droid-settings
-        shell: pwsh
         run: |
           # Setup API Level
           $apiLevel = '${{ matrix.api-level }}'
@@ -536,7 +538,6 @@ jobs:
           path: samples/IntegrationTest/Build
 
       - name: Build iOS package
-        shell: pwsh
         run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Upload iOS test app for smoke test.
