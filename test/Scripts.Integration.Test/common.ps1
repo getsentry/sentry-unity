@@ -16,13 +16,15 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
     $result.dispose = {
         $result.stop.Invoke()
 
-        Write-Host "Server stdout:" -ForegroundColor Yellow
+        Write-Host "::group::  Server stdout" -ForegroundColor Yellow
         $stdout = Get-Content $result.outFile -Raw
         Write-Host $stdout
+        Write-Host "::endgroup::"
 
-        Write-Host "Server stderr:" -ForegroundColor Yellow
+        Write-Host "::group::  Server stderr" -ForegroundColor Yellow
         $stderr = Get-Content $result.errFile -Raw
         Write-Host $stderr
+        Write-Host "::endgroup::"
 
         Remove-Item $result.outFile -ErrorAction Continue
         Remove-Item $result.errFile -ErrorAction Continue

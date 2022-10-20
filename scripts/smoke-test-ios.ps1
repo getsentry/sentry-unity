@@ -154,30 +154,38 @@ function Test
 
         function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
-            $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
+            Write-Host "::group::Test $name"
+            try
+            {
+                Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
+                $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
-            if ("$SuccessString" -eq "")
-            {
-                $SuccessString = "${$Name.ToUpper()} TEST: PASS"
-            }
-
-            Write-Host -NoNewline "'$Name' test STATUS: "
-            $stdout = $consoleOut  | Select-String $SuccessString
-            If ($null -ne $stdout)
-            {
-                Write-Host "PASSED" -ForegroundColor Green
-            }
-            Else
-            {
-                $device.TestFailed = $True
-                Write-Host "FAILED" -ForegroundColor Red
-                Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
-                foreach ($consoleLine in $consoleOut)
+                if ("$SuccessString" -eq "")
                 {
-                    Write-Host $consoleLine
+                    $SuccessString = "${$Name.ToUpper()} TEST: PASS"
                 }
-                Write-Host " ===== END OF CONSOLE ====="
+
+                Write-Host -NoNewline "'$Name' test STATUS: "
+                $stdout = $consoleOut  | Select-String $SuccessString
+                If ($null -ne $stdout)
+                {
+                    Write-Host "PASSED" -ForegroundColor Green
+                }
+                Else
+                {
+                    $device.TestFailed = $True
+                    Write-Host "FAILED" -ForegroundColor Red
+                    Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
+                    foreach ($consoleLine in $consoleOut)
+                    {
+                        Write-Host $consoleLine
+                    }
+                    Write-Host " ===== END OF CONSOLE ====="
+                }
+            }
+            finally
+            {
+                Write-Host "::endgroup::"
             }
         }
 
@@ -194,11 +202,12 @@ function Test
         }
         catch
         {
-            Write-Host "$($device.Name) Console"
+            Write-Host "::group::$($device.Name) console output"
             foreach ($consoleLine in $consoleOut)
             {
                 Write-Host $consoleLine
             }
+            Write-Host "::endgroup::"
             throw;
         }
 

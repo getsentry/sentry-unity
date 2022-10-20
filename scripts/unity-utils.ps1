@@ -40,16 +40,24 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
     $stdout = ""
+    $try = 1
     do
     {
-        ClearUnityLog $logFilePath
-        New-Item $logFilePath > $null
+        $retryInfo = ($try -gt 1) ? "(retry nr. $try)" : ''
+        Write-Host "::group::Run $retryInfo $unityPath $arguments"
+        try
+        {
+            ClearUnityLog $logFilePath
+            New-Item $logFilePath > $null
 
-        Write-Host "Running $unityPath $arguments"
-        $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+            $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
 
-        $stdout = WaitForUnityExit $logFilePath $process
-
+            $stdout = WaitForUnityExit $logFilePath $process
+        }
+        finally
+        {
+            Write-Host "::endgroup::"
+        }
         if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
         {
             $msg = "Unity failed because it couldn't acquire a license."
@@ -59,6 +67,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
             {
                 Write-Host -ForegroundColor Yellow "$msg Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
                 Start-Sleep -Seconds $timeToSleep
+                $try = $try + 1
             }
             else
             {
