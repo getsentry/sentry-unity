@@ -46,37 +46,38 @@ Class AppleDevice
     }
 }
 
-function Build()
+function MakeExecutable([string] $file)
 {
-    $mapFileParser = "MapFileParser.sh"
-    If (Test-Path -Path "$XcodeArtifactPath/$mapFileParser")
+    If (Test-Path -Path $file)
     {
-        Write-Host -NoNewline "Fixing permission for $mapFileParser : "
-        # We need to allow the execution of this script, otherwise Xcode will throw permission denied.
-        chmod +x "$XcodeArtifactPath/$mapFileParser"
+        Write-Host -NoNewline "Fixing permission for $file : "
+        chmod +x $file
         Write-Host "OK" -ForegroundColor Green
     }
+}
 
-    Write-Host "Building iOS project"
-
-    $sentryCli = "sentry-cli-Darwin-universal"
-    if (Test-Path -Path "$XcodeArtifactPath/$sentryCli")
-    {
-        # We need to manually switch the CLI executable, because the artifact that came through GH actions'
-        # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
-        # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
-        #             with the missing executable bit in the UPM package - it's fixed on build.
-        chmod +x "$XcodeArtifactPath/$sentryCli"
-    }
+function Build()
+{
+    MakeExecutable "$XcodeArtifactPath/MapFileParser.sh"
+    MakeExecutable "$XcodeArtifactPath/sentry-cli-Darwin-universal"
 
     $buildCallback = {
-        xcodebuild `
-            -project "$XcodeArtifactPath/$ProjectName.xcodeproj" `
-            -scheme "Unity-iPhone" `
-            -configuration "Release" `
-            -sdk "iphonesimulator" `
-            -derivedDataPath "$ArchivePath/$ProjectName" `
-        | Write-Host
+
+        Write-Host "::group::Building iOS project"
+        try
+        {
+            xcodebuild `
+                -project "$XcodeArtifactPath/$ProjectName.xcodeproj" `
+                -scheme "Unity-iPhone" `
+                -configuration "Release" `
+                -sdk "iphonesimulator" `
+                -derivedDataPath "$ArchivePath/$ProjectName" `
+            | Write-Host
+        }
+        finally
+        {
+            Write-Host '::endgroup::'
+        }
     }
 
     if ($IsIntegrationTest)
@@ -118,26 +119,26 @@ function Test
 
     $deviceCount = $DeviceList.Count
 
-    Write-Host "Found $deviceCount devices on version $SelectedRuntime" -ForegroundColor Green
-
+    Write-Host "::group::Found $deviceCount devices on version $SelectedRuntime" -ForegroundColor Green
     ForEach ($device in $deviceList)
     {
         Write-Host "$($device.Name) - $($device.UUID)"
     }
+    Write-Host '::endgroup::'
 
     $devicesRan = 0
     ForEach ($device in $deviceList)
     {
         If ($skippedItems -lt $skipCount)
         {
-            Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+            # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
             $device.TestSkipped = $true
             $skippedItems++
             continue
         }
         If ($devicesRan -ge $DevicesToRun)
         {
-            Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+            # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
             $device.TestSkipped = $true
             continue
         }
@@ -154,7 +155,7 @@ function Test
 
         function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "::group::Test $name"
+            Write-Host "::group::Test: '$name'"
             try
             {
                 Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green

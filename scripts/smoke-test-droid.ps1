@@ -244,15 +244,13 @@ foreach ($device in $DeviceList)
 
     function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString)
     {
-        Write-Host "::group::Test $name"
+        Write-Host "::group::Test: '$name'"
         try
         {
             $AppStarted = $false
 
             Write-Host "Clearing logcat from $device."
             adb -s $device logcat -c
-
-            Write-Host "Starting Test '$Name'"
 
             adb -s $device shell am start -n $TestActivityName -e test $Name
             #despite calling start, the app might not be started yet.

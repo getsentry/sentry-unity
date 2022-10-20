@@ -88,9 +88,9 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
     $timeTaken = "Time taken: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
     Write-Host -ForegroundColor Green "Unity finished successfully. $timeTaken"
-    if ($try -gt 5)
+    if ($try -gt 3)
     {
-        Write-Host "::notice::It took $try tries to successfully aquire a Unity license. $timeTaken"
+        Write-Host "::$($try -gt 10 ? 'warning' : 'notice')::It took $try tries to successfully aquire a Unity license. $timeTaken"
     }
     return $ReturnLogOutput ? $stdout : $null
 }

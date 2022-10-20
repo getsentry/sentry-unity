@@ -81,8 +81,7 @@ Set-StrictMode -Version latest
 
 function RunTest([string] $type)
 {
-
-    Write-Host "::group::Test $type"
+    Write-Host "::group::Test: '$type'"
     try
     {
         if ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and (Get-Command "xvfb-run" -ErrorAction SilentlyContinue))
@@ -131,7 +130,7 @@ function RunTest([string] $type)
                 throw $info
             }
             Write-Host $info
-        } 
+        }
     }
     finally
     {
