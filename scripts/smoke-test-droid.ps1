@@ -161,18 +161,33 @@ function CheckAndCloseActiveSystemAlerts([string] $deviceId, [string] $deviceApi
     }
 }
 
-function SignalActionSmokeStatus
+function ExitNow([string] $status, [string] $message)
 {
-    param ($smokeStatus)
     if (Test-Path env:GITHUB_OUTPUT)
     {
-        Write-Host "Writing smoke-status=$smokeStatus to ${env:GITHUB_OUTPUT}"
-        "smoke-status=$smokeStatus" >> $env:GITHUB_OUTPUT
+        Write-Host "Writing 'smoke-status=$status' to ${env:GITHUB_OUTPUT}"
+        "smoke-status=$status" >> $env:GITHUB_OUTPUT
     }
     else
     {
-        Write-Host "smoke-status=$smokeStatus"
+        Write-Host "smoke-status=$status"
     }
+
+    if ($status -ieq "success")
+    {
+        Write-Host $message -ForegroundColor Green
+    }
+    elseif ($status -ieq "flaky")
+    {
+        Write-Warning $message
+    }
+    else
+    {
+        OnError $device $deviceApi
+        Write-Error $message
+        exit 1 # just in case error handling is overriden
+    }
+    exit 0
 }
 
 # Filter device List
@@ -190,8 +205,7 @@ $DeviceCount = $DeviceList.Count
 
 If ($DeviceCount -eq 0)
 {
-    SignalActionSmokeStatus("Completed")
-    Throw "It seems like no devices were found $RawAdbDeviceList"
+    ExitNow("Failed", "It seems like no devices were found $RawAdbDeviceList")
 }
 Else
 {
@@ -201,8 +215,7 @@ Else
 # Check if APK was built.
 If (-not (Test-Path -Path "$ApkPath/$ApkFileName" ))
 {
-    SignalActionSmokeStatus("Failed")
-    Throw "Expected APK on $ApkPath/$ApkFileName but it was not found."
+    ExitNow("Failed", "Expected APK on $ApkPath/$ApkFileName but it was not found.")
 }
 
 # Test
@@ -238,116 +251,98 @@ foreach ($device in $DeviceList)
 
     If ($stdout -notcontains "Success")
     {
-        SignalActionSmokeStatus("Failed")
-        Throw "Failed to Install APK: $stdout."
+        ExitNow("Failed", "Failed to Install APK: $stdout.")
     }
 
     function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString)
     {
         Write-Host "::group::Test: '$name'"
-        try
+
+        Write-Host "Clearing logcat from $device."
+        adb -s $device logcat -c
+
+        adb -s $device shell am start -n $TestActivityName -e test $Name
+        #despite calling start, the app might not be started yet.
+
+        $AppStarted = $false
+        Write-Host (DateTimeNow)
+        $Timeout = 45
+        While ($Timeout -gt 0)
         {
-            $AppStarted = $false
+            #Get a list of active processes
+            $processIsRunning = (adb -s $device shell ps)
+            #And filter by ProcessName
+            $processIsRunning = $processIsRunning | Select-String $ProcessName
 
-            Write-Host "Clearing logcat from $device."
-            adb -s $device logcat -c
-
-            adb -s $device shell am start -n $TestActivityName -e test $Name
-            #despite calling start, the app might not be started yet.
-
-            Write-Host (DateTimeNow)
-            $Timeout = 45
-            While ($Timeout -gt 0)
+            If ($processIsRunning -eq $null -And $AppStarted)
             {
-                #Get a list of active processes
-                $processIsRunning = (adb -s $device shell ps)
-                #And filter by ProcessName
-                $processIsRunning = $processIsRunning | Select-String $ProcessName
-
-                If ($processIsRunning -eq $null -And $AppStarted)
-                {
-                    $Timeout = -2
-                    break
-                }
-                ElseIf ($processIsRunning -ne $null -And !$AppStarted)
-                {
-                    # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
-                    $AppStarted = $true
-                }
-                Write-Host "Waiting Process on $device to complete, waiting $Timeout seconds"
-                Start-Sleep -Seconds 1
-                $Timeout--
-                CheckAndCloseActiveSystemAlerts $device $deviceApi
+                $Timeout = -2
+                break
             }
-
-            if ("$SuccessString" -eq "")
+            ElseIf ($processIsRunning -ne $null -And !$AppStarted)
             {
-                $SuccessString = "$($Name.ToUpper()) TEST: PASS"
+                # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
+                $AppStarted = $true
             }
-
-            if ("$FailureString" -eq "")
-            {
-                $FailureString = "$($Name.ToUpper()) TEST: FAIL"
-            }
-
-            Write-Host (DateTimeNow)
-            $LogcatCache = adb -s $device logcat -d
-            $lineWithSuccess = $LogcatCache | Select-String $SuccessString
-            $lineWithFailure = $LogcatCache | Select-String $FailureString
-
-            if ($lineWithFailure -eq $null)
-            {
-                $lineWithFailure = $LogcatCache | Select-String "Error: Activity class .* does not exist."
-            }
-
-            If ($lineWithFailure -ne $null)
-            {
-                SignalActionSmokeStatus("Failed")
-                Write-Warning "$name test failed"
-                Write-Warning "$lineWithFailure"
-                OnError $device $deviceApi
-                throw "$Name test: FAIL"
-            }
-            elseif ($lineWithSuccess -ne $null)
-            {
-                Write-Host "$lineWithSuccess"
-                Write-Host "$Name test: PASS" -ForegroundColor Green
-            }
-            ElseIf (($LogcatCache | Select-String 'CRASH   :'))
-            {
-                SignalActionSmokeStatus("Crashed")
-                Write-Warning "$name test app has crashed."
-                OnError $device $deviceApi
-                Throw "$name test app has crashed."
-            }
-            ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.'))
-            {
-                SignalActionSmokeStatus("Flaky")
-                Write-Warning "$name test was flaky, unity failed to initialize."
-                OnError $device $deviceApi
-                Throw "$name test was flaky, unity failed to initialize."
-            }
-            ElseIf ($Timeout -le 0)
-            {
-                SignalActionSmokeStatus("Timeout")
-                Write-Warning "$name Test Timeout, see Logcat info for more information below."
-                Write-Host "PS info."
-                adb -s $device shell ps
-                OnError $device $deviceApi
-                Throw "$name test Timeout"
-            }
-            Else
-            {
-                SignalActionSmokeStatus("Failed")
-                Write-Warning "$name test: process completed but $Name test was not signaled."
-                OnError $device $deviceApi
-                Throw "$Name test Failed."
-            }
+            Write-Host "Waiting Process on $device to complete, waiting $Timeout seconds"
+            Start-Sleep -Seconds 1
+            $Timeout--
+            CheckAndCloseActiveSystemAlerts $device $deviceApi
         }
-        finally
+
+        if ("$SuccessString" -eq "")
+        {
+            $SuccessString = "$($Name.ToUpper()) TEST: PASS"
+        }
+
+        if ("$FailureString" -eq "")
+        {
+            $FailureString = "$($Name.ToUpper()) TEST: FAIL"
+        }
+
+        Write-Host (DateTimeNow)
+        $LogcatCache = adb -s $device logcat -d
+        $lineWithSuccess = $LogcatCache | Select-String $SuccessString
+        $lineWithFailure = $LogcatCache | Select-String $FailureString
+
+        if ($lineWithFailure -eq $null)
+        {
+            $lineWithFailure = $LogcatCache | Select-String "Error: Activity class .* does not exist."
+        }
+
+        If ($lineWithFailure -ne $null)
         {
             Write-Host "::endgroup::"
+            ExitNow("Failed", "$Name test: FAIL - $lineWithFailure")
         }
+        elseif ($lineWithSuccess -ne $null)
+        {
+            Write-Host "$lineWithSuccess"
+            Write-Host "$Name test: PASS" -ForegroundColor Green
+            Write-Host "::endgroup::"
+        }
+        ElseIf (($LogcatCache | Select-String 'CRASH   :'))
+        {
+            Write-Host "::endgroup::"
+            ExitNow("Crashed", "$name test app has crashed.")
+        }
+        ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.'))
+        {
+            Write-Host "::endgroup::"
+            ExitNow("Flaky", "$name test was flaky, unity failed to initialize.")
+        }
+        ElseIf ($Timeout -le 0)
+        {
+            Write-Host "::endgroup::"
+            Write-Host "PS info:"
+            adb -s $device shell ps
+            ExitNow("Timeout", "$name test Timeout, see Logcat info for more info.")
+        }
+        Else
+        {
+            ExitNow("Failed", "$name test: failed - process completed but $Name test was not signaled.")
+        }
+
     }
 
     RunTest -Name "smoke"
@@ -363,11 +358,9 @@ foreach ($device in $DeviceList)
     }
     catch
     {
-        SignalActionSmokeStatus("Failed");
         OnError $device $deviceApi
-        throw;
+        ExitNow("Failed", $_);
     }
 }
 
-SignalActionSmokeStatus("Completed")
-Write-Host "Tests completed successfully." -ForegroundColor Green
+ExitNow("Success", "Tests completed successfully.")

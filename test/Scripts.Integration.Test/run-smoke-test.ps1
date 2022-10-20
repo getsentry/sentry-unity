@@ -104,10 +104,11 @@ function RunTest([string] $type)
         $timedOut = $null # reset any previously set timeout
         $process | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue -ErrorVariable timedOut
 
+        $appLog = ""
         if ("$AppDataDir" -ne "")
         {
             Write-Host "$type test: Player.log contents:" -ForegroundColor Yellow
-            Get-Content "$AppDataDir/Player.log"
+            $appLog = Get-Content "$AppDataDir/Player.log"
             Write-Host "================================================================================" -ForegroundColor Yellow
             Write-Host "$type test: Player.log contents END" -ForegroundColor Yellow
         }
@@ -124,7 +125,8 @@ function RunTest([string] $type)
         }
         Else
         {
-            $info = "Test process finished with status code $($process.ExitCode)."
+            $lineWithFailure = $appLog | Select-String "$($type.ToUpper()) TEST: FAIL"
+            $info = "Test process finished with status code $($process.ExitCode). $lineWithFailure"
             If ($type -ne "crash")
             {
                 throw $info
