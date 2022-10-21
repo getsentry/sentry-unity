@@ -527,7 +527,7 @@ jobs:
 
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
-    name: Run iOS ${{ matrix.ios-runtime }} Smoke Test - ${{ matrix.unity-version }}
+    name: Run iOS ${{ matrix.ios }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: macos-12
     strategy:
       fail-fast: false
@@ -539,7 +539,11 @@ jobs:
         # On the other hand https://developer.apple.com/support/app-store/ shows 14 % phones and 18 % tablets use iOS 14
         # as of May 31, 2022. Therefore, let's stick to testing iOS 14 until 2023.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-        ios-runtime: ['12.5', '14.8', '15.7', latest] # last updated October 2022
+        # Also make sure to match the versions available here:
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+        ios: ['12.4', '14.5', '15.4', latest] # last updated October 2022
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -552,23 +556,23 @@ jobs:
 
       - name: Setup xcode-install
         # Github Virtual machine already sets the runtime and simulator for the latest release.
-        if: ${{ matrix.ios-runtime != 'latest'}}
+        if: ${{ matrix.ios != 'latest'}}
         run: gem install xcode-install
 
-      - name: Setup ${{matrix.ios-runtime}} runtime
-        if: ${{ matrix.ios-runtime != 'latest'}}
-        run: xcversion simulators --install='iOS ${{matrix.ios-runtime}}'
+      - name: Setup ${{matrix.ios}} runtime
+        if: ${{ matrix.ios != 'latest'}}
+        run: xcversion simulators --install='iOS ${{matrix.ios}}'
 
-      - name: Setup ${{matrix.ios-runtime}} Simulator
-        if: ${{ matrix.ios-runtime != 'latest' }}
+      - name: Setup ${{matrix.ios}} Simulator
+        if: ${{ matrix.ios != 'latest' }}
         # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
-        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios-runtime }}"
+        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios }}"
 
       - name: Smoke test
         id: smoke-test-ios
         timeout-minutes: 10
         run: |
-          $runtime = "${{ matrix.ios-runtime }}"
+          $runtime = "${{ matrix.ios }}"
           If ($runtime -ne "latest")
           {
             $runtime = "iOS " + $runtime
