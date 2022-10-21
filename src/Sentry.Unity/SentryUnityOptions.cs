@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
@@ -82,9 +83,9 @@ namespace Sentry.Unity
         public int ScreenshotCompression { get; set; } = 75;
 
         /// <summary>
-        /// Whether the SDK should automatically add LogType.Debug and LogType.Warning messages as breadcrumbs
+        /// The minimum level of logs the SDK should add as a breadcrumb
         /// </summary>
-        public bool addLogsAsBreadcrumbs { get; set; } = true;
+        public LogType MinimumBreadcrumbLevel { get; set; } = LogType.Log;
 
         /// <summary>
         /// Whether the SDK should add native support for iOS

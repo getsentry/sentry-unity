@@ -127,13 +127,11 @@ namespace Sentry.Unity.Integrations
             if (logType is LogType.Error or LogType.Assert)
             {
                 _hub.CaptureMessage(logMessage, ToEventTagType(logType));
-                // So the next event includes this as a breadcrumb
-                _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
-                return;
             }
 
-            if (_sentryOptions?.addLogsAsBreadcrumbs is true)
+            if(_sentryOptions != null && PassesMinimumBreadcrumbLevel(_sentryOptions.MinimumBreadcrumbLevel, logType))
             {
+                // So the next event includes this as a breadcrumb
                 _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
             }
         }
@@ -152,6 +150,32 @@ namespace Sentry.Unity.Integrations
             // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.
             _hub?.PauseSession();
             _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+        }
+
+
+        internal static bool PassesMinimumBreadcrumbLevel(LogType minimumLogType, LogType logType)
+        {
+            switch (minimumLogType)
+            {
+                case LogType.Log when logType is LogType.Log or LogType.Warning or LogType.Error or LogType.Assert or LogType.Exception:
+                    return true;
+                case LogType.Warning when logType is LogType.Warning or LogType.Error or LogType.Assert or LogType.Exception:
+                    return true;
+                case LogType.Error:
+                case LogType.Assert:
+                {
+                    if (logType is LogType.Error or LogType.Assert or LogType.Exception)
+                    {
+                        return true;
+                    }
+
+                    break;
+                }
+                case LogType.Exception when logType is LogType.Exception:
+                    return true;
+            }
+
+            return false;
         }
 
         private static SentryLevel ToEventTagType(LogType logType)

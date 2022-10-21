@@ -63,12 +63,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            options.AddLogsAsBreadcrumbs = EditorGUILayout.Toggle(
-                new GUIContent("Add Logs as Breadcrumbs", "Whether to capture 'LogType.Log' and " +
-                                                      "'LogType.Log' as breadcrumbs automatically.\n" +
-                                                      "'LogType.Error' will get captured in any case and added as " +
-                                                      "breadcrumb to subsequent events."),
-                options.AddLogsAsBreadcrumbs);
+            options.MinimumBreadcrumbLevel = (LogType)EditorGUILayout.EnumPopup(
+                new GUIContent("Minimum Log Breadcrumb Level", "Minimum log type the SDK adds as breadcrumb."),
+                options.MinimumBreadcrumbLevel);
 
             options.MaxBreadcrumbs = EditorGUILayout.IntField(
                 new GUIContent("Max Breadcrumbs", "Maximum number of breadcrumbs that get captured." +
