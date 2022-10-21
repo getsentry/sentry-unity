@@ -50,8 +50,10 @@ If (-not(Test-Path -Path $PackageReleaseOutput) -Or $Repack) {
 If (-not(Test-Path -Path "$NewProjectPath") -Or $Recreate) {
 	Write-Host "Creating Project"
 	./test/Scripts.Integration.Test/create-project.ps1 "$UnityPath"
-	Write-Host "Updating Sentry"
-	./test/Scripts.Integration.Test/update-sentry.ps1 "$UnityPath" -Platform $Platform
+	Write-Host "Adding Sentry"
+	./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath"
+	Write-Host "Configuring Sentry"
+	./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform
 }
 
 # If ($Platform -eq "Android") {

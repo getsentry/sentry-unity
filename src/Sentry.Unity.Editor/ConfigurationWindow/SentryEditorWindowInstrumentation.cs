@@ -116,7 +116,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             }
 
             optionsWindow.Close();
-            Debug.LogFormat("{0}: Sentry options Configured", functionName);
+            Debug.LogFormat("{0}: SUCCESS", functionName);
         }
 
         public static bool TryGetValue(this Dictionary<string, string> dict, String key, out bool value)

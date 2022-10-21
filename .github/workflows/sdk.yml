@@ -19,8 +19,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Get submodules status
-        run: git submodule status | tee submodules-status
+      - name: Select submodules
+        id: env
+        shell: bash
+        run: |
+          if [[ "${{ inputs.target }}" == "Android" ]]; then
+            submodules="modules/sentry-java"
+          elif [[ "${{ inputs.target }}" == "iOS" || "${{ inputs.target }}" == "macOS"  ]]; then
+            submodules="modules/sentry-cocoa"
+          else
+            submodules="modules/sentry-native"
+          fi
+          echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
+
+      - name: Get submodule status
+        run: git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
 
       - run: cp -r package-dev/Plugins/${{ inputs.target }} sdk-static || echo "never mind, no files checked in..."
         shell: bash
@@ -37,19 +50,6 @@ jobs:
             modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
-      - name: Checkout submodules
-        if: steps.cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          if [[ "${{ inputs.target }}" == "Android" ]]; then
-            submodules="modules/sentry-java"
-          elif [[ "${{ inputs.target }}" == "iOS" || "${{ inputs.target }}" == "macOS"  ]]; then
-            submodules="modules/sentry-cocoa"
-          else
-            submodules="modules/sentry-native"
-          fi
-          ./scripts/init-submodules.sh src/sentry-dotnet $submodules
-
       - name: Installing Linux Dependencies
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         run: |
@@ -58,7 +58,9 @@ jobs:
 
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: |
+          git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
+          dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - uses: actions/upload-artifact@v3
         with:

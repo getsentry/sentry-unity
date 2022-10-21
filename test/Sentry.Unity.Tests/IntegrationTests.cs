@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
@@ -21,7 +22,7 @@ namespace Sentry.Unity.Tests
         [SetUp]
         public new void Setup()
         {
-            _testHttpClientHandler = new TestHttpClientHandler();
+            _testHttpClientHandler = new TestHttpClientHandler("SetupTestHttpClientHandler");
             _eventMessage = Guid.NewGuid() + " Test Event";
             _identifyingEventValueAttribute = CreateAttribute("value", _eventMessage);
         }
@@ -38,7 +39,7 @@ namespace Sentry.Unity.Tests
             // We don't have it in tests, but in scenes.
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
         }
 
@@ -53,7 +54,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -73,7 +74,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -91,7 +92,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
 
@@ -111,7 +112,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
 
@@ -129,7 +130,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -149,7 +150,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -165,7 +166,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Not.Contain(expectedAttribute));
         }
@@ -175,7 +176,7 @@ namespace Sentry.Unity.Tests
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 
-            var firstHttpClientHandler = new TestHttpClientHandler();
+            var firstHttpClientHandler = new TestHttpClientHandler("NotSupposedToBeCalled_TestHttpClientHandler");
             using var firstDisposable = InitSentrySdk(o =>
             {
                 o.Dsn = "http://publickey@localhost:8000/12345";
@@ -187,9 +188,10 @@ namespace Sentry.Unity.Tests
             var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
-            Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout));
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
-            Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
+            // Sanity check
+            Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout));
+
+            Assert.AreNotEqual(string.Empty, _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout));
         }
 
         [UnityTest]
@@ -203,7 +205,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
             Assert.That(triggeredEvent, Does.Contain(expectedMechanism));
         }
@@ -221,7 +223,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogError), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -239,7 +241,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogErrorInTask), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -256,7 +258,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -273,7 +275,7 @@ namespace Sentry.Unity.Tests
 
             testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogExceptionInTask), _eventMessage);
 
-            var triggeredEvent = _testHttpClientHandler.GetEvent(TestEventType.SentryEvent, _eventReceiveTimeout);
+            var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
             Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
             Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
         }
@@ -301,8 +303,10 @@ namespace Sentry.Unity.Tests
 
         private static string CreateAttribute(string name, string value) => $"\"{name}\":\"{value}\"";
 
-        internal static IEnumerator SetupSceneCoroutine(string sceneName)
+        internal static IEnumerator SetupSceneCoroutine(string sceneName, [CallerMemberName] string callerName = "")
         {
+            Debug.Log($"=== Running: '{callerName}' ===\n");
+
             // don't fail test if exception is thrown via 'SendMessage', we want to continue
             LogAssert.ignoreFailingMessages = true;
 
