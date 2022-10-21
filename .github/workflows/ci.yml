@@ -452,8 +452,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
-          #api-level 30 image is only available with google services.
-          target: ${{ steps.droid-settings.outputs.target }}
+          # target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
@@ -477,7 +476,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
-          target: ${{ steps.droid-settings.outputs.target }}
+          # target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
