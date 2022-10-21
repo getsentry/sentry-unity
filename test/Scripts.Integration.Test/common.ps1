@@ -275,18 +275,11 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
                 'libunity.so: count=1',
                 'libunity.sym.so: count=1'
             )
-            if ($unity2021OrHigher)
+            If ($unity2020OrHigher)
             {
                 $expectedFiles = @(
                     "libil2cpp.sym.so: count=$($withSources ? 3 : 2)",
                     "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)"
-                ) + $expectedFiles
-            }
-            elseIf ($unity2020OrHigher)
-            {
-                $expectedFiles = @(
-                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
-                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)"
                 ) + $expectedFiles
             }
             else
@@ -345,7 +338,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         }
         # Note: control only gets here if none of the alternatives match...
         $successful = $false
-        $fileWithoutCount = $file.Substring(0, $file.Length-1)
+        $fileWithoutCount = $file.Substring(0, $file.Length - 1)
         $filePattern = [Regex]::new('(?<=' + "$([Regex]::Escape($fileWithoutCount))" + ')[\w]+')
         $actualCount = $filePattern.Matches($symbolServerOutput)
 
