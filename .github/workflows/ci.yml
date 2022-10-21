@@ -415,6 +415,11 @@ jobs:
           name: testapp-Android-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
 
+      - name: Setup HAXM
+        run: |
+          brew install --cask intel-haxm
+          kextstat
+
       # outputs variables: api-level, label, target
       - name: Configure Android Settings
         id: droid-settings
@@ -454,7 +459,7 @@ jobs:
           arch: x86
           cores: 2
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: false
           script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
@@ -478,7 +483,7 @@ jobs:
           arch: x86
           cores: 2
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: false
           script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
