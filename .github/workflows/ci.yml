@@ -399,19 +399,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [21, 27, 29, 30]
+        api-level: [27, 28, 29, 30, 31] # last updated October 2022
         unity-version: ['2019', '2020', '2021', '2022']
-        exclude:
-          # API 21 is no longer supported since Unity 2021.2.10f1
+        include:
+          # API 21 is barely used but let's check it as the minimum supported version for now.
           - api-level: 21
-            unity-version: '2021'
-          - api-level: 21
-            unity-version: '2022'
-          # Smoke test currently crashes on API 30 with Unity 2021 & 2022 build on CI, see issue #719
-          - api-level: 30
-            unity-version: '2021'
-          - api-level: 30
-            unity-version: '2022'
+            unity-version: 2019
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -530,14 +523,18 @@ jobs:
   ios-smoke-test-run:
     needs: [ios-smoke-test-build]
     name: Run iOS ${{ matrix.ios-runtime }} Smoke Test - ${{ matrix.unity-version }}
-    runs-on: macos-latest
+    runs-on: macos-12
     strategy:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021', '2022']
+        # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
+        # That page also shows which iPhones are supported with whith iOS version, therefore we don't need to test
+        # iOS 13 and 14 because there are no devices that support those version while not supporting iOS 15.
+        # On the other hand https://developer.apple.com/support/app-store/ shows 14 % phones and 18 % tablets use iOS 14
+        # as of May 31, 2022. Therefore, let's stick to testing iOS 14 until 2023.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
-        # TODO: put 12.0 back
-        ios-runtime: ['12.4', '13.0', '14.1', latest]
+        ios-runtime: ['12.5', '14.8', '15.7', latest] # last updated October 2022
     steps:
       - name: Checkout
         uses: actions/checkout@v3
