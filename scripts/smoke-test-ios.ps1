@@ -76,7 +76,7 @@ function Build()
         }
         finally
         {
-            Write-Host '::endgroup::'
+            Write-Host "::endgroup::"
         }
     }
 
@@ -124,7 +124,7 @@ function Test
     {
         Write-Host "$($device.Name) - $($device.UUID)"
     }
-    Write-Host '::endgroup::'
+    Write-Host "::endgroup::"
 
     $devicesRan = 0
     ForEach ($device in $deviceList)

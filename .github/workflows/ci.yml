@@ -450,7 +450,7 @@ jobs:
 
       - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test
         id: smoke-test
-        timeout-minutes: 30
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
@@ -466,16 +466,16 @@ jobs:
           script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Kill emulator if AVD failed.
-        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        if: ${{ steps.smoke-test.outputs.status != 'success' }}
         run: |
-          Write-Host "Smoke test failed with status (${{ steps.smoke-test.outputs.smoke-status }}), closing simulator."
+          Write-Host "Smoke test failed with status (${{ steps.smoke-test.outputs.status }}), closing simulator."
           adb emu kill
           sleep 7
 
       - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test (Retry)
-        timeout-minutes: 30
+        timeout-minutes: 15
         # Retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ steps.smoke-test.outputs.smoke-status == 'Flaky' }}
+        if: ${{ (steps.smoke-test.outputs.status == 'flaky') || (steps.smoke-test.outputs.status == '') }}
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}

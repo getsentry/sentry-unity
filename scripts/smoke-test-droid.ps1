@@ -165,12 +165,12 @@ function ExitNow([string] $status, [string] $message)
 {
     if (Test-Path env:GITHUB_OUTPUT)
     {
-        Write-Host "Writing 'smoke-status=$status' to ${env:GITHUB_OUTPUT}"
-        "smoke-status=$status" >> $env:GITHUB_OUTPUT
+        Write-Host "Writing 'status=$status' to env:GITHUB_OUTPUT: ${env:GITHUB_OUTPUT}"
+        "status=$status" >> $env:GITHUB_OUTPUT
     }
     else
     {
-        Write-Host "smoke-status=$status"
+        Write-Host "status=$status"
     }
 
     if ($status -ieq "success")
@@ -205,7 +205,7 @@ $DeviceCount = $DeviceList.Count
 
 If ($DeviceCount -eq 0)
 {
-    ExitNow("Failed", "It seems like no devices were found $RawAdbDeviceList")
+    ExitNow "failed" "It seems like no devices were found $RawAdbDeviceList"
 }
 Else
 {
@@ -215,7 +215,7 @@ Else
 # Check if APK was built.
 If (-not (Test-Path -Path "$ApkPath/$ApkFileName" ))
 {
-    ExitNow("Failed", "Expected APK on $ApkPath/$ApkFileName but it was not found.")
+    ExitNow "failed" "Expected APK on $ApkPath/$ApkFileName but it was not found."
 }
 
 # Test
@@ -251,7 +251,7 @@ foreach ($device in $DeviceList)
 
     If ($stdout -notcontains "Success")
     {
-        ExitNow("Failed", "Failed to Install APK: $stdout.")
+        ExitNow "failed" "Failed to Install APK: $stdout."
     }
 
     function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString)
@@ -313,7 +313,7 @@ foreach ($device in $DeviceList)
         If ($lineWithFailure -ne $null)
         {
             Write-Host "::endgroup::"
-            ExitNow("Failed", "$Name test: FAIL - $lineWithFailure")
+            ExitNow "failed" "$Name test: FAIL - $lineWithFailure"
         }
         elseif ($lineWithSuccess -ne $null)
         {
@@ -324,25 +324,25 @@ foreach ($device in $DeviceList)
         ElseIf (($LogcatCache | Select-String 'CRASH   :'))
         {
             Write-Host "::endgroup::"
-            ExitNow("Crashed", "$name test app has crashed.")
+            ExitNow "crashed" "$name test app has crashed."
         }
         ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.'))
         {
             Write-Host "::endgroup::"
-            ExitNow("Flaky", "$name test was flaky, unity failed to initialize.")
+            ExitNow "flaky" "$name test was flaky, unity failed to initialize."
         }
         ElseIf ($Timeout -le 0)
         {
             Write-Host "::endgroup::"
             Write-Host "PS info:"
             adb -s $device shell ps
-            ExitNow("Timeout", "$name test Timeout, see Logcat info for more info.")
+            ExitNow "timeout" "$name test Timeout, see Logcat info for more info."
         }
         Else
         {
-            ExitNow("Failed", "$name test: failed - process completed but $Name test was not signaled.")
+            Write-Host "::endgroup::"
+            ExitNow "failed" "$name test: failed - process completed but $Name test was not signaled."
         }
-
     }
 
     RunTest -Name "smoke"
@@ -359,8 +359,8 @@ foreach ($device in $DeviceList)
     catch
     {
         OnError $device $deviceApi
-        ExitNow("Failed", $_);
+        ExitNow "failed" $_;
     }
 }
 
-ExitNow("Success", "Tests completed successfully.")
+ExitNow "success" "Tests completed successfully."
