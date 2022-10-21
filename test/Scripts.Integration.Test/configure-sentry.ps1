@@ -16,7 +16,9 @@ $unityArgs = @( `
         "-sentryOptionsScript", "SmokeTestOptions", `
         "-attachScreenshot", "true", `
         "-il2cppLineNumbers", "true", `
-        "-diagnosticLevel", "debug")
+        "-diagnosticLevel", "debug",
+        "-traceSampleRate", "true",
+        "-performanceAutoInstrumentation", "true")
 
 if ($CheckSymbols)
 {
