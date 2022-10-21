@@ -12,6 +12,10 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   cancel-previous-workflow:
     runs-on: ubuntu-latest
@@ -21,35 +25,24 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  android-sdk:
+  sdk:
+    strategy:
+      matrix:
+        include:
+          - target: Android
+            host: ubuntu-latest
+          - target: iOS
+            host: macos-12
+          - target: Linux
+            host: ubuntu-latest
+          - target: macOS
+            host: macos-latest
+          - target: Windows
+            host: windows-latest
     uses: ./.github/workflows/sdk.yml
     with:
-      target: Android
-      runsOn: ubuntu-latest
-
-  ios-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: iOS
-      runsOn: macos-12 # To keep the .xcframework internal directory structure/naming consistent with the dev environment
-
-  macos-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: macOS
-      runsOn: macos-latest
-
-  linux-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: Linux
-      runsOn: ubuntu-latest
-
-  windows-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: Windows
-      runsOn: windows-latest
+      target: ${{ matrix.target }}
+      runsOn: ${{ matrix.host }}
 
   build:
     name: Build - ${{ matrix.unity-version }}
@@ -64,11 +57,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Checkout submodules
-        run: ./scripts/init-submodules.sh src/sentry-dotnet
+        run: git submodule update --init --recursive src/sentry-dotnet
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -81,27 +74,17 @@ jobs:
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
       - name: Start the Unity docker container
-        # 1. We use the host dotnet installation - it's much faster than installing inside the docker container.
-        # 2. We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
-        #    Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
-        run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-ios-1.0.1"
-          docker run -td --name unity \
-            -v ${{ github.workspace }}:/sentry-unity \
-            -v /usr/share/dotnet:/usr/share/dotnet \
-            -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
-            -v $ANDROID_HOME:$ANDROID_HOME \
-            -v $JAVA_HOME_11_X64:$JAVA_HOME_11_X64 \
-            --workdir /sentry-unity $image
-          docker exec unity ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
-          docker exec unity ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+        # We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
+        # Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
+        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
 
       # Required by sentry-dotnet since 3.19.0
       - name: Install Android dotnet workflow
         run: dotnet workload install android --temp-dir "${{ runner.temp }}"
 
       - name: Download CLI
-        run: pwsh ./scripts/download-sentry-cli.ps1
+        run: ./scripts/download-sentry-cli.ps1
 
       - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
@@ -139,27 +122,22 @@ jobs:
           path: package-dev/Plugins/Windows
           wait-timeout: 3600
 
-      - name: Create Unity license config
-        run: |
-          docker exec unity mkdir -p /usr/share/unity3d/config/
-          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
-
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build /p:AndroidSdkDirectory=$ANDROID_HOME /p:JavaSdkDirectory=$JAVA_HOME_11_X64 -c Release
+        run: docker exec unity dotnet build /p:AndroidSdkDirectory=$env:ANDROID_HOME /p:JavaSdkDirectory=$env:JAVA_HOME_11_X64 -c Release
 
       - name: Assembly alias
+        shell: bash
         run: |
           docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3 && \
           ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
-      - name: Update .meta files before packaging
-        # We need to open & close Unity on the sample project to update .meta files in package-dev.
-        # We could add a new custom target but reusing UnityConfigureSentryOptions is good enough.
-        run: docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-
-      - name: Prepare Sentry package for release
-        shell: pwsh
-        run: ./scripts/pack.ps1
+      - name: Package for release
+        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        run: |
+          # Before packaging, we need to open & close Unity on the sample project to update .meta files in package-dev.
+          # We could add a new custom target but reusing UnityConfigureSentryOptions is good enough.
+          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          ./scripts/pack.ps1
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v3
@@ -194,9 +172,82 @@ jobs:
           name: Test results (editmode)
           path: artifacts/test/editmode
 
+  package-validation:
+    name: UPM Package validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download UPM package
+        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
+        with:
+          name: ${{ github.sha }}
+          wait-timeout: 3600
+
+      - name: Verify package content against snapshot
+        # If this step fails, you can accept the new file content by
+        # running the following script locally with 'accept' as an argument
+        # and committing the new snapshot file to your branch. i.e:
+        # ./test/Scripts.Tests/test-pack-contents.ps1 accept
+        run: ./test/Scripts.Tests/test-pack-contents.ps1
+
+  # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`. If running on the `main`
+  # branch, the project doesn't include Sentry SDK because in that case we test building with & without it.
+  # We could just create the project later in `smoke-test-build` but then it's executed for each job in the matrix
+  # and reduces concurrency because of Unity licence limits.
+  smoke-test-create:
+    name: Prepare Smoke Test ${{ matrix.unity-version }}
+    runs-on: ubuntu-latest
+    needs: [package-validation]
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ['2019', '2020', '2021', '2022']
+    env:
+      UNITY_PATH: docker exec unity unity-editor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Start the Unity docker container
+        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
+
+      - name: Create new Project
+        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Download UPM package
+        if: ${{ github.ref_name != 'main' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}
+
+      - name: Extract UPM package
+        if: ${{ github.ref_name != 'main' }}
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name != 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      # We create tar explicitly because upload-artifact is slow for many files located in Library
+      - name: Create archive
+        run: tar -cvzf test-project.tar.gz samples/IntegrationTest
+
+      - name: Upload project
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-${{ matrix.unity-version }}
+          if-no-files-found: error
+          path: test-project.tar.gz
+
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    needs: [smoke-test-create]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -212,91 +263,64 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Load env
-        id: env
-        run: echo "unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $GITHUB_OUTPUT
-
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
-        run: |
-          image="unityci/editor:ubuntu-${{ steps.env.outputs.unityVersion }}-${{ matrix.platform }}${{ matrix.image-suffix }}-1.0.1"
-          image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
-          echo "Starting up a docker container with $image"
-          docker run -td --name unity -v ${{ github.workspace }}:/sentry-unity --workdir /sentry-unity $image
+        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
 
-      - name: Create Unity license config
-        run: |
-          docker exec unity mkdir -p /usr/share/unity3d/config/
-          echo '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}' | docker exec -i unity sh -c "cat > /usr/share/unity3d/config/services-config.json"
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@v3
+        with:
+          name: smoke-test-${{ matrix.unity-version }}
 
-      - name: Create new Project
-        run: sudo pwsh ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
         if: ${{ github.ref_name == 'main' }}
-        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
-        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
+        uses: actions/download-artifact@v3
         with:
           name: ${{ github.sha }}
-          wait-timeout: 3600
 
       - name: Extract UPM package
-        run: sudo pwsh ./test/Scripts.Integration.Test/extract-package.ps1
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: sudo pwsh ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Configure Sentry
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: sudo pwsh ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
-      - name: Prepare for upload
-        run: |
-          cd samples/IntegrationTest/Build
-          sudo chown -R $(id -u):$(id -g) .
-          sudo rm -rf *_BackUpThisFolder_ButDontShipItWithYourGame
-
-      - name: Upload test app for smoke test
+      - name: Upload test app
         uses: actions/upload-artifact@v3
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
-          path: samples/IntegrationTest/Build
           if-no-files-found: error
+          path: |
+            samples/IntegrationTest/Build
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
 
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}
-          path: samples/IntegrationTest
-
-  package-validation:
-    needs: [build]
-    name: UPM Package validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download UPM package
-        uses: actions/download-artifact@v3
-        with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
-          name: ${{ github.sha }}
-
-      - name: Verify package content against snapshot
-        shell: pwsh
-        # If this step fails, you can accept the new file content by
-        # running the following script locally with 'accept' as an argument
-        # and committing the new snapshot file to your branch. i.e:
-        # pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
-        run: ./test/Scripts.Tests/test-pack-contents.ps1
+          path: |
+            samples/IntegrationTest
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
 
   desktop-smoke-test:
     name: Run ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
+    needs: [smoke-test-create]
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
@@ -310,9 +334,6 @@ jobs:
           - os: macos
             unity-modules: mac-il2cpp
             unity-config-path: /Library/Application Support/Unity/config/
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -334,8 +355,13 @@ jobs:
           New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
           Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
-      - name: Create new Project
-        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@v3
+        with:
+          name: smoke-test-${{ matrix.unity-version }}
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
@@ -343,25 +369,27 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
-        uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
+        uses: actions/download-artifact@v3
         with:
-          # Artifact name is the commit sha. Which is what craft uses to find the relevant artifact.
           name: ${{ github.sha }}
-          wait-timeout: 3600
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
-      - name: Add Sentry to test project
-        run: ./test/Scripts.Integration.Test/update-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Configure Sentry
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
 
       - name: Build with Sentry SDK
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
 
-      - name: Run Player - Smoke Test
+      - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
-      - name: Run Player - Crash Test
+      - name: Run Crash Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
 
   android-smoke-test:
@@ -384,9 +412,6 @@ jobs:
             unity-version: '2021'
           - api-level: 30
             unity-version: '2022'
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -400,7 +425,6 @@ jobs:
       # outputs variables: api-level, label, target
       - name: Configure Android Settings
         id: droid-settings
-        shell: pwsh
         run: |
           # Setup API Level
           $apiLevel = '${{ matrix.api-level }}'
@@ -426,8 +450,7 @@ jobs:
 
       - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test
         id: smoke-test
-        continue-on-error: true
-        timeout-minutes: 30
+        timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
@@ -443,18 +466,16 @@ jobs:
           script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Kill emulator if AVD failed.
-        if: ${{ steps.smoke-test.outputs.smoke-status != 'Completed' }}
+        if: ${{ steps.smoke-test.outputs.status != 'success' }}
         run: |
-          Write-Host "Smoke test failed with status (${{ steps.smoke-test.outputs.smoke-status }}), closing simulator."
+          Write-Host "Smoke test failed with status (${{ steps.smoke-test.outputs.status }}), closing simulator."
           adb emu kill
           sleep 7
 
       - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test (Retry)
-        id: smoke-test-retry
-        continue-on-error: true
-        timeout-minutes: 30
+        timeout-minutes: 15
         # Retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ steps.smoke-test.outputs.smoke-status == 'Flaky' }}
+        if: ${{ (steps.smoke-test.outputs.status == 'flaky') || (steps.smoke-test.outputs.status == '') }}
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
@@ -467,14 +488,6 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
-
-      - name: Throw error if Smoke test failed
-        run: |
-          $mainResult = '${{ steps.smoke-test.outputs.smoke-status }}'
-          $retryResult = '${{ steps.smoke-test-retry.outputs.smoke-status }}'
-          if (!($mainResult -eq 'Completed') -and !($mainResult -eq 'Flaky' -and $retryResult -eq 'Completed')) {
-            Write-Error "Test: $mainResult; Retry: $retryResult"
-          }
 
       - name: Upload screenshot if smoke test failed
         if: ${{ failure() }}
@@ -502,7 +515,6 @@ jobs:
           path: samples/IntegrationTest/Build
 
       - name: Build iOS package
-        shell: pwsh
         run: ./Scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Upload iOS test app for smoke test.
@@ -526,9 +538,6 @@ jobs:
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # TODO: put 12.0 back
         ios-runtime: ['12.4', '13.0', '14.1', latest]
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -591,6 +600,10 @@ jobs:
           pip3 install --upgrade --user selenium urllib3 requests
           python3 scripts/smoke-test-webgl.py "${{steps.download.outputs.download-path}}"
 
-      - name: Run (Linux)
+      - name: Run Smoke Test (Linux)
         if: ${{ matrix.platform == 'Linux' }}
-        run: pwsh ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
+
+      - name: Run Crash Test (Linux)
+        if: ${{ matrix.platform == 'Linux' }}
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash

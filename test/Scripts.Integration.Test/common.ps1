@@ -16,13 +16,15 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
     $result.dispose = {
         $result.stop.Invoke()
 
-        Write-Host "Server stdout:" -ForegroundColor Yellow
+        Write-Host "::group::  Server stdout" -ForegroundColor Yellow
         $stdout = Get-Content $result.outFile -Raw
         Write-Host $stdout
+        Write-Host "::endgroup::"
 
-        Write-Host "Server stderr:" -ForegroundColor Yellow
+        Write-Host "::group::  Server stderr" -ForegroundColor Yellow
         $stderr = Get-Content $result.errFile -Raw
         Write-Host $stderr
+        Write-Host "::endgroup::"
 
         Remove-Item $result.outFile -ErrorAction Continue
         Remove-Item $result.errFile -ErrorAction Continue
@@ -351,5 +353,19 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     else
     {
         exit 1
+    }
+}
+
+function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $successMessage, [string[]] $arguments)
+{
+    $stdout = RunUnityCustom $UnityPath $arguments -ReturnLogOutput
+    $lineWithSuccess = $stdout | Select-String $successMessage
+    If ($null -ne $lineWithSuccess)
+    {
+        Write-Host "`n$name | SUCCESS because the following text was found: '$lineWithSuccess'" -ForegroundColor Green
+    }
+    Else
+    {
+        Write-Error "$name | Unity exited without an error but the successMessage was not found in the output ('$successMessage')"
     }
 }
