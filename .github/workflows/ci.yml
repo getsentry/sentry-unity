@@ -456,7 +456,7 @@ jobs:
           target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
-          arch: x86
+          arch: x86_64
           cores: 2
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
@@ -480,7 +480,7 @@ jobs:
           target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
-          arch: x86
+          arch: x86_64
           cores: 2
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on

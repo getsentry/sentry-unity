@@ -34,7 +34,7 @@ $projectSettings = Get-Content $projectSettingsPath
 # Don't print stack traces in debug logs. See ./samples/unity-of-bugs/ProjectSettings/PresetManager.asset
 $projectSettings = $projectSettings -replace "m_StackTraceTypes: ?[01]+", "m_StackTraceTypes: 010000000000000000000000000000000100000001000000"
 # Build Android for x86_64 - for the emulator
-$projectSettings = $projectSettings -replace "AndroidTargetArchitectures: ?[0-9]+", "AndroidTargetArchitectures: 4"
+$projectSettings = $projectSettings -replace "AndroidTargetArchitectures: ?[0-9]+", "AndroidTargetArchitectures: 8"
 # Build for iOS Simulator
 $projectSettings = $projectSettings -replace "iPhoneSdkVersion: ?[0-9]+", "iPhoneSdkVersion: 989"
 $projectSettings | Out-File $projectSettingsPath
