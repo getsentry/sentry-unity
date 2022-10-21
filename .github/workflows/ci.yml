@@ -25,35 +25,24 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  android-sdk:
+  sdk:
+    strategy:
+      matrix:
+        include:
+          - target: Android
+            host: ubuntu-latest
+          - target: iOS
+            host: macos-12
+          - target: Linux
+            host: ubuntu-latest
+          - target: macOS
+            host: macos-latest
+          - target: Windows
+            host: windows-latest
     uses: ./.github/workflows/sdk.yml
     with:
-      target: Android
-      runsOn: ubuntu-latest
-
-  ios-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: iOS
-      runsOn: macos-12 # To keep the .xcframework internal directory structure/naming consistent with the dev environment
-
-  macos-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: macOS
-      runsOn: macos-latest
-
-  linux-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: Linux
-      runsOn: ubuntu-latest
-
-  windows-sdk:
-    uses: ./.github/workflows/sdk.yml
-    with:
-      target: Windows
-      runsOn: windows-latest
+      target: ${{ matrix.target }}
+      runsOn: ${{ matrix.host }}
 
   build:
     name: Build - ${{ matrix.unity-version }}
