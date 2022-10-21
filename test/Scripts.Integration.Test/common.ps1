@@ -16,13 +16,15 @@ function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:
     $result.dispose = {
         $result.stop.Invoke()
 
-        Write-Host "Server stdout:" -ForegroundColor Yellow
+        Write-Host "::group::  Server stdout" -ForegroundColor Yellow
         $stdout = Get-Content $result.outFile -Raw
         Write-Host $stdout
+        Write-Host "::endgroup::"
 
-        Write-Host "Server stderr:" -ForegroundColor Yellow
+        Write-Host "::group::  Server stderr" -ForegroundColor Yellow
         $stderr = Get-Content $result.errFile -Raw
         Write-Host $stderr
+        Write-Host "::endgroup::"
 
         Remove-Item $result.outFile -ErrorAction Continue
         Remove-Item $result.errFile -ErrorAction Continue
@@ -275,18 +277,11 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
                 'libunity.so: count=1',
                 'libunity.sym.so: count=1'
             )
-            if ($unity2021OrHigher)
+            If ($unity2020OrHigher)
             {
                 $expectedFiles = @(
                     "libil2cpp.sym.so: count=$($withSources ? 3 : 2)",
                     "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)"
-                ) + $expectedFiles
-            }
-            elseIf ($unity2020OrHigher)
-            {
-                $expectedFiles = @(
-                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
-                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)"
                 ) + $expectedFiles
             }
             else
@@ -345,7 +340,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         }
         # Note: control only gets here if none of the alternatives match...
         $successful = $false
-        $fileWithoutCount = $file.Substring(0, $file.Length-1)
+        $fileWithoutCount = $file.Substring(0, $file.Length - 1)
         $filePattern = [Regex]::new('(?<=' + "$([Regex]::Escape($fileWithoutCount))" + ')[\w]+')
         $actualCount = $filePattern.Matches($symbolServerOutput)
 
@@ -358,5 +353,19 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     else
     {
         exit 1
+    }
+}
+
+function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $successMessage, [string[]] $arguments)
+{
+    $stdout = RunUnityCustom $UnityPath $arguments -ReturnLogOutput
+    $lineWithSuccess = $stdout | Select-String $successMessage
+    If ($null -ne $lineWithSuccess)
+    {
+        Write-Host "`n$name | SUCCESS because the following text was found: '$lineWithSuccess'" -ForegroundColor Green
+    }
+    Else
+    {
+        Write-Error "$name | Unity exited without an error but the successMessage was not found in the output ('$successMessage')"
     }
 }

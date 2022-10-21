@@ -1,7 +1,7 @@
 param (
     [string] $Action,
     [string] $SelectedRuntime,
-    [Int32] $DevicesToRun = 3,
+    [Int32] $DevicesToRun = 1,
     [Switch] $IsIntegrationTest,
     [string] $UnityVersion = ""
 )
@@ -13,7 +13,7 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIn
 #          'latest' for runing the test with the latest runtime
 #          'iOS <version>' to run on the specified runtime ex: iOS 12.4
 # $DevicesToRun: the amount of devices to run
-#          '0' or empty will run on 3 devices, otherwise on the specified amount.
+#          '0' or empty will run on 1 device, otherwise on the specified amount.
 $ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
@@ -46,37 +46,38 @@ Class AppleDevice
     }
 }
 
-function Build()
+function MakeExecutable([string] $file)
 {
-    $mapFileParser = "MapFileParser.sh"
-    If (Test-Path -Path "$XcodeArtifactPath/$mapFileParser")
+    If (Test-Path -Path $file)
     {
-        Write-Host -NoNewline "Fixing permission for $mapFileParser : "
-        # We need to allow the execution of this script, otherwise Xcode will throw permission denied.
-        chmod +x "$XcodeArtifactPath/$mapFileParser"
+        Write-Host -NoNewline "Fixing permission for $file : "
+        chmod +x $file
         Write-Host "OK" -ForegroundColor Green
     }
+}
 
-    Write-Host "Building iOS project"
-
-    $sentryCli = "sentry-cli-Darwin-universal"
-    if(Test-Path -Path "$XcodeArtifactPath/$sentryCli")
-    {
-        # We need to manually switch the CLI executable, because the artifact that came through GH actions'
-        # upload-artifact has it's permissions stripped. See https://github.com/actions/upload-artifact/issues/38
-        # Side note: The permissions are set by the SentryCli.cs so end-users aren't affected if we ship the CLI
-        #             with the missing executable bit in the UPM package - it's fixed on build.
-        chmod +x "$XcodeArtifactPath/$sentryCli"
-    }
+function Build()
+{
+    MakeExecutable "$XcodeArtifactPath/MapFileParser.sh"
+    MakeExecutable "$XcodeArtifactPath/sentry-cli-Darwin-universal"
 
     $buildCallback = {
-        xcodebuild `
-            -project "$XcodeArtifactPath/$ProjectName.xcodeproj" `
-            -scheme "Unity-iPhone" `
-            -configuration "Release" `
-            -sdk "iphonesimulator" `
-            -derivedDataPath "$ArchivePath/$ProjectName" `
-        | Write-Host
+
+        Write-Host "::group::Building iOS project"
+        try
+        {
+            xcodebuild `
+                -project "$XcodeArtifactPath/$ProjectName.xcodeproj" `
+                -scheme "Unity-iPhone" `
+                -configuration "Release" `
+                -sdk "iphonesimulator" `
+                -derivedDataPath "$ArchivePath/$ProjectName" `
+            | Write-Host
+        }
+        finally
+        {
+            Write-Host "::endgroup::"
+        }
     }
 
     if ($IsIntegrationTest)
@@ -118,26 +119,26 @@ function Test
 
     $deviceCount = $DeviceList.Count
 
-    Write-Host "Found $deviceCount devices on version $SelectedRuntime" -ForegroundColor Green
-
+    Write-Host "::group::Found $deviceCount devices on version $SelectedRuntime" -ForegroundColor Green
     ForEach ($device in $deviceList)
     {
         Write-Host "$($device.Name) - $($device.UUID)"
     }
+    Write-Host "::endgroup::"
 
     $devicesRan = 0
     ForEach ($device in $deviceList)
     {
         If ($skippedItems -lt $skipCount)
         {
-            Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+            # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
             $device.TestSkipped = $true
             $skippedItems++
             continue
         }
         If ($devicesRan -ge $DevicesToRun)
         {
-            Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+            # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
             $device.TestSkipped = $true
             continue
         }
@@ -154,30 +155,38 @@ function Test
 
         function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
-            $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
+            Write-Host "::group::Test: '$name'"
+            try
+            {
+                Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
+                $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
-            if ("$SuccessString" -eq "")
-            {
-                $SuccessString = "${$Name.ToUpper()} TEST: PASS"
-            }
-
-            Write-Host -NoNewline "'$Name' test STATUS: "
-            $stdout = $consoleOut  | Select-String $SuccessString
-            If ($null -ne $stdout)
-            {
-                Write-Host "PASSED" -ForegroundColor Green
-            }
-            Else
-            {
-                $device.TestFailed = $True
-                Write-Host "FAILED" -ForegroundColor Red
-                Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
-                foreach ($consoleLine in $consoleOut)
+                if ("$SuccessString" -eq "")
                 {
-                    Write-Host $consoleLine
+                    $SuccessString = "${$Name.ToUpper()} TEST: PASS"
                 }
-                Write-Host " ===== END OF CONSOLE ====="
+
+                Write-Host -NoNewline "'$Name' test STATUS: "
+                $stdout = $consoleOut  | Select-String $SuccessString
+                If ($null -ne $stdout)
+                {
+                    Write-Host "PASSED" -ForegroundColor Green
+                }
+                Else
+                {
+                    $device.TestFailed = $True
+                    Write-Host "FAILED" -ForegroundColor Red
+                    Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
+                    foreach ($consoleLine in $consoleOut)
+                    {
+                        Write-Host $consoleLine
+                    }
+                    Write-Host " ===== END OF CONSOLE ====="
+                }
+            }
+            finally
+            {
+                Write-Host "::endgroup::"
             }
         }
 
@@ -194,11 +203,12 @@ function Test
         }
         catch
         {
-            Write-Host "$($device.Name) Console"
+            Write-Host "::group::$($device.Name) console output"
             foreach ($consoleLine in $consoleOut)
             {
                 Write-Host $consoleLine
             }
+            Write-Host "::endgroup::"
             throw;
         }
 

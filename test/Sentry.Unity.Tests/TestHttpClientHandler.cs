@@ -9,18 +9,17 @@ using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Tests
 {
-    public enum TestEventType
-    {
-        SentryEvent,
-        SentryTransaction
-    }
-
     public class TestHttpClientHandler : HttpClientHandler
     {
-        private readonly string[] EventQualifiers = { "\"type\":\"event\"", "\"type\":\"transaction\"" };
+        private readonly string name;
 
         private readonly List<string> _requests = new();
         private readonly AutoResetEvent _requestReceived = new(false);
+
+        public TestHttpClientHandler(string name = "TestHttpClientHandler")
+        {
+            this.name = name;
+        }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -39,15 +38,15 @@ namespace Sentry.Unity.Tests
             }
         }
 
-        public string GetEvent(TestEventType type, TimeSpan timeout)
+        public string GetEvent(string identifier, TimeSpan timeout)
         {
             // Check all the already received requests
             lock (_requests)
             {
-                var eventRequest = _requests.Find(r => r.Contains(EventQualifiers[(int)type]));
+                var eventRequest = _requests.Find(r => r.Contains(identifier));
                 if (!string.IsNullOrEmpty(eventRequest))
                 {
-                    Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n" + eventRequest);
+                    Debug.Log($"{UnityLogger.LogPrefix}{name} returns event:\n" + eventRequest);
                     return eventRequest;
                 }
             }
@@ -60,10 +59,10 @@ namespace Sentry.Unity.Tests
                 {
                     lock (_requests)
                     {
-                        if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(EventQualifiers[(int)type]))
+                        if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(identifier))
                         {
                             var eventRequest = _requests[_requests.Count - 1];
-                            Debug.Log(UnityLogger.LogPrefix + "TestHttpClientHandler returns event: \n" + eventRequest);
+                            Debug.Log($"{UnityLogger.LogPrefix}{name} returns event:\n" + eventRequest);
 
                             return eventRequest;
                         }
@@ -71,7 +70,7 @@ namespace Sentry.Unity.Tests
                 }
             }
 
-            Debug.LogError(UnityLogger.LogPrefix + "TestHttpClientHandler timed out waiting for an event.");
+            Debug.LogError($"{UnityLogger.LogPrefix}{name} timed out waiting for an event.");
             return string.Empty;
         }
     }

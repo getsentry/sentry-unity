@@ -17,7 +17,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         $arguments = $arguments | Where-Object { $_ –ne "-batchmode" }
         Write-Host "Updated arguments: $arguments"
     }
-    ElseIf ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "")
+    ElseIf ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and $unityPath -ne "xvfb-run")
     {
         $arguments = @("-ae", "/dev/stdout", "$unityPath") + $arguments
         $unityPath = "xvfb-run"
@@ -40,25 +40,39 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stopwatch.Start()
     $stdout = ""
+    $try = 1
     do
     {
-        ClearUnityLog $logFilePath
-        New-Item $logFilePath > $null
+        $runInfo = ($try -gt 1) ? "Retry #$try run" : 'Run'
+        Write-Host "::group::$runInfo $unityPath $arguments"
+        try
+        {
+            ClearUnityLog $logFilePath
+            New-Item $logFilePath > $null
 
-        Write-Host "Running $unityPath $arguments"
-        $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+            $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
 
-        $stdout = WaitForUnityExit $logFilePath $process
-
+            $stdout = WaitForUnityExit $logFilePath $process
+        }
+        finally
+        {
+            Write-Host "::endgroup::"
+        }
         if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
         {
-            Write-Host -ForegroundColor Red "Unity failed because it couldn't acquire a license."
+            $msg = "Unity failed because it couldn't acquire a license."
             $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatch.Elapsed.TotalSeconds
             $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
             if ($timeToSleep -gt 0)
             {
-                Write-Host -ForegroundColor Yellow "Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
+                Write-Host -ForegroundColor Yellow "$msg Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
                 Start-Sleep -Seconds $timeToSleep
+                $try = $try + 1
+            }
+            else
+            {
+                Write-Host "::error::$msg"
+                Throw $msg
             }
         }
         else
@@ -72,7 +86,12 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         Throw "Unity exited with code $($process.ExitCode)"
     }
 
-    Write-Host -ForegroundColor Green "Unity finished successfully. Time taken: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+    $timeTaken = "Time taken: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+    Write-Host -ForegroundColor Green "Unity finished successfully. $timeTaken"
+    if ($try -gt 3)
+    {
+        Write-Host "::$($try -gt 10 ? 'warning' : 'notice')::It took $try tries to successfully aquire a Unity license. $timeTaken"
+    }
     return $ReturnLogOutput ? $stdout : $null
 }
 
