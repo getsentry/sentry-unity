@@ -129,7 +129,7 @@ namespace Sentry.Unity.Integrations
                 _hub.CaptureMessage(logMessage, ToEventTagType(logType));
             }
 
-            if(_sentryOptions != null && PassesMinimumBreadcrumbLevel(_sentryOptions.MinimumBreadcrumbLevel, logType))
+            if (_sentryOptions != null && PassesMinimumBreadcrumbLevel(_sentryOptions.MinimumBreadcrumbLevel, logType))
             {
                 // So the next event includes this as a breadcrumb
                 _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
@@ -163,14 +163,14 @@ namespace Sentry.Unity.Integrations
                     return true;
                 case LogType.Error:
                 case LogType.Assert:
-                {
-                    if (logType is LogType.Error or LogType.Assert or LogType.Exception)
                     {
-                        return true;
-                    }
+                        if (logType is LogType.Error or LogType.Assert or LogType.Exception)
+                        {
+                            return true;
+                        }
 
-                    break;
-                }
+                        break;
+                    }
                 case LogType.Exception when logType is LogType.Exception:
                     return true;
             }
