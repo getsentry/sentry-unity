@@ -399,7 +399,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [27, 28, 29, 30, 31] # last updated October 2022
+        api-level: [27, 28, 29, 30, 31, latest] # last updated October 2022
         unity-version: ['2019', '2020', '2021', '2022']
         include:
           # API 21 is barely used but let's check it as the minimum supported version for now.
@@ -439,12 +439,8 @@ jobs:
           {
             Write-Output "Current API is $apiLevel"
           }
-          # Setup Arch and Target
-          $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
-          Write-Output "Current Target is $target"
           "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
           "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
-          "target=$target" >> $env:GITHUB_OUTPUT
 
       - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test
         id: smoke-test
@@ -452,7 +448,6 @@ jobs:
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
-          # target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
@@ -476,7 +471,6 @@ jobs:
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
           api-level: ${{ steps.droid-settings.outputs.api-level }}
-          # target: ${{ steps.droid-settings.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
@@ -484,7 +478,9 @@ jobs:
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: false
-          script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
+          script: |
+            echo "::Warning::Retrying Android API ${{ steps.droid-settings.outputs.label }} test due to previous step failure: '${{ steps.smoke-test.outputs.status }}'"
+            pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Upload screenshot if smoke test failed
         if: ${{ failure() }}
