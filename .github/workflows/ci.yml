@@ -399,12 +399,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [27, 28, 29, 30, 31, latest] # last updated October 2022
+        api-level: [27, 28, 29, 30, 31] # last updated October 2022
         unity-version: ['2019', '2020', '2021', '2022']
         include:
           # API 21 is barely used but let's check it as the minimum supported version for now.
           - api-level: 21
-            unity-version: 2019
+            unity-version: '2019'
+        exclude:
+          # Seems like there's an error in Unity with Android API 30 - disabling.
+          # https://github.com/getsentry/sentry-unity/issues/719#issuecomment-1129129952
+          - api-level: 30
+            unity-version: '2021'
+          - api-level: 30
+            unity-version: '2022'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -422,7 +429,7 @@ jobs:
 
       # outputs variables: api-level, label, target
       - name: Configure Android Settings
-        id: droid-settings
+        id: config
         run: |
           # Setup API Level
           $apiLevel = '${{ matrix.api-level }}'
@@ -439,15 +446,20 @@ jobs:
           {
             Write-Output "Current API is $apiLevel"
           }
+          # Setup Arch and Target
+          $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
+          Write-Output "Current Target is $target"
+          "target=$target" >> $env:GITHUB_OUTPUT
           "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
           "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
 
-      - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test
+      - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test
         id: smoke-test
         timeout-minutes: 15
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
-          api-level: ${{ steps.droid-settings.outputs.api-level }}
+          api-level: ${{ steps.config.outputs.api-level }}
+          target: ${{ steps.config.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
@@ -464,13 +476,14 @@ jobs:
           adb emu kill
           sleep 7
 
-      - name: Android API ${{ steps.droid-settings.outputs.label }} emulator setup + Smoke test (Retry)
+      - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test (Retry)
         timeout-minutes: 15
         # Retry the tests if the previous fail happened on the emulator startup.
         if: ${{ (steps.smoke-test.outputs.status == 'flaky') || (steps.smoke-test.outputs.status == '') }}
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         with:
-          api-level: ${{ steps.droid-settings.outputs.api-level }}
+          api-level: ${{ steps.config.outputs.api-level }}
+          target: ${{ steps.config.outputs.target }}
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
@@ -479,7 +492,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: false
           script: |
-            echo "::Warning::Retrying Android API ${{ steps.droid-settings.outputs.label }} test due to previous step failure: '${{ steps.smoke-test.outputs.status }}'"
+            echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} test due to previous step failure: '${{ steps.smoke-test.outputs.status }}'"
             pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Upload screenshot if smoke test failed
