@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
@@ -80,6 +81,11 @@ namespace Sentry.Unity
         /// The JPG compression quality of the attached screenshot
         /// </summary>
         public int ScreenshotCompression { get; set; } = 75;
+
+        /// <summary>
+        /// Whether the SDK should automatically add breadcrumbs per LogType
+        /// </summary>
+        public Dictionary<LogType, bool> AddBreadcrumbsForLogType { get; set; }
 
         /// <summary>
         /// Whether the SDK should add native support for iOS
@@ -202,6 +208,15 @@ namespace Sentry.Unity
             Environment = application.IsEditor && !isBuilding
                 ? "editor"
                 : "production";
+
+            AddBreadcrumbsForLogType = new Dictionary<LogType, bool>
+            {
+                { LogType.Log, true},
+                { LogType.Warning, true},
+                { LogType.Assert, true},
+                { LogType.Error, true},
+                { LogType.Exception, true},
+            };
         }
 
         public override string ToString()

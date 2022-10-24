@@ -25,6 +25,11 @@ MonoBehaviour:
   <AttachScreenshot>k__BackingField: 1
   <ScreenshotQuality>k__BackingField: 2
   <ScreenshotCompression>k__BackingField: 75
+  <BreadcrumbsForLogs>k__BackingField: 1
+  <BreadcrumbsForWarnings>k__BackingField: 1
+  <BreadcrumbsForAsserts>k__BackingField: 1
+  <BreadcrumbsForErrors>k__BackingField: 1
+  <BreadcrumbsForExceptions>k__BackingField: 1
   <MaxBreadcrumbs>k__BackingField: 100
   <ReportAssembliesMode>k__BackingField: 1
   <SendDefaultPii>k__BackingField: 0

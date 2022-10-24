@@ -64,8 +64,11 @@ namespace Sentry.Unity.Integrations
             exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
             _ = _hub.CaptureException(exception);
 
-            // So the next event includes this error as a breadcrumb
-            _hub.AddBreadcrumb(message: $"{exception.GetType()}: {exception.Message}", category: "unity.logger", level: BreadcrumbLevel.Error);
+            if (_sentryOptions?.AddBreadcrumbsForLogType[LogType.Exception] is true)
+            {
+                // So the next event includes this error as a breadcrumb
+                _hub.AddBreadcrumb(message: $"{exception.GetType()}: {exception.Message}", category: "unity.logger", level: BreadcrumbLevel.Error);
+            }
         }
 
         public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
@@ -129,8 +132,11 @@ namespace Sentry.Unity.Integrations
                 _hub.CaptureMessage(logMessage, ToEventTagType(logType));
             }
 
-            // So the next event includes this as a breadcrumb
-            _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+            if (_sentryOptions?.AddBreadcrumbsForLogType[logType] is true)
+            {
+                // So the next event includes this as a breadcrumb
+                _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+            }
         }
 
         private void OnQuitting()
