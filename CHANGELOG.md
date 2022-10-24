@@ -7,6 +7,7 @@
 - Additional IL2CPP arguments get added only once ([#997](https://github.com/getsentry/sentry-unity/pull/997))
 - Releasing temp render texture after capturing a screenshot ([#983](https://github.com/getsentry/sentry-unity/pull/983))
 - Automatic screenshot mirroring on select devices. ([#1019](https://github.com/getsentry/sentry-unity/pull/1019))
+- Hide `StackTraceMode` from options to avoid accidental errors when used with IL2CPP ([#1033](https://github.com/getsentry/sentry-unity/pull/1033))
 
 ### Features
 
