@@ -10,7 +10,7 @@
 
 ### Features
 
-- Added minimum breadcrumb level to the options ([#1030](https://github.com/getsentry/sentry-unity/pull/1030))
+- Added flags per LogType for automatically adding breadcrumbs ([#1030](https://github.com/getsentry/sentry-unity/pull/1030))
 - The Cocoa SDK is now bundled as `.xcframework` ([#1002](https://github.com/getsentry/sentry-unity/pull/1002))
 - Automated Performance Instrumentation for Runtime Initialization ([#991](https://github.com/getsentry/sentry-unity/pull/991))
 - Automated Performance Instrumentation for Scene Loading ([#768](https://github.com/getsentry/sentry-unity/pull/768))
