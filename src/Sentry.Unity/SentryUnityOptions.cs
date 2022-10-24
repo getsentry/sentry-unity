@@ -116,6 +116,9 @@ namespace Sentry.Unity
         /// </remarks>
         public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
+        /// This option is hidden due to incompatibility between IL2CPP and Enhanced mode.
+        private new StackTraceMode StackTraceMode { get; set; }
+
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
         internal string? DefaultUserId
@@ -175,8 +178,9 @@ namespace Sentry.Unity
             RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
             InitCacheFlushTimeout = System.TimeSpan.Zero;
 
-            // Ben.Demystifer not compatible with IL2CPP
-            StackTraceMode = StackTraceMode.Original;
+            // Ben.Demystifer not compatible with IL2CPP. We could allow Enhanced in the future for Mono.
+            // See https://github.com/getsentry/sentry-unity/issues/675
+            base.StackTraceMode = StackTraceMode.Original;
             IsEnvironmentUser = false;
 
             if (application.ProductName is string productName
