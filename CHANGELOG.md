@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Disabled Android lifecycle breadcrumbs ([#1038](https://github.com/getsentry/sentry-unity/pull/1038))
 - Additional IL2CPP arguments get added only once ([#997](https://github.com/getsentry/sentry-unity/pull/997))
 - Releasing temp render texture after capturing a screenshot ([#983](https://github.com/getsentry/sentry-unity/pull/983))
 - Automatic screenshot mirroring on select devices. ([#1019](https://github.com/getsentry/sentry-unity/pull/1019))
