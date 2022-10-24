@@ -343,7 +343,7 @@ namespace Sentry.Unity.Editor.Android
             => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
 
         public void SetAutoAppLifecycleBreadcrumbs(bool enableAutoAppLifeCycleBreadcrumbs)
-            => SetMetaData($"{SentryPrefix}.bbreadcrumbs.app-lifecycle", enableAutoAppLifeCycleBreadcrumbs.ToString());
+            => SetMetaData($"{SentryPrefix}.breadcrumbs.app-lifecycle", enableAutoAppLifeCycleBreadcrumbs.ToString());
 
         internal void SetAnr(bool enableAnr)
             => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr.ToString());
