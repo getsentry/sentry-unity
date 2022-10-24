@@ -34,8 +34,8 @@ function TakeScreenshot
     param ( $deviceId )
     $file = "/data/local/tmp/screen.png"
     adb -s $deviceId shell "screencap -p $file"
-    adb pull $file "$ApkPath"
-    adb shell "rm $file"
+    adb -s $deviceId pull $file "$ApkPath"
+    adb -s $deviceId shell "rm $file"
 }
 
 function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
@@ -52,12 +52,25 @@ function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
     }
 }
 
-function OnError([string] $deviceId, [string] $deviceApi)
+function LogCat([string] $deviceId, [string] $appPID)
+{
+    if ($null -eq $appPID -or $deviceApi -eq "21")
+    {
+        adb -s $device logcat -d
+    }
+    else
+    {
+        adb -s $device logcat -d --pid=$appPID
+    }
+}
+
+function OnError([string] $deviceId, [string] $deviceApi, [string] $appPID)
 {
     Write-Host "Dumping logs for $device"
     Write-Host "::group::logcat"
-    adb -s $deviceId logcat -d
+    LogCat $deviceId $appPID
     Write-Host "::endgroup::"
+    LogCat $deviceId $null | Out-File "$ApkPath/logcat.txt"
     Write-Host "::group::UI XML Log"
     GetDeviceUiLog $device $deviceApi
     Write-Host "::endgroup::"
@@ -183,7 +196,6 @@ function ExitNow([string] $status, [string] $message)
     }
     else
     {
-        OnError $device $deviceApi
         Write-Error $message
         exit 1 # just in case error handling is overriden
     }
@@ -251,6 +263,7 @@ foreach ($device in $DeviceList)
 
     If ($stdout -notcontains "Success")
     {
+        OnError $device $deviceApi
         ExitNow "failed" "Failed to Install APK: $stdout."
     }
 
@@ -264,30 +277,39 @@ foreach ($device in $DeviceList)
         adb -s $device shell am start -n $TestActivityName -e test $Name
         #despite calling start, the app might not be started yet.
 
-        $AppStarted = $false
-        Write-Host (DateTimeNow)
-        $Timeout = 45
-        While ($Timeout -gt 0)
+        $timedOut = $true
+        $appPID = $null
+        $stopwatch = [System.Diagnostics.Stopwatch]::new()
+        $stopwatch.Start()
+        While ($stopwatch.Elapsed.TotalSeconds -lt 60)
         {
-            #Get a list of active processes
-            $processIsRunning = (adb -s $device shell ps)
-            #And filter by ProcessName
-            $processIsRunning = $processIsRunning | Select-String $ProcessName
-
-            If ($processIsRunning -eq $null -And $AppStarted)
+            # Check if the app started - it's not absolutely necessary to get the PID, just useful to achieve good log output.
+            if ($null -eq $appPID)
             {
-                $Timeout = -2
+                $appPID = (adb -s $device shell pidof $ProcessName)
+                if ($null -eq $appPID)
+                {
+                    if ($stopwatch.Elapsed.TotalSeconds % 10 -eq 0)
+                    {
+                        Write-Host "Waiting Process on $device to start, time elapsed already: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+                    }
+                    # No sleep here or we may miss the start. While it's not critical, it's useful to get the PID.
+                    continue
+                }
+            }
+
+            $isRunning = $null -ne (adb -s $device shell pidof $ProcessName)
+            If ($isRunning)
+            {
+                Write-Host "Waiting Process $appPID on $device to complete, time elapsed already: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+                Start-Sleep -Seconds 1
+                CheckAndCloseActiveSystemAlerts $device $deviceApi
+            }
+            else
+            {
+                $timedOut = $false
                 break
             }
-            ElseIf ($processIsRunning -ne $null -And !$AppStarted)
-            {
-                # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
-                $AppStarted = $true
-            }
-            Write-Host "Waiting Process on $device to complete, waiting $Timeout seconds"
-            Start-Sleep -Seconds 1
-            $Timeout--
-            CheckAndCloseActiveSystemAlerts $device $deviceApi
         }
 
         if ("$SuccessString" -eq "")
@@ -301,7 +323,7 @@ foreach ($device in $DeviceList)
         }
 
         Write-Host (DateTimeNow)
-        $LogcatCache = adb -s $device logcat -d
+        $LogcatCache = LogCat $device $appPID
         $lineWithSuccess = $LogcatCache | Select-String $SuccessString
         $lineWithFailure = $LogcatCache | Select-String $FailureString
 
@@ -313,6 +335,7 @@ foreach ($device in $DeviceList)
         If ($lineWithFailure -ne $null)
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "failed" "$Name test: FAIL - $lineWithFailure"
         }
         elseif ($lineWithSuccess -ne $null)
@@ -324,23 +347,28 @@ foreach ($device in $DeviceList)
         ElseIf (($LogcatCache | Select-String 'CRASH   :'))
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "crashed" "$name test app has crashed."
         }
         ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.'))
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "flaky" "$name test was flaky, unity failed to initialize."
         }
-        ElseIf ($Timeout -le 0)
+        ElseIf ($timedOut)
         {
             Write-Host "::endgroup::"
-            Write-Host "PS info:"
+            Write-Host "::group::Processes running on device"
             adb -s $device shell ps
+            Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "timeout" "$name test Timeout, see Logcat info for more info."
         }
         Else
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "failed" "$name test: failed - process completed but $Name test was not signaled."
         }
     }

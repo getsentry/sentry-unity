@@ -495,12 +495,14 @@ jobs:
             echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} test due to previous step failure: '${{ steps.smoke-test.outputs.status }}'"
             pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
-      - name: Upload screenshot if smoke test failed
+      - name: Upload artifacts on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: testapp-android-screenshot-${{ matrix.api-level }}-${{ matrix.unity-version }}
-          path: samples/IntegrationTest/Build/screen.png
+          path: |
+            samples/IntegrationTest/Build/screen.png
+            samples/IntegrationTest/Build/logcat.txt
 
   ios-smoke-test-build:
     needs: [smoke-test-build]
