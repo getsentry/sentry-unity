@@ -43,7 +43,12 @@ namespace Sentry.Unity
         [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
         [field: SerializeField] public int ScreenshotCompression { get; set; } = 75;
 
-        [field: SerializeField] public LogType MinimumBreadcrumbLevel { get; set; } = LogType.Log;
+        [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
+        [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
+        [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
+        [field: SerializeField] public bool BreadcrumbsForErrors { get; set; } = true;
+        [field: SerializeField] public bool BreadcrumbsForExceptions { get; set; } = true;
+
         [field: SerializeField] public int MaxBreadcrumbs { get; set; } = Constants.DefaultMaxBreadcrumbs;
 
         [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
@@ -108,7 +113,6 @@ namespace Sentry.Unity
                 AttachScreenshot = AttachScreenshot,
                 ScreenshotQuality = ScreenshotQuality,
                 ScreenshotCompression = ScreenshotCompression,
-                MinimumBreadcrumbLevel = MinimumBreadcrumbLevel,
                 MaxBreadcrumbs = MaxBreadcrumbs,
                 ReportAssembliesMode = ReportAssembliesMode,
                 SendDefaultPii = SendDefaultPii,
@@ -139,6 +143,12 @@ namespace Sentry.Unity
             {
                 options.Environment = EnvironmentOverride;
             }
+
+            options.AddBreadcrumbsForLogType[LogType.Log] = BreadcrumbsForLogs;
+            options.AddBreadcrumbsForLogType[LogType.Warning] = BreadcrumbsForWarnings;
+            options.AddBreadcrumbsForLogType[LogType.Assert] = BreadcrumbsForAsserts;
+            options.AddBreadcrumbsForLogType[LogType.Error] = BreadcrumbsForErrors;
+            options.AddBreadcrumbsForLogType[LogType.Exception] = BreadcrumbsForExceptions;
 
             options.SetupLogging();
 

@@ -83,9 +83,9 @@ namespace Sentry.Unity
         public int ScreenshotCompression { get; set; } = 75;
 
         /// <summary>
-        /// The minimum level of logs the SDK should add as a breadcrumb
+        /// Whether the SDK should automatically add breadcrumbs per LogType
         /// </summary>
-        public LogType MinimumBreadcrumbLevel { get; set; } = LogType.Log;
+        public Dictionary<LogType, bool> AddBreadcrumbsForLogType { get; set; }
 
         /// <summary>
         /// Whether the SDK should add native support for iOS
@@ -204,6 +204,15 @@ namespace Sentry.Unity
             Environment = application.IsEditor && !isBuilding
                 ? "editor"
                 : "production";
+
+            AddBreadcrumbsForLogType = new Dictionary<LogType, bool>
+            {
+                { LogType.Log, true},
+                { LogType.Warning, true},
+                { LogType.Assert, true},
+                { LogType.Error, true},
+                { LogType.Exception, true},
+            };
         }
 
         public override string ToString()

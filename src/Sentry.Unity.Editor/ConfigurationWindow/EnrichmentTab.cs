@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
@@ -63,9 +64,27 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            options.MinimumBreadcrumbLevel = (LogType)EditorGUILayout.EnumPopup(
-                new GUIContent("Minimum Log Breadcrumb Level", "Minimum log type the SDK adds as breadcrumb."),
-                options.MinimumBreadcrumbLevel);
+            GUILayout.Label("Breadcrumbs automatically added for LogType:", EditorStyles.boldLabel);
+
+            options.BreadcrumbsForLogs = EditorGUILayout.Toggle(
+                new GUIContent("Log", "Whether the SDK automatically adds breadcrumbs 'Debug.Log'."),
+                options.BreadcrumbsForLogs);
+            options.BreadcrumbsForWarnings = EditorGUILayout.Toggle(
+                new GUIContent("Warning", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogWarning'."),
+                options.BreadcrumbsForWarnings);
+            options.BreadcrumbsForAsserts = EditorGUILayout.Toggle(
+                new GUIContent("Assert", "Whether the SDK automatically adds breadcrumbs for 'Debug.Assert'."),
+                options.BreadcrumbsForAsserts);
+            options.BreadcrumbsForErrors = EditorGUILayout.Toggle(
+                new GUIContent("Error", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogError'."),
+                options.BreadcrumbsForLogs);
+            options.BreadcrumbsForExceptions = EditorGUILayout.Toggle(
+                new GUIContent("Exception", "Whether the SDK automatically adds breadcrumbs for exceptions and 'Debug.LogException'."),
+                options.BreadcrumbsForExceptions);
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
 
             options.MaxBreadcrumbs = EditorGUILayout.IntField(
                 new GUIContent("Max Breadcrumbs", "Maximum number of breadcrumbs that get captured." +

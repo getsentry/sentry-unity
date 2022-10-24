@@ -125,34 +125,13 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        [TestCase(LogType.Log, true, true, true, true, true)]
-        [TestCase(LogType.Warning, false, true, true, true, true)]
-        [TestCase(LogType.Error, false, false, true, true, true)]
-        [TestCase(LogType.Assert, false, false, true, true, true)]
-        [TestCase(LogType.Exception, false, false, false, false, true)]
-        public void PassesMinimumBreadcrumbLevel_ForEveryMinimumLevel_PassesCorrectly(
-            LogType minimumBreadcrumbLevel,
-            bool logExpected,
-            bool warningExpected,
-            bool errorExpected,
-            bool assertExpected,
-            bool exceptionExpected)
-        {
-            Assert.AreEqual(logExpected, UnityLogHandlerIntegration.PassesMinimumBreadcrumbLevel(minimumBreadcrumbLevel, LogType.Log));
-            Assert.AreEqual(warningExpected, UnityLogHandlerIntegration.PassesMinimumBreadcrumbLevel(minimumBreadcrumbLevel, LogType.Warning));
-            Assert.AreEqual(errorExpected, UnityLogHandlerIntegration.PassesMinimumBreadcrumbLevel(minimumBreadcrumbLevel, LogType.Error));
-            Assert.AreEqual(assertExpected, UnityLogHandlerIntegration.PassesMinimumBreadcrumbLevel(minimumBreadcrumbLevel, LogType.Assert));
-            Assert.AreEqual(exceptionExpected, UnityLogHandlerIntegration.PassesMinimumBreadcrumbLevel(minimumBreadcrumbLevel, LogType.Exception));
-        }
-
-        [Test]
         [TestCase(LogType.Log)]
         [TestCase(LogType.Warning)]
         [TestCase(LogType.Error)]
         [TestCase(LogType.Assert)]
-        public void CaptureLogFormat_MinimumBreadcrumbLevelLog_AllLogsAsBreadcrumbAdded(LogType logType)
+        public void CaptureLogFormat_AddAsBreadcrumbEnabled_AddedAsBreadcrumb(LogType logType)
         {
-            _fixture.SentryOptions.MinimumBreadcrumbLevel = LogType.Log;
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[logType] = true;
             var sut = _fixture.GetSut();
             var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
@@ -166,17 +145,45 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        public void CaptureException_AddAsBreadcrumbEnabled_AddedAsBreadcrumb()
+        {
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = true;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureException(new Exception(message), null);
+
+            var scope = new Scope(_fixture.SentryOptions);
+            _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
+
+            StringAssert.Contains(message, breadcrumb.Message);
+        }
+
+        [Test]
         [TestCase(LogType.Log)]
         [TestCase(LogType.Warning)]
         [TestCase(LogType.Error)]
         [TestCase(LogType.Assert)]
-        public void CaptureLogFormat_MinimumBreadcrumbLevelException_NoLogAddedAsBreadcrumb(LogType logType)
+        public void CaptureLogFormat_AddAsBreadcrumbDisabled_NotAddedAsBreadcrumb(LogType logType)
         {
-            _fixture.SentryOptions.MinimumBreadcrumbLevel = LogType.Exception;
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[logType] = false;
             var sut = _fixture.GetSut();
             var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
             sut.CaptureLogFormat(logType, null, "{0}", message);
+
+            Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
+        }
+
+        [Test]
+        public void CaptureException_AddAsBreadcrumbEnabled_NotAddedAsBreadcrumb()
+        {
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = false;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureException(new Exception("Test Exception"), null);
 
             Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
         }
