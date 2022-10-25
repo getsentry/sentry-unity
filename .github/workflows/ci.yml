@@ -8,6 +8,9 @@ on:
     # No point to run on tags - the releasee is already pushed to the release repo.
     tags-ignore:
       - '**'
+    # We must explicitly specify `branches` configuration when we specify `tags-ignore` - otherwise it won't run at all.
+    branches:
+      - '**'
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
