@@ -16,9 +16,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var options = SentryScriptableObject
-                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = SentryScriptableObject.LoadOptions()?.ToSentryUnityOptions(true);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             try
@@ -57,8 +55,8 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddNativeOptions(options);
                 sentryXcodeProject.AddSentryToMain(options);
 
-                var sentryCliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
-                if (sentryCliOptions.IsValid(logger))
+                var sentryCliOptions = SentryScriptableObject.LoadCliOptions();
+                if (sentryCliOptions?.IsValid(logger) is true)
                 {
                     SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions, options);
                     SentryCli.AddExecutableToXcodeProject(pathToProject, logger);

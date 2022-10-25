@@ -181,7 +181,11 @@ namespace Sentry.Unity
                 }
             }
 
-            OptionsConfiguration?.Configure(options);
+            if (isBuilding) {
+                OptionsConfiguration?.ConfigureAtBuild(options);
+            } else {
+                OptionsConfiguration?.ConfigureAtRuntime(options);
+            }
 
             // Doing this after the configure callback to allow users to programmatically opt out
             if (!isBuilding && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)

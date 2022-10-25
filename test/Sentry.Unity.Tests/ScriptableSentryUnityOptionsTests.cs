@@ -22,8 +22,10 @@ namespace Sentry.Unity.Tests
 
         class TestOptionsConfiguration : ScriptableOptionsConfiguration
         {
-            public bool GotCalled;
-            public override void Configure(SentryUnityOptions options) => GotCalled = true;
+            public bool GotCalledAtBuild;
+            public override void ConfigureAtBuild(SentryUnityOptions options) => GotCalledAtBuild = true;
+            public bool GotCalledAtRuntime;
+            public override void ConfigureAtRuntime(SentryUnityOptions options) => GotCalledAtRuntime = true;
         }
 
         [SetUp]
@@ -118,7 +120,8 @@ namespace Sentry.Unity.Tests
 
             scriptableOptions.ToSentryUnityOptions(isBuilding);
 
-            Assert.IsTrue(optionsConfiguration.GotCalled);
+            Assert.AreEqual(optionsConfiguration.GotCalledAtBuild, isBuilding);
+            Assert.AreEqual(optionsConfiguration.GotCalledAtRuntime, !isBuilding);
         }
 
         [Test]

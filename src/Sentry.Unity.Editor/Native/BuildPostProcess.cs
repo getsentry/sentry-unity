@@ -20,9 +20,7 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var options = SentryScriptableObject
-                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var options = SentryScriptableObject.LoadOptions()?.ToSentryUnityOptions(true);
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
             var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 
@@ -99,8 +97,8 @@ namespace Sentry.Unity.Editor.Native
 
         private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, bool isMono)
         {
-            var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
-            if (!cliOptions.IsValid(logger))
+            var cliOptions = SentryScriptableObject.LoadCliOptions();
+            if (cliOptions?.IsValid(logger) is not true)
             {
                 if (options.Il2CppLineNumberSupportEnabled)
                 {

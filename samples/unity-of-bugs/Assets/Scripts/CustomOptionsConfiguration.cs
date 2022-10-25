@@ -1,16 +1,19 @@
 using Sentry.Unity;
 using UnityEngine;
 
+/// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/CustomOptionsConfiguration", menuName = "Sentry/CustomOptionsConfiguration", order = 999)]
 public class CustomOptionsConfiguration : ScriptableOptionsConfiguration
 {
-    // This method gets called when you instantiated the scriptable object and added it to the configuration window
-    public override void Configure(SentryUnityOptions options)
-    {
-        // NOTE: Changes to the options object done here will not affect native crashes. The native SDKs only take 
-        // options defined in the Sentry editor configuration window. 
-        // Learn more at: https://docs.sentry.io/platforms/unity/native-support/configuration/
+    /// See base class for documentation.
+    public override void ConfigureAtBuild(SentryUnityOptions options) {
+        Debug.Log("CustomOptionsConfiguration::ConfigureAtBuild called");
+    }
 
+    /// See base class for documentation.
+    public override void ConfigureAtRuntime(SentryUnityOptions options)
+    {
+        Debug.Log("CustomOptionsConfiguration::ConfigureAtRuntime called");
         options.BeforeSend = sentryEvent =>
         {
             if (sentryEvent.Tags.ContainsKey("SomeTag"))

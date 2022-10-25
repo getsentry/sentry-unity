@@ -70,21 +70,29 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             var scriptName = Path.GetFileNameWithoutExtension(scriptPath);
 
-            File.WriteAllText(scriptPath, $@"using Sentry.Unity;
+            File.WriteAllText(scriptPath, $@"using System;
+using Sentry.Unity;
 using UnityEngine;
 
+/// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration
 [CreateAssetMenu(fileName = ""Assets/Resources/Sentry/{scriptName}.cs"", menuName = ""Sentry/{scriptName}"", order = 999)]
 public class {scriptName} : ScriptableOptionsConfiguration
 {{
-    // This method gets called when you instantiated the scriptable object and added it to the configuration window
-    public override void Configure(SentryUnityOptions options)
+    /// See base class for documentation.
+    public override void ConfigureAtBuild(SentryUnityOptions options)
     {{
-        // NOTE: Native support is already initialized by the time this method runs, so Unity bugs are captured.
-        // That means changes done to the 'options' here will only affect events from C# scripts.
-
-        // Your code here
+        // TODO implement
+        throw new NotImplementedException();
     }}
-}}");
+
+    /// See base class for documentation.
+    public override void ConfigureAtRuntime(SentryUnityOptions options)
+    {{
+        // TODO implement
+        throw new NotImplementedException();
+    }}
+}}
+");
 
             // The created script has to be compiled and the scriptable object can't immediately be instantiated.
             // So instead we work around this by setting a 'CreateScriptableObjectFlag' flag in the EditorPrefs to
