@@ -54,9 +54,13 @@ function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
 
 function LogCat([string] $deviceId, [string] $appPID)
 {
-    if ($null -eq $appPID -or $deviceApi -eq "21")
+    if ([string]::IsNullOrEmpty($appPID))
     {
         adb -s $device logcat -d
+    }
+    elseif ($deviceApi -eq "21")
+    {
+        adb -s $device shell "logcat -d | grep -E '\( *$appPID\)'"
     }
     else
     {

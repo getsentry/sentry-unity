@@ -499,7 +499,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
-          name: testapp-android-screenshot-${{ matrix.api-level }}-${{ matrix.unity-version }}
+          name: testapp-android-logs-${{ matrix.api-level }}-${{ matrix.unity-version }}
           path: |
             samples/IntegrationTest/Build/screen.png
             samples/IntegrationTest/Build/logcat.txt
