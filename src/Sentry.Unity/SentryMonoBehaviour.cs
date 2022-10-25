@@ -118,6 +118,7 @@ namespace Sentry.Unity
     internal partial class SentryMonoBehaviour
     {
         internal readonly MainThreadData MainThreadData = new();
+        internal Func<bool>? IsMainThread;
 
         private ISentrySystemInfo? _sentrySystemInfo;
         internal ISentrySystemInfo SentrySystemInfo
@@ -132,7 +133,11 @@ namespace Sentry.Unity
 
         // Note: Awake is called only once and synchronously while the object is built.
         // We want to do it this way instead of a StartCoroutine() so that we have the context info ASAP.
-        private void Awake() => CollectData();
+        private void Awake()
+        {
+            IsMainThread = () => MainThreadData.IsMainThread();
+            CollectData();
+        }
 
         internal void CollectData()
         {

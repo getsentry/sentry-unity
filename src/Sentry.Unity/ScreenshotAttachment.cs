@@ -27,16 +27,16 @@ namespace Sentry.Unity
         {
             // Note: we need to check explicitly that we're on the same thread. While Unity would throw otherwise
             // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
-            if (!_behaviour.MainThreadData.IsMainThread())
+            if (_behaviour.IsMainThread is null || !_behaviour.IsMainThread())
             {
                 _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
                 return Stream.Null;
             }
 
-            return new MemoryStream(CaptureScreenshot());
+            return new MemoryStream(CaptureScreenshot(Screen.width, Screen.height));
         }
 
-        private int GetTargetResolution(ScreenshotQuality quality)
+        internal static int GetTargetResolution(ScreenshotQuality quality)
         {
             return quality switch
             {
@@ -47,11 +47,8 @@ namespace Sentry.Unity
             };
         }
 
-        private byte[] CaptureScreenshot()
+        internal byte[] CaptureScreenshot(int width, int height)
         {
-            var width = Screen.width;
-            var height = Screen.height;
-
             // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
             // original ratio based on which, width or height, is the smaller
             if (_options.ScreenshotQuality is not ScreenshotQuality.Full)
