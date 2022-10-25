@@ -5,6 +5,9 @@ on:
     paths-ignore:
       - '**.md'
       - '**.txt'
+    # No point to run on tags - the releasee is already pushed to the release repo.
+    tags-ignore:
+      - '**'
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
