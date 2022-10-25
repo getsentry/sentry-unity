@@ -9,7 +9,7 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public SentryUnityOptions Options = new(attachScreenshot: true);
+            public SentryUnityOptions Options = new() {AttachScreenshot = true};
             public bool IsMainThread = true;
 
             public ScreenshotAttachmentContent GetSut()

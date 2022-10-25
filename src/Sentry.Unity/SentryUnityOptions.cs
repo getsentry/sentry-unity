@@ -219,11 +219,6 @@ namespace Sentry.Unity
             };
         }
 
-        public SentryUnityOptions(bool attachScreenshot) : this()
-        {
-            AttachScreenshot = attachScreenshot;
-        }
-
         public override string ToString()
         {
             return $@"Sentry SDK Options:
