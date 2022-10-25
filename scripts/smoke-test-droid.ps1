@@ -68,6 +68,19 @@ function LogCat([string] $deviceId, [string] $appPID)
     }
 }
 
+function PidOf([string] $deviceId, [string] $processName)
+{
+    if ($deviceApi -eq "21")
+    {
+        # `pidof` doesn't exist - take second column from the `ps` output for the given process instead.
+        ((adb -s $deviceId shell "ps | grep '$processName'") -Split " +")[1]
+    }
+    else
+    {
+        adb -s $deviceId shell pidof $processName
+    }
+}
+
 function OnError([string] $deviceId, [string] $deviceApi, [string] $appPID)
 {
     Write-Host "Dumping logs for $device"
@@ -290,7 +303,7 @@ foreach ($device in $DeviceList)
             # Check if the app started - it's not absolutely necessary to get the PID, just useful to achieve good log output.
             if ($null -eq $appPID)
             {
-                $appPID = (adb -s $device shell pidof $ProcessName)
+                $appPID = PidOf $device $ProcessName
                 if ($null -eq $appPID)
                 {
                     if ($stopwatch.Elapsed.TotalSeconds % 10 -eq 0)
@@ -302,7 +315,7 @@ foreach ($device in $DeviceList)
                 }
             }
 
-            $isRunning = $null -ne (adb -s $device shell pidof $ProcessName)
+            $isRunning = $null -ne (PidOf $device $ProcessName)
             If ($isRunning)
             {
                 Write-Host "Waiting Process $appPID on $device to complete, time elapsed already: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
