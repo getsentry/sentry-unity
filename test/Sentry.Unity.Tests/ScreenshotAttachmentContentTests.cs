@@ -9,7 +9,7 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public SentryUnityOptions Options = new() {AttachScreenshot = true};
+            public SentryUnityOptions Options = new() { AttachScreenshot = true };
             public bool IsMainThread = true;
 
             public ScreenshotAttachmentContent GetSut()
@@ -70,7 +70,7 @@ namespace Sentry.Unity.Tests
             var sut = _fixture.GetSut();
 
             var bytes = sut.CaptureScreenshot(2000, 2000);
-            var texture = new Texture2D(1,1); // Size does not matter. Will be overwritten by loading
+            var texture = new Texture2D(1, 1); // Size does not matter. Will be overwritten by loading
             texture.LoadImage(bytes);
 
             Assert.IsTrue(texture.width <= maximumAllowedDimension && texture.height <= maximumAllowedDimension);
@@ -84,7 +84,7 @@ namespace Sentry.Unity.Tests
             var sut = _fixture.GetSut();
 
             var bytes = sut.CaptureScreenshot(testScreenSize, testScreenSize);
-            var texture = new Texture2D(1,1); // Size does not matter. Will be overwritten by loading
+            var texture = new Texture2D(1, 1); // Size does not matter. Will be overwritten by loading
             texture.LoadImage(bytes);
 
             Assert.IsTrue(texture.width == testScreenSize && texture.height == testScreenSize);
