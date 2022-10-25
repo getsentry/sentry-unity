@@ -403,6 +403,8 @@ foreach ($device in $DeviceList)
     }
     catch
     {
+        Write-Warning "Caught exception: $_"
+        Write-Host $_.ScriptStackTrace
         OnError $device $deviceApi
         ExitNow "failed" $_;
     }

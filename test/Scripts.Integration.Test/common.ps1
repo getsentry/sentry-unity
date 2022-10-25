@@ -109,6 +109,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
             else
             {
                 Write-Warning "crash test $run/$runs : FAILED, retrying. The error was: $_"
+                Write-Host $_.ScriptStackTrace
                 continue
             }
         }

@@ -22,9 +22,11 @@ public class SmokeTester : MonoBehaviour
 
     public void Start()
     {
-        Debug.Log("SmokeTester.Start() running");
+        Debug.Log("SmokeTester starting");
 
         var arg = GetTestArg();
+        Debug.Log($"SmokeTester arg: '{arg}'");
+
         if (arg == "smoke")
         {
             SmokeTest();
@@ -101,10 +103,9 @@ public class SmokeTester : MonoBehaviour
 
     public static void SmokeTest()
     {
-        t.name = "SMOKE";
+        t.Start("SMOKE");
         try
         {
-            Debug.Log("SMOKE TEST: Start");
             int crashed = _crashedLastRun();
             t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
 
@@ -173,7 +174,7 @@ public class SmokeTester : MonoBehaviour
 
     public static void CrashTest()
     {
-        Debug.Log("CRASH TEST: Start");
+        t.Start("CRASH");
 
         AddContext();
 
@@ -187,7 +188,7 @@ public class SmokeTester : MonoBehaviour
 
     public static void HasntCrashedTest()
     {
-        t.name = "HASNT-CRASHED";
+        t.Start("HASNT-CRASHED");
         int crashed = _crashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
         t.Pass();
@@ -195,7 +196,7 @@ public class SmokeTester : MonoBehaviour
 
     public static void HasCrashedTest()
     {
-        t.name = "HAS-CRASHED";
+        t.Start("HAS-CRASHED");
         int crashed = _crashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == true (1)", crashed == 1);
         t.Pass();
@@ -226,7 +227,7 @@ public class SmokeTester : MonoBehaviour
 
     private class TestHandler : HttpClientHandler
     {
-        public String name;
+        private String name;
 
         private List<string> _requests = new List<string>();
 
@@ -237,6 +238,12 @@ public class SmokeTester : MonoBehaviour
         private int _testNumber = 0;
 
         public int exitCode = 0;
+
+        public void Start(String testName)
+        {
+            name = testName;
+            Debug.Log($"{name} TEST: start");
+        }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -262,7 +269,7 @@ public class SmokeTester : MonoBehaviour
         {
             if (exitCode != 0)
             {
-                Debug.Log($"Ignoring spurious Exit({code}). Application is already exiting with code {exitCode}");
+                Debug.Log($"{name} TEST: Ignoring spurious Exit({code}). Application is already exiting with code {exitCode}");
             }
             else
             {
