@@ -181,9 +181,12 @@ namespace Sentry.Unity
                 }
             }
 
-            if (isBuilding) {
+            if (isBuilding)
+            {
                 OptionsConfiguration?.ConfigureAtBuild(options);
-            } else {
+            }
+            else
+            {
                 OptionsConfiguration?.ConfigureAtRuntime(options);
             }
 
