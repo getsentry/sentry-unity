@@ -73,7 +73,7 @@ function PidOf([string] $deviceId, [string] $processName)
     if ($deviceApi -eq "21")
     {
         # `pidof` doesn't exist - take second column from the `ps` output for the given process instead.
-        ((adb -s $deviceId shell "ps | grep '$processName'") -Split " +")[1]
+        (adb -s $deviceId shell "ps | grep '$processName'") -Split " +" | Select-Object -Skip 1 -First 1
     }
     else
     {
