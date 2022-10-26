@@ -5,12 +5,6 @@ on:
     paths-ignore:
       - '**.md'
       - '**.txt'
-    # No point to run on tags - the releasee is already pushed to the release repo.
-    tags-ignore:
-      - '**'
-    # We must explicitly specify `branches` configuration when we specify `tags-ignore` - otherwise it won't run at all.
-    branches:
-      - '**'
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
@@ -460,9 +454,10 @@ jobs:
           "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
 
       - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test
+        uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         id: smoke-test
         timeout-minutes: 15
-        uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
+        continue-on-error: true
         with:
           api-level: ${{ steps.config.outputs.api-level }}
           target: ${{ steps.config.outputs.target }}
@@ -483,10 +478,9 @@ jobs:
           sleep 7
 
       - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test (Retry)
-        timeout-minutes: 15
-        # Retry the tests if the previous fail happened on the emulator startup.
-        if: ${{ (steps.smoke-test.outputs.status == 'flaky') || (steps.smoke-test.outputs.status == '') }}
+        if: ${{ steps.smoke-test.outputs.status != 'success' }}
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
+        timeout-minutes: 15
         with:
           api-level: ${{ steps.config.outputs.api-level }}
           target: ${{ steps.config.outputs.target }}
@@ -498,7 +492,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: false
           script: |
-            echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} test due to previous step failure: '${{ steps.smoke-test.outputs.status }}'"
+            echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} because the previous step finished with: '${{ steps.smoke-test.outputs.status }}'"
             pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Upload artifacts on failure
