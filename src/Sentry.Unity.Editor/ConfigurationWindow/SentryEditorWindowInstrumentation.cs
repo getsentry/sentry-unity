@@ -76,7 +76,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (args.TryGetValue("traceSampleRate", out boolValue))
             {
                 Debug.LogFormat("{0}: Configuring TraceSampleRate to {1}", functionName, boolValue ? 1.0f : 0.0f);
-                options.TracesSampleRate = boolValue ? 1.0f : 0.0f;
+                options.TracesSampleRate = boolValue ? 1.0d : 0.0d;
             }
 
             if (args.TryGetValue("performanceAutoInstrumentation", out boolValue))

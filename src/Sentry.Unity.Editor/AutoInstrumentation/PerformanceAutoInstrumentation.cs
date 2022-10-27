@@ -16,7 +16,6 @@ namespace Sentry.Unity.Editor
     public static class PerformanceAutoInstrumentation
     {
         private const string PlayerAssembly = "Assembly-CSharp.dll";
-        private const string OutputDirectory = "PlayerScriptAssemblies"; // There are multiple directories involved - we want this one in particular
 
         static PerformanceAutoInstrumentation()
         {
@@ -45,8 +44,7 @@ namespace Sentry.Unity.Editor
 
                     logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
 
-                    var stopwatch = new Stopwatch();
-                    stopwatch.Start();
+                    var stopwatch = Stopwatch.StartNew();
 
                     try
                     {
@@ -113,7 +111,7 @@ namespace Sentry.Unity.Editor
                             string.Equals(
                                 p.ParameterType.FullName,
                                 parameter.FullName,
-                                StringComparison.CurrentCulture))
+                                StringComparison.Ordinal))
                             .ToList();
 
                         if (parameterDefinitions.Count == 0)
@@ -133,7 +131,7 @@ namespace Sentry.Unity.Editor
             throw new Exception(
                 $"Failed to find method '{name}' " +
                 $"in '{typeDefinition.FullName}' " +
-                $"with parameters: '{(requiredParameters is not null ? string.Join(",", requiredParameters.ToList()) : "none")}'");
+                $"with parameters: '{(requiredParameters is not null ? string.Join(",", requiredParameters.AsEnumerable()) : "none")}'");
         }
 
         private static void ModifyPlayerAssembly(

@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
@@ -34,30 +35,24 @@ namespace Sentry.Unity.Editor
 
         private static bool TryReadSymbols(this ModuleDefinition module)
         {
-            var hasSymbols = false;
             try
             {
                 module.ReadSymbols();
-                hasSymbols = true;
+                return true;
             }
-            catch (SymbolsNotFoundException)
+            catch
             {
+                return false;
             }
-
-            return hasSymbols;
         }
 
         public static void Write(StrongNameKeyPair? key, bool hasSymbols, ModuleDefinition module, string file)
         {
             var parameters = new WriterParameters
             {
-                WriteSymbols = hasSymbols
+                WriteSymbols = hasSymbols,
+                StrongNameKeyPair = key
             };
-
-            if (key != null)
-            {
-                parameters.StrongNameKeyPair = key;
-            }
 
             module.Write(file, parameters);
         }
