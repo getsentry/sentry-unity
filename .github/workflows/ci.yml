@@ -431,6 +431,7 @@ jobs:
           kextstat
 
       - name: Record test session
+        shell: bash
         run: |
           brew install ffmpeg
           mkdir -p ${{ env.ARTIFACTS_PATH }}
@@ -473,13 +474,11 @@ jobs:
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
-          cores: 2
+          cores: 3
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: true
-          script: |
-            adb shell 'su;setprop debug.hwui.renderer skiagl;stop;start'
-            pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
+          script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
 
       - name: Kill emulator if AVD failed.
         if: ${{ steps.smoke-test.outputs.status != 'success' }}
@@ -498,7 +497,7 @@ jobs:
           force-avd-creation: false
           ram-size: 2048M
           arch: x86_64
-          cores: 2
+          cores: 3
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: true

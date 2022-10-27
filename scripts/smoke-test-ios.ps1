@@ -104,7 +104,7 @@ function Test
         throw " Runtime (-- $SelectedRuntime --) not found"
     }
 
-    foreach ($device in $deviceListRaw[$runtimeIndex..$deviceListRaw.Count])
+    foreach ($device in $deviceListRaw[$runtimeIndex..($deviceListRaw.Count - 1)])
     {
         If ($device.StartsWith("--"))
         {
@@ -251,7 +251,7 @@ function Test
 function LatestRuntime
 {
     $runtimes = xcrun simctl list runtimes iOS
-    $lastRuntime = $runtimes[$runtimesnewArray.Count – 1]
+    $lastRuntime = $runtimes | Select-Object -Last 1
     $result = [regex]::Match($lastRuntime, "(?<runtime>iOS [0-9.]+)")
     if ($result.Success -eq $False)
     {
