@@ -26,22 +26,28 @@ else
 }
 $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 
-$_LogPath = "./$ApkPath/../test-artifacts/$(Get-Date -Format "HHmmss")"
-function LogPath
+$_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$ApkPath/../test-artifacts/") `
+    + $(Get-Date -Format "HHmmss")
+function ArtifactsPath
 {
-    if (-not (Test-Path $_LogPath))
+    if (-not (Test-Path $_ArtifactsPath))
     {
-        New-Item $_LogPath -ItemType Directory
+        New-Item $_ArtifactsPath -ItemType Directory | Out-Null
     }
-    $_LogPath
+    $_ArtifactsPath.Replace('\', '/')
 }
 
-function TakeScreenshot
+if (Test-Path env:CI)
 {
-    param ( $deviceId )
-    $file = "/data/local/tmp/screen.png"
+    # Take Screenshot of VM to verify emulator start
+    screencapture "$(ArtifactsPath)host-screenshot.jpg"
+}
+
+function TakeScreenshot([string] $deviceId)
+{
+    $file = "/data/local/tmp/screen$(Get-Date -Format "HHmmss").png"
     adb -s $deviceId shell "screencap -p $file"
-    adb -s $deviceId pull $file (LogPath)
+    adb -s $deviceId pull $file (ArtifactsPath)
     adb -s $deviceId shell "rm $file"
 }
 
@@ -94,7 +100,7 @@ function OnError([string] $deviceId, [string] $deviceApi, [string] $appPID)
     Write-Host "::group::logcat"
     LogCat $deviceId $appPID
     Write-Host "::endgroup::"
-    LogCat $deviceId $null | Out-File "$(LogPath)/logcat.txt"
+    LogCat $deviceId $null | Out-File "$(ArtifactsPath)/logcat.txt"
     Write-Host "::group::UI XML Log"
     GetDeviceUiLog $device $deviceApi
     Write-Host "::endgroup::"
@@ -256,6 +262,12 @@ foreach ($device in $DeviceList)
     $deviceApi = "$(adb -s $device shell getprop ro.build.version.sdk)".Trim()
     $deviceSdk = "$(adb -s $device shell getprop ro.build.version.release)".Trim()
     Write-Host "`nChecking device $device with SDK '$deviceSdk' and API '$deviceApi'"
+
+    if (Test-Path env:CI)
+    {
+        # Take Screenshot of the device to verify emulator start
+        TakeScreenshot $device
+    }
 
     $stdout = adb -s $device shell "pm list packages -f"
     if ($null -ne ($stdout | Select-String $ProcessName))
