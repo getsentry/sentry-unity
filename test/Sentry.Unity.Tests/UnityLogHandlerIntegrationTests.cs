@@ -125,6 +125,70 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        [TestCase(LogType.Log)]
+        [TestCase(LogType.Warning)]
+        [TestCase(LogType.Error)]
+        [TestCase(LogType.Assert)]
+        public void CaptureLogFormat_AddAsBreadcrumbEnabled_AddedAsBreadcrumb(LogType logType)
+        {
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[logType] = true;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureLogFormat(logType, null, "{0}", message);
+
+            var scope = new Scope(_fixture.SentryOptions);
+            _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
+
+            Assert.AreEqual(message, breadcrumb.Message);
+        }
+
+        [Test]
+        public void CaptureException_AddAsBreadcrumbEnabled_AddedAsBreadcrumb()
+        {
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = true;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureException(new Exception(message), null);
+
+            var scope = new Scope(_fixture.SentryOptions);
+            _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
+
+            StringAssert.Contains(message, breadcrumb.Message);
+        }
+
+        [Test]
+        [TestCase(LogType.Log)]
+        [TestCase(LogType.Warning)]
+        [TestCase(LogType.Error)]
+        [TestCase(LogType.Assert)]
+        public void CaptureLogFormat_AddAsBreadcrumbDisabled_NotAddedAsBreadcrumb(LogType logType)
+        {
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[logType] = false;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureLogFormat(logType, null, "{0}", message);
+
+            Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
+        }
+
+        [Test]
+        public void CaptureException_AddAsBreadcrumbEnabled_NotAddedAsBreadcrumb()
+        {
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = false;
+            var sut = _fixture.GetSut();
+            var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+
+            sut.CaptureException(new Exception("Test Exception"), null);
+
+            Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
+        }
+
+        [Test]
         public void CaptureException_ExceptionCapturedAndMechanismSet()
         {
             var sut = _fixture.GetSut();

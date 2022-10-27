@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
 namespace Sentry.Unity
@@ -82,6 +83,11 @@ namespace Sentry.Unity
         public int ScreenshotCompression { get; set; } = 75;
 
         /// <summary>
+        /// Whether the SDK should automatically add breadcrumbs per LogType
+        /// </summary>
+        public Dictionary<LogType, bool> AddBreadcrumbsForLogType { get; set; }
+
+        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;
@@ -115,6 +121,9 @@ namespace Sentry.Unity
         /// For that, Org Slut, Project Slug and Auth token are required.
         /// </remarks>
         public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+
+        /// This option is hidden due to incompatibility between IL2CPP and Enhanced mode.
+        private new StackTraceMode StackTraceMode { get; set; }
 
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
         internal string? _defaultUserId;
@@ -175,8 +184,9 @@ namespace Sentry.Unity
             RequestBodyCompressionLevel = CompressionLevelWithAuto.NoCompression;
             InitCacheFlushTimeout = System.TimeSpan.Zero;
 
-            // Ben.Demystifer not compatible with IL2CPP
-            StackTraceMode = StackTraceMode.Original;
+            // Ben.Demystifer not compatible with IL2CPP. We could allow Enhanced in the future for Mono.
+            // See https://github.com/getsentry/sentry-unity/issues/675
+            base.StackTraceMode = StackTraceMode.Original;
             IsEnvironmentUser = false;
 
             if (application.ProductName is string productName
@@ -198,6 +208,15 @@ namespace Sentry.Unity
             Environment = application.IsEditor && !isBuilding
                 ? "editor"
                 : "production";
+
+            AddBreadcrumbsForLogType = new Dictionary<LogType, bool>
+            {
+                { LogType.Log, true},
+                { LogType.Warning, true},
+                { LogType.Assert, true},
+                { LogType.Error, true},
+                { LogType.Exception, true},
+            };
         }
 
         public override string ToString()

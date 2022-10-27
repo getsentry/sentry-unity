@@ -2,15 +2,26 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Java SDK from v6.5.0 to v6.6.0 ([#1042](https://github.com/getsentry/sentry-unity/pull/1042))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#660)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.5.0...6.6.0)
+
+## 0.24.0
+
 ### Fixes
 
+- Disabled Android lifecycle breadcrumbs ([#1038](https://github.com/getsentry/sentry-unity/pull/1038))
 - Additional IL2CPP arguments get added only once ([#997](https://github.com/getsentry/sentry-unity/pull/997))
 - Releasing temp render texture after capturing a screenshot ([#983](https://github.com/getsentry/sentry-unity/pull/983))
 - Automatic screenshot mirroring on select devices. ([#1019](https://github.com/getsentry/sentry-unity/pull/1019))
+- Hide `StackTraceMode` from options to avoid accidental errors when used with IL2CPP ([#1033](https://github.com/getsentry/sentry-unity/pull/1033))
 
 ### Features
 
 - Automated Performance Instrumentation for MonoBehaviour.Awake methods ([#998](https://github.com/getsentry/sentry-unity/pull/998))
+- Added flags per LogType for automatically adding breadcrumbs ([#1030](https://github.com/getsentry/sentry-unity/pull/1030))
 - The Cocoa SDK is now bundled as `.xcframework` ([#1002](https://github.com/getsentry/sentry-unity/pull/1002))
 - Automated Performance Instrumentation for Runtime Initialization ([#991](https://github.com/getsentry/sentry-unity/pull/991))
 - Automated Performance Instrumentation for Scene Loading ([#768](https://github.com/getsentry/sentry-unity/pull/768))
@@ -20,12 +31,12 @@
 - Bump Java SDK from v6.4.1 to v6.5.0 ([#980](https://github.com/getsentry/sentry-unity/pull/980), [#1005](https://github.com/getsentry/sentry-unity/pull/1005), [#1011](https://github.com/getsentry/sentry-unity/pull/1011))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#650)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.4.1...6.5.0)
-- Bump CLI from v2.5.2 to v2.7.0 ([#986](https://github.com/getsentry/sentry-unity/pull/986), [#999](https://github.com/getsentry/sentry-unity/pull/999))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#270)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.7.0)
-- Bump Cocoa SDK from v7.25.1 to v7.28.0 ([#988](https://github.com/getsentry/sentry-unity/pull/988), [#996](https://github.com/getsentry/sentry-unity/pull/996), [#1004](https://github.com/getsentry/sentry-unity/pull/1004), [#1016](https://github.com/getsentry/sentry-unity/pull/1016))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7280)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.25.1...7.28.0)
+- Bump CLI from v2.5.2 to v2.8.0 ([#986](https://github.com/getsentry/sentry-unity/pull/986), [#999](https://github.com/getsentry/sentry-unity/pull/999), [#1043](https://github.com/getsentry/sentry-unity/pull/1043))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#280)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.5.2...2.8.0)
+- Bump Cocoa SDK from v7.25.1 to v7.29.0 ([#988](https://github.com/getsentry/sentry-unity/pull/988), [#996](https://github.com/getsentry/sentry-unity/pull/996), [#1004](https://github.com/getsentry/sentry-unity/pull/1004), [#1016](https://github.com/getsentry/sentry-unity/pull/1016), [#1041](https://github.com/getsentry/sentry-unity/pull/1041))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7290)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.25.1...7.29.0)
 - Bump .NET SDK from v3.21.0 to v3.22.0 ([#1008](https://github.com/getsentry/sentry-unity/pull/1008))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3220)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.21.0...3.22.0)

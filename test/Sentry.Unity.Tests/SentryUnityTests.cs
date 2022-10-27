@@ -23,7 +23,6 @@ namespace Sentry.Unity.Tests
         {
             var options = new SentryUnityOptions();
             options.AttachStacktrace = true;
-            options.StackTraceMode = StackTraceMode.Original;
             var sut = new SentryStackTraceFactory(options);
 
             IList<SentryStackFrame> framesSentry = null!;

@@ -396,7 +396,7 @@ Log.LogMessage("Unity Version: " + version);
     </Task>
   </UsingTask>
 
-    <!-- Locate the TestRunner.dlls by filling the wildcard with the template version number. 3d is the default template -->
+  <!-- Locate the TestRunner.dlls by filling the wildcard with the template version number. 3d is the default template -->
   <UsingTask TaskName="LocateTestRunner" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <UnityLibcache ParameterType="System.String" Required="true" />
