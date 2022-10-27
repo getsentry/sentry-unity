@@ -27,7 +27,7 @@ namespace Sentry.Unity
         {
             // Note: we need to check explicitly that we're on the same thread. While Unity would throw otherwise
             // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
-            if (_behaviour.IsMainThread is null || !_behaviour.IsMainThread())
+            if (_behaviour.MainThreadData.IsMainThread())
             {
                 _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
                 return Stream.Null;

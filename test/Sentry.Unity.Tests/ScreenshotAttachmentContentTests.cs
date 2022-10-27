@@ -1,7 +1,8 @@
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Sentry.Unity.Tests
 {
@@ -10,16 +11,8 @@ namespace Sentry.Unity.Tests
         private class Fixture
         {
             public SentryUnityOptions Options = new() { AttachScreenshot = true };
-            public bool IsMainThread = true;
 
-            public ScreenshotAttachmentContent GetSut()
-            {
-                var gameObject = new GameObject("TestSentryMonoBehaviour");
-                var sentryMonoBehaviour = gameObject.AddComponent<SentryMonoBehaviour>();
-                sentryMonoBehaviour.IsMainThread = () => IsMainThread;
-
-                return new ScreenshotAttachmentContent(Options, sentryMonoBehaviour);
-            }
+            public ScreenshotAttachmentContent GetSut() => new(Options, SentryMonoBehaviour.Instance);
         }
 
         private Fixture _fixture = null!;
@@ -41,7 +34,6 @@ namespace Sentry.Unity.Tests
         [Test]
         public void GetStream_IsMainThread_ReturnsStream()
         {
-            _fixture.IsMainThread = true;
             var sut = _fixture.GetSut();
 
             var stream = sut.GetStream();
@@ -52,12 +44,16 @@ namespace Sentry.Unity.Tests
         [Test]
         public void GetStream_IsNonMainThread_ReturnsNullStream()
         {
-            _fixture.IsMainThread = false;
             var sut = _fixture.GetSut();
 
-            var stream = sut.GetStream();
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+                var stream = sut.GetStream();
 
-            Assert.AreEqual(Stream.Null, stream);
+                Assert.NotNull(stream);
+                Assert.AreEqual(Stream.Null, stream);
+            }).Start();
         }
 
         [Test]
