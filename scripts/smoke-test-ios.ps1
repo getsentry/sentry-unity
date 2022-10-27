@@ -14,7 +14,6 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIn
 #          'iOS <version>' to run on the specified runtime ex: iOS 12.4
 # $DevicesToRun: the amount of devices to run
 #          '0' or empty will run on 1 device, otherwise on the specified amount.
-$ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 

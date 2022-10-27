@@ -3,7 +3,7 @@ param (
     [Switch] $IsIntegrationTest
 )
 
-Set-StrictMode -Version latest
+. $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
 # GITHUB_WORKSPACE is the root folder where the project is stored.
 Write-Host "#################################################"
@@ -14,27 +14,34 @@ Write-Host "#################################################"
 
 if ($IsIntegrationTest)
 {
-    Set-Variable -Name "ApkPath" -Value "samples/IntegrationTest/Build"
-    Set-Variable -Name "ApkFileName" -Value "test.apk"
-    Set-Variable -Name "ProcessName" -Value "com.DefaultCompany.IntegrationTest"
+    $ApkPath = "samples/IntegrationTest/Build"
+    $ApkFileName = "test.apk"
+    $ProcessName = "com.DefaultCompany.IntegrationTest"
 }
 else
 {
-
-    Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
-    Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
-    Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
+    $ApkPath = "samples/artifacts/builds/Android"
+    $ApkFileName = "IL2CPP_Player.apk"
+    $ProcessName = "io.sentry.samples.unityofbugs"
 }
-Set-Variable -Name "TestActivityName" -Value "$ProcessName/com.unity3d.player.UnityPlayerActivity"
+$TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 
-. $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
+$_LogPath = "./$ApkPath/../test-artifacts/$(Get-Date -Format "HHmmss")"
+function LogPath
+{
+    if (-not (Test-Path $_LogPath))
+    {
+        New-Item $_LogPath -ItemType Directory
+    }
+    $_LogPath
+}
 
 function TakeScreenshot
 {
     param ( $deviceId )
     $file = "/data/local/tmp/screen.png"
     adb -s $deviceId shell "screencap -p $file"
-    adb -s $deviceId pull $file "$ApkPath"
+    adb -s $deviceId pull $file (LogPath)
     adb -s $deviceId shell "rm $file"
 }
 
@@ -87,17 +94,13 @@ function OnError([string] $deviceId, [string] $deviceApi, [string] $appPID)
     Write-Host "::group::logcat"
     LogCat $deviceId $appPID
     Write-Host "::endgroup::"
-    LogCat $deviceId $null | Out-File "$ApkPath/logcat.txt"
+    LogCat $deviceId $null | Out-File "$(LogPath)/logcat.txt"
     Write-Host "::group::UI XML Log"
     GetDeviceUiLog $device $deviceApi
     Write-Host "::endgroup::"
     TakeScreenshot $device
 }
 
-function DateTimeNow
-{
-    return Get-Date -UFormat "%T %Z"
-}
 
 function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $alert)
 {
@@ -339,7 +342,6 @@ foreach ($device in $DeviceList)
             $FailureString = "$($Name.ToUpper()) TEST: FAIL"
         }
 
-        Write-Host (DateTimeNow)
         $LogcatCache = LogCat $device $appPID
         $lineWithSuccess = $LogcatCache | Select-String $SuccessString
         $lineWithFailure = $LogcatCache | Select-String $FailureString
