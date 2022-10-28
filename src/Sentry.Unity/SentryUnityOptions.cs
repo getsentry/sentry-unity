@@ -122,7 +122,7 @@ namespace Sentry.Unity
         /// </remarks>
         public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
-        /// This option is hidden due to incompatibility between IL2CPP and Enhanced mode.
+        // This option is hidden due to incompatibility between IL2CPP and Enhanced mode.
         private new StackTraceMode StackTraceMode { get; set; }
 
         // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).

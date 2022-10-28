@@ -33,10 +33,10 @@ namespace Sentry.Unity
                 return Stream.Null;
             }
 
-            return new MemoryStream(CaptureScreenshot());
+            return new MemoryStream(CaptureScreenshot(Screen.width, Screen.height));
         }
 
-        private int GetTargetResolution(ScreenshotQuality quality)
+        internal static int GetTargetResolution(ScreenshotQuality quality)
         {
             return quality switch
             {
@@ -47,11 +47,8 @@ namespace Sentry.Unity
             };
         }
 
-        private byte[] CaptureScreenshot()
+        internal byte[] CaptureScreenshot(int width, int height)
         {
-            var width = Screen.width;
-            var height = Screen.height;
-
             // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
             // original ratio based on which, width or height, is the smaller
             if (_options.ScreenshotQuality is not ScreenshotQuality.Full)
