@@ -67,7 +67,7 @@ namespace Sentry.Unity.Editor
             var typeDefinition = module.GetType(type.FullName);
             if (typeDefinition is null)
             {
-                throw new Exception($"Failed to get type '{type.FullName}' from module '{module.Name}'");
+                throw new ArgumentException($"Failed to get requested type definition in {module.Name}", type.FullName);
             }
 
             return typeDefinition;
@@ -78,7 +78,7 @@ namespace Sentry.Unity.Editor
             var reference = module.ImportReference(method);
             if (reference is null)
             {
-                throw new Exception($"Failed to import '{method.FullName}' into '{module.Name}");
+                throw new ArgumentException($"Failed to import requested reference in {module.Name}", method.FullName);
             }
 
             return reference;
