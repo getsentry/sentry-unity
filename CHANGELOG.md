@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Removing Sentry.framework from being copied as ResourceBundle ([#1056](https://github.com/getsentry/sentry-unity/pull/1056))
+
 ### Features
 
 - Automated Performance Instrumentation for MonoBehaviour.Awake methods ([#998](https://github.com/getsentry/sentry-unity/pull/998))
