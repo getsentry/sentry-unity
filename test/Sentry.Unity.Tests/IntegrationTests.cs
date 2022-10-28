@@ -18,6 +18,7 @@ namespace Sentry.Unity.Tests
         private string _eventMessage = null!; // Set in setup
         private string _identifyingEventValueAttribute = null!; // Set in setup
 
+        // [SetUp] gets called after disabling the self initialization in the IPrebuildSetup
         [SetUp]
         public new void Setup()
         {

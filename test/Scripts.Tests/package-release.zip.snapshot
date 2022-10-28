@@ -1,5 +1,13 @@
 Documentation~/index.md
 Editor/iOS.meta
+Editor/Mono.Cecil.dll
+Editor/Mono.Cecil.dll.meta
+Editor/Mono.Cecil.Mdb.dll
+Editor/Mono.Cecil.Mdb.dll.meta
+Editor/Mono.Cecil.Pdb.dll
+Editor/Mono.Cecil.Pdb.dll.meta
+Editor/Mono.Cecil.Rocks.dll
+Editor/Mono.Cecil.Rocks.dll.meta
 Editor/sentry-cli.meta
 Editor/Sentry.Unity.Editor.dll
 Editor/Sentry.Unity.Editor.dll.meta

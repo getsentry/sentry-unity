@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace Sentry.Unity
     /// Singleton and DontDestroyOnLoad setup.
     /// </summary>
     [AddComponentMenu("")] // Hides it from being added as a component in the inspector
-    internal partial class SentryMonoBehaviour : MonoBehaviour
+    public partial class SentryMonoBehaviour : MonoBehaviour
     {
         private static SentryMonoBehaviour? _instance;
         public static SentryMonoBehaviour Instance
@@ -30,9 +31,20 @@ namespace Sentry.Unity
     }
 
     /// <summary>
+    /// A MonoBehaviour used to provide access to helper methods used during Performance Auto Instrumentation
+    /// </summary>
+    public partial class SentryMonoBehaviour
+    {
+        public void StartAwakeSpan(MonoBehaviour monoBehaviour) =>
+            SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
+
+        public void FinishAwakeSpan() => SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
+    }
+
+    /// <summary>
     ///  A MonoBehavior used to forward application focus events to subscribers.
     /// </summary>
-    internal partial class SentryMonoBehaviour
+    public partial class SentryMonoBehaviour
     {
         /// <summary>
         /// Hook to receive an event when the application gains focus.
@@ -115,7 +127,7 @@ namespace Sentry.Unity
     /// <summary>
     /// Main thread data collector.
     /// </summary>
-    internal partial class SentryMonoBehaviour
+    public partial class SentryMonoBehaviour
     {
         internal readonly MainThreadData MainThreadData = new();
 

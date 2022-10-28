@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Automated Performance Instrumentation for MonoBehaviour.Awake methods ([#998](https://github.com/getsentry/sentry-unity/pull/998))
+
 ### Dependencies
 
 - Bump Java SDK from v6.5.0 to v6.6.0 ([#1042](https://github.com/getsentry/sentry-unity/pull/1042))

@@ -17,6 +17,7 @@ MonoBehaviour:
   <CaptureInEditor>k__BackingField: 1
   <EnableLogDebouncing>k__BackingField: 0
   <TracesSampleRate>k__BackingField: 0
+  <AutoInstrumentPerformance>k__BackingField: 0
   <AutoSessionTracking>k__BackingField: 1
   <AutoSessionTrackingInterval>k__BackingField: 30000
   <ReleaseOverride>k__BackingField: 

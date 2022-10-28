@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Sentry.Unity.Editor
 {
-    public static class SentryPackageInfo
+    internal static class SentryPackageInfo
     {
         internal static string PackageName = SentryUnityOptions.PackageName;
         internal static string PackageNameDev = SentryUnityOptions.PackageName + ".dev";
