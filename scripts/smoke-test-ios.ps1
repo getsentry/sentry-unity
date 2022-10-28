@@ -126,16 +126,8 @@ function Test
     Write-Host "::endgroup::"
 
     $devicesRan = 0
-    $skippedItems = 0
     ForEach ($device in $deviceList)
     {
-        If ($skippedItems -lt $skipCount)
-        {
-            # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
-            $device.TestSkipped = $true
-            $skippedItems++
-            continue
-        }
         If ($devicesRan -ge $DevicesToRun)
         {
             # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green

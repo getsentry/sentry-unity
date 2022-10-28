@@ -435,7 +435,9 @@ jobs:
         run: |
           command -v ffmpeg || brew install ffmpeg
           mkdir -p ${{ env.ARTIFACTS_PATH }}
-          ffmpeg -nostdin -f avfoundation -i 1 ${{ env.ARTIFACTS_PATH }}out.mkv > ${{ env.ARTIFACTS_PATH }}ffmpeg.log 2>&1 &
+          ffmpeg -f avfoundation -list_devices true -i ""
+          ffmpeg -codecs
+          ffmpeg -nostdin -f avfoundation -i 1 -video_size 720x480 -framerate 5 ${{ env.ARTIFACTS_PATH }}out.mkv > ${{ env.ARTIFACTS_PATH }}ffmpeg.log 2>&1 &
 
       # outputs variables: api-level, label, target
       - name: Configure Android Settings
