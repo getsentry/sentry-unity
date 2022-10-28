@@ -433,11 +433,11 @@ jobs:
       - name: Record test session
         shell: bash
         run: |
+          set -x
           command -v ffmpeg || brew install ffmpeg
           mkdir -p ${{ env.ARTIFACTS_PATH }}
-          ffmpeg -f avfoundation -list_devices true -i ""
           ffmpeg -codecs
-          ffmpeg -nostdin -f avfoundation -i 1 -video_size 720x480 -framerate 5 ${{ env.ARTIFACTS_PATH }}out.mkv > ${{ env.ARTIFACTS_PATH }}ffmpeg.log 2>&1 &
+          ffmpeg -nostdin -f avfoundation -i 0 -video_size 720x480 -framerate 5 -an ${{ env.ARTIFACTS_PATH }}out.mkv > ${{ env.ARTIFACTS_PATH }}ffmpeg.log 2>&1 &
 
       # outputs variables: api-level, label, target
       - name: Configure Android Settings
@@ -468,7 +468,7 @@ jobs:
       - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
         id: smoke-test
-        timeout-minutes: 15
+        timeout-minutes: 30
         continue-on-error: true
         with:
           api-level: ${{ steps.config.outputs.api-level }}
@@ -492,7 +492,7 @@ jobs:
       - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test (Retry)
         if: ${{ steps.smoke-test.outputs.status != 'success' }}
         uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
-        timeout-minutes: 15
+        timeout-minutes: 30
         with:
           api-level: ${{ steps.config.outputs.api-level }}
           target: ${{ steps.config.outputs.target }}
