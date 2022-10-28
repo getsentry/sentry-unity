@@ -29,9 +29,6 @@ namespace Sentry.Unity.Editor
                     return;
                 }
 
-                var fileInfo = new FileInfo(assemblyPath);
-                Debug.Log($"Finished compiling '{assemblyPath}' - '{fileInfo.Length}'");
-
                 // Adding the output directory to the check because there are two directories involved in building. We specifically want 'PlayerScriptAssemblies'
                 if (assemblyPath.Contains(PlayerAssembly))
                 {
