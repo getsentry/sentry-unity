@@ -29,7 +29,6 @@ namespace Sentry.Unity.Editor
                     return;
                 }
 
-                // Adding the output directory to the check because there are two directories involved in building. We specifically want 'PlayerScriptAssemblies'
                 if (assemblyPath.Contains(PlayerAssembly))
                 {
                     var logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
