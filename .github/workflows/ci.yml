@@ -433,9 +433,9 @@ jobs:
       - name: Record test session
         shell: bash
         run: |
-          brew install ffmpeg
+          command -v ffmpeg || brew install ffmpeg
           mkdir -p ${{ env.ARTIFACTS_PATH }}
-          ffmpeg -f avfoundation -i 0 -t 120 ${{ env.ARTIFACTS_PATH }}out.mov &
+          ffmpeg -nostdin -f avfoundation -i 1 ${{ env.ARTIFACTS_PATH }}out.mkv > ${{ env.ARTIFACTS_PATH }}ffmpeg.log 2>&1 &
 
       # outputs variables: api-level, label, target
       - name: Configure Android Settings
@@ -504,6 +504,10 @@ jobs:
           script: |
             echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} because the previous step finished with: '${{ steps.smoke-test.outputs.status }}'"
             pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
+
+      - name: Stop screen recording
+        continue-on-error: true
+        run: killall ffmpeg
 
       - name: Upload artifacts on failure
         if: ${{ failure() }}

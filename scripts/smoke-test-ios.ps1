@@ -126,6 +126,7 @@ function Test
     Write-Host "::endgroup::"
 
     $devicesRan = 0
+    $skippedItems = 0
     ForEach ($device in $deviceList)
     {
         If ($skippedItems -lt $skipCount)
