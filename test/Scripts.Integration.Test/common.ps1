@@ -299,7 +299,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         {
             $expectedFiles = @(
                 "IntegrationTest: count=$($withSources ? 3 : 2)",
-                'Sentry: count=6',
+                'Sentry: count=8',
                 "UnityFramework: count=$($withSources ? 5 : 4)",
                 'libiPhone-lib.dylib: count=1'
             )
@@ -308,7 +308,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         {
             $expectedFiles = @(
                 "IntegrationTest: count=$($withSources ? 3 : 2)",
-                'Sentry: count=6',
+                'Sentry: count=8',
                 "UnityFramework: count=$($withSources ? 4 : 3)",
                 'libiPhone-lib.dylib: count=1'
             )
