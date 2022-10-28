@@ -40,7 +40,7 @@ function ArtifactsPath
 if (Test-Path env:CI)
 {
     # Take Screenshot of VM to verify emulator start
-    screencapture "$(ArtifactsPath)host-screenshot.jpg"
+    screencapture "$(ArtifactsPath)/host-screenshot.jpg"
 }
 
 function TakeScreenshot([string] $deviceId)
