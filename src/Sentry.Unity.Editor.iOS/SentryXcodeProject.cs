@@ -106,10 +106,6 @@ fi
             var frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
 
-            var addFrameworkToProjectMethod = _pbxProjectType.GetMethod("AddFrameworkToProject", BindingFlags.Public | BindingFlags.Instance);
-            addFrameworkToProjectMethod.Invoke(_project, new object[] { _mainTargetGuid, FrameworkName, false });
-            addFrameworkToProjectMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, FrameworkName, false });
-
             // Embedding the framework because it's dynamic and needed at runtime
             _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
                 .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
@@ -124,10 +120,12 @@ fi
             _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
 
+            // Getting the Link With Binary phase
             var getBuildPhaseMethod = _pbxProjectType.GetMethod("GetFrameworksBuildPhaseByTarget", new[] { typeof(string) });
             var mainBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _mainTargetGuid });
             var unityFrameworkBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid });
 
+            // Linking With Binary
             var addFileToBuildSectionMethod = _pbxProjectType.GetMethod("AddFileToBuildSection", new[] { typeof(string), typeof(string), typeof(string) });
             addFileToBuildSectionMethod.Invoke(_project, new object[] { _mainTargetGuid, mainBuildPhaseGuid, frameworkGuid });
             addFileToBuildSectionMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, unityFrameworkBuildPhaseGuid, frameworkGuid });
