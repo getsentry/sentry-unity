@@ -42,6 +42,11 @@
         <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.CoreModule.dll</HintPath>
         <Private>false</Private>
       </Reference>
+      <!-- Used for texture.loadImage in tests -->
+      <Reference Include="UnityEngine.ImageConversionModule">
+        <HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.ImageConversionModule.dll</HintPath>
+        <Private>false</Private>
+      </Reference>
     </ItemGroup>
     <Error Condition="!Exists('$(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll"></Error>
   </Target>
