@@ -311,8 +311,7 @@ foreach ($device in $DeviceList)
 
         $timedOut = $true
         $appPID = $null
-        $stopwatch = [System.Diagnostics.Stopwatch]::new()
-        $stopwatch.Start()
+        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
         While ($stopwatch.Elapsed.TotalSeconds -lt 60)
         {
             # Check if the app started - it's not absolutely necessary to get the PID, just useful to achieve good log output.

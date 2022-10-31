@@ -457,7 +457,7 @@ jobs:
           "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
 
       - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test
-        uses: reactivecircus/android-emulator-runner@76c2bf6f95ed6458fd659a1bdb680a0f8df232dc
+        uses: reactivecircus/android-emulator-runner@50986b1464923454c95e261820bc626f38490ec0
         id: smoke-test
         timeout-minutes: 30
         continue-on-error: true
