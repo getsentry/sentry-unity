@@ -3,7 +3,7 @@ param (
     [Switch] $IsIntegrationTest
 )
 
-Set-StrictMode -Version latest
+. $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
 # GITHUB_WORKSPACE is the root folder where the project is stored.
 Write-Host "#################################################"
@@ -14,28 +14,41 @@ Write-Host "#################################################"
 
 if ($IsIntegrationTest)
 {
-    Set-Variable -Name "ApkPath" -Value "samples/IntegrationTest/Build"
-    Set-Variable -Name "ApkFileName" -Value "test.apk"
-    Set-Variable -Name "ProcessName" -Value "com.DefaultCompany.IntegrationTest"
+    $ApkPath = "samples/IntegrationTest/Build"
+    $ApkFileName = "test.apk"
+    $ProcessName = "com.DefaultCompany.IntegrationTest"
 }
 else
 {
-
-    Set-Variable -Name "ApkPath" -Value "samples/artifacts/builds/Android"
-    Set-Variable -Name "ApkFileName" -Value "IL2CPP_Player.apk"
-    Set-Variable -Name "ProcessName" -Value "io.sentry.samples.unityofbugs"
+    $ApkPath = "samples/artifacts/builds/Android"
+    $ApkFileName = "IL2CPP_Player.apk"
+    $ProcessName = "io.sentry.samples.unityofbugs"
 }
-Set-Variable -Name "TestActivityName" -Value "$ProcessName/com.unity3d.player.UnityPlayerActivity"
+$TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 
-. $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
-
-function TakeScreenshot
+$_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$ApkPath/../test-artifacts/") `
+    + $(Get-Date -Format "HHmmss")
+function ArtifactsPath
 {
-    param ( $deviceId )
-    $file = "/data/local/tmp/screen.png"
+    if (-not (Test-Path $_ArtifactsPath))
+    {
+        New-Item $_ArtifactsPath -ItemType Directory | Out-Null
+    }
+    $_ArtifactsPath.Replace('\', '/')
+}
+
+if (Test-Path env:CI)
+{
+    # Take Screenshot of VM to verify emulator start
+    screencapture "$(ArtifactsPath)/host-screenshot.jpg"
+}
+
+function TakeScreenshot([string] $deviceId)
+{
+    $file = "/data/local/tmp/screen$(Get-Date -Format "HHmmss").png"
     adb -s $deviceId shell "screencap -p $file"
-    adb pull $file "$ApkPath"
-    adb shell "rm $file"
+    adb -s $deviceId pull $file (ArtifactsPath)
+    adb -s $deviceId shell "rm $file"
 }
 
 function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
@@ -52,22 +65,48 @@ function GetDeviceUiLog([string] $deviceId, [string] $deviceApi)
     }
 }
 
-function OnError([string] $deviceId, [string] $deviceApi)
+function LogCat([string] $deviceId, [string] $appPID)
+{
+    if ([string]::IsNullOrEmpty($appPID))
+    {
+        adb -s $device logcat -d
+    }
+    elseif ($deviceApi -eq "21")
+    {
+        adb -s $device shell "logcat -d | grep -E '\( *$appPID\)'"
+    }
+    else
+    {
+        adb -s $device logcat -d --pid=$appPID
+    }
+}
+
+function PidOf([string] $deviceId, [string] $processName)
+{
+    if ($deviceApi -eq "21")
+    {
+        # `pidof` doesn't exist - take second column from the `ps` output for the given process instead.
+        (adb -s $deviceId shell "ps | grep '$processName'") -Split " +" | Select-Object -Skip 1 -First 1
+    }
+    else
+    {
+        adb -s $deviceId shell pidof $processName
+    }
+}
+
+function OnError([string] $deviceId, [string] $deviceApi, [string] $appPID)
 {
     Write-Host "Dumping logs for $device"
     Write-Host "::group::logcat"
-    adb -s $deviceId logcat -d
+    LogCat $deviceId $appPID
     Write-Host "::endgroup::"
+    LogCat $deviceId $null | Out-File "$(ArtifactsPath)/logcat.txt"
     Write-Host "::group::UI XML Log"
     GetDeviceUiLog $device $deviceApi
     Write-Host "::endgroup::"
     TakeScreenshot $device
 }
 
-function DateTimeNow
-{
-    return Get-Date -UFormat "%T %Z"
-}
 
 function CloseSystemAlert([string] $deviceId, [string] $deviceApi, [string] $alert)
 {
@@ -183,7 +222,6 @@ function ExitNow([string] $status, [string] $message)
     }
     else
     {
-        OnError $device $deviceApi
         Write-Error $message
         exit 1 # just in case error handling is overriden
     }
@@ -225,6 +263,12 @@ foreach ($device in $DeviceList)
     $deviceSdk = "$(adb -s $device shell getprop ro.build.version.release)".Trim()
     Write-Host "`nChecking device $device with SDK '$deviceSdk' and API '$deviceApi'"
 
+    if (Test-Path env:CI)
+    {
+        # Take Screenshot of the device to verify emulator start
+        TakeScreenshot $device
+    }
+
     $stdout = adb -s $device shell "pm list packages -f"
     if ($null -ne ($stdout | Select-String $ProcessName))
     {
@@ -251,6 +295,7 @@ foreach ($device in $DeviceList)
 
     If ($stdout -notcontains "Success")
     {
+        OnError $device $deviceApi
         ExitNow "failed" "Failed to Install APK: $stdout."
     }
 
@@ -264,30 +309,38 @@ foreach ($device in $DeviceList)
         adb -s $device shell am start -n $TestActivityName -e test $Name
         #despite calling start, the app might not be started yet.
 
-        $AppStarted = $false
-        Write-Host (DateTimeNow)
-        $Timeout = 45
-        While ($Timeout -gt 0)
+        $timedOut = $true
+        $appPID = $null
+        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+        While ($stopwatch.Elapsed.TotalSeconds -lt 60)
         {
-            #Get a list of active processes
-            $processIsRunning = (adb -s $device shell ps)
-            #And filter by ProcessName
-            $processIsRunning = $processIsRunning | Select-String $ProcessName
-
-            If ($processIsRunning -eq $null -And $AppStarted)
+            # Check if the app started - it's not absolutely necessary to get the PID, just useful to achieve good log output.
+            if ($null -eq $appPID)
             {
-                $Timeout = -2
+                $appPID = PidOf $device $ProcessName
+                if ($null -eq $appPID)
+                {
+                    if ($stopwatch.Elapsed.TotalSeconds % 10 -eq 0)
+                    {
+                        Write-Host "Waiting Process on $device to start, time elapsed already: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+                    }
+                    # No sleep here or we may miss the start. While it's not critical, it's useful to get the PID.
+                    continue
+                }
+            }
+
+            $isRunning = $null -ne (PidOf $device $ProcessName)
+            If ($isRunning)
+            {
+                Write-Host "Waiting Process $appPID on $device to complete, time elapsed already: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+                Start-Sleep -Seconds 1
+                CheckAndCloseActiveSystemAlerts $device $deviceApi
+            }
+            else
+            {
+                $timedOut = $false
                 break
             }
-            ElseIf ($processIsRunning -ne $null -And !$AppStarted)
-            {
-                # Some devices might take a while to start the test, so we wait for the activity to start before checking if it was closed.
-                $AppStarted = $true
-            }
-            Write-Host "Waiting Process on $device to complete, waiting $Timeout seconds"
-            Start-Sleep -Seconds 1
-            $Timeout--
-            CheckAndCloseActiveSystemAlerts $device $deviceApi
         }
 
         if ("$SuccessString" -eq "")
@@ -300,8 +353,7 @@ foreach ($device in $DeviceList)
             $FailureString = "$($Name.ToUpper()) TEST: FAIL"
         }
 
-        Write-Host (DateTimeNow)
-        $LogcatCache = adb -s $device logcat -d
+        $LogcatCache = LogCat $device $appPID
         $lineWithSuccess = $LogcatCache | Select-String $SuccessString
         $lineWithFailure = $LogcatCache | Select-String $FailureString
 
@@ -313,6 +365,7 @@ foreach ($device in $DeviceList)
         If ($lineWithFailure -ne $null)
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "failed" "$Name test: FAIL - $lineWithFailure"
         }
         elseif ($lineWithSuccess -ne $null)
@@ -324,23 +377,28 @@ foreach ($device in $DeviceList)
         ElseIf (($LogcatCache | Select-String 'CRASH   :'))
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "crashed" "$name test app has crashed."
         }
         ElseIf (($LogcatCache | Select-String 'Unity   : Timeout while trying detaching primary window.'))
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "flaky" "$name test was flaky, unity failed to initialize."
         }
-        ElseIf ($Timeout -le 0)
+        ElseIf ($timedOut)
         {
             Write-Host "::endgroup::"
-            Write-Host "PS info:"
+            Write-Host "::group::Processes running on device"
             adb -s $device shell ps
+            Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "timeout" "$name test Timeout, see Logcat info for more info."
         }
         Else
         {
             Write-Host "::endgroup::"
+            OnError $device $deviceApi $appPID
             ExitNow "failed" "$name test: failed - process completed but $Name test was not signaled."
         }
     }
@@ -358,6 +416,8 @@ foreach ($device in $DeviceList)
     }
     catch
     {
+        Write-Warning "Caught exception: $_"
+        Write-Host $_.ScriptStackTrace
         OnError $device $deviceApi
         ExitNow "failed" $_;
     }

@@ -77,8 +77,6 @@ else
     Write-Warning 'On windows, this would normally be: -AppDataDir "$env:UserProfile\AppData\LocalLow\DefaultCompany\unity-of-bugs\"'
 }
 
-Set-StrictMode -Version latest
-
 function RunTest([string] $type)
 {
     Write-Host "::group::Test: '$type'"

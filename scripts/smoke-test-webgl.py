@@ -16,6 +16,7 @@ from threading import Thread
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from threading import Thread, Lock
 
 host = '127.0.0.1'
 port = 8000
@@ -37,6 +38,7 @@ ignoreRegex = '"exception":{"values":\[{"type":"(' + '|'.join(
 class RequestVerifier:
     __requests = []
     __testNumber = 0
+    __lock = Lock()
 
     def Capture(self, info, body):
 
@@ -49,9 +51,13 @@ class RequestVerifier:
                 "TEST: Skipping the received HTTP Request because it's an unrelated unity bug:\n{}".format(match.group(0)))
             return
 
-        print("TEST: Received HTTP Request #{} = {}\n{}".format(
-            len(self.__requests), info, body), flush=True)
-        self.__requests.append({"request": info, "body": body})
+        self.__lock.acquire()
+        try:
+            print("TEST: Received HTTP Request #{} = {}\n{}".format(
+                len(self.__requests), info, body), flush=True)
+            self.__requests.append({"request": info, "body": body})
+        finally:
+            self.__lock.release()
 
     def Expect(self, message, result):
         self.__testNumber += 1
@@ -205,7 +211,7 @@ t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}")
 t.ExpectMessage(currentMessage, "'tag-key':'tag-value'")
 t.ExpectMessage(
     currentMessage, "'user':{'id':'user-id','username':'username','email':'email@example.com','ip_address':'::1','other':{'role':'admin'}}")
-    
+
 # t.ExpectMessage(
 # currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'")
 # t.ExpectMessageNot(currentMessage, "'length':0")

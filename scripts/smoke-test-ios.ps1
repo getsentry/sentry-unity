@@ -14,7 +14,6 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIn
 #          'iOS <version>' to run on the specified runtime ex: iOS 12.4
 # $DevicesToRun: the amount of devices to run
 #          '0' or empty will run on 1 device, otherwise on the specified amount.
-$ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
@@ -105,7 +104,7 @@ function Test
         throw " Runtime (-- $SelectedRuntime --) not found"
     }
 
-    foreach ($device in $deviceListRaw[$runtimeIndex..$deviceListRaw.Count])
+    foreach ($device in $deviceListRaw[$runtimeIndex..($deviceListRaw.Count - 1)])
     {
         If ($device.StartsWith("--"))
         {
@@ -129,13 +128,6 @@ function Test
     $devicesRan = 0
     ForEach ($device in $deviceList)
     {
-        If ($skippedItems -lt $skipCount)
-        {
-            # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
-            $device.TestSkipped = $true
-            $skippedItems++
-            continue
-        }
         If ($devicesRan -ge $DevicesToRun)
         {
             # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
@@ -163,7 +155,7 @@ function Test
 
                 if ("$SuccessString" -eq "")
                 {
-                    $SuccessString = "${$Name.ToUpper()} TEST: PASS"
+                    $SuccessString = "$($Name.ToUpper()) TEST: PASS"
                 }
 
                 Write-Host -NoNewline "'$Name' test STATUS: "
@@ -252,7 +244,7 @@ function Test
 function LatestRuntime
 {
     $runtimes = xcrun simctl list runtimes iOS
-    $lastRuntime = $runtimes[$runtimesnewArray.Count – 1]
+    $lastRuntime = $runtimes | Select-Object -Last 1
     $result = [regex]::Match($lastRuntime, "(?<runtime>iOS [0-9.]+)")
     if ($result.Success -eq $False)
     {

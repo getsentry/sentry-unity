@@ -3,6 +3,7 @@
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
+from threading import Thread, Lock
 import sys
 import threading
 import binascii
@@ -12,6 +13,20 @@ apiOrg = 'sentry-sdks'
 apiProject = 'sentry-unity'
 uri = urlparse(sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8000')
 uploads = {}
+lock = Lock()
+
+
+def registerUpload(name: str, chunks: int):
+    lock.acquire()
+    try:
+        if name not in uploads:
+            uploads[name] = \
+                {'count': 1, 'chunks': chunks}
+        else:
+            uploads[name]['count'] += 1
+            uploads[name]['chunks'] += chunks
+    finally:
+        lock.release()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -51,14 +66,9 @@ class Handler(BaseHTTPRequestHandler):
             jsonRequest = json.loads(self.body)
             jsonResponse = '{'
             for key, value in jsonRequest.items():
-                jsonResponse += '"{}":{{"state":"ok","missingChunks":[]}},'.format(
-                    key)
-                if value['name'] not in uploads:
-                    uploads[value['name']] = \
-                        {'count': 1, 'chunks': len(value['chunks'])}
-                else:
-                    uploads[value['name']]['count'] += 1
-                    uploads[value['name']]['chunks'] += len(value['chunks'])
+                jsonResponse += '"{}"'.format(key)
+                jsonResponse += ':{"state":"ok","missingChunks":[]},'
+                registerUpload(value['name'], len(value['chunks']))
             jsonResponse = jsonResponse.rstrip(',') + '}'
             self.writeJSON(jsonResponse)
         else:

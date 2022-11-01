@@ -1,8 +1,16 @@
 # Note: this is currently used by integration test scripts as well as "smoke-test-*.ps1" scripts.
 # If/when those are merged to some extent, maybe this file could be merged into `globals.ps1`.
 
-function RunApiServer([string] $ServerScript, [string] $Uri = "http://localhost:8000")
+Set-StrictMode -Version latest
+$ErrorActionPreference = "Stop"
+
+function RunApiServer([string] $ServerScript, [string] $Uri)
 {
+    if ([string]::IsNullOrEmpty($Uri))
+    {
+        $Uri = SymbolServerUrlFor ((Test-Path variable:UnityPath) ? $UnityPath : '')
+    }
+
     $result = "" | Select-Object -Property process, outFile, errFile, stop, output, dispose
     Write-Host "Starting the $ServerScript on $Uri"
     $result.outFile = New-TemporaryFile
@@ -109,6 +117,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
             else
             {
                 Write-Warning "crash test $run/$runs : FAILED, retrying. The error was: $_"
+                Write-Host $_.ScriptStackTrace
                 continue
             }
         }
@@ -145,14 +154,14 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
 
 function SymbolServerUrlFor([string] $UnityPath, [string] $Platform = "")
 {
-    # Note: iOS has special handling - it's the "update-sentry" script runs elsewhere than the actual build & upload.
+    # Note: iOS has special handling - its "update-sentry" script runs elsewhere than the actual build & upload.
     ($UnityPath.StartsWith("docker ") -and ($Platform -ne "iOS")) ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
 }
 
 function RunWithSymbolServer([ScriptBlock] $Callback)
 {
     # start the server
-    $httpServer = RunApiServer "symbol-upload-server" (SymbolServerUrlFor $UnityPath)
+    $httpServer = RunApiServer "symbol-upload-server"
 
     # run the test
     try

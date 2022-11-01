@@ -18,6 +18,8 @@ $UnityPath = $null
 
 If ($IsMacOS) {
 	$UnityPath = "/Applications/Unity/Hub/Editor/$UnityVersion*/Unity.app/"
+} elseif ($IsWindows) {
+	$UnityPath = "C:/Program Files/Unity/Hub/Editor/$UnityVersion/Editor/Unity.exe"
 }
 
 If (-not(Test-Path -Path $UnityPath)) {
