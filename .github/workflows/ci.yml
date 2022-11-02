@@ -127,15 +127,15 @@ jobs:
 
       - name: Install assemblyalias
         shell: bash
-        run: docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3
+        run: docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3'
 
       - name: Alias editor assemblies
         shell: bash
-        run: ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Mono.Cecil*"'
+        run: docker exec unity bash -c '~/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Mono.Cecil*"'
 
       - name: Alias runtime assemblies
         shell: bash
-        run: ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
+        run: docker exec unity bash -c '~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
 
       - name: Package for release
         if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
