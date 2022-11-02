@@ -1,8 +1,6 @@
 using System;
 using System.Reflection;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor
 {
@@ -25,6 +23,7 @@ namespace Sentry.Unity.Editor
             var parameters = new ReaderParameters
             {
                 InMemory = true,
+                AssemblyResolver = new SentryAssemblyResolver(),
             };
 
             var module = ModuleDefinition.ReadModule(file, parameters);

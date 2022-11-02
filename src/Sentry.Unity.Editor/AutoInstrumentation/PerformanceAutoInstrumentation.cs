@@ -6,18 +6,57 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Sentry.Extensibility;
 using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor
 {
-    [InitializeOnLoad]
-    public static class PerformanceAutoInstrumentation
+    public class BuildFiddler : IPostBuildPlayerScriptDLLs
     {
+        public int callbackOrder { get; }
+        public void OnPostBuildPlayerScriptDLLs(BuildReport report)
+        {
+            var assemblyPath = Array.Find(report.files, file => file.path.Contains(PlayerAssembly)).path;
+            var sentryPath = Array.Find(report.files, file => file.path.Contains("Sentry.Unity.dll")).path;
+            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+
+            var textrendering = Array.Find(report.files, file => file.path.Contains("UnityEngine.TextRenderingModule.dll")).path;
+
+            if (options == null)
+            {
+                return;
+            }
+
+            var logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
+            if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
+            {
+                logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
+                return;
+            }
+
+            logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
+
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                ModifyPlayerAssembly(logger, assemblyPath, sentryPath);
+            }
+            catch (Exception e)
+            {
+                logger?.LogError("Failed to add the performance auto instrumentation. " +
+                                 "The assembly has not been modified.", e);
+            }
+
+            stopwatch.Stop();
+            logger?.LogInfo("Auto Instrumentation finished in '{0}'.", stopwatch.Elapsed);
+        }
+
         private const string PlayerAssembly = "Assembly-CSharp.dll";
 
-        static PerformanceAutoInstrumentation()
+        static void PerformanceAutoInstrumentation()
         {
             var sentryUnityAssemblyPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.Unity.dll"));
             var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
