@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Resolved conflicting dependencies for Mono.Cecil ([#1064](https://github.com/getsentry/sentry-unity/pull/1064))
+
 ### Dependencies
 
 - Bump .NET SDK from v3.23.0 to v3.23.1 ([#1062](https://github.com/getsentry/sentry-unity/pull/1062))
