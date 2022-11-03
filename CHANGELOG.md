@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Resolved conflicing dependencies for Mono.Cecil ([#1064](https://github.com/getsentry/sentry-unity/pull/1064))
+- Resolved conflicting dependencies for Mono.Cecil ([#1064](https://github.com/getsentry/sentry-unity/pull/1064))
 
 ### Dependencies
 
