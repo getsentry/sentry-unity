@@ -20,7 +20,8 @@ namespace Sentry.Unity.Editor
 
         private readonly SentryAssemblyResolver _assemblyResolver;
 
-        internal SentryPlayerReaderWriter(string workingDirectory,
+        internal SentryPlayerReaderWriter(
+            string workingDirectory,
             string playerAssemblyPath,
             string sentryUnityAssemblyPath)
         {
@@ -30,9 +31,9 @@ namespace Sentry.Unity.Editor
             _assemblyResolver = new SentryAssemblyResolver(workingDirectory);
         }
 
-        public static SentryPlayerReaderWriter ReadAssemblies(string? workingDirectory)
+        public static SentryPlayerReaderWriter ReadAssemblies(string workingDirectory)
         {
-            if (string.IsNullOrEmpty(workingDirectory) || !Directory.Exists(workingDirectory))
+            if (!Directory.Exists(workingDirectory))
             {
                 throw new DirectoryNotFoundException($"Failed to find the working directory at '{workingDirectory}'");
             }

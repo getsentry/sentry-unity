@@ -34,7 +34,8 @@ namespace Sentry.Unity.Editor
 
             try
             {
-                var workingDirectoryPath = Path.GetDirectoryName(report.files.FirstOrDefault().path);
+                var workingDirectoryPath = Path.GetDirectoryName(report.files.FirstOrDefault().path)
+                                           ?? throw new ArgumentException("Failed to get the working directory from the report.");
                 var playerReaderWriter = SentryPlayerReaderWriter.ReadAssemblies(workingDirectoryPath);
                 ModifyPlayerAssembly(logger, playerReaderWriter);
             }
