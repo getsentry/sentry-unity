@@ -2,13 +2,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Sentry.Extensibility;
-using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor
@@ -18,12 +15,7 @@ namespace Sentry.Unity.Editor
         public int callbackOrder { get; }
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-            var assemblyPath = Array.Find(report.files, file => file.path.Contains(PlayerAssembly)).path;
-            var sentryPath = Array.Find(report.files, file => file.path.Contains("Sentry.Unity.dll")).path;
             var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
-
-            var textrendering = Array.Find(report.files, file => file.path.Contains("UnityEngine.TextRenderingModule.dll")).path;
-
             if (options == null)
             {
                 return;
@@ -36,13 +28,15 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
-            logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
+            logger?.LogInfo("Running Performance Auto Instrumentation in PostBuildScriptPhase.");
 
             var stopwatch = Stopwatch.StartNew();
 
             try
             {
-                ModifyPlayerAssembly(logger, assemblyPath, sentryPath);
+                var workingDirectoryPath = Path.GetDirectoryName(report.files.FirstOrDefault().path);
+                var playerReaderWriter = SentryPlayerReaderWriter.ReadAssemblies(workingDirectoryPath);
+                ModifyPlayerAssembly(logger, playerReaderWriter);
             }
             catch (Exception e)
             {
@@ -51,150 +45,18 @@ namespace Sentry.Unity.Editor
             }
 
             stopwatch.Stop();
-            logger?.LogInfo("Auto Instrumentation finished in '{0}'.", stopwatch.Elapsed);
+            logger?.LogInfo("Auto Instrumentation finished in {0} seconds.", stopwatch.Elapsed.Seconds);
         }
 
-        private const string PlayerAssembly = "Assembly-CSharp.dll";
-
-        static void PerformanceAutoInstrumentation()
+        private static void ModifyPlayerAssembly(IDiagnosticLogger? logger, SentryPlayerReaderWriter playerReaderWriter)
         {
-            var sentryUnityAssemblyPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.Unity.dll"));
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+            var getInstanceMethod = playerReaderWriter.ImportSentryMonoBehaviourMethod("get_Instance");
+            var startAwakeSpanMethod = playerReaderWriter.ImportSentryMonoBehaviourMethod("StartAwakeSpan", new[] { typeof(MonoBehaviour) });
+            var finishAwakeSpanMethod = playerReaderWriter.ImportSentryMonoBehaviourMethod("FinishAwakeSpan");
 
-            CompilationPipeline.assemblyCompilationFinished += (assemblyPath, _) =>
-            {
-                if (!BuildPipeline.isBuildingPlayer || options == null)
-                {
-                    return;
-                }
+            var monoBehaviourReference = playerReaderWriter.ImportType(typeof(MonoBehaviour));
 
-                if (assemblyPath.Contains(PlayerAssembly))
-                {
-                    var logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-                    if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
-                    {
-                        logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
-                        return;
-                    }
-
-                    logger?.LogInfo("Compilation of '{0}' finished. Running Performance Auto Instrumentation.", assemblyPath);
-
-                    var stopwatch = Stopwatch.StartNew();
-
-                    try
-                    {
-                        ModifyPlayerAssembly(logger, assemblyPath, sentryUnityAssemblyPath);
-                    }
-                    catch (Exception e)
-                    {
-                        logger?.LogError("Failed to add the performance auto instrumentation. " +
-                                         "The assembly has not been modified.", e);
-                    }
-
-                    stopwatch.Stop();
-                    logger?.LogInfo("Auto Instrumentation finished in '{0}'.", stopwatch.Elapsed);
-                }
-            };
-        }
-
-        private static TypeDefinition GetTypeDefinition(ModuleDefinition module, Type type)
-        {
-            var typeDefinition = module.GetType(type.FullName);
-            if (typeDefinition is null)
-            {
-                throw new ArgumentException($"Failed to get requested type definition in {module.Name}", type.FullName);
-            }
-
-            return typeDefinition;
-        }
-
-        private static MethodReference ImportReference(ModuleDefinition module, MethodDefinition method)
-        {
-            var reference = module.ImportReference(method);
-            if (reference is null)
-            {
-                throw new ArgumentException($"Failed to import requested reference in {module.Name}", method.FullName);
-            }
-
-            return reference;
-        }
-
-        private static MethodDefinition GetMethodDefinition(TypeDefinition typeDefinition, string name, Type[]? requiredParameters = null)
-        {
-            foreach (var method in typeDefinition.Methods)
-            {
-                if (method?.Name == name)
-                {
-                    switch (requiredParameters)
-                    {
-                        case null when !method.HasParameters:
-                            return method;
-                        case null:
-                            continue;
-                    }
-
-                    if (method.Parameters.Count != requiredParameters.Length)
-                    {
-                        continue;
-                    }
-
-                    // We go over all the required parameters and compare them to the parameters found in the method.
-                    var hasMatchingParameters = true;
-                    foreach (var parameter in requiredParameters)
-                    {
-                        var parameterDefinitions = method.Parameters.Where(p =>
-                            string.Equals(
-                                p.ParameterType.FullName,
-                                parameter.FullName,
-                                StringComparison.Ordinal))
-                            .ToList();
-
-                        if (parameterDefinitions.Count == 0)
-                        {
-                            hasMatchingParameters = false;
-                            break;
-                        }
-                    }
-
-                    if (hasMatchingParameters)
-                    {
-                        return method;
-                    }
-                }
-            }
-
-            throw new Exception(
-                $"Failed to find method '{name}' " +
-                $"in '{typeDefinition.FullName}' " +
-                $"with parameters: '{(requiredParameters is not null ? string.Join(",", requiredParameters.AsEnumerable()) : "none")}'");
-        }
-
-        private static void ModifyPlayerAssembly(
-            IDiagnosticLogger? logger,
-            string playerAssemblyPath,
-            string sentryUnityAssemblyPath)
-        {
-            if (!File.Exists(playerAssemblyPath))
-            {
-                throw new FileNotFoundException($"Failed to find '{PlayerAssembly}' at '{playerAssemblyPath}'.");
-            }
-
-            if (!File.Exists(sentryUnityAssemblyPath))
-            {
-                throw new FileNotFoundException($"Failed to find '{Path.GetFileName(sentryUnityAssemblyPath)}' at '{sentryUnityAssemblyPath}'.");
-            }
-
-            var (sentryModule, _) = ModuleReaderWriter.Read(sentryUnityAssemblyPath);
-            var (playerModule, hasSymbols) = ModuleReaderWriter.Read(playerAssemblyPath);
-
-            var sentryMonoBehaviourDefinition = GetTypeDefinition(sentryModule, typeof(SentryMonoBehaviour));
-            var monoBehaviourReference = playerModule.ImportReference(typeof(MonoBehaviour));
-
-            var getInstanceMethod = ImportReference(playerModule, GetMethodDefinition(sentryMonoBehaviourDefinition, "get_Instance"));
-            var startAwakeSpanMethod = ImportReference(playerModule, GetMethodDefinition(sentryMonoBehaviourDefinition, "StartAwakeSpan", new[] { typeof(MonoBehaviour) }));
-            var finishAwakeSpanMethod = ImportReference(playerModule, GetMethodDefinition(sentryMonoBehaviourDefinition, "FinishAwakeSpan"));
-
-            foreach (var type in playerModule.GetTypes())
+            foreach (var type in playerReaderWriter.GetTypes())
             {
                 if (type.BaseType?.FullName != monoBehaviourReference?.FullName)
                 {
@@ -243,8 +105,8 @@ namespace Sentry.Unity.Editor
                 }
             }
 
-            logger?.LogInfo("Applying Auto Instrumentation by overwriting '{0}'.", Path.GetFileName(playerAssemblyPath));
-            ModuleReaderWriter.Write(null, hasSymbols, playerModule, playerAssemblyPath);
+            logger?.LogInfo("Applying Auto Instrumentation.");
+            playerReaderWriter.Write();
         }
     }
 }

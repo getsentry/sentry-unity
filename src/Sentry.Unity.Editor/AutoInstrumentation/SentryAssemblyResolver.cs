@@ -3,13 +3,14 @@ using Mono.Cecil;
 
 namespace Sentry.Unity.Editor
 {
-
     public class SentryAssemblyResolver : BaseAssemblyResolver
     {
+        private readonly string _workingDirectory;
         private readonly DefaultAssemblyResolver _defaultResolver;
 
-        public SentryAssemblyResolver()
+        public SentryAssemblyResolver(string workingDirectory)
         {
+            _workingDirectory = workingDirectory;
             _defaultResolver = new DefaultAssemblyResolver();
         }
 
@@ -22,14 +23,15 @@ namespace Sentry.Unity.Editor
             }
             catch (AssemblyResolutionException e)
             {
-                var staging = "../game/Temp/StagingArea/Data/Managed/";
-                var path = Path.GetFullPath(staging + e.AssemblyReference.Name + ".dll");
+                var path = Path.GetFullPath(Path.Combine(_workingDirectory, e.AssemblyReference.Name + ".dll"));
                 if (File.Exists(path))
                 {
-                    return assembly = AssemblyDefinition.ReadAssembly(path);
+                    assembly = AssemblyDefinition.ReadAssembly(path);
                 }
-
-                throw;
+                else
+                {
+                    throw;
+                }
             }
 
             return assembly;
