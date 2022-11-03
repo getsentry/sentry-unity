@@ -126,16 +126,13 @@ jobs:
         run: docker exec unity dotnet build /p:AndroidSdkDirectory=$env:ANDROID_HOME /p:JavaSdkDirectory=$env:JAVA_HOME_11_X64 -c Release
 
       - name: Install assemblyalias
-        shell: bash
-        run: docker exec unity bash -c 'dotnet tool install --global Alias --version 0.4.3'
+        run: docker exec unity dotnet tool install --global Alias --version 0.4.3
 
       - name: Alias editor assemblies
-        shell: bash
-        run: docker exec unity bash -c '~/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Mono.Cecil*"'
+        run: docker exec unity ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Mono.Cecil*"
 
       - name: Alias runtime assemblies
-        shell: bash
-        run: docker exec unity bash -c '~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"'
+        run: docker exec unity ~/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
       - name: Package for release
         if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
