@@ -42,6 +42,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             EditorGUI.BeginDisabledGroup(options.TracesSampleRate <= 0);
 
+            GUILayout.Label("Experimental", EditorStyles.boldLabel);
             options.PerformanceAutoInstrumentation = EditorGUILayout.Toggle(
                 new GUIContent("Auto Instrumentation", "To create transaction and spans automatically, " +
                                                        "the SDK will modify the compiled assembly during a post build step."),
