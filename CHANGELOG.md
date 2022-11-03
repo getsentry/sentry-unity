@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed the Auto Instrumentation failing to resolve prebuilt asseblies ([#1066](https://github.com/getsentry/sentry-unity/pull/1066))
+
 ### Dependencies
 
 - Bump .NET SDK from v3.23.0 to v3.23.1 ([#1062](https://github.com/getsentry/sentry-unity/pull/1062))
