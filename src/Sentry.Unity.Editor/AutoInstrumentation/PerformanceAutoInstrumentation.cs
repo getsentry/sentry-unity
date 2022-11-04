@@ -16,11 +16,6 @@ namespace Sentry.Unity.Editor
         public int callbackOrder { get; }
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-            foreach (var file in report.files)
-            {
-                Debug.Log(file.path);
-            }
-
             var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
             if (options == null)
             {
