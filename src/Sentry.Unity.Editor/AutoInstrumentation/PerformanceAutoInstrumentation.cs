@@ -7,6 +7,7 @@ using Sentry.Extensibility;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor
 {
@@ -15,6 +16,11 @@ namespace Sentry.Unity.Editor
         public int callbackOrder { get; }
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
+            foreach (var file in report.files)
+            {
+                Debug.Log(file.path);
+            }
+
             var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
             if (options == null)
             {
@@ -34,9 +40,8 @@ namespace Sentry.Unity.Editor
 
             try
             {
-                var workingDirectoryPath = Path.GetDirectoryName(report.files.FirstOrDefault().path)
-                                           ?? throw new ArgumentException("Failed to get the working directory from the report.");
-                var playerReaderWriter = SentryPlayerReaderWriter.ReadAssemblies(workingDirectoryPath);
+                var workingDirectory = Path.Combine(Application.dataPath, "..", "Temp", "StagingArea", "Data", "Managed");
+                var playerReaderWriter = SentryPlayerReaderWriter.ReadAssemblies(workingDirectory);
                 ModifyPlayerAssembly(logger, playerReaderWriter);
             }
             catch (Exception e)
