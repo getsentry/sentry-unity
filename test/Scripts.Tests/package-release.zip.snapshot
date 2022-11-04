@@ -68,6 +68,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Head
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryException.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryFrame.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryHub.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryId.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryIntegrationProtocol.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryMeasurementUnit.h
@@ -77,6 +78,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Head
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryNSError.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryOptions.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryProfilingConditionals.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryRequest.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentrySampleDecision.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentrySamplingContext.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryScope.h
@@ -131,6 +133,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryEvent.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryException.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryFrame.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryHub.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryId.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryIntegrationProtocol.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryMeasurementUnit.h
@@ -140,6 +143,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryMessage
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryNSError.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryOptions.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryProfilingConditionals.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryRequest.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentrySampleDecision.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentrySamplingContext.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryScope.h
