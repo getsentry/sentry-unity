@@ -123,7 +123,7 @@ jobs:
           wait-timeout: 3600
 
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build /p:AndroidSdkDirectory=$env:ANDROID_HOME /p:JavaSdkDirectory=$env:JAVA_HOME_11_X64 -c Release
+        run: docker exec unity dotnet build -c Release
 
       - name: Install assemblyalias
         run: docker exec unity dotnet tool install --global Alias --version 0.4.3
