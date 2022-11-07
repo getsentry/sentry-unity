@@ -365,7 +365,7 @@ namespace Sentry.Unity.Tests
             sut.ConfigureScope(scope);
 
             // assert
-            Assert.AreEqual( testUnityVersion,scope.Contexts.Runtime.Version);
+            Assert.AreEqual(testUnityVersion, scope.Contexts.Runtime.Version);
         }
 
         private void AssertEventProcessorTags(IReadOnlyDictionary<string, string> tags)
