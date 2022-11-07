@@ -11,6 +11,7 @@ namespace Sentry.Unity.Editor
         private const string PlayerAssemblyName = "Assembly-CSharp.dll";
         private const string SentryUnityAssemblyName = "Sentry.Unity.dll";
 
+        private readonly string _workingDirectory;
         private readonly string _playerAssemblyPath;
         private readonly string _sentryUnityAssemblyPath;
 
@@ -18,17 +19,14 @@ namespace Sentry.Unity.Editor
         private ModuleDefinition _playerModule = null!;         // Set when reading the assemblies
         private ModuleDefinition _sentryUnityModule = null!;    // Set when reading the assemblies
 
-        private readonly SentryAssemblyResolver _assemblyResolver;
-
         private SentryPlayerReaderWriter(
             string workingDirectory,
             string playerAssemblyPath,
             string sentryUnityAssemblyPath)
         {
+            _workingDirectory = workingDirectory;
             _playerAssemblyPath = playerAssemblyPath;
             _sentryUnityAssemblyPath = sentryUnityAssemblyPath;
-
-            _assemblyResolver = new SentryAssemblyResolver(workingDirectory);
         }
 
         public static SentryPlayerReaderWriter ReadAssemblies(string workingDirectory)
@@ -102,10 +100,13 @@ namespace Sentry.Unity.Editor
         {
             try
             {
+                var assemblyResolver = new DefaultAssemblyResolver();
+                assemblyResolver.AddSearchDirectory(_workingDirectory);
+
                 var parameters = new ReaderParameters
                 {
                     InMemory = true,
-                    AssemblyResolver = _assemblyResolver,
+                    AssemblyResolver = assemblyResolver,
                 };
 
                 var module = ModuleDefinition.ReadModule(file, parameters);
