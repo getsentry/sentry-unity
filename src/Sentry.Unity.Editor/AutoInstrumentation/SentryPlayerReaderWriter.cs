@@ -145,52 +145,25 @@ namespace Sentry.Unity.Editor
 
         private MethodDefinition GetMethodDefinition(TypeDefinition typeDefinition, string name, Type[]? requiredParameters = null)
         {
-            foreach (var method in typeDefinition.Methods)
+            requiredParameters ??= Array.Empty<Type>();
+
+            var matchingMethod = typeDefinition.Methods
+                .FirstOrDefault(method =>
+                    method.Name == name &&
+                    requiredParameters.Length == method.Parameters.Count &&
+                    method.Parameters.Select(p => p.ParameterType.FullName)
+                        .SequenceEqual(requiredParameters.Select(x => x.FullName))
+                );
+
+            if (matchingMethod == null)
             {
-                if (method?.Name == name)
-                {
-                    switch (requiredParameters)
-                    {
-                        case null when !method.HasParameters:
-                            return method;
-                        case null:
-                            continue;
-                    }
-
-                    if (method.Parameters.Count != requiredParameters.Length)
-                    {
-                        continue;
-                    }
-
-                    // We go over all the required parameters and compare them to the parameters found in the method.
-                    var hasMatchingParameters = true;
-                    foreach (var parameter in requiredParameters)
-                    {
-                        var parameterDefinitions = method.Parameters.Where(p =>
-                            string.Equals(
-                                p.ParameterType.FullName,
-                                parameter.FullName,
-                                StringComparison.Ordinal))
-                            .ToList();
-
-                        if (parameterDefinitions.Count == 0)
-                        {
-                            hasMatchingParameters = false;
-                            break;
-                        }
-                    }
-
-                    if (hasMatchingParameters)
-                    {
-                        return method;
-                    }
-                }
+                throw new Exception(
+                    $"Failed to find method '{name}' " +
+                    $"in '{typeDefinition.FullName}' " +
+                    $"with parameters: '{string.Join<Type>(",", requiredParameters)}'");
             }
 
-            throw new Exception(
-                $"Failed to find method '{name}' " +
-                $"in '{typeDefinition.FullName}' " +
-                $"with parameters: '{(requiredParameters is not null ? string.Join(",", requiredParameters.AsEnumerable()) : "none")}'");
+            return matchingMethod;
         }
     }
 }
