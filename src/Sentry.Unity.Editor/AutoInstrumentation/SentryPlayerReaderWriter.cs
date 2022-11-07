@@ -20,7 +20,7 @@ namespace Sentry.Unity.Editor
 
         private readonly SentryAssemblyResolver _assemblyResolver;
 
-        internal SentryPlayerReaderWriter(
+        private SentryPlayerReaderWriter(
             string workingDirectory,
             string playerAssemblyPath,
             string sentryUnityAssemblyPath)
@@ -59,7 +59,7 @@ namespace Sentry.Unity.Editor
         public void Write()
         {
             var parameters = new WriterParameters { WriteSymbols = _playerModuleHasSymbols };
-            _playerModule?.Write(_playerAssemblyPath, parameters);
+            _playerModule.Write(_playerAssemblyPath, parameters);
         }
 
         public MethodReference ImportSentryMonoBehaviourMethod(string methodName, Type[]? methodParameters = null)
@@ -92,13 +92,13 @@ namespace Sentry.Unity.Editor
             return _playerModule.GetTypes();
         }
 
-        internal void ReadFromWorkingDirectory()
+        private void ReadFromWorkingDirectory()
         {
             (_playerModule, _playerModuleHasSymbols) = Read(_playerAssemblyPath);
             (_sentryUnityModule, _) = Read(_sentryUnityAssemblyPath);
         }
 
-        internal (ModuleDefinition module, bool hasSymbols) Read(string file)
+        private (ModuleDefinition module, bool hasSymbols) Read(string file)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace Sentry.Unity.Editor
             }
         }
 
-        internal bool TryReadSymbols(ModuleDefinition module)
+        private bool TryReadSymbols(ModuleDefinition module)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace Sentry.Unity.Editor
             }
         }
 
-        internal TypeDefinition GetTypeDefinition(ModuleDefinition module, Type type)
+        private TypeDefinition GetTypeDefinition(ModuleDefinition module, Type type)
         {
             var typeDefinition = module.GetType(type.FullName);
             if (typeDefinition is null)
@@ -143,7 +143,7 @@ namespace Sentry.Unity.Editor
             return typeDefinition;
         }
 
-        internal MethodDefinition GetMethodDefinition(TypeDefinition typeDefinition, string name, Type[]? requiredParameters = null)
+        private MethodDefinition GetMethodDefinition(TypeDefinition typeDefinition, string name, Type[]? requiredParameters = null)
         {
             foreach (var method in typeDefinition.Methods)
             {
