@@ -21,7 +21,7 @@ namespace Sentry.Unity.Editor
             }
             catch (AssemblyResolutionException e)
             {
-                var path = Path.GetFullPath(Path.Combine(_workingDirectory, e.AssemblyReference.Name + ".dll"));
+                var path = Path.Combine(_workingDirectory, e.AssemblyReference.Name + ".dll");
                 if (File.Exists(path))
                 {
                     return AssemblyDefinition.ReadAssembly(path);
