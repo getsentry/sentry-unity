@@ -82,14 +82,12 @@ public class {scriptName} : ScriptableOptionsConfiguration
     public override void ConfigureAtBuild(SentryUnityOptions options)
     {{
         // TODO implement
-        throw new NotImplementedException();
     }}
 
     /// See base class for documentation.
     public override void ConfigureAtRuntime(SentryUnityOptions options)
     {{
         // TODO implement
-        throw new NotImplementedException();
     }}
 }}
 ");
