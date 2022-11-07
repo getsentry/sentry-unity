@@ -15,25 +15,20 @@ namespace Sentry.Unity.Editor
 
         public override AssemblyDefinition Resolve(AssemblyNameReference name)
         {
-            AssemblyDefinition assembly;
             try
             {
-                assembly = _defaultResolver.Resolve(name);
+                return _defaultResolver.Resolve(name);
             }
             catch (AssemblyResolutionException e)
             {
                 var path = Path.GetFullPath(Path.Combine(_workingDirectory, e.AssemblyReference.Name + ".dll"));
                 if (File.Exists(path))
                 {
-                    assembly = AssemblyDefinition.ReadAssembly(path);
+                    return AssemblyDefinition.ReadAssembly(path);
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return assembly;
+                throw;
+            }
         }
     }
 }
