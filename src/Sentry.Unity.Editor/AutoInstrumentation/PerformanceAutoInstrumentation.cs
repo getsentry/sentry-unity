@@ -20,11 +20,15 @@ namespace Sentry.Unity.Editor
         static PerformanceAutoInstrumentation()
         {
             var sentryUnityAssemblyPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.Unity.dll"));
-            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
-
             CompilationPipeline.assemblyCompilationFinished += (assemblyPath, _) =>
             {
-                if (!BuildPipeline.isBuildingPlayer || options == null)
+                if (!BuildPipeline.isBuildingPlayer)
+                {
+                    return;
+                }
+
+                var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
+                if (options == null)
                 {
                     return;
                 }
