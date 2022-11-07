@@ -59,7 +59,7 @@ namespace Sentry.Unity.Editor
         public void Write()
         {
             var parameters = new WriterParameters { WriteSymbols = _playerModuleHasSymbols };
-            _playerModule?.Write(_playerAssemblyPath, parameters);
+            _playerModule.Write(_playerAssemblyPath, parameters);
         }
 
         public MethodReference ImportSentryMonoBehaviourMethod(string methodName, Type[]? methodParameters = null)
