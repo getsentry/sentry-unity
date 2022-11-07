@@ -155,6 +155,7 @@ namespace Sentry.Unity.Tests
         public string? UnityTargetFrameRate = null;
         public string? UnityCopyTextureSupport = null;
         public string? UnityRenderingThreadingMode = null;
+        public string? UnityVersion = null;
 
         protected override void WriteScope(
             string? AppStartTime,
@@ -188,7 +189,8 @@ namespace Sentry.Unity.Tests
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode
+            string? UnityRenderingThreadingMode,
+            string? UnityVersion
         )
         {
             this.AppStartTime = AppStartTime;
@@ -223,6 +225,7 @@ namespace Sentry.Unity.Tests
             this.UnityTargetFrameRate = UnityTargetFrameRate;
             this.UnityCopyTextureSupport = UnityCopyTextureSupport;
             this.UnityRenderingThreadingMode = UnityRenderingThreadingMode;
+            this.UnityVersion = UnityVersion;
             SyncFinished.Set();
         }
     }

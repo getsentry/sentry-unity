@@ -1,6 +1,7 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Protocol;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 using DeviceOrientation = Sentry.Protocol.DeviceOrientation;
 

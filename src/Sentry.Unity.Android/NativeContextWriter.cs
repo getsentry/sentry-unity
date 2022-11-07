@@ -36,7 +36,8 @@ namespace Sentry.Unity.Android
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode
+            string? UnityRenderingThreadingMode,
+            string? UnityVersion
         )
         {
             // We're only setting the missing contexts, the rest is configured by sentry-java.  We could also sync
@@ -81,6 +82,8 @@ namespace Sentry.Unity.Android
                 UnityTargetFrameRate,
                 UnityCopyTextureSupport,
                 UnityRenderingThreadingMode);
+
+            CWUtil.WriteRuntime(UnityVersion);
         }
     }
 }

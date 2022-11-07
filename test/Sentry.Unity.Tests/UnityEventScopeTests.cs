@@ -351,6 +351,23 @@ namespace Sentry.Unity.Tests
             AssertEventProcessorTags(transaction.Tags);
         }
 
+        [Test]
+        public void RuntimeVersion_Set()
+        {
+            // arrange
+            var options = new SentryUnityOptions();
+            var testUnityVersion = "TestVersion.1.2.3";
+            _testApplication.UnityVersion = testUnityVersion;
+            var sut = new UnityScopeUpdater(options, _mainThreadData, _testApplication);
+            var scope = new Scope(options);
+
+            // act
+            sut.ConfigureScope(scope);
+
+            // assert
+            Assert.AreEqual( testUnityVersion,scope.Contexts.Runtime.Version);
+        }
+
         private void AssertEventProcessorTags(IReadOnlyDictionary<string, string> tags)
         {
             Assert.IsNotNull(tags);

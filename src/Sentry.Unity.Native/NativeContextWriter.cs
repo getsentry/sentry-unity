@@ -36,7 +36,8 @@ namespace Sentry.Unity.Native
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode
+            string? UnityRenderingThreadingMode,
+            string? UnityVersion
         )
         {
             CWUtil.WriteApp(AppStartTime, AppBuildType);
@@ -78,6 +79,8 @@ namespace Sentry.Unity.Native
                 UnityTargetFrameRate,
                 UnityCopyTextureSupport,
                 UnityRenderingThreadingMode);
+
+            CWUtil.WriteRuntime(UnityVersion);
         }
 
     }

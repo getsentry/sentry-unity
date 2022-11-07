@@ -51,6 +51,7 @@ namespace Sentry.Unity
         public void ConfigureScope(Scope scope)
         {
             PopulateSdk(scope.Sdk);
+            PopulateRuntime(scope.Contexts.Runtime);
             PopulateApp(scope.Contexts.App);
             PopulateOperatingSystem(scope.Contexts.OperatingSystem);
             PopulateDevice(scope.Contexts.Device);
@@ -65,6 +66,11 @@ namespace Sentry.Unity
             sdk.AddPackage(UnitySdkInfo.PackageName, UnitySdkInfo.Version);
             sdk.Name = UnitySdkInfo.Name;
             sdk.Version = UnitySdkInfo.Version;
+        }
+
+        private void PopulateRuntime(Runtime runtime)
+        {
+            runtime.Version = _application.UnityVersion;
         }
 
         private void PopulateApp(App app)

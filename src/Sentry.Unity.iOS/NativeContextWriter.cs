@@ -40,7 +40,8 @@ namespace Sentry.Unity.iOS
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode
+            string? UnityRenderingThreadingMode,
+            string? UnityVersion
         ) => SentryNativeBridgeWriteScope(
             // // AppStartTime,
             // AppBuildType,
@@ -73,7 +74,8 @@ namespace Sentry.Unity.iOS
             UnityInstallMode,
             UnityTargetFrameRate,
             UnityCopyTextureSupport,
-            UnityRenderingThreadingMode
+            UnityRenderingThreadingMode,
+            UnityVersion
         );
 
         private static sbyte marshallNullableBool(bool? value) => (sbyte)(value.HasValue ? (value.Value ? 1 : 0) : -1);
@@ -113,7 +115,8 @@ namespace Sentry.Unity.iOS
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode
+            string? UnityRenderingThreadingMode,
+            string? UnityVersion
         );
     }
 }

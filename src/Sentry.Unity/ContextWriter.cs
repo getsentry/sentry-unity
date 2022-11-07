@@ -46,7 +46,8 @@ namespace Sentry.Unity
                 unityContext.InstallMode,
                 unityContext.TargetFrameRate,
                 unityContext.CopyTextureSupport,
-                unityContext.RenderingThreadingMode
+                unityContext.RenderingThreadingMode,
+                scope.Contexts.Runtime.Version
             );
         }
 
@@ -82,7 +83,8 @@ namespace Sentry.Unity
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode
+            string? UnityRenderingThreadingMode,
+            string? UnityVersion
         );
     }
 }
