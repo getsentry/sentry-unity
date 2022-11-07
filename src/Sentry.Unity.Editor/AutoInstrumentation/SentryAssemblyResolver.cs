@@ -6,12 +6,11 @@ namespace Sentry.Unity.Editor
     public class SentryAssemblyResolver : BaseAssemblyResolver
     {
         private readonly string _workingDirectory;
-        private readonly DefaultAssemblyResolver _defaultResolver;
+        private readonly DefaultAssemblyResolver _defaultResolver = new();
 
         public SentryAssemblyResolver(string workingDirectory)
         {
             _workingDirectory = workingDirectory;
-            _defaultResolver = new DefaultAssemblyResolver();
         }
 
         public override AssemblyDefinition Resolve(AssemblyNameReference name)
