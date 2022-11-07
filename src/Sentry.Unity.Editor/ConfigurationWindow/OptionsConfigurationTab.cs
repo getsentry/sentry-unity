@@ -79,7 +79,7 @@ using UnityEngine;
 public class {scriptName} : ScriptableOptionsConfiguration
 {{
     /// See base class for documentation.
-    public override void ConfigureAtBuild(SentryUnityOptions options)
+    public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions? cliOptions)
     {{
         // TODO implement
     }}

@@ -24,8 +24,23 @@ namespace Sentry.Unity.Editor
 
         internal static T? Load<T>(string path) where T : ScriptableObject => AssetDatabase.LoadAssetAtPath<T>(path);
 
-        internal static SentryCliOptions? LoadCliOptions() => Load<SentryCliOptions>(SentryCliOptions.GetConfigPath());
-        internal static ScriptableSentryUnityOptions? LoadOptions() =>
+        private static SentryCliOptions? LoadCliOptions() => Load<SentryCliOptions>(SentryCliOptions.GetConfigPath());
+        private static ScriptableSentryUnityOptions? LoadOptions() =>
             Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+
+        internal static (SentryUnityOptions?, SentryCliOptions?) ConfiguredBuildtimeOptions()
+        {
+            var scriptableOptions = LoadOptions();
+            var cliOptions = LoadCliOptions();
+
+            SentryUnityOptions? options = null;
+            if (scriptableOptions is not null)
+            {
+                options = scriptableOptions.ToSentryUnityOptions(isBuilding: true);
+                scriptableOptions.OptionsConfiguration?.ConfigureAtBuild(options, cliOptions);
+            }
+
+            return (options, cliOptions);
+        }
     }
 }

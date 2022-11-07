@@ -25,8 +25,7 @@ namespace Sentry.Unity.Editor.Android
 
         public AndroidManifestConfiguration()
             : this(
-                () => SentryScriptableObject.LoadOptions()?.ToSentryUnityOptions(true),
-                () => SentryScriptableObject.LoadCliOptions(),
+                () => SentryScriptableObject.ConfiguredBuildtimeOptions(),
                 isDevelopmentBuild: EditorUserBuildSettings.development,
                 scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
         {
@@ -34,14 +33,12 @@ namespace Sentry.Unity.Editor.Android
 
         // Testing
         internal AndroidManifestConfiguration(
-            Func<SentryUnityOptions?> getOptions,
-            Func<SentryCliOptions?> getSentryCliOptions,
+            Func<(SentryUnityOptions?, SentryCliOptions?)> getOptions,
             bool isDevelopmentBuild,
             ScriptingImplementation scriptingImplementation,
             IUnityLoggerInterceptor? interceptor = null)
         {
-            _options = getOptions();
-            _sentryCliOptions = getSentryCliOptions();
+            (_options, _sentryCliOptions) = getOptions();
             _logger = _options?.DiagnosticLogger ?? new UnityLogger(_options ?? new SentryUnityOptions(), interceptor);
 
             _isDevelopmentBuild = isDevelopmentBuild;

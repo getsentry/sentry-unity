@@ -20,7 +20,7 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var options = SentryScriptableObject.LoadOptions()?.ToSentryUnityOptions(true);
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
             var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 
@@ -50,7 +50,7 @@ namespace Sentry.Unity.Editor.Native
                 var projectDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
                 AddCrashHandler(logger, target, projectDir, executableName);
-                UploadDebugSymbols(logger, target, projectDir, executableName, options, isMono);
+                UploadDebugSymbols(logger, target, projectDir, executableName, options, cliOptions, isMono);
             }
             catch (Exception e)
             {
@@ -95,10 +95,9 @@ namespace Sentry.Unity.Editor.Native
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, bool isMono)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
         {
-            var cliOptions = SentryScriptableObject.LoadCliOptions();
-            if (cliOptions?.IsValid(logger) is not true)
+            if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
             {
                 if (options.Il2CppLineNumberSupportEnabled)
                 {

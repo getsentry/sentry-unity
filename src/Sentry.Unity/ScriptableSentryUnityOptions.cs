@@ -133,7 +133,8 @@ namespace Sentry.Unity
                 WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
                 MacosNativeSupportEnabled = MacosNativeSupportEnabled,
                 LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
-                Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled
+                Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
+                PerformanceAutoInstrumentationEnabled = PerformanceAutoInstrumentation,
             };
 
             if (!string.IsNullOrWhiteSpace(ReleaseOverride))
@@ -181,19 +182,15 @@ namespace Sentry.Unity
                 }
             }
 
-            if (isBuilding)
-            {
-                OptionsConfiguration?.ConfigureAtBuild(options);
-            }
-            else
+            if (!isBuilding)
             {
                 OptionsConfiguration?.ConfigureAtRuntime(options);
-            }
 
-            // Doing this after the configure callback to allow users to programmatically opt out
-            if (!isBuilding && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
-            {
-                options.AddIl2CppExceptionProcessor(unityInfo);
+                // Doing this after the configure callback to allow users to programmatically opt out
+                if (options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
+                {
+                    options.AddIl2CppExceptionProcessor(unityInfo);
+                }
             }
 
             return options;

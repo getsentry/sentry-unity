@@ -20,7 +20,7 @@ namespace Sentry.Unity.Editor
         static PerformanceAutoInstrumentation()
         {
             var sentryUnityAssemblyPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Runtime", "Sentry.Unity.dll"));
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
 
             CompilationPipeline.assemblyCompilationFinished += (assemblyPath, _) =>
             {
@@ -31,8 +31,8 @@ namespace Sentry.Unity.Editor
 
                 if (assemblyPath.Contains(PlayerAssembly))
                 {
-                    var logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-                    if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
+                    var logger = options.DiagnosticLogger;
+                    if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentationEnabled)
                     {
                         logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
                         return;

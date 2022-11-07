@@ -10,7 +10,7 @@ namespace Sentry.Unity
         /// Additionally, because iOS, macOS and Android native error handling is
         /// configured at build time, you can make changes to these options here.
         /// </summary>
-        public abstract void ConfigureAtBuild(SentryUnityOptions options);
+        public abstract void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions? cliOptions);
 
         /// <summary>
         /// Called at the player startup by SentryInitialization.

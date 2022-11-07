@@ -16,7 +16,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var options = SentryScriptableObject.LoadOptions()?.ToSentryUnityOptions(true);
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             try
@@ -55,12 +55,11 @@ namespace Sentry.Unity.Editor.iOS
                 sentryXcodeProject.AddNativeOptions(options);
                 sentryXcodeProject.AddSentryToMain(options);
 
-                var sentryCliOptions = SentryScriptableObject.LoadCliOptions();
-                if (sentryCliOptions?.IsValid(logger) is true)
+                if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is true)
                 {
-                    SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions, options);
+                    SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
                     SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
-                    sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, sentryCliOptions);
+                    sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, cliOptions);
                 }
                 else if (options.Il2CppLineNumberSupportEnabled)
                 {
