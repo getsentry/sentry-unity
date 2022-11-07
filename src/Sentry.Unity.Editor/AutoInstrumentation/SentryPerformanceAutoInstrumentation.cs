@@ -11,7 +11,7 @@ using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor
 {
-    public class BuildFiddler : IPostBuildPlayerScriptDLLs
+    public class SentryPerformanceAutoInstrumentation : IPostBuildPlayerScriptDLLs
     {
         public int callbackOrder { get; }
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
