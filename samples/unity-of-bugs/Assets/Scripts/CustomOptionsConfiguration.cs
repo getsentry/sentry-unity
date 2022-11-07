@@ -6,7 +6,7 @@ using UnityEngine;
 public class CustomOptionsConfiguration : ScriptableOptionsConfiguration
 {
     /// See base class for documentation.
-    public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions? cliOptions)
+    public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions cliOptions)
     {
         Debug.Log("CustomOptionsConfiguration::ConfigureAtBuild called");
     }

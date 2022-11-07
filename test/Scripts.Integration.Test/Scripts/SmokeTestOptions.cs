@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/SmokeTestOptions.cs", menuName = "Sentry/SmokeTestOptions", order = 999)]
 public class SmokeTestOptions : ScriptableOptionsConfiguration
 {
-    public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions? cliOptions)
+    public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions cliOptions)
     {
         Debug.Log("Sentry: SmokeTestOptions - ConfigureAtBuild called");
     }

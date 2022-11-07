@@ -23,7 +23,7 @@ namespace Sentry.Unity.Tests
         class TestOptionsConfiguration : ScriptableOptionsConfiguration
         {
             public bool GotCalledAtBuild;
-            public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions? cliOptions) => GotCalledAtBuild = true;
+            public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions cliOptions) => GotCalledAtBuild = true;
             public bool GotCalledAtRuntime;
             public override void ConfigureAtRuntime(SentryUnityOptions options) => GotCalledAtRuntime = true;
         }
