@@ -54,6 +54,7 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
 
         options.AttachScreenshot = true;
         options.Il2CppLineNumberSupportEnabled = true;
+        options.Debug = true;
         options.DiagnosticLevel = SentryLevel.Debug;
         options.TracesSampleRate = 1.0d;
         options.PerformanceAutoInstrumentationEnabled = true;
