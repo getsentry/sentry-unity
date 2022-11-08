@@ -17,9 +17,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         {
             Debug.LogFormat("{0}: Invoking SentryOptions", functionName);
 
-            if (!EditorApplication.ExecuteMenuItem("Tools/Sentry"))
+            if (!EditorApplication.ExecuteMenuItem(SentryWindow.EditorMenuPath.Replace(" -> ", "/")))
             {
-                throw new Exception($"{functionName} failed: Menu item 'Tools -> Sentry' not found. Was the Sentry UPM package installed?");
+                throw new Exception($"{functionName} failed: Menu item '{SentryWindow.EditorMenuPath}' not found. Was the Sentry UPM package installed?");
             }
 
             var optionsWindow = EditorWindow.GetWindow<SentryWindow>();
@@ -33,7 +33,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             Debug.LogFormat("{0}: Found SentryOptions", functionName);
 
             var value = "";
-            bool boolValue;
             if (args.TryGetValue("sentryOptionsScript", out value))
             {
                 Debug.LogFormat("{0}: Configuring Options Script to {1}", functionName, value);

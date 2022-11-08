@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Sentry.Extensibility;
+using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEditor;
 using UnityEditor.Android;
 using UnityEngine;
@@ -68,7 +69,8 @@ namespace Sentry.Unity.Editor.Android
             if (_options is null)
             {
                 _logger.LogWarning("Android Native support disabled. " +
-                                  "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                                  "Sentry has not been configured. You can do that through the editor: {0}",
+                                  SentryWindow.EditorMenuPath);
                 disableAutoInit = true;
             }
             else if (!_options.IsValid())

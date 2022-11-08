@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
@@ -36,7 +37,8 @@ namespace Sentry.Unity.Editor.iOS
                 if (options is null)
                 {
                     logger.LogWarning("Native support disabled. " +
-                                      "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                                      "Sentry has not been configured. You can do that through the editor: {0}",
+                                      SentryWindow.EditorMenuPath);
                     return;
                 }
 
