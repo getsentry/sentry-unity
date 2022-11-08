@@ -81,11 +81,19 @@ public class {scriptName} : ScriptableOptionsConfiguration
     /// See base class for documentation.
     public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions? cliOptions)
     {{
-        // TODO implement
+        Configure(options);
+        // TODO implement buildtime-specific configuration, if any
     }}
 
     /// See base class for documentation.
     public override void ConfigureAtRuntime(SentryUnityOptions options)
+    {{
+        Configure(options);
+        // TODO implement runtime-specific configuration, if any
+    }}
+
+    /// Usually, it's a good idea to have common configuration and only call really specific setup in the above methods.
+    private void Configure(SentryUnityOptions options)
     {{
         // TODO implement
     }}
