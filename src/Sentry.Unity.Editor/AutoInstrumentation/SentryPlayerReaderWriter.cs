@@ -120,7 +120,7 @@ namespace Sentry.Unity.Editor
             }
         }
 
-        private bool TryReadSymbols(ModuleDefinition module)
+        private static bool TryReadSymbols(ModuleDefinition module)
         {
             try
             {
