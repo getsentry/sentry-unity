@@ -16,3 +16,15 @@ $unityArgs = @( `
         "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
 
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
+
+function AssertPathExists([string] $Path)
+{
+    if (!(Test-Path $Path))
+    {
+        Write-Error "Path is expected to exist but it doesn't: '$Path'"
+    }
+}
+
+AssertPathExists "$NewProjectAssetsPath/Plugins/Sentry/SentryCliOptions.asset"
+AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/SentryOptions.asset"
+AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/SmokeTestOptions.asset"
