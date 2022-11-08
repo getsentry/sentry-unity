@@ -120,7 +120,7 @@ namespace Sentry.Unity.Tests
 
             scriptableOptions.ToSentryUnityOptions(isBuilding);
 
-            Assert.AreEqual(optionsConfiguration.GotCalledAtBuild, isBuilding);
+            Assert.AreEqual(optionsConfiguration.GotCalledAtBuild, false); // never called in ToSentryUnityOptions()
             Assert.AreEqual(optionsConfiguration.GotCalledAtRuntime, !isBuilding);
         }
 
