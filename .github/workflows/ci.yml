@@ -499,7 +499,7 @@ jobs:
           disable-animations: true
           script: |
             echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} because the previous step finished with: '${{ steps.smoke-test.outputs.status }}'"
-            pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
+            pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest -IsRetried
 
       - name: Upload artifacts on failure
         if: ${{ failure() }}

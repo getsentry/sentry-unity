@@ -1,6 +1,7 @@
 param (
     [Parameter(Position = 0)]
-    [Switch] $IsIntegrationTest
+    [Switch] $IsIntegrationTest,
+    [Switch] $IsRetried
 )
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
@@ -216,7 +217,7 @@ function ExitNow([string] $status, [string] $message)
     {
         Write-Host $message -ForegroundColor Green
     }
-    elseif ($status -ieq "flaky")
+    elseif ($status -ieq "flaky" -and !$IsRetried)
     {
         Write-Warning $message
     }
