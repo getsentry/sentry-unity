@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Added Unity version to event context ([#1072](https://github.com/getsentry/sentry-unity/pull/1072))
+
 ## 0.25.1
 
 ### Fixes
