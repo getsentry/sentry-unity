@@ -144,7 +144,7 @@ namespace Sentry.Unity.Editor
             return typeDefinition;
         }
 
-        private MethodDefinition GetMethodDefinition(TypeDefinition typeDefinition, string name, Type[]? requiredParameters = null)
+        private static MethodDefinition GetMethodDefinition(TypeDefinition typeDefinition, string name, Type[]? requiredParameters = null)
         {
             requiredParameters ??= Array.Empty<Type>();
 
