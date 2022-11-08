@@ -122,7 +122,10 @@ namespace Sentry.Unity
         /// </remarks>
         public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
-        internal bool PerformanceAutoInstrumentationEnabled { get; set; } = false;
+        /// <summary>
+        /// Enable automatic performance transaction tracking.
+        /// </summary>
+        public bool PerformanceAutoInstrumentationEnabled { get; set; } = false;
 
         // This option is hidden due to incompatibility between IL2CPP and Enhanced mode.
         private new StackTraceMode StackTraceMode { get; set; }

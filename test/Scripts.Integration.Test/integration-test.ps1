@@ -75,7 +75,7 @@ If(-not(Test-Path -Path "Samples/IntegrationTest/Build") -Or $Rebuild) {
 }
 
 Write-Host "Running Smoke Test"
-If ($Platform -eq "macOS") {
+If ($Platform -eq "macOS" -or $Platform -eq "Windows") {
 	./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 }
 

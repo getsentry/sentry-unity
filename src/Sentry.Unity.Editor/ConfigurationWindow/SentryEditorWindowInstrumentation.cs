@@ -34,85 +34,16 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             var value = "";
             bool boolValue;
-            if (args.TryGetValue("sentryOptions.Dsn", out value))
-            {
-                Debug.LogFormat("{0}: Configuring DSN to {1}", functionName, value);
-                options.Dsn = value;
-            }
-
             if (args.TryGetValue("sentryOptionsScript", out value))
             {
                 Debug.LogFormat("{0}: Configuring Options Script to {1}", functionName, value);
                 OptionsConfigurationDotNet.SetScript(value);
             }
 
-            if (args.TryGetValue("attachScreenshot", out boolValue))
-            {
-                Debug.LogFormat("{0}: Configuring AttachScreenshot to {1}", functionName, boolValue);
-                options.AttachScreenshot = boolValue;
-            }
-
-            if (args.TryGetValue("diagnosticLevel", out value))
-            {
-                Debug.LogFormat("{0}: Configuring DiagnosticLevel to {1}", functionName, value);
-                options.DebugOnlyInEditor = false;
-                options.DiagnosticLevel = value switch
-                {
-                    "debug" => SentryLevel.Debug,
-                    "info" => SentryLevel.Info,
-                    "warning" => SentryLevel.Warning,
-                    "error" => SentryLevel.Error,
-                    "fatal" => SentryLevel.Fatal,
-                    _ => throw new ArgumentException($"Invalid DiagnosticLevel value: {value}")
-                };
-            }
-
-            if (args.TryGetValue("il2cppLineNumbers", out boolValue))
-            {
-                Debug.LogFormat("{0}: Configuring Il2CppLineNumberSupportEnabled to {1}", functionName, boolValue);
-                options.Il2CppLineNumberSupportEnabled = boolValue;
-            }
-
-            if (args.TryGetValue("traceSampleRate", out boolValue))
-            {
-                Debug.LogFormat("{0}: Configuring TraceSampleRate to {1}", functionName, boolValue ? 1.0f : 0.0f);
-                options.TracesSampleRate = boolValue ? 1.0d : 0.0d;
-            }
-
-            if (args.TryGetValue("performanceAutoInstrumentation", out boolValue))
-            {
-                Debug.LogFormat("{0}: Configuring Performance Auto Instrumentation to {1}", functionName, boolValue);
-                options.PerformanceAutoInstrumentation = boolValue;
-            }
-
-            if (args.TryGetValue("cliOptions.Org", out value))
-            {
-                Debug.LogFormat("{0}: Configuring symbol-upload organization to {1}", functionName, value);
-                cliOptions.Organization = value;
-            }
-
-            if (args.TryGetValue("cliOptions.Project", out value))
-            {
-                Debug.LogFormat("{0}: Configuring symbol-upload project to {1}", functionName, value);
-                cliOptions.Project = value;
-            }
-
-            if (args.TryGetValue("cliOptions.Auth", out value))
-            {
-                Debug.LogFormat("{0}: Configuring symbol-upload auth token", functionName);
-                cliOptions.Auth = value;
-            }
-
             if (args.TryGetValue("cliOptions.UrlOverride", out value))
             {
                 Debug.LogFormat("{0}: Configuring symbol-upload UrlOverride to {1}", functionName, value);
                 cliOptions.UrlOverride = value;
-            }
-
-            if (args.TryGetValue("cliOptions.UploadSources", out boolValue))
-            {
-                Debug.LogFormat("{0}: Configuring symbol-upload UploadSources to {1}", functionName, boolValue);
-                cliOptions.UploadSources = boolValue;
             }
 
             optionsWindow.Close();
