@@ -27,11 +27,10 @@ namespace Sentry.Unity.Editor.Native
 
             try
             {
-                if (options?.IsValid() is not true)
+                if (options is null)
                 {
-                    logger.LogWarning("Native support disabled. " +
-                                      "Sentry has not been configured. You can do that through the editor: {0}",
-                                      SentryWindow.EditorMenuPath);
+                    logger.LogWarning("Native support disabled because Sentry has not been configured. " +
+                                      "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
                     return;
                 }
 

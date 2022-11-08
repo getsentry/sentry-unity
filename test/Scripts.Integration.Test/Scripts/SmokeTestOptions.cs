@@ -7,7 +7,7 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
 {
     public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions cliOptions)
     {
-        Debug.Log("Sentry: SmokeTestOptions - ConfigureAtBuild called");
+        Debug.Log("Sentry: SmokeTestOptions::ConfigureAtBuild() called");
 
         cliOptions.UploadSymbols = !string.IsNullOrEmpty(cliOptions.UrlOverride);
         cliOptions.UploadSources = cliOptions.UploadSymbols;
@@ -15,12 +15,12 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
         cliOptions.Project = "sentry-unity";
         cliOptions.Auth = "dummy-token";
 
-        Debug.Log("Sentry: SmokeTestOptions - ConfigureAtBuild finished");
+        Debug.Log("Sentry: SmokeTestOptions::ConfigureAtBuild() finished");
     }
 
     public override void ConfigureAtRuntime(SentryUnityOptions options)
     {
-        Debug.Log("Sentry: SmokeTestOptions - ConfigureAtRuntime called");
+        Debug.Log("Sentry: SmokeTestOptions::ConfigureAtRuntime() called");
         Configure(options);
 
         options.CreateHttpClientHandler = () => SmokeTester.t;
@@ -35,13 +35,13 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
         // If an ANR triggers while the smoke test runs, the test would fail because we expect exact order of events.
         options.DisableAnrIntegration();
 
-        Debug.Log("Sentry: SmokeTestOptions - ConfigureAtRuntime finished");
+        Debug.Log("Sentry: SmokeTestOptions::ConfigureAtRuntime() finished");
     }
 
     /// Usually, it's a good idea to have common configuration and only call really specific setup in the above methods.
     private void Configure(SentryUnityOptions options)
     {
-        Debug.Log("Sentry: SmokeTestOptions -Configure called");
+        Debug.Log("Sentry: SmokeTestOptions::Configure() called");
 
         options.Dsn = string.Format("http://publickey@{0}:8000/12345",
 #if UNITY_ANDROID
@@ -57,5 +57,6 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
         options.DiagnosticLevel = SentryLevel.Debug;
         options.TracesSampleRate = 1.0d;
         options.PerformanceAutoInstrumentationEnabled = true;
+        Debug.Log("Sentry: SmokeTestOptions::Configure() finished");
     }
 }

@@ -36,21 +36,20 @@ namespace Sentry.Unity.Editor.iOS
 
                 if (options is null)
                 {
-                    logger.LogWarning("Native support disabled. " +
-                                      "Sentry has not been configured. You can do that through the editor: {0}",
-                                      SentryWindow.EditorMenuPath);
+                    logger.LogWarning("iOS native support disabled because Sentry has not been configured. " +
+                                      "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
                     return;
                 }
 
                 if (!options.IsValid())
                 {
-                    logger.LogWarning("Native support disabled.");
+                    logger.LogWarning("iOS native support disabled.");
                     return;
                 }
 
                 if (!options.IosNativeSupportEnabled)
                 {
-                    logger.LogDebug("iOS Native support disabled through the options.");
+                    logger.LogDebug("iOS native support disabled through the options.");
                     return;
                 }
 

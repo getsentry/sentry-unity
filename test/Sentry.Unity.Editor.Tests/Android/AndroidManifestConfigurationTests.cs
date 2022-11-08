@@ -71,8 +71,10 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "Android Native support disabled. " +
-                                                                              "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+            _fixture.LoggerInterceptor.AssertLogContains(
+                SentryLevel.Warning,
+                "Android native support disabled because Sentry has not been configured. " +
+                "You can do that through the editor: Tools -> Sentry");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -117,7 +119,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Android Native support disabled through the options.");
+            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Android native support disabled through the options.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),

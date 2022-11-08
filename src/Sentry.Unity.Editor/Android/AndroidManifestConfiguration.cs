@@ -68,19 +68,18 @@ namespace Sentry.Unity.Editor.Android
             var disableAutoInit = false;
             if (_options is null)
             {
-                _logger.LogWarning("Android Native support disabled. " +
-                                  "Sentry has not been configured. You can do that through the editor: {0}",
-                                  SentryWindow.EditorMenuPath);
+                _logger.LogWarning("Android native support disabled because Sentry has not been configured. " +
+                                  "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
                 disableAutoInit = true;
             }
             else if (!_options.IsValid())
             {
-                _logger.LogDebug("Native support disabled.");
+                _logger.LogDebug("Android native support disabled.");
                 disableAutoInit = true;
             }
             else if (!_options.AndroidNativeSupportEnabled)
             {
-                _logger.LogDebug("Android Native support disabled through the options.");
+                _logger.LogDebug("Android native support disabled through the options.");
                 disableAutoInit = true;
             }
 
