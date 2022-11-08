@@ -7,7 +7,6 @@ using Sentry.Extensibility;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Editor
 {
