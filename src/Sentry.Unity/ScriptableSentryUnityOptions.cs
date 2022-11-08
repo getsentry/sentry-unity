@@ -30,8 +30,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
         [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
 
-        // TODO rename to PerformanceAutoInstrumentationEnabled to align with the rest of the boolean options below
-        [field: SerializeField] public bool PerformanceAutoInstrumentation { get; set; } = false;
+        [field: SerializeField] public bool PerformanceAutoInstrumentationEnabled { get; set; } = false;
 
         [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
 
@@ -136,7 +135,7 @@ namespace Sentry.Unity
                 MacosNativeSupportEnabled = MacosNativeSupportEnabled,
                 LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
                 Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
-                PerformanceAutoInstrumentationEnabled = PerformanceAutoInstrumentation,
+                PerformanceAutoInstrumentationEnabled = PerformanceAutoInstrumentationEnabled,
             };
 
             if (!string.IsNullOrWhiteSpace(ReleaseOverride))

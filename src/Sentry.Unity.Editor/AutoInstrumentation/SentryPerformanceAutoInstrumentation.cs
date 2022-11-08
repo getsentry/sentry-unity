@@ -22,7 +22,7 @@ namespace Sentry.Unity.Editor
             }
 
             var logger = options.DiagnosticLogger ?? new UnityLogger(options);
-            if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
+            if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentationEnabled)
             {
                 logger.LogInfo("Performance Auto Instrumentation has been disabled.");
                 return;
