@@ -8,6 +8,7 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
     public override void ConfigureAtBuild(SentryUnityOptions options, SentryCliOptions cliOptions)
     {
         Debug.Log("Sentry: SmokeTestOptions::ConfigureAtBuild() called");
+        Configure(options);
 
         cliOptions.UploadSymbols = !string.IsNullOrEmpty(cliOptions.UrlOverride);
         cliOptions.UploadSources = cliOptions.UploadSymbols;
