@@ -14,6 +14,14 @@ namespace Sentry.Unity.Protocol
         public const string Type = "unity";
 
         /// <summary>
+        /// The Unity editor version
+        /// </summary>
+        /// <example>
+        /// 2019.4.40f1
+        /// </example>>
+        public string? EditorVersion { get; set; }
+
+        /// <summary>
         /// Application install mode.
         /// </summary>
         /// <example>

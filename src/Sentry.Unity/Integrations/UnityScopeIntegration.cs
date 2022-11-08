@@ -1,11 +1,8 @@
-
 using System;
-using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
 using Sentry.Integrations;
 using Sentry.Unity.Integrations;
-using UnityEngine;
 using OperatingSystem = Sentry.Protocol.OperatingSystem;
 
 namespace Sentry.Unity
@@ -51,7 +48,6 @@ namespace Sentry.Unity
         public void ConfigureScope(Scope scope)
         {
             PopulateSdk(scope.Sdk);
-            PopulateRuntime(scope.Contexts.Runtime);
             PopulateApp(scope.Contexts.App);
             PopulateOperatingSystem(scope.Contexts.OperatingSystem);
             PopulateDevice(scope.Contexts.Device);
@@ -66,11 +62,6 @@ namespace Sentry.Unity
             sdk.AddPackage(UnitySdkInfo.PackageName, UnitySdkInfo.Version);
             sdk.Name = UnitySdkInfo.Name;
             sdk.Version = UnitySdkInfo.Version;
-        }
-
-        private void PopulateRuntime(Runtime runtime)
-        {
-            runtime.Version = _application.UnityVersion;
         }
 
         private void PopulateApp(App app)
@@ -143,6 +134,7 @@ namespace Sentry.Unity
 
         private void PopulateUnity(Protocol.Unity unity)
         {
+            unity.EditorVersion = _mainThreadData.EditorVersion;
             unity.InstallMode = _mainThreadData.InstallMode;
             unity.TargetFrameRate = _mainThreadData.TargetFrameRate;
             unity.CopyTextureSupport = _mainThreadData.CopyTextureSupport;

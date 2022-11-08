@@ -186,7 +186,7 @@ namespace Sentry.Unity.Tests
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
-            string? UnityInstallMode,
+            string? EditorVersion,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
             string? UnityRenderingThreadingMode,
@@ -221,7 +221,7 @@ namespace Sentry.Unity.Tests
             this.GpuVendorId = GpuVendorId;
             this.GpuMultiThreadedRendering = GpuMultiThreadedRendering;
             this.GpuGraphicsShaderLevel = GpuGraphicsShaderLevel;
-            this.UnityInstallMode = UnityInstallMode;
+            this.UnityInstallMode = EditorVersion;
             this.UnityTargetFrameRate = UnityTargetFrameRate;
             this.UnityCopyTextureSupport = UnityCopyTextureSupport;
             this.UnityRenderingThreadingMode = UnityRenderingThreadingMode;

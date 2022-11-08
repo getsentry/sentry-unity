@@ -33,11 +33,11 @@ namespace Sentry.Unity.Android
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
+            string? EditorVersion,
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode,
-            string? UnityVersion
+            string? UnityRenderingThreadingMode
         )
         {
             // We're only setting the missing contexts, the rest is configured by sentry-java.  We could also sync
@@ -78,12 +78,11 @@ namespace Sentry.Unity.Android
                 GpuGraphicsShaderLevel);
 
             CWUtil.WriteUnity(
+                EditorVersion,
                 UnityInstallMode,
                 UnityTargetFrameRate,
                 UnityCopyTextureSupport,
                 UnityRenderingThreadingMode);
-
-            CWUtil.WriteRuntime(UnityVersion);
         }
     }
 }

@@ -289,11 +289,11 @@ void SentryNativeBridgeWriteScope( // clang-format off
     const char *GpuVendorId,
     int8_t GpuMultiThreadedRendering,
     const char *GpuGraphicsShaderLevel,
+    const char *EditorVersion,
     const char *UnityInstallMode,
     const char *UnityTargetFrameRate,
     const char *UnityCopyTextureSupport,
-    const char *UnityRenderingThreadingMode,
-    const char *UnityVersion
+    const char *UnityRenderingThreadingMode
 ) // clang-format on
 {
     // Note: we're using a NSMutableDictionary because it will skip fields with nil values.
@@ -317,6 +317,7 @@ void SentryNativeBridgeWriteScope( // clang-format off
         [scope performSelector:@selector(setContextValue:forKey:) withObject:gpu withObject:@"gpu"];
 
         NSMutableDictionary *unity = [[NSMutableDictionary alloc] init];
+        unity[@"editor_version"] = _NSStringOrNil(EditorVersion);
         unity[@"install_mode"] = _NSStringOrNil(UnityInstallMode);
         unity[@"target_frame_rate"] = _NSStringOrNil(UnityTargetFrameRate);
         unity[@"copy_texture_support"] = _NSStringOrNil(UnityCopyTextureSupport);
@@ -324,11 +325,5 @@ void SentryNativeBridgeWriteScope( // clang-format off
         [scope performSelector:@selector(setContextValue:forKey:)
                     withObject:unity
                     withObject:@"unity"];
-
-        NSMutableDictionary *runtime = [[NSMutableDictionary alloc] init];
-        runtime[@"version"] = _NSStringOrNil(UnityVersion);
-        [scope performSelector:@selector(setContextValue:forKey:)
-                    withObject:runtime
-                    withObject:@"runtime"];
     });
 }

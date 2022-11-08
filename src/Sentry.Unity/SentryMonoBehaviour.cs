@@ -170,6 +170,7 @@ namespace Sentry.Unity
             MainThreadData.SupportsComputeShaders = SentrySystemInfo.SupportsComputeShaders;
             MainThreadData.SupportsGeometryShaders = SentrySystemInfo.SupportsGeometryShaders;
             MainThreadData.GraphicsShaderLevel = SentrySystemInfo.GraphicsShaderLevel;
+            MainThreadData.EditorVersion = SentrySystemInfo.EditorVersion;
             MainThreadData.InstallMode = SentrySystemInfo.InstallMode;
             if (MainThreadData.IsMainThread())
             {

@@ -80,24 +80,19 @@ namespace Sentry.Unity.NativeUtils
         }
 
         internal static void WriteUnity(
+            string? EditorVersion,
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
             string? UnityRenderingThreadingMode)
         {
             var obj = C.sentry_value_new_object();
+            C.SetValueIfNotNull(obj, "editor_version", EditorVersion);
             C.SetValueIfNotNull(obj, "install_mode", UnityInstallMode);
             C.SetValueIfNotNull(obj, "target_frame_rate", UnityTargetFrameRate);
             C.SetValueIfNotNull(obj, "copy_texture_support", UnityCopyTextureSupport);
             C.SetValueIfNotNull(obj, "rendering_threading_mode", UnityRenderingThreadingMode);
-            C.sentry_set_context(Sentry.Unity.Protocol.Unity.Type, obj);
-        }
-
-        public static void WriteRuntime(string? unityVersion)
-        {
-            var obj = C.sentry_value_new_object();
-            C.SetValueIfNotNull(obj, "version", unityVersion);
-            C.sentry_set_context(Sentry.Protocol.Runtime.Type, obj);
+            C.sentry_set_context(Protocol.Unity.Type, obj);
         }
     }
 }

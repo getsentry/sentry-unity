@@ -33,11 +33,11 @@ namespace Sentry.Unity.Native
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
+            string? EditorVersion,
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode,
-            string? UnityVersion
+            string? UnityRenderingThreadingMode
         )
         {
             CWUtil.WriteApp(AppStartTime, AppBuildType);
@@ -75,13 +75,11 @@ namespace Sentry.Unity.Native
                 GpuGraphicsShaderLevel);
 
             CWUtil.WriteUnity(
+                EditorVersion,
                 UnityInstallMode,
                 UnityTargetFrameRate,
                 UnityCopyTextureSupport,
                 UnityRenderingThreadingMode);
-
-            CWUtil.WriteRuntime(UnityVersion);
         }
-
     }
 }
