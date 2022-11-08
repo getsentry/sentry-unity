@@ -292,7 +292,8 @@ void SentryNativeBridgeWriteScope( // clang-format off
     const char *UnityInstallMode,
     const char *UnityTargetFrameRate,
     const char *UnityCopyTextureSupport,
-    const char *UnityRenderingThreadingMode
+    const char *UnityRenderingThreadingMode,
+    const char *UnityVersion
 ) // clang-format on
 {
     // Note: we're using a NSMutableDictionary because it will skip fields with nil values.
@@ -323,5 +324,11 @@ void SentryNativeBridgeWriteScope( // clang-format off
         [scope performSelector:@selector(setContextValue:forKey:)
                     withObject:unity
                     withObject:@"unity"];
+
+        NSMutableDictionary *runtime = [[NSMutableDictionary alloc] init];
+        runtime[@"version"] = _NSStringOrNil(UnityVersion);
+        [scope performSelector:@selector(setContextValue:forKey:)
+                    withObject:runtime
+                    withObject:@"runtime"];
     });
 }
