@@ -133,7 +133,7 @@ namespace Sentry.Unity.Editor
             }
         }
 
-        private TypeDefinition GetTypeDefinition(ModuleDefinition module, Type type)
+        private static TypeDefinition GetTypeDefinition(ModuleDefinition module, Type type)
         {
             var typeDefinition = module.GetType(type.FullName);
             if (typeDefinition is null)
