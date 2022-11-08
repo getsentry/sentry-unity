@@ -67,6 +67,11 @@ namespace Sentry.Unity.Protocol
 
             writer.WriteString("type", Type);
 
+            if (!string.IsNullOrWhiteSpace(EditorVersion))
+            {
+                writer.WriteString("editor_version", EditorVersion);
+            }
+
             if (!string.IsNullOrWhiteSpace(InstallMode))
             {
                 writer.WriteString("install_mode", InstallMode);
@@ -93,6 +98,7 @@ namespace Sentry.Unity.Protocol
         public static Unity FromJson(JsonElement json)
             => new()
             {
+                EditorVersion = json.GetPropertyOrNull("editor_version")?.GetString(),
                 InstallMode = json.GetPropertyOrNull("install_mode")?.GetString(),
                 CopyTextureSupport = json.GetPropertyOrNull("copy_texture_support")?.GetString(),
                 RenderingThreadingMode = json.GetPropertyOrNull("rendering_threading_mode")?.GetString(),

@@ -43,11 +43,11 @@ namespace Sentry.Unity
                 scope.Contexts.Gpu.VendorId,
                 scope.Contexts.Gpu.MultiThreadedRendering,
                 scope.Contexts.Gpu.GraphicsShaderLevel,
+                unityContext.EditorVersion,
                 unityContext.InstallMode,
                 unityContext.TargetFrameRate,
                 unityContext.CopyTextureSupport,
-                unityContext.RenderingThreadingMode,
-                scope.Contexts.Runtime.Version
+                unityContext.RenderingThreadingMode
             );
         }
 
@@ -81,10 +81,10 @@ namespace Sentry.Unity
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
             string? EditorVersion,
+            string? InstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode,
-            string? UnityVersion
+            string? UnityRenderingThreadingMode
         );
     }
 }
