@@ -29,6 +29,8 @@ public class BuildtimeOptions : Sentry.Unity.Editor.ScriptableOptionsConfigurati
         options.Il2CppLineNumberSupportEnabled = true;
         options.Debug = true;
         options.DiagnosticLevel = SentryLevel.Debug;
+        options.TracesSampleRate = 1.0d;
+        options.PerformanceAutoInstrumentationEnabled = true;
 
         cliOptions.UploadSymbols = !string.IsNullOrEmpty(cliOptions.UrlOverride);
         cliOptions.UploadSources = cliOptions.UploadSymbols;
