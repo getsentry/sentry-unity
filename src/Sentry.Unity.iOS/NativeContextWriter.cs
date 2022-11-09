@@ -37,11 +37,11 @@ namespace Sentry.Unity.iOS
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
-            string? EditorVersion,
+            string? UnityEditorVersion,
+            string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode,
-            string? UnityVersion
+            string? UnityRenderingThreadingMode
         ) => SentryNativeBridgeWriteScope(
             // // AppStartTime,
             // AppBuildType,
@@ -71,11 +71,11 @@ namespace Sentry.Unity.iOS
             GpuVendorId,
             marshallNullableBool(GpuMultiThreadedRendering),
             GpuGraphicsShaderLevel,
-            EditorVersion,
+            UnityEditorVersion,
+            UnityInstallMode,
             UnityTargetFrameRate,
             UnityCopyTextureSupport,
-            UnityRenderingThreadingMode,
-            UnityVersion
+            UnityRenderingThreadingMode
         );
 
         private static sbyte marshallNullableBool(bool? value) => (sbyte)(value.HasValue ? (value.Value ? 1 : 0) : -1);
@@ -112,11 +112,11 @@ namespace Sentry.Unity.iOS
             string? GpuVendorId,
             sbyte GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
+            string? UnityEditorVersion,
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode,
-            string? UnityVersion
+            string? UnityRenderingThreadingMode
         );
     }
 }
