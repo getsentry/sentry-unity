@@ -112,6 +112,7 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(sysInfo.GraphicsDeviceVendorId?.Value, context.GpuVendorId);
             Assert.AreEqual(sysInfo.GraphicsMultiThreaded?.Value, context.GpuMultiThreadedRendering);
             Assert.AreEqual(sysInfo.GraphicsShaderLevel.ToString(), context.GpuGraphicsShaderLevel);
+            Assert.AreEqual(sysInfo.EditorVersion, context.UnityEditorVersion);
             Assert.AreEqual(sysInfo.InstallMode, context.UnityInstallMode);
             Assert.AreEqual(sysInfo.TargetFrameRate?.Value, context.UnityTargetFrameRate);
             Assert.AreEqual(sysInfo.CopyTextureSupport?.Value, context.UnityCopyTextureSupport);
@@ -151,11 +152,11 @@ namespace Sentry.Unity.Tests
         public string? GpuVendorId = null;
         public bool? GpuMultiThreadedRendering = null;
         public string? GpuGraphicsShaderLevel = null;
+        public string? UnityEditorVersion = null;
         public string? UnityInstallMode = null;
         public string? UnityTargetFrameRate = null;
         public string? UnityCopyTextureSupport = null;
         public string? UnityRenderingThreadingMode = null;
-        public string? UnityVersion = null;
 
         protected override void WriteScope(
             string? AppStartTime,
@@ -186,11 +187,11 @@ namespace Sentry.Unity.Tests
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
-            string? EditorVersion,
+            string? UnityEditorVersion,
+            string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
-            string? UnityRenderingThreadingMode,
-            string? UnityVersion
+            string? UnityRenderingThreadingMode
         )
         {
             this.AppStartTime = AppStartTime;
@@ -221,11 +222,11 @@ namespace Sentry.Unity.Tests
             this.GpuVendorId = GpuVendorId;
             this.GpuMultiThreadedRendering = GpuMultiThreadedRendering;
             this.GpuGraphicsShaderLevel = GpuGraphicsShaderLevel;
-            this.UnityInstallMode = EditorVersion;
+            this.UnityEditorVersion = UnityEditorVersion;
+            this.UnityInstallMode = UnityInstallMode;
             this.UnityTargetFrameRate = UnityTargetFrameRate;
             this.UnityCopyTextureSupport = UnityCopyTextureSupport;
             this.UnityRenderingThreadingMode = UnityRenderingThreadingMode;
-            this.UnityVersion = UnityVersion;
             SyncFinished.Set();
         }
     }
