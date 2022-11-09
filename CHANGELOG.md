@@ -6,11 +6,14 @@
 
 - Added Unity version to event context ([#1072](https://github.com/getsentry/sentry-unity/pull/1072))
 
+### Fixes
+
+- Auto Instrumentation now correctly resolves prebuilt assemblies ([#1066](https://github.com/getsentry/sentry-unity/pull/1066))
+
 ## 0.25.1
 
 ### Fixes
 
-- Auto Instrumentation now correctly resolves prebuilt assemblies ([#1066](https://github.com/getsentry/sentry-unity/pull/1066))
 - Resolved conflicting dependencies for Mono.Cecil ([#1064](https://github.com/getsentry/sentry-unity/pull/1064))
 
 ### Dependencies
