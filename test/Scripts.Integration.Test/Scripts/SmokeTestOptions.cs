@@ -53,6 +53,8 @@ public class SmokeTestOptions : ScriptableOptionsConfiguration
             "localhost");
 #endif
 
+        Debug.LogFormat("Sentry: Setting options.Dsn = {0}", options.Dsn);
+
         options.AttachScreenshot = true;
         options.Il2CppLineNumberSupportEnabled = true;
         options.Debug = true;
