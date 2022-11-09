@@ -80,8 +80,8 @@ namespace Sentry.Unity
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
-            string? EditorVersion,
-            string? InstallMode,
+            string? UnityEditorVersion,
+            string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
             string? UnityRenderingThreadingMode
