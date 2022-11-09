@@ -409,8 +409,8 @@ foreach ($device in $DeviceList)
         }
     }
 
-    # RunTest -Name "smoke"
-    # RunTest -Name "hasnt-crashed"
+    RunTest -Name "smoke"
+    RunTest -Name "hasnt-crashed"
 
     try
     {
