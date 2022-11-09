@@ -33,10 +33,16 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             Debug.LogFormat("{0}: Found SentryOptions", functionName);
 
             var value = "";
-            if (args.TryGetValue("sentryOptionsScript", out value))
+            if (args.TryGetValue("runtimeOptionsScript", out value))
             {
-                Debug.LogFormat("{0}: Configuring Options Script to {1}", functionName, value);
-                OptionsConfigurationDotNet.SetScript(value);
+                Debug.LogFormat("{0}: Configuring Runtime Options Script to {1}", functionName, value);
+                OptionsConfigurationItem.SetScript(value);
+            }
+
+            if (args.TryGetValue("buildtimeOptionsScript", out value))
+            {
+                Debug.LogFormat("{0}: Configuring Buildtime Options Script to {1}", functionName, value);
+                OptionsConfigurationItem.SetScript(value);
             }
 
             if (args.TryGetValue("cliOptions.UrlOverride", out value))

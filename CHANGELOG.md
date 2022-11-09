@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Changes
+### Features
 
-- `ScriptableOptionsConfiguration`: adds `ConfigureAtBuild()` and renames `Configure()` with `ConfigureAtRuntime()` ([#1046](https://github.com/getsentry/sentry-unity/pull/1046))
+- Add build-time `ScriptableOptionsConfiguration` scripting interface to support changing settings for native integrations and CLI ([#1046](https://github.com/getsentry/sentry-unity/pull/1046))
 
 ### Fixes
 

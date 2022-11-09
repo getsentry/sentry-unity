@@ -39,7 +39,8 @@ namespace Sentry.Unity.Editor
                 options = scriptableOptions.ToSentryUnityOptions(isBuilding: true);
                 /// Must be non-nullable in the interface otherwise Unity script compilation fails...
                 cliOptions ??= ScriptableObject.CreateInstance<SentryCliOptions>();
-                scriptableOptions.OptionsConfiguration?.ConfigureAtBuild(options, cliOptions);
+                var setupScript = scriptableOptions.BuildtimeOptionsConfiguration as Sentry.Unity.Editor.ScriptableOptionsConfiguration;
+                setupScript?.Configure(options, cliOptions);
             }
 
             return (options, cliOptions);

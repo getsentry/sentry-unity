@@ -75,7 +75,10 @@ namespace Sentry.Unity
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
-        [field: SerializeField] public ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
+        [field: SerializeField] public Sentry.Unity.ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
+
+        /// Actual type is `Sentry.Unity.Editor.ScriptableOptionsConfiguration` but we can't reference it here because we don't depend on the editor Assembly.
+        [field: SerializeField] public ScriptableObject? BuildtimeOptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
         [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
@@ -185,7 +188,7 @@ namespace Sentry.Unity
 
             if (!isBuilding)
             {
-                OptionsConfiguration?.ConfigureAtRuntime(options);
+                OptionsConfiguration?.Configure(options);
 
                 // Doing this after the configure callback to allow users to programmatically opt out
                 if (options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
