@@ -34,6 +34,7 @@ namespace Sentry.Unity
         int? GraphicsShaderLevel { get; }
         bool? GraphicsUVStartsAtTop { get; }
         Lazy<bool>? IsDebugBuild { get; }
+        string? EditorVersion { get; }
         string? InstallMode { get; }
         Lazy<string>? TargetFrameRate { get; }
         Lazy<string>? CopyTextureSupport { get; }
@@ -79,6 +80,7 @@ namespace Sentry.Unity
         public int? GraphicsShaderLevel => SystemInfo.graphicsShaderLevel;
         public bool? GraphicsUVStartsAtTop => SystemInfo.graphicsUVStartsAtTop;
         public Lazy<bool> IsDebugBuild => new(() => Debug.isDebugBuild);
+        public string? EditorVersion => Application.unityVersion;
         public string? InstallMode => Application.installMode.ToString();
         public Lazy<string> TargetFrameRate => new(() => Application.targetFrameRate.ToString());
         public Lazy<string> CopyTextureSupport => new(() => SystemInfo.copyTextureSupport.ToString());

@@ -4,6 +4,7 @@
 
 ### Features
 
+- Added Unity version to event context ([#1072](https://github.com/getsentry/sentry-unity/pull/1072))
 - Add build-time `ScriptableOptionsConfiguration` scripting interface to support changing settings for native integrations and CLI ([#1046](https://github.com/getsentry/sentry-unity/pull/1046))
 
 ### Fixes

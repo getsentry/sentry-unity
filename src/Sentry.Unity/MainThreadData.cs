@@ -57,6 +57,7 @@ namespace Sentry.Unity
 
         public bool? IsDebugBuild { get; set; }
 
+        public string? EditorVersion { get; set; }
         public string? InstallMode { get; set; }
 
         public string? TargetFrameRate { get; set; }
