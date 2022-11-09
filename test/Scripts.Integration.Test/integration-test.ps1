@@ -53,6 +53,7 @@ If ($Clean)
 
 If (-not(Test-Path -Path $PackageReleaseOutput) -Or $Repack)
 {
+    dotnet build
     Write-Host "Creating Package"
     ./scripts/pack.ps1
     Write-Host "Extracting Package"
