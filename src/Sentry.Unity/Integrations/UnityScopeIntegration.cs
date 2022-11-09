@@ -1,11 +1,8 @@
-
 using System;
-using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Reflection;
 using Sentry.Integrations;
 using Sentry.Unity.Integrations;
-using UnityEngine;
 using OperatingSystem = Sentry.Protocol.OperatingSystem;
 
 namespace Sentry.Unity
@@ -137,6 +134,7 @@ namespace Sentry.Unity
 
         private void PopulateUnity(Protocol.Unity unity)
         {
+            unity.EditorVersion = _mainThreadData.EditorVersion;
             unity.InstallMode = _mainThreadData.InstallMode;
             unity.TargetFrameRate = _mainThreadData.TargetFrameRate;
             unity.CopyTextureSupport = _mainThreadData.CopyTextureSupport;

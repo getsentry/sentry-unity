@@ -430,6 +430,7 @@ namespace Sentry.Unity.Tests
         {
             _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
             {
+                EditorVersion = "TestEditorVersion2022.3.2f1",
                 InstallMode = "Editor",
                 TargetFrameRate = new Lazy<string>(() => "-1"),
                 CopyTextureSupport = new Lazy<string>(() => "Basic, Copy3D, DifferentTypes, TextureToRT, RTToTexture"),
@@ -444,6 +445,7 @@ namespace Sentry.Unity.Tests
 
             // assert
             var unityProtocol = (Unity.Protocol.Unity)scope.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.EditorVersion, unityProtocol.EditorVersion);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.InstallMode, unityProtocol.InstallMode);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.TargetFrameRate!.Value, unityProtocol.TargetFrameRate);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.CopyTextureSupport!.Value, unityProtocol.CopyTextureSupport);
@@ -579,6 +581,7 @@ namespace Sentry.Unity.Tests
         public int? GraphicsShaderLevel { get; set; }
         public bool? GraphicsUVStartsAtTop { get; }
         public Lazy<bool>? IsDebugBuild { get; set; }
+        public string? EditorVersion { get; set; }
         public string? InstallMode { get; set; }
         public Lazy<string>? TargetFrameRate { get; set; }
         public Lazy<string>? CopyTextureSupport { get; set; }

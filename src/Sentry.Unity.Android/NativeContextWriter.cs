@@ -33,6 +33,7 @@ namespace Sentry.Unity.Android
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel,
+            string? EditorVersion,
             string? UnityInstallMode,
             string? UnityTargetFrameRate,
             string? UnityCopyTextureSupport,
@@ -77,6 +78,7 @@ namespace Sentry.Unity.Android
                 GpuGraphicsShaderLevel);
 
             CWUtil.WriteUnity(
+                EditorVersion,
                 UnityInstallMode,
                 UnityTargetFrameRate,
                 UnityCopyTextureSupport,
