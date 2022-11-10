@@ -15,7 +15,7 @@ This is the UPM package for the Sentry SDK for Unity.
 
 Install it via `UPM`:
 ```
-https://github.com/getsentry/unity.git#0.25.1
+https://github.com/getsentry/unity.git#0.26.0
 ```
 
 ## Source code
