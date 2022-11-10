@@ -10,6 +10,12 @@
 
 - Auto Instrumentation now correctly resolves prebuilt assemblies ([#1066](https://github.com/getsentry/sentry-unity/pull/1066))
 
+### Dependencies
+
+- Bump Cocoa SDK from v7.30.2-1-gf5f89105 to v7.30.2 ([#1075](https://github.com/getsentry/sentry-unity/pull/1075))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7302)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.30.2-1-gf5f89105...7.30.2)
+
 ## 0.25.1
 
 ### Fixes
