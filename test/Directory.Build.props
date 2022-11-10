@@ -8,11 +8,10 @@
 
   <!-- Note: this OVERWRITES the ResetTargetFrameworks target from the parent dir -->
   <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity">
-    <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
-    <PropertyGroup Condition="$(UnityVersion.StartsWith('2021')) or $(UnityVersion.StartsWith('2022'))">
-      <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020'))">
+      <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
-    <Message Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
+    <Message Text="Selected TFM: $(TargetFramework) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
   </Target>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->

@@ -9,26 +9,18 @@
     <DevPackageFolderName>package-dev</DevPackageFolderName>
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
-    <!-- Must be set here but will be overwritten below once the UnityVersion is ±resolved -->
-    <!-- When using Unity 2022 the default will change to netstandard2.1 -->
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <!-- Might be overwritten below in 'ResetTargetFrameworks' for older Unity versions -->
+    <TargetFramework>netstandard2.1</TargetFramework>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <!-- Note: for ./tests directory, this target is overwritten -->
   <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity" BeforeTargets="CollectPackageReferences">
-    <!-- Blocked by https://github.com/getsentry/sentry-unity/issues/513 -->
-    <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
-    <!-- <PropertyGroup Condition="$(UnityVersion.StartsWith('2021.2')) or $(UnityVersion.StartsWith('2022'))">
-      <TargetFrameworks>netstandard2.1</TargetFrameworks>
-    </PropertyGroup> -->
-    <!-- Lowest version supported at this time is 2019 and up to 2021 ns2.0 is the only option. -->
-    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020')) or $(UnityVersion.StartsWith('2021.1'))">
-      <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <!-- The default for versions 2019 and 2020 is ns2.0 -->
+    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020'))">
+      <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
-    <!-- Being specific on which Unity version we support allows us to quickly ajust these settings when adding support to new editors.
-    Future 2022 or 2023 versions likely will target net6.0 so not rolling forward. Instead break the build here. -->
-    <Message Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
+    <Message Text="Selected TFM: $(TargetFramework) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
   </Target>
 
   <ItemGroup>
@@ -40,8 +32,8 @@
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnity" DependsOnTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
-    <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll."></Error>
-    <Error Condition="!Exists('$(UnityManagedPath)/UnityEngine.dll')" Text="Couldn't find UnityEngine at $(UnityManagedPath)/UnityEngine.dll."></Error>
+    <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll." />
+    <Error Condition="!Exists('$(UnityManagedPath)/UnityEngine.dll')" Text="Couldn't find UnityEngine at $(UnityManagedPath)/UnityEngine.dll." />
     <ItemGroup>
       <Reference Include="UnityEngine">
         <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>
