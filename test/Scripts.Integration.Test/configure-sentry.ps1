@@ -27,6 +27,6 @@ function AssertPathExists([string] $Path)
 }
 
 AssertPathExists "$NewProjectAssetsPath/Plugins/Sentry/SentryCliOptions.asset"
+AssertPathExists "$NewProjectAssetsPath/Plugins/Sentry/BuildtimeOptions.asset"
 AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/SentryOptions.asset"
-AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/BuildtimeOptions.asset"
 AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/RuntimeOptions.asset"
