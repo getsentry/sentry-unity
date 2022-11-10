@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Sentry.Extensibility;
+using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEditor;
 using UnityEditor.Android;
 using UnityEngine;
@@ -25,9 +26,7 @@ namespace Sentry.Unity.Editor.Android
 
         public AndroidManifestConfiguration()
             : this(
-                () => SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                    ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer),
-                () => SentryScriptableObject.Load<SentryCliOptions>(SentryCliOptions.GetConfigPath()),
+                () => SentryScriptableObject.ConfiguredBuildtimeOptions(),
                 isDevelopmentBuild: EditorUserBuildSettings.development,
                 scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
         {
@@ -35,14 +34,12 @@ namespace Sentry.Unity.Editor.Android
 
         // Testing
         internal AndroidManifestConfiguration(
-            Func<SentryUnityOptions?> getOptions,
-            Func<SentryCliOptions?> getSentryCliOptions,
+            Func<(SentryUnityOptions?, SentryCliOptions?)> getOptions,
             bool isDevelopmentBuild,
             ScriptingImplementation scriptingImplementation,
             IUnityLoggerInterceptor? interceptor = null)
         {
-            _options = getOptions();
-            _sentryCliOptions = getSentryCliOptions();
+            (_options, _sentryCliOptions) = getOptions();
             _logger = _options?.DiagnosticLogger ?? new UnityLogger(_options ?? new SentryUnityOptions(), interceptor);
 
             _isDevelopmentBuild = isDevelopmentBuild;
@@ -71,18 +68,18 @@ namespace Sentry.Unity.Editor.Android
             var disableAutoInit = false;
             if (_options is null)
             {
-                _logger.LogWarning("Android Native support disabled. " +
-                                  "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                _logger.LogWarning("Android native support disabled because Sentry has not been configured. " +
+                                  "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
                 disableAutoInit = true;
             }
             else if (!_options.IsValid())
             {
-                _logger.LogDebug("Native support disabled.");
+                _logger.LogDebug("Android native support disabled.");
                 disableAutoInit = true;
             }
             else if (!_options.AndroidNativeSupportEnabled)
             {
-                _logger.LogDebug("Android Native support disabled through the options.");
+                _logger.LogDebug("Android native support disabled through the options.");
                 disableAutoInit = true;
             }
 

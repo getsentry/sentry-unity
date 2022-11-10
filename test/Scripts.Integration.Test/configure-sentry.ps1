@@ -12,22 +12,21 @@ $UnityPath = FormatUnityPath $UnityPath
 $unityArgs = @( `
         "-quit", "-batchmode", "-nographics", "-projectPath ", $NewProjectPath, `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
-        "-sentryOptions.Dsn", (TestDsnFor $Platform), `
-        "-sentryOptionsScript", "SmokeTestOptions", `
-        "-attachScreenshot", "true", `
-        "-il2cppLineNumbers", "true", `
-        "-diagnosticLevel", "debug",
-        "-traceSampleRate", "true",
-        "-performanceAutoInstrumentation", "true")
-
-if ($CheckSymbols)
-{
-    $unityArgs += @( `
-            "-cliOptions.UploadSources", "true", `
-            "-cliOptions.Org", "sentry-sdks", `
-            "-cliOptions.Project", "sentry-unity", `
-            "-cliOptions.Auth", "dummy-token", `
-            "-cliOptions.UrlOverride", (SymbolServerUrlFor $UnityPath $Platform))
-}
+        "-buildtimeOptionsScript", "BuildtimeOptions", `
+        "-runtimeOptionsScript", "RuntimeOptions", `
+        "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
 
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
+
+function AssertPathExists([string] $Path)
+{
+    if (!(Test-Path $Path))
+    {
+        Write-Error "Path is expected to exist but it doesn't: '$Path'"
+    }
+}
+
+AssertPathExists "$NewProjectAssetsPath/Plugins/Sentry/SentryCliOptions.asset"
+AssertPathExists "$NewProjectAssetsPath/Plugins/Sentry/BuildtimeOptions.asset"
+AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/SentryOptions.asset"
+AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/RuntimeOptions.asset"

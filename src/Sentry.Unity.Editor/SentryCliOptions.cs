@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using Sentry.Extensibility;
-using UnityEditor;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor
@@ -30,7 +28,7 @@ namespace Sentry.Unity.Editor
         private static void MissingFieldWarning(IDiagnosticLogger? logger, string name) =>
             logger?.LogWarning("{0} missing. Please set it under {1}", name, EditorMenuPath);
 
-        public bool IsValid(IDiagnosticLogger? logger, bool? isDevelopmentBuild = null)
+        public bool IsValid(IDiagnosticLogger? logger, bool isDevelopmentBuild)
         {
             if (!UploadSymbols)
             {
@@ -38,7 +36,7 @@ namespace Sentry.Unity.Editor
                 return false;
             }
 
-            if ((isDevelopmentBuild ?? EditorUserBuildSettings.development) && !UploadDevelopmentSymbols)
+            if (isDevelopmentBuild && !UploadDevelopmentSymbols)
             {
                 logger?.LogDebug("Automated symbols upload for development builds has been disabled.");
                 return false;

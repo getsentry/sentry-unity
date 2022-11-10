@@ -20,9 +20,8 @@ namespace Sentry.Unity.Editor
                 return;
             }
 
-            var options = SentryScriptableObject
-                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
 
             if (options is null)
             {

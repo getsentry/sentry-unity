@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
@@ -16,9 +17,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var options = SentryScriptableObject
-                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             try
@@ -37,32 +36,31 @@ namespace Sentry.Unity.Editor.iOS
 
                 if (options is null)
                 {
-                    logger.LogWarning("Native support disabled. " +
-                                      "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                    logger.LogWarning("iOS native support disabled because Sentry has not been configured. " +
+                                      "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
                     return;
                 }
 
                 if (!options.IsValid())
                 {
-                    logger.LogWarning("Native support disabled.");
+                    logger.LogWarning("iOS native support disabled.");
                     return;
                 }
 
                 if (!options.IosNativeSupportEnabled)
                 {
-                    logger.LogDebug("iOS Native support disabled through the options.");
+                    logger.LogDebug("iOS native support disabled through the options.");
                     return;
                 }
 
                 sentryXcodeProject.AddNativeOptions(options);
                 sentryXcodeProject.AddSentryToMain(options);
 
-                var sentryCliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
-                if (sentryCliOptions.IsValid(logger))
+                if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is true)
                 {
-                    SentryCli.CreateSentryProperties(pathToProject, sentryCliOptions, options);
+                    SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
                     SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
-                    sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, sentryCliOptions);
+                    sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, cliOptions);
                 }
                 else if (options.Il2CppLineNumberSupportEnabled)
                 {

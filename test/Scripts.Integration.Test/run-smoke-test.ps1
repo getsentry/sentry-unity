@@ -107,6 +107,7 @@ function RunTest([string] $type)
         {
             Write-Host "$type test: Player.log contents:" -ForegroundColor Yellow
             $appLog = Get-Content "$AppDataDir/Player.log"
+            $appLog
             Write-Host "================================================================================" -ForegroundColor Yellow
             Write-Host "$type test: Player.log contents END" -ForegroundColor Yellow
         }

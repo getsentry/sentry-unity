@@ -144,19 +144,6 @@ function BuildMethodFor([string] $platform)
     }
 }
 
-function TestDsnFor([string] $platform)
-{
-    $dsn = "http://publickey@"
-    switch ("$platform")
-    {
-        "Android" { $dsn += "10.0.2.2"; break; }
-        "WebGL" { $dsn += "127.0.0.1"; break; }
-        Default { $dsn += "localhost" }
-    }
-    $dsn += ":8000/12345"
-    return $dsn
-}
-
 function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
     If ($unityPath.StartsWith("docker "))

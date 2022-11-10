@@ -17,7 +17,7 @@ MonoBehaviour:
   <CaptureInEditor>k__BackingField: 1
   <EnableLogDebouncing>k__BackingField: 0
   <TracesSampleRate>k__BackingField: 0
-  <AutoInstrumentPerformance>k__BackingField: 0
+  <PerformanceAutoInstrumentationEnabled>k__BackingField: 1
   <AutoSessionTracking>k__BackingField: 1
   <AutoSessionTrackingInterval>k__BackingField: 30000
   <ReleaseOverride>k__BackingField: 
@@ -47,7 +47,9 @@ MonoBehaviour:
   <MacosNativeSupportEnabled>k__BackingField: 1
   <LinuxNativeSupportEnabled>k__BackingField: 1
   <Il2CppLineNumberSupportEnabled>k__BackingField: 1
-  <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: bda1a724b0875436aade31393b0129c0,
+  <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: 407b4d5f2fef2c845bf2a3dcdf6b00fb,
+    type: 2}
+  <BuildtimeOptionsConfiguration>k__BackingField: {fileID: 11400000, guid: 6bcc81a646c08ce439ab03805d477458,
     type: 2}
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0

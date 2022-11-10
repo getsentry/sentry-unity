@@ -15,20 +15,20 @@ namespace Sentry.Unity.Editor
         public int callbackOrder { get; }
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-            var options = SentryScriptableObject.Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
             if (options == null)
             {
                 return;
             }
 
-            var logger = options.ToSentryUnityOptions(isBuilding: true).DiagnosticLogger;
-            if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentation)
+            var logger = options.DiagnosticLogger ?? new UnityLogger(options);
+            if (options.TracesSampleRate <= 0.0f || !options.PerformanceAutoInstrumentationEnabled)
             {
-                logger?.LogInfo("Performance Auto Instrumentation has been disabled.");
+                logger.LogInfo("Performance Auto Instrumentation has been disabled.");
                 return;
             }
 
-            logger?.LogInfo("Running Performance Auto Instrumentation in PostBuildScriptPhase.");
+            logger.LogInfo("Running Performance Auto Instrumentation in PostBuildScriptPhase.");
 
             var stopwatch = Stopwatch.StartNew();
 
@@ -40,15 +40,15 @@ namespace Sentry.Unity.Editor
             }
             catch (Exception e)
             {
-                logger?.LogError("Failed to add the performance auto instrumentation. " +
+                logger.LogError("Failed to add the performance auto instrumentation. " +
                                  "The assembly has not been modified.", e);
             }
 
             stopwatch.Stop();
-            logger?.LogInfo("Auto Instrumentation finished in {0} seconds.", stopwatch.Elapsed.Seconds);
+            logger.LogInfo("Auto Instrumentation finished in {0} seconds.", stopwatch.Elapsed.Seconds);
         }
 
-        private static void ModifyPlayerAssembly(IDiagnosticLogger? logger, SentryPlayerReaderWriter playerReaderWriter)
+        private static void ModifyPlayerAssembly(IDiagnosticLogger logger, SentryPlayerReaderWriter playerReaderWriter)
         {
             var getInstanceMethod = playerReaderWriter.ImportSentryMonoBehaviourMethod("get_Instance");
             var startAwakeSpanMethod = playerReaderWriter.ImportSentryMonoBehaviourMethod("StartAwakeSpan", new[] { typeof(MonoBehaviour) });
@@ -63,25 +63,25 @@ namespace Sentry.Unity.Editor
                     continue;
                 }
 
-                logger?.LogDebug("\tChecking: '{0}'", type.FullName);
+                logger.LogDebug("\tChecking: '{0}'", type.FullName);
 
                 foreach (var method in type.Methods.Where(method => method.Name == "Awake"))
                 {
-                    logger?.LogDebug("\tDetected 'Awake' method.");
+                    logger.LogDebug("\tDetected 'Awake' method.");
 
                     if (method.Body is null)
                     {
-                        logger?.LogDebug("\tMethod body is null. Skipping.");
+                        logger.LogDebug("\tMethod body is null. Skipping.");
                         continue;
                     }
 
                     if (method.Body.Instructions is null)
                     {
-                        logger?.LogDebug("\tInstructions are null. Skipping.");
+                        logger.LogDebug("\tInstructions are null. Skipping.");
                         continue;
                     }
 
-                    logger?.LogDebug("\t\tAdding 'Start Awake Span'.");
+                    logger.LogDebug("\t\tAdding 'Start Awake Span'.");
 
                     var processor = method.Body.GetILProcessor();
 
@@ -90,7 +90,7 @@ namespace Sentry.Unity.Editor
                     processor.InsertBefore(method.Body.Instructions[0], processor.Create(OpCodes.Ldarg_0));
                     processor.InsertBefore(method.Body.Instructions[0], processor.Create(OpCodes.Call, getInstanceMethod));
 
-                    logger?.LogDebug("\t\tAdding 'Finish Awake Span'.");
+                    logger.LogDebug("\t\tAdding 'Finish Awake Span'.");
 
                     // We're checking the instructions for OpCode.Ret so we can insert the finish span instruction before it.
                     // Iterating over the collection backwards because we're modifying it's length
@@ -105,7 +105,7 @@ namespace Sentry.Unity.Editor
                 }
             }
 
-            logger?.LogInfo("Applying Auto Instrumentation.");
+            logger.LogInfo("Applying Auto Instrumentation.");
             playerReaderWriter.Write();
         }
     }

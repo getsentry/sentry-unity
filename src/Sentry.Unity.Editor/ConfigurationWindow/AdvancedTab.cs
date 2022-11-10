@@ -85,7 +85,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 {
                     EditorGUILayout.HelpBox("The IL2CPP line number feature is supported from Unity version 2020.3 or newer and 2021.3  or newer onwards", MessageType.Warning);
                 }
-                else if (cliOptions is not null && !cliOptions.IsValid(null))
+                else if (cliOptions is not null && !cliOptions.IsValid(null, EditorUserBuildSettings.development))
                 {
                     EditorGUILayout.HelpBox("The IL2CPP line number support relies on the Debug Symbol Upload to be properly set up.", MessageType.Error);
                 }

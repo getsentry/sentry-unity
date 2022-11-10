@@ -1,6 +1,7 @@
 param (
     [Parameter(Position = 0)]
-    [Switch] $IsIntegrationTest
+    [Switch] $IsIntegrationTest,
+    [Switch] $WarnIfFlaky
 )
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
@@ -216,7 +217,7 @@ function ExitNow([string] $status, [string] $message)
     {
         Write-Host $message -ForegroundColor Green
     }
-    elseif ($status -ieq "flaky")
+    elseif ($status -ieq "flaky" -and $WarnIfFlaky)
     {
         Write-Warning $message
     }
@@ -259,6 +260,8 @@ If (-not (Test-Path -Path "$ApkPath/$ApkFileName" ))
 # Test
 foreach ($device in $DeviceList)
 {
+    adb -s $device logcat -c
+
     $deviceApi = "$(adb -s $device shell getprop ro.build.version.sdk)".Trim()
     $deviceSdk = "$(adb -s $device shell getprop ro.build.version.release)".Trim()
     Write-Host "`nChecking device $device with SDK '$deviceSdk' and API '$deviceApi'"
@@ -283,7 +286,7 @@ foreach ($device in $DeviceList)
     do
     {
         Write-Host "Installing test app..."
-        $stdout = (adb -s $device install -r $ApkPath/$ApkFileName)
+        $stdout = (adb -s $device install -r $ApkPath/$ApkFileName 2>&1)
 
         if ($stdout.Contains("Broken pipe"))
         {
@@ -299,12 +302,15 @@ foreach ($device in $DeviceList)
         ExitNow "failed" "Failed to Install APK: $stdout."
     }
 
-    function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString)
+    function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString, [switch] $PreserveLogcat)
     {
         Write-Host "::group::Test: '$name'"
 
-        Write-Host "Clearing logcat from $device."
-        adb -s $device logcat -c
+        if (!$PreserveLogcat)
+        {
+            Write-Host "Clearing logcat from $device."
+            adb -s $device logcat -c
+        }
 
         adb -s $device shell am start -n $TestActivityName -e test $Name
         #despite calling start, the app might not be started yet.
@@ -411,7 +417,7 @@ foreach ($device in $DeviceList)
         # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
         CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
             RunTest -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
-            RunTest -Name "has-crashed"
+            RunTest -Name "has-crashed" -PreserveLogcat
         }
     }
     catch

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using Sentry.Unity.Editor.ConfigurationWindow;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build;
@@ -20,18 +21,16 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var options = SentryScriptableObject
-                .Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath())
-                ?.ToSentryUnityOptions(BuildPipeline.isBuildingPlayer);
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
             var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 
             try
             {
-                if (options?.IsValid() is not true)
+                if (options is null)
                 {
-                    logger.LogWarning("Native support disabled. " +
-                                      "Sentry has not been configured. You can do that through the editor: Tools -> Sentry");
+                    logger.LogWarning("Native support disabled because Sentry has not been configured. " +
+                                      "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
                     return;
                 }
 
@@ -52,7 +51,7 @@ namespace Sentry.Unity.Editor.Native
                 var projectDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
                 AddCrashHandler(logger, target, projectDir, executableName);
-                UploadDebugSymbols(logger, target, projectDir, executableName, options, isMono);
+                UploadDebugSymbols(logger, target, projectDir, executableName, options, cliOptions, isMono);
             }
             catch (Exception e)
             {
@@ -97,10 +96,9 @@ namespace Sentry.Unity.Editor.Native
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, bool isMono)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
         {
-            var cliOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(SentryCliOptions.GetConfigPath());
-            if (!cliOptions.IsValid(logger))
+            if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
             {
                 if (options.Il2CppLineNumberSupportEnabled)
                 {

@@ -80,33 +80,16 @@ public class SmokeTester : MonoBehaviour
     }
 #endif
 
-    private static TestHandler t = new TestHandler();
+    internal static TestHandler t = new TestHandler();
 
-    private static Func<int> _crashedLastRun = () => -1;
-
-    // Forwarded from SmokeTestOptions.Configure()
-    public static void Configure(SentryUnityOptions options)
-    {
-        Debug.Log("SmokeTester.Configure() running");
-        options.CreateHttpClientHandler = () => t;
-        _crashedLastRun = () =>
-        {
-            if (options.CrashedLastRun != null)
-            {
-                return options.CrashedLastRun() ? 1 : 0;
-            }
-            return -2;
-        };
-        // If an ANR triggers while the smoke test runs, the test would fail because we expect exact order of events.
-        options.DisableAnrIntegration();
-    }
+    internal static Func<int> CrashedLastRun = () => -1;
 
     public static void SmokeTest()
     {
         t.Start("SMOKE");
         try
         {
-            int crashed = _crashedLastRun();
+            int crashed = CrashedLastRun();
             t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
 
             var currentMessage = 0;
@@ -189,7 +172,7 @@ public class SmokeTester : MonoBehaviour
     public static void HasntCrashedTest()
     {
         t.Start("HASNT-CRASHED");
-        int crashed = _crashedLastRun();
+        int crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
         t.Pass();
     }
@@ -197,7 +180,7 @@ public class SmokeTester : MonoBehaviour
     public static void HasCrashedTest()
     {
         t.Start("HAS-CRASHED");
-        int crashed = _crashedLastRun();
+        int crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == true (1)", crashed == 1);
         t.Pass();
     }
@@ -225,7 +208,7 @@ public class SmokeTester : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void throw_cpp();
 
-    private class TestHandler : HttpClientHandler
+    internal class TestHandler : HttpClientHandler
     {
         private String name;
 

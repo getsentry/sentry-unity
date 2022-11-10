@@ -27,7 +27,7 @@ public class Builder
             options = BuildOptions.StrictMode,
         };
 
-        if(File.Exists("Assets/Scenes/SmokeTest.unity"))
+        if (File.Exists("Assets/Scenes/SmokeTest.unity"))
         {
             buildPlayerOptions.scenes = new[] { "Assets/Scenes/SmokeTest.unity" };
         }

@@ -235,6 +235,9 @@ Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
 Runtime/SentryIntegrations.cs
 Runtime/SentryIntegrations.cs.meta
+Samples~/unity-of-bugs/Editor.meta
+Samples~/unity-of-bugs/Editor/SentryBuildtimeOptionsConfiguration.cs
+Samples~/unity-of-bugs/Editor/SentryBuildtimeOptionsConfiguration.cs.meta
 Samples~/unity-of-bugs/Scenes.meta
 Samples~/unity-of-bugs/Scripts.meta
 Samples~/unity-of-bugs/Scenes/1_Bugfarm.unity
@@ -249,8 +252,8 @@ Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs
 Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs.meta
-Samples~/unity-of-bugs/Scripts/CustomOptionsConfiguration.cs
-Samples~/unity-of-bugs/Scripts/CustomOptionsConfiguration.cs.meta
+Samples~/unity-of-bugs/Scripts/SentryRuntimeOptionsConfiguration.cs
+Samples~/unity-of-bugs/Scripts/SentryRuntimeOptionsConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport.meta
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs.meta

@@ -11,6 +11,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
     {
         private const string LinkXmlPath = "Assets/Plugins/Sentry/link.xml";
 
+        public const string EditorMenuPath = "Tools -> Sentry";
+
         [MenuItem("Tools/Sentry")]
         public static void OnMenuClick()
         {
