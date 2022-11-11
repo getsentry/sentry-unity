@@ -1,4 +1,4 @@
-<Project InitialTargets="FindUnity">
+<Project>
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
