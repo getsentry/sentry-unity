@@ -52,8 +52,8 @@ jobs:
       matrix:
         # Building the SDK with Unity 2022 requires ns2.1 - skipping for now
         unity-version: ['2019', '2020', '2021']
-      env:
-        UNITY_VERSION: ${{ matrix.unity-version }}
+    env:
+      UNITY_VERSION: ${{ matrix.unity-version }}
     steps:
       - name: Hello
         run: echo $env:UNITY_VERSION
