@@ -317,10 +317,10 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   </Target>
 
   <!-- Run PlayMode tests with dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests -->
-  <Target Name="UnityPlayModeTest" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
+  <Target Name="UnityPlayModeTest" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
     <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
-    <Message Importance="High" Text="Running Unity PlayMode tests."></Message>
+    <Message Importance="High" Text="Running Unity PlayMode tests." />
 
     <!-- Unity exits with a non-zero exit code when running tests. We ignore it and manually check the test results instead. -->
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
@@ -329,10 +329,10 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   </Target>
 
   <!-- Run EditMode tests with dotnet msbuild /t:UnityEditModeTest test/Sentry.Unity.Editor.Tests -->
-  <Target Name="UnityEditModeTest" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
+  <Target Name="UnityEditModeTest" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Editor.Tests'">
     <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
 
-    <Message Importance="High" Text="Running Unity EditMode tests."></Message>
+    <Message Importance="High" Text="Running Unity EditMode tests." />
 
     <!-- Unity exits with a non-zero exit code when running tests. We ignore it and manually check the test results instead. -->
     <!-- IgnoreStandardErrorWarningFormat="true" because of the intentional compilation error printed in GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile(). -->

@@ -39,7 +39,7 @@
         <Private>false</Private>
       </Reference>
     </ItemGroup>
-    <Error Condition="!Exists('$(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll"></Error>
+    <Error Condition="!Exists('$(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll" />
   </Target>
 
   <PropertyGroup>
