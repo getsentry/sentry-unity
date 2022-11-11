@@ -1,20 +1,4 @@
 <Project>
-
-  <PropertyGroup>
-    <!-- TODO: why are we doing this-->
-    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(UNITY_VERSION) != ''">
-    <UnityVersion>$(UNITY_VERSION)</UnityVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(UNITY_VERSION) == ''">
-    <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
-    <ProjectSettingsFileContent>$([System.IO.File]::ReadAllText($(UnitySampleProjectUnityVersion)))</ProjectSettingsFileContent>
-    <UnityVersion>$([System.Text.RegularExpressions.Regex]::Match("$(ProjectSettingsFileContent)", ": +([^\s]+)").Groups[1].Value)</UnityVersion>
-  </PropertyGroup>
-
   <PropertyGroup>
     <Version>0.25.1</Version>
     <LangVersion>9</LangVersion>
@@ -25,6 +9,19 @@
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
     <SignAssembly>false</SignAssembly>
+    <!-- The RepoRoot gets used in the conditional propertygroup for finding the Unity version -->
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
+  </PropertyGroup>
+
+  <!-- With this it's possible for the local environment (i.e. CI) to override the version  -->
+  <PropertyGroup Condition="$(UNITY_VERSION) != ''">
+    <UnityVersion>$(UNITY_VERSION)</UnityVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(UNITY_VERSION) == ''">
+    <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
+    <ProjectSettingsFileContent>$([System.IO.File]::ReadAllText($(UnitySampleProjectUnityVersion)))</ProjectSettingsFileContent>
+    <UnityVersion>$([System.Text.RegularExpressions.Regex]::Match("$(ProjectSettingsFileContent)", ": +([^\s]+)").Groups[1].Value)</UnityVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020'))">
@@ -44,7 +41,6 @@
 
   <Target Name="PrintVersions" BeforeTargets="CoreCompile" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Message Text="%0aBuilding the Unity SDK with:%0a    UnityVersion: $(UnityVersion)%0a    TargetFramework: $(TargetFramework)%0a" Importance="High" />
-    <Message Text="HUE: $(Fake)" Importance="High" />
   </Target>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
