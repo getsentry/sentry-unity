@@ -1,4 +1,4 @@
-<Project>
+<Project InitialTargets="FindUnity">
   <PropertyGroup>
     <!-- Assumes building projects in this repo (not submodules). i.e: src/Sentry.Unity -->
     <UnitySampleProjectPath>$(MSBuildProjectDirectory)/../../samples/unity-of-bugs/</UnitySampleProjectPath>
@@ -8,8 +8,6 @@
     <IOSBuildMethod>Builder.BuildIOSPlayer</IOSBuildMethod>
     <IOSBuildPath>$(PlayerBuildPath)iOS/Xcode</IOSBuildPath>
     <!-- Assumes running `dotnet` from the root of the repo: -->
-    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
-    <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <UnityTestPlayModeResultFilePath>../../artifacts/test/playmode/results.xml</UnityTestPlayModeResultFilePath>
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
@@ -26,15 +24,8 @@
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
-  <Target Name="BuildSentry">
-
-  </Target>
-
   <!-- Use the Unity Editor version set in the sample project of the repo -->
-  <Target Name="FindUnity" BeforeTargets="Build">
-    <LocateUnityVersion ProjectSettingsPath="$(UnitySampleProjectUnityVersion)">
-      <Output PropertyName="UnityVersion" TaskParameter="UnityVersion" />
-    </LocateUnityVersion>
+  <Target Name="FindUnity">
     <Message Text="Unity Version: $(UnityVersion)" Importance="Normal" />
 
     <!-- Unity paths on Windows -->
@@ -349,52 +340,6 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec EnvironmentVariables="IgnoreExitCode=true" IgnoreStandardErrorWarningFormat="true" Command="pwsh &quot;$(RepoRoot)scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)"/>
     <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
   </Target>
-
-  <!-- Read Unity Version -->
-  <UsingTask TaskName="LocateUnityVersion" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <ProjectSettingsPath ParameterType="System.String" Required="true" />
-      <UnityVersion ParameterType="System.String" Output="true" />
-    </ParameterGroup>
-
-    <Task>
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Linq" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-if (Environment.GetEnvironmentVariable("UNITY_VERSION") is { } unityVersion)
-{
-    Log.LogMessage("Unity Version from environment variable: " + unityVersion);
-    UnityVersion = unityVersion;
-    return true;
-}
-
-if (Environment.GetEnvironmentVariable("UNITY_PATH") is { } unityPath)
-{
-    UnityVersion = File.ReadAllText(unityPath + "/version").Trim();
-    Log.LogMessage("Unity Version from path " + unityPath + " is: " + UnityVersion);
-    return true;
-}
-
-if (!File.Exists(ProjectSettingsPath))
-{
-    Log.LogError("Can't find Unity version because project settings file not found at " + ProjectSettingsPath);
-    return false;
-}
-
-var version = File.ReadLines(ProjectSettingsPath).FirstOrDefault(l => l.StartsWith("m_EditorVersion: "));
-if (version == null)
-{
-    Log.LogError("Unity version not found in file: " + ProjectSettingsPath);
-    return false;
-}
-UnityVersion = version.Substring("m_EditorVersion: ".Length);
-
-Log.LogMessage("Unity Version: " + version);
-]]>
-      </Code>
-    </Task>
-  </UsingTask>
 
   <!-- Locate the TestRunner.dlls by filling the wildcard with the template version number. 3d is the default template -->
   <UsingTask TaskName="LocateTestRunner" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">

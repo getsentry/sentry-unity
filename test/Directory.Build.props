@@ -1,18 +1,10 @@
-<Project InitialTargets="ResetTargetFrameworks">
+<Project>
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
     <PackageRuntimeTestsPath>../../$(DevPackageFolderName)/Tests/Runtime</PackageRuntimeTestsPath>
     <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
   </PropertyGroup>
-
-  <!-- Note: this OVERWRITES the ResetTargetFrameworks target from the parent dir -->
-  <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity">
-    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020'))">
-      <TargetFramework>netstandard2.0</TargetFramework>
-    </PropertyGroup>
-    <Message Text="Selected TFM: $(TargetFramework) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
-  </Target>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnityEditor" BeforeTargets="BeforeResolveReferences">
