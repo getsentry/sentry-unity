@@ -5,11 +5,11 @@
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$([System.Environment]::GetEnvironmentVariable('unityVersion')) != ''">
+  <PropertyGroup Condition="$(UNITY_VERSION) != ''">
     <UnityVersion>$(UNITY_VERSION)</UnityVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$([System.Environment]::GetEnvironmentVariable('unityVersion')) == ''">
+  <PropertyGroup Condition="$(UNITY_VERSION) == ''">
     <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <ProjectSettingsFileContent>$([System.IO.File]::ReadAllText($(UnitySampleProjectUnityVersion)))</ProjectSettingsFileContent>
     <UnityVersion>$([System.Text.RegularExpressions.Regex]::Match("$(ProjectSettingsFileContent)", ": +([^\s]+)").Groups[1].Value)</UnityVersion>
