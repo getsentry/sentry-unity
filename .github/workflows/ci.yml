@@ -62,8 +62,8 @@ jobs:
       - name: Load env
         id: env
         run: |
-          echo "{UNITY_VERSION}={$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")}" >> $GITHUB_ENV
-          echo "unityVersion=$GITHUB_ENV:UNITY_VERSION" >> $env:GITHUB_OUTPUT
+          UNITY_VERSION=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")
+          echo "UNITY_VERSION=${UNITY_VERSION}" >> $GITHUB_ENV
           
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
