@@ -64,7 +64,7 @@ jobs:
         run: |
           UNITY_VERSION=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")
           echo "UNITY_VERSION=${UNITY_VERSION}" >> $GITHUB_ENV
-          
+        
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Restore Unity Packages
