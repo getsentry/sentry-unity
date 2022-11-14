@@ -8,43 +8,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  cocoa:
+  deps:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Cocoa SDK
+            path: modules/sentry-cocoa
+          - name: Java SDK
+            path: modules/sentry-java
+          - name: Native SDK
+            path: modules/sentry-native
+          - name: .NET SDK
+            path: src/sentry-dotnet
+          - name: CLI
+            path: modules/sentry-cli.properties
     uses: getsentry/github-workflows/.github/workflows/updater.yml@v2
     with:
-      path: modules/sentry-cocoa
-      name: Cocoa SDK
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
-
-  java:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v2
-    with:
-      path: modules/sentry-java
-      name: Java SDK
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
-
-  native:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v2
-    with:
-      path: modules/sentry-native
-      name: Native SDK
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
-
-  dotnet:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v2
-    with:
-      path: src/sentry-dotnet
-      name: .NET SDK
-    secrets:
-      api-token: ${{ secrets.CI_DEPLOY_KEY }}
-
-  cli:
-    uses: getsentry/github-workflows/.github/workflows/updater.yml@v2
-    with:
-      path: modules/sentry-cli.properties
-      name: CLI
+      name: ${{ matrix.name }}
+      path: ${{ matrix.path }}
     secrets:
       api-token: ${{ secrets.CI_DEPLOY_KEY }}
 
