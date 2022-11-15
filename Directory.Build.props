@@ -9,6 +9,10 @@
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
     <SignAssembly>false</SignAssembly>
+
+    <!-- This is the default for our lowest supported version 2019 LTS: netstandard2.0 -->
+    <!-- It gets overridden in the test/props -->
+    <TargetFramework>netstandard2.0</TargetFramework>
     <!-- The RepoRoot gets used in the conditional propertygroup for finding the Unity version -->
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
   </PropertyGroup>
@@ -18,18 +22,11 @@
     <UnityVersion>$(UNITY_VERSION)</UnityVersion>
   </PropertyGroup>
 
+  <!-- If there is no Unity version in the environment we default to reading it from the settings of the samples project -->
   <PropertyGroup Condition="$(UNITY_VERSION) == ''">
     <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <ProjectSettingsFileContent>$([System.IO.File]::ReadAllText($(UnitySampleProjectUnityVersion)))</ProjectSettingsFileContent>
     <UnityVersion>$([System.Text.RegularExpressions.Regex]::Match("$(ProjectSettingsFileContent)", ": +([^\s]+)").Groups[1].Value)</UnityVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020'))">
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(UnityVersion.StartsWith('2021')) or $(UnityVersion.StartsWith('2022'))">
-    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,10 +35,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.0" PrivateAssets="All" />
     <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="All" />
   </ItemGroup>
-
-  <Target Name="PrintVersions" BeforeTargets="CoreCompile" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Message Text="%0aBuilding the Unity SDK with:%0a    UnityVersion: $(UnityVersion)%0a    TargetFramework: $(TargetFramework)%0a" Importance="High" />
-  </Target>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnity" DependsOnTargets="FindUnity" BeforeTargets="BeforeResolveReferences">

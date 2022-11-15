@@ -7,4 +7,8 @@
     <PackageEditorPath>$(DevPackagePath)/Editor</PackageEditorPath>
   </PropertyGroup>
 
+  <Target Name="PrintVersions" BeforeTargets="BeforeResolveReferences" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Message Text="%0aBuilding the Unity SDK with:%0a    UnityVersion: $(UnityVersion)%0a    TargetFramework: $(TargetFramework)" Importance="High" />
+  </Target>
+
 </Project>

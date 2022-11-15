@@ -6,6 +6,15 @@
     <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
   </PropertyGroup>
 
+  <!-- Starting with the 2021 LTS Unity's TestRunner targets netstandard2.1 -->
+  <PropertyGroup Condition="$(UnityVersion.StartsWith('2021')) or $(UnityVersion.StartsWith('2022'))">
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="PrintVersions" BeforeTargets="BeforeResolveReferences" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
+    <Message Text="%0aBuilding the Tests with:%0a    UnityVersion: $(UnityVersion)%0a    TargetFramework: $(TargetFramework)" Importance="High" />
+  </Target>
+
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnityEditor" BeforeTargets="BeforeResolveReferences">
     <ItemGroup>
