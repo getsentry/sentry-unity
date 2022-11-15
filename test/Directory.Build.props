@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <Target Name="PrintVersions" BeforeTargets="BeforeResolveReferences" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
-    <Message Text="%0aBuilding the Tests with:%0a    UnityVersion: $(UnityVersion)%0a    TargetFramework: $(TargetFramework)" Importance="High" />
+    <Message Text="Building the Tests with:%0a    UnityVersion: $(UnityVersion)%0a    TargetFramework: $(TargetFramework)" Importance="High" />
   </Target>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
