@@ -1,5 +1,4 @@
 <Project>
-
   <PropertyGroup>
     <Version>0.26.0</Version>
     <LangVersion>9</LangVersion>
@@ -9,27 +8,26 @@
     <DevPackageFolderName>package-dev</DevPackageFolderName>
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
-    <!-- Must be set here but will be overwritten below once the UnityVersion is ±resolved -->
-    <!-- When using Unity 2022 the default will change to netstandard2.1 -->
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <SignAssembly>false</SignAssembly>
+
+    <!-- This is the default for our lowest supported version 2019 LTS: netstandard2.0 -->
+    <!-- It gets overridden in the test/props -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- The RepoRoot gets used in the conditional propertygroup for finding the Unity version -->
+    <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
   </PropertyGroup>
 
-  <!-- Note: for ./tests directory, this target is overwritten -->
-  <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity" BeforeTargets="CollectPackageReferences">
-    <!-- Blocked by https://github.com/getsentry/sentry-unity/issues/513 -->
-    <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
-    <!-- <PropertyGroup Condition="$(UnityVersion.StartsWith('2021.2')) or $(UnityVersion.StartsWith('2022'))">
-      <TargetFrameworks>netstandard2.1</TargetFrameworks>
-    </PropertyGroup> -->
-    <!-- Lowest version supported at this time is 2019 and up to 2021 ns2.0 is the only option. -->
-    <PropertyGroup Condition="$(UnityVersion.StartsWith('2019')) or $(UnityVersion.StartsWith('2020')) or $(UnityVersion.StartsWith('2021.1'))">
-      <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    </PropertyGroup>
-    <!-- Being specific on which Unity version we support allows us to quickly ajust these settings when adding support to new editors.
-    Future 2022 or 2023 versions likely will target net6.0 so not rolling forward. Instead break the build here. -->
-    <Message Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
-  </Target>
+  <!-- With this it's possible for the local environment (i.e. CI) to override the version  -->
+  <PropertyGroup Condition="$(UNITY_VERSION) != ''">
+    <UnityVersion>$(UNITY_VERSION)</UnityVersion>
+  </PropertyGroup>
+
+  <!-- If there is no Unity version in the environment we default to reading it from the settings of the samples project -->
+  <PropertyGroup Condition="$(UNITY_VERSION) == ''">
+    <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
+    <ProjectSettingsFileContent>$([System.IO.File]::ReadAllText($(UnitySampleProjectUnityVersion)))</ProjectSettingsFileContent>
+    <UnityVersion>$([System.Text.RegularExpressions.Regex]::Match("$(ProjectSettingsFileContent)", ": +([^\s]+)").Groups[1].Value)</UnityVersion>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Roslynator.Analyzers" Version="3.0.0" PrivateAssets="All" />
@@ -40,8 +38,8 @@
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
   <Target Name="ReferenceUnity" DependsOnTargets="FindUnity" BeforeTargets="BeforeResolveReferences">
-    <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll."></Error>
-    <Error Condition="!Exists('$(UnityManagedPath)/UnityEngine.dll')" Text="Couldn't find UnityEngine at $(UnityManagedPath)/UnityEngine.dll."></Error>
+    <Error Condition="'$(UnityManagedPath)' == ''" Text="'UnityManagedPath' not defined. Can't find UnityEngine.dll." />
+    <Error Condition="!Exists('$(UnityManagedPath)/UnityEngine.dll')" Text="Couldn't find UnityEngine at $(UnityManagedPath)/UnityEngine.dll." />
     <ItemGroup>
       <Reference Include="UnityEngine">
         <HintPath>$(UnityManagedPath)/UnityEngine.dll</HintPath>

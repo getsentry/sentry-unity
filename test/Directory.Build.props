@@ -1,4 +1,4 @@
-<Project InitialTargets="ResetTargetFrameworks">
+<Project>
   <Import Project="../Directory.Build.props" />
 
   <PropertyGroup>
@@ -6,13 +6,13 @@
     <PackageEditorTestsPath>../../$(DevPackageFolderName)/Tests/Editor</PackageEditorTestsPath>
   </PropertyGroup>
 
-  <!-- Note: this OVERWRITES the ResetTargetFrameworks target from the parent dir -->
-  <Target Name="ResetTargetFrameworks" DependsOnTargets="FindUnity">
-    <!-- With 2022 Unity packages are already targeting ns2.1 and Unity itself only has that as an option so we must target ns2.1 here too: -->
-    <PropertyGroup Condition="$(UnityVersion.StartsWith('2021')) or $(UnityVersion.StartsWith('2022'))">
-      <TargetFrameworks>netstandard2.1</TargetFrameworks>
-    </PropertyGroup>
-    <Message Text="Selected TFM: $(TargetFrameworks) for Unity version $(UnityVersion), project: $(MSBuildProjectName)" Importance="High" />
+  <!-- Starting with the 2021 LTS Unity's TestRunner targets netstandard2.1 -->
+  <PropertyGroup Condition="$(UnityVersion.StartsWith('2021')) or $(UnityVersion.StartsWith('2022'))">
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="PrintVersions" BeforeTargets="BeforeResolveReferences" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Tests'">
+    <Message Text="Building the Tests with:%0a    UnityVersion: $(UnityVersion)%0a    TargetFramework: $(TargetFramework)" Importance="High" />
   </Target>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
@@ -48,7 +48,7 @@
         <Private>false</Private>
       </Reference>
     </ItemGroup>
-    <Error Condition="!Exists('$(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll"></Error>
+    <Error Condition="!Exists('$(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll')" Text="TestRunner not found. Expected: $(UnityTemplateAssemblyPath)/UnityEngine.TestRunner.dll" />
   </Target>
 
   <PropertyGroup>
