@@ -4,9 +4,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v7.30.2 to v7.31.1 ([#1079](https://github.com/getsentry/sentry-unity/pull/1079), [#1082](https://github.com/getsentry/sentry-unity/pull/1082))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7311)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.30.2...7.31.1)
+- Bump Cocoa SDK from v7.30.2 to v7.31.2 ([#1079](https://github.com/getsentry/sentry-unity/pull/1079), [#1082](https://github.com/getsentry/sentry-unity/pull/1082), [#1089](https://github.com/getsentry/sentry-unity/pull/1089))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/master/CHANGELOG.md#7312)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.30.2...7.31.2)
 - Bump CLI from v2.8.1 to v2.9.0 ([#1080](https://github.com/getsentry/sentry-unity/pull/1080))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#290)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.8.1...2.9.0)
