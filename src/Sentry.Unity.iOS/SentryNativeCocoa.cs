@@ -63,7 +63,7 @@ namespace Sentry.Unity.iOS
         }
 
         /// <summary>
-        /// Closes the native Android support.
+        /// Closes the native Cocoa support.
         /// </summary>
         public static void Close(IDiagnosticLogger? logger = null)
         {
