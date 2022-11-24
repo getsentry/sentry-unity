@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- During the self init, if the SDK has been disabled, the native layer on mobile now closes down too ([#1092](https://github.com/getsentry/sentry-unity/pull/1092))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v7.30.2 to v7.31.2 ([#1079](https://github.com/getsentry/sentry-unity/pull/1079), [#1082](https://github.com/getsentry/sentry-unity/pull/1082), [#1089](https://github.com/getsentry/sentry-unity/pull/1089))
