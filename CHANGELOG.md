@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed logging for automated debug symbol upload for iOS ([#1091](https://github.com/getsentry/sentry-unity/pull/1091))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v7.30.2 to v7.31.1 ([#1079](https://github.com/getsentry/sentry-unity/pull/1079), [#1082](https://github.com/getsentry/sentry-unity/pull/1082))
