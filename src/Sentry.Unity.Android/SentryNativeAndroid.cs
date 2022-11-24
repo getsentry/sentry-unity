@@ -53,15 +53,20 @@ namespace Sentry.Unity.Android
                         "Failed to reinstall backend. Captured native crashes will miss scope data and tag.", e);
                 }
 
-                ApplicationAdapter.Instance.Quitting += () =>
-                {
-                    // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
-                    options.DiagnosticLogger?.LogDebug("Closing the sentry-java SDK");
-                    SentryJava.Close();
-                };
+                ApplicationAdapter.Instance.Quitting += () => Close(options.DiagnosticLogger);
 
                 options.DefaultUserId = SentryJava.GetInstallationId();
             }
+        }
+
+        /// <summary>
+        /// Closes the native Android support.
+        /// </summary>
+        public static void Close(IDiagnosticLogger? logger = null)
+        {
+            // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
+            logger?.LogDebug("Closing the sentry-java SDK");
+            SentryJava.Close();
         }
     }
 }
