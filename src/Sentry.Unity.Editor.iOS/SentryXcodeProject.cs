@@ -24,7 +24,7 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _uploadScript = @"
 
 process_upload_symbols() {{
-    ./{0} --log-level=debug upload-dif {1} $BUILT_PRODUCTS_DIR &> sentry-symbols-upload.log
+    ./{0} --log-level=debug upload-dif {1} --force-foreground $BUILT_PRODUCTS_DIR &> sentry-symbols-upload.log
     if [ ""$?"" -eq ""0"" ] ; then
         echo ""note: Debug symbol upload successful.""
     else
