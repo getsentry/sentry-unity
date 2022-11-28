@@ -5,6 +5,7 @@
 ### Features
 
 - Added missing SDK closing functionality ([#1092](https://github.com/getsentry/sentry-unity/pull/1092))
+
 ### Fixes
 
 - Fixed logging for automated debug symbol upload for iOS ([#1091](https://github.com/getsentry/sentry-unity/pull/1091))
