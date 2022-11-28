@@ -22,14 +22,8 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
         private readonly string _uploadScript = @"
-
 process_upload_symbols() {{
-    ./{0} --log-level=debug upload-dif {1} --force-foreground $BUILT_PRODUCTS_DIR &> sentry-symbols-upload.log
-    if [ ""$?"" -eq ""0"" ] ; then
-        echo ""note: Debug symbol upload successful.""
-    else
-        echo ""error: Debug symbol upload failed. See './sentry-symbols-upload.log' for more information.""
-    fi
+    ./{0} upload-dif --force-foreground {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
 }}
 
 export SENTRY_PROPERTIES=sentry.properties
