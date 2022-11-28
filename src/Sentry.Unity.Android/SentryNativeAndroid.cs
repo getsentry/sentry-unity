@@ -54,9 +54,7 @@ namespace Sentry.Unity.Android
                         "Failed to reinstall backend. Captured native crashes will miss scope data and tag.", e);
                 }
 
-                ApplicationAdapter.Instance.Quitting += () => Close(options.DiagnosticLogger);
                 options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);
-
                 options.DefaultUserId = SentryJava.GetInstallationId();
             }
         }

@@ -85,7 +85,7 @@ namespace Sentry.Unity
                     nativeInitException = new Exception("Sentry native error capture configuration failed.", e);
                 }
 
-                var unitySDK = SentryUnity.Init(options);
+                SentryUnity.Init(options);
                 if (nativeInitException != null)
                 {
                     SentrySdk.CaptureException(nativeInitException);

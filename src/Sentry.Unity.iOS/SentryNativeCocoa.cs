@@ -55,9 +55,8 @@ namespace Sentry.Unity.iOS
 
                 return crashedLastRun;
             };
-            ApplicationAdapter.Instance.Quitting += () => Close(options.DiagnosticLogger);
-            options.NativeSupportCloseCallback += () => Close(options.DiagnosticLogger);
 
+            options.NativeSupportCloseCallback += () => Close(options.DiagnosticLogger);
             if (sentryUnityInfo.IL2CPP)
             {
                 options.DefaultUserId = SentryCocoaBridgeProxy.GetInstallationId();

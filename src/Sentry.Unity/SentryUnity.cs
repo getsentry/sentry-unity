@@ -59,7 +59,6 @@ namespace Sentry.Unity
                                                              "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
                         Options.CacheDirectoryPath = null;
                         Options.AutoSessionTracking = false;
-
                     }
                 }
 
@@ -100,7 +99,14 @@ namespace Sentry.Unity
             Options?.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");
             try
             {
-                Options?.NativeSupportCloseCallback?.Invoke();
+                ApplicationAdapter.Instance.Quitting -= Close;
+
+                if (Options is not null)
+                {
+                    Options.NativeSupportCloseCallback?.Invoke();
+                    Options.NativeSupportCloseCallback = null;
+                }
+
                 DotnetSdk?.Dispose();
             }
             finally
