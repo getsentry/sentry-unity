@@ -22,22 +22,21 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
         private readonly string _uploadScript = @"
-
 process_upload_symbols() {{
-    ./{0} --log-level=info upload-dif {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
+    ./{0} upload-dif --force-foreground {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
 }}
 
 export SENTRY_PROPERTIES=sentry.properties
 if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
-    echo ""note: Uploading debug symbols (Bitcode disabled).""
+    echo ""Uploading debug symbols (Bitcode disabled).""
     process_upload_symbols
 else
     echo ""Bitcode is enabled""
     if [ ""$ACTION"" = ""install"" ] ; then
-        echo ""note: Uploading debug symbols and bcsymbolmaps (Bitcode enabled).""
+        echo ""Uploading debug symbols and bcsymbolmaps (Bitcode enabled).""
         process_upload_symbols
     else
-        echo ""note: Skipping debug symbol upload because Bitcode is enabled and this is a non-install build.""
+        echo ""Skipping debug symbol upload because Bitcode is enabled and this is a non-install build.""
     fi
 fi
 ";
