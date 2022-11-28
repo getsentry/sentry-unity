@@ -67,7 +67,7 @@ If (-not(Test-Path -Path "$NewProjectPath") -Or $Recreate)
     Write-Host "Adding Sentry"
     ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath"
     Write-Host "Configuring Sentry"
-    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform
+    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols
 }
 
 $buildDir = "Samples/IntegrationTest/Build"
