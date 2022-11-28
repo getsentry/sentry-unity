@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Fixes
+### Features
 
-- During the self init, if the SDK has been disabled, the native layer on mobile now closes down too ([#1092](https://github.com/getsentry/sentry-unity/pull/1092))
+- Added missing SDK closing functionality ([#1092](https://github.com/getsentry/sentry-unity/pull/1092))
 
 ### Dependencies
 
