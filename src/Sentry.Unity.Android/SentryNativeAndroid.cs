@@ -1,6 +1,7 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.NativeUtils;
 
 namespace Sentry.Unity.Android
 {
@@ -54,6 +55,7 @@ namespace Sentry.Unity.Android
                 }
 
                 ApplicationAdapter.Instance.Quitting += () => Close(options.DiagnosticLogger);
+                options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);
 
                 options.DefaultUserId = SentryJava.GetInstallationId();
             }

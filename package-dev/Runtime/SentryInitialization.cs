@@ -85,7 +85,7 @@ namespace Sentry.Unity
                     nativeInitException = new Exception("Sentry native error capture configuration failed.", e);
                 }
 
-                SentryUnity.Init(options);
+                var unitySDK = SentryUnity.Init(options);
                 if (nativeInitException != null)
                 {
                     SentrySdk.CaptureException(nativeInitException);
@@ -112,9 +112,9 @@ namespace Sentry.Unity
             {
                 // Closing down the native layer that are set up during build and self-initialize
 #if SENTRY_NATIVE_COCOA
-                    SentryNativeCocoa.Close(options.DiagnosticLogger);
+                SentryNativeCocoa.Close(options.DiagnosticLogger);
 #elif SENTRY_NATIVE_ANDROID
-                    SentryNativeAndroid.Close(options.DiagnosticLogger);
+                SentryNativeAndroid.Close(options.DiagnosticLogger);
 #endif
             }
         }
