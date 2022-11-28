@@ -77,7 +77,7 @@ namespace Sentry.Unity
 
         [field: SerializeField] public Sentry.Unity.ScriptableOptionsConfiguration? OptionsConfiguration { get; set; }
 
-        /// Actual type is `Sentry.Unity.Editor.ScriptableOptionsConfiguration` but we can't reference it here because we don't depend on the editor Assembly.
+        // Actual type is `Sentry.Unity.Editor.ScriptableOptionsConfiguration` but we can't reference it here because we don't depend on the editor Assembly.
         [field: SerializeField] public ScriptableObject? BuildtimeOptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
