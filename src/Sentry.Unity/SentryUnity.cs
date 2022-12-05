@@ -108,19 +108,23 @@ namespace Sentry.Unity
                 }
 
                 DotnetSdk?.Dispose();
+                DotnetSdk = null;
             }
-            finally
+            catch (Exception ex)
             {
-                try
-                {
-                    // We don't really need to close, Windows would release the lock anyway, but let's be nice.
-                    LockFile?.Close();
-                }
-                catch (Exception ex)
-                {
-                    Options?.DiagnosticLogger?.Log(SentryLevel.Warning,
-                        "Exception while releasing the lockfile on the config directory.", ex);
-                }
+                Options?.DiagnosticLogger?.Log(SentryLevel.Warning,
+                    "Exception while closing the .NET SDK.", ex);
+            }
+
+            try
+            {
+                // We don't really need to close, Windows would release the lock anyway, but let's be nice.
+                LockFile?.Close();
+            }
+            catch (Exception ex)
+            {
+                Options?.DiagnosticLogger?.Log(SentryLevel.Warning,
+                    "Exception while releasing the lockfile on the config directory.", ex);
             }
         }
     }
