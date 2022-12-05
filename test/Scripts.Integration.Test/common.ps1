@@ -289,8 +289,8 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             If ($unity2020OrHigher)
             {
                 $expectedFiles = @(
-                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
-                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)"
+                    "libil2cpp.sym.so: count=$($withSources ? 3 : 2)",
+                    "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)"
                 ) + $expectedFiles
             }
             else
