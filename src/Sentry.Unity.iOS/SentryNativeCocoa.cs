@@ -55,15 +55,21 @@ namespace Sentry.Unity.iOS
 
                 return crashedLastRun;
             };
-            ApplicationAdapter.Instance.Quitting += () =>
-            {
-                options.DiagnosticLogger?.LogDebug("Closing the sentry-cocoa SDK");
-                SentryCocoaBridgeProxy.Close();
-            };
+
+            options.NativeSupportCloseCallback += () => Close(options.DiagnosticLogger);
             if (sentryUnityInfo.IL2CPP)
             {
                 options.DefaultUserId = SentryCocoaBridgeProxy.GetInstallationId();
             }
+        }
+
+        /// <summary>
+        /// Closes the native Cocoa support.
+        /// </summary>
+        public static void Close(IDiagnosticLogger? logger = null)
+        {
+            logger?.LogDebug("Closing the sentry-cocoa SDK");
+            SentryCocoaBridgeProxy.Close();
         }
     }
 }

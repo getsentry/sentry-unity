@@ -108,6 +108,15 @@ namespace Sentry.Unity
                 }
 #endif
             }
+            else
+            {
+                // Closing down the native layer that are set up during build and self-initialize
+#if SENTRY_NATIVE_COCOA
+                SentryNativeCocoa.Close(options.DiagnosticLogger);
+#elif SENTRY_NATIVE_ANDROID
+                SentryNativeAndroid.Close(options.DiagnosticLogger);
+#endif
+            }
         }
     }
 
