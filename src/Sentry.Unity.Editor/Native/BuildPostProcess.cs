@@ -3,6 +3,8 @@ using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.FileSystemGlobbing;
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;
@@ -48,10 +50,10 @@ namespace Sentry.Unity.Editor.Native
 
                 logger.LogDebug("Adding native support.");
 
-                var projectDir = Path.GetDirectoryName(executablePath);
+                var buildOutputDir = Path.GetDirectoryName(executablePath);
                 var executableName = Path.GetFileName(executablePath);
-                AddCrashHandler(logger, target, projectDir, executableName);
-                UploadDebugSymbols(logger, target, projectDir, executableName, options, cliOptions, isMono);
+                AddCrashHandler(logger, target, buildOutputDir, executableName);
+                UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
             }
             catch (Exception e)
             {
@@ -68,7 +70,7 @@ namespace Sentry.Unity.Editor.Native
             _ => false,
         };
 
-        private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName)
+        private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName)
         {
             string crashpadPath;
             if (target is BuildTarget.StandaloneWindows64)
@@ -91,13 +93,14 @@ namespace Sentry.Unity.Editor.Native
             }
 
             crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
-            var targetPath = Path.Combine(projectDir, Path.GetFileName(crashpadPath));
+            var targetPath = Path.Combine(buildOutputDir, Path.GetFileName(crashpadPath));
             logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
             File.Copy(crashpadPath, targetPath, true);
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string projectDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
         {
+            var projectDir = Directory.GetParent(Application.dataPath).FullName;
             if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
             {
                 if (options.Il2CppLineNumberSupportEnabled)
@@ -108,13 +111,13 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            logger.LogInfo("Uploading debugging information using sentry-cli in {0}", projectDir);
+            logger.LogInfo("Uploading debugging information using sentry-cli in {0}", buildOutputDir);
 
             var paths = "";
             Func<string, bool> addPath = (string name) =>
             {
-                var fullPath = Path.Combine(projectDir, name);
-                if (Directory.Exists(fullPath) || File.Exists(fullPath))
+                var fullPath = Path.Combine(buildOutputDir, name);
+                if (fullPath.Contains("*") || Directory.Exists(fullPath) || File.Exists(fullPath))
                 {
                     paths += $" \"{name}\"";
                     logger.LogDebug($"Adding '{name}' to the debug-info upload");
@@ -127,22 +130,39 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
+            Action<string, string[]> addFilesMatching = (string directory, string[] includePatterns) =>
+            {
+                Matcher matcher = new();
+                matcher.AddIncludePatterns(includePatterns);
+                foreach (string file in matcher.GetResultsInFullPath(directory))
+                {
+                    addPath(file);
+                }
+            };
+
             addPath(executableName);
-            addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+            if (!isMono)
+            {
+                addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+            }
             if (target is BuildTarget.StandaloneWindows64)
             {
-                addPath("GameAssembly.dll");
                 addPath("UnityPlayer.dll");
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
                 if (isMono)
                 {
                     addPath("MonoBleedingEdge/EmbedRuntime");
+                    addFilesMatching($"{projectDir}/Temp", new[] { "**/UnityEngine.*.pdb", "**/Assembly-CSharp.pdb" });
+                    addFilesMatching(buildOutputDir, new[] { "*.pdb" });
+                }
+                else
+                {
+                    addPath("GameAssembly.dll");
                 }
             }
             else if (target is BuildTarget.StandaloneLinux64)
             {
-                addPath("GameAssembly.so");
                 addPath("UnityPlayer.so");
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
                 if (isMono)
@@ -155,7 +175,11 @@ namespace Sentry.Unity.Editor.Native
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
             }
 
-            var cliArgs = "upload-dif --il2cpp-mapping ";
+            var cliArgs = "upload-dif ";
+            if (!isMono)
+            {
+                cliArgs += "--il2cpp-mapping ";
+            }
             if (cliOptions.UploadSources)
             {
                 cliArgs += "--include-sources ";
@@ -168,7 +192,7 @@ namespace Sentry.Unity.Editor.Native
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = SentryCli.SetupSentryCli(),
-                    WorkingDirectory = projectDir,
+                    WorkingDirectory = buildOutputDir,
                     Arguments = cliArgs,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -177,7 +201,7 @@ namespace Sentry.Unity.Editor.Native
                 }
             };
 
-            var propertiesFile = SentryCli.CreateSentryProperties(projectDir, cliOptions, options);
+            var propertiesFile = SentryCli.CreateSentryProperties(buildOutputDir, cliOptions, options);
             try
             {
                 process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
