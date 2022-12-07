@@ -153,7 +153,6 @@ namespace Sentry.Unity.Editor.Native
                 if (isMono)
                 {
                     addPath("MonoBleedingEdge/EmbedRuntime");
-                    addFilesMatching($"{projectDir}/Temp", new[] { "**/UnityEngine.*.pdb", "**/Assembly-CSharp.pdb" });
                     addFilesMatching(buildOutputDir, new[] { "*.pdb" });
                 }
                 else
@@ -168,11 +167,17 @@ namespace Sentry.Unity.Editor.Native
                 if (isMono)
                 {
                     addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
+                    addFilesMatching(buildOutputDir, new[] { "*.debug" });
                 }
             }
             else if (target is BuildTarget.StandaloneOSX)
             {
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
+            }
+
+            if (isMono)
+            {
+                addFilesMatching($"{projectDir}/Temp", new[] { "**/UnityEngine.*.pdb", "**/Assembly-CSharp.pdb" });
             }
 
             var cliArgs = "upload-dif ";
