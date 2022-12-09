@@ -15,7 +15,7 @@ namespace Sentry.Unity
     /// </summary>
     public static class SentryUnity
     {
-        private static SentryUnitySDK? UnitySdk;
+        private static SentryUnitySdk? UnitySdk;
 
         /// <summary>
         /// Initializes Sentry Unity SDK while configuring the options.
@@ -36,7 +36,7 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions options)
         {
-            UnitySdk = SentryUnitySDK.Init(options);
+            UnitySdk = SentryUnitySdk.Init(options);
         }
 
         /// <summary>

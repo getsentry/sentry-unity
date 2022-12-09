@@ -7,20 +7,20 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
-    internal class SentryUnitySDK
+    internal class SentryUnitySdk
     {
         private readonly SentryUnityOptions _options;
         private IDisposable _dotnetSdk = null!;
         private FileStream _lockFile = null!;
 
-        private SentryUnitySDK(SentryUnityOptions options)
+        private SentryUnitySdk(SentryUnityOptions options)
         {
             _options = options;
         }
 
-        internal static SentryUnitySDK? Init(SentryUnityOptions options)
+        internal static SentryUnitySdk? Init(SentryUnityOptions options)
         {
-            var unitySdk = new SentryUnitySDK(options);
+            var unitySdk = new SentryUnitySdk(options);
 
             options.SetupLogging();
             if (!options.ShouldInitializeSdk())
