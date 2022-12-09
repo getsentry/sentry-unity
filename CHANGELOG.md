@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Java SDK from v6.9.1 to v6.9.2 ([#1107](https://github.com/getsentry/sentry-unity/pull/1107))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#692)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.9.1...6.9.2)
+- Bump Native SDK from v0.5.2 to v0.5.3 ([#1109](https://github.com/getsentry/sentry-unity/pull/1109))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#053)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.5.2...0.5.3)
+
+## 0.27.0
+
 ### Features
 
 - Added missing SDK closing functionality ([#1092](https://github.com/getsentry/sentry-unity/pull/1092))
