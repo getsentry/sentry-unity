@@ -1,1 +1,5 @@
 *       @bitsandfoxes @vaind
+
+# Automatic dependency updates
+/scripts/ci-env.ps1   @bitsandfoxes
+/modules              @bitsandfoxes
