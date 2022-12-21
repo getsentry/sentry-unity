@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed an issue related to the IL2CPP line number feature where a C# exception could lead to a crash ([#1126](https://github.com/getsentry/sentry-unity/pull/1126))
+
 ### Features
 
 - Mono PDB files upload during build ([#1106](https://github.com/getsentry/sentry-unity/pull/1106))
