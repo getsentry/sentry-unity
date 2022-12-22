@@ -211,7 +211,7 @@ namespace Sentry.Unity
             {
                 Release = application.Version;
             }
-            
+
             Environment = application.IsEditor && !isBuilding
                 ? "editor"
                 : "production";
