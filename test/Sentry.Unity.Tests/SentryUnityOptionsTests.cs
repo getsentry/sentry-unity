@@ -44,9 +44,9 @@ namespace Sentry.Unity.Tests
         public void Ctor_IsGlobalModeEnabled_IsTrue() => Assert.IsTrue(_fixture.GetSut().IsGlobalModeEnabled);
 
         [Test]
-        public void Ctor_Release_IsProductNameAtVersionPlusBuild() =>
+        public void Ctor_Release_IsProductNameAtVersion() =>
             Assert.AreEqual(
-                $"{_fixture.Application.ProductName}@{_fixture.Application.Version}+{_fixture.Application.BuildGUID}",
+                $"{_fixture.Application.ProductName}@{_fixture.Application.Version}",
                 _fixture.GetSut().Release);
 
         [Test]
