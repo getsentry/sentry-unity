@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Removed build GUID from automated release creation to keep events from different layers in the same release([#1127](https://github.com/getsentry/sentry-unity/pull/1127))
+- Removed build GUID from automated release creation to keep events from different layers in the same release ([#1127](https://github.com/getsentry/sentry-unity/pull/1127))
 
 ### Features
 
