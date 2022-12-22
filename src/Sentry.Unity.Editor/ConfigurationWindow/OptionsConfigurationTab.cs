@@ -3,8 +3,6 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using RuntimeConfiguration = Sentry.Unity.ScriptableOptionsConfiguration;
-using BuildtimeConfiguration = Sentry.Unity.Editor.ScriptableOptionsConfiguration;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow
 {
@@ -41,10 +39,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             );
 
             options.BuildtimeOptionsConfiguration = OptionsConfigurationItem.Display(
-                options.BuildtimeOptionsConfiguration as BuildtimeConfiguration,
+                options.BuildtimeOptionsConfiguration,
                 "Buildtime Options Script",
                 "SentryBuildtimeOptionsConfiguration"
-            ) as ScriptableObject;
+            );
         }
     }
 
@@ -71,21 +69,18 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             return result;
         }
 
-        private static string SentryAssetPath(string scriptName, bool isEditorScript) =>
-            string.Format("Assets/{0}/Sentry/{1}.asset", isEditorScript ? "Plugins" : "Resources", scriptName);
+        private static string SentryAssetPath(string scriptName) => $"Assets/Resources/Sentry/{scriptName}.asset";
 
         private static void CreateScript<T>(string fieldName, string scriptName)
         {
-            var isEditorScript = typeof(T) == typeof(BuildtimeConfiguration);
-            var directory = isEditorScript ? "Assets/Editor" : "Assets/Scripts";
-
+            const string directory = "Assets/Scripts";
             if (!AssetDatabase.IsValidFolder(directory))
             {
                 AssetDatabase.CreateFolder(Path.GetDirectoryName(directory), Path.GetFileName(directory));
             }
 
             var scriptPath = EditorUtility.SaveFilePanel(fieldName, directory, scriptName, "cs");
-            if (String.IsNullOrEmpty(scriptPath))
+            if (string.IsNullOrEmpty(scriptPath))
             {
                 return;
             }
@@ -99,21 +94,16 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             scriptName = Path.GetFileNameWithoutExtension(scriptPath);
 
             var template = new StringBuilder();
-            template.AppendLine("using System;");
             template.AppendLine("using UnityEngine;");
             template.AppendLine("using Sentry.Unity;");
-            if (isEditorScript)
-            {
-                template.AppendLine("using Sentry.Unity.Editor;");
-            }
             template.AppendLine();
-            template.AppendFormat("[CreateAssetMenu(fileName = \"{0}\", menuName = \"Sentry/{0}\", order = 999)]\n", SentryAssetPath(scriptName, isEditorScript));
+            template.AppendFormat("[CreateAssetMenu(fileName = \"{0}\", menuName = \"Sentry/{0}\", order = 999)]\n", SentryAssetPath(scriptName));
             template.AppendFormat("public class {0} : {1}\n", scriptName, typeof(T).FullName);
             template.AppendLine("{");
             template.AppendLine("    /// See base class for documentation.");
             template.AppendLine("    /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration");
             template.AppendFormat("    public override void Configure(SentryUnityOptions options{0})\n",
-                                  typeof(T) == typeof(BuildtimeConfiguration) ? ", SentryCliOptions cliOptions" : "");
+                                  typeof(T) == typeof(BuildtimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
             template.AppendLine("    {");
             template.AppendLine("        // TODO implement");
             template.AppendLine("    }");
@@ -146,11 +136,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             SetScript(scriptName);
         }
 
-        internal static void SetScript(String scriptNameWithoutExtension)
+        internal static void SetScript(string scriptNameWithoutExtension)
         {
             var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
-            var isEditorScript = optionsConfigurationObject is BuildtimeConfiguration;
-            AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension, isEditorScript));
+            var isEditorScript = optionsConfigurationObject is BuildtimeOptionsConfiguration;
+            AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
             AssetDatabase.Refresh();
 
             var options = EditorWindow.GetWindow<SentryWindow>().Options;
@@ -158,18 +148,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (isEditorScript)
             {
                 // Don't overwrite already set OptionsConfiguration
-                if (options.BuildtimeOptionsConfiguration is null)
-                {
-                    options.BuildtimeOptionsConfiguration = optionsConfigurationObject;
-                }
+                options.BuildtimeOptionsConfiguration ??= optionsConfigurationObject as BuildtimeOptionsConfiguration;
             }
             else
             {
                 // Don't overwrite already set OptionsConfiguration
-                if (options.OptionsConfiguration is null)
-                {
-                    options.OptionsConfiguration = optionsConfigurationObject as RuntimeConfiguration;
-                }
+                options.OptionsConfiguration ??= optionsConfigurationObject as RuntimeOptionsConfiguration;
             }
         }
     }
