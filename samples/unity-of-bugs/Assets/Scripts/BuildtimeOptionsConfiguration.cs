@@ -1,8 +1,8 @@
 using UnityEngine;
 using Sentry.Unity;
 
-[CreateAssetMenu(fileName = "Assets/Resources/Sentry/SentryBuildtimeOptionsConfiguration.asset", menuName = "Sentry/Assets/Resources/Sentry/SentryBuildtimeOptionsConfiguration.asset", order = 999)]
-public class SentryBuildtimeOptionsConfiguration : Sentry.Unity.BuildtimeOptionsConfiguration
+[CreateAssetMenu(fileName = "Assets/Resources/Sentry/BuildtimeOptionsConfiguration.asset", menuName = "Sentry/BuildtimeOptionsConfiguration.asset", order = 999)]
+public class BuildtimeOptionsConfiguration : SentryBuildtimeOptionsConfiguration
 {
     /// See base class for documentation.
     /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration

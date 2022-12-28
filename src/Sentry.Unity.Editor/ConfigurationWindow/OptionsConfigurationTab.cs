@@ -97,7 +97,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             template.AppendLine("using UnityEngine;");
             template.AppendLine("using Sentry.Unity;");
             template.AppendLine();
-            template.AppendFormat("[CreateAssetMenu(fileName = \"{0}\", menuName = \"Sentry/{0}\", order = 999)]\n", SentryAssetPath(scriptName));
+            template.AppendFormat("[CreateAssetMenu(fileName = \"{0}\", menuName = \"Sentry/{1}\", order = 999)]\n", SentryAssetPath(scriptName), scriptName);
             template.AppendFormat("public class {0} : {1}\n", scriptName, typeof(T).FullName);
             template.AppendLine("{");
             template.AppendLine("    /// See base class for documentation.");
