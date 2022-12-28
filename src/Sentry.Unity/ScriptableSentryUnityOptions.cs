@@ -75,7 +75,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
-        [field: SerializeField] public RuntimeOptionsConfiguration? OptionsConfiguration { get; set; }
+        [field: SerializeField] public RuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
         [field: SerializeField] public BuildtimeOptionsConfiguration? BuildtimeOptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
@@ -186,9 +186,9 @@ namespace Sentry.Unity
 
             if (!isBuilding)
             {
-                if (OptionsConfiguration != null)
+                if (RuntimeOptionsConfiguration != null)
                 {
-                    OptionsConfiguration.Configure(options);
+                    RuntimeOptionsConfiguration.Configure(options);
                 }
 
                 // Doing this after the configure callback to allow users to programmatically opt out

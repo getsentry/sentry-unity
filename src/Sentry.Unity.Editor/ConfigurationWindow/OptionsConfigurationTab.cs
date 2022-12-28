@@ -32,8 +32,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             EditorGUILayout.Space();
 
-            options.OptionsConfiguration = OptionsConfigurationItem.Display(
-                options.OptionsConfiguration,
+            options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
+                options.RuntimeOptionsConfiguration,
                 "Runtime Options Script",
                 "SentryRuntimeOptionsConfiguration"
             );
@@ -153,7 +153,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             else
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.OptionsConfiguration ??= optionsConfigurationObject as RuntimeOptionsConfiguration;
+                options.RuntimeOptionsConfiguration ??= optionsConfigurationObject as RuntimeOptionsConfiguration;
             }
         }
     }
