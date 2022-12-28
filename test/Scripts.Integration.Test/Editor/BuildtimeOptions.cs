@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/BuildtimeOptions.cs", menuName = "Sentry/BuildtimeOptions", order = 999)]
-public class BuildtimeOptions : Sentry.Unity.Editor.ScriptableOptionsConfiguration
+public class BuildtimeOptions : SentryBuildtimeOptionsConfiguration
 {
     public override void Configure(SentryUnityOptions options, SentryCliOptions cliOptions)
     {

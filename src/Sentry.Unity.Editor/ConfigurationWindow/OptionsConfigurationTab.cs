@@ -103,7 +103,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             template.AppendLine("    /// See base class for documentation.");
             template.AppendLine("    /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration");
             template.AppendFormat("    public override void Configure(SentryUnityOptions options{0})\n",
-                                  typeof(T) == typeof(BuildtimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
+                                  typeof(T) == typeof(SentryBuildtimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
             template.AppendLine("    {");
             template.AppendLine("        // TODO implement");
             template.AppendLine("    }");
@@ -139,7 +139,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal static void SetScript(string scriptNameWithoutExtension)
         {
             var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
-            var isEditorScript = optionsConfigurationObject is BuildtimeOptionsConfiguration;
+            var isEditorScript = optionsConfigurationObject is SentryBuildtimeOptionsConfiguration;
             AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
             AssetDatabase.Refresh();
 
@@ -148,12 +148,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (isEditorScript)
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.BuildtimeOptionsConfiguration ??= optionsConfigurationObject as BuildtimeOptionsConfiguration;
+                options.BuildtimeOptionsConfiguration ??= optionsConfigurationObject as SentryBuildtimeOptionsConfiguration;
             }
             else
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.RuntimeOptionsConfiguration ??= optionsConfigurationObject as RuntimeOptionsConfiguration;
+                options.RuntimeOptionsConfiguration ??= optionsConfigurationObject as SentryRuntimeOptionsConfiguration;
             }
         }
     }
