@@ -69,8 +69,8 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Head
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryEvent.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryException.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryFrame.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryHub.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryHub.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryId.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryIntegrationProtocol.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryMeasurementUnit.h
@@ -134,8 +134,8 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryError.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryEvent.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryException.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryFrame.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryHub.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryHub.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryId.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryIntegrationProtocol.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryMeasurementUnit.h
@@ -237,9 +237,6 @@ Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
 Runtime/SentryIntegrations.cs
 Runtime/SentryIntegrations.cs.meta
-Samples~/unity-of-bugs/Editor.meta
-Samples~/unity-of-bugs/Editor/SentryBuildtimeOptionsConfiguration.cs
-Samples~/unity-of-bugs/Editor/SentryBuildtimeOptionsConfiguration.cs.meta
 Samples~/unity-of-bugs/Scenes.meta
 Samples~/unity-of-bugs/Scripts.meta
 Samples~/unity-of-bugs/Scenes/1_Bugfarm.unity
@@ -254,11 +251,13 @@ Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs
 Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs.meta
-Samples~/unity-of-bugs/Scripts/SentryRuntimeOptionsConfiguration.cs
-Samples~/unity-of-bugs/Scripts/SentryRuntimeOptionsConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport.meta
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs.meta
+Samples~/unity-of-bugs/Scripts/SentryBuildtimeOptionsConfiguration.cs
+Samples~/unity-of-bugs/Scripts/SentryBuildtimeOptionsConfiguration.cs.meta
+Samples~/unity-of-bugs/Scripts/SentryRuntimeOptionsConfiguration.cs
+Samples~/unity-of-bugs/Scripts/SentryRuntimeOptionsConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/AndroidButtons.cs
