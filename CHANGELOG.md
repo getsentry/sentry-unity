@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer creates warnings when loading the options ([#1128](https://github.com/getsentry/sentry-unity/pull/1128))
+
 ### Features
 
 - Mono PDB files upload during build ([#1106](https://github.com/getsentry/sentry-unity/pull/1106))
