@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- No longer log warnings about missing IL2CPP methods when running in the Editor ([#1132](https://github.com/getsentry/sentry-unity/pull/1132))
+
 ### Features
 
 - Mono PDB files upload during build ([#1106](https://github.com/getsentry/sentry-unity/pull/1106))
