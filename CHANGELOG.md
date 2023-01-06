@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fixed an issue related to the IL2CPP line number feature where a C# exception could lead to a crash ([#1126](https://github.com/getsentry/sentry-unity/pull/1126))
+- No longer log warnings about missing IL2CPP methods when running in the Editor ([#1132](https://github.com/getsentry/sentry-unity/pull/1132))
 
 ### Features
 
@@ -12,18 +13,21 @@
 
 ### Dependencies
 
-- Bump Java SDK from v6.9.1 to v6.10.0 ([#1107](https://github.com/getsentry/sentry-unity/pull/1107), [#1122](https://github.com/getsentry/sentry-unity/pull/1122))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6100)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.9.1...6.10.0)
+- Bump Java SDK from v6.9.1 to v6.11.0 ([#1107](https://github.com/getsentry/sentry-unity/pull/1107), [#1122](https://github.com/getsentry/sentry-unity/pull/1122), [#1133](https://github.com/getsentry/sentry-unity/pull/1133))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6110)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.9.1...6.11.0)
 - Bump Native SDK from v0.5.2 to v0.5.3 ([#1109](https://github.com/getsentry/sentry-unity/pull/1109))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#053)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.5.2...0.5.3)
-- Bump Cocoa SDK from v7.31.3 to v7.31.4 ([#1115](https://github.com/getsentry/sentry-unity/pull/1115))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/8.0.0/CHANGELOG.md#7314)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.3...7.31.4)
+- Bump Cocoa SDK from v7.31.3 to v7.31.5 ([#1115](https://github.com/getsentry/sentry-unity/pull/1115), [#1129](https://github.com/getsentry/sentry-unity/pull/1129))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/8.0.0/CHANGELOG.md#7315)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.3...7.31.5)
 - Bump .NET SDK from v3.24.0 to v3.24.1 ([#1121](https://github.com/getsentry/sentry-unity/pull/1121))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3241)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.24.0...3.24.1)
+- Bump CLI from v2.10.0 to v2.11.0 ([#1124](https://github.com/getsentry/sentry-unity/pull/1124))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2110)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.10.0...2.11.0)
 
 ## 0.27.0
 
