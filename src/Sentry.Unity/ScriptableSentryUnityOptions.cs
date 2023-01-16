@@ -2,6 +2,7 @@ using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Sentry.Unity
 {
@@ -75,7 +76,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
-        [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
+        [field: SerializeField] public SentryRuntimeOptionsConfiguration? OptionsConfiguration { get; set; }
         [field: SerializeField] public SentryBuildtimeOptionsConfiguration? BuildtimeOptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
@@ -186,9 +187,9 @@ namespace Sentry.Unity
 
             if (!isBuilding)
             {
-                if (RuntimeOptionsConfiguration != null)
+                if (OptionsConfiguration != null)
                 {
-                    RuntimeOptionsConfiguration.Configure(options);
+                    OptionsConfiguration.Configure(options);
                 }
 
                 // Doing this after the configure callback to allow users to programmatically opt out
