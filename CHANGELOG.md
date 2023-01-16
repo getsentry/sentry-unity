@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Fixes
+### Breaking Changes
 
-- The SDK no longer creates warnings when loading the options ([#1128](https://github.com/getsentry/sentry-unity/pull/1128))
+- Fixed the SDK creating warnings before initializing when loading the options. This will require you to reassign the option configuration in the editor configuration window. ([#1128](https://github.com/getsentry/sentry-unity/pull/1128))
 
 ### Features
 
