@@ -211,10 +211,6 @@ namespace Sentry.Unity
             {
                 Release = application.Version;
             }
-            if (!string.IsNullOrWhiteSpace(application.BuildGUID))
-            {
-                Release += $"+{application.BuildGUID}";
-            }
 
             Environment = application.IsEditor && !isBuilding
                 ? "editor"
