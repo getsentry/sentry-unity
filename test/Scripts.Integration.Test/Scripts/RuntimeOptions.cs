@@ -3,7 +3,7 @@ using Sentry.Unity;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/RuntimeOptions.cs", menuName = "Sentry/RuntimeOptions", order = 999)]
-public class RuntimeOptions : ScriptableOptionsConfiguration
+public class RuntimeOptions : SentryRuntimeOptionsConfiguration
 {
     public override void Configure(SentryUnityOptions options)
     {

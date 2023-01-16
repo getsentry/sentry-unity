@@ -20,7 +20,7 @@ If ($IsMacOS)
 {
     $UnityPath = "/Applications/Unity/Hub/Editor/$UnityVersion*/Unity.app/"
 }
-elseif ($IsWindows)
+Elseif ($IsWindows)
 {
     $UnityPath = "C:/Program Files/Unity/Hub/Editor/$UnityVersion/Editor/Unity.exe"
 }
@@ -72,19 +72,24 @@ If (-not(Test-Path -Path "$NewProjectPath") -Or $Recreate)
 
 $buildDir = "Samples/IntegrationTest/Build"
 
-if ($Rebuild -or -not(Test-Path -Path $buildDir))
+If ($Rebuild -or -not(Test-Path -Path $buildDir))
 {
     Write-Host "Building Project"
-    ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
-    if ($Platform -eq "iOS")
+
+    If ($Platform -eq "iOS")
     {
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
         ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion $UnityVersion
+    }
+    Else 
+    {
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
     }
 }
 
 Write-Host "Running tests"
 
-switch -Regex ($Platform)
+Switch -Regex ($Platform)
 {
     "^(Windows|MacOS|Linux)$"
     {

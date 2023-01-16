@@ -2,7 +2,7 @@ using System;
 using Sentry.Extensibility;
 using UnityEngine;
 
-namespace Sentry.Unity.Editor
+namespace Sentry.Unity
 {
     [Serializable]
     public sealed class SentryCliOptions : ScriptableObject

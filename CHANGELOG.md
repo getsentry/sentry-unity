@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Fixed the SDK creating warnings before initializing when loading the options. This will require you to reassign the option configuration in the editor configuration window. ([#1128](https://github.com/getsentry/sentry-unity/pull/1128))
+
 ### Fixes
 
 - Removed build GUID from automated release creation to keep events from different layers in the same release ([#1127](https://github.com/getsentry/sentry-unity/pull/1127))

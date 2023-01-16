@@ -20,7 +20,7 @@ namespace Sentry.Unity.Tests
                 persistentDataPath: "test/persistent/data/path");
         }
 
-        class TestOptionsConfiguration : ScriptableOptionsConfiguration
+        class TestOptionsConfiguration : SentryRuntimeOptionsConfiguration
         {
             public bool GotCalled;
             public override void Configure(SentryUnityOptions options) => GotCalled = true;
