@@ -4,7 +4,10 @@
 
 ### Breaking Changes
 
-- Fixed the SDK creating warnings before initializing when loading the options. This will require you to reassign the option configuration in the editor configuration window. ([#1128](https://github.com/getsentry/sentry-unity/pull/1128))
+- Fixed the SDK creating warnings before initializing when loading the options.
+  - `Sentry.Unity.ScriptableOptionsConfiguration` changed to `SentryRuntimeOptionsConfiguration`
+  - and `Sentry.Unity.Editor.ScriptableOptionsConfiguration` changed to `SentryBuildtimeOptionsConfiguration`
+If you make use of the programmatic configuration, you will need to update your implementation with those base classes ([#1128](https://github.com/getsentry/sentry-unity/pull/1128))
 
 ### Fixes
 
