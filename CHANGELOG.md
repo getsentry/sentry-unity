@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Made inlined helpers on the macOS bridge static ([#148](https://github.com/getsentry/sentry-unity/pull/1148))
+
 ### Dependencies
 
 - Bump Java SDK from v6.11.0 to v6.12.1 ([#1143](https://github.com/getsentry/sentry-unity/pull/1143))
