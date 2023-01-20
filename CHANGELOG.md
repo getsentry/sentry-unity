@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed conflicting default name for scriptable options configuration scripts ([#1146](https://github.com/getsentry/sentry-unity/pull/1146))
+
 ### Dependencies
 
 - Bump Java SDK from v6.11.0 to v6.12.1 ([#1143](https://github.com/getsentry/sentry-unity/pull/1143))

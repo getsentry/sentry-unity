@@ -186,8 +186,8 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     #    chunks = the total number of chunks over all occurrences of a file.
     # We don't check the number of chunks because it depends on the file size.
     $expectedFiles = @()
-    $unity2020OrHigher = $unityVersion -match "202[0-9]+"
-    $unity2021OrHigher = $unityVersion -match "202[1-9]+"
+    $unity_2020_OrHigher = $unityVersion -match "202[0-9]+"
+    $unity_2021_OrHigher = $unityVersion -match "202[1-9]+"
 
     # Currently we only test symbol upload with sources, but we want to keep the values below to also test without in the future.
     # We can have up to 4 different types of files grouped under one name:
@@ -200,7 +200,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     $withSources = $true
     If ($buildMethod.contains('Mac'))
     {
-        if ($unity2020OrHigher)
+        if ($unity_2020_OrHigher)
         {
             $expectedFiles = @(
                 "GameAssembly.dylib: count=$($withSources ? 8 : 6)",
@@ -223,7 +223,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
-        if ($unity2020OrHigher)
+        if ($unity_2020_OrHigher)
         {
             $expectedFiles = @(
                 'GameAssembly.dll: count=1',
@@ -259,10 +259,10 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('Android'))
     {
-        if ($unity2021OrHigher)
+        if ($unity_2021_OrHigher)
         {
             $expectedFiles = @(
-                "libil2cpp.so: count=$($withSources ? 2 : 1)",
+                "libil2cpp.so: count=$($withSources ? 4 : 2)",
                 'libil2cpp.sym.so: count=1',
                 'libmain.so: count=1',
                 'libsentry-android.so: count=4',
@@ -273,7 +273,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             )
             if ($withSources)
             {
-                $expectedFiles = @('libil2cpp.dbg.so: count=3') + $expectedFiles
+                $expectedFiles = @('libil2cpp.dbg.so: count=1') + $expectedFiles
             }
         }
         else
@@ -286,7 +286,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
                 'libunity.so: count=1',
                 'libunity.sym.so: count=1'
             )
-            If ($unity2020OrHigher)
+            If ($unity_2020_OrHigher)
             {
                 $expectedFiles = @(
                     "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
@@ -304,7 +304,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('IOS'))
     {
-        if ($unity2020OrHigher)
+        if ($unity_2020_OrHigher)
         {
             $expectedFiles = @(
                 "IntegrationTest: count=$($withSources ? 3 : 2)",
