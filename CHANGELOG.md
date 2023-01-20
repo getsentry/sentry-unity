@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Made inlined helpers on the macOS bridge static ([#148](https://github.com/getsentry/sentry-unity/pull/1148))
+- Made inlined helpers on the macOS bridge static ([#1148](https://github.com/getsentry/sentry-unity/pull/1148))
 
 ### Dependencies
 
