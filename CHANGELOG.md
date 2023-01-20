@@ -5,6 +5,7 @@
 ### Fixes
 
 - Made inlined helpers on the macOS bridge static ([#148](https://github.com/getsentry/sentry-unity/pull/1148))
+- Fixed conflicting default name for scriptable options configuration scripts ([#1146](https://github.com/getsentry/sentry-unity/pull/1146))
 
 ### Dependencies
 

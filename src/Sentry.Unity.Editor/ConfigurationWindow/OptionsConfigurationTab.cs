@@ -35,13 +35,13 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             options.OptionsConfiguration = OptionsConfigurationItem.Display(
                 options.OptionsConfiguration,
                 "Runtime Options Script",
-                "SentryRuntimeOptionsConfiguration"
+                "RuntimeOptionsConfiguration"
             );
 
             options.BuildtimeOptionsConfiguration = OptionsConfigurationItem.Display(
                 options.BuildtimeOptionsConfiguration,
                 "Buildtime Options Script",
-                "SentryBuildtimeOptionsConfiguration"
+                "BuildtimeOptionsConfiguration"
             );
         }
     }
