@@ -91,21 +91,9 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            // TODO: Is format '{0}' and args.length == 1 guaranteed?
-            if (args.Length == 0 || !format.Contains("{0}"))
+            // The SDK sets "Sentry" as tag when logging and we're not capturing SDK internal logs. Expected format: "{0}: {1}"
+            if (args.Length > 1 && args[0].Equals("Sentry"))
             {
-                return;
-            }
-
-            if (args[0] is not string logMessage)
-            {
-                return;
-            }
-
-            // We're not capturing SDK internal logs
-            if (logMessage.StartsWith(UnityLogger.LogPrefix, StringComparison.Ordinal))
-            {
-                // TODO: Maybe color Sentry internal logs (highlight 'Sentry'?)
                 return;
             }
 
@@ -125,6 +113,7 @@ namespace Sentry.Unity.Integrations
                 }
             }
 
+            var logMessage = string.Format(format, args);
             // TODO: Capture the context (i.e. grab the name if != null and set it as context)
 
             if (logType is LogType.Error or LogType.Assert)
