@@ -37,10 +37,10 @@ namespace Sentry.Unity.Editor.Android
             Func<(SentryUnityOptions?, SentryCliOptions?)> getOptions,
             bool isDevelopmentBuild,
             ScriptingImplementation scriptingImplementation,
-            IUnityLoggerInterceptor? interceptor = null)
+            ILogger? logger = null)
         {
             (_options, _sentryCliOptions) = getOptions();
-            _logger = _options?.DiagnosticLogger ?? new UnityLogger(_options ?? new SentryUnityOptions(), interceptor);
+            _logger = _options?.DiagnosticLogger ?? new UnityLogger(_options ?? new SentryUnityOptions(), logger);
 
             _isDevelopmentBuild = isDevelopmentBuild;
             _scriptingImplementation = scriptingImplementation;
