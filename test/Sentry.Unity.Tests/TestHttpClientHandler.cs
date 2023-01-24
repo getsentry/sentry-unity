@@ -46,7 +46,7 @@ namespace Sentry.Unity.Tests
                 var eventRequest = _requests.Find(r => r.Contains(identifier));
                 if (!string.IsNullOrEmpty(eventRequest))
                 {
-                    Debug.Log($"{UnityLogger.LogPrefix}{name} returns event:\n" + eventRequest);
+                    Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
                     return eventRequest;
                 }
             }
@@ -62,7 +62,7 @@ namespace Sentry.Unity.Tests
                         if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(identifier))
                         {
                             var eventRequest = _requests[_requests.Count - 1];
-                            Debug.Log($"{UnityLogger.LogPrefix}{name} returns event:\n" + eventRequest);
+                            Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
 
                             return eventRequest;
                         }
@@ -70,7 +70,7 @@ namespace Sentry.Unity.Tests
                 }
             }
 
-            Debug.LogError($"{UnityLogger.LogPrefix}{name} timed out waiting for an event.");
+            Debug.LogError($"{UnityLogger.LogTag}{name} timed out waiting for an event.");
             return string.Empty;
         }
     }
