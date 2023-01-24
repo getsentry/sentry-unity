@@ -30,7 +30,7 @@ namespace Sentry.Unity
                 return;
             }
 
-            _logger.Log(GetUnityLogType(logLevel), LogTag, $"({logLevel}) {Format(message, args)} {exception}");
+            _logger.Log(GetUnityLogType(logLevel), LogTag, $"({logLevel.ToString()}) {Format(message, args)} {exception}");
         }
 
         internal static LogType GetUnityLogType(SentryLevel logLevel)
