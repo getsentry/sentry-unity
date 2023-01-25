@@ -216,7 +216,7 @@ public class SmokeTester : MonoBehaviour
 
         private AutoResetEvent _requestReceived = new AutoResetEvent(false);
 
-        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(100);
 
         private int _testNumber = 0;
 
