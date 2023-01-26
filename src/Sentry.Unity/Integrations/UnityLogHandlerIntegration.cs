@@ -113,11 +113,11 @@ namespace Sentry.Unity.Integrations
                 }
             }
 
-            var logMessage = string.Format(format, args);
-            // TODO: Capture the context (i.e. grab the name if != null and set it as context)
+            var logMessage = args.Length == 0 ? format : string.Format(format, args);
 
             if (logType is LogType.Error or LogType.Assert)
             {
+                // TODO: Capture the context (i.e. grab the name if != null and set it as context)
                 _hub.CaptureMessage(logMessage, ToEventTagType(logType));
             }
 
