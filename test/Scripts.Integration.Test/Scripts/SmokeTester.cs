@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Sentry;
-using Sentry.Infrastructure;
-using Sentry.Unity;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -89,7 +87,7 @@ public class SmokeTester : MonoBehaviour
         t.Start("SMOKE");
         try
         {
-            int crashed = CrashedLastRun();
+            var crashed = CrashedLastRun();
             t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
 
             var currentMessage = 0;
@@ -143,7 +141,7 @@ public class SmokeTester : MonoBehaviour
         }
         catch (Exception ex)
         {
-            if (t.exitCode == 0)
+            if (t.ExitCode == 0)
             {
                 Debug.Log($"SMOKE TEST: FAILED with exception {ex}");
                 t.Exit(-1);
@@ -172,7 +170,7 @@ public class SmokeTester : MonoBehaviour
     public static void HasntCrashedTest()
     {
         t.Start("HASNT-CRASHED");
-        int crashed = CrashedLastRun();
+        var crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
         t.Pass();
     }
@@ -180,7 +178,7 @@ public class SmokeTester : MonoBehaviour
     public static void HasCrashedTest()
     {
         t.Start("HAS-CRASHED");
-        int crashed = CrashedLastRun();
+        var crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == true (1)", crashed == 1);
         t.Pass();
     }
@@ -210,22 +208,19 @@ public class SmokeTester : MonoBehaviour
 
     internal class TestHandler : HttpClientHandler
     {
-        private String name;
-
-        private List<string> _requests = new List<string>();
-
+        private string _name;
+        private ConcurrentQueue<string> _requests = new ConcurrentQueue<string>();
         private AutoResetEvent _requestReceived = new AutoResetEvent(false);
 
         private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
 
         private int _testNumber = 0;
+        public int ExitCode = 0;
 
-        public int exitCode = 0;
-
-        public void Start(String testName)
+        public void Start(string testName)
         {
-            name = testName;
-            Debug.Log($"{name} TEST: start");
+            _name = testName;
+            Debug.Log($"{_name} TEST: start");
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -237,26 +232,23 @@ public class SmokeTester : MonoBehaviour
         private void Receive(HttpRequestMessage message)
         {
             var msgText = message.Content.ReadAsStringAsync().Result;
-            lock (_requests)
-            {
-                // Adding "Sentry: " prefix to prevent the UnityLogHandlerIntegration from capturing this message and
-                // adding it as a breadcrumb, which in turn multiplies it on following (intercepted) HTTP requests...
-                // Note: remove the prefix once setting breadcrumb log level is possible - https://github.com/getsentry/sentry-unity/issues/60
-                Debug.Log($"Sentry: {name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
-                _requests.Add(msgText);
-                _requestReceived.Set();
-            }
+            // Adding "Sentry: " prefix to prevent the UnityLogHandlerIntegration from capturing this message and
+            // adding it as a breadcrumb, which in turn multiplies it on following (intercepted) HTTP requests...
+            // Note: remove the prefix once setting breadcrumb log level is possible - https://github.com/getsentry/sentry-unity/issues/60
+            Debug.Log($"Sentry: {_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+            _requests.Enqueue(msgText);
+            _requestReceived.Set();
         }
 
         public void Exit(int code)
         {
-            if (exitCode != 0)
+            if (ExitCode != 0)
             {
-                Debug.Log($"{name} TEST: Ignoring spurious Exit({code}). Application is already exiting with code {exitCode}");
+                Debug.Log($"{_name} TEST: Ignoring spurious Exit({code}). Application is already exiting with code {ExitCode}");
             }
             else
             {
-                exitCode = code;
+                ExitCode = code;
                 Application.Quit(code);
                 // Application.Quit doesn't actually terminate immediately so exit the context at least...
                 throw new Exception($"Quitting with exit code {code}");
@@ -265,27 +257,27 @@ public class SmokeTester : MonoBehaviour
 
         public void Pass()
         {
-            if (exitCode == 0)
+            if (ExitCode == 0)
             {
                 // On Android we'll grep logcat for this string instead of relying on exit code:
-                Debug.Log($"{name} TEST: PASS");
+                Debug.Log($"{_name} TEST: PASS");
 
                 // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
-                exitCode = 200;
+                ExitCode = 200;
 
 #if !UNITY_WEBGL  // We don't quit on WebGL because outgoing HTTP requests (in coroutines) would be cancelled.
-                Application.Quit(exitCode);
+                Application.Quit(ExitCode);
 #endif
             }
         }
 
-        public void Expect(String message, bool result)
+        public void Expect(string message, bool result)
         {
             _testNumber++;
-            Debug.Log($"{name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
+            Debug.Log($"{_name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"{name} TEST: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
+                Debug.Log($"{_name} TEST: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
                 Exit(_testNumber);
             }
         }
@@ -294,24 +286,21 @@ public class SmokeTester : MonoBehaviour
         {
             while (true)
             {
-                lock (_requests)
+                if (_requests.Count > index)
                 {
-                    if (_requests.Count > index)
-                        break;
+                    break;
                 }
                 if (!_requestReceived.WaitOne(_receiveTimeout))
                 {
-                    Debug.Log($"{name} TEST: Failed while waiting for an HTTP request #{index} to come in.");
+                    Debug.Log($"{_name} TEST: Failed while waiting for an HTTP request #{index} to come in.");
                     Exit(_testNumber);
                 }
             }
-            lock (_requests)
-            {
-                return _requests[index];
-            }
+
+            return _requests.ElementAt(index);
         }
 
-        public bool CheckMessage(int index, String substring, bool negate = false)
+        public bool CheckMessage(int index, string substring, bool negate = false)
         {
 #if UNITY_WEBGL
             // Note: we cannot use the standard checks on WebGL - it would get stuck here because of the lack of multi-threading.
@@ -324,10 +313,10 @@ public class SmokeTester : MonoBehaviour
 #endif
         }
 
-        public void ExpectMessage(int index, String substring) =>
+        public void ExpectMessage(int index, string substring) =>
             Expect($"HTTP Request #{index} contains \"{substring}\".", CheckMessage(index, substring));
 
-        public void ExpectMessageNot(int index, String substring) =>
+        public void ExpectMessageNot(int index, string substring) =>
             Expect($"HTTP Request #{index} doesn't contain \"{substring}\".", CheckMessage(index, substring, negate: true));
     }
 }
