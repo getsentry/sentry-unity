@@ -11,6 +11,10 @@ using Sentry;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
+#if UNITY_WEBGL
+using System.Web;
+#endif
+
 public class SmokeTester : MonoBehaviour
 {
     private void Awake()
