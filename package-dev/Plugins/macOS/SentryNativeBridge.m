@@ -242,14 +242,17 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
-inline NSString *_NSStringOrNil(const char *value)
+static inline NSString *_NSStringOrNil(const char *value)
 {
     return value ? [NSString stringWithUTF8String:value] : nil;
 }
 
-inline NSString *_NSNumberOrNil(int32_t value) { return value == 0 ? nil : @(value); }
+static inline NSString *_NSNumberOrNil(int32_t value)
+{
+    return value == 0 ? nil : @(value);
+}
 
-inline NSNumber *_NSBoolOrNil(int8_t value)
+static inline NSNumber *_NSBoolOrNil(int8_t value)
 {
     if (value == 0) {
         return @NO;
