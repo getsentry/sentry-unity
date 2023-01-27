@@ -1,10 +1,15 @@
 # Changelog
 
-## 0.28.1
+## Unreleased
 
 ### Fixes
 
 - Fixed the logging integration only capturing tags and missing the message ([#1150](https://github.com/getsentry/sentry-unity/pull/1150))
+
+## 0.28.1
+
+### Fixes
+
 - Fixed conflicting default name for scriptable options configuration scripts ([#1146](https://github.com/getsentry/sentry-unity/pull/1146))
 
 ### Dependencies
