@@ -151,8 +151,8 @@ namespace Sentry.Unity.Android
                 }
                 catch (Exception e)
                 {
-                    // Adding the Sentry logger prefix ensures we don't send this error to Sentry.
-                    UnityEngine.Debug.LogError($"{UnityLogger.LogPrefix}Error in SentryJava.ScopeCallback: {e}");
+                    // Adding the Sentry logger tag ensures we don't send this error to Sentry.
+                    Debug.unityLogger.Log(LogType.Error, UnityLogger.LogTag, $"Error in SentryJava.ScopeCallback: {e}");
                 }
                 return null;
             }

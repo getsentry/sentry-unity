@@ -37,12 +37,11 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void CaptureLogFormat_LogStartsWithUnityLoggerPrefix_NotCaptured()
+        public void CaptureLogFormat_LogContainsSentryTag_NotCaptured()
         {
             var sut = _fixture.GetSut();
-            var message = $"{UnityLogger.LogPrefix}Test Message";
 
-            sut.CaptureLogFormat(LogType.Error, null, "{0}", message);
+            sut.CaptureLogFormat(LogType.Error, null, "{0}: {1}", UnityLogger.LogTag, "Test Message");
 
             Assert.AreEqual(0, _fixture.Hub.CapturedEvents.Count);
         }

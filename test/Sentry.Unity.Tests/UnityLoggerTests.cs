@@ -1,65 +1,57 @@
+using System;
+using System.Globalization;
 using NUnit.Framework;
+using Sentry.Unity.Tests.SharedClasses;
+using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace Sentry.Unity.Tests
 {
     public sealed class UnityLoggerTests
     {
         [Test]
-        public void Log_DebugLevels_Correspond([Values] SentryLevel sentryLevel)
+        [TestCase(SentryLevel.Debug, LogType.Log)]
+        [TestCase(SentryLevel.Info, LogType.Log)]
+        [TestCase(SentryLevel.Warning, LogType.Warning)]
+        [TestCase(SentryLevel.Error, LogType.Error)]
+        [TestCase(SentryLevel.Fatal, LogType.Error)]
+        public void GetUnityLogType_LogTypes_Correspond(SentryLevel sentryLevel, LogType expectedLogType)
         {
-            LogAssert.ignoreFailingMessages = true;
-
-            var interceptor = new TestUnityLoggerInterceptor();
-            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = sentryLevel }, interceptor);
-
-            const string expectedLog = "Some log";
-            logger.Log(sentryLevel, expectedLog);
-
-            Assert.True(logger.IsEnabled(sentryLevel));
-            Assert.True(interceptor.LogMessage.Contains("Sentry"));
-            Assert.True(interceptor.LogMessage.Contains(expectedLog));
-            Assert.True(interceptor.LogMessage.Contains(sentryLevel.ToString()));
-        }
-
-        [TestCaseSource(nameof(SentryLevels))]
-        public void Log_LowerLevelThanInitializationLevel_DisablesLogger(SentryLevel initializationLevel, SentryLevel lowerLevel)
-        {
-            var interceptor = new TestUnityLoggerInterceptor();
-            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = initializationLevel }, interceptor);
-
-            const string expectedLog = "Some log";
-
-            logger.Log(lowerLevel, expectedLog);
-
-            Assert.False(logger.IsEnabled(lowerLevel));
-            Assert.False(interceptor.LogMessage.Contains(expectedLog));
+            Assert.AreEqual(expectedLogType, UnityLogger.GetUnityLogType(sentryLevel));
         }
 
         [Test]
-        public void Log_StartsWithLogPrefix()
+        [TestCase(SentryLevel.Info, SentryLevel.Debug)]
+        [TestCase(SentryLevel.Warning, SentryLevel.Info)]
+        [TestCase(SentryLevel.Error, SentryLevel.Warning)]
+        [TestCase(SentryLevel.Fatal, SentryLevel.Error)]
+        public void Log_LowerLevelThanInitializationLevel_DisablesLogger(SentryLevel initializationLevel, SentryLevel logLevel)
         {
-            var interceptor = new TestUnityLoggerInterceptor();
-            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = SentryLevel.Debug }, interceptor);
+            LogAssert.ignoreFailingMessages = true;
+
+            var testLogger = new UnityTestLogger();
+            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = initializationLevel }, testLogger);
+
+            const string expectedLog = "Some log";
+
+            logger.Log(logLevel, expectedLog);
+
+            Assert.False(logger.IsEnabled(logLevel));
+            Assert.IsEmpty(testLogger.Logs);
+        }
+
+        [Test]
+        public void Log_SetsTag()
+        {
+            var testLogger = new UnityTestLogger();
+            var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = SentryLevel.Debug }, testLogger);
 
             logger.Log(SentryLevel.Debug, "TestLog");
 
-            StringAssert.StartsWith(UnityLogger.LogPrefix, interceptor.LogMessage);
-        }
-
-        private static object[] SentryLevels =
-        {
-            new object[] { SentryLevel.Info, SentryLevel.Debug },
-            new object[] { SentryLevel.Warning, SentryLevel.Info },
-            new object[] { SentryLevel.Error, SentryLevel.Warning },
-            new object[] { SentryLevel.Fatal, SentryLevel.Error }
-        };
-
-        private sealed class TestUnityLoggerInterceptor : IUnityLoggerInterceptor
-        {
-            public string LogMessage { get; private set; } = string.Empty;
-
-            public void Intercept(SentryLevel level, string logMessage) => LogMessage = logMessage;
+            Assert.AreEqual(1, testLogger.Logs.Count);
+            // The format is: "(logType, tag, message)"
+            StringAssert.AreEqualIgnoringCase(UnityLogger.LogTag, testLogger.Logs[0].Item2);
         }
     }
 }

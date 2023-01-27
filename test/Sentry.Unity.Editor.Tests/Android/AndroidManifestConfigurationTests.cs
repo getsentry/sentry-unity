@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
+using Sentry.Unity.Tests.SharedClasses;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,13 +15,13 @@ namespace Sentry.Unity.Editor.Tests.Android
         {
             public SentryUnityOptions? SentryUnityOptions { get; set; }
             public SentryCliOptions? SentryCliOptions { get; set; }
-            public TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
+            public UnityTestLogger UnityTestLogger { get; set; }
             public bool IsDevelopmentBuild { get; set; }
             public ScriptingImplementation ScriptingImplementation { get; set; } = ScriptingImplementation.IL2CPP;
 
             public Fixture()
             {
-                LoggerInterceptor = new();
+                UnityTestLogger = new();
                 // Options configured to initialize the Android SDK, tests will change from there:
                 SentryUnityOptions = new()
                 {
@@ -29,7 +30,7 @@ namespace Sentry.Unity.Editor.Tests.Android
                     AndroidNativeSupportEnabled = true,
                     Debug = true
                 };
-                SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, LoggerInterceptor);
+                SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, UnityTestLogger);
 
                 SentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
                 SentryCliOptions.Auth = "test_auth_token";
@@ -41,7 +42,7 @@ namespace Sentry.Unity.Editor.Tests.Android
                 new(() => (SentryUnityOptions, SentryCliOptions),
                     IsDevelopmentBuild,
                     ScriptingImplementation,
-                    LoggerInterceptor);
+                    UnityTestLogger);
         }
 
         [SetUp]
@@ -71,7 +72,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(
+            _fixture.UnityTestLogger.AssertLogContains(
                 SentryLevel.Warning,
                 "Android native support disabled because Sentry has not been configured. " +
                 "You can do that through the editor: Tools -> Sentry");
@@ -88,7 +89,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -105,7 +106,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -119,7 +120,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Android native support disabled through the options.");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Android native support disabled through the options.");
 
             Assert.True(manifest.Contains(
                     "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
@@ -133,7 +134,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting DSN: {expected}");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, $"Setting DSN: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.dsn\" android:value=\"{expected}\" />"),
@@ -160,7 +161,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting Release: {expected}");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, $"Setting Release: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.release\" android:value=\"{expected}\" />"),
@@ -187,7 +188,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting Environment: {expected}");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, $"Setting Environment: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.environment\" android:value=\"{expected}\" />"),
@@ -217,7 +218,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             // Debug message is only logged if level is Debug:
             if (levels.SentryLevel == SentryLevel.Debug)
             {
-                _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {levels.SentryLevel}");
+                _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, $"Setting DiagnosticLevel: {levels.SentryLevel}");
             }
 
             Assert.True(manifest.Contains(
@@ -233,7 +234,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var sut = _fixture.GetSut();
             var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, $"Setting SampleRate: {expected}");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, $"Setting SampleRate: {expected}");
 
             Assert.True(manifest.Contains(
                     $"<meta-data android:name=\"io.sentry.sample-rate\" android:value=\"{expected}\" />"),
@@ -284,7 +285,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "Failed to load sentry-cli options.");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Warning, "Failed to load sentry-cli options.");
 
             Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
@@ -300,7 +301,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload has been disabled.");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Automated symbols upload has been disabled.");
 
             Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
@@ -316,7 +317,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "Automated symbols upload for development builds has been disabled.");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Automated symbols upload for development builds has been disabled.");
 
             Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
@@ -332,7 +333,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.SetupSymbolsUpload(dsuFixture.UnityProjectPath, dsuFixture.GradleProjectPath);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Warning, "sentry-cli validation failed. Symbols will not be uploaded." +
                                                    "\nYou can disable this warning by disabling the automated symbols upload under " +
                                                    SentryCliOptions.EditorMenuPath);
 

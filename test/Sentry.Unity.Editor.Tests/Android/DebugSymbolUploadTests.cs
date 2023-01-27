@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
+using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEditor;
 
@@ -13,7 +14,7 @@ namespace Sentry.Unity.Editor.Tests.Android
     {
         public class Fixture
         {
-            internal TestUnityLoggerInterceptor LoggerInterceptor { get; set; }
+            internal UnityTestLogger UnityTestLogger { get; set; }
             public string FakeProjectPath { get; set; }
             public string UnityProjectPath { get; set; }
             public string GradleProjectPath { get; set; }
@@ -24,7 +25,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             public Fixture()
             {
-                LoggerInterceptor = new();
+                UnityTestLogger = new();
 
                 FakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
@@ -35,7 +36,7 @@ namespace Sentry.Unity.Editor.Tests.Android
                 Application = new TestApplication(unityVersion: "2019.4");
             }
 
-            internal DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), LoggerInterceptor),
+            internal DebugSymbolUpload GetSut() => new(new UnityLogger(new SentryOptions(), UnityTestLogger),
                 null, UnityProjectPath, GradleProjectPath, ScriptingImplementation.IL2CPP, IsExporting, Application);
         }
 
@@ -148,7 +149,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.RemoveUploadFromGradleFile();
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug, "No previous upload task found.");
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "No previous upload task found.");
         }
 
         [Test]
@@ -176,7 +177,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             sut.TryCopySymbolsToGradleProject(_fixture.Application);
 
-            _fixture.LoggerInterceptor.AssertLogContains(SentryLevel.Debug,
+            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug,
                 "New building backend. Skipping copying of debug symbols.");
         }
 

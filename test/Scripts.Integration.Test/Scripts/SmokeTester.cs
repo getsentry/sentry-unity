@@ -236,10 +236,10 @@ public class SmokeTester : MonoBehaviour
         private void Receive(HttpRequestMessage message)
         {
             var msgText = message.Content.ReadAsStringAsync().Result;
-            // Adding "Sentry: " prefix to prevent the UnityLogHandlerIntegration from capturing this message and
+            // Setting "Sentry" as tag to prevent the UnityLogHandlerIntegration from capturing this message and
             // adding it as a breadcrumb, which in turn multiplies it on following (intercepted) HTTP requests...
             // Note: remove the prefix once setting breadcrumb log level is possible - https://github.com/getsentry/sentry-unity/issues/60
-            Debug.Log($"Sentry: {_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+            Debug.unityLogger.Log(LogType.Log, "Sentry", $"{_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
             _requests.Enqueue(msgText);
             _requestReceived.Set();
         }

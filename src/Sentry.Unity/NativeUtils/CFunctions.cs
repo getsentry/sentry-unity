@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace Sentry.Unity.NativeUtils
 {
@@ -189,8 +190,8 @@ namespace Sentry.Unity.NativeUtils
             }
             catch (Exception e)
             {
-                // Adding the Sentry logger prefix ensures we don't send this error to Sentry.
-                UnityEngine.Debug.LogError($"{UnityLogger.LogPrefix}Error loading the list of debug images: {e}");
+                // Adding the Sentry logger tag ensures we don't send this error to Sentry.
+                Debug.unityLogger.Log(LogType.Error, UnityLogger.LogTag, $"Error loading the list of debug images: {e}");
             }
             return result;
         }
