@@ -68,14 +68,13 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
 void SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
-    id error = nil;
     id sentryOptions = [[SentryOptions alloc]
         performSelector:@selector(initWithDict:didFailWithError:)
-        withObject:dictOptions withObject:&error];
+        withObject:dictOptions withObject:nil];
 
-    if (error != nil)
+    if (sentryOptions == nil)
     {
-        NSLog(@"%@",[error performSelector:@selector(localizedDescription)]);
+        NSLog(@"Sentry Native Bridge failed to initialize the options from the dictionary.");
         return;
     }
 
