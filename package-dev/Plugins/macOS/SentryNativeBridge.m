@@ -68,14 +68,14 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
 void SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
-    NSError *error = nil;
+    id error = nil;
     id sentryOptions = [[SentryOptions alloc]
         performSelector:@selector(initWithDict:didFailWithError:)
         withObject:dictOptions withObject:&error];
 
     if (error != nil)
     {
-        NSLog(@"%@",[error localizedDescription]);
+        NSLog(@"%@",[error performSelector:@selector(localizedDescription)]);
         return;
     }
 
