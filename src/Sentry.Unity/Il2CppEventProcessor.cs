@@ -9,6 +9,7 @@ using Sentry.Unity.Integrations;
 using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using static System.Net.Mime.MediaTypeNames;
+using Application = UnityEngine.Application;
 
 namespace Sentry.Unity
 {
@@ -108,6 +109,9 @@ namespace Sentry.Unity
                         frame.Package.StartsWith("UnityEngine.", StringComparison.InvariantCultureIgnoreCase) ||
                         frame.Package.StartsWith("Assembly-CSharp", StringComparison.InvariantCultureIgnoreCase)
                     );
+
+                    frame.InstructionAddressAdjustment =
+                        Application.platform == RuntimePlatform.Android ? "none" : "all";
 
                     string? notes = null;
                     DebugImage? image = null;
