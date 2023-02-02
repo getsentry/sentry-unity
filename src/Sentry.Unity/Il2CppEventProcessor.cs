@@ -73,6 +73,8 @@ namespace Sentry.Unity
                 //      Wouldn't it cause invalid frame info?
                 var nativeLen = nativeStackTrace.Frames.Length;
                 var eventLen = sentryStacktrace.Frames.Count;
+                sentryStacktrace.InstructionAddressAdjustment =
+                    Application.platform == RuntimePlatform.Android ? "none" : "all";
 
                 if (nativeLen != eventLen)
                 {
@@ -100,7 +102,7 @@ namespace Sentry.Unity
                     // A good heuristic to use in that case is to just subtract 1.
                     // TODO should we do this for all addresses or only relative ones?
                     //      If the former, we should also update `frame.InstructionAddress` down below.
-                    var instructionAddress = (ulong)nativeFrame.ToInt64() - 1;
+                    var instructionAddress = (ulong)nativeFrame.ToInt64();
 
                     // We cannot determine whether this frame is a main library frame just from the address
                     // because even relative address on the frame may correspond to an absolute addres of a loaded library.
@@ -109,9 +111,6 @@ namespace Sentry.Unity
                         frame.Package.StartsWith("UnityEngine.", StringComparison.InvariantCultureIgnoreCase) ||
                         frame.Package.StartsWith("Assembly-CSharp", StringComparison.InvariantCultureIgnoreCase)
                     );
-
-                    frame.InstructionAddressAdjustment =
-                        Application.platform == RuntimePlatform.Android ? "none" : "all";
 
                     string? notes = null;
                     DebugImage? image = null;
