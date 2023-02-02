@@ -14,15 +14,16 @@ namespace Sentry.Unity.Editor.iOS
         internal string Generate(SentryUnityOptions options)
         {
             var nativeOptions = $@"#import <Foundation/Foundation.h>
+#import <Sentry/SentryOptions+HybridSDKs.h>
 
 // IMPORTANT: Changes to this file will be lost!
 // This file is generated during the Xcode project creation.
 
 // To learn more please take a look at our docs at: https://docs.sentry.io/platforms/unity/native-support/
 
-static NSDictionary* getSentryOptions()
+static SentryOptions* getSentryOptions()
 {{
-    NSDictionary* options = @{{
+    NSDictionary* optionsDictionary = @{{
         @""sdk"" : @{{ @""name"": @""sentry.cocoa.unity"" }},
         @""dsn"" : @""{options.Dsn}"",
         @""debug"" : @{ToObjCString(options.Debug)},
@@ -36,6 +37,14 @@ static NSDictionary* getSentryOptions()
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}""
     }};
+
+    NSError *error = nil;
+    SentryOptions* options = [[SentryOptions alloc] initWithDict:optionsDictionary didFailWithError:&error];
+    if (error != nil)
+    {{
+        NSLog(@""%@"",[error localizedDescription]);
+        return nil;
+    }}
 
     return options;
 }}";

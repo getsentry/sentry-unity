@@ -7,6 +7,7 @@ static Class SentrySDK;
 static Class SentryScope;
 static Class SentryBreadcrumb;
 static Class SentryUser;
+static Class SentryOptions;
 static Class PrivateSentrySDKOnly;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
@@ -33,6 +34,7 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryScope)
             LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
             LOAD_CLASS_OR_BREAK(SentryUser)
+            LOAD_CLASS_OR_BREAK(SentryOptions)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
 
             // everything above passed - mark as successfully loaded
@@ -66,7 +68,11 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
 void SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
-    [SentrySDK performSelector:@selector(startWithOptions:) withObject:dictOptions];
+    id sentryOptions = [[SentryOptions alloc]
+        performSelector:@selector(initWithDict:didFailWithError:)
+        withObject:dictOptions withObject:nil];
+
+    [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
 }
 
 void SentryConfigureScope(void (^callback)(id))
