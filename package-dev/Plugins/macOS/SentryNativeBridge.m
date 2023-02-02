@@ -72,12 +72,6 @@ void SentryNativeBridgeStartWithOptions(const void *options)
         performSelector:@selector(initWithDict:didFailWithError:)
         withObject:dictOptions withObject:nil];
 
-    if (sentryOptions == nil)
-    {
-        NSLog(@"Sentry Native Bridge failed to initialize the options from the dictionary.");
-        return;
-    }
-
     [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
 }
 
