@@ -74,6 +74,11 @@ namespace Sentry.Unity
         public bool AttachScreenshot { get; set; } = false;
 
         /// <summary>
+        /// Try to attach the current scene's hierarchy.
+        /// </summary>
+        public bool AttachViewHierarchy { get; set; } = false;
+
+        /// <summary>
         /// The quality of the attached screenshot
         /// </summary>
         public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;

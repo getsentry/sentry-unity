@@ -56,6 +56,8 @@ namespace Sentry.Unity
                         new ScreenshotAttachmentContent(options, SentryMonoBehaviour.Instance))));
             }
 
+
+
             if (options.NativeContextWriter is { } contextWriter)
             {
                 SentrySdk.ConfigureScope((scope) =>

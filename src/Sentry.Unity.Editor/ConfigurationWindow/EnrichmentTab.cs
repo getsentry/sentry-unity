@@ -121,6 +121,14 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.ScreenshotCompression, 1, 100);
 
             EditorGUILayout.EndToggleGroup();
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            options.AttachViewHierarchy = EditorGUILayout.Toggle(
+                new GUIContent("Attach Hierarchy", "Try to attach the current scene's hierarchy."),
+                options.AttachViewHierarchy);
         }
     }
 }

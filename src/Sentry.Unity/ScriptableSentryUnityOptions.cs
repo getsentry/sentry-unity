@@ -46,6 +46,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool AttachScreenshot { get; set; }
         [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
         [field: SerializeField] public int ScreenshotCompression { get; set; } = 75;
+        [field: SerializeField] public bool AttachViewHierarchy { get; set; }
 
         [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
         [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
@@ -118,6 +119,7 @@ namespace Sentry.Unity
                 AttachScreenshot = AttachScreenshot,
                 ScreenshotQuality = ScreenshotQuality,
                 ScreenshotCompression = ScreenshotCompression,
+                AttachViewHierarchy = AttachViewHierarchy,
                 MaxBreadcrumbs = MaxBreadcrumbs,
                 ReportAssembliesMode = ReportAssembliesMode,
                 SendDefaultPii = SendDefaultPii,
