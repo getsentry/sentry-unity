@@ -11,8 +11,9 @@ namespace Sentry.Unity
 {
     internal class ViewHierarchyAttachment : Attachment
     {
-        public ViewHierarchyAttachment(IAttachmentContent  content) :
-            base(AttachmentType.Default, content, "view-hierarchy.json", "application/json") { }
+        public ViewHierarchyAttachment(IAttachmentContent content) :
+            base(AttachmentType.Default, content, "view-hierarchy.json", "application/json")
+        { }
     }
 
     internal class ViewHierarchyAttachmentContent : IAttachmentContent
