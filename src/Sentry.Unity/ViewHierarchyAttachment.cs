@@ -12,7 +12,7 @@ namespace Sentry.Unity
     internal class ViewHierarchyAttachment : Attachment
     {
         public ViewHierarchyAttachment(IAttachmentContent  content) :
-            base(AttachmentType.Default, content, "view-hierarchy.json", "application/json") { }
+            base(AttachmentType.ViewHierarchy, content, "view-hierarchy.json", "application/json") { }
     }
 
     internal class ViewHierarchyAttachmentContent : IAttachmentContent
@@ -42,9 +42,12 @@ namespace Sentry.Unity
         internal Stream CaptureViewHierarchy(int maxDepth, int maxChildCount)
         {
             var rootGameObjects = new List<GameObject>();
-            SceneManager.GetActiveScene().GetRootGameObjects(rootGameObjects);
+            var scene =SceneManager.GetActiveScene();
+            scene.GetRootGameObjects(rootGameObjects);
 
-            var root = new ViewHierarchyNode();
+            var viewHierarchy = new ViewHierarchy();
+            var root = new ViewHierarchyNode() { Identifier = scene.name };
+            viewHierarchy.Children = new List<ViewHierarchyNode>{ root };
             foreach (var gameObject in rootGameObjects)
             {
                 CreateNode(maxDepth, maxChildCount, root, gameObject.transform);
@@ -52,7 +55,7 @@ namespace Sentry.Unity
 
             var stream = new MemoryStream();
             using var writer = new Utf8JsonWriter(stream);
-            root.WriteTo(writer, _options.DiagnosticLogger);
+            viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
 
             writer.Flush();
             stream.Seek(0, SeekOrigin.Begin);

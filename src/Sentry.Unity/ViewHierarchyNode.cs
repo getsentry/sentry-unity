@@ -4,6 +4,33 @@ using Sentry.Extensibility;
 
 namespace Sentry.Unity
 {
+    public class ViewHierarchy : IJsonSerializable
+    {
+        public string? RenderingSystem { get; set; }
+        public string? Windows { get; set; }
+
+        public List<ViewHierarchyNode>? Children { get; set; }
+
+        public void WriteTo(Utf8JsonWriter writer, IDiagnosticLogger? logger)
+        {
+            writer.WriteStartObject();
+
+            writer.WriteString("rendering_system", "unity");
+
+            if (Children is {} children)
+            {
+                writer.WriteStartArray("windows");
+                foreach (var child in children)
+                {
+                    child.WriteTo(writer, logger);
+                }
+                writer.WriteEndArray();
+            }
+
+            writer.WriteEndObject();
+        }
+    }
+
     public class ViewHierarchyNode : IJsonSerializable
     {
         public string? Type { get; set; }
@@ -22,7 +49,7 @@ namespace Sentry.Unity
 
             if (Identifier is { } identifier)
             {
-                writer.WriteString("identifier", identifier);
+                writer.WriteString("type", identifier);
             }
 
             if (Tag is { } tag)
