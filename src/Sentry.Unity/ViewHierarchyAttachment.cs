@@ -42,12 +42,16 @@ namespace Sentry.Unity
         internal Stream CaptureViewHierarchy(int maxDepth, int maxChildCount)
         {
             var rootGameObjects = new List<GameObject>();
-            var scene =SceneManager.GetActiveScene();
+            var scene = SceneManager.GetActiveScene();
             scene.GetRootGameObjects(rootGameObjects);
 
-            var viewHierarchy = new ViewHierarchy();
-            var root = new ViewHierarchyNode() { Identifier = scene.name };
-            viewHierarchy.Children = new List<ViewHierarchyNode>{ root };
+            var root = new ViewHierarchyNode { Type = scene.name };
+            var viewHierarchy = new ViewHierarchy
+            {
+                RenderingSystem = "Unity",
+                Children = new List<ViewHierarchyNode> { root }
+            };
+
             foreach (var gameObject in rootGameObjects)
             {
                 CreateNode(maxDepth, maxChildCount, root, gameObject.transform);
@@ -63,11 +67,7 @@ namespace Sentry.Unity
             return stream;
         }
 
-        internal void CreateNode(
-            int depth,
-            int maxChildCount,
-            ViewHierarchyNode parentNode,
-            Transform transform)
+        internal void CreateNode(int depth, int maxChildCount, ViewHierarchyNode parentNode, Transform transform)
         {
             depth--;
             if (depth <= 0)
@@ -78,12 +78,12 @@ namespace Sentry.Unity
             var position = transform.position;
             var node = new ViewHierarchyNode
             {
-                Identifier = transform.name,
+                Type = transform.name,
                 X = position.x,
                 Y = position.y,
                 Z = position.z,
                 Tag = transform.tag,
-                Visibility = transform.gameObject.activeSelf
+                Visible = transform.gameObject.activeSelf
             };
 
             if (parentNode.Children is null)
