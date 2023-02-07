@@ -16,7 +16,11 @@ namespace Sentry.Unity.Editor.iOS
 #include ""SentryOptions.m""
 ";
         private const string Init = @"
-        [SentrySDK startWithOptions:getSentryOptions()];
+        SentryOptions* options = getSentryOptions();
+        if(options != nil)
+        {
+            [SentrySDK startWithOptions:options];
+        }
 ";
 
         public void AddSentry(string pathToMain, IDiagnosticLogger? logger)
