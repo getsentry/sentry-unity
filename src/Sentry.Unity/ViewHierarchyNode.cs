@@ -77,7 +77,7 @@ namespace Sentry.Unity
                 writer.WriteBoolean("visibility", visibility);
             }
 
-            if (Children is {} children)
+            if (Children is { } children)
             {
                 writer.WriteStartArray("children");
                 foreach (var child in children)
