@@ -73,8 +73,11 @@ namespace Sentry.Unity
                 //      Wouldn't it cause invalid frame info?
                 var nativeLen = nativeStackTrace.Frames.Length;
                 var eventLen = sentryStacktrace.Frames.Count;
-                sentryStacktrace.InstructionAddressAdjustment =
-                    Application.platform == RuntimePlatform.Android ? "none" : "all";
+
+                sentryStacktrace.AddressAdjustment =
+                    Application.platform == RuntimePlatform.Android
+                        ? InstructionAddressAdjustment.None
+                        : InstructionAddressAdjustment.All;
 
                 if (nativeLen != eventLen)
                 {
