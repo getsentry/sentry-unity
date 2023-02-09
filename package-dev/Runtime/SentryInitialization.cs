@@ -132,21 +132,6 @@ namespace Sentry.Unity
 #endif
         }
 
-        public string Platform
-        {
-            get =>
-#if UNITY_IOS || UNITY_STANDALONE_OSX
-                "macho"
-#elif UNITY_ANDROID || UNITY_STANDALONE_LINUX
-                "elf"
-#elif UNITY_STANDALONE_WIN
-                "pe"
-#else
-                "unknown"
-#endif
-            ;
-        }
-
         public Il2CppMethods Il2CppMethods => _il2CppMethods;
 
         private Il2CppMethods _il2CppMethods
