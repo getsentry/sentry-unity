@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using Sentry.Extensibility;
@@ -76,6 +77,9 @@ namespace Sentry.Unity
             }
 
             var position = transform.position;
+            var components = new List<Component>();
+            transform.GetComponents(components);
+
             var node = new ViewHierarchyNode
             {
                 Type = transform.name,
@@ -83,7 +87,8 @@ namespace Sentry.Unity
                 Y = position.y,
                 Z = position.z,
                 Tag = transform.tag,
-                Visible = transform.gameObject.activeSelf
+                Visible = transform.gameObject.activeSelf,
+                Extras = components.Select(e => e.GetType().ToString()).ToList()
             };
 
             if (parentNode.Children is null)
