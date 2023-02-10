@@ -220,6 +220,8 @@ Runtime/Sentry.dll
 Runtime/Sentry.dll.meta
 Runtime/Sentry.Microsoft.Bcl.AsyncInterfaces.dll
 Runtime/Sentry.Microsoft.Bcl.AsyncInterfaces.dll.meta
+Runtime/Sentry.pdb
+Runtime/Sentry.pdb.meta
 Runtime/Sentry.System.Buffers.dll
 Runtime/Sentry.System.Buffers.dll.meta
 Runtime/Sentry.System.Collections.Immutable.dll
