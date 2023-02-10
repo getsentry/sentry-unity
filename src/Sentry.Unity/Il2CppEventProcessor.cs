@@ -15,7 +15,7 @@ namespace Sentry.Unity
         private readonly SentryUnityOptions _options;
         private readonly Il2CppMethods _il2CppMethods;
 
-        internal UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, Il2CppMethods il2CppMethods)
+        public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, Il2CppMethods il2CppMethods)
         {
             _options = options;
             _il2CppMethods = il2CppMethods;
