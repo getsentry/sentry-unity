@@ -30,7 +30,7 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions options)
         {
-            if(UnitySdk is not null)
+            if (UnitySdk is not null)
             {
                 options.DiagnosticLogger?.LogWarning("The SDK has already been initialized.");
             }
