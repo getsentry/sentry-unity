@@ -75,6 +75,11 @@ namespace Sentry.Unity.Editor.iOS
 
         internal static void CopyFramework(string sourcePath, string targetPath, IDiagnosticLogger? logger)
         {
+            if (!Directory.Exists(sourcePath))
+            {
+                throw new DirectoryNotFoundException($"Failed to find '{sourcePath}'");
+            }
+
             if (Directory.Exists(targetPath))
             {
                 logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
@@ -97,6 +102,11 @@ namespace Sentry.Unity.Editor.iOS
 
         internal static void CopyFile(string sourcePath, string targetPath, IDiagnosticLogger? logger)
         {
+            if (!File.Exists(sourcePath))
+            {
+                throw new DirectoryNotFoundException($"Failed to find '{sourcePath}'");
+            }
+
             if (File.Exists(targetPath))
             {
                 logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
