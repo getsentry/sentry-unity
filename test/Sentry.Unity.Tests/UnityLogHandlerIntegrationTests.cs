@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using Sentry.Protocol;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 
@@ -228,6 +229,22 @@ namespace Sentry.Unity.Tests
             Assert.AreEqual(exception.GetType() + ": " + message, breadcrumb.Message);
             Assert.AreEqual("unity.logger", breadcrumb.Category);
             Assert.AreEqual(BreadcrumbLevel.Error, breadcrumb.Level);
+        }
+
+        [Test]
+        public void Register_RegisteredASecondTime_LogsWarningAndReturns()
+        {
+            var testLogger = new TestLogger();
+            _fixture.SentryOptions.DiagnosticLogger = testLogger;
+            _fixture.SentryOptions.Debug = true;
+            var sut = _fixture.GetSut();
+
+            // Edge-case of initializing the SDK twice with the same options object.
+            sut.Register(_fixture.Hub, _fixture.SentryOptions);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Warning &&
+                log.message.Contains("UnityLogHandlerIntegration has already been registered.")));
         }
     }
 }
