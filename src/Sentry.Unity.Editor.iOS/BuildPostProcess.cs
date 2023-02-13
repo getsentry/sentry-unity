@@ -104,7 +104,7 @@ namespace Sentry.Unity.Editor.iOS
         {
             if (!File.Exists(sourcePath))
             {
-                throw new DirectoryNotFoundException($"Failed to find '{sourcePath}'");
+                throw new FileNotFoundException($"Failed to find '{sourcePath}'");
             }
 
             if (File.Exists(targetPath))
