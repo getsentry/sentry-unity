@@ -49,7 +49,7 @@ namespace Sentry.Unity.Tests
 
             // Thread.Sleep blocks the UI thread
             var watch = Stopwatch.StartNew();
-            while (watch.Elapsed < _timeout.Multiply(2) && arn is null)
+            while (watch.Elapsed < TimeSpan.FromTicks(_timeout.Ticks * 2) && arn is null)
             {
                 Thread.Sleep(10);
             }
@@ -77,7 +77,7 @@ namespace Sentry.Unity.Tests
 
             // yield WaitForSeconds doesn't block the UI thread
             var watch = Stopwatch.StartNew();
-            while (watch.Elapsed < _timeout.Multiply(3))
+            while (watch.Elapsed < TimeSpan.FromTicks(_timeout.Ticks * 3))
             {
                 yield return new WaitForSeconds(0.01f);
             }
@@ -95,7 +95,7 @@ namespace Sentry.Unity.Tests
             _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
             // Thread.Sleep blocks the UI thread
-            Thread.Sleep(_timeout.Divide(2));
+            Thread.Sleep(TimeSpan.FromTicks(_timeout.Ticks / 2));
 
             Assert.IsNull(arn);
         }
