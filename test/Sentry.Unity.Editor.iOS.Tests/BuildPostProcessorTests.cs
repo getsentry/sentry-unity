@@ -55,6 +55,12 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
+        public void CopyFramework_SourceMissing_ThrowsDirectoryNotFoundException() =>
+            Assert.Throws<DirectoryNotFoundException>(() =>
+                BuildPostProcess.CopyFramework("non-existent-path.framework",
+                    Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework"), new TestLogger()));
+
+        [Test]
         public void CopyFramework_FailedToCopy_ThrowsDirectoryNotFoundException() =>
             Assert.Throws<DirectoryNotFoundException>(() =>
                 BuildPostProcess.CopyFramework("non-existent-path.framework",
@@ -84,6 +90,12 @@ namespace Sentry.Unity.Editor.iOS.Tests
                 log.logLevel == SentryLevel.Debug &&
                 log.message.Contains("has already been copied to")));
         }
+
+        [Test]
+        public void CopyFile_SourceMissing_ThrowsFileNotFoundException() =>
+            Assert.Throws<FileNotFoundException>(() =>
+                BuildPostProcess.CopyFile("non-existent-path.m",
+                    Path.Combine(_xcodeProjectPath, "NewDirectory", "Test.m"), new TestLogger()));
 
         [Test]
         public void CopyFile_FailedToCopyFile_ThrowsFileNotFoundException() =>
