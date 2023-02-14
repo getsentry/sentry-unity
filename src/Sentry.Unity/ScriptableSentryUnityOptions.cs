@@ -69,7 +69,7 @@ namespace Sentry.Unity
         [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
         [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
         [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
-        
+
         [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
         [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
 
@@ -78,7 +78,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
-        
+
         [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
         [field: SerializeField] public SentryRuntimeOptionsConfiguration? OptionsConfiguration { get; set; }
