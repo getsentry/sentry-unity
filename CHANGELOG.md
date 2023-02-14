@@ -6,6 +6,10 @@
 
 - Fixed the logging integration only capturing tags and missing the message ([#1150](https://github.com/getsentry/sentry-unity/pull/1150))
 
+### Features
+
+- Added ANR options to the editor window and made ANR timeout accessible on the options object ([#1181](https://github.com/getsentry/sentry-unity/pull/1181))
+
 ### Dependencies
 
 - Bump Native SDK from v0.5.3 to v0.5.4 ([#1157](https://github.com/getsentry/sentry-unity/pull/1157))
