@@ -28,6 +28,18 @@ namespace Sentry.Unity.Integrations
         {
             _hub = hub;
             _sentryOptions = sentryOptions as SentryUnityOptions;
+            if (_sentryOptions is null)
+            {
+                return;
+            }
+
+            // If called twice (i.e. init with the same options object) the integration will reference itself as the
+            // original handler loghandler and endlessly forward to itself
+            if (Debug.unityLogger.logHandler == this)
+            {
+                _sentryOptions.DiagnosticLogger?.LogWarning("UnityLogHandlerIntegration has already been registered.");
+                return;
+            }
 
             _unityLogHandler = Debug.unityLogger.logHandler;
             Debug.unityLogger.logHandler = this;
