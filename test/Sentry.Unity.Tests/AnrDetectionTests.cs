@@ -111,7 +111,7 @@ namespace Sentry.Unity.Tests
             _monoBehaviour.UpdatePauseStatus(true);
 
             // Thread.Sleep blocks the UI thread
-            Thread.Sleep(_timeout.Multiply(2));
+            Thread.Sleep(TimeSpan.FromTicks(_timeout.Ticks * 2));
 
             // We need to let the single-threaded watchdog populate `arn` after UI became responsive again.
             if (!multiThreaded)
