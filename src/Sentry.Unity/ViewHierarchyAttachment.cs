@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using Sentry.Extensibility;
 using UnityEngine;
@@ -47,11 +46,11 @@ namespace Sentry.Unity
             var scene = SceneManager.GetActiveScene();
             scene.GetRootGameObjects(rootGameObjects);
 
-            var root = new ViewHierarchyNode { Type = scene.name };
+            var root = new UnityViewHierarchyNode { Type = scene.name };
             var viewHierarchy = new ViewHierarchy
             {
                 RenderingSystem = "Unity",
-                Children = new List<ViewHierarchyNode> { root }
+                Children = new List<IJsonSerializable> { root }
             };
 
             foreach (var gameObject in rootGameObjects)
@@ -81,7 +80,7 @@ namespace Sentry.Unity
             var components = new List<Component>();
             transform.GetComponents(components);
 
-            var node = new ViewHierarchyNode
+            var node = new UnityViewHierarchyNode
             {
                 Type = transform.name,
                 X = position.x,
@@ -94,7 +93,7 @@ namespace Sentry.Unity
 
             if (parentNode.Children is null)
             {
-                parentNode.Children = new List<ViewHierarchyNode> { node };
+                parentNode.Children = new List<IJsonSerializable> { node };
             }
             else
             {
