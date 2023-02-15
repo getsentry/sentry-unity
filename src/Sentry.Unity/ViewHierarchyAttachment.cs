@@ -46,11 +46,11 @@ namespace Sentry.Unity
             var scene = SceneManager.GetActiveScene();
             scene.GetRootGameObjects(rootGameObjects);
 
-            var root = new UnityViewHierarchyNode { Type = scene.name };
+            var root = new UnityViewHierarchyNode(scene.name);
             var viewHierarchy = new ViewHierarchy
             {
                 RenderingSystem = "Unity",
-                Children = new List<IJsonSerializable> { root }
+                Windows = new List<IViewHierarchyNode> { root }
             };
 
             foreach (var gameObject in rootGameObjects)
@@ -68,7 +68,7 @@ namespace Sentry.Unity
             return stream;
         }
 
-        internal void CreateNode(int depth, int maxChildCount, ViewHierarchyNode parentNode, Transform transform)
+        internal void CreateNode(int depth, int maxChildCount, IViewHierarchyNode parentNode, Transform transform)
         {
             depth--;
             if (depth <= 0)
@@ -76,24 +76,21 @@ namespace Sentry.Unity
                 return;
             }
 
-            var position = transform.position;
             var components = new List<Component>();
             transform.GetComponents(components);
-
-            var node = new UnityViewHierarchyNode
+            var node = new UnityViewHierarchyNode(transform.name)
             {
-                Type = transform.name,
-                X = position.x,
-                Y = position.y,
-                Z = position.z,
                 Tag = transform.tag,
-                Visible = transform.gameObject.activeSelf,
+                Position = transform.position.ToString(),
+                Rotation = transform.rotation.eulerAngles.ToString(),
+                Scale = transform.localScale.ToString(),
+                Active = transform.gameObject.activeSelf,
                 Extras = components.Select(e => e.GetType().ToString()).ToList()
             };
 
             if (parentNode.Children is null)
             {
-                parentNode.Children = new List<IJsonSerializable> { node };
+                parentNode.Children = new List<IViewHierarchyNode> { node };
             }
             else
             {
