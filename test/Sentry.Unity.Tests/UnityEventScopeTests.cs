@@ -25,6 +25,8 @@ namespace Sentry.Unity.Tests
         [SetUp]
         public void SetUp()
         {
+            Debug.Log("Setup");
+
             _gameObject = new GameObject("ScopeTest");
             _testLogger = new TestLogger();
             _sentryMonoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
@@ -35,6 +37,11 @@ namespace Sentry.Unity.Tests
         public void TearDown()
         {
             Object.Destroy(_gameObject);
+
+            if (SentrySdk.IsEnabled)
+            {
+                SentryUnity.Close();
+            }
         }
 
         public string FormatLogs(List<(SentryLevel, string, Exception?)> logs)

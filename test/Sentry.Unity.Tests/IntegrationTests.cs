@@ -20,11 +20,20 @@ namespace Sentry.Unity.Tests
 
         // [SetUp] gets called after disabling the self initialization in the IPrebuildSetup
         [SetUp]
-        public new void Setup()
+        public void SetUp()
         {
             _testHttpClientHandler = new TestHttpClientHandler("SetupTestHttpClientHandler");
             _eventMessage = Guid.NewGuid() + " Test Event";
             _identifyingEventValueAttribute = CreateAttribute("value", _eventMessage);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (SentrySdk.IsEnabled)
+            {
+                SentryUnity.Close();
+            }
         }
 
         [UnityTest]
