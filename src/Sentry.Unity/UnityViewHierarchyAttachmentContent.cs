@@ -9,19 +9,12 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity
 {
-    internal class ViewHierarchyAttachment : Attachment
-    {
-        public ViewHierarchyAttachment(IAttachmentContent content) :
-            base(AttachmentType.ViewHierarchy, content, "view-hierarchy.json", "application/json")
-        { }
-    }
-
-    internal class ViewHierarchyAttachmentContent : IAttachmentContent
+    internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
     {
         private readonly SentryMonoBehaviour _behaviour;
         private readonly SentryUnityOptions _options;
 
-        public ViewHierarchyAttachmentContent(SentryUnityOptions options, SentryMonoBehaviour behaviour)
+        public UnityViewHierarchyAttachmentContent(SentryUnityOptions options, SentryMonoBehaviour behaviour)
         {
             _behaviour = behaviour;
             _options = options;
@@ -37,29 +30,15 @@ namespace Sentry.Unity
                 return Stream.Null;
             }
 
-            return CaptureViewHierarchy(10, 10);
+            return CaptureViewHierarchy();
         }
 
-        internal Stream CaptureViewHierarchy(int maxDepth, int maxChildCount)
+        internal Stream CaptureViewHierarchy()
         {
-            var rootGameObjects = new List<GameObject>();
-            var scene = SceneManager.GetActiveScene();
-            scene.GetRootGameObjects(rootGameObjects);
-
-            var root = new UnityViewHierarchyNode(scene.name);
-            var viewHierarchy = new ViewHierarchy
-            {
-                RenderingSystem = "Unity",
-                Windows = new List<IViewHierarchyNode> { root }
-            };
-
-            foreach (var gameObject in rootGameObjects)
-            {
-                CreateNode(maxDepth, maxChildCount, root, gameObject.transform);
-            }
-
             var stream = new MemoryStream();
             using var writer = new Utf8JsonWriter(stream);
+
+            var viewHierarchy = CreateViewHierarchy(10, 10, 10);
             viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
 
             writer.Flush();
@@ -68,7 +47,29 @@ namespace Sentry.Unity
             return stream;
         }
 
-        internal void CreateNode(int depth, int maxChildCount, IViewHierarchyNode parentNode, Transform transform)
+        internal ViewHierarchy CreateViewHierarchy(int maxRootGameObjectCount, int maxChildCount, int maxDepth)
+        {
+            var rootGameObjects = new List<GameObject>();
+            var scene = SceneManager.GetActiveScene();
+            scene.GetRootGameObjects(rootGameObjects);
+
+            // Consider the root a 'scene'.
+            // TODO: Scenes loaded 'additionally' could/should captured as well
+            var root = new UnityViewHierarchyNode(scene.name);
+            var viewHierarchy = new ViewHierarchy("Unity");
+            viewHierarchy.Windows.Add(root);
+
+            maxDepth++; // Offsetting the depth by +1 because we're adding the scene as the root node
+            var rootElementCount = Math.Min(rootGameObjects.Count, maxRootGameObjectCount);
+            for (var i = 0; i < rootElementCount; i++)
+            {
+                CreateNode(maxDepth, maxChildCount, root, rootGameObjects[i].transform);
+            }
+
+            return viewHierarchy;
+        }
+
+        internal void CreateNode(int depth, int maxChildCount, ViewHierarchyNode parentNode, Transform transform)
         {
             depth--;
             if (depth <= 0)
@@ -88,14 +89,7 @@ namespace Sentry.Unity
                 Extras = components.Select(e => e.GetType().ToString()).ToList()
             };
 
-            if (parentNode.Children is null)
-            {
-                parentNode.Children = new List<IViewHierarchyNode> { node };
-            }
-            else
-            {
-                parentNode.Children.Add(node);
-            }
+            parentNode.Children.Add(node);
 
             for (var i = 0; i < Math.Min(transform.childCount, maxChildCount); i++)
             {
