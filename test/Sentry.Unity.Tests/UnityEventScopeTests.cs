@@ -25,8 +25,6 @@ namespace Sentry.Unity.Tests
         [SetUp]
         public void SetUp()
         {
-            Debug.Log("Setup");
-
             _gameObject = new GameObject("ScopeTest");
             _testLogger = new TestLogger();
             _sentryMonoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
