@@ -71,12 +71,6 @@ namespace Sentry.Unity
 
         internal void CreateNode(int depth, int maxChildCount, ViewHierarchyNode parentNode, Transform transform)
         {
-            depth--;
-            if (depth <= 0)
-            {
-                return;
-            }
-
             var components = new List<Component>();
             transform.GetComponents(components);
             var node = new UnityViewHierarchyNode(transform.name)
@@ -91,7 +85,14 @@ namespace Sentry.Unity
 
             parentNode.Children.Add(node);
 
-            for (var i = 0; i < Math.Min(transform.childCount, maxChildCount); i++)
+            depth--;
+            if (depth <= 0)
+            {
+                return;
+            }
+
+            var childCount = Math.Min(transform.childCount, maxChildCount);
+            for (var i = 0; i < childCount; i++)
             {
                 CreateNode(depth, maxChildCount, node, transform.GetChild(i));
             }
