@@ -35,6 +35,11 @@ namespace Sentry.Unity.Tests
         public void TearDown()
         {
             Object.Destroy(_gameObject);
+
+            if (SentrySdk.IsEnabled)
+            {
+                SentryUnity.Close();
+            }
         }
 
         public string FormatLogs(List<(SentryLevel, string, Exception?)> logs)
