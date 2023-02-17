@@ -9,15 +9,15 @@
 
 ### Dependencies
 
-- Bump Native SDK from v0.5.3 to v0.5.4 ([#1157](https://github.com/getsentry/sentry-unity/pull/1157))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#054)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.5.3...0.5.4)
 - Bump Java SDK from v6.12.1 to v6.14.0 ([#1156](https://github.com/getsentry/sentry-unity/pull/1156), [#1171](https://github.com/getsentry/sentry-unity/pull/1171), [#1184](https://github.com/getsentry/sentry-unity/pull/1184))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6140)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.12.1...6.14.0)
-- Bump CLI from v2.11.0 to v2.12.0 ([#1163](https://github.com/getsentry/sentry-unity/pull/1163))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2120)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.11.0...2.12.0)
+- Bump Native SDK from v0.5.3 to v0.6.0 ([#1157](https://github.com/getsentry/sentry-unity/pull/1157), [#1182](https://github.com/getsentry/sentry-unity/pull/1182))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#060)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.5.3...0.6.0)
+- Bump CLI from v2.11.0 to v2.13.0 ([#1163](https://github.com/getsentry/sentry-unity/pull/1163), [#1186](https://github.com/getsentry/sentry-unity/pull/1186))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2130)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.11.0...2.13.0)
 - Bump .NET SDK from v3.26.2 to v3.28.1 ([#1164](https://github.com/getsentry/sentry-unity/pull/1164), [#1170](https://github.com/getsentry/sentry-unity/pull/1170), [#1172](https://github.com/getsentry/sentry-unity/pull/1172), [#1175](https://github.com/getsentry/sentry-unity/pull/1175))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3281)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.26.2...3.28.1)
