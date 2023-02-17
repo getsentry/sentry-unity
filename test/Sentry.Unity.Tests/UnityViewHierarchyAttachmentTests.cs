@@ -1,13 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using NUnit.Framework;
-using Sentry.Unity.Tests.TestBehaviours;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
 {
