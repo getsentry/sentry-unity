@@ -101,7 +101,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             template.AppendFormat("public class {0} : {1}\n", scriptName, typeof(T).FullName);
             template.AppendLine("{");
 
-            if (typeof(T) == typeof(SentryBuildtimeOptionsConfiguration))
+            if (typeof(T) == typeof(SentryBuildTimeOptionsConfiguration))
             {
                 template.AppendLine("    /// Called during app build. Changes made here will affect build-time processing, symbol upload, etc.");
                 template.AppendLine("    /// Additionally, because iOS, macOS and Android native error handling is configured at build time,");
@@ -116,9 +116,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             template.AppendLine("    /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration");
             template.AppendFormat("    public override void Configure(SentryUnityOptions options{0})\n",
-                                  typeof(T) == typeof(SentryBuildtimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
+                                  typeof(T) == typeof(SentryBuildTimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
             template.AppendLine("    {");
-            if (typeof(T) != typeof(SentryBuildtimeOptionsConfiguration))
+            if (typeof(T) != typeof(SentryBuildTimeOptionsConfiguration))
             {
                 template.AppendLine("        // Note that changes to the options here will **not** affect iOS, macOS and Android events. (i.e.  i.e. environment and release)");
                 template.AppendLine("        // Take a look at `SentryBuildTimeOptionsConfiguration` instead.");
@@ -157,7 +157,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal static void SetScript(string scriptNameWithoutExtension)
         {
             var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
-            var isEditorScript = optionsConfigurationObject is SentryBuildtimeOptionsConfiguration;
+            var isEditorScript = optionsConfigurationObject is SentryBuildTimeOptionsConfiguration;
             AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
             AssetDatabase.Refresh();
 
@@ -166,7 +166,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (isEditorScript)
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.BuildtimeOptionsConfiguration ??= optionsConfigurationObject as SentryBuildtimeOptionsConfiguration;
+                options.BuildtimeOptionsConfiguration ??= optionsConfigurationObject as SentryBuildTimeOptionsConfiguration;
             }
             else
             {
