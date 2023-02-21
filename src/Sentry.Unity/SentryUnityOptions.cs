@@ -79,6 +79,21 @@ namespace Sentry.Unity
         public bool AttachViewHierarchy { get; set; } = false;
 
         /// <summary>
+        /// Try to attach the current scene's hierarchy.
+        /// </summary>
+        public int MaxViewHierarchyRootObjects { get; set; } = 100;
+
+        /// <summary>
+        /// Try to attach the current scene's hierarchy.
+        /// </summary>
+        public int MaxViewHierarchyChildCount { get; set; } = 20;
+
+        /// <summary>
+        /// Try to attach the current scene's hierarchy.
+        /// </summary>
+        public int MaxViewHierarchyDepth { get; set; } = 10;
+
+        /// <summary>
         /// The quality of the attached screenshot
         /// </summary>
         public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;

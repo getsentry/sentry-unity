@@ -38,7 +38,10 @@ namespace Sentry.Unity
             var stream = new MemoryStream();
             using var writer = new Utf8JsonWriter(stream);
 
-            var viewHierarchy = CreateViewHierarchy(10, 10, 10);
+            var viewHierarchy = CreateViewHierarchy(
+                _options.MaxViewHierarchyRootObjects,
+                _options.MaxViewHierarchyChildCount,
+                _options.MaxViewHierarchyDepth);
             viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
 
             writer.Flush();

@@ -125,10 +125,30 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
+            {
+                options.AttachViewHierarchy = EditorGUILayout.BeginToggleGroup(
+                    new GUIContent("Attach Hierarchy", "Try to attach the current scene's hierarchy."),
+                    options.AttachViewHierarchy);
 
-            options.AttachViewHierarchy = EditorGUILayout.Toggle(
-                new GUIContent("Attach Hierarchy", "Try to attach the current scene's hierarchy."),
-                options.AttachViewHierarchy);
+                options.MaxViewHierarchyRootObjects = EditorGUILayout.IntField(
+                    new GUIContent("Max Root GameObjects", "Maximum number of GameObjects in the root of" +
+                                                           "the scene to get captured." +
+                                                      "\nDefault: 100"),
+                    options.MaxViewHierarchyRootObjects);
+
+                options.MaxViewHierarchyChildCount = EditorGUILayout.IntField(
+                    new GUIContent("Max Child Count", "Maximum number of children objects on each GameObject" +
+                                                   "to get captured." +
+                                                      "\nDefault: 20"),
+                    options.MaxViewHierarchyChildCount);
+
+                options.MaxViewHierarchyDepth = EditorGUILayout.IntField(
+                    new GUIContent("Max Depth", "Maximum depth of the hierarchy to get captured." +
+                                                      "\nDefault: 10"),
+                    options.MaxViewHierarchyDepth);
+
+                EditorGUILayout.EndToggleGroup();
+            }
         }
     }
 }
