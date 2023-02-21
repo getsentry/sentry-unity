@@ -1,27 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
-using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.NativeUtils;
 using UnityEngine;
-using static System.Net.Mime.MediaTypeNames;
+using Application = UnityEngine.Application;
 
 namespace Sentry.Unity
 {
     internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
     {
         private readonly SentryUnityOptions _options;
-        private readonly ISentryUnityInfo _sentryUnityInfo;
         private readonly Il2CppMethods _il2CppMethods;
 
-        public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, Il2CppMethods il2CppMethods)
+        public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, Il2CppMethods il2CppMethods)
         {
             _options = options;
-            _sentryUnityInfo = sentryUnityInfo;
             _il2CppMethods = il2CppMethods;
 
             _options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
@@ -39,7 +35,7 @@ namespace Sentry.Unity
 
             var exceptions = EnumerateChainedExceptions(incomingException);
             var usedImages = new HashSet<DebugImage>();
-            _logger = _options.DiagnosticLogger;
+            Logger = _options.DiagnosticLogger;
 
             // Unity usually produces stack traces with relative offsets in the GameAssembly library.
             // However, at least on Unity 2020 built Windows player, the offsets seem to be absolute.
@@ -54,6 +50,11 @@ namespace Sentry.Unity
                     // instructions, so with no stack trace, there is nothing to do
                     continue;
                 }
+
+                sentryStacktrace.AddressAdjustment =
+                    Application.platform == RuntimePlatform.Android
+                        ? InstructionAddressAdjustment.None
+                        : InstructionAddressAdjustment.All;
 
                 var nativeStackTrace = GetNativeStackTrace(exception);
 
@@ -72,7 +73,6 @@ namespace Sentry.Unity
                 //      Wouldn't it cause invalid frame info?
                 var nativeLen = nativeStackTrace.Frames.Length;
                 var eventLen = sentryStacktrace.Frames.Count;
-
                 if (nativeLen != eventLen)
                 {
                     _options.DiagnosticLogger?.LogWarning(
@@ -89,17 +89,9 @@ namespace Sentry.Unity
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
                     var mainImageUUID = NormalizeUUID(nativeStackTrace.ImageUuid);
 
-                    // _options.DiagnosticLogger?.Log(SentryLevel.Debug, "Processing stack frame '{0}' image address: {1:X8}, packge: {2}",
-                    //     null, frame.Function, frame.ImageAddress, frame.Package);
-
-                    // The instructions in the stack trace generally have "return addresses"
-                    // in them. But for symbolication, we want to symbolicate the address of
-                    // the "call instruction", which in almost all cases happens to be
-                    // the instruction right in front of the return address.
-                    // A good heuristic to use in that case is to just subtract 1.
                     // TODO should we do this for all addresses or only relative ones?
                     //      If the former, we should also update `frame.InstructionAddress` down below.
-                    var instructionAddress = (ulong)nativeFrame.ToInt64() - 1;
+                    var instructionAddress = (ulong)nativeFrame.ToInt64();
 
                     // We cannot determine whether this frame is a main library frame just from the address
                     // because even relative address on the frame may correspond to an absolute addres of a loaded library.
@@ -136,11 +128,19 @@ namespace Sentry.Unity
                             continue;
                         }
 
-                        // First, try to find the image among loaded one, otherwise create a dummy one.
+                        // First, try to find the image among the loaded ones, otherwise create a dummy one.
                         mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUUID(info.Image.DebugId), mainImageUUID))?.Image;
                         mainLibImage ??= new DebugImage
                         {
-                            Type = _sentryUnityInfo.Platform,
+                            Type = Application.platform switch
+                            {
+                                RuntimePlatform.Android => "elf",
+                                RuntimePlatform.IPhonePlayer => "macho",
+                                RuntimePlatform.OSXPlayer => "macho",
+                                RuntimePlatform.LinuxPlayer => "elf",
+                                RuntimePlatform.WindowsPlayer => "pe",
+                                _ => "unknown"
+                            },
                             // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
                             // A null/missing `CodeFile` however would lead to a processing error in sentry.
                             // Since the code file is not strictly necessary for processing, we just fall back to
@@ -213,7 +213,7 @@ namespace Sentry.Unity
             public bool ContainsAddress(ulong address) => StartAddress <= address && address <= EndAddress;
         }
 
-        private static IDiagnosticLogger? _logger;
+        private static IDiagnosticLogger? Logger;
 
         private static readonly Lazy<List<DebugImageInfo>> DebugImagesSorted = new(() =>
         {
@@ -228,14 +228,14 @@ namespace Sentry.Unity
                 {
                     if (image.ImageSize is null)
                     {
-                        _logger?.Log(SentryLevel.Debug,
+                        Logger?.Log(SentryLevel.Debug,
                             "Skipping debug image '{0}' (CodeId {1} | DebugId: {2}) because its size is NULL",
                             null, image.CodeFile, image.CodeId, image.DebugId);
                         continue;
                     }
 
                     var info = new DebugImageInfo(image);
-                    int i = 0;
+                    var i = 0;
                     for (; i < result.Count; i++)
                     {
                         if (info.StartAddress < result[i].StartAddress)
@@ -246,7 +246,7 @@ namespace Sentry.Unity
                     }
                     result.Insert(i, info);
 
-                    _logger?.Log(SentryLevel.Debug,
+                    Logger?.Log(SentryLevel.Debug,
                         "Found debug image '{0}' (CodeId {1} | DebugId: {2}) with addresses between {3:X8} and {4:X8}",
                         null, image.CodeFile, image.CodeId, image.DebugId, info.StartAddress, info.EndAddress);
                 }
@@ -259,11 +259,11 @@ namespace Sentry.Unity
             var list = DebugImagesSorted.Value;
 
             // Manual binary search implementation on "value in range".
-            int lowerBound = 0;
-            int upperBound = list.Count - 1;
+            var lowerBound = 0;
+            var upperBound = list.Count - 1;
             while (lowerBound <= upperBound)
             {
-                int mid = (lowerBound + upperBound) / 2;
+                var mid = (lowerBound + upperBound) / 2;
                 var info = list[mid];
 
                 if (info.StartAddress <= instructionAddress)

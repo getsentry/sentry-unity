@@ -1,12 +1,6 @@
 using System;
-using System.IO;
 using System.ComponentModel;
-using System.Diagnostics.Tracing;
-using System.Threading.Tasks;
-using System.Xml;
 using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
-using UnityEngine;
 
 namespace Sentry.Unity
 {
@@ -36,6 +30,11 @@ namespace Sentry.Unity
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Init(SentryUnityOptions options)
         {
+            if (UnitySdk is not null)
+            {
+                options.DiagnosticLogger?.LogWarning("The SDK has already been initialized.");
+            }
+
             UnitySdk = SentryUnitySdk.Init(options);
         }
 

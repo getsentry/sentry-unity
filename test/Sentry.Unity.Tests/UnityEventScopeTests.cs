@@ -15,7 +15,7 @@ using Object = UnityEngine.Object;
 // TODO do we need a real (working) DSN in these tests?
 namespace Sentry.Unity.Tests
 {
-    public sealed class UnityEventProcessorThreadingTests
+    public sealed class UnityEventProcessorThreadingTests : DisabledSelfInitializationTests
     {
         private GameObject _gameObject = null!;
         private TestLogger _testLogger = null!;
@@ -35,6 +35,11 @@ namespace Sentry.Unity.Tests
         public void TearDown()
         {
             Object.Destroy(_gameObject);
+
+            if (SentrySdk.IsEnabled)
+            {
+                SentryUnity.Close();
+            }
         }
 
         public string FormatLogs(List<(SentryLevel, string, Exception?)> logs)
