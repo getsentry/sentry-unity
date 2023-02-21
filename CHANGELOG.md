@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Feature
+
+- Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
+
 ### Fixes
 
 - Preventing `LoggingIntegration` from registering multiple times ([#1178](https://github.com/getsentry/sentry-unity/pull/1178))
