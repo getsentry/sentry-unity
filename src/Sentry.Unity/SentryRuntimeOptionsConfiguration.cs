@@ -7,7 +7,7 @@ namespace Sentry.Unity
         /// <summary>
         /// Called at the player startup by SentryInitialization.
         /// You can alter configuration for the C# error handling and also
-        /// native error handling in platforms other than iOS, macOS and Android.
+        /// native error handling in platforms **other** than iOS, macOS and Android.
         /// </summary>
         /// <seealso cref="SentryBuildtimeOptionsConfiguration"/>
         public abstract void Configure(SentryUnityOptions options);

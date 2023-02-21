@@ -32,8 +32,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             EditorGUILayout.Space();
 
-            options.OptionsConfiguration = OptionsConfigurationItem.Display(
-                options.OptionsConfiguration,
+            options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
+                options.RuntimeOptionsConfiguration,
                 "Runtime Options Script",
                 "RuntimeOptionsConfiguration"
             );
@@ -100,11 +100,29 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             template.AppendFormat("[CreateAssetMenu(fileName = \"{0}\", menuName = \"Sentry/{1}\", order = 999)]\n", SentryAssetPath(scriptName), scriptName);
             template.AppendFormat("public class {0} : {1}\n", scriptName, typeof(T).FullName);
             template.AppendLine("{");
-            template.AppendLine("    /// See base class for documentation.");
+
+            if (typeof(T) == typeof(SentryBuildtimeOptionsConfiguration))
+            {
+                template.AppendLine("    /// Called during app build. Changes made here will affect build-time processing, symbol upload, etc.");
+                template.AppendLine("    /// Additionally, because iOS, macOS and Android native error handling is configured at build time,");
+                template.AppendLine("    /// you can make changes to these options here.");
+            }
+            else
+            {
+                template.AppendLine("    /// Called at the player startup by SentryInitialization.");
+                template.AppendLine("    /// You can alter configuration for the C# error handling and also");
+                template.AppendLine("    /// native error handling in platforms **other** than iOS, macOS and Android.");
+            }
+
             template.AppendLine("    /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration");
             template.AppendFormat("    public override void Configure(SentryUnityOptions options{0})\n",
                                   typeof(T) == typeof(SentryBuildtimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
             template.AppendLine("    {");
+            if (typeof(T) != typeof(SentryBuildtimeOptionsConfiguration))
+            {
+                template.AppendLine("        // Note that changes to the options here will **not** affect iOS, macOS and Android events. (i.e.  i.e. environment and release)");
+                template.AppendLine("        // Take a look at `SentryBuildTimeOptionsConfiguration` instead.");
+            }
             template.AppendLine("        // TODO implement");
             template.AppendLine("    }");
             template.AppendLine("}");
@@ -153,7 +171,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             else
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.OptionsConfiguration ??= optionsConfigurationObject as SentryRuntimeOptionsConfiguration;
+                options.RuntimeOptionsConfiguration ??= optionsConfigurationObject as SentryRuntimeOptionsConfiguration;
             }
         }
     }
