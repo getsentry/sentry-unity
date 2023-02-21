@@ -1,9 +1,12 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 using Sentry.Extensibility;
+using Sentry.Unity.Tests.SharedClasses;
+using UnityEditor.PackageManager;
 
 namespace Sentry.Unity.Tests
 {
@@ -14,7 +17,7 @@ namespace Sentry.Unity.Tests
         {
             if (SentrySdk.IsEnabled)
             {
-                SentrySdk.Close();
+                SentryUnity.Close();
             }
         }
 
@@ -82,6 +85,25 @@ namespace Sentry.Unity.Tests
             SentryUnity.Init(options);
 
             Assert.IsFalse(SentrySdk.IsEnabled);
+        }
+
+        [Test]
+        public void Init_MultipleTimes_LogsWarning()
+        {
+            var testLogger = new TestLogger();
+            var options = new SentryUnityOptions
+            {
+                Debug = true,
+                Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
+                DiagnosticLogger = testLogger,
+            };
+
+            SentryUnity.Init(options);
+            SentryUnity.Init(options);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Warning &&
+                log.message.Contains("The SDK has already been initialized.")));
         }
     }
 }

@@ -18,7 +18,16 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [SetUp]
-        public new void Setup() => _fixture = new Fixture();
+        public void SetUp() => _fixture = new Fixture();
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (SentrySdk.IsEnabled)
+            {
+                SentryUnity.Close();
+            }
+        }
 
         [Test]
         [TestCase(ScreenshotQuality.High, 1920)]

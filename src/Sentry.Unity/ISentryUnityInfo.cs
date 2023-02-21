@@ -5,7 +5,6 @@ namespace Sentry.Unity
     public interface ISentryUnityInfo
     {
         public bool IL2CPP { get; }
-        public string? Platform { get; }
         public Il2CppMethods? Il2CppMethods { get; }
     }
 
