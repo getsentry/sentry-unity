@@ -140,7 +140,7 @@ Let's outline the needed steps for `UPM` package development flow
     * `Runtime` - `Sentry.Unity.Tests.dll`
 * open `samples/unity-of-bugs` project in `Unity`, then `Scenes/BugFarmScene` scene
 * configure `Sentry Unity (dev)` package
-  * on the tab `Tools`, select `Sentry` and insert your `DSN` or [Sentry SDK](https://sentry.io/settings/sentry-sdks/projects/sentry-unity/) one `https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417`
+  * on the tab `Tools`, select `Sentry` and insert your `DSN` or [Sentry SDK](https://sentry.io/settings/sentry-sdks/projects/sentry-unity/) one `https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880`
   * configure other settings for your needs
 * run the project in `Unity` via clicking `Play`
 * click `ThrowNull` or any other button and check errors in `Sentry` web UI
