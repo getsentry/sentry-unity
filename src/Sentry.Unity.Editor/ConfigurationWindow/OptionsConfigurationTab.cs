@@ -120,7 +120,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             template.AppendLine("    {");
             if (typeof(T) != typeof(SentryBuildTimeOptionsConfiguration))
             {
-                template.AppendLine("        // Note that changes to the options here will **not** affect iOS, macOS and Android events. (i.e.  i.e. environment and release)");
+                template.AppendLine("        // Note that changes to the options here will **not** affect iOS, macOS and Android events. (i.e. environment and release)");
                 template.AppendLine("        // Take a look at `SentryBuildTimeOptionsConfiguration` instead.");
             }
             template.AppendLine("        // TODO implement");
