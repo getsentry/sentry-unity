@@ -36,7 +36,7 @@ namespace Sentry.Unity
                 writer.WriteString("scale", Scale);
             }
 
-            if (Active is {} active)
+            if (Active is { } active)
             {
                 writer.WriteString("active", active.ToString());
             }
