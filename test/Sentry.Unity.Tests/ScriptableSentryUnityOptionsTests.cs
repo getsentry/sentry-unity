@@ -114,7 +114,7 @@ namespace Sentry.Unity.Tests
         {
             var optionsConfiguration = ScriptableObject.CreateInstance<TestOptionsConfiguration>();
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            scriptableOptions.OptionsConfiguration = optionsConfiguration;
+            scriptableOptions.RuntimeOptionsConfiguration = optionsConfiguration;
 
             scriptableOptions.ToSentryUnityOptions(isBuilding);
 
