@@ -10,6 +10,7 @@ public class BuildTimeOptionsConfiguration : Sentry.Unity.SentryBuildTimeOptions
     /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration
     public override void Configure(SentryUnityOptions options, SentryCliOptions cliOptions)
     {
-        // TODO implement
+        Debug.Log("SentryBuildTimeOptionsConfiguration::Configure() called");
+        Debug.Log("SentryBuildTimeOptionsConfiguration::Configure() finished");
     }
 }
