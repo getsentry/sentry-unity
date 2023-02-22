@@ -22,7 +22,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 "This allows you to change configuration otherwise unavailable from the Editor UI, e.g. set a custom BeforeSend callback." +
                 "\n" +
                 "\n" +
-                "Use 'Buildtime Options Script' in case you need to change build-time behavior, e.g. specify custom Sentry-CLI options " +
+                "Use 'BuildTime Options Script' in case you need to change build-time behavior, e.g. specify custom Sentry-CLI options " +
                 "or change settings for native SDKs that start before the managed layer does (such as Android, iOS, macOS).",
                 MessageType.Info);
 
@@ -40,8 +40,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             options.BuildtimeOptionsConfiguration = OptionsConfigurationItem.Display(
                 options.BuildtimeOptionsConfiguration,
-                "Buildtime Options Script",
-                "BuildtimeOptionsConfiguration"
+                "Build Time Options Script",
+                "BuildTimeOptionsConfiguration"
             );
         }
     }
