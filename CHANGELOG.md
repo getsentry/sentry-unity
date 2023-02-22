@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Removed `Override Sentry URL` from editor window ([#1188](https://github.com/getsentry/sentry-unity/pull/1188))
+  - The option is still available from within the `SentryBuildTimeOptionsConfiguration`
+
 ### Feature
 
 - Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
