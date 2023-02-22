@@ -49,7 +49,7 @@ namespace Sentry.Unity
 
         [field: SerializeField] public bool AttachViewHierarchy { get; set; } = false;
         [field: SerializeField] public int MaxViewHierarchyRootObjects { get; set; } = 100;
-        [field: SerializeField] public int MaxViewHierarchyChildCount { get; set; } = 20;
+        [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
         [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
 
         [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
@@ -125,7 +125,7 @@ namespace Sentry.Unity
                 ScreenshotCompression = ScreenshotCompression,
                 AttachViewHierarchy = AttachViewHierarchy,
                 MaxViewHierarchyRootObjects = MaxViewHierarchyRootObjects,
-                MaxViewHierarchyChildCount = MaxViewHierarchyChildCount,
+                MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
                 MaxViewHierarchyDepth = MaxViewHierarchyDepth,
                 MaxBreadcrumbs = MaxBreadcrumbs,
                 ReportAssembliesMode = ReportAssembliesMode,

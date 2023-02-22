@@ -136,11 +136,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                       "\nDefault: 100"),
                     options.MaxViewHierarchyRootObjects);
 
-                options.MaxViewHierarchyChildCount = EditorGUILayout.IntField(
-                    new GUIContent("Max Child Count", "Maximum number of children objects on each GameObject" +
+                options.MaxViewHierarchyObjectChildCount = EditorGUILayout.IntField(
+                    new GUIContent("Max Child Count Per Object", "Maximum number of children objects on each GameObject" +
                                                    "to get captured." +
                                                       "\nDefault: 20"),
-                    options.MaxViewHierarchyChildCount);
+                    options.MaxViewHierarchyObjectChildCount);
 
                 options.MaxViewHierarchyDepth = EditorGUILayout.IntField(
                     new GUIContent("Max Depth", "Maximum depth of the hierarchy to get captured." +

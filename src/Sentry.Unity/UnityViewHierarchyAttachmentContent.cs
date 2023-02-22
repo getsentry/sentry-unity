@@ -40,7 +40,7 @@ namespace Sentry.Unity
 
             var viewHierarchy = CreateViewHierarchy(
                 _options.MaxViewHierarchyRootObjects,
-                _options.MaxViewHierarchyChildCount,
+                _options.MaxViewHierarchyObjectChildCount,
                 _options.MaxViewHierarchyDepth);
             viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
 

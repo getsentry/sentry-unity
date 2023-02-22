@@ -86,7 +86,7 @@ namespace Sentry.Unity
         /// <summary>
         /// Try to attach the current scene's hierarchy.
         /// </summary>
-        public int MaxViewHierarchyChildCount { get; set; } = 20;
+        public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
 
         /// <summary>
         /// Try to attach the current scene's hierarchy.
