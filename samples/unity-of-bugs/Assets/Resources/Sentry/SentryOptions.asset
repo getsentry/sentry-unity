@@ -47,6 +47,8 @@ MonoBehaviour:
   <MacosNativeSupportEnabled>k__BackingField: 1
   <LinuxNativeSupportEnabled>k__BackingField: 1
   <Il2CppLineNumberSupportEnabled>k__BackingField: 1
+  <AnrDetectionEnabled>k__BackingField: 1
+  <AnrTimeout>k__BackingField: 5000
   <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: 407b4d5f2fef2c845bf2a3dcdf6b00fb,
     type: 2}
   <BuildtimeOptionsConfiguration>k__BackingField: {fileID: 11400000, guid: 6bcc81a646c08ce439ab03805d477458,

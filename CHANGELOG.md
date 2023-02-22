@@ -11,6 +11,10 @@
 - Preventing `LoggingIntegration` from registering multiple times ([#1178](https://github.com/getsentry/sentry-unity/pull/1178))
 - Fixed the logging integration only capturing tags and missing the message ([#1150](https://github.com/getsentry/sentry-unity/pull/1150))
 
+### Features
+
+- Added ANR options to the editor window and made ANR timeout accessible on the options object ([#1181](https://github.com/getsentry/sentry-unity/pull/1181))
+
 ### Dependencies
 
 - Bump Java SDK from v6.12.1 to v6.14.0 ([#1156](https://github.com/getsentry/sentry-unity/pull/1156), [#1171](https://github.com/getsentry/sentry-unity/pull/1171), [#1184](https://github.com/getsentry/sentry-unity/pull/1184))

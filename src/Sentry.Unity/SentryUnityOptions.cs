@@ -89,6 +89,11 @@ namespace Sentry.Unity
         public Dictionary<LogType, bool> AddBreadcrumbsForLogType { get; set; }
 
         /// <summary>
+        /// The duration in [ms] for how long the game has to be unresponsive before an ANR event is reported.
+        /// </summary>
+        public TimeSpan AnrTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;
