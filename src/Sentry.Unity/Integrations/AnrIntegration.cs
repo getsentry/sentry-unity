@@ -58,7 +58,7 @@ namespace Sentry.Unity
         {
             MonoBehaviour = monoBehaviour;
             Logger = logger;
-            DetectionTimeoutMs = detectionTimeout.Milliseconds;
+            DetectionTimeoutMs = (int)detectionTimeout.TotalMilliseconds;
             SleepIntervalMs = Math.Max(1, DetectionTimeoutMs / 5);
 
             MonoBehaviour.ApplicationPausing += () => Paused = true;
