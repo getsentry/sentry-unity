@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Removed `Override Sentry URL` from editor window ([#1188](https://github.com/getsentry/sentry-unity/pull/1188))
+  - The option is still available from within the `SentryBuildTimeOptionsConfiguration`
+
 ### Feature
 
 - Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
@@ -10,6 +15,10 @@
 
 - Preventing `LoggingIntegration` from registering multiple times ([#1178](https://github.com/getsentry/sentry-unity/pull/1178))
 - Fixed the logging integration only capturing tags and missing the message ([#1150](https://github.com/getsentry/sentry-unity/pull/1150))
+
+### Features
+
+- Added ANR options to the editor window and made ANR timeout accessible on the options object ([#1181](https://github.com/getsentry/sentry-unity/pull/1181))
 
 ### Dependencies
 

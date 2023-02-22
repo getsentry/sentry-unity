@@ -59,6 +59,14 @@ namespace Sentry.Unity.Editor
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
+            EditorGUILayout.LabelField("Application Not Responding", EditorStyles.boldLabel);
+            EditorGUILayout.Toggle("Enable ANR Detection", options.AnrDetectionEnabled);
+            EditorGUILayout.IntField("ANR Timeout [ms]", options.AnrTimeout);
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
             EditorGUILayout.Toggle("iOS Native Support", options.IosNativeSupportEnabled);
             EditorGUILayout.Toggle("Android Native Support", options.AndroidNativeSupportEnabled);
             EditorGUILayout.Toggle("Windows Native Support", options.WindowsNativeSupportEnabled);

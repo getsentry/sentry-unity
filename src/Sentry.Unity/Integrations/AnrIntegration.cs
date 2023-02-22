@@ -28,11 +28,15 @@ namespace Sentry.Unity
                 {
                     if (options.MultiThreading)
                     {
-                        Watchdog = new AnrWatchDogMultiThreaded(options.DiagnosticLogger, _monoBehaviour);
+                        Watchdog = new AnrWatchDogMultiThreaded(options.DiagnosticLogger,
+                            _monoBehaviour,
+                            options.AnrTimeout);
                     }
                     else
                     {
-                        Watchdog = new AnrWatchDogSingleThreaded(options.DiagnosticLogger, _monoBehaviour);
+                        Watchdog = new AnrWatchDogSingleThreaded(options.DiagnosticLogger,
+                            _monoBehaviour,
+                            options.AnrTimeout);
                     }
                 }
             }
@@ -50,11 +54,11 @@ namespace Sentry.Unity
         internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
         protected bool Paused { get; private set; } = false;
 
-        internal AnrWatchDog(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, int detectionTimeoutMilliseconds = 5000)
+        internal AnrWatchDog(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, TimeSpan detectionTimeout)
         {
             MonoBehaviour = monoBehaviour;
             Logger = logger;
-            DetectionTimeoutMs = detectionTimeoutMilliseconds;
+            DetectionTimeoutMs = detectionTimeout.Milliseconds;
             SleepIntervalMs = Math.Max(1, DetectionTimeoutMs / 5);
 
             MonoBehaviour.ApplicationPausing += () => Paused = true;
@@ -85,8 +89,8 @@ namespace Sentry.Unity
         private bool _stop;
         private readonly Thread _thread = null!;
 
-        internal AnrWatchDogMultiThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, int detectionTimeoutMilliseconds = 5000)
-          : base(logger, monoBehaviour, detectionTimeoutMilliseconds)
+        internal AnrWatchDogMultiThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, TimeSpan detectionTimeout)
+          : base(logger, monoBehaviour, detectionTimeout)
         {
             _thread = new Thread(Run)
             {
@@ -164,8 +168,8 @@ namespace Sentry.Unity
         private readonly Stopwatch _watch = new();
         private bool _stop;
 
-        internal AnrWatchDogSingleThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, int detectionTimeoutMilliseconds = 5000)
-         : base(logger, monoBehaviour, detectionTimeoutMilliseconds)
+        internal AnrWatchDogSingleThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, TimeSpan detectionTimeout)
+         : base(logger, monoBehaviour, detectionTimeout)
         {
             // Check the UI status periodically by running a coroutine on the UI thread and checking the elapsed time
             _watch.Start();
