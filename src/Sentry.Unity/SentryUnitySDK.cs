@@ -11,7 +11,7 @@ namespace Sentry.Unity
     {
         private readonly SentryUnityOptions _options;
         private IDisposable _dotnetSdk = null!;
-        private FileStream _lockFile = null!;
+        private FileStream? _lockFile;
 
         private SentryUnitySdk(SentryUnityOptions options)
         {
@@ -96,7 +96,7 @@ namespace Sentry.Unity
             try
             {
                 // We don't really need to close, Windows would release the lock anyway, but let's be nice.
-                _lockFile.Close();
+                _lockFile?.Close();
             }
             catch (Exception ex)
             {
