@@ -7,7 +7,7 @@
 - Removed `Override Sentry URL` from editor window ([#1188](https://github.com/getsentry/sentry-unity/pull/1188))
   - The option is still available from within the `SentryBuildTimeOptionsConfiguration`
 - Renamed `SentryBuiltimeOptionsConfiguration` to `SentryBuilTimeOptionsConfiguration` ([#1187](https://github.com/getsentry/sentry-unity/pull/1187))
-If you make use of the programmatic build time configuration, you will need to update your implementation with the base class
+  - If you make use of the programmatic build time configuration, you will need to update your implementation with the base class
 
 ### Feature
 
