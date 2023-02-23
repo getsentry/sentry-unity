@@ -29,9 +29,11 @@ namespace Sentry.Unity
         [field: SerializeField] public string? Dsn { get; set; }
         [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
         [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
-        [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
 
-        [field: SerializeField] public bool PerformanceAutoInstrumentationEnabled { get; set; } = false;
+        [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
+        [field: SerializeField] public bool AutoStartupTraces { get; set; } = true;
+        [field: SerializeField] public bool AutoSceneLoadTraces { get; set; } = true;
+        [field: SerializeField] public bool AutoAwakeTraces { get; set; } = false;
 
         [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
 
@@ -117,6 +119,8 @@ namespace Sentry.Unity
                 CaptureInEditor = CaptureInEditor,
                 EnableLogDebouncing = EnableLogDebouncing,
                 TracesSampleRate = TracesSampleRate,
+                AutoStartupTraces = AutoStartupTraces,
+                AutoSceneLoadTraces = AutoSceneLoadTraces,
                 AutoSessionTracking = AutoSessionTracking,
                 AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
                 AttachStacktrace = AttachStacktrace,
@@ -143,7 +147,7 @@ namespace Sentry.Unity
                 MacosNativeSupportEnabled = MacosNativeSupportEnabled,
                 LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
                 Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
-                PerformanceAutoInstrumentationEnabled = PerformanceAutoInstrumentationEnabled,
+                PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
             };
 
             if (!string.IsNullOrWhiteSpace(ReleaseOverride))

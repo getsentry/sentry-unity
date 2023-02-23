@@ -31,6 +31,16 @@ namespace Sentry.Unity
         public bool Enabled { get; set; } = true;
 
         /// <summary>
+        /// "Whether the SDK should automatically create traces during startup."
+        /// </summary>
+        public bool AutoStartupTraces { get; set; } = true;
+
+        /// <summary>
+        /// "Whether the SDK should automatically create traces when loading scenes."
+        /// </summary>
+        public bool AutoSceneLoadTraces { get; set; } = true;
+
+        /// <summary>
         /// Whether Sentry events should be captured while in the Unity Editor.
         /// </summary>
         // Lower entry barrier, likely set to false after initial setup.
