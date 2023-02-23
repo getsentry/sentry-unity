@@ -9,6 +9,7 @@
 
 ### Feature
 
+- Added Performance Integration options to editor window ([#1198](https://github.com/getsentry/sentry-unity/pull/1198))
 - Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
 
 ### Fixes
