@@ -23,7 +23,7 @@ namespace Sentry.Unity.Editor.Native
                 return;
             }
 
-            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
             var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 

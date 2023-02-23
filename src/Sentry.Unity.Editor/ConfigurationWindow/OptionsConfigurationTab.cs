@@ -38,8 +38,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 "RuntimeOptionsConfiguration"
             );
 
-            options.BuildtimeOptionsConfiguration = OptionsConfigurationItem.Display(
-                options.BuildtimeOptionsConfiguration,
+            options.BuildTimeOptionsConfiguration = OptionsConfigurationItem.Display(
+                options.BuildTimeOptionsConfiguration,
                 "Build Time Options Script",
                 "BuildTimeOptionsConfiguration"
             );
@@ -166,7 +166,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (isEditorScript)
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.BuildtimeOptionsConfiguration ??= optionsConfigurationObject as SentryBuildTimeOptionsConfiguration;
+                options.BuildTimeOptionsConfiguration ??= optionsConfigurationObject as SentryBuildTimeOptionsConfiguration;
             }
             else
             {

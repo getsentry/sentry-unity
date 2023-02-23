@@ -4,12 +4,12 @@ using Sentry.Unity.Editor;
 using UnityEngine;
 using UnityEditor;
 
-[CreateAssetMenu(fileName = "Assets/Resources/Sentry/BuildtimeOptions.cs", menuName = "Sentry/BuildtimeOptions", order = 999)]
-public class BuildtimeOptions : SentryBuildtimeOptionsConfiguration
+[CreateAssetMenu(fileName = "Assets/Resources/Sentry/BuildTimeOptions.cs", menuName = "Sentry/BuildTimeOptions", order = 999)]
+public class BuildTimeOptions : SentryBuildTimeOptionsConfiguration
 {
     public override void Configure(SentryUnityOptions options, SentryCliOptions cliOptions)
     {
-        Debug.Log("Sentry: BuildtimeOptions::Configure() called");
+        Debug.Log("Sentry: BuildTimeOptions::Configure() called");
 
         switch (EditorUserBuildSettings.selectedBuildTargetGroup)
         {
@@ -38,6 +38,6 @@ public class BuildtimeOptions : SentryBuildtimeOptionsConfiguration
         cliOptions.Project = "sentry-unity";
         cliOptions.Auth = "dummy-token";
 
-        Debug.Log("Sentry: BuildtimeOptions::Configure() finished");
+        Debug.Log("Sentry: BuildTimeOptions::Configure() finished");
     }
 }

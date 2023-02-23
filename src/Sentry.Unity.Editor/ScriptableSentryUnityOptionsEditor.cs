@@ -81,7 +81,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.LabelField("Options Configuration", EditorStyles.boldLabel);
             EditorGUILayout.ObjectField("Runtime Configuration", options.OptionsConfiguration,
                 typeof(SentryRuntimeOptionsConfiguration), false);
-            EditorGUILayout.ObjectField("Buildtime Configuration", options.BuildtimeOptionsConfiguration,
+            EditorGUILayout.ObjectField("Build Time Configuration", options.BuildTimeOptionsConfiguration,
                 typeof(SentryBuildTimeOptionsConfiguration), false);
 
             EditorGUILayout.Space();

@@ -39,9 +39,9 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 OptionsConfigurationItem.SetScript(value);
             }
 
-            if (args.TryGetValue("buildtimeOptionsScript", out value))
+            if (args.TryGetValue("buildTimeOptionsScript", out value))
             {
-                Debug.LogFormat("{0}: Configuring Buildtime Options Script to {1}", functionName, value);
+                Debug.LogFormat("{0}: Configuring Build Time Options Script to {1}", functionName, value);
                 OptionsConfigurationItem.SetScript(value);
             }
 

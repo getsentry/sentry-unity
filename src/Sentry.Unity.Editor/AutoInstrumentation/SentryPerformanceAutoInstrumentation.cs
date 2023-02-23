@@ -15,7 +15,7 @@ namespace Sentry.Unity.Editor
         public int callbackOrder { get; }
         public void OnPostBuildPlayerScriptDLLs(BuildReport report)
         {
-            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
             if (options == null)
             {
                 return;
