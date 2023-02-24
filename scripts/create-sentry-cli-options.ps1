@@ -50,8 +50,9 @@ If (-not(Test-Path -Path $assetPath))
 $assetPath += "SentryCliOptions.asset"
 If (-not(Test-Path -Path $assetPath))
 {
-
+  Write-Output "Creating asset file."
   New-Item $assetPath
 }
 
+Write-Output "Writing content to file."
 Set-Content $assetPath $assetContent
