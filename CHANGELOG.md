@@ -13,6 +13,7 @@
 
 ### Fixes
 
+- The SDK no longer logs a warning due to a missing log file on non-windows player platforms ([#1195](https://github.com/getsentry/sentry-unity/pull/1195))
 - Preventing `LoggingIntegration` from registering multiple times ([#1178](https://github.com/getsentry/sentry-unity/pull/1178))
 - Fixed the logging integration only capturing tags and missing the message ([#1150](https://github.com/getsentry/sentry-unity/pull/1150))
 
