@@ -1,16 +1,22 @@
 Set-StrictMode -Version latest
 
+Write-Output "Creating Sentry CLI Options"
+
 $meta_path = "$PSScriptRoot/../package-dev/Runtime/Sentry.Unity.dll.meta"
 $meta_content = Get-Content -Path $meta_path
 $guid = ([Regex]::Match($meta_content, '(?<=guid: )\S+'))
 
-if(!$guid.Success)
+if($guid.Success)
 {
-    Write-Error "Failed to retrieve the guid from '$meta_path'"
-    return
+  Write-Output "Successfully read GUID '$guid' from '$meta_path'"    
+}
+else 
+{
+  Write-Error "Failed to retrieve the guid from '$meta_path'"
+  return
 }
 
-$AssetContent = @"
+$assetContent = @"
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
@@ -22,7 +28,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 582302131, guid: $guid, type: 3}
+  m_Script: {fileID: 1079966944, guid: $guid, type: 3}
   m_Name: SentryCliOptions
   m_EditorClassIdentifier: 
   <UploadSymbols>k__BackingField: 1
@@ -34,16 +40,18 @@ MonoBehaviour:
   <Project>k__BackingField: sentry-unity
 "@
 
-$AssetPath = "$PSScriptRoot/../samples/unity-of-bugs/Assets/Plugins/Sentry/"
-If (-not(Test-Path -Path $AssetPath))
+$assetPath = "$PSScriptRoot/../samples/unity-of-bugs/Assets/Plugins/Sentry/"
+If (-not(Test-Path -Path $assetPath))
 {
-  New-Item $AssetPath -Type Directory
+  Write-Output "Creating directory at '$assetPath'"
+  New-Item $assetPath -Type Directory
 }
 
-$AssetPath += "SentryCliOptions.asset"
-If (-not(Test-Path -Path $AssetPath))
+$assetPath += "SentryCliOptions.asset"
+If (-not(Test-Path -Path $assetPath))
 {
-  New-Item $AssetPath
+
+  New-Item $assetPath
 }
 
-Set-Content $AssetPath $AssetContent
+Set-Content $assetPath $assetContent
