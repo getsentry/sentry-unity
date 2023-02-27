@@ -15,6 +15,7 @@
 
 ### Fixes
 
+- The SDK no longer logs a warning due to a missing log file on non-windows player platforms ([#1195](https://github.com/getsentry/sentry-unity/pull/1195))
 - Preventing `LoggingIntegration` from registering multiple times ([#1178](https://github.com/getsentry/sentry-unity/pull/1178))
 - Fixed the logging integration only capturing tags and missing the message ([#1150](https://github.com/getsentry/sentry-unity/pull/1150))
 
@@ -36,9 +37,9 @@
 - Bump .NET SDK from v3.26.2 to v3.28.1 ([#1164](https://github.com/getsentry/sentry-unity/pull/1164), [#1170](https://github.com/getsentry/sentry-unity/pull/1170), [#1172](https://github.com/getsentry/sentry-unity/pull/1172), [#1175](https://github.com/getsentry/sentry-unity/pull/1175))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3281)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.26.2...3.28.1)
-- Bump Cocoa SDK from v7.31.5 to v8.1.0 ([#1162](https://github.com/getsentry/sentry-unity/pull/1162))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#810)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.5...8.1.0)
+- Bump Cocoa SDK from v7.31.5 to v8.2.0 ([#1162](https://github.com/getsentry/sentry-unity/pull/1162), [#1199](https://github.com/getsentry/sentry-unity/pull/1199))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#820)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.5...8.2.0)
 
 ## 0.28.1
 

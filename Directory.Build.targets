@@ -489,6 +489,15 @@ void PrintFailedTests(XElement element)
     </Task>
   </UsingTask>
 
+  <!-- Checks if the environment variable 'SENTRY_AUTH_TOKEN' has been set and creates the SentryCliOptions.asset for the sample project
+       This is meant for developers - so they don't have to configure the CLI options after each clean checkout (or git clean).
+       Gets automatically run after 'DownloadNativeSDKs'
+       dotnet msbuild /t:SetupSampleSentryCliOptions src/Sentry.Unity -->
+  <Target Name="SetupSampleSentryCliOptions" AfterTargets="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(SENTRY_AUTH_TOKEN)' != ''">
+    <Message Importance="High" Text="Found environment variable 'SENTRY_AUTH_TOKEN'. Creating Sentry CLI options for sample project. " />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/create-sentry-cli-options.ps1&quot;"/>
+  </Target>
+
   <!--  Downloads native SDKs from the latest successful GitHub Actions workflow run.
         This is meant for developers - so that they don't have to compile the native SDK after each clean checkout (or git clean).
         Depends on your a GH CLI installation - https://cli.github.com/
@@ -514,5 +523,7 @@ void PrintFailedTests(XElement element)
     <!-- Download overwrites some files that then show up as changed in the IDE, even though there are no changes, e.g. only whitespace -->
     <Message Importance="High" Text="Restoring package-dev/Plugins to the latest git commit" />
     <Exec WorkingDirectory="$(RepoRoot)" Command="git restore package-dev/Plugins" />
+
+
   </Target>
 </Project>
