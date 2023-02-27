@@ -14,7 +14,6 @@ if($guid.Success)
 else 
 {
   Write-Error "Failed to retrieve the guid from '$meta_path'"
-  return
 }
 
 $assetContent = @"
