@@ -68,7 +68,7 @@ namespace Sentry.Unity.Tests
         {
             var options = new SentryUnityOptions
             {
-                Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417"
+                Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880"
             };
 
             SentryUnity.Init(options);
@@ -94,7 +94,7 @@ namespace Sentry.Unity.Tests
             var options = new SentryUnityOptions
             {
                 Debug = true,
-                Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417",
+                Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880",
                 DiagnosticLogger = testLogger,
             };
 

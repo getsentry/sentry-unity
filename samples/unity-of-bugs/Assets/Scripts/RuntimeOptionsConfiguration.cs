@@ -13,7 +13,7 @@ public class RuntimeOptionsConfiguration : Sentry.Unity.SentryRuntimeOptionsConf
         // Note that changes to the options here will **not** affect iOS, macOS and Android events. (i.e. environment and release)
         // Take a look at `SentryBuildTimeOptionsConfiguration` instead.
 
-        Debug.Log("SentryRuntimeOptionsConfiguration::Configure() called");
+        Debug.Log(nameof(RuntimeOptionsConfiguration) + "::Configure() called");
 
         // BeforeSend is only relevant at runtime. It wouldn't hurt to be set at build time, just wouldn't do anything.
         options.BeforeSend = sentryEvent =>
@@ -27,6 +27,6 @@ public class RuntimeOptionsConfiguration : Sentry.Unity.SentryRuntimeOptionsConf
             return sentryEvent;
         };
 
-        Debug.Log("SentryRuntimeOptionsConfiguration::Configure() finished");
+        Debug.Log(nameof(RuntimeOptionsConfiguration) + "::Configure() finished");
     }
 }

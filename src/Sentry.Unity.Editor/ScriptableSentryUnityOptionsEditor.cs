@@ -19,7 +19,15 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Toggle("Enable Sentry SDK", options.Enabled);
             EditorGUILayout.TextField("DSN", options.Dsn);
             EditorGUILayout.Toggle("Capture In Editor", options.CaptureInEditor);
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
             EditorGUILayout.FloatField("Traces Sample Rate", (float)options.TracesSampleRate);
+            EditorGUILayout.Toggle("Auto Startup Traces", options.AutoStartupTraces);
+            EditorGUILayout.Toggle("Auto Scene Load Traces", options.AutoSceneLoadTraces);
+            EditorGUILayout.Toggle("Attach Stacktrace", options.AutoAwakeTraces);
 
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
@@ -79,7 +87,7 @@ namespace Sentry.Unity.Editor
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Options Configuration", EditorStyles.boldLabel);
-            EditorGUILayout.ObjectField("Runtime Configuration", options.OptionsConfiguration,
+            EditorGUILayout.ObjectField("Runtime Configuration", options.RuntimeOptionsConfiguration,
                 typeof(SentryRuntimeOptionsConfiguration), false);
             EditorGUILayout.ObjectField("Build Time Configuration", options.BuildTimeOptionsConfiguration,
                 typeof(SentryBuildTimeOptionsConfiguration), false);

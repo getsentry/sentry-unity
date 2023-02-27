@@ -29,7 +29,7 @@ namespace Sentry.Unity.Tests
         {
             SentryUnity.Init(options =>
             {
-                options.Dsn = "https://94677106febe46b88b9b9ae5efd18a00@o447951.ingest.sentry.io/5439417";
+                options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
                 configure?.Invoke(options);
             });
 

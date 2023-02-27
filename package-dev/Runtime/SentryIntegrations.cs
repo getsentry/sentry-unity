@@ -23,10 +23,16 @@ namespace Sentry.Unity
             {
 // On WebGL the SDK initializes on BeforeScene so the Startup Tracing won't work properly. https://github.com/getsentry/sentry-unity/issues/1000
 #if !SENTRY_WEBGL
-                options.AddIntegration(new StartupTracingIntegration());
+                if (options.AutoStartupTraces)
+                {
+                    options.AddIntegration(new StartupTracingIntegration());
+                }
 #endif
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
-                options.AddIntegration(new SceneManagerTracingIntegration());
+                if (options.AutoSceneLoadTraces)
+                {
+                    options.AddIntegration(new SceneManagerTracingIntegration());
+                }
 #endif
             }
             else

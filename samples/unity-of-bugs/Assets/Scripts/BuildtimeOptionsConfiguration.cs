@@ -10,7 +10,13 @@ public class BuildTimeOptionsConfiguration : Sentry.Unity.SentryBuildTimeOptions
     /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration
     public override void Configure(SentryUnityOptions options, SentryCliOptions cliOptions)
     {
-        Debug.Log("SentryBuildTimeOptionsConfiguration::Configure() called");
-        Debug.Log("SentryBuildTimeOptionsConfiguration::Configure() finished");
+        Debug.Log(nameof(BuildTimeOptionsConfiguration) + "::Configure() called");
+
+        // Changes to the options object that will be used during build.
+        // This means you have access to the Sentry CLI options and also the options that affect the native layer
+        // on Android, iOS and macOS
+        // As an example: We use this as part of our integration tests here: https://github.com/getsentry/sentry-unity/blob/main/test/Scripts.Integration.Test/Editor/BuildTimeOptions.cs
+
+        Debug.Log(nameof(BuildTimeOptionsConfiguration) + "::Configure() finished");
     }
 }
