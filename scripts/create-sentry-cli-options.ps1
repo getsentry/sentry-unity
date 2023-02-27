@@ -1,4 +1,5 @@
 Set-StrictMode -Version latest
+$ErrorActionPreference = "Stop"
 
 Write-Output "Creating Sentry CLI Options"
 
