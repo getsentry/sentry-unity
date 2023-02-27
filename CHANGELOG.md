@@ -6,12 +6,10 @@
 
 - Removed `Override Sentry URL` from editor window ([#1188](https://github.com/getsentry/sentry-unity/pull/1188))
   - The option is still available from within the `SentryBuildTimeOptionsConfiguration`
+- Renamed `OptionsConfiguration` to `RuntimeOptionsConfiguration` on the ScriptableSentryOptions ([#1196](https://github.com/getsentry/sentry-unity/pull/1196))
+  - If you make use of programmatic runtime options configuration, you will need to reassign the scriptable object in the configuration tab
 - Renamed `SentryBuiltimeOptionsConfiguration` to `SentryBuilTimeOptionsConfiguration` ([#1187](https://github.com/getsentry/sentry-unity/pull/1187))
   - If you make use of the programmatic build time configuration, you will need to update your implementation with the base class
-
-### Feature
-
-- Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
 
 ### Fixes
 
@@ -21,6 +19,8 @@
 
 ### Features
 
+- Added Performance Integration options to editor window ([#1198](https://github.com/getsentry/sentry-unity/pull/1198))
+- Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
 - Added ANR options to the editor window and made ANR timeout accessible on the options object ([#1181](https://github.com/getsentry/sentry-unity/pull/1181))
 
 ### Dependencies
