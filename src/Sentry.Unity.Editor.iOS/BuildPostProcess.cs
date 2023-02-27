@@ -17,7 +17,7 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
             var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
             try

@@ -84,7 +84,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
         [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
-        [field: SerializeField] public SentryBuildtimeOptionsConfiguration? BuildtimeOptionsConfiguration { get; set; }
+        [field: SerializeField] public SentryBuildTimeOptionsConfiguration? BuildTimeOptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
         [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;

@@ -21,7 +21,7 @@ namespace Sentry.Unity.Editor
             }
 
 
-            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildtimeOptions();
+            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
 
             if (options is null)
             {

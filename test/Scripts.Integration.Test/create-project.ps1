@@ -24,7 +24,7 @@ RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$NewProjectPath", "
 Write-Host "Copying Editor scripts to integration project:"
 New-Item -Path "$NewProjectAssetsPath" -Name "Editor" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Editor/*" -Destination "$NewProjectAssetsPath/Editor/" `
-    -Exclude "BuildtimeOptions.cs"
+    -Exclude "BuildTimeOptions.cs"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scenes" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scenes/*" -Destination "$NewProjectAssetsPath/Scenes/"
 Write-Host " OK"
