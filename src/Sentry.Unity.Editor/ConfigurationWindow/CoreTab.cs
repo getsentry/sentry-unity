@@ -32,21 +32,40 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
 
-            GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
+            {
+                GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
 
-            options.TracesSampleRate = EditorGUILayout.Slider(
-                new GUIContent("Traces Sample Rate", "Indicates the percentage of transactions that are " +
-                                                     "captured. Setting this to 0 discards all trace data. " +
-                                                     "Setting this to 1.0 captures all."),
-                (float)options.TracesSampleRate, 0.0f, 1.0f);
+                options.TracesSampleRate = EditorGUILayout.Slider(
+                    new GUIContent("Traces Sample Rate", "Indicates the percentage of transactions that are " +
+                                                         "captured. Setting this to 0 discards all trace data. " +
+                                                         "Setting this to 1.0 captures all."),
+                    (float)options.TracesSampleRate, 0.0f, 1.0f);
 
-            EditorGUI.BeginDisabledGroup(options.TracesSampleRate <= 0);
+                EditorGUI.BeginDisabledGroup(options.TracesSampleRate <= 0);
 
-            GUILayout.Label("Experimental", EditorStyles.boldLabel);
-            options.PerformanceAutoInstrumentationEnabled = EditorGUILayout.Toggle(
-                new GUIContent("Auto Instrumentation", "To create transaction and spans automatically, " +
-                                                       "the SDK will modify the compiled assembly during a post build step."),
-                options.PerformanceAutoInstrumentationEnabled);
+                options.AutoStartupTraces = EditorGUILayout.Toggle(
+                    new GUIContent("Auto Startup Traces ", "Whether the SDK should automatically create " +
+                                                           "traces during startup. This integration is currently " +
+                                                           "unavailable on WebGL."),
+                    options.AutoStartupTraces);
+
+                options.AutoSceneLoadTraces = EditorGUILayout.Toggle(
+                    new GUIContent("Auto Scene Traces ", "Whether the SDK should automatically create traces " +
+                                                         "during scene loading. Requires Unity 2020.3 or newer."),
+                    options.AutoSceneLoadTraces);
+            }
+
+            EditorGUILayout.Space();
+
+            GUILayout.Label("Auto Instrumentation - Experimental", EditorStyles.boldLabel);
+
+            EditorGUILayout.HelpBox("The SDK will modify the compiled assembly during a post build step " +
+                                    "to create transaction and spans automatically.", MessageType.Info);
+
+            options.AutoAwakeTraces = EditorGUILayout.Toggle(
+                new GUIContent("Awake Calls", "Whether the SDK automatically captures all instances " +
+                                              "of Awake as Spans."),
+                options.AutoAwakeTraces);
 
             EditorGUI.EndDisabledGroup();
         }
