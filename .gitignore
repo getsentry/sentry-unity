@@ -47,6 +47,7 @@ package-dev/Editor/sentry-cli
 
 # Build output of Sentry.Unity
 sentry-unity/Assets/Plugins/Sentry/
+sentry-unity/Assets/Plugins/Sentry.meta
 sentry-unity/Assets/Editor/Sentry/
 
 # Native SDK files
