@@ -2,7 +2,7 @@ using UnityEngine;
 using Sentry.Unity;
 
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/RuntimeOptionsConfiguration.asset", menuName = "Sentry/RuntimeOptionsConfiguration", order = 999)]
-public class RuntimeOptionsConfiguration : Sentry.Unity.SentryRuntimeOptionsConfiguration
+public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfiguration
 {
     /// Called at the player startup by SentryInitialization.
     /// You can alter configuration for the C# error handling and also
@@ -13,7 +13,7 @@ public class RuntimeOptionsConfiguration : Sentry.Unity.SentryRuntimeOptionsConf
         // Note that changes to the options here will **not** affect iOS, macOS and Android events. (i.e. environment and release)
         // Take a look at `SentryBuildTimeOptionsConfiguration` instead.
 
-        Debug.Log(nameof(RuntimeOptionsConfiguration) + "::Configure() called");
+        Debug.Log(nameof(RuntimeConfiguration) + "::Configure() called");
 
         // BeforeSend is only relevant at runtime. It wouldn't hurt to be set at build time, just wouldn't do anything.
         options.BeforeSend = sentryEvent =>
@@ -27,6 +27,6 @@ public class RuntimeOptionsConfiguration : Sentry.Unity.SentryRuntimeOptionsConf
             return sentryEvent;
         };
 
-        Debug.Log(nameof(RuntimeOptionsConfiguration) + "::Configure() finished");
+        Debug.Log(nameof(RuntimeConfiguration) + "::Configure() finished");
     }
 }
