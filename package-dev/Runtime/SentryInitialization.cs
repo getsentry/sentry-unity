@@ -92,7 +92,7 @@ namespace Sentry.Unity
                 }
 
 #if !SENTRY_WEBGL
-                if (options.TracesSampleRate > 0.0f)
+                if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
                 {
                     options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.",
                         StartupTransactionOperation);
