@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Text;
 using UnityEditor;
@@ -18,30 +17,32 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 "The scriptable options configuration allows you to programmatically modify Sentry options." +
                 "\n" +
                 "\n" +
-                "You can use 'Runtime Options Script' to modify options just before Sentry SDK gets initialized. " +
-                "This allows you to change configuration otherwise unavailable from the Editor UI, e.g. set a custom BeforeSend callback." +
+                "You can use the 'Runtime Configuration Script' to modify options just before Sentry SDK gets " +
+                "initialized. This allows you to access options and functionality otherwise unavailable from the " +
+                "Editor UI, e.g. set a custom BeforeSend callback." +
                 "\n" +
                 "\n" +
-                "Use 'Build Time Options Script' in case you need to change build-time behavior, e.g. specify custom Sentry-CLI options " +
-                "or change settings for native SDKs that start before the managed layer does (such as Android, iOS, macOS).",
+                "Use the 'Build Time Configuration Script' in case you need to change build-time behavior, " +
+                "e.g. specify custom Sentry-CLI options or change settings for native SDKs that start before the " +
+                "managed layer does (such as Android, iOS, macOS).",
                 MessageType.Info);
 
             EditorGUILayout.HelpBox("Clicking the 'New' button will prompt you with selecting a location for " +
-                                    "your custom 'ScriptableOptionsConfiguration' script and automatically " +
+                                    "your custom 'SentryConfiguration' script and automatically " +
                                     "create a new asset instance.", MessageType.Info);
 
             EditorGUILayout.Space();
 
             options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
                 options.RuntimeOptionsConfiguration,
-                "Runtime Options Script",
-                "RuntimeOptionsConfiguration"
+                "Runtime Configuration Script",
+                "SentryRuntimeConfiguration"
             );
 
             options.BuildTimeOptionsConfiguration = OptionsConfigurationItem.Display(
                 options.BuildTimeOptionsConfiguration,
-                "Build Time Options Script",
-                "BuildTimeOptionsConfiguration"
+                "Build Time Configuration Script",
+                "SentryBuildTimeConfiguration"
             );
         }
     }
