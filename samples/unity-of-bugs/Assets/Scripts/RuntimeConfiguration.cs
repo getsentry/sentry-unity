@@ -1,7 +1,7 @@
 using UnityEngine;
 using Sentry.Unity;
 
-[CreateAssetMenu(fileName = "Assets/Resources/Sentry/RuntimeOptionsConfiguration.asset", menuName = "Sentry/RuntimeOptionsConfiguration", order = 999)]
+[CreateAssetMenu(fileName = "Assets/Resources/Sentry/RuntimeConfiguration.asset", menuName = "Sentry/RuntimeConfiguration", order = 999)]
 public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfiguration
 {
     /// Called at the player startup by SentryInitialization.

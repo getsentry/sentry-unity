@@ -1,7 +1,7 @@
 using UnityEngine;
 using Sentry.Unity;
 
-[CreateAssetMenu(fileName = "Assets/Resources/Sentry/BuildTimeOptionsConfiguration.asset", menuName = "Sentry/BuildTimeOptionsConfiguration", order = 999)]
+[CreateAssetMenu(fileName = "Assets/Resources/Sentry/BuildTimeConfiguration.asset", menuName = "Sentry/BuildTimeConfiguration", order = 999)]
 public class BuildTimeConfiguration : Sentry.Unity.SentryBuildTimeOptionsConfiguration
 {
     /// Called during app build. Changes made here will affect build-time processing, symbol upload, etc.
