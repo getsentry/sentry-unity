@@ -9,7 +9,7 @@ using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Editor.Tests
 {
-    public sealed class WizardJson
+    public sealed class WizardJson : SentryTestsBase
     {
         [Test]
         public void Step1Response()

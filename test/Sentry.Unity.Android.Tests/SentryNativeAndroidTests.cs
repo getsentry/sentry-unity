@@ -5,7 +5,7 @@ using Sentry.Unity;
 
 namespace Sentry.Unity.Android.Tests
 {
-    public class SentryNativeAndroidTests
+    public class SentryNativeAndroidTests : SentryTestsBase
     {
         private bool _reinstallCalled;
         private Action? _originalReinstallSentryNativeBackendStrategy;
@@ -16,7 +16,7 @@ namespace Sentry.Unity.Android.Tests
             => _fakeReinstallSentryNativeBackendStrategy = () => _reinstallCalled = true;
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _originalReinstallSentryNativeBackendStrategy =
                 Interlocked.Exchange(ref SentryNative.ReinstallSentryNativeBackendStrategy,

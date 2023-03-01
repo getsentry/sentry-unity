@@ -4,7 +4,7 @@ using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Editor.Tests
 {
-    public class SentryUnityVersionTests
+    public class SentryUnityVersionTests : SentryTestsBase
     {
         [Test]
         [TestCase("2019.4.39f1", "2019.4.39")]

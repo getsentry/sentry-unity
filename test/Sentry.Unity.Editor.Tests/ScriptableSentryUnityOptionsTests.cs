@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests
 {
-    public class ScriptableSentryUnityOptionsTests
+    public class ScriptableSentryUnityOptionsTests : SentryTestsBase
     {
         [Test]
         public void ScriptableSentryUnityOptions_Creation_AllPropertiesPresent()

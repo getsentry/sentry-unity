@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class UnityLoggerTests
+    public sealed class UnityLoggerTests : SentryTestsBase
     {
         [Test]
         [TestCase(SentryLevel.Debug, LogType.Log)]

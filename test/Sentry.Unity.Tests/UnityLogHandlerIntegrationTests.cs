@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class UnityLogHandlerIntegrationTests
+    public sealed class UnityLogHandlerIntegrationTests : SentryTestsBase
     {
         private class Fixture
         {
@@ -28,7 +28,7 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _fixture = new Fixture
             {

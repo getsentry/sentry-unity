@@ -6,14 +6,14 @@ using Sentry.Unity.Editor.Android;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
-    public class ProguardSetupTests
+    public class ProguardSetupTests : SentryTestsBase
     {
         private string _fakeProjectPath = null!;
         private string _gradleProjectPath = null!;
         private string _outputPath = null!;
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _gradleProjectPath = Path.Combine(_fakeProjectPath, "GradleProject");

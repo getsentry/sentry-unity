@@ -10,7 +10,7 @@ using UnityEditor.PackageManager;
 
 namespace Sentry.Unity.Tests
 {
-    public class SentryUnitySelfInitializationTests
+    public class SentryUnitySelfInitializationTests : SentryTestsBase
     {
         [TearDown]
         public void TearDown()

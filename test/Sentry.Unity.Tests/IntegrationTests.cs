@@ -10,7 +10,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class IntegrationTests
+    public sealed class IntegrationTests : SentryTestsBase
     {
         private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
         private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
@@ -19,7 +19,7 @@ namespace Sentry.Unity.Tests
         private string _identifyingEventValueAttribute = null!; // Set in setup
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _testHttpClientHandler = new TestHttpClientHandler("SetupTestHttpClientHandler");
             _eventMessage = Guid.NewGuid() + " Test Event";

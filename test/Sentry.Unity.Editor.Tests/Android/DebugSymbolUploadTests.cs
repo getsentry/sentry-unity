@@ -10,7 +10,7 @@ using UnityEditor;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
-    public class DebugSymbolUploadTests
+    public class DebugSymbolUploadTests : SentryTestsBase
     {
         public class Fixture
         {
@@ -41,7 +41,7 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _fixture = new Fixture();
             SetupFakeProject(_fixture.FakeProjectPath);

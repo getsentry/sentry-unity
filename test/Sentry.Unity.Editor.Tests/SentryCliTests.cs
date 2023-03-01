@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests
 {
-    public class SentryCliTests
+    public class SentryCliTests : SentryTestsBase
     {
         [Test]
         public void GetSentryCliPlatformName_UnrecognizedPlatform_ThrowsInvalidOperationException()

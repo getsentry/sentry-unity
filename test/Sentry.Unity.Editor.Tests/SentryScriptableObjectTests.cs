@@ -5,7 +5,7 @@ using UnityEditor;
 
 namespace Sentry.Unity.Editor.Tests
 {
-    public class SentryScriptableObjectTests
+    public class SentryScriptableObjectTests : SentryTestsBase
     {
         private string _tempPath = null!; // Assigned in Setup
 

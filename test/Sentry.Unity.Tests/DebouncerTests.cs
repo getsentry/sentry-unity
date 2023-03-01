@@ -9,7 +9,7 @@ namespace Sentry.Unity.Tests
     /// <summary>
     /// Testing debouncer in realtime.
     /// </summary>
-    public sealed class DebouncerTests
+    public sealed class DebouncerTests : SentryTestsBase
     {
         private readonly TimeSpan DefaultOffset = TimeSpan.FromMilliseconds(100);
 

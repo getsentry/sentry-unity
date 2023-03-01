@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Sentry.Unity.Tests
 {
     [TestFixture]
-    public class ScriptableSentryUnityOptionsTests
+    public class ScriptableSentryUnityOptionsTests : SentryTestsBase
     {
         private const string TestSentryOptionsFileName = "TestSentryOptions.json";
 
@@ -27,7 +27,7 @@ namespace Sentry.Unity.Tests
         }
 
         [SetUp]
-        public void Setup() => _fixture = new Fixture();
+        public new void SetUp() => _fixture = new Fixture();
         private Fixture _fixture = null!;
 
         [Test]

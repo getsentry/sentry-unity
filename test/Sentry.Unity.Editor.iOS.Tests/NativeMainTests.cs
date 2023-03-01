@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
-    public class NativeMainTests
+    public class NativeMainTests : SentryTestsBase
     {
         [Test]
         public void ContainsSentry_SentryAlreadyAdded_ReturnsTrue()

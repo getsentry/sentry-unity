@@ -7,7 +7,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Editor.Tests
 {
-    public sealed class EditorModeTests
+    public sealed class EditorModeTests : SentryTestsBase
     {
         [Test]
         public void ValidateDsn_WrongFormat_CreatesError()

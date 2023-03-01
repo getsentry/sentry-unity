@@ -5,7 +5,7 @@ using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class UnityBeforeSceneLoadIntegrationTests
+    public sealed class UnityBeforeSceneLoadIntegrationTests : SentryTestsBase
     {
         private class Fixture
         {
@@ -23,7 +23,7 @@ namespace Sentry.Unity.Tests
         private SentryOptions _sentryOptions = null!;
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _fixture = new Fixture();
             _hub = new TestHub();

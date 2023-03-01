@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.Editor.Tests
 {
-    public class Il2CppBuildPreProcessTests
+    public class Il2CppBuildPreProcessTests : SentryTestsBase
     {
         private string arguments = null!;
         private string resultingArguments = null!;

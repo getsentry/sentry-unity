@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
-    public class NativeOptionsTests
+    public class NativeOptionsTests : SentryTestsBase
     {
         [Test]
         public void GenerateOptions_NewSentryOptions_Compiles()

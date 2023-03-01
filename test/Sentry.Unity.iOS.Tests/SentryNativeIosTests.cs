@@ -11,12 +11,12 @@ namespace Sentry.Unity.iOS.Tests
         public Il2CppMethods? Il2CppMethods { get; }
     }
 
-    public class SentryNativeCocoaTests
+    public class SentryNativeCocoaTests : SentryTestsBase
     {
         private TestSentryUnityInfo _sentryUnityInfo = null!;
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _sentryUnityInfo = new TestSentryUnityInfo { IL2CPP = false };
         }

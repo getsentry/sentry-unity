@@ -3,7 +3,7 @@ using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Tests
 {
-    public class SentryUnityOptionsExtensionsTests
+    public class SentryUnityOptionsExtensionsTests : SentryTestsBase
     {
         private class Fixture
         {
@@ -25,7 +25,7 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = new();
 
         [SetUp]
-        public void SetUp() => _fixture = new Fixture();
+        public new void SetUp() => _fixture = new Fixture();
 
         [Test]
         public void Validate_OptionsDisabled_ReturnsFalse()

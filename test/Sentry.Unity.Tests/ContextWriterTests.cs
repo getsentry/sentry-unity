@@ -8,14 +8,14 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class ContextWriterTests
+    public sealed class ContextWriterTests : SentryTestsBase
     {
         private GameObject _gameObject = null!;
         private SentryMonoBehaviour _sentryMonoBehaviour = null!;
         private TestApplication _testApplication = null!;
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _gameObject = new GameObject("ContextWriterTest");
             _sentryMonoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();

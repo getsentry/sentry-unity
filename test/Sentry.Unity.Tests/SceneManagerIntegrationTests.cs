@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests
 {
-    public class SceneManagerIntegrationTests
+    public class SceneManagerIntegrationTests : SentryTestsBase
     {
         [Test]
         public void SceneLoaded_DisabledHub_NoCrumbAdded()

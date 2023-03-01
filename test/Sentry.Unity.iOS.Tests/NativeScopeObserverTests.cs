@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.iOS.Tests
 {
-    public class IosNativeScopeObserverTests
+    public class IosNativeScopeObserverTests : SentryTestsBase
     {
         [Test]
         public void GetTimestamp_ReturnStringConformsToISO8601()

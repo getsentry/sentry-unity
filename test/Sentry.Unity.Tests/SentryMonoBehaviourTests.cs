@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
-    public class SentryMonoBehaviourTests
+    public class SentryMonoBehaviourTests : SentryTestsBase
     {
         private class Fixture
         {
@@ -21,7 +21,7 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [SetUp]
-        public void SetUp() => _fixture = new Fixture();
+        public new void SetUp() => _fixture = new Fixture();
 
         [Test]
         public void OnApplicationPause_OnAndroid_ApplicationPausingTriggered()

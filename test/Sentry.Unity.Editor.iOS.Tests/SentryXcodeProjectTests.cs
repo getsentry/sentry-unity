@@ -7,7 +7,7 @@ using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
-    public class SentryXcodeProjectTests
+    public class SentryXcodeProjectTests : SentryTestsBase
     {
         private class NativeMainTest : INativeMain
         {
@@ -45,7 +45,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         private Fixture _fixture = new();
 
         [SetUp]
-        public void SetUp() => _fixture = new Fixture();
+        public new void SetUp() => _fixture = new Fixture();
 
         [TearDown]
         public void DestroyFrameworkDirectories()

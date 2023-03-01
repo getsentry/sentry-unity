@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class SentryUnityOptionsTests
+    public sealed class SentryUnityOptionsTests : SentryTestsBase
     {
         class Fixture
         {
@@ -19,7 +19,7 @@ namespace Sentry.Unity.Tests
         }
 
         [SetUp]
-        public void Setup() => _fixture = new Fixture();
+        public new void SetUp() => _fixture = new Fixture();
         private Fixture _fixture = null!;
 
         [Test]

@@ -12,7 +12,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity
 {
-    public class SentrySceneTracingIntegrationTests
+    public class SentrySceneTracingIntegrationTests : SentryTestsBase
     {
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
         private SentryUnityOptions _options;
@@ -20,7 +20,7 @@ namespace Sentry.Unity
         private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _testHttpClientHandler = new TestHttpClientHandler();
             _options = new SentryUnityOptions

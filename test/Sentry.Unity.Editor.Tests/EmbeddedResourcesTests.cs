@@ -3,7 +3,7 @@ using Sentry.Unity.Editor.ConfigurationWindow;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class EmbeddedResourcesTests
+    public sealed class EmbeddedResourcesTests : SentryTestsBase
     {
         [Test]
         public void Resources_Embedded()

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
-    public class ScreenshotAttachmentTests
+    public class ScreenshotAttachmentTests : SentryTestsBase
     {
         private class Fixture
         {
@@ -18,7 +18,7 @@ namespace Sentry.Unity.Tests
         private Fixture _fixture = null!;
 
         [SetUp]
-        public void SetUp() => _fixture = new Fixture();
+        public new void SetUp() => _fixture = new Fixture();
 
         [TearDown]
         public void TearDown()

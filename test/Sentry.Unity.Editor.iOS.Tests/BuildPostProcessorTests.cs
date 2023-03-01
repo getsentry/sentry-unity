@@ -6,7 +6,7 @@ using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
-    public class BuildPostProcessorTests
+    public class BuildPostProcessorTests : SentryTestsBase
     {
         private string _testDirectoryRoot = null!;
         private string _testFrameworkPath = null!;
@@ -14,7 +14,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
         private string _xcodeProjectPath = null!;
 
         [SetUp]
-        public void Setup()
+        public new void SetUp()
         {
             _testDirectoryRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString().Substring(0, 4));
             _testFrameworkPath = Path.Combine(_testDirectoryRoot, "Test.framework");

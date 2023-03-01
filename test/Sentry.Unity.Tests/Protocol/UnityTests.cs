@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.Tests.Protocol
 {
-    public sealed class UnityTests
+    public sealed class UnityTests : SentryTestsBase
     {
         [Test]
         public void Ctor_NoPropertyFilled_SerializesEmptyObject()

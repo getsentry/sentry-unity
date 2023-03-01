@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
-    public class AndroidManifestTests
+    public class AndroidManifestTests : SentryTestsBase
     {
         private class Fixture
         {
@@ -46,7 +46,7 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [SetUp]
-        public void SetUp() => _fixture = new Fixture();
+        public new void SetUp() => _fixture = new Fixture();
         private Fixture _fixture = null!;
 
         [Test]

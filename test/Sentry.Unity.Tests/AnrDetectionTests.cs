@@ -10,7 +10,7 @@ using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Tests
 {
-    public class AnrDetectionTests
+    public class AnrDetectionTests : SentryTestsBase
     {
         private readonly TimeSpan _timeout = TimeSpan.FromSeconds(0.5);
         private readonly IDiagnosticLogger _logger = new TestLogger(forwardToUnityLog: true);
@@ -19,7 +19,7 @@ namespace Sentry.Unity.Tests
         private AnrWatchDog _sut = null!;
 
         [SetUp]
-        public void SetUp()
+        public new void SetUp()
         {
             _gameObject = new GameObject("Tests");
             _monoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
