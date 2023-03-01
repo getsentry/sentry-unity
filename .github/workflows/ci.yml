@@ -159,7 +159,7 @@ jobs:
           docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
-        if: ${{ failure() }}
+        # if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: Test results (playmode)
