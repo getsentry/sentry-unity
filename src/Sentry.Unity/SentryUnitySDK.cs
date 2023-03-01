@@ -48,6 +48,7 @@ namespace Sentry.Unity
             }
 
             unitySdk._dotnetSdk = SentrySdk.Init(options);
+            SentrySdk.AddBreadcrumb("Initialized .NET SDK.");
 
             if (options.AttachScreenshot)
             {
@@ -81,9 +82,13 @@ namespace Sentry.Unity
             _options.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");
             try
             {
+                SentrySdk.AddBreadcrumb("Attempting to close the native part.");
+
                 ApplicationAdapter.Instance.Quitting -= Close;
                 _options.NativeSupportCloseCallback?.Invoke();
                 _options.NativeSupportCloseCallback = null;
+
+                SentrySdk.AddBreadcrumb("Attempting to close the .NET SDK.");
 
                 _dotnetSdk.Dispose();
             }

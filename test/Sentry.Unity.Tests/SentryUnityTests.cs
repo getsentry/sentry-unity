@@ -17,6 +17,7 @@ namespace Sentry.Unity.Tests
         {
             if (SentrySdk.IsEnabled)
             {
+                SentrySdk.AddBreadcrumb("Closing the SDK for: " + TestContext.CurrentContext.Test.Name);
                 SentryUnity.Close();
             }
         }
