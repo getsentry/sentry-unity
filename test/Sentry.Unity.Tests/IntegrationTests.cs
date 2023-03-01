@@ -335,6 +335,8 @@ namespace Sentry.Unity.Tests
                 configure?.Invoke(options);
             });
 
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
+
             return new SentryDisposable();
         }
 

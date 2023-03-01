@@ -81,6 +81,7 @@ namespace Sentry.Unity.Tests
             // act
             _sentryMonoBehaviour.CollectData();
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
             Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
             // assert
