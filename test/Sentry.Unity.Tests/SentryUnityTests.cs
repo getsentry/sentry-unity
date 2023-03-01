@@ -71,7 +71,8 @@ namespace Sentry.Unity.Tests
             var options = new SentryUnityOptions
             {
                 Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880",
-                FlushTimeout = TimeSpan.Zero
+                Debug = true,
+                DiagnosticLevel = SentryLevel.Debug
             };
 
             SentryUnity.Init(options);
