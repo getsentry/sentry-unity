@@ -76,8 +76,10 @@ namespace Sentry.Unity.Tests
             };
 
             SentryUnity.Init(options);
-            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
-            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
+            // SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            // SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
+            Debug.Log("Scene: " + SceneManager.GetActiveScene().name);
+            Debug.Log("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsTrue(SentrySdk.IsEnabled);
         }
