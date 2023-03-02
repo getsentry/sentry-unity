@@ -9,6 +9,7 @@ using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
@@ -68,6 +69,7 @@ namespace Sentry.Unity.Tests
                 DiagnosticLogger = _testLogger
             };
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             var sentryEvent = new SentryEvent

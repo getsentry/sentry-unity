@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
@@ -33,6 +34,7 @@ namespace Sentry.Unity.Tests
                 configure?.Invoke(options);
             });
 
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             return new SentryDisposable();

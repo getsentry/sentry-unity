@@ -8,6 +8,7 @@ using Debug = UnityEngine.Debug;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
 using UnityEditor.PackageManager;
+using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests
 {
@@ -18,7 +19,6 @@ namespace Sentry.Unity.Tests
         {
             if (SentrySdk.IsEnabled)
             {
-                SentrySdk.AddBreadcrumb("Closing the SDK for: " + TestContext.CurrentContext.Test.Name);
                 SentryUnity.Close();
             }
         }
@@ -76,6 +76,7 @@ namespace Sentry.Unity.Tests
             };
 
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsTrue(SentrySdk.IsEnabled);
@@ -84,10 +85,15 @@ namespace Sentry.Unity.Tests
         [Test]
         public void SentryUnity_OptionsInvalid_DoesNotInitialize()
         {
-            var options = new SentryUnityOptions();
+            var options = new SentryUnityOptions
+            {
+                Debug = true,
+                DiagnosticLevel = SentryLevel.Debug
+            };
 
             // Even tho the defaults are set the DSN is missing making the options invalid for initialization
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsFalse(SentrySdk.IsEnabled);
@@ -96,15 +102,17 @@ namespace Sentry.Unity.Tests
         [Test]
         public void Init_MultipleTimes_LogsWarning()
         {
-            var testLogger = new TestLogger();
+            var testLogger = new TestLogger(true);
             var options = new SentryUnityOptions
             {
                 Debug = true,
                 Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880",
                 DiagnosticLogger = testLogger,
+                DiagnosticLevel = SentryLevel.Debug
             };
 
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
             SentryUnity.Init(options);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
