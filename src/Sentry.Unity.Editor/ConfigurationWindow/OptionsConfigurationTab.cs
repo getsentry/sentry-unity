@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Text;
 using UnityEditor;
@@ -18,30 +17,32 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 "The scriptable options configuration allows you to programmatically modify Sentry options." +
                 "\n" +
                 "\n" +
-                "You can use 'Runtime Options Script' to modify options just before Sentry SDK gets initialized. " +
-                "This allows you to change configuration otherwise unavailable from the Editor UI, e.g. set a custom BeforeSend callback." +
+                "You can use the 'Runtime Configuration Script' to modify options just before Sentry SDK gets " +
+                "initialized. This allows you to access options and functionality otherwise unavailable from the " +
+                "Editor UI, e.g. set a custom BeforeSend callback." +
                 "\n" +
                 "\n" +
-                "Use 'Buildtime Options Script' in case you need to change build-time behavior, e.g. specify custom Sentry-CLI options " +
-                "or change settings for native SDKs that start before the managed layer does (such as Android, iOS, macOS).",
+                "Use the 'Build Time Configuration Script' in case you need to change build-time behavior, " +
+                "e.g. specify custom Sentry-CLI options or change settings for native SDKs that start before the " +
+                "managed layer does (such as Android, iOS, macOS).",
                 MessageType.Info);
 
             EditorGUILayout.HelpBox("Clicking the 'New' button will prompt you with selecting a location for " +
-                                    "your custom 'ScriptableOptionsConfiguration' script and automatically " +
+                                    "your custom 'SentryConfiguration' script and automatically " +
                                     "create a new asset instance.", MessageType.Info);
 
             EditorGUILayout.Space();
 
-            options.OptionsConfiguration = OptionsConfigurationItem.Display(
-                options.OptionsConfiguration,
-                "Runtime Options Script",
-                "RuntimeOptionsConfiguration"
+            options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
+                options.RuntimeOptionsConfiguration,
+                "Runtime Configuration Script",
+                "SentryRuntimeConfiguration"
             );
 
-            options.BuildtimeOptionsConfiguration = OptionsConfigurationItem.Display(
-                options.BuildtimeOptionsConfiguration,
-                "Buildtime Options Script",
-                "BuildtimeOptionsConfiguration"
+            options.BuildTimeOptionsConfiguration = OptionsConfigurationItem.Display(
+                options.BuildTimeOptionsConfiguration,
+                "Build Time Configuration Script",
+                "SentryBuildTimeConfiguration"
             );
         }
     }
@@ -100,11 +101,29 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             template.AppendFormat("[CreateAssetMenu(fileName = \"{0}\", menuName = \"Sentry/{1}\", order = 999)]\n", SentryAssetPath(scriptName), scriptName);
             template.AppendFormat("public class {0} : {1}\n", scriptName, typeof(T).FullName);
             template.AppendLine("{");
-            template.AppendLine("    /// See base class for documentation.");
+
+            if (typeof(T) == typeof(SentryBuildTimeOptionsConfiguration))
+            {
+                template.AppendLine("    /// Called during app build. Changes made here will affect build-time processing, symbol upload, etc.");
+                template.AppendLine("    /// Additionally, because iOS, macOS and Android native error handling is configured at build time,");
+                template.AppendLine("    /// you can make changes to these options here.");
+            }
+            else
+            {
+                template.AppendLine("    /// Called at the player startup by SentryInitialization.");
+                template.AppendLine("    /// You can alter configuration for the C# error handling and also");
+                template.AppendLine("    /// native error handling in platforms **other** than iOS, macOS and Android.");
+            }
+
             template.AppendLine("    /// Learn more at https://docs.sentry.io/platforms/unity/configuration/options/#programmatic-configuration");
             template.AppendFormat("    public override void Configure(SentryUnityOptions options{0})\n",
-                                  typeof(T) == typeof(SentryBuildtimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
+                                  typeof(T) == typeof(SentryBuildTimeOptionsConfiguration) ? ", SentryCliOptions cliOptions" : "");
             template.AppendLine("    {");
+            if (typeof(T) != typeof(SentryBuildTimeOptionsConfiguration))
+            {
+                template.AppendLine("        // Note that changes to the options here will **not** affect iOS, macOS and Android events. (i.e. environment and release)");
+                template.AppendLine("        // Take a look at `SentryBuildTimeOptionsConfiguration` instead.");
+            }
             template.AppendLine("        // TODO implement");
             template.AppendLine("    }");
             template.AppendLine("}");
@@ -139,7 +158,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal static void SetScript(string scriptNameWithoutExtension)
         {
             var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
-            var isEditorScript = optionsConfigurationObject is SentryBuildtimeOptionsConfiguration;
+            var isEditorScript = optionsConfigurationObject is SentryBuildTimeOptionsConfiguration;
             AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
             AssetDatabase.Refresh();
 
@@ -148,12 +167,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             if (isEditorScript)
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.BuildtimeOptionsConfiguration ??= optionsConfigurationObject as SentryBuildtimeOptionsConfiguration;
+                options.BuildTimeOptionsConfiguration ??= optionsConfigurationObject as SentryBuildTimeOptionsConfiguration;
             }
             else
             {
                 // Don't overwrite already set OptionsConfiguration
-                options.OptionsConfiguration ??= optionsConfigurationObject as SentryRuntimeOptionsConfiguration;
+                options.RuntimeOptionsConfiguration ??= optionsConfigurationObject as SentryRuntimeOptionsConfiguration;
             }
         }
     }

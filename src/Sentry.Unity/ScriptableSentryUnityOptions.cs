@@ -29,9 +29,11 @@ namespace Sentry.Unity
         [field: SerializeField] public string? Dsn { get; set; }
         [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
         [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
-        [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
 
-        [field: SerializeField] public bool PerformanceAutoInstrumentationEnabled { get; set; } = false;
+        [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
+        [field: SerializeField] public bool AutoStartupTraces { get; set; } = true;
+        [field: SerializeField] public bool AutoSceneLoadTraces { get; set; } = true;
+        [field: SerializeField] public bool AutoAwakeTraces { get; set; } = false;
 
         [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
 
@@ -74,15 +76,20 @@ namespace Sentry.Unity
         [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
         [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
         [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
+
+        [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
+        [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
+
         [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
-        [field: SerializeField] public SentryRuntimeOptionsConfiguration? OptionsConfiguration { get; set; }
-        [field: SerializeField] public SentryBuildtimeOptionsConfiguration? BuildtimeOptionsConfiguration { get; set; }
+        [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
+        [field: SerializeField] public SentryBuildTimeOptionsConfiguration? BuildTimeOptionsConfiguration { get; set; }
 
         [field: SerializeField] public bool Debug { get; set; } = true;
         [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
@@ -117,6 +124,8 @@ namespace Sentry.Unity
                 CaptureInEditor = CaptureInEditor,
                 EnableLogDebouncing = EnableLogDebouncing,
                 TracesSampleRate = TracesSampleRate,
+                AutoStartupTraces = AutoStartupTraces,
+                AutoSceneLoadTraces = AutoSceneLoadTraces,
                 AutoSessionTracking = AutoSessionTracking,
                 AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
                 AttachStacktrace = AttachStacktrace,
@@ -140,13 +149,14 @@ namespace Sentry.Unity
                 // need to set it here directly.
                 Debug = ShouldDebug(application.IsEditor && !isBuilding),
                 DiagnosticLevel = DiagnosticLevel,
+                AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
                 IosNativeSupportEnabled = IosNativeSupportEnabled,
                 AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
                 WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
                 MacosNativeSupportEnabled = MacosNativeSupportEnabled,
                 LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
                 Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
-                PerformanceAutoInstrumentationEnabled = PerformanceAutoInstrumentationEnabled,
+                PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
             };
 
             if (!string.IsNullOrWhiteSpace(ReleaseOverride))
@@ -196,15 +206,20 @@ namespace Sentry.Unity
 
             if (!isBuilding)
             {
-                if (OptionsConfiguration != null)
+                if (RuntimeOptionsConfiguration != null)
                 {
-                    OptionsConfiguration.Configure(options);
+                    RuntimeOptionsConfiguration.Configure(options);
                 }
 
                 // Doing this after the configure callback to allow users to programmatically opt out
                 if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
                 {
                     options.AddIl2CppExceptionProcessor(unityInfo);
+                }
+
+                if (!AnrDetectionEnabled)
+                {
+                    options.DisableAnrIntegration();
                 }
             }
 

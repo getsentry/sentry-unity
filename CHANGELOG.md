@@ -1,15 +1,27 @@
 # Changelog
 
-## Unreleased
+## 1.0.0
 
-### Feature
+### Breaking Changes
 
-- Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
+- Renamed `OptionsConfiguration` to `RuntimeOptionsConfiguration` on the ScriptableSentryOptions ([#1196](https://github.com/getsentry/sentry-unity/pull/1196))\
+    If you make use of programmatic runtime options configuration, you will need to reassign the scriptable object in the configuration tab
+- Renamed `SentryBuildtimeOptionsConfiguration` to `SentryBuildTimeOptionsConfiguration` ([#1187](https://github.com/getsentry/sentry-unity/pull/1187))\
+    If you make use of the programmatic build time configuration, you will need to update your implementation with the base class
+- Removed `Override Sentry URL` from editor window ([#1188](https://github.com/getsentry/sentry-unity/pull/1188))\
+    The option is still available from within the `SentryBuildTimeOptionsConfiguration`
 
 ### Fixes
 
+- The SDK no longer logs a warning due to a missing log file on non-windows player platforms ([#1195](https://github.com/getsentry/sentry-unity/pull/1195))
 - Preventing `LoggingIntegration` from registering multiple times ([#1178](https://github.com/getsentry/sentry-unity/pull/1178))
 - Fixed the logging integration only capturing tags and missing the message ([#1150](https://github.com/getsentry/sentry-unity/pull/1150))
+
+### Features
+
+- Added Performance Integration options to editor window ([#1198](https://github.com/getsentry/sentry-unity/pull/1198))
+- Much improved line numbers for IL2CPP builds by setting the `instruction_addr_adjustment` appropriately ([#1165](https://github.com/getsentry/sentry-unity/pull/1165))
+- Added ANR options to the editor window and made ANR timeout accessible on the options object ([#1181](https://github.com/getsentry/sentry-unity/pull/1181))
 
 ### Dependencies
 
@@ -25,9 +37,9 @@
 - Bump .NET SDK from v3.26.2 to v3.28.1 ([#1164](https://github.com/getsentry/sentry-unity/pull/1164), [#1170](https://github.com/getsentry/sentry-unity/pull/1170), [#1172](https://github.com/getsentry/sentry-unity/pull/1172), [#1175](https://github.com/getsentry/sentry-unity/pull/1175))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3281)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.26.2...3.28.1)
-- Bump Cocoa SDK from v7.31.5 to v8.1.0 ([#1162](https://github.com/getsentry/sentry-unity/pull/1162))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#810)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.5...8.1.0)
+- Bump Cocoa SDK from v7.31.5 to v8.2.0 ([#1162](https://github.com/getsentry/sentry-unity/pull/1162), [#1199](https://github.com/getsentry/sentry-unity/pull/1199))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#820)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/7.31.5...8.2.0)
 
 ## 0.28.1
 

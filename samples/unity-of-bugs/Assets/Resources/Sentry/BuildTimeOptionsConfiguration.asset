@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91e386628575c034e89d0f7632eb69b8, type: 3}
-  m_Name: SentryRuntimeOptionsConfiguration
+  m_Script: {fileID: 11500000, guid: 59bc41c2bf823704a9122d2a5995ffcf, type: 3}
+  m_Name: BuildTimeOptionsConfiguration
   m_EditorClassIdentifier: 

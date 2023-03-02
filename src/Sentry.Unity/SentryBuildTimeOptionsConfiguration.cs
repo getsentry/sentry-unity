@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
-    public abstract class SentryBuildtimeOptionsConfiguration : ScriptableObject
+    public abstract class SentryBuildTimeOptionsConfiguration : ScriptableObject
     {
         /// <summary>
         /// Called during app build. Changes made here will affect build-time processing, symbol upload, etc.
