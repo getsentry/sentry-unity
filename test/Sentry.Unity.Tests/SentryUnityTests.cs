@@ -8,6 +8,7 @@ using Debug = UnityEngine.Debug;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
 using UnityEditor.PackageManager;
+using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests
 {
@@ -18,7 +19,6 @@ namespace Sentry.Unity.Tests
         {
             if (SentrySdk.IsEnabled)
             {
-                SentrySdk.AddBreadcrumb("Closing the SDK for: " + TestContext.CurrentContext.Test.Name);
                 SentryUnity.Close();
             }
         }
@@ -76,7 +76,10 @@ namespace Sentry.Unity.Tests
             };
 
             SentryUnity.Init(options);
-            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
+            // SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            // SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
+            Debug.Log("Scene: " + SceneManager.GetActiveScene().name);
+            Debug.Log("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsTrue(SentrySdk.IsEnabled);
         }
@@ -92,6 +95,7 @@ namespace Sentry.Unity.Tests
 
             // Even tho the defaults are set the DSN is missing making the options invalid for initialization
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsFalse(SentrySdk.IsEnabled);
@@ -110,6 +114,7 @@ namespace Sentry.Unity.Tests
             };
 
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
             SentryUnity.Init(options);
             SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
