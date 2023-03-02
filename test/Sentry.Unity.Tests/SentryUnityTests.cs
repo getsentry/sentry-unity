@@ -84,7 +84,11 @@ namespace Sentry.Unity.Tests
         [Test]
         public void SentryUnity_OptionsInvalid_DoesNotInitialize()
         {
-            var options = new SentryUnityOptions();
+            var options = new SentryUnityOptions
+            {
+                Debug = true,
+                DiagnosticLevel = SentryLevel.Debug
+            };
 
             // Even tho the defaults are set the DSN is missing making the options invalid for initialization
             SentryUnity.Init(options);
@@ -96,12 +100,13 @@ namespace Sentry.Unity.Tests
         [Test]
         public void Init_MultipleTimes_LogsWarning()
         {
-            var testLogger = new TestLogger();
+            var testLogger = new TestLogger(true);
             var options = new SentryUnityOptions
             {
                 Debug = true,
                 Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880",
                 DiagnosticLogger = testLogger,
+                DiagnosticLevel = SentryLevel.Debug
             };
 
             SentryUnity.Init(options);
