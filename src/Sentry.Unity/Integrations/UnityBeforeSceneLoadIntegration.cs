@@ -12,13 +12,13 @@ namespace Sentry.Unity.Integrations
 
         public void Register(IHub hub, SentryOptions options)
         {
-            // var data = _application.ActiveSceneName is { } name
-            //     ? new Dictionary<string, string> { { "scene", name } }
-            //     : null;
-            //
-            // hub.AddBreadcrumb(message: "BeforeSceneLoad", category: "scene.beforeload", data: data);
-            //
-            // options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registered BeforeSceneLoad integration.");
+            var data = _application.ActiveSceneName is { } name
+                ? new Dictionary<string, string> { { "scene", name } }
+                : null;
+
+            hub.AddBreadcrumb(message: "BeforeSceneLoad", category: "scene.beforeload", data: data);
+
+            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registered BeforeSceneLoad integration.");
         }
     }
 }
