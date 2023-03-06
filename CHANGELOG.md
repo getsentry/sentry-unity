@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added `View Hierarchy` as an opt-in attachment. This will capture the scene hierarchy at moment of an event and send it to Sentry ([#1169](https://github.com/getsentry/sentry-unity/pull/1169))
+- Added `View Hierarchy` as an opt-in attachment. This will capture the scene hierarchy at the moment an event occurs and send it to Sentry ([#1169](https://github.com/getsentry/sentry-unity/pull/1169))
 
 ## 1.0.0
 
