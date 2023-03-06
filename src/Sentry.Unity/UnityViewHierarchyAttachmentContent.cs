@@ -57,7 +57,6 @@ namespace Sentry.Unity
             scene.GetRootGameObjects(rootGameObjects);
 
             // Consider the root a 'scene'.
-            // TODO: Scenes loaded 'additionally' could/should captured as well
             var root = new UnityViewHierarchyNode(scene.name);
             var viewHierarchy = new ViewHierarchy("Unity");
             viewHierarchy.Windows.Add(root);
