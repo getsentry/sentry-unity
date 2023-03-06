@@ -89,17 +89,17 @@ namespace Sentry.Unity
         public bool AttachViewHierarchy { get; set; } = false;
 
         /// <summary>
-        /// Try to attach the current scene's hierarchy.
+        /// Maximum number of captured GameObjects in a scene root.
         /// </summary>
         public int MaxViewHierarchyRootObjects { get; set; } = 100;
 
         /// <summary>
-        /// Try to attach the current scene's hierarchy.
+        /// Maximum number of child objects captured for each GameObject.
         /// </summary>
         public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
 
         /// <summary>
-        /// Try to attach the current scene's hierarchy.
+        /// Maximum depth of the hierarchy to capture. For example, setting 1 will only capture root GameObjects.
         /// </summary>
         public int MaxViewHierarchyDepth { get; set; } = 10;
 

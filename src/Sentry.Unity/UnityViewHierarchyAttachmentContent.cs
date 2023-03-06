@@ -61,7 +61,6 @@ namespace Sentry.Unity
             var viewHierarchy = new ViewHierarchy("Unity");
             viewHierarchy.Windows.Add(root);
 
-            maxDepth++; // Offsetting the depth by +1 because we're adding the scene as the root node
             var rootElementCount = Math.Min(rootGameObjects.Count, maxRootGameObjectCount);
             for (var i = 0; i < rootElementCount; i++)
             {

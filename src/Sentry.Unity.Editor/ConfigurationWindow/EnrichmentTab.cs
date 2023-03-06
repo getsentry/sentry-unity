@@ -131,21 +131,34 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     options.AttachViewHierarchy);
 
                 options.MaxViewHierarchyRootObjects = EditorGUILayout.IntField(
-                    new GUIContent("Max Root GameObjects", "Maximum number of GameObjects in the root of" +
-                                                           "the scene to get captured." +
-                                                      "\nDefault: 100"),
+                    new GUIContent("Max Root GameObjects", "Maximum number of captured GameObjects in " +
+                                                    "a scene root." +
+                                                    "\nDefault: 100"),
                     options.MaxViewHierarchyRootObjects);
+                if (options.MaxViewHierarchyRootObjects <= 0)
+                {
+                    options.MaxViewHierarchyRootObjects = 0;
+                }
 
                 options.MaxViewHierarchyObjectChildCount = EditorGUILayout.IntField(
-                    new GUIContent("Max Child Count Per Object", "Maximum number of children objects on each GameObject" +
-                                                   "to get captured." +
-                                                      "\nDefault: 20"),
+                    new GUIContent("Max Child Count Per Object", "Maximum number of child objects " +
+                                                    "captured for each GameObject." +
+                                                    "\nDefault: 20"),
                     options.MaxViewHierarchyObjectChildCount);
+                if (options.MaxViewHierarchyObjectChildCount <= 0)
+                {
+                    options.MaxViewHierarchyObjectChildCount = 0;
+                }
 
                 options.MaxViewHierarchyDepth = EditorGUILayout.IntField(
-                    new GUIContent("Max Depth", "Maximum depth of the hierarchy to get captured." +
-                                                      "\nDefault: 10"),
+                    new GUIContent("Max Depth", "Maximum depth of the hierarchy to capture. " +
+                                                    "For example, setting 1 will only capture root GameObjects." +
+                                                    "\nDefault: 10"),
                     options.MaxViewHierarchyDepth);
+                if (options.MaxViewHierarchyDepth <= 0)
+                {
+                    options.MaxViewHierarchyDepth = 0;
+                }
 
                 EditorGUILayout.EndToggleGroup();
             }
