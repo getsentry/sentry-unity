@@ -2,7 +2,15 @@
 
 ## Unreleased
 
+### Features
+
 - Added `View Hierarchy` as an opt-in attachment. This will capture the scene hierarchy at the moment an event occurs and send it to Sentry ([#1169](https://github.com/getsentry/sentry-unity/pull/1169))
+
+### Dependencies
+
+- Bump CLI from v2.13.0 to v2.14.3 ([#1213](https://github.com/getsentry/sentry-unity/pull/1213))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2143)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.13.0...2.14.3)
 
 ## 1.0.0
 
