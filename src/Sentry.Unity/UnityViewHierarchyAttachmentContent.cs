@@ -72,7 +72,7 @@ namespace Sentry.Unity
             return viewHierarchy;
         }
 
-        internal void CreateNode(int depth, int maxChildCount, ViewHierarchyNode parentNode, Transform transform)
+        internal void CreateNode(int remainingDepth, int maxChildCount, ViewHierarchyNode parentNode, Transform transform)
         {
             var components = new List<Component>();
             transform.GetComponents(components);
@@ -88,8 +88,8 @@ namespace Sentry.Unity
 
             parentNode.Children.Add(node);
 
-            depth--;
-            if (depth <= 0)
+            remainingDepth--;
+            if (remainingDepth <= 0)
             {
                 return;
             }
@@ -97,7 +97,7 @@ namespace Sentry.Unity
             var childCount = Math.Min(transform.childCount, maxChildCount);
             for (var i = 0; i < childCount; i++)
             {
-                CreateNode(depth, maxChildCount, node, transform.GetChild(i));
+                CreateNode(remainingDepth, maxChildCount, node, transform.GetChild(i));
             }
         }
     }
