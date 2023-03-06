@@ -47,6 +47,7 @@ namespace Sentry.Unity.Tests
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
+
                 var stream = sut.GetStream();
 
                 Assert.NotNull(stream);
@@ -58,6 +59,7 @@ namespace Sentry.Unity.Tests
         public void CaptureViewHierarchy_ReturnsNonNullStream()
         {
             var sut = _fixture.GetSut();
+
             using var stream = sut.CaptureViewHierarchy();
 
             Assert.AreNotEqual(Stream.Null, stream);
@@ -113,8 +115,8 @@ namespace Sentry.Unity.Tests
             var sut = _fixture.GetSut();
             var testHierarchy = new GameObject("GameObject").transform;
             CreateTestHierarchy(5, 1, testHierarchy);
-
             var root = new UnityViewHierarchyNode("root");
+
             sut.CreateNode(3, 1, root, testHierarchy);
 
             Assert.AreEqual(0, root.Children[0].Children[0].Children[0].Children.Count);
@@ -126,8 +128,8 @@ namespace Sentry.Unity.Tests
             var sut = _fixture.GetSut();
             var testHierarchy = new GameObject("GameObject").transform;
             CreateTestHierarchy(3, 1, testHierarchy);
-
             var root = new UnityViewHierarchyNode("root");
+
             sut.CreateNode(5, 1, root, testHierarchy);
 
             Assert.AreEqual(0, root.Children[0].Children[0].Children[0].Children.Count);
@@ -153,18 +155,18 @@ namespace Sentry.Unity.Tests
             var sut = _fixture.GetSut();
             var testHierarchy = new GameObject("GameObject").transform;
             CreateTestHierarchy(2, 3, testHierarchy);
-
             var root = new UnityViewHierarchyNode("root");
+
             sut.CreateNode(2, 5, root, testHierarchy);
 
             Assert.AreEqual(1, root.Children.Count); // Sanity check
             Assert.AreEqual(3, root.Children[0].Children.Count);
         }
 
-        private void CreateTestHierarchy(int depth, int childCount, Transform parent)
+        private void CreateTestHierarchy(int remainingDepth, int childCount, Transform parent)
         {
-            depth--;
-            if (depth <= 0)
+            remainingDepth--;
+            if (remainingDepth <= 0)
             {
                 return;
             }
@@ -174,7 +176,7 @@ namespace Sentry.Unity.Tests
                 var gameObject = new GameObject($"{parent.name}_{i}");
                 gameObject.transform.SetParent(parent);
 
-                CreateTestHierarchy(depth, childCount, gameObject.transform);
+                CreateTestHierarchy(remainingDepth, childCount, gameObject.transform);
             }
         }
     }
