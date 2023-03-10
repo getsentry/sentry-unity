@@ -28,6 +28,7 @@ MonoBehaviour:
   <AttachScreenshot>k__BackingField: 1
   <ScreenshotQuality>k__BackingField: 2
   <ScreenshotCompression>k__BackingField: 75
+  <AttachViewHierarchy>k__BackingField: 1
   <BreadcrumbsForLogs>k__BackingField: 1
   <BreadcrumbsForWarnings>k__BackingField: 1
   <BreadcrumbsForAsserts>k__BackingField: 1
