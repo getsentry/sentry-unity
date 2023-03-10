@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Tests
 {
-    public class ScreenshotAttachmentTests : DisabledSelfInitializationTests
+    public class ScreenshotAttachmentTests
     {
         private class Fixture
         {

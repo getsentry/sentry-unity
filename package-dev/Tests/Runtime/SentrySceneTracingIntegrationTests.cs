@@ -12,7 +12,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity
 {
-    public class SentrySceneTracingIntegrationTests : DisabledSelfInitializationTests
+    public class SentrySceneTracingIntegrationTests
     {
 #if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
         private SentryUnityOptions _options;

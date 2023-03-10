@@ -1,5 +1,6 @@
 using UnityEngine;
 using Sentry.Unity;
+using UnityEngine.SceneManagement;
 
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/RuntimeConfiguration.asset", menuName = "Sentry/RuntimeConfiguration", order = 999)]
 public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfiguration
@@ -14,6 +15,13 @@ public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfigurati
         // Take a look at `SentryBuildTimeOptionsConfiguration` instead.
 
         Debug.Log(nameof(RuntimeConfiguration) + "::Configure() called");
+
+        // Making sure the SDK is not already initialized during tests
+        if (SceneManager.GetActiveScene().name.Contains("TestScene"))
+        {
+            Debug.Log("Disabling the SDK while running tests.");
+            options.Enabled = false;
+        }
 
         // BeforeSend is only relevant at runtime. It wouldn't hurt to be set at build time, just wouldn't do anything.
         options.BeforeSend = sentryEvent =>

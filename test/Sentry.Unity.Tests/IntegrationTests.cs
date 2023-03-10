@@ -10,7 +10,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
 {
-    public sealed class IntegrationTests : DisabledSelfInitializationTests
+    public sealed class IntegrationTests
     {
         private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
         private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
@@ -18,7 +18,6 @@ namespace Sentry.Unity.Tests
         private string _eventMessage = null!; // Set in setup
         private string _identifyingEventValueAttribute = null!; // Set in setup
 
-        // [SetUp] gets called after disabling the self initialization in the IPrebuildSetup
         [SetUp]
         public void SetUp()
         {
