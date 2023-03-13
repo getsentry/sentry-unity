@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests
 {
-    public class UnityViewHierarchyAttachmentTests : DisabledSelfInitializationTests
+    public class UnityViewHierarchyAttachmentTests
     {
         private class Fixture
         {
