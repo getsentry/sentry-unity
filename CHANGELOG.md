@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed missing debug file upload for assembly definitions for Mono builds ([#1226](https://github.com/getsentry/sentry-unity/pull/1226))
 - The ANR detection is now unaffected by changes to `Time.timescale` ([#1225](https://github.com/getsentry/sentry-unity/pull/1225))
 
 ### Features
