@@ -141,44 +141,67 @@ namespace Sentry.Unity.Editor.Native
             };
 
             addPath(executableName);
-            if (!isMono)
-            {
-                addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
-            }
-            if (target is BuildTarget.StandaloneWindows64)
-            {
-                addPath("UnityPlayer.dll");
-                addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
-                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
-                if (isMono)
-                {
-                    addPath("MonoBleedingEdge/EmbedRuntime");
-                    addFilesMatching(buildOutputDir, new[] { "*.pdb" });
-                }
-                else
-                {
-                    addPath("GameAssembly.dll");
-                }
-            }
-            else if (target is BuildTarget.StandaloneLinux64)
-            {
-                addPath("GameAssembly.so");
-                addPath("UnityPlayer.so");
-                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
-                if (isMono)
-                {
-                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
-                    addFilesMatching(buildOutputDir, new[] { "*.debug" });
-                }
-            }
-            else if (target is BuildTarget.StandaloneOSX)
-            {
-                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
-            }
 
-            if (isMono)
+            switch (target)
             {
-                addFilesMatching($"{projectDir}/Temp", new[] { "**/UnityEngine.*.pdb", "**/Assembly-CSharp.pdb" });
+                case BuildTarget.StandaloneWindows64:
+                    addPath("UnityPlayer.dll");
+                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
+                    addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+
+                    if (isMono)
+                    {
+                        addPath("MonoBleedingEdge/EmbedRuntime");
+                        addFilesMatching(buildOutputDir, new[] { "*.pdb" });
+
+                        // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
+                        // './Temp/ManagedSymbols/'. We want the one in 'Temp/ManagedSymbols/' specifically.
+                        var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
+                        if (Directory.Exists(managedSymbolsDirectory))
+                        {
+                            addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
+                        }
+                    }
+                    else // IL2CPP
+                    {
+                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                        addPath("GameAssembly.dll");
+                    }
+                    break;
+                case BuildTarget.StandaloneLinux64:
+                    addPath("GameAssembly.so");
+                    addPath("UnityPlayer.so");
+                    addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
+
+                    if (isMono)
+                    {
+                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
+                        addFilesMatching(buildOutputDir, new[] { "*.debug" });
+
+                        var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
+                        if (Directory.Exists(managedSymbolsDirectory))
+                        {
+                            addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
+                        }
+                    }
+                    else // IL2CPP
+                    {
+                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                    }
+                    break;
+                case BuildTarget.StandaloneOSX:
+                    addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
+
+                    if (isMono)
+                    { }
+                    else // IL2CPP
+                    {
+                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                    }
+                    break;
+                default:
+                    logger.LogError($"Symbol upload for '{target}' is currently not supported.");
+                    break;
             }
 
             var cliArgs = "upload-dif ";
