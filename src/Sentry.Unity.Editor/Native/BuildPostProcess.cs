@@ -178,7 +178,7 @@ namespace Sentry.Unity.Editor.Native
 
             if (isMono)
             {
-                addFilesMatching($"{projectDir}/Temp", new[] { "**/UnityEngine.*.pdb", "**/Assembly-CSharp.pdb" });
+                addFilesMatching($"{projectDir}/Temp/ManagedSymbols", new[] { "*.pdb" });
             }
 
             var cliArgs = "upload-dif ";
