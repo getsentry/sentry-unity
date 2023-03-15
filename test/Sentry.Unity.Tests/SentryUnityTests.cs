@@ -7,6 +7,7 @@ using Debug = UnityEngine.Debug;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
 using UnityEditor.PackageManager;
+using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests
 {
@@ -72,6 +73,8 @@ namespace Sentry.Unity.Tests
             };
 
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsTrue(SentrySdk.IsEnabled);
         }
@@ -83,6 +86,8 @@ namespace Sentry.Unity.Tests
 
             // Even tho the defaults are set the DSN is missing making the options invalid for initialization
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsFalse(SentrySdk.IsEnabled);
         }
@@ -99,7 +104,11 @@ namespace Sentry.Unity.Tests
             };
 
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             Assert.IsTrue(testLogger.Logs.Any(log =>
                 log.logLevel == SentryLevel.Warning &&

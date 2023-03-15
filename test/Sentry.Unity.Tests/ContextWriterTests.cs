@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
@@ -81,6 +82,9 @@ namespace Sentry.Unity.Tests
             // act
             _sentryMonoBehaviour.CollectData();
             SentryUnity.Init(options);
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
+
             Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
             // assert

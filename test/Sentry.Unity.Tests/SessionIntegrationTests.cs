@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
@@ -32,6 +33,9 @@ namespace Sentry.Unity.Tests
                 options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
                 configure?.Invoke(options);
             });
+
+            SentrySdk.AddBreadcrumb("Scene: " + SceneManager.GetActiveScene().name);
+            SentrySdk.AddBreadcrumb("Running: " + TestContext.CurrentContext.Test.Name);
 
             return new SentryDisposable();
         }
