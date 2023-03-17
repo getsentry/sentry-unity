@@ -7,6 +7,9 @@
 - Bump CLI from v2.14.4 to v2.15.1 ([#1231](https://github.com/getsentry/sentry-unity/pull/1231))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2151)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.14.4...2.15.1)
+- Bump Java SDK from v6.14.0 to v6.15.0 ([#1212](https://github.com/getsentry/sentry-unity/pull/1212))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6150)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.14.0...6.15.0)
 
 ## 1.1.0
 
