@@ -31,6 +31,58 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void TearDown() => Directory.Delete(_testDirectoryRoot, true);
 
         [Test]
+        public void AddSentryToXcodeProject_OptionsNull_LogsAndReturn()
+        {
+            var options = new SentryUnityOptions { Enabled = false };
+            var testLogger = new TestLogger();
+
+            BuildPostProcess.AddSentryToXcodeProject(null, null, testLogger, string.Empty);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Warning &&
+                log.message.Contains("iOS native support disabled because Sentry has not been configured.")));
+            Assert.IsFalse(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Info &&
+                log.message.Contains("Attempting to add Sentry to the Xcode project.")));
+        }
+
+        [Test]
+        public void AddSentryToXcodeProject_OptionsDisabled_LogsAndReturn()
+        {
+            var options = new SentryUnityOptions { Enabled = false };
+            var testLogger = new TestLogger();
+
+            BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, string.Empty);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Warning &&
+                log.message.Contains("iOS native support disabled.")));
+            Assert.IsFalse(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Info &&
+                log.message.Contains("Attempting to add Sentry to the Xcode project.")));
+        }
+
+        [Test]
+        public void AddSentryToXcodeProject_IosNativeSupportDisabled_LogsAndReturn()
+        {
+            var options = new SentryUnityOptions
+            {
+                Dsn = "test_dsn",
+                IosNativeSupportEnabled = false
+            };
+            var testLogger = new TestLogger();
+
+            BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, string.Empty);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Info &&
+                log.message.Contains("iOS native support disabled through the options.")));
+            Assert.IsFalse(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Info &&
+                log.message.Contains("Attempting to add Sentry to the Xcode project.")));
+        }
+
+        [Test]
         public void CopyFrameworkToXcodeProject_CopyFramework_DirectoryExists()
         {
             var targetPath = Path.Combine(_xcodeProjectPath, "SomeDirectory", "Test.framework");
