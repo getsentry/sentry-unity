@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer adds the Sentry.framework to the output Xcode project when `iOS Native Support` is disabled ([#1233](https://github.com/getsentry/sentry-unity/pull/1233))
+
 ### Dependencies
 
 - Bump CLI from v2.14.4 to v2.15.1 ([#1231](https://github.com/getsentry/sentry-unity/pull/1231))
