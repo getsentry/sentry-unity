@@ -90,37 +90,37 @@ jobs:
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
-          wait-timeout: ${{ github.run_attempt == '1' && '3600' || '30' }}
+          wait-timeout: 3600
 
       - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: Android-libraries
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          wait-timeout: ${{ github.run_attempt == '1' && '3600' || '30' }}
+          wait-timeout: 3600
 
       - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
-          wait-timeout: ${{ github.run_attempt == '1' && '3600' || '30' }}
+          wait-timeout: 3600
 
       - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: macOS-sdk
           path: package-dev/Plugins/macOS
-          wait-timeout: ${{ github.run_attempt == '1' && '3600' || '30' }}
+          wait-timeout: 3600
 
       - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: Linux-sdk
           path: package-dev/Plugins/Linux
-          wait-timeout: ${{ github.run_attempt == '1' && '3600' || '30' }}
+          wait-timeout: 3600
 
       - uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
-          wait-timeout: ${{ github.run_attempt == '1' && '3600' || '30' }}
+          wait-timeout: 3600
 
       - name: Build Sentry.Unity Solution
         run: docker exec unity dotnet build -c Release
@@ -186,7 +186,7 @@ jobs:
         uses: vaind/download-artifact@cbec071ac01e26699bc70c82f63ef724b3b0a91d
         with:
           name: ${{ github.sha }}
-          wait-timeout: ${{ github.run_attempt == '1' && '3600' || '30' }}
+          wait-timeout: 3600
 
       - name: Verify package content against snapshot
         # If this step fails, you can accept the new file content by
