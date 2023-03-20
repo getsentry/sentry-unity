@@ -19,6 +19,13 @@ public class Builder
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
         DisableUnityAudio();
 
+        // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
+#if UNITY_2022_1_OR_NEWER
+        PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
+#elif UNITY_2021_2_OR_NEWER
+        EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
+#endif
+
         var buildPlayerOptions = new BuildPlayerOptions
         {
             locationPathName = args["buildPath"],
