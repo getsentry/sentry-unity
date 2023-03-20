@@ -66,11 +66,13 @@ jobs:
         with:
           name: ${{ inputs.target }}-sdk
           path: package-dev/Plugins/${{ inputs.target }}
-          retention-days: ${{ github.ref_name == 'main' && 14 || 1 }}
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
 
       - uses: actions/upload-artifact@v3
         if: ${{ inputs.target == 'Android' }}
         with:
           name: ${{ inputs.target }}-libraries
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
-          retention-days: 1
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
