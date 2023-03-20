@@ -4,8 +4,8 @@
 # └───────────────────────────────────────────────────┘ #
 
 param(
-    [string] $UnityVersion,
-    [string] $Platform,
+    [Parameter(Mandatory = $true)][string] $UnityVersion,
+    [Parameter(Mandatory = $true)][string] $Platform,
     [switch] $Clean,
     [switch] $Repack,
     [switch] $Recreate,
@@ -60,7 +60,13 @@ If (-not(Test-Path -Path $PackageReleaseOutput) -Or $Repack)
     ./test/Scripts.Integration.Test/extract-package.ps1
 }
 
-If (-not(Test-Path -Path "$NewProjectPath") -Or $Recreate)
+# Support recreating the integration test project without cleaning the SDK build (and repackaging).
+if ($Recreate -and (Test-Path -Path $NewProjectPath))
+{
+    Remove-Item -Path $NewProjectPath -Recurse -Force -Confirm:$false
+}
+
+If (-not(Test-Path -Path "$NewProjectPath"))
 {
     Write-Host "Creating Project"
     ./test/Scripts.Integration.Test/create-project.ps1 "$UnityPath"
@@ -81,7 +87,7 @@ If ($Rebuild -or -not(Test-Path -Path $buildDir))
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
         ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion $UnityVersion
     }
-    Else 
+    Else
     {
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
     }
