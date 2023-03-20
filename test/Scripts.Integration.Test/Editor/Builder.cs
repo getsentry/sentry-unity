@@ -29,9 +29,15 @@ public class Builder
 
         // Disable optimizations to reduce the build time.
 #if UNITY_2021_2_OR_NEWER
-        PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
+        // TODO Linux fails with `free(): invalid pointer` in the smoke-test, after everthing seems to have shut down.
+        if (target != BuildTarget.StandaloneLinux64) {
+            PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
+        }
 #else
-        PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
+        // TODO Windows fails to build
+        if (target != BuildTarget.StandaloneWindows64) {
+            PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
+        }
 #endif
 
         var buildPlayerOptions = new BuildPlayerOptions
