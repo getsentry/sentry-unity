@@ -27,6 +27,13 @@ public class Builder
         EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
 #endif
 
+        // Disable optimizations to reduce the build time.
+#if UNITY_2021_2_OR_NEWER
+        PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
+#else
+        PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
+#endif
+
         var buildPlayerOptions = new BuildPlayerOptions
         {
             locationPathName = args["buildPath"],
@@ -43,7 +50,7 @@ public class Builder
         var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
         var summary = report.summary;
 
-        Debug.Log("Build result at outputPath: " + report.summary.outputPath);
+        Debug.Log("Build result at outputPath: " + summary.outputPath);
 
         switch (summary.result)
         {
@@ -51,19 +58,8 @@ public class Builder
                 Debug.Log($"Build succeeded: {summary.totalSize} bytes");
                 break;
             default:
-                var message = $"Build result: {summary.result} with {summary.totalErrors}" +
-                              $" error{(summary.totalErrors > 1 ? "s" : "")}.";
-
-                Debug.Log(message);
-                throw new Exception(message);
-        }
-
-        if (summary.totalErrors > 0)
-        {
-            var message = $"Build succeeded with {summary.totalErrors} error{(summary.totalErrors > 1 ? "s" : "")}.";
-            Debug.Log(message);
-            // Break the build
-            throw new Exception(message);
+                Debug.Log($"Build result: {summary.result} with {summary.totalErrors}" + $" error{(summary.totalErrors > 1 ? "s" : "")}.");
+                throw new Exception("Build failed, see details above.");
         }
 
         if (summary.totalWarnings > 0)
@@ -71,6 +67,7 @@ public class Builder
             Debug.Log($"Build succeeded with {summary.totalWarnings} warning{(summary.totalWarnings > 1 ? "s" : "")}.");
         }
     }
+
     public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone);
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
     public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
