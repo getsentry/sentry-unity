@@ -305,16 +305,22 @@ jobs:
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ matrix.platform != 'iOS' && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ (matrix.platform != 'iOS' && matrix.platform != 'Android') && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+
+      # We create tar explicitly because upload-artifact is slow for many files located in Library
+      - name: Create archive
+        shell: bash
+        run: |
+          # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
+          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          tar -cvzf test-app.tar.gz samples/IntegrationTest/Build
 
       - name: Upload test app
         uses: actions/upload-artifact@v3
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
           if-no-files-found: error
-          path: |
-            samples/IntegrationTest/Build
-            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          path: test-app.tar.gz
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
@@ -404,10 +410,10 @@ jobs:
       - name: Run Crash Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
 
-  android-smoke-test:
+  android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build]
-    name: Run Android ${{ matrix.api-level }} Unity ${{ matrix.unity-version }} Smoke Test
+    needs: [mobile-smoke-test-compile]
+    name: Run Android ${{ matrix.api-level }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -435,7 +441,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v3
         with:
-          name: testapp-Android-${{ matrix.unity-version }}
+          name: testapp-Android-${{ matrix.unity-version }}-compiled
           path: samples/IntegrationTest/Build
 
       - name: Setup HAXM
@@ -484,7 +490,7 @@ jobs:
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
           disable-animations: true
-          script: pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest -WarnIfFlaky
+          script: pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest -WarnIfFlaky
 
       - name: Kill emulator if AVD failed.
         if: ${{ steps.smoke-test.outputs.status != 'success' }}
@@ -509,7 +515,7 @@ jobs:
           disable-animations: true
           script: |
             echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} because the previous step finished with: '${{ steps.smoke-test.outputs.status }}'"
-            pwsh ./scripts/smoke-test-droid.ps1 -IsIntegrationTest
+            pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest
 
       - name: Upload artifacts on failure
         if: ${{ failure() }}
@@ -520,34 +526,64 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-  ios-smoke-test-build:
+  mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: Compile iOS Smoke Test - ${{ matrix.unity-version }}
-    runs-on: macos-latest
+    name: Compile ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    runs-on: ${{ matrix.platform == 'iOS' && 'macos' || 'ubuntu' }}-latest
     strategy:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021', '2022']
+        platform: ['Android', 'iOS']
+        include:
+          # See supported version in https://docs.unity3d.com/2022.2/Documentation/Manual/android-sdksetup.html
+          - unity-version: '2019'
+            ndk: 'r19'
+          - unity-version: '2020'
+            ndk: 'r19'
+          - unity-version: '2021'
+            ndk: 'r21d'
+          - unity-version: '2022'
+            ndk: 'r21d'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download XCode app artifact
+      - name: Download app project
         uses: actions/download-artifact@v3
         with:
-          name: testapp-iOS-${{ matrix.unity-version }}
-          path: samples/IntegrationTest/Build
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
 
-      - name: Build iOS package
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+      - name: Extract app project
+        run: tar -xvzf test-app.tar.gz
 
-      - name: Upload iOS test app for smoke test.
+      - uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc # pin@v2
+        if: ${{ matrix.platform == 'Android' }}
+
+      - uses: nttld/setup-ndk@8c3b609ff4d54576ea420551943fd34b4d03b0dc # pin@v1
+        if: ${{ matrix.platform == 'Android' }}
+        id: setup-ndk
+        with:
+          ndk-version: ${{ matrix.ndk }}
+          add-to-path: false
+
+      - name: Build app
+        run: |
+          if ("${{ matrix.platform }}" -eq "Android")
+          {
+            # Replace local.properties so that it doesn't reference Unity built-in SDK & NDK (not available in this job).
+            @("sdk.dir=$($env:ANDROID_SDK_ROOT)", "ndk.dir=${{ steps.setup-ndk.outputs.ndk-path }}") | Out-File "samples/IntegrationTest/Build/local.properties"
+          }
+          ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+
+      - name: Upload app
         uses: actions/upload-artifact@v3
         with:
-          name: testapp-iOS-compiled-${{ matrix.unity-version }}
-          # Ignore the files that are not required for the test.
+          name: testapp-${{ matrix.platform }}-compiled-${{ matrix.unity-version }}
+          # Collect app but ignore the files that are not required for the test.
           path: |
+            samples/IntegrationTest/Build/*.apk
             samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
             !**/Release-iphonesimulator/*.dSYM
             !**/Release-iphonesimulator/UnityFramework.framework/*
@@ -556,7 +592,7 @@ jobs:
 
   ios-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [ios-smoke-test-build]
+    needs: [mobile-smoke-test-compile]
     name: Run iOS ${{ matrix.ios }} Smoke Test - ${{ matrix.unity-version }}
     runs-on: macos-12
     strategy:
@@ -628,14 +664,16 @@ jobs:
         id: download
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
-          path: samples/IntegrationTest/Build
+
+      - name: Extract test app
+        run: tar -xvzf test-app.tar.gz
 
       - name: Run (WebGL)
         if: ${{ matrix.platform == 'WebGL' }}
         timeout-minutes: 10
         run: |
           pip3 install --upgrade --user selenium urllib3 requests
-          python3 scripts/smoke-test-webgl.py "${{steps.download.outputs.download-path}}"
+          python3 scripts/smoke-test-webgl.py "samples/IntegrationTest/Build"
 
       - name: Run Smoke Test (Linux)
         if: ${{ matrix.platform == 'Linux' }}

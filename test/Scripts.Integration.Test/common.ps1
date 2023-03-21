@@ -378,3 +378,13 @@ function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $succes
         Write-Error "$name | Unity exited without an error but the successMessage was not found in the output ('$successMessage')"
     }
 }
+
+function MakeExecutable([string] $file)
+{
+    If ((Test-Path -Path $file) -and (Get-Command 'chmod' -ErrorAction SilentlyContinue))
+    {
+        Write-Host -NoNewline "Fixing permission for $file : "
+        chmod +x $file
+        Write-Host "OK" -ForegroundColor Green
+    }
+}

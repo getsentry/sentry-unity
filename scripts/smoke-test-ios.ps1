@@ -45,16 +45,6 @@ Class AppleDevice
     }
 }
 
-function MakeExecutable([string] $file)
-{
-    If (Test-Path -Path $file)
-    {
-        Write-Host -NoNewline "Fixing permission for $file : "
-        chmod +x $file
-        Write-Host "OK" -ForegroundColor Green
-    }
-}
-
 function Build()
 {
     MakeExecutable "$XcodeArtifactPath/MapFileParser.sh"
