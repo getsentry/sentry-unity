@@ -19,6 +19,7 @@ public class Builder
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
         DisableUnityAudio();
         EditorUserBuildSettings.allowDebugging = false;
+        EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
 
         // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
 #if UNITY_2022_1_OR_NEWER

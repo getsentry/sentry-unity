@@ -28,15 +28,7 @@ function GetTestAppName
     {
         return "test"
     }
-    ElseIf ($buildMethod.contains("Android"))
-    {
-        return "test.apk"
-    }
-    ElseIf ($buildMethod.contains("IOS"))
-    {
-        return ""
-    }
-    ElseIf ($buildMethod.contains("WebGL"))
+    ElseIf ($buildMethod.contains("Android") -or $buildMethod.contains("IOS") -or $buildMethod.contains("WebGL"))
     {
         return ""
     }

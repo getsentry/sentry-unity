@@ -33,14 +33,11 @@ namespace Sentry.Unity.Editor.Android
 // Credentials and project settings information are stored in the sentry.properties file
 gradle.taskGraph.whenReady {{
     gradle.taskGraph.allTasks[-1].doLast {{
-        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\'s a merge of two streams).'
-        def sentryLogFile = new FileOutputStream('{2}/Logs/sentry-symbols-upload.log')
+        println 'Uploading symbols to Sentry.'
         exec {{
             environment 'SENTRY_PROPERTIES', './sentry.properties'
             executable '{0}'
             args = ['upload-dif', {1}]
-            standardOutput sentryLogFile
-            errorOutput sentryLogFile
         }}
     }}
 }}";
@@ -80,17 +77,18 @@ gradle.taskGraph.whenReady {{
                 throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
             }
 
-            var uploadDifArguments = "\"--il2cpp-mapping\",";
+            var uploadDifArguments = "\"--il2cpp-mapping\", ";
             if (_cliOptions?.UploadSources ?? false)
             {
-                uploadDifArguments += "\"--include-sources\",";
+                uploadDifArguments += "\"--include-sources\", ";
             }
+            uploadDifArguments += "project.projectDir, ";
 
             foreach (var symbolUploadPath in _symbolUploadPaths)
             {
                 if (Directory.Exists(symbolUploadPath))
                 {
-                    uploadDifArguments += $"\"{ConvertSlashes(symbolUploadPath)}\",";
+                    uploadDifArguments += $"\"{ConvertSlashes(symbolUploadPath)}\", ";
                 }
                 else
                 {
@@ -100,7 +98,7 @@ gradle.taskGraph.whenReady {{
 
             using var streamWriter = File.AppendText(_gradleScriptPath);
             streamWriter.WriteLine(SymbolUploadTaskStartComment);
-            streamWriter.WriteLine(_symbolUploadTask.Trim(), sentryCliPath, uploadDifArguments, ConvertSlashes(_unityProjectPath));
+            streamWriter.WriteLine(_symbolUploadTask.Trim(), sentryCliPath, uploadDifArguments);
             streamWriter.WriteLine(SymbolUploadTaskEndComment);
         }
 
