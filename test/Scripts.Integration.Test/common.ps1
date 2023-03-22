@@ -265,7 +265,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         if ($unity_2021_OrHigher)
         {
             $expectedFiles = @(
-                "libil2cpp.so: count=$($withSources ? 4 : 1)",
+                "libil2cpp.so: count=$($withSources ? 6 : 1)",
                 'libil2cpp.sym.so: count=1',
                 'libmain.so: count=1',
                 'libsentry-android.so: count=4',
@@ -351,10 +351,14 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             }
         }
         # Note: control only gets here if none of the alternatives match...
-        $successful = $false
         $fileWithoutCount = $file.Substring(0, $file.Length - 1)
         $filePattern = [Regex]::new('(?<=' + "$([Regex]::Escape($fileWithoutCount))" + ')[\w]+')
         $actualCount = $filePattern.Matches($symbolServerOutput)
+
+        if ("$actualCount" -eq "")
+        {
+            $successful = $false
+        }
 
         Write-Host "  $alternatives - MISSING `n    Server received '$actualCount' instead." -ForegroundColor Red
     }

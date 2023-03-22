@@ -90,7 +90,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             var actualSymbolPaths = sut.GetSymbolUploadPaths();
 
-            Assert.AreEqual(0, actualSymbolPaths.Length);
+            Assert.AreEqual(2, actualSymbolPaths.Count);
         }
 
         [Test]
@@ -111,15 +111,6 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             var ex = Assert.Throws<FileNotFoundException>(() => sut.AppendUploadToGradleFile(_fixture.SentryCliPath));
             Assert.AreEqual(Path.Combine(_fixture.GradleProjectPath, "build.gradle"), ex.FileName);
-        }
-
-        [Test]
-        public void AppendUploadToGradleFile_SymbolsDirectoryDoesNotExist_ThrowsDirectoryNotFoundException()
-        {
-            var sut = _fixture.GetSut();
-            sut._symbolUploadPaths = new[] { string.Empty };
-
-            Assert.Throws<DirectoryNotFoundException>(() => sut.AppendUploadToGradleFile(_fixture.SentryCliPath));
         }
 
         [Test]
@@ -170,22 +161,15 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void TryCopySymbolsToGradleProject_IsNewBuildingBackend_LogsAndReturns()
+        [TestCase("2019.4")]
+        [TestCase("2020.3")]
+        [TestCase("2021.1")]
+        [TestCase("2021.2")]
+        [TestCase("2022.1")]
+        public void TryCopySymbolsToGradleProject_CopiesFilesFromBuildOutputToSymbolsDirectory(string unityVersion)
         {
-            _fixture.Application = new TestApplication(unityVersion: "2021.2");
-
-            var sut = _fixture.GetSut();
-
-            sut.TryCopySymbolsToGradleProject(_fixture.Application);
-
-            _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug,
-                "New building backend. Skipping copying of debug symbols.");
-        }
-
-        [Test]
-        public void TryCopySymbolsToGradleProject_IsOldBuildingBackend_CopiesFilesFromBuildOutputToSymbolsDirectory()
-        {
-            _fixture.Application = new TestApplication(unityVersion: "2019.4");
+            _fixture.Application = new TestApplication(unityVersion: unityVersion);
+            _fixture.IsExporting = true;
             var expectedSymbolsPath = Path.Combine(_fixture.GradleProjectPath, "symbols");
             var sut = _fixture.GetSut();
 
