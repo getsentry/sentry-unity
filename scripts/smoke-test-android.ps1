@@ -47,6 +47,7 @@ if ($IsIntegrationTest)
 
         $symbolServerOutput = RunWithSymbolServer -Callback $buildCallback
         CheckSymbolServerOutput 'Android' $symbolServerOutput $UnityVersion
+        return;
     }
 }
 else
