@@ -139,7 +139,7 @@ gradle.taskGraph.whenReady {{
 
         public void TryCopySymbolsToGradleProject(IApplication? application = null)
         {
-            if (_isExporting)
+            if (!_isExporting)
             {
                 return;
             }
