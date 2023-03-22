@@ -73,9 +73,10 @@ namespace Sentry.Unity.Editor.Tests.Android
         public void GetSymbolUploadPaths_IsExportingFalse_ReturnsCorrectPathForVersion(string unityVersion,
             string relativeBuildPath, string gradlePath)
         {
+            _fixture.IsExporting = false;
             var sut = _fixture.GetSut();
 
-            var actualSymbolsPaths = sut.GetSymbolUploadPaths(false);
+            var actualSymbolsPaths = sut.GetSymbolUploadPaths();
 
             Assert.NotNull(actualSymbolsPaths.Any(path => path.Contains(relativeBuildPath)));
             Assert.NotNull(actualSymbolsPaths.Any(path => path.Contains(gradlePath)));
@@ -84,12 +85,12 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void GetSymbolUploadPaths_IsExportingTrue_ReturnsPathToExportedProject()
         {
+            _fixture.IsExporting = true;
             var sut = _fixture.GetSut();
 
-            var actualSymbolPaths = sut.GetSymbolUploadPaths(true);
+            var actualSymbolPaths = sut.GetSymbolUploadPaths();
 
-            Assert.AreEqual(1, actualSymbolPaths.Length);
-            Assert.NotNull(actualSymbolPaths.Any(path => path.Contains(_fixture.GradleProjectPath)));
+            Assert.AreEqual(0, actualSymbolPaths.Length);
         }
 
         [Test]

@@ -22,6 +22,7 @@ namespace Sentry.Unity.Editor.Android
         private readonly string _gradleProjectPath;
         private readonly string _gradleScriptPath;
         private readonly ScriptingImplementation _scriptingBackend;
+        private readonly bool _isExporting;
 
         private readonly SentryCliOptions? _cliOptions;
         internal string[] _symbolUploadPaths;
@@ -56,9 +57,10 @@ gradle.taskGraph.whenReady {{
             _gradleProjectPath = gradleProjectPath;
             _gradleScriptPath = Path.Combine(_gradleProjectPath, "build.gradle");
             _scriptingBackend = scriptingBackend;
+            _isExporting = isExporting;
 
             _cliOptions = cliOptions;
-            _symbolUploadPaths = GetSymbolUploadPaths(isExporting, application);
+            _symbolUploadPaths = GetSymbolUploadPaths(application);
         }
 
         public void AppendUploadToGradleFile(string sentryCliPath)
@@ -82,17 +84,24 @@ gradle.taskGraph.whenReady {{
             {
                 uploadDifArguments += "\"--include-sources\", ";
             }
-            uploadDifArguments += "project.projectDir, ";
 
-            foreach (var symbolUploadPath in _symbolUploadPaths)
+            if (_isExporting)
             {
-                if (Directory.Exists(symbolUploadPath))
+                uploadDifArguments += "project.projectDir, ";
+                sentryCliPath = $"./{Path.GetFileName(sentryCliPath)}";
+            }
+            else
+            {
+                foreach (var symbolUploadPath in _symbolUploadPaths)
                 {
-                    uploadDifArguments += $"\"{ConvertSlashes(symbolUploadPath)}\", ";
-                }
-                else
-                {
-                    throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolUploadPath}");
+                    if (Directory.Exists(symbolUploadPath))
+                    {
+                        uploadDifArguments += $"\"{ConvertSlashes(symbolUploadPath)}\", ";
+                    }
+                    else
+                    {
+                        throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolUploadPath}");
+                    }
                 }
             }
 
@@ -130,6 +139,11 @@ gradle.taskGraph.whenReady {{
 
         public void TryCopySymbolsToGradleProject(IApplication? application = null)
         {
+            if (_isExporting)
+            {
+                return;
+            }
+
             // The new building backend takes care of making the debug symbol files available within the exported project
             if (IsNewBuildingBackend(application))
             {
@@ -152,12 +166,12 @@ gradle.taskGraph.whenReady {{
             }
         }
 
-        internal string[] GetSymbolUploadPaths(bool isExporting, IApplication? application = null)
+        internal string[] GetSymbolUploadPaths(IApplication? application = null)
         {
-            if (isExporting)
+            if (_isExporting)
             {
-                _logger.LogInfo("Exporting the project. Root for symbols upload: {0}", _gradleProjectPath);
-                return new[] { _gradleProjectPath };
+                _logger.LogInfo("Exporting the project. Root for symbols upload: Gradle project.projectDir");
+                return new string[0];
             }
 
             var paths = new List<string>();

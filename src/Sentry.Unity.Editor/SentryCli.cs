@@ -35,12 +35,24 @@ namespace Sentry.Unity.Editor
             return propertiesFile;
         }
 
-        public static string SetupSentryCli()
+        public static string SetupSentryCli(string? outDirectory = null)
         {
             var sentryCliPlatformName = GetSentryCliPlatformName();
             var sentryCliPath = GetSentryCliPath(sentryCliPlatformName);
-            SetExecutePermission(sentryCliPath);
 
+            if (outDirectory is not null)
+            {
+                if (!Directory.Exists(outDirectory))
+                {
+                    throw new DirectoryNotFoundException($"Output project directory not found: {outDirectory}");
+                }
+
+                var outCliPath = Path.Combine(outDirectory, sentryCliPlatformName);
+                File.Copy(sentryCliPath, outCliPath, true);
+                sentryCliPath = outCliPath;
+            }
+
+            SetExecutePermission(sentryCliPath);
             return sentryCliPath;
         }
 
@@ -84,26 +96,6 @@ namespace Sentry.Unity.Editor
             {
                 throw new UnauthorizedAccessException($"Failed to set permission to {filePath}");
             }
-        }
-
-        internal static void AddExecutableToXcodeProject(string projectPath, IDiagnosticLogger? logger)
-        {
-            var executableSource = GetSentryCliPath(SentryCliMacOS);
-            var executableDestination = Path.Combine(projectPath, SentryCliMacOS);
-
-            if (!Directory.Exists(projectPath))
-            {
-                throw new DirectoryNotFoundException($"Xcode project directory not found at {executableDestination}");
-            }
-
-            if (File.Exists(executableDestination))
-            {
-                logger?.LogDebug("sentry-cli executable already found at {0}", executableDestination);
-                return;
-            }
-
-            File.Copy(executableSource, executableDestination);
-            SetExecutePermission(executableDestination);
         }
 
         internal static string? UrlOverride(string? dsnOption, string? urlOverrideOption)
