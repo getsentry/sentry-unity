@@ -35,10 +35,10 @@ namespace Sentry.Unity.Editor
             return propertiesFile;
         }
 
-        public static string SetupSentryCli(string? outDirectory = null)
+        public static string SetupSentryCli(string? outDirectory = null, RuntimePlatform? actualBuildHost = null)
         {
-            var sentryCliPlatformName = GetSentryCliPlatformName();
-            var sentryCliPath = GetSentryCliPath(sentryCliPlatformName);
+            var executableName = GetSentryCliPlatformExecutable(actualBuildHost);
+            var sentryCliPath = GetSentryCliPath(executableName);
 
             if (outDirectory is not null)
             {
@@ -47,7 +47,7 @@ namespace Sentry.Unity.Editor
                     throw new DirectoryNotFoundException($"Output project directory not found: {outDirectory}");
                 }
 
-                var outCliPath = Path.Combine(outDirectory, sentryCliPlatformName);
+                var outCliPath = Path.Combine(outDirectory, executableName);
                 File.Copy(sentryCliPath, outCliPath, true);
                 sentryCliPath = outCliPath;
             }
@@ -56,17 +56,16 @@ namespace Sentry.Unity.Editor
             return sentryCliPath;
         }
 
-        internal static string GetSentryCliPlatformName(IApplication? application = null)
+        internal static string GetSentryCliPlatformExecutable(RuntimePlatform? buildHost = null)
         {
-            application ??= ApplicationAdapter.Instance;
+            buildHost ??= ApplicationAdapter.Instance.Platform;
 
-            return application.Platform switch
+            return buildHost switch
             {
                 RuntimePlatform.WindowsEditor => SentryCliWindows,
                 RuntimePlatform.OSXEditor => SentryCliMacOS,
                 RuntimePlatform.LinuxEditor => SentryCliLinux,
-                _ => throw new InvalidOperationException(
-                    $"Cannot get sentry-cli for the current platform: {Application.platform}")
+                _ => throw new InvalidOperationException($"Cannot get sentry-cli for {buildHost}")
             };
         }
 

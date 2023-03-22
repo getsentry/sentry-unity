@@ -10,11 +10,9 @@ namespace Sentry.Unity.Editor.Tests
     public class SentryCliTests
     {
         [Test]
-        public void GetSentryCliPlatformName_UnrecognizedPlatform_ThrowsInvalidOperationException()
+        public void GetSentryCliPlatformExecutable_UnrecognizedPlatform_ThrowsInvalidOperationException()
         {
-            var application = new TestApplication(platform: RuntimePlatform.LinuxPlayer);
-
-            Assert.Throws<InvalidOperationException>(() => SentryCli.GetSentryCliPlatformName(application));
+            Assert.Throws<InvalidOperationException>(() => SentryCli.GetSentryCliPlatformExecutable(RuntimePlatform.LinuxPlayer));
         }
 
         [Test]
@@ -23,9 +21,7 @@ namespace Sentry.Unity.Editor.Tests
         [TestCase(RuntimePlatform.LinuxEditor, SentryCli.SentryCliLinux)]
         public void GetSentryPlatformName_RecognizedPlatform_SetsSentryCliName(RuntimePlatform platform, string expectedName)
         {
-            var application = new TestApplication(platform: platform);
-
-            var actualName = SentryCli.GetSentryCliPlatformName(application);
+            var actualName = SentryCli.GetSentryCliPlatformExecutable(platform);
 
             Assert.AreEqual(expectedName, actualName);
         }
@@ -36,13 +32,10 @@ namespace Sentry.Unity.Editor.Tests
             Assert.Throws<FileNotFoundException>(() => SentryCli.GetSentryCliPath("InvalidName"));
         }
 
-        private string GetCliPlatformSpecificName() =>
-            SentryCli.GetSentryCliPlatformName(new TestApplication(platform: Application.platform));
-
         [Test]
         public void GetSentryCliPath_ValidFileName_ReturnsPath()
         {
-            var sentryCliPlatformName = GetCliPlatformSpecificName();
+            var sentryCliPlatformName = SentryCli.GetSentryCliPlatformExecutable(Application.platform);
             var expectedPath = Path.GetFullPath(
                 Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName));
 
@@ -101,6 +94,16 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
+        public void SetupSentryCli_WithCustomBuildHOst_ReturnsValidCliPath()
+        {
+            var returnedPath = SentryCli.SetupSentryCli(null, RuntimePlatform.OSXEditor);
+            var expectedExeName = SentryCli.GetSentryCliPlatformExecutable(RuntimePlatform.OSXEditor);
+
+            Assert.IsTrue(File.Exists(returnedPath));
+            Assert.AreEqual(expectedExeName, Path.GetFileName(returnedPath));
+        }
+
+        [Test]
         public void SetupSentryCli_ProjectPathDoesNotExist_ThrowsDirectoryNotFoundException()
         {
             Assert.Throws<DirectoryNotFoundException>(() => SentryCli.SetupSentryCli("non-existent-path"));
@@ -113,7 +116,7 @@ namespace Sentry.Unity.Editor.Tests
             Directory.CreateDirectory(fakeProjectDirectory);
 
             var returnedPath = SentryCli.SetupSentryCli(fakeProjectDirectory);
-            var expectedPath = Path.Combine(fakeProjectDirectory, GetCliPlatformSpecificName());
+            var expectedPath = Path.Combine(fakeProjectDirectory, SentryCli.GetSentryCliPlatformExecutable(Application.platform));
 
             Assert.AreEqual(expectedPath, returnedPath);
             Assert.IsTrue(File.Exists(returnedPath));
