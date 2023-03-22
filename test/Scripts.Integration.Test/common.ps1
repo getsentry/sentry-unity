@@ -154,8 +154,11 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
 
 function SymbolServerUrlFor([string] $UnityPath, [string] $Platform = "")
 {
-    # Note: iOS has special handling - its "update-sentry" script runs elsewhere than the actual build & upload.
-    ($UnityPath.StartsWith("docker ") -and ($Platform -ne "iOS")) ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
+    # Note: Android and iOS have special handling - even though the project is exported while running in docker,
+    # the actual build and thus the symbol-server test runs later, on a different machine, outside docker.
+    # Therefore, we return localhost regardless of building in docker.
+    (!$UnityPath.StartsWith("docker ") -or ($Platform -eq "iOS") -or ($Platform -eq "Android")) `
+        ? 'http://localhost:8000' : 'http://172.17.0.1:8000'
 }
 
 function RunWithSymbolServer([ScriptBlock] $Callback)
