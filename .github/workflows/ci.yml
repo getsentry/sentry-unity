@@ -414,7 +414,10 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
     name: Run Android ${{ matrix.api-level }} Smoke Test - ${{ matrix.unity-version }}
-    runs-on: macos-latest
+    uses: ./.github/workflows/android-smoke-test-wrapper.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
+      api-level: ${{ matrix.api-level }}
     strategy:
       fail-fast: false
       matrix:
@@ -431,97 +434,6 @@ jobs:
             unity-version: '2021'
           - api-level: 30
             unity-version: '2022'
-    env:
-      ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
-      HOMEBREW_NO_INSTALL_CLEANUP: 1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download test app artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: testapp-Android-compiled-${{ matrix.unity-version }}
-          path: samples/IntegrationTest/Build
-
-      # outputs variables: api-level, label, target
-      - name: Configure Android Settings
-        id: config
-        run: |
-          # Setup API Level
-          $apiLevel = '${{ matrix.api-level }}'
-          if ( $apiLevel -eq 'latest')
-          {
-            # Gets the latest API level that isn't in Beta/Alpha
-            $response = (Invoke-WebRequest -UseBasicParsing -Uri "https://developer.android.com/studio/releases/platforms").Content
-            $result = [regex]::Match($response, " \(API level (?<model>\d+)\)")
-            $apiLevel = $result.Groups["model"].Value
-            Write-Output "Latest API is $apiLevel"
-            $label = "$apiLevel (latest)"
-          }
-          else
-          {
-            Write-Output "Current API is $apiLevel"
-          }
-          # Setup Arch and Target
-          $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
-          Write-Output "Current Target is $target"
-          "target=$target" >> $env:GITHUB_OUTPUT
-          "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
-          "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
-
-      - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test
-        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.28.0
-        id: smoke-test
-        timeout-minutes: 40
-        continue-on-error: true
-        with:
-          api-level: ${{ steps.config.outputs.api-level }}
-          target: ${{ steps.config.outputs.target }}
-          force-avd-creation: false
-          ram-size: 2048M
-          arch: x86_64
-          cores: 3
-          emulator-boot-timeout: 1800
-          disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
-          emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
-          disable-animations: true
-          script: pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest -WarnIfFlaky
-
-      - name: Kill emulator if AVD failed.
-        if: ${{ steps.smoke-test.outputs.status != 'success' }}
-        run: |
-          Write-Host "Smoke test failed with status (${{ steps.smoke-test.outputs.status }}), closing simulator."
-          adb emu kill
-          sleep 7
-
-      - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test (Retry)
-        if: ${{ steps.smoke-test.outputs.status != 'success' }}
-        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.28.0
-        timeout-minutes: 40
-        with:
-          api-level: ${{ steps.config.outputs.api-level }}
-          target: ${{ steps.config.outputs.target }}
-          force-avd-creation: false
-          ram-size: 2048M
-          arch: x86_64
-          cores: 3
-          emulator-boot-timeout: 1800
-          disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
-          emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
-          disable-animations: true
-          script: |
-            echo "::Warning::Retrying Android API ${{ steps.config.outputs.label }} because the previous step finished with: '${{ steps.smoke-test.outputs.status }}'"
-            pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest
-
-      - name: Upload artifacts on failure
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: testapp-android-logs-${{ matrix.api-level }}-${{ matrix.unity-version }}
-          path: ${{ env.ARTIFACTS_PATH }}
-          # Lower retention period - we only need this to retry CI.
-          retention-days: 14
 
   mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
