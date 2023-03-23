@@ -284,8 +284,6 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             $expectedFiles = @(
                 'libil2cpp.so: count=1',
                 'libmain.so: count=1',
-                'libsentry-android.so: count=7',
-                'libsentry.so: count=7',
                 'libunity.so: count=1',
                 'libunity.sym.so: count=1'
             )
@@ -293,7 +291,9 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             {
                 $expectedFiles = @(
                     "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
-                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)"
+                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)",
+                    'libsentry-android.so: count=7',
+                    'libsentry.so: count=7'
                 ) + $expectedFiles
             }
             else
