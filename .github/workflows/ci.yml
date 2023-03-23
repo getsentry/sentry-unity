@@ -237,7 +237,7 @@ jobs:
         if: ${{ github.ref_name != 'main' }}
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      # We create tar explicitly because upload-artifact is slow for many files located in Library
+      # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
         run: tar -cvzf test-project.tar.gz samples/IntegrationTest
 
@@ -307,7 +307,7 @@ jobs:
       - name: Build with Sentry SDK
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ (matrix.platform != 'iOS' && matrix.platform != 'Android') && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
 
-      # We create tar explicitly because upload-artifact is slow for many files located in Library
+      # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
         shell: bash
         run: |
@@ -441,7 +441,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v3
         with:
-          name: testapp-Android-${{ matrix.unity-version }}-compiled
+          name: testapp-Android-compiled-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
 
       - name: Setup HAXM
@@ -618,7 +618,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: testapp-iOS-compiled-${{ matrix.unity-version }}
-          path: samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator
+          path: samples/IntegrationTest/Build
 
       - name: Setup xcode-install
         # Github Virtual machine already sets the runtime and simulator for the latest release.
