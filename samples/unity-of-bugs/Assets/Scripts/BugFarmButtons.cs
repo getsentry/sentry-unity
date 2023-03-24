@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Runtime.CompilerServices;
 using Sentry;
 using UnityEngine;
@@ -15,6 +16,17 @@ public class BugFarmButtons : MonoBehaviour
     {
         Debug.Log("Sample Start 🦋");
         Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
+        var a = 1;
+        var b = 2;
+        var c = 3;
+        var d = 4;
+        var e = 6;
+        Demo(a, b, c, d, e);
+    }
+
+    public void Demo(int a, int b, int c, int d, int e)
+    {
+        throw new Exception((a + b + c + d + e).ToString());
     }
 
     public void AssertFalse() => Assert.AreEqual(true, false);
