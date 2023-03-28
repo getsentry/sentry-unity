@@ -1,8 +1,8 @@
 Documentation~/index.md
 Editor/iOS.meta
-Editor/Microsoft.Extensions.FileSystemGlobbing.dll
-Editor/Microsoft.Extensions.FileSystemGlobbing.dll.meta
 Editor/sentry-cli.meta
+Editor/Sentry.Microsoft.Extensions.FileSystemGlobbing.dll
+Editor/Sentry.Microsoft.Extensions.FileSystemGlobbing.dll.meta
 Editor/Sentry.Mono.Cecil.dll
 Editor/Sentry.Mono.Cecil.dll.meta
 Editor/Sentry.Mono.Cecil.Mdb.dll

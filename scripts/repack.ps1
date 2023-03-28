@@ -1,5 +1,5 @@
 assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
-assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Mono.Cecil*"
+assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;Mono.Cecil*"
 
 $unity_version = Get-Content ./samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt | grep m_EditorVersion -m 1 | cut -d ' ' -f 2
 
