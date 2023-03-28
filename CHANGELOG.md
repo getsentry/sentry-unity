@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Fixes
+
+- Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
+
 ### Dependencies
 
 - Bump CLI from v2.14.4 to v2.15.2 ([#1231](https://github.com/getsentry/sentry-unity/pull/1231), [#1236](https://github.com/getsentry/sentry-unity/pull/1236))
