@@ -37,12 +37,14 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
     $arguments += @("-logfile", $logFilePath)
 
+    $stopwatchTotal = [System.Diagnostics.Stopwatch]::new()
+    $stopwatchTotal.Start()
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
-    $stopwatch.Start()
     $stdout = ""
     $try = 1
     do
     {
+        $stopwatch.Restart()
         $runInfo = ($try -gt 1) ? "Retry #$try run" : 'Run'
         Write-Host "::group::$runInfo $unityPath $arguments"
         try
@@ -61,7 +63,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
         {
             $msg = "Unity failed because it couldn't acquire a license."
-            $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatch.Elapsed.TotalSeconds
+            $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatchTotal.Elapsed.TotalSeconds
             $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
             if ($timeToSleep -gt 0)
             {
@@ -79,7 +81,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         {
             break
         }
-    } while ($stopwatch.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
+    } while ($stopwatchTotal.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
 
     if ($process.ExitCode -ne 0 -and $env:IgnoreExitCode -ne "true")
     {
@@ -90,7 +92,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
     Write-Host -ForegroundColor Green "Unity finished successfully. $timeTaken"
     if ($try -gt 3)
     {
-        Write-Host "::$($try -gt 10 ? 'warning' : 'notice')::It took $try tries to successfully aquire a Unity license. $timeTaken"
+        Write-Host "::$($try -gt 10 ? 'warning' : 'notice')::It took $try tries to successfully acquire a Unity license. Total time taken: $($stopwatchTotal.Elapsed.ToString('hh\:mm\:ss\.fff'))"
     }
     return $ReturnLogOutput ? $stdout : $null
 }
