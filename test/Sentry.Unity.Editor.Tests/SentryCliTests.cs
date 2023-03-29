@@ -94,7 +94,7 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void SetupSentryCli_WithCustomBuildHOst_ReturnsValidCliPath()
+        public void SetupSentryCli_WithCustomBuildHost_ReturnsValidCliPath()
         {
             var returnedPath = SentryCli.SetupSentryCli(null, RuntimePlatform.OSXEditor);
             var expectedExeName = SentryCli.GetSentryCliPlatformExecutable(RuntimePlatform.OSXEditor);
