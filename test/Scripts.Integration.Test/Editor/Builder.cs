@@ -19,7 +19,6 @@ public class Builder
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
         DisableUnityAudio();
         EditorUserBuildSettings.allowDebugging = false;
-        EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
 
         // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
 #if UNITY_2022_1_OR_NEWER
@@ -36,7 +35,8 @@ public class Builder
         }
 #else
         // TODO Windows fails to build
-        if (target != BuildTarget.StandaloneWindows64) {
+        if (target != BuildTarget.StandaloneWindows64)
+        {
             PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
         }
 #endif
@@ -79,7 +79,12 @@ public class Builder
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
     public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
-    public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
+    public static void BuildAndroidIl2CPPProject()
+    {
+        EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
+    }
+    public static void BuildIOSProject() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
     public static void BuildWebGLPlayer() => BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL);
 
     public static Dictionary<string, string> ParseCommandLineArguments()

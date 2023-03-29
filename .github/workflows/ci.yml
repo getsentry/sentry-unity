@@ -301,11 +301,27 @@ jobs:
         if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
-
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" ${{ (matrix.platform != 'iOS' && matrix.platform != 'Android') && '-CheckSymbols' || '' }} -UnityVersion "${{ matrix.unity-version }}"
+        run: |
+          ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+
+      - name:
+        run: |
+          $platform = '${{ matrix.platform }}'
+          if ($platform -eq 'iOS')
+          {
+            $checkSymbols = $false
+          }
+          elseif (($platform -eq 'Android') -and ('${{ github.ref_name }}' -ne 'main'))
+          {
+            $checkSymbols = $false
+            $platform = 'Android-Export'
+          }
+          else
+          {
+            $checkSymbols = $true
+          }
+          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols:$checkSymbols -UnityVersion "${{ matrix.unity-version }}"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -468,16 +484,17 @@ jobs:
         run: tar -xvzf test-app.tar.gz
 
       - uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc # pin@v2
-        if: ${{ matrix.platform == 'Android' }}
+        if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
 
       - uses: nttld/setup-ndk@8c3b609ff4d54576ea420551943fd34b4d03b0dc # pin@v1
-        if: ${{ matrix.platform == 'Android' }}
+        if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
         id: setup-ndk
         with:
           ndk-version: ${{ matrix.ndk }}
           add-to-path: false
 
       - name: Build app
+        if: ${{ matrix.platform != 'Android' || github.ref_name != 'main' }}
         run: |
           if ("${{ matrix.platform }}" -eq "Android")
           {

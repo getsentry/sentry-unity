@@ -155,7 +155,7 @@ gradle\.taskGraph\.whenReady {
 // Credentials and project settings information are stored in the sentry\.properties file
 gradle\.taskGraph\.whenReady {
     gradle\.taskGraph\.allTasks\[-1\]\.doLast {
-        println 'Uploading symbols to Sentry\. You can find the full log in \./Logs/sentry-symbols-upload\.log \(the file content may not be strictly sequential because it's a merge of two streams\)\.'
+        println 'Uploading symbols to Sentry\. You can find the full log in \./Logs/sentry-symbols-upload\.log \(the file content may not be strictly sequential because it\\'s a merge of two streams\)\.'
         def sentryLogFile = new FileOutputStream\('[^\s]+/UnityProject/Logs/sentry-symbols-upload\.log'\)
         exec {
             environment 'SENTRY_PROPERTIES', '\./sentry\.properties'

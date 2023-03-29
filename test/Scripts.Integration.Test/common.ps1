@@ -157,7 +157,7 @@ function SymbolServerUrlFor([string] $UnityPath, [string] $Platform = "")
     # Note: Android and iOS have special handling - even though the project is exported while running in docker,
     # the actual build and thus the symbol-server test runs later, on a different machine, outside docker.
     # Therefore, we return localhost regardless of building in docker.
-    (!$UnityPath.StartsWith("docker ") -or ($Platform -eq "iOS") -or ($Platform -eq "Android")) `
+    (!$UnityPath.StartsWith("docker ") -or ($Platform -eq "iOS") -or ($Platform -eq "Android-Export")) `
         ? 'http://localhost:8000' : 'http://172.17.0.1:8000'
 }
 

@@ -25,7 +25,7 @@ else
     RunUnityCustom $unityPath $unityArgs
 }
 
-if ($Platform -eq "Android")
+if ($Platform -eq "Android-Export")
 {
     # See test/Scripts.Integration.Test/gradle/README.md
     $gradleVersion = $UnityVersion.StartsWith("2019") ? "v5.1.1" : "v6.1.1"

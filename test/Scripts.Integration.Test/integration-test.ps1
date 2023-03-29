@@ -82,10 +82,10 @@ If ($Rebuild -or -not(Test-Path -Path $buildDir))
 {
     Write-Host "Building Project"
 
-    If (("iOS", "Android") -contains $Platform)
+    If (("iOS", "Android-Export") -contains $Platform)
     {
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
-        & "./scripts/smoke-test-$($Platform.ToLower()).ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
+        & "./scripts/smoke-test-$($Platform -eq 'iOS' ? 'ios' : 'android').ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
     }
     Else
     {
@@ -101,7 +101,7 @@ Switch -Regex ($Platform)
     {
         ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
     }
-    "^Android$"
+    "^(Android|Android-Export)$"
     {
         ./scripts/smoke-test-android.ps1 -IsIntegrationTest
     }
