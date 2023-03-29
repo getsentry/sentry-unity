@@ -7,7 +7,7 @@
 - Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
 ### Fixes
 
-- Sentry CLI integration in an export Android project ([#1242](https://github.com/getsentry/sentry-unity/pull/1242))
+- Sentry CLI integration when exporting an Android project ([#1242](https://github.com/getsentry/sentry-unity/pull/1242))
 
 ### Dependencies
 
