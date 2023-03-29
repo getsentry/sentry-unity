@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
@@ -59,7 +60,7 @@ namespace Sentry.Unity.Editor.iOS
                 if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is true)
                 {
                     SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
-                    SentryCli.AddExecutableToXcodeProject(pathToProject, logger);
+                    SentryCli.SetupSentryCli(pathToProject, RuntimePlatform.OSXEditor);
                     sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, cliOptions);
                 }
                 else if (options.Il2CppLineNumberSupportEnabled)

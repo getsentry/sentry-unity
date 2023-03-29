@@ -186,14 +186,15 @@ namespace Sentry.Unity.Editor.Android
             try
             {
                 _logger.LogInfo("Adding automated debug symbols upload to the gradle project.");
-
-                var sentryCliPath = SentryCli.SetupSentryCli();
+                // TODO this currently copies the CLI for the current platform, thus making the exported project only
+                // build properly on the same platform as it was exported from (Linux->Linux, Windows->Windows, etc.).
+                // In practice, users should be able to build the project on any platform, regardless of where Unity
+                // ran. In that case, we would either need to include all CLI binaries and switch in Gradle, or let
+                // gradle download CLI on demand (relevant code could be taken from sentry-java repo?).
+                var sentryCliPath = SentryCli.SetupSentryCli(
+                    EditorUserBuildSettings.exportAsGoogleAndroidProject ? gradleProjectPath : null);
                 SentryCli.CreateSentryProperties(gradleProjectPath, _sentryCliOptions!, _options!);
-
-                if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
-                {
-                    symbolsUpload.TryCopySymbolsToGradleProject();
-                }
+                symbolsUpload.TryCopySymbolsToGradleProject();
 
                 symbolsUpload.AppendUploadToGradleFile(sentryCliPath);
             }
