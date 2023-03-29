@@ -3,6 +3,7 @@ using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Callbacks;
 
 namespace Sentry.Unity.Editor.iOS
@@ -23,6 +24,23 @@ namespace Sentry.Unity.Editor.iOS
             AddSentryToXcodeProject(options, cliOptions, logger, pathToProject);
         }
 
+        internal static bool IsNativeSupportEnabled(SentryUnityOptions options, IDiagnosticLogger logger)
+        {
+            if (!options.IsValid())
+            {
+                logger.LogWarning("Sentry SDK has been disabled. There will be no iOS native support.");
+                return false;
+            }
+
+            if (!options.IosNativeSupportEnabled)
+            {
+                logger.LogInfo("The iOS native support has been disabled through the options.");
+                return false;
+            }
+
+            return true;
+        }
+
         internal static void AddSentryToXcodeProject(SentryUnityOptions? options,
             SentryCliOptions? cliOptions,
             IDiagnosticLogger logger,
@@ -35,15 +53,16 @@ namespace Sentry.Unity.Editor.iOS
                 return;
             }
 
-            if (!options.IsValid())
+            if (!IsNativeSupportEnabled(options, logger))
             {
-                logger.LogWarning("iOS native support disabled.");
-                return;
-            }
+                var main = File.ReadAllText(Path.Combine(pathToProject, SentryXcodeProject.MainPath));
+                if (NativeMain.ContainsSentry(main, logger))
+                {
+                    throw new BuildFailedException(
+                        "The iOS native support has been disabled but the exported project has been modified " +
+                        "during a previous build. Select 'Replace' when exporting the project to create a clean project.");
+                }
 
-            if (!options.IosNativeSupportEnabled)
-            {
-                logger.LogInfo("iOS native support disabled through the options.");
                 return;
             }
 
@@ -62,7 +81,7 @@ namespace Sentry.Unity.Editor.iOS
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
                 sentryXcodeProject.AddSentryFramework();
                 sentryXcodeProject.AddSentryNativeBridge();
-                sentryXcodeProject.AddNativeOptions(options);
+                sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
                 sentryXcodeProject.AddSentryToMain(options);
 
                 if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is true)
@@ -79,6 +98,7 @@ namespace Sentry.Unity.Editor.iOS
             catch (Exception e)
             {
                 logger.LogError("Failed to add the Sentry framework to the generated Xcode project", e);
+                return;
             }
 
             logger.LogInfo("Successfully added Sentry to the Xcode project.");

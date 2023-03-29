@@ -5,14 +5,9 @@ using Sentry.Extensibility;
 
 namespace Sentry.Unity.Editor.iOS
 {
-    internal interface INativeMain
+    internal static class NativeMain
     {
-        public void AddSentry(string pathToMain, IDiagnosticLogger? logger);
-    }
-
-    internal class NativeMain : INativeMain
-    {
-        private const string Include = @"#include <Sentry/Sentry.h>
+        public const string Include = @"#include <Sentry/Sentry.h>
 #include ""SentryOptions.m""
 ";
         private const string Init = @"
@@ -23,7 +18,7 @@ namespace Sentry.Unity.Editor.iOS
         }
 ";
 
-        public void AddSentry(string pathToMain, IDiagnosticLogger? logger)
+        public static void AddSentry(string pathToMain, IDiagnosticLogger? logger)
         {
             if (!File.Exists(pathToMain))
             {
@@ -40,7 +35,7 @@ namespace Sentry.Unity.Editor.iOS
             File.WriteAllText(pathToMain, sentryMain);
         }
 
-        internal bool ContainsSentry(string main, IDiagnosticLogger? logger)
+        internal static bool ContainsSentry(string main, IDiagnosticLogger? logger)
         {
             if (main.Contains(Include))
             {
@@ -51,7 +46,7 @@ namespace Sentry.Unity.Editor.iOS
             return false;
         }
 
-        internal string AddSentryToMain(string main)
+        internal static string AddSentryToMain(string main)
         {
             main = main.Insert(0, Include);
 

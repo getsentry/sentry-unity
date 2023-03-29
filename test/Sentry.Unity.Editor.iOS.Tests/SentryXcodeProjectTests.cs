@@ -9,24 +9,12 @@ namespace Sentry.Unity.Editor.iOS.Tests
 {
     public class SentryXcodeProjectTests
     {
-        private class NativeMainTest : INativeMain
-        {
-            public void AddSentry(string pathToMain, IDiagnosticLogger? logger) { }
-        }
-
-        private class NativeOptionsTest : INativeOptions
-        {
-            public void CreateFile(string path, SentryUnityOptions options) { }
-        }
-
         private class Fixture
         {
             public string ProjectRoot { get; set; } =
                 Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles", "2019_4");
             public SentryUnityOptions Options { get; set; }
             public TestLogger TestLogger { get; set; }
-            public INativeMain NativeMain { get; set; } = new NativeMainTest();
-            public INativeOptions NativeOptions { get; set; } = new NativeOptionsTest();
 
             public Fixture()
             {
@@ -39,7 +27,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
                 };
             }
 
-            public SentryXcodeProject GetSut() => new(ProjectRoot, NativeMain, NativeOptions);
+            public SentryXcodeProject GetSut() => new(ProjectRoot);
         }
 
         private Fixture _fixture = new();
@@ -139,7 +127,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
 
-            xcodeProject.AddNativeOptions(_fixture.Options);
+            xcodeProject.AddNativeOptions(_fixture.Options, (_, _) => {});
 
             StringAssert.Contains(SentryXcodeProject.OptionsName, xcodeProject.ProjectToString());
         }

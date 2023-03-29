@@ -16,8 +16,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             }
 
             const string testOptionsFileName = "testOptions.m";
-            var nativeOptions = new NativeOptions();
-            var nativeOptionsString = nativeOptions.Generate(new SentryUnityOptions());
+            var nativeOptionsString = NativeOptions.Generate(new SentryUnityOptions());
             File.WriteAllText(testOptionsFileName, nativeOptionsString);
 
             var process = Process.Start("clang", $"-fsyntax-only {testOptionsFileName}");
@@ -37,8 +36,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             }
 
             const string testOptionsFileName = "testOptions.m";
-            var nativeOptions = new NativeOptions();
-            var nativeOptionsString = nativeOptions.Generate(new SentryUnityOptions());
+            var nativeOptionsString = NativeOptions.Generate(new SentryUnityOptions());
             nativeOptionsString += "AppendedTextToFailCompilation";
 
             File.WriteAllText(testOptionsFileName, nativeOptionsString);
@@ -55,9 +53,8 @@ namespace Sentry.Unity.Editor.iOS.Tests
         public void CreateOptionsFile_NewSentryOptions_FileCreated()
         {
             const string testOptionsFileName = "testOptions.m";
-            var nativeOptions = new NativeOptions();
 
-            nativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
+            NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
 
             Assert.IsTrue(File.Exists(testOptionsFileName));
 
