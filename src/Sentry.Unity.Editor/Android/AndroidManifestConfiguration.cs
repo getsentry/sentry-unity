@@ -54,6 +54,7 @@ namespace Sentry.Unity.Editor.Android
             var gradleProjectPath = Directory.GetParent(basePath).FullName;
             SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
             SetupProguard(gradleProjectPath);
+            CopyAndroidSdkToGradleProject(gradleProjectPath);
         }
 
         internal void ModifyManifest(string basePath)
@@ -65,33 +66,33 @@ namespace Sentry.Unity.Editor.Android
                     manifestPath);
             }
 
-            var disableAutoInit = false;
+            var enableNativeSupport = true;
             if (_options is null)
             {
                 _logger.LogWarning("Android native support disabled because Sentry has not been configured. " +
                                   "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
-                disableAutoInit = true;
+                enableNativeSupport = false;
             }
             else if (!_options.IsValid())
             {
                 _logger.LogDebug("Android native support disabled.");
-                disableAutoInit = true;
+                enableNativeSupport = false;
             }
             else if (!_options.AndroidNativeSupportEnabled)
             {
                 _logger.LogDebug("Android native support disabled through the options.");
-                disableAutoInit = true;
+                enableNativeSupport = false;
             }
 
             var androidManifest = new AndroidManifest(manifestPath, _logger);
             androidManifest.RemovePreviousConfigurations();
-            androidManifest.AddDisclaimerComment();
 
-            if (disableAutoInit)
+            if (!enableNativeSupport)
             {
-                androidManifest.DisableSentryAndSave();
                 return;
             }
+
+            androidManifest.AddDisclaimerComment();
 
             _logger.LogDebug("Configuring Sentry options on AndroidManifest: {0}", basePath);
             androidManifest.SetSDK("sentry.java.android.unity");
@@ -226,6 +227,37 @@ namespace Sentry.Unity.Editor.Android
             }
         }
 
+        internal void CopyAndroidSdkToGradleProject(string gradlePath)
+        {
+            var sentrySdkPath = Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry");
+            var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
+
+            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
+            {
+                _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
+                foreach (var file in Directory.GetFiles(sentrySdkPath))
+                {
+                    var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (!File.Exists(destinationFile))
+                    {
+                        File.Copy(file, destinationFile);
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogInfo("Removing the Android SDK from the output project.");
+                foreach (var file in Directory.GetFiles(sentrySdkPath))
+                {
+                    var fileToDelete = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (File.Exists(fileToDelete))
+                    {
+                        File.Delete(fileToDelete);
+                    }
+                }
+            }
+        }
+
         internal static string GetManifestPath(string basePath) =>
             new StringBuilder(basePath)
                 .Append(Path.DirectorySeparatorChar)
@@ -315,14 +347,6 @@ namespace Sentry.Unity.Editor.Android
 
         public void AddDisclaimerComment() =>
             _applicationElement.AppendChild(_applicationElement.OwnerDocument.CreateComment(Disclaimer));
-
-        // Without this we get:
-        // Unable to get provider io.sentry.android.core.SentryInitProvider: java.lang.IllegalArgumentException: DSN is required. Use empty string to disable SDK.
-        internal void DisableSentryAndSave()
-        {
-            SetMetaData($"{SentryPrefix}.auto-init", "false");
-            _ = Save();
-        }
 
         internal void SetDsn(string dsn) => SetMetaData($"{SentryPrefix}.dsn", dsn);
 
