@@ -44,8 +44,10 @@ namespace Sentry.Unity.Editor.Android
                 }
                 else
                 {
+                    var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
+                    Directory.CreateDirectory(logsDir);
                     text += "        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'\n";
-                    text += $"        def sentryLogFile = new FileOutputStream('{ConvertSlashes(_unityProjectPath)}/Logs/sentry-symbols-upload.log')\n";
+                    text += $"        def sentryLogFile = new FileOutputStream('{logsDir}/sentry-symbols-upload.log')\n";
                 }
                 text += "        exec {{\n";
                 text += "            environment 'SENTRY_PROPERTIES', './sentry.properties'\n";

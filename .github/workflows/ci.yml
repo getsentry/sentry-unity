@@ -303,7 +303,8 @@ jobs:
 
       - name: Build with Sentry SDK
         run: |
-          ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+          $platform = ('${{ matrix.platform }}' -eq 'Android') -and ('${{ github.ref_name }}' -ne 'main') ? 'Android-Export' : '${{ matrix.platform }}'
+          ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols
 
       - name:
         run: |
