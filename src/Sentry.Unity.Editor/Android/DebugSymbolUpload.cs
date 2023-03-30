@@ -45,7 +45,9 @@ namespace Sentry.Unity.Editor.Android
                 else
                 {
                     text += "        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'\n";
-                    text += $"        def sentryLogFile = new FileOutputStream('{ConvertSlashes(_unityProjectPath)}/Logs/sentry-symbols-upload.log')\n";
+                    text += $"        def logFile = file('{ConvertSlashes(_unityProjectPath)}/Logs/sentry-symbols-upload.log')\n";
+                    text += "        logFile.getParentFile().mkdirs()\n";
+                    text += "        def sentryLogFile = new FileOutputStream(logFile, false)\n";
                 }
                 text += "        exec {{\n";
                 text += "            environment 'SENTRY_PROPERTIES', './sentry.properties'\n";
