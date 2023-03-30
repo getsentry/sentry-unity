@@ -229,7 +229,7 @@ namespace Sentry.Unity.Editor.Android
 
         internal void CopyAndroidSdkToGradleProject(string gradlePath)
         {
-            var sentrySdkPath = Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry");
+            var sentrySdkPath = Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
             var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
 
             if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
