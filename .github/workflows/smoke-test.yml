@@ -1,0 +1,411 @@
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+    secrets:
+      LICENSE_SERVER_URL:
+        required: true
+      UNITY_LICENSE_SERVER_CONFIG:
+        required: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  # This produces the `samples/IntegrationTest` as `smoke-test-${{ inputs.unity-version }}`. If running on the `main`
+  # branch, the project doesn't include Sentry SDK because in that case we test building with & without it.
+  # We could just create the project later in `smoke-test-build` but then it's executed for each job in the matrix
+  # and reduces concurrency because of Unity licence limits.
+  create:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    name: Create project
+    runs-on: ubuntu-latest
+    env:
+      UNITY_PATH: docker exec unity unity-editor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Start the Unity docker container
+        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
+
+      - name: Create new Project
+        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Download UPM package
+        if: ${{ github.ref_name != 'main' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}
+
+      - name: Extract UPM package
+        if: ${{ github.ref_name != 'main' }}
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name != 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      # We create tar explicitly because upload-artifact is slow for many files.
+      - name: Create archive
+        run: tar -cvzf test-project.tar.gz samples/IntegrationTest
+
+      - name: Upload project
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-${{ inputs.unity-version }}
+          if-no-files-found: error
+          path: test-project.tar.gz
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+  # On Mac & Windows, we do a Unity build & run of the smoke test in a single job:
+  build-and-run-desktop:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    name: Build and run ${{ matrix.os }}
+    needs: [create]
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['windows', 'macos']
+        include:
+          - os: windows
+            unity-modules: windows-il2cpp
+            unity-config-path: C:/ProgramData/Unity/config/
+          - os: macos
+            unity-modules: mac-il2cpp
+            unity-config-path: /Library/Application Support/Unity/config/
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Load env
+        id: env
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ inputs.unity-version }}")" >> $env:GITHUB_OUTPUT
+
+      - name: Setup Unity
+        uses: getsentry/setup-unity@46c2e082d98cc3a825a5b59038cb31705fe9ff56
+        with:
+          unity-version: ${{ steps.env.outputs.unityVersion }}
+          unity-modules: ${{ matrix.unity-modules }}
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Create Unity license config
+        run: |
+          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
+          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@v3
+        with:
+          name: smoke-test-${{ inputs.unity-version }}
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
+
+      - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}
+
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Configure Sentry
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
+
+      - name: Build with Sentry SDK
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ inputs.unity-version }}"
+
+      - name: Run Smoke Test
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
+
+      - name: Run Crash Test
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
+
+  # A Linux, docker-based build to prepare a game ("player") executable for some platforms, project for others.
+  unity-build:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    name: Unity Build ${{ matrix.platform }}
+    needs: [create]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ['Android', 'WebGL', 'Linux', 'iOS']
+        include:
+          - platform: Linux
+            image-suffix: '-il2cpp'
+    env:
+      UNITY_PATH: docker exec unity unity-editor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Start the Unity docker container
+        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
+
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@v3
+        with:
+          name: smoke-test-${{ inputs.unity-version }}
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
+
+      - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}
+
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Build with Sentry SDK
+        run: |
+          ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}" -CheckSymbols
+
+      - name:
+        run: |
+          $platform = '${{ matrix.platform }}'
+          if ($platform -eq 'iOS')
+          {
+            $checkSymbols = $false
+          }
+          elseif (($platform -eq 'Android') -and ('${{ github.ref_name }}' -ne 'main'))
+          {
+            $checkSymbols = $false
+            $platform = 'Android-Export'
+          }
+          else
+          {
+            $checkSymbols = $true
+          }
+          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols:$checkSymbols -UnityVersion "${{ inputs.unity-version }}"
+
+      # We create tar explicitly because upload-artifact is slow for many files.
+      - name: Create archive
+        shell: bash
+        run: |
+          # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
+          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          tar -cvzf test-app.tar.gz samples/IntegrationTest/Build
+
+      - name: Upload test app
+        uses: actions/upload-artifact@v3
+        with:
+          name: testapp-${{ matrix.platform }}-${{ inputs.unity-version }}
+          if-no-files-found: error
+          path: test-app.tar.gz
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - name: Upload IntegrationTest project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-project-${{ matrix.platform }}-${{ inputs.unity-version }}
+          path: |
+            samples/IntegrationTest
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+  compile-mobile:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [unity-build]
+    name: Compile ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform == 'iOS' && 'macos' || 'ubuntu' }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ['Android', 'iOS']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download app project
+        uses: actions/download-artifact@v3
+        with:
+          name: testapp-${{ matrix.platform }}-${{ inputs.unity-version }}
+
+      - name: Extract app project
+        run: tar -xvzf test-app.tar.gz
+
+      - uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc # pin@v2
+        if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
+
+      - uses: nttld/setup-ndk@8c3b609ff4d54576ea420551943fd34b4d03b0dc # pin@v1
+        if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
+        id: setup-ndk
+        with:
+          # See supported version in https://docs.unity3d.com/2022.2/Documentation/Manual/android-sdksetup.html
+          ndk-version: ${{ (inputs.unity-version == '2019' || inputs.unity-version == '2020') && 'r19' || 'r21d' }}
+          add-to-path: false
+
+      - name: Build app
+        if: ${{ matrix.platform != 'Android' || github.ref_name != 'main' }}
+        run: |
+          if ("${{ matrix.platform }}" -eq "Android")
+          {
+            # Replace local.properties so that it doesn't reference Unity built-in SDK & NDK (not available in this job).
+            @("sdk.dir=$($env:ANDROID_SDK_ROOT)", "ndk.dir=${{ steps.setup-ndk.outputs.ndk-path }}") | Out-File "samples/IntegrationTest/Build/local.properties"
+          }
+          ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
+
+      - name: Upload app
+        uses: actions/upload-artifact@v3
+        with:
+          name: testapp-${{ matrix.platform }}-compiled-${{ inputs.unity-version }}
+          # Collect app but ignore the files that are not required for the test.
+          path: |
+            samples/IntegrationTest/Build/*.apk
+            samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
+            !**/Release-iphonesimulator/*.dSYM
+            !**/Release-iphonesimulator/UnityFramework.framework/*
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+  run-android:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [compile-mobile]
+    name: Run Android ${{ matrix.api-level }}
+    uses: ./.github/workflows/android-smoke-test-wrapper.yml
+    with:
+      unity-version: ${{ inputs.unity-version }}
+      api-level: ${{ matrix.api-level }}
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [27, 28, 29, 30, 31] # last updated October 2022
+        include:
+          # API 21 is barely used but let's check it as the minimum supported version for now.
+          - api-level: ${{ inputs.unity-version == '2019' && '21' || '27' }}
+        exclude:
+          # Seems like there's an error in Unity with Android API 30 - disabling.
+          # https://github.com/getsentry/sentry-unity/issues/719#issuecomment-1129129952
+          - api-level: ${{ (inputs.unity-version == '2021' || inputs.unity-version == '2022') && '30' }}
+
+  run-ios:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [compile-mobile]
+    name: Run iOS ${{ matrix.ios }}
+    runs-on: macos-12
+    strategy:
+      fail-fast: false
+      matrix:
+        # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
+        # That page also shows which iPhones are supported with whith iOS version, therefore we don't need to test
+        # iOS 13 and 14 because there are no devices that support those version while not supporting iOS 15.
+        # On the other hand https://developer.apple.com/support/app-store/ shows 14 % phones and 18 % tablets use iOS 14
+        # as of May 31, 2022. Therefore, let's stick to testing iOS 14 until 2023.
+        # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
+        # Also make sure to match the versions available here:
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+        ios: ['12.4', '14.5', '15.4', latest] # last updated October 2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download app artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: testapp-iOS-compiled-${{ inputs.unity-version }}
+          path: samples/IntegrationTest/Build
+
+      - name: Setup xcode-install
+        # Github Virtual machine already sets the runtime and simulator for the latest release.
+        if: ${{ matrix.ios != 'latest'}}
+        run: gem install xcode-install
+
+      - name: Setup ${{matrix.ios}} runtime
+        if: ${{ matrix.ios != 'latest'}}
+        run: xcversion simulators --install='iOS ${{matrix.ios}}'
+
+      - name: Setup ${{matrix.ios}} Simulator
+        if: ${{ matrix.ios != 'latest' }}
+        # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
+        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios }}"
+
+      - name: Smoke test
+        id: smoke-test-ios
+        timeout-minutes: 10
+        run: |
+          $runtime = "${{ matrix.ios }}"
+          If ($runtime -ne "latest")
+          {
+            $runtime = "iOS " + $runtime
+          }
+          ./Scripts/smoke-test-ios.ps1 Test "$runtime" -IsIntegrationTest
+
+  run-webgl-and-linux:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [unity-build]
+    name: Run  ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ['WebGL', 'Linux']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download test app artifact
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: testapp-${{ matrix.platform }}-${{ inputs.unity-version }}
+
+      - name: Extract test app
+        run: tar -xvzf test-app.tar.gz
+
+      - name: Run (WebGL)
+        if: ${{ matrix.platform == 'WebGL' }}
+        timeout-minutes: 10
+        run: |
+          pip3 install --upgrade --user selenium urllib3 requests
+          python3 scripts/smoke-test-webgl.py "samples/IntegrationTest/Build"
+
+      - name: Run Smoke Test (Linux)
+        if: ${{ matrix.platform == 'Linux' }}
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
+
+      - name: Run Crash Test (Linux)
+        if: ${{ matrix.platform == 'Linux' }}
+        run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
