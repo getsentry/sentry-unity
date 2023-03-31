@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Java SDK from v6.14.0 to v6.16.0 ([#1237](https://github.com/getsentry/sentry-unity/pull/1237))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6160)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.14.0...6.16.0)
+
 ## Fixes
 
 - Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
