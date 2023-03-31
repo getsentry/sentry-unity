@@ -77,7 +77,8 @@ namespace Sentry.Unity.Editor.Tests.Android
                 "Android native support disabled because Sentry has not been configured. " +
                 "You can do that through the editor: Tools -> Sentry");
 
-            Assert.False(manifest.Contains("io.sentry"));
+            Debug.Log($"Manifest:\n{manifest}");
+            Assert.False(manifest.Contains("io.sentry.dsn"));
         }
 
         [Test]

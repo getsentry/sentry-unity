@@ -9,7 +9,7 @@
 
 ### Features
 
-- With `Android Native Support` disabled the SDK now supports exporting an Android project without any modifications to the gradle project ([#1263](https://github.com/getsentry/sentry-unity/pull/1263))
+- The SDK now supports exporting the project to Android without any modifications to gradle ([#1263](https://github.com/getsentry/sentry-unity/pull/1263))
 
 ### Dependencies
 
