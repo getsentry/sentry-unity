@@ -2,12 +2,14 @@
 
 ## Unreleased
 
-## Fixes
-
-- Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
 ### Fixes
 
+- Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
 - Sentry CLI integration when exporting an Android project ([#1242](https://github.com/getsentry/sentry-unity/pull/1242))
+
+### Features
+
+- With `Android Native Support` disabled the SDK now supports exporting an Android project without any modifications to the gradle project ([#1263](https://github.com/getsentry/sentry-unity/pull/1263))
 
 ### Dependencies
 
