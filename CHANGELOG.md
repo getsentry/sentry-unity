@@ -4,10 +4,11 @@
 
 ### Fixes
 
-- The SDK no longer adds the Sentry.framework to the output Xcode project when `iOS Native Support` is disabled ([#1233](https://github.com/getsentry/sentry-unity/pull/1233))
-## Fixes
-
 - Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
+
+### Features
+
+- The SDK now supports exporting the project to iOS without any modifications to Xcode ([#1233](https://github.com/getsentry/sentry-unity/pull/1233))
 
 ### Dependencies
 
