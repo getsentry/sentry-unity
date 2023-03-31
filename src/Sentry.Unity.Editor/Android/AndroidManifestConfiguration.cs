@@ -54,7 +54,8 @@ namespace Sentry.Unity.Editor.Android
             var gradleProjectPath = Directory.GetParent(basePath).FullName;
             SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
             SetupProguard(gradleProjectPath);
-            CopyAndroidSdkToGradleProject(gradleProjectPath);
+
+            CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
         }
 
         internal void ModifyManifest(string basePath)
@@ -227,15 +228,20 @@ namespace Sentry.Unity.Editor.Android
             }
         }
 
-        internal void CopyAndroidSdkToGradleProject(string gradlePath)
+        internal void CopyAndroidSdkToGradleProject(string unityProjectPath, string gradlePath)
         {
-            var sentrySdkPath = Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
+            var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
             var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
 
             if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
             {
+                if (!Directory.Exists(androidSdkPath))
+                {
+                    throw new DirectoryNotFoundException($"Failed to find the Android SDK at '{androidSdkPath}'.");
+                }
+
                 _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
-                foreach (var file in Directory.GetFiles(sentrySdkPath))
+                foreach (var file in Directory.GetFiles(androidSdkPath))
                 {
                     var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
                     if (!File.Exists(destinationFile))
@@ -247,7 +253,7 @@ namespace Sentry.Unity.Editor.Android
             else
             {
                 _logger.LogInfo("Removing the Android SDK from the output project.");
-                foreach (var file in Directory.GetFiles(sentrySdkPath))
+                foreach (var file in Directory.GetFiles(androidSdkPath))
                 {
                     var fileToDelete = Path.Combine(targetPath, Path.GetFileName(file));
                     if (File.Exists(fileToDelete))
