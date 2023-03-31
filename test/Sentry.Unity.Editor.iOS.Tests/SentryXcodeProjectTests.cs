@@ -127,7 +127,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
 
-            xcodeProject.AddNativeOptions(_fixture.Options, (_, _) => {});
+            xcodeProject.AddNativeOptions(_fixture.Options, (_, _) => { });
 
             StringAssert.Contains(SentryXcodeProject.OptionsName, xcodeProject.ProjectToString());
         }
