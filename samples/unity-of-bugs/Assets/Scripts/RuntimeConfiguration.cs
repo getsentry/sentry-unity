@@ -17,7 +17,8 @@ public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfigurati
         Debug.Log(nameof(RuntimeConfiguration) + "::Configure() called");
 
         // Making sure the SDK is not already initialized during tests
-        if (SceneManager.GetActiveScene().name.Contains("TestScene"))
+        var sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName != null && sceneName.Contains("TestScene"))
         {
             Debug.Log("Disabling the SDK while running tests.");
             options.Enabled = false;

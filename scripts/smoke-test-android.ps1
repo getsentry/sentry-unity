@@ -1,7 +1,9 @@
 param (
     [Parameter(Position = 0)]
+    [string] $Action = "",
     [Switch] $IsIntegrationTest,
-    [Switch] $WarnIfFlaky
+    [Switch] $WarnIfFlaky,
+    [string] $UnityVersion = ""
 )
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
@@ -15,19 +17,48 @@ Write-Host "#################################################"
 
 if ($IsIntegrationTest)
 {
-    $ApkPath = "samples/IntegrationTest/Build"
+    $BuildDir = "samples/IntegrationTest/Build"
     $ApkFileName = "test.apk"
     $ProcessName = "com.DefaultCompany.IntegrationTest"
+
+    if ($Action -eq "Build")
+    {
+        $buildCallback = {
+            Write-Host "::group::Gradle build $BuildDir"
+            Push-Location $BuildDir
+            try
+            {
+                MakeExecutable "./gradlew"
+                & ./gradlew --info --no-daemon assembleRelease | ForEach-Object {
+                    Write-Host "  $_"
+                }
+                if (-not $?)
+                {
+                    throw "Gradle execution failed"
+                }
+                Copy-Item -Path launcher/build/outputs/apk/release/launcher-release.apk -Destination $ApkFileName
+            }
+            finally
+            {
+                Pop-Location
+                Write-Host "::endgroup::"
+            }
+        }
+
+        $symbolServerOutput = RunWithSymbolServer -Callback $buildCallback
+        CheckSymbolServerOutput 'Android' $symbolServerOutput $UnityVersion
+        return;
+    }
 }
 else
 {
-    $ApkPath = "samples/artifacts/builds/Android"
+    $BuildDir = "samples/artifacts/builds/Android"
     $ApkFileName = "IL2CPP_Player.apk"
     $ProcessName = "io.sentry.samples.unityofbugs"
 }
 $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 
-$_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$ApkPath/../test-artifacts/") `
+$_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$BuildDir/../test-artifacts/") `
     + $(Get-Date -Format "HHmmss")
 function ArtifactsPath
 {
@@ -252,9 +283,9 @@ Else
 }
 
 # Check if APK was built.
-If (-not (Test-Path -Path "$ApkPath/$ApkFileName" ))
+If (-not (Test-Path -Path "$BuildDir/$ApkFileName" ))
 {
-    ExitNow "failed" "Expected APK on $ApkPath/$ApkFileName but it was not found."
+    ExitNow "failed" "Expected APK on $BuildDir/$ApkFileName but it was not found."
 }
 
 # Test
@@ -286,7 +317,7 @@ foreach ($device in $DeviceList)
     do
     {
         Write-Host "Installing test app..."
-        $stdout = (adb -s $device install -r $ApkPath/$ApkFileName 2>&1)
+        $stdout = (adb -s $device install -r $BuildDir/$ApkFileName 2>&1)
 
         if ($stdout.Contains("Broken pipe"))
         {

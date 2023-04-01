@@ -154,8 +154,11 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
 
 function SymbolServerUrlFor([string] $UnityPath, [string] $Platform = "")
 {
-    # Note: iOS has special handling - its "update-sentry" script runs elsewhere than the actual build & upload.
-    ($UnityPath.StartsWith("docker ") -and ($Platform -ne "iOS")) ? 'http://172.17.0.1:8000' : 'http://localhost:8000'
+    # Note: Android and iOS have special handling - even though the project is exported while running in docker,
+    # the actual build and thus the symbol-server test runs later, on a different machine, outside docker.
+    # Therefore, we return localhost regardless of building in docker.
+    (!$UnityPath.StartsWith("docker ") -or ($Platform -eq "iOS") -or ($Platform -eq "Android-Export")) `
+        ? 'http://localhost:8000' : 'http://172.17.0.1:8000'
 }
 
 function RunWithSymbolServer([ScriptBlock] $Callback)
@@ -262,7 +265,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         if ($unity_2021_OrHigher)
         {
             $expectedFiles = @(
-                "libil2cpp.so: count=$($withSources ? 4 : 1)",
+                "libil2cpp.so: count=$($withSources ? 6 : 1)",
                 'libil2cpp.sym.so: count=1',
                 'libmain.so: count=1',
                 'libsentry-android.so: count=4',
@@ -281,8 +284,6 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             $expectedFiles = @(
                 'libil2cpp.so: count=1',
                 'libmain.so: count=1',
-                'libsentry-android.so: count=7',
-                'libsentry.so: count=7',
                 'libunity.so: count=1',
                 'libunity.sym.so: count=1'
             )
@@ -290,7 +291,9 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             {
                 $expectedFiles = @(
                     "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
-                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)"
+                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)",
+                    'libsentry-android.so: count=7',
+                    'libsentry.so: count=7'
                 ) + $expectedFiles
             }
             else
@@ -348,10 +351,14 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             }
         }
         # Note: control only gets here if none of the alternatives match...
-        $successful = $false
         $fileWithoutCount = $file.Substring(0, $file.Length - 1)
         $filePattern = [Regex]::new('(?<=' + "$([Regex]::Escape($fileWithoutCount))" + ')[\w]+')
         $actualCount = $filePattern.Matches($symbolServerOutput)
+
+        if ("$actualCount" -eq "")
+        {
+            $successful = $false
+        }
 
         Write-Host "  $alternatives - MISSING `n    Server received '$actualCount' instead." -ForegroundColor Red
     }
@@ -376,5 +383,15 @@ function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $succes
     Else
     {
         Write-Error "$name | Unity exited without an error but the successMessage was not found in the output ('$successMessage')"
+    }
+}
+
+function MakeExecutable([string] $file)
+{
+    If ((Test-Path -Path $file) -and (Get-Command 'chmod' -ErrorAction SilentlyContinue))
+    {
+        Write-Host -NoNewline "Fixing permission for $file : "
+        chmod +x $file
+        Write-Host "OK" -ForegroundColor Green
     }
 }

@@ -138,7 +138,7 @@ class Handler(SimpleHTTPRequestHandler):
 appServer = ThreadingHTTPServer((host, port), Handler)
 appServerThread = Thread(target=appServer.serve_forever)
 appServerThread.start()
-
+time.sleep(1)
 
 class TestDriver:
     def __init__(self):
