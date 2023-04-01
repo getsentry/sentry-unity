@@ -2,18 +2,14 @@
 
 ## Unreleased
 
-### Dependencies
-
-- Bump Java SDK from v6.14.0 to v6.17.0 ([#1264](https://github.com/getsentry/sentry-unity/pull/1264))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6170)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.14.0...6.17.0)
-
-## Fixes
-
-- Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
 ### Fixes
 
 - Sentry CLI integration when exporting an Android project ([#1242](https://github.com/getsentry/sentry-unity/pull/1242))
+- Resolved the `Microsoft.Extensions.FileSystemGlobbing.dll` dependency conflict ([#1253](https://github.com/getsentry/sentry-unity/pull/1253))
+
+### Features
+
+- The SDK now supports exporting the project to iOS without any modifications to Xcode ([#1233](https://github.com/getsentry/sentry-unity/pull/1233))
 
 ### Dependencies
 
@@ -26,6 +22,9 @@
 - Bump Native SDK from v0.6.0 to v0.6.1 ([#1254](https://github.com/getsentry/sentry-unity/pull/1254))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#061)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.6.0...0.6.1)
+- Bump Java SDK from v6.14.0 to v6.17.0 ([#1264](https://github.com/getsentry/sentry-unity/pull/1264))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6170)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.14.0...6.17.0)
 
 ## 1.1.0
 

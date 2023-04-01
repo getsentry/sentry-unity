@@ -19,7 +19,7 @@ namespace Sentry.Unity.Editor.iOS
         internal const string OptionsName = "SentryOptions.m";
         internal const string SymbolUploadPhaseName = "SymbolUpload";
 
-        private readonly string _mainPath = Path.Combine("MainApp", "main.mm");
+        internal static readonly string MainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
         private readonly string _uploadScript = @"
 process_upload_symbols() {{
@@ -51,16 +51,7 @@ fi
         private string _mainTargetGuid = null!;             // Set when opening the project
         private string _unityFrameworkTargetGuid = null!;   // Set when opening the project
 
-        private readonly INativeMain _nativeMain;
-        private readonly INativeOptions _nativeOptions;
-
-        internal SentryXcodeProject(string projectRoot) : this(projectRoot, new NativeMain(), new NativeOptions())
-        { }
-
-        internal SentryXcodeProject(
-            string projectRoot,
-            INativeMain mainModifier,
-            INativeOptions sentryNativeOptions)
+        internal SentryXcodeProject(string projectRoot)
         {
             var xcodeAssembly = Assembly.Load("UnityEditor.iOS.Extensions.Xcode");
             _pbxProjectType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PBXProject");
@@ -71,9 +62,6 @@ fi
             _projectRoot = projectRoot;
             _projectPath = (string)_pbxProjectType.GetMethod("GetPBXProjectPath", BindingFlags.Public | BindingFlags.Static)
                 .Invoke(null, new[] { _projectRoot });
-
-            _nativeMain = mainModifier;
-            _nativeOptions = sentryNativeOptions;
         }
 
         public static SentryXcodeProject Open(string path)
@@ -166,15 +154,15 @@ fi
                 .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", uploadScript });
         }
 
-        public void AddNativeOptions(SentryUnityOptions options)
+        public void AddNativeOptions(SentryUnityOptions options, Action<string, SentryUnityOptions> nativeOptionFileCreation)
         {
-            _nativeOptions.CreateFile(Path.Combine(_projectRoot, _optionsPath), options);
+            nativeOptionFileCreation.Invoke(Path.Combine(_projectRoot, _optionsPath), options);
             _pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { _optionsPath, _optionsPath, 1 }); // 1 is PBXSourceTree.Source
         }
 
         public void AddSentryToMain(SentryUnityOptions options) =>
-            _nativeMain.AddSentry(Path.Combine(_projectRoot, _mainPath), options.DiagnosticLogger);
+            NativeMain.AddSentry(Path.Combine(_projectRoot, MainPath), options.DiagnosticLogger);
 
         internal bool MainTargetContainsSymbolUploadBuildPhase()
         {
