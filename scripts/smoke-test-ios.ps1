@@ -20,7 +20,7 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIn
 $ProjectName = "Unity-iPhone"
 $XcodeArtifactPath = "samples/IntegrationTest/Build"
 $ArchivePath = "$XcodeArtifactPath/archive"
-$AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-IphoneSimulator/IntegrationTest.app"
+$AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-iphonesimulator/IntegrationTest.app"
 $AppName = "com.DefaultCompany.IntegrationTest"
 
 Class AppleDevice
@@ -42,16 +42,6 @@ Class AppleDevice
         }
         $this.Name = $result.Groups["model"].Value
         $this.UUID = $result.Groups["uuid"].Value
-    }
-}
-
-function MakeExecutable([string] $file)
-{
-    If (Test-Path -Path $file)
-    {
-        Write-Host -NoNewline "Fixing permission for $file : "
-        chmod +x $file
-        Write-Host "OK" -ForegroundColor Green
     }
 }
 

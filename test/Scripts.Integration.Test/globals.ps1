@@ -28,15 +28,11 @@ function GetTestAppName
     {
         return "test"
     }
-    ElseIf ($buildMethod.contains("Android"))
+    ElseIf ($buildMethod.contains("AndroidIl2CPPPlayer"))
     {
         return "test.apk"
     }
-    ElseIf ($buildMethod.contains("IOS"))
-    {
-        return ""
-    }
-    ElseIf ($buildMethod.contains("WebGL"))
+    ElseIf ($buildMethod.contains("AndroidIl2CPPProject") -or $buildMethod.contains("IOS") -or $buildMethod.contains("WebGL"))
     {
         return ""
     }
@@ -116,11 +112,12 @@ function BuildMethodFor([string] $platform)
     switch ("$platform")
     {
         "Android" { return "Builder.BuildAndroidIl2CPPPlayer" }
+        "Android-Export" { return "Builder.BuildAndroidIl2CPPProject" }
         "MacOS" { return "Builder.BuildMacIl2CPPPlayer" }
         "Windows" { return "Builder.BuildWindowsIl2CPPPlayer" }
         "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
         "WebGL" { return "Builder.BuildWebGLPlayer" }
-        "iOS" { return "Builder.BuildIOSPlayer" }
+        "iOS" { return "Builder.BuildIOSProject" }
         ""
         {
             If ($IsMacOS)

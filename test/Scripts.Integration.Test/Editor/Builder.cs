@@ -18,6 +18,28 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
         DisableUnityAudio();
+        EditorUserBuildSettings.allowDebugging = false;
+
+        // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
+#if UNITY_2022_1_OR_NEWER
+        PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
+#elif UNITY_2021_2_OR_NEWER
+        EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
+#endif
+
+        // Disable optimizations to reduce the build time.
+#if UNITY_2021_2_OR_NEWER
+        // TODO Linux fails with `free(): invalid pointer` in the smoke-test, after everthing seems to have shut down.
+        if (target != BuildTarget.StandaloneLinux64) {
+            PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
+        }
+#else
+        // TODO Windows fails to build
+        if (target != BuildTarget.StandaloneWindows64)
+        {
+            PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
+        }
+#endif
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
@@ -35,7 +57,7 @@ public class Builder
         var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
         var summary = report.summary;
 
-        Debug.Log("Build result at outputPath: " + report.summary.outputPath);
+        Debug.Log("Build result at outputPath: " + summary.outputPath);
 
         switch (summary.result)
         {
@@ -43,19 +65,8 @@ public class Builder
                 Debug.Log($"Build succeeded: {summary.totalSize} bytes");
                 break;
             default:
-                var message = $"Build result: {summary.result} with {summary.totalErrors}" +
-                              $" error{(summary.totalErrors > 1 ? "s" : "")}.";
-
-                Debug.Log(message);
-                throw new Exception(message);
-        }
-
-        if (summary.totalErrors > 0)
-        {
-            var message = $"Build succeeded with {summary.totalErrors} error{(summary.totalErrors > 1 ? "s" : "")}.";
-            Debug.Log(message);
-            // Break the build
-            throw new Exception(message);
+                Debug.Log($"Build result: {summary.result} with {summary.totalErrors}" + $" error{(summary.totalErrors > 1 ? "s" : "")}.");
+                throw new Exception("Build failed, see details above.");
         }
 
         if (summary.totalWarnings > 0)
@@ -63,11 +74,17 @@ public class Builder
             Debug.Log($"Build succeeded with {summary.totalWarnings} warning{(summary.totalWarnings > 1 ? "s" : "")}.");
         }
     }
+
     public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone);
     public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
     public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
     public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
-    public static void BuildIOSPlayer() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
+    public static void BuildAndroidIl2CPPProject()
+    {
+        EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
+    }
+    public static void BuildIOSProject() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
     public static void BuildWebGLPlayer() => BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL);
 
     public static Dictionary<string, string> ParseCommandLineArguments()

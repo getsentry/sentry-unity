@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
+using UnityEditor.Build;
 
 namespace Sentry.Unity.Editor.iOS.Tests
 {
@@ -29,6 +30,73 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
         [TearDown]
         public void TearDown() => Directory.Delete(_testDirectoryRoot, true);
+
+        [Test]
+        public void AddSentryToXcodeProject_OptionsNull_LogsAndReturn()
+        {
+            var options = new SentryUnityOptions { Enabled = false };
+            var testLogger = new TestLogger();
+
+            BuildPostProcess.AddSentryToXcodeProject(null, null, testLogger, string.Empty);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Warning &&
+                log.message.Contains("iOS native support disabled because Sentry has not been configured.")));
+            Assert.IsFalse(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Info &&
+                log.message.Contains("Attempting to add Sentry to the Xcode project.")));
+        }
+
+        [Test]
+        public void IsNativeSupportEnabled_OptionsDisabled_LogsAndReturnsFalse()
+        {
+            var options = new SentryUnityOptions { Enabled = false };
+            var testLogger = new TestLogger();
+
+            var enabled = BuildPostProcess.IsNativeSupportEnabled(options, testLogger);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Warning &&
+                log.message.Contains("Sentry SDK has been disabled. There will be no iOS native support.")));
+            Assert.IsFalse(enabled);
+        }
+
+        [Test]
+        public void IsNativeSupportEnabled_IosNativeSupportDisabled_LogsAndReturnsFalse()
+        {
+            var options = new SentryUnityOptions
+            {
+                Dsn = "test_dsn",
+                IosNativeSupportEnabled = false
+            };
+            var testLogger = new TestLogger();
+
+            var enabled = BuildPostProcess.IsNativeSupportEnabled(options, testLogger);
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Info &&
+                log.message.Contains("The iOS native support has been disabled through the options.")));
+            Assert.IsFalse(enabled);
+        }
+
+        [Test]
+        public void AddSentryToXcodeProject_NativeSupportDisabledButMainAlreadyModified_ThrowsBuildFailedException()
+        {
+            var file = new FileInfo(Path.Combine(_xcodeProjectPath, SentryXcodeProject.MainPath));
+            file.Directory?.Create();
+            File.WriteAllText(file.FullName, NativeMain.Include);
+            var options = new SentryUnityOptions
+            {
+                Dsn = "test_dsn",
+                IosNativeSupportEnabled = false
+            };
+            var testLogger = new TestLogger();
+
+            Assert.Throws<BuildFailedException>(() =>
+                BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _xcodeProjectPath));
+
+            Directory.Delete(_xcodeProjectPath, true);
+        }
 
         [Test]
         public void CopyFrameworkToXcodeProject_CopyFramework_DirectoryExists()

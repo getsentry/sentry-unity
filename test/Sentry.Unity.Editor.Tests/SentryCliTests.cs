@@ -10,11 +10,9 @@ namespace Sentry.Unity.Editor.Tests
     public class SentryCliTests
     {
         [Test]
-        public void GetSentryCliPlatformName_UnrecognizedPlatform_ThrowsInvalidOperationException()
+        public void GetSentryCliPlatformExecutable_UnrecognizedPlatform_ThrowsInvalidOperationException()
         {
-            var application = new TestApplication(platform: RuntimePlatform.LinuxPlayer);
-
-            Assert.Throws<InvalidOperationException>(() => SentryCli.GetSentryCliPlatformName(application));
+            Assert.Throws<InvalidOperationException>(() => SentryCli.GetSentryCliPlatformExecutable(RuntimePlatform.LinuxPlayer));
         }
 
         [Test]
@@ -23,9 +21,7 @@ namespace Sentry.Unity.Editor.Tests
         [TestCase(RuntimePlatform.LinuxEditor, SentryCli.SentryCliLinux)]
         public void GetSentryPlatformName_RecognizedPlatform_SetsSentryCliName(RuntimePlatform platform, string expectedName)
         {
-            var application = new TestApplication(platform: platform);
-
-            var actualName = SentryCli.GetSentryCliPlatformName(application);
+            var actualName = SentryCli.GetSentryCliPlatformExecutable(platform);
 
             Assert.AreEqual(expectedName, actualName);
         }
@@ -39,7 +35,7 @@ namespace Sentry.Unity.Editor.Tests
         [Test]
         public void GetSentryCliPath_ValidFileName_ReturnsPath()
         {
-            var sentryCliPlatformName = SentryCli.GetSentryCliPlatformName(new TestApplication(platform: Application.platform));
+            var sentryCliPlatformName = SentryCli.GetSentryCliPlatformExecutable(Application.platform);
             var expectedPath = Path.GetFullPath(
                 Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName));
 
@@ -91,38 +87,41 @@ namespace Sentry.Unity.Editor.Tests
         }
 
         [Test]
-        public void AddExecutableToXcodeProject_ProjectPathDoesNotExist_ThrowsDirectoryNotFoundException()
+        public void SetupSentryCli_WithoutArgs_ReturnsValidCliPath()
         {
-            Assert.Throws<DirectoryNotFoundException>(() => SentryCli.AddExecutableToXcodeProject("non-existent-path", new UnityLogger(new SentryUnityOptions())));
+            var returnedPath = SentryCli.SetupSentryCli();
+            Assert.IsTrue(File.Exists(returnedPath));
         }
 
         [Test]
-        public void AddExecutableToXcodeProject_ProjectPathExists_CopiesSentryCliForMacOS()
+        public void SetupSentryCli_WithCustomBuildHost_ReturnsValidCliPath()
         {
-            var fakeXcodeProjectDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(fakeXcodeProjectDirectory);
+            var returnedPath = SentryCli.SetupSentryCli(null, RuntimePlatform.OSXEditor);
+            var expectedExeName = SentryCli.GetSentryCliPlatformExecutable(RuntimePlatform.OSXEditor);
 
-            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory, new UnityLogger(new SentryUnityOptions()));
-
-            Assert.IsTrue(File.Exists(Path.Combine(fakeXcodeProjectDirectory, SentryCli.SentryCliMacOS)));
-
-            Directory.Delete(fakeXcodeProjectDirectory, true);
+            Assert.IsTrue(File.Exists(returnedPath));
+            Assert.AreEqual(expectedExeName, Path.GetFileName(returnedPath));
         }
 
         [Test]
-        public void AddExecutableToXcodeProject_ExecutableAlreadyExists_LogsAndReturns()
+        public void SetupSentryCli_ProjectPathDoesNotExist_ThrowsDirectoryNotFoundException()
         {
-            var logger = new TestLogger();
-            var fakeXcodeProjectDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(fakeXcodeProjectDirectory);
+            Assert.Throws<DirectoryNotFoundException>(() => SentryCli.SetupSentryCli("non-existent-path"));
+        }
 
-            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory, logger);
-            SentryCli.AddExecutableToXcodeProject(fakeXcodeProjectDirectory, logger);
+        [Test]
+        public void SetupSentryCli_ProjectPathExists_CopiesSentryCli()
+        {
+            var fakeProjectDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(fakeProjectDirectory);
 
-            Assert.IsTrue(File.Exists(Path.Combine(fakeXcodeProjectDirectory, SentryCli.SentryCliMacOS)));
-            Assert.AreEqual(1, logger.Logs.Count);
+            var returnedPath = SentryCli.SetupSentryCli(fakeProjectDirectory);
+            var expectedPath = Path.Combine(fakeProjectDirectory, SentryCli.GetSentryCliPlatformExecutable(Application.platform));
 
-            Directory.Delete(fakeXcodeProjectDirectory, true);
+            Assert.AreEqual(expectedPath, returnedPath);
+            Assert.IsTrue(File.Exists(returnedPath));
+
+            Directory.Delete(fakeProjectDirectory, true);
         }
 
         [Test]

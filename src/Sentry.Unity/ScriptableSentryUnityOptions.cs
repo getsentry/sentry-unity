@@ -49,6 +49,11 @@ namespace Sentry.Unity
         [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
         [field: SerializeField] public int ScreenshotCompression { get; set; } = 75;
 
+        [field: SerializeField] public bool AttachViewHierarchy { get; set; } = false;
+        [field: SerializeField] public int MaxViewHierarchyRootObjects { get; set; } = 100;
+        [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
+        [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
+
         [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
         [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
         [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
@@ -127,6 +132,10 @@ namespace Sentry.Unity
                 AttachScreenshot = AttachScreenshot,
                 ScreenshotQuality = ScreenshotQuality,
                 ScreenshotCompression = ScreenshotCompression,
+                AttachViewHierarchy = AttachViewHierarchy,
+                MaxViewHierarchyRootObjects = MaxViewHierarchyRootObjects,
+                MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
+                MaxViewHierarchyDepth = MaxViewHierarchyDepth,
                 MaxBreadcrumbs = MaxBreadcrumbs,
                 ReportAssembliesMode = ReportAssembliesMode,
                 SendDefaultPii = SendDefaultPii,

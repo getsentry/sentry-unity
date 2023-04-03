@@ -56,6 +56,13 @@ namespace Sentry.Unity
                         new ScreenshotAttachmentContent(options, SentryMonoBehaviour.Instance))));
             }
 
+            if (options.AttachViewHierarchy)
+            {
+                SentrySdk.ConfigureScope(s =>
+                    s.AddAttachment(new ViewHierarchyAttachment(
+                        new UnityViewHierarchyAttachmentContent(options, SentryMonoBehaviour.Instance))));
+            }
+
             if (options.NativeContextWriter is { } contextWriter)
             {
                 SentrySdk.ConfigureScope((scope) =>

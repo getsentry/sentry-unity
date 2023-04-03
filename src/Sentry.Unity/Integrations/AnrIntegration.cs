@@ -115,7 +115,7 @@ namespace Sentry.Unity
 
         private IEnumerator UpdateUiStatus()
         {
-            var waitForSeconds = new WaitForSeconds((float)SleepIntervalMs / 1000);
+            var waitForSeconds = new WaitForSecondsRealtime((float)SleepIntervalMs / 1000);
 
             yield return waitForSeconds;
             while (!_stop)
@@ -180,7 +180,7 @@ namespace Sentry.Unity
 
         private IEnumerator UpdateUiStatus()
         {
-            var waitForSeconds = new WaitForSeconds((float)SleepIntervalMs / 1000);
+            var waitForSeconds = new WaitForSecondsRealtime((float)SleepIntervalMs / 1000);
             while (!_stop)
             {
                 if (_watch.ElapsedMilliseconds >= DetectionTimeoutMs)

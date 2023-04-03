@@ -84,6 +84,26 @@ namespace Sentry.Unity
         public bool AttachScreenshot { get; set; } = false;
 
         /// <summary>
+        /// Try to attach the current scene's hierarchy.
+        /// </summary>
+        public bool AttachViewHierarchy { get; set; } = false;
+
+        /// <summary>
+        /// Maximum number of captured GameObjects in a scene root.
+        /// </summary>
+        public int MaxViewHierarchyRootObjects { get; set; } = 100;
+
+        /// <summary>
+        /// Maximum number of child objects captured for each GameObject.
+        /// </summary>
+        public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
+
+        /// <summary>
+        /// Maximum depth of the hierarchy to capture. For example, setting 1 will only capture root GameObjects.
+        /// </summary>
+        public int MaxViewHierarchyDepth { get; set; } = 10;
+
+        /// <summary>
         /// The quality of the attached screenshot
         /// </summary>
         public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;

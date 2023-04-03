@@ -128,5 +128,19 @@ namespace Sentry.Unity.Tests
 
             Assert.IsNull(arn);
         }
+
+        [UnityTest]
+        public IEnumerator IsNotAffectedByTimeScale()
+        {
+            ApplicationNotResponding? anr = null;
+            _sut = CreateWatchDog(true);
+            _sut.OnApplicationNotResponding += (_, e) => anr = e;
+
+            Time.timeScale = 0.0f;
+            yield return new WaitForSecondsRealtime((float)_timeout.TotalSeconds * 2);
+            Time.timeScale = 1.0f;
+
+            Assert.IsNull(anr);
+        }
     }
 }

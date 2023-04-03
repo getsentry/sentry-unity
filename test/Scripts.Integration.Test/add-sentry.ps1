@@ -10,7 +10,7 @@ $UnityPath = FormatUnityPath $UnityPath
 RunUnityAndExpect $UnityPath "AddSentryPackage" "Sentry Package Installation: SUCCESS" @( `
         "-batchmode", "-projectPath ", "$NewProjectPath", "-installSentry", "Disk")
 
-Write-Host -NoNewline "Copying Integration Test Files"
+Write-Host "Copying Integration Test Files"
 New-Item -Path "$NewProjectAssetsPath" -Name "Scripts" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$NewProjectAssetsPath/Scripts/"
 Copy-Item -Recurse "$IntegrationScriptsPath/Editor/BuildTimeOptions.cs" -Destination "$NewProjectAssetsPath/Editor/"
