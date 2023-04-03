@@ -305,7 +305,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 if (gradle.Contains(SDKDependencies))
                 {
-                    _logger.LogInfo("Adding Android SDK dependencies have previously been added. Removing them.");
+                    _logger.LogInfo("Android SDK dependencies have previously been added. Removing them.");
 
                     var regex = new Regex(regexPattern);
                     var match = regex.Match(gradle);
