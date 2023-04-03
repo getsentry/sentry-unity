@@ -24,7 +24,11 @@ int main(int argc, char* argv[])
 {
     @autoreleasepool
     {
-        [SentrySDK startWithOptions:getSentryOptions()];
+        SentryOptions* options = getSentryOptions();
+        if(options != nil)
+        {
+            [SentrySDK startWithOptions:options];
+        }
 
         id ufw = UnityFrameworkLoad();
         [ufw runUIApplicationMainWithArgc: argc argv: argv];
