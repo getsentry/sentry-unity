@@ -79,7 +79,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             // Sanity check that the previous replacement worked.
             StringAssert.Contains(lineSeparator, File.ReadAllText(gradleScript));
-            Assert.AreEqual(49, Regex.Matches(File.ReadAllText(gradleScript), lineSeparator).Count);
+            Assert.AreEqual(47, Regex.Matches(File.ReadAllText(gradleScript), lineSeparator).Count);
 
             var sut = GetSut();
 

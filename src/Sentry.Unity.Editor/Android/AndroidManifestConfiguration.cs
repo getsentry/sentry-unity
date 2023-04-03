@@ -22,6 +22,10 @@ namespace Sentry.Unity.Editor.Android
         private readonly bool _isDevelopmentBuild;
         private readonly ScriptingImplementation _scriptingImplementation;
 
+        public const string SDKDependencies = @"
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')";
+
         // Lower levels are called first.
         public int callbackOrder => 1;
 
@@ -57,7 +61,7 @@ namespace Sentry.Unity.Editor.Android
             SetupProguard(gradleProjectPath);
 
             CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
-            AddSdkAsDependency(gradleProjectPath);
+            AddAndroidSdkDependencies(gradleProjectPath);
         }
 
         internal void ModifyManifest(string basePath)
@@ -266,11 +270,8 @@ namespace Sentry.Unity.Editor.Android
             }
         }
 
-        internal void AddSdkAsDependency(string gradleProjectPath)
+        internal void AddAndroidSdkDependencies(string gradleProjectPath)
         {
-            const string dependency = @"
-    implementation(name: 'sentry-android-ndk-release', ext:'aar')
-    implementation(name: 'sentry-android-core-release', ext:'aar')";
             const string regexPattern = @"(dependencies\s\{\n).+";
 
             var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
@@ -283,7 +284,7 @@ namespace Sentry.Unity.Editor.Android
 
             if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
             {
-                if (gradle.Contains(dependency))
+                if (gradle.Contains(SDKDependencies))
                 {
                     _logger.LogDebug("Android SDK dependencies already added. Skipping.");
                 }
@@ -294,7 +295,7 @@ namespace Sentry.Unity.Editor.Android
                 var match = regex.Match(gradle);
                 if (match.Success)
                 {
-                    File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, dependency));
+                    File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, SDKDependencies));
                     return;
                 }
 
@@ -302,7 +303,7 @@ namespace Sentry.Unity.Editor.Android
             }
             else
             {
-                if (gradle.Contains(dependency))
+                if (gradle.Contains(SDKDependencies))
                 {
                     _logger.LogInfo("Adding Android SDK dependencies have previously been added. Removing them.");
 
@@ -310,7 +311,7 @@ namespace Sentry.Unity.Editor.Android
                     var match = regex.Match(gradle);
                     if (match.Success)
                     {
-                        var cleanGradle = gradle.Remove(match.Index + match.Length, dependency.Length);
+                        var cleanGradle = gradle.Remove(match.Index + match.Length, SDKDependencies.Length);
                         File.WriteAllText(gradleFilePath, cleanGradle);
                         return;
                     }
