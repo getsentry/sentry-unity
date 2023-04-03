@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
@@ -421,6 +422,37 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             var gradleContent = File.ReadAllText(gradleFilePath);
             StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent);
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportEnabledAndDependenciesAlreadyAdded_LogsAndReturns()
+        {
+            // Arrange
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            var testLogger = new TestLogger();
+            _fixture.SentryUnityOptions!.DiagnosticLogger = testLogger;
+            var sut = _fixture.GetSut();
+
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Act
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Assert
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            Assert.IsTrue(File.Exists(gradleFilePath));
+
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent); // Sanity check
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Debug &&
+                log.message.Contains("Android SDK dependencies already added. Skipping.")));
 
             Directory.Delete(fakeProjectPath, true);
         }
