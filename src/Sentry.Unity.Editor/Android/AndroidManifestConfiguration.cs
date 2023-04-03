@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
@@ -56,6 +57,7 @@ namespace Sentry.Unity.Editor.Android
             SetupProguard(gradleProjectPath);
 
             CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+            AddSdkAsDependency(gradleProjectPath);
         }
 
         internal void ModifyManifest(string basePath)
@@ -260,6 +262,60 @@ namespace Sentry.Unity.Editor.Android
                     {
                         File.Delete(fileToDelete);
                     }
+                }
+            }
+        }
+
+        internal void AddSdkAsDependency(string gradleProjectPath)
+        {
+            const string dependency = @"
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')";
+            const string regexPattern = @"(dependencies\s\{\n).+";
+
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            if (!File.Exists(gradleFilePath))
+            {
+                throw new FileNotFoundException($"Failed to find 'build.gradle' at '{gradleFilePath}'.");
+            }
+
+            var gradle = File.ReadAllText(gradleFilePath);
+
+            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
+            {
+                if (gradle.Contains(dependency))
+                {
+                    _logger.LogDebug("Android SDK dependencies already added. Skipping.");
+                }
+
+                _logger.LogInfo("Adding Android SDK dependencies to 'build.gradle'.");
+
+                var regex = new Regex(regexPattern);
+                var match = regex.Match(gradle);
+                if (match.Success)
+                {
+                    File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, dependency));
+                    return;
+                }
+
+                throw new ArgumentException($"Failed to add Sentry Android dependencies to 'build.gradle'.\n{gradle}", nameof(gradle));
+            }
+            else
+            {
+                if (gradle.Contains(dependency))
+                {
+                    _logger.LogInfo("Adding Android SDK dependencies have previously been added. Removing them.");
+
+                    var regex = new Regex(regexPattern);
+                    var match = regex.Match(gradle);
+                    if (match.Success)
+                    {
+                        var cleanGradle = gradle.Remove(match.Index + match.Length, dependency.Length);
+                        File.WriteAllText(gradleFilePath, cleanGradle);
+                        return;
+                    }
+
+                    throw new ArgumentException("Failed to remove Android SDK dependencies from 'build.gradle'. If this persists consider building a 'clean' build.");
                 }
             }
         }
