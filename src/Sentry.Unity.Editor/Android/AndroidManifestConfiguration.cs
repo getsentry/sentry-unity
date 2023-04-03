@@ -287,19 +287,19 @@ namespace Sentry.Unity.Editor.Android
                 if (gradle.Contains(SDKDependencies))
                 {
                     _logger.LogDebug("Android SDK dependencies already added. Skipping.");
+                    return;
                 }
 
                 _logger.LogInfo("Adding Android SDK dependencies to 'build.gradle'.");
 
                 var regex = new Regex(regexPattern);
                 var match = regex.Match(gradle);
-                if (match.Success)
+                if (!match.Success)
                 {
-                    File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, SDKDependencies));
-                    return;
+                    throw new ArgumentException($"Failed to add Sentry Android dependencies to 'build.gradle'.\n{gradle}", nameof(gradle));
                 }
 
-                throw new ArgumentException($"Failed to add Sentry Android dependencies to 'build.gradle'.\n{gradle}", nameof(gradle));
+                File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, SDKDependencies));
             }
             else
             {
@@ -307,16 +307,7 @@ namespace Sentry.Unity.Editor.Android
                 {
                     _logger.LogInfo("Android SDK dependencies have previously been added. Removing them.");
 
-                    var regex = new Regex(regexPattern);
-                    var match = regex.Match(gradle);
-                    if (match.Success)
-                    {
-                        var cleanGradle = gradle.Remove(match.Index + match.Length, SDKDependencies.Length);
-                        File.WriteAllText(gradleFilePath, cleanGradle);
-                        return;
-                    }
-
-                    throw new ArgumentException("Failed to remove Android SDK dependencies from 'build.gradle'. If this persists consider building a 'clean' build.");
+                    File.WriteAllText(gradleFilePath, gradle.Replace(SDKDependencies, ""));
                 }
             }
         }
