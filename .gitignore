@@ -40,7 +40,7 @@ package-dev/Plugins/*/Sentry/crashpad_handler*
 !package-dev/**/SentryNativeBridge.m.meta
 
 # Android SDK files
-package-dev/Plugins/Android/Sentry/*
+package-dev/Plugins/Android/Sentry~/*
 
 # CLI
 package-dev/Editor/sentry-cli

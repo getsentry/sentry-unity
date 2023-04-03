@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
@@ -20,6 +21,10 @@ namespace Sentry.Unity.Editor.Android
 
         private readonly bool _isDevelopmentBuild;
         private readonly ScriptingImplementation _scriptingImplementation;
+
+        public const string SDKDependencies = @"
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')";
 
         // Lower levels are called first.
         public int callbackOrder => 1;
@@ -54,6 +59,9 @@ namespace Sentry.Unity.Editor.Android
             var gradleProjectPath = Directory.GetParent(basePath).FullName;
             SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
             SetupProguard(gradleProjectPath);
+
+            CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+            AddAndroidSdkDependencies(gradleProjectPath);
         }
 
         internal void ModifyManifest(string basePath)
@@ -65,33 +73,33 @@ namespace Sentry.Unity.Editor.Android
                     manifestPath);
             }
 
-            var disableAutoInit = false;
+            var enableNativeSupport = true;
             if (_options is null)
             {
                 _logger.LogWarning("Android native support disabled because Sentry has not been configured. " +
                                   "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
-                disableAutoInit = true;
+                enableNativeSupport = false;
             }
             else if (!_options.IsValid())
             {
                 _logger.LogDebug("Android native support disabled.");
-                disableAutoInit = true;
+                enableNativeSupport = false;
             }
             else if (!_options.AndroidNativeSupportEnabled)
             {
                 _logger.LogDebug("Android native support disabled through the options.");
-                disableAutoInit = true;
+                enableNativeSupport = false;
             }
 
             var androidManifest = new AndroidManifest(manifestPath, _logger);
             androidManifest.RemovePreviousConfigurations();
-            androidManifest.AddDisclaimerComment();
 
-            if (disableAutoInit)
+            if (!enableNativeSupport)
             {
-                androidManifest.DisableSentryAndSave();
                 return;
             }
+
+            androidManifest.AddDisclaimerComment();
 
             _logger.LogDebug("Configuring Sentry options on AndroidManifest: {0}", basePath);
             androidManifest.SetSDK("sentry.java.android.unity");
@@ -226,6 +234,84 @@ namespace Sentry.Unity.Editor.Android
             }
         }
 
+        internal void CopyAndroidSdkToGradleProject(string unityProjectPath, string gradlePath)
+        {
+            var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
+            var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
+
+            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
+            {
+                if (!Directory.Exists(androidSdkPath))
+                {
+                    throw new DirectoryNotFoundException($"Failed to find the Android SDK at '{androidSdkPath}'.");
+                }
+
+                _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
+                foreach (var file in Directory.GetFiles(androidSdkPath))
+                {
+                    var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (!File.Exists(destinationFile))
+                    {
+                        File.Copy(file, destinationFile);
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogInfo("Removing the Android SDK from the output project.");
+                foreach (var file in Directory.GetFiles(androidSdkPath))
+                {
+                    var fileToDelete = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (File.Exists(fileToDelete))
+                    {
+                        File.Delete(fileToDelete);
+                    }
+                }
+            }
+        }
+
+        internal void AddAndroidSdkDependencies(string gradleProjectPath)
+        {
+            const string regexPattern = @"(dependencies\s\{\n).+";
+
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            if (!File.Exists(gradleFilePath))
+            {
+                throw new FileNotFoundException($"Failed to find 'build.gradle' at '{gradleFilePath}'.");
+            }
+
+            var gradle = File.ReadAllText(gradleFilePath);
+
+            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
+            {
+                if (gradle.Contains(SDKDependencies))
+                {
+                    _logger.LogDebug("Android SDK dependencies already added. Skipping.");
+                    return;
+                }
+
+                _logger.LogInfo("Adding Android SDK dependencies to 'build.gradle'.");
+
+                var regex = new Regex(regexPattern);
+                var match = regex.Match(gradle);
+                if (!match.Success)
+                {
+                    throw new ArgumentException($"Failed to add Sentry Android dependencies to 'build.gradle'.\n{gradle}", nameof(gradle));
+                }
+
+                File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, SDKDependencies));
+            }
+            else
+            {
+                if (gradle.Contains(SDKDependencies))
+                {
+                    _logger.LogInfo("Android SDK dependencies have previously been added. Removing them.");
+
+                    File.WriteAllText(gradleFilePath, gradle.Replace(SDKDependencies, ""));
+                }
+            }
+        }
+
         internal static string GetManifestPath(string basePath) =>
             new StringBuilder(basePath)
                 .Append(Path.DirectorySeparatorChar)
@@ -315,14 +401,6 @@ namespace Sentry.Unity.Editor.Android
 
         public void AddDisclaimerComment() =>
             _applicationElement.AppendChild(_applicationElement.OwnerDocument.CreateComment(Disclaimer));
-
-        // Without this we get:
-        // Unable to get provider io.sentry.android.core.SentryInitProvider: java.lang.IllegalArgumentException: DSN is required. Use empty string to disable SDK.
-        internal void DisableSentryAndSave()
-        {
-            SetMetaData($"{SentryPrefix}.auto-init", "false");
-            _ = Save();
-        }
 
         internal void SetDsn(string dsn) => SetMetaData($"{SentryPrefix}.dsn", dsn);
 

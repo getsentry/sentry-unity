@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
@@ -66,7 +67,7 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void ModifyManifest_LoadSentryUnityOptions_NullOptions_LogWarningAndDisableInit()
+        public void ModifyManifest_LoadSentryUnityOptions_NullOptions_LogWarningAndDoesNotAddSentry()
         {
             _fixture.SentryUnityOptions = null;
             var sut = _fixture.GetSut();
@@ -77,13 +78,12 @@ namespace Sentry.Unity.Editor.Tests.Android
                 "Android native support disabled because Sentry has not been configured. " +
                 "You can do that through the editor: Tools -> Sentry");
 
-            Assert.True(manifest.Contains(
-                    "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                "Expected 'auto-init' to be disabled");
+            Debug.Log($"Manifest:\n{manifest}");
+            Assert.False(manifest.Contains("io.sentry.dsn"));
         }
 
         [Test]
-        public void ModifyManifest_UnityOptions_EnabledFalse_LogDebugAndDisableInit()
+        public void ModifyManifest_UnityOptions_EnabledFalse_LogDebugAndDoesNotAddSentry()
         {
             _fixture.SentryUnityOptions!.Enabled = false;
             var sut = _fixture.GetSut();
@@ -91,16 +91,15 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Sentry SDK has been disabled.\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
 
-            Assert.True(manifest.Contains(
-                    "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                "Expected 'auto-init' to be disabled");
+            Debug.Log($"Manifest:\n{manifest}");
+            Assert.False(manifest.Contains("io.sentry.dsn"));
         }
 
         [Test]
         [TestCase(null)]
         [TestCase("")]
         [TestCase("  ")]
-        public void ModifyManifest_UnityOptions_EnabledWithoutDsn_LogWarningAndDisableInit(string? dsn)
+        public void ModifyManifest_UnityOptions_EnabledWithoutDsn_LogWarningAndDoesNotAddSentry(string? dsn)
         {
             _fixture.SentryUnityOptions!.Dsn = dsn;
             var sut = _fixture.GetSut();
@@ -108,13 +107,12 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Warning, "No Sentry DSN configured. Sentry will be disabled.");
 
-            Assert.True(manifest.Contains(
-                    "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                "Expected 'auto-init' to be disabled");
+            Debug.Log($"Manifest:\n{manifest}");
+            Assert.False(manifest.Contains("io.sentry.dsn"));
         }
 
         [Test]
-        public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDisableInit()
+        public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDoesNotAddSentry()
         {
             _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
             var sut = _fixture.GetSut();
@@ -122,9 +120,8 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Android native support disabled through the options.");
 
-            Assert.True(manifest.Contains(
-                    "<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />"),
-                "Expected 'auto-init' to be disabled");
+            Debug.Log($"Manifest:\n{manifest}");
+            Assert.False(manifest.Contains("io.sentry.dsn"));
         }
 
         [Test]
@@ -258,9 +255,10 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void ModifyManifest_RepeatedRunRemovesConfigs()
+        public void ModifyManifest_RepeatedRunOverwritesConfigs()
         {
-            var fixture2 = new Fixture { SentryUnityOptions = null };
+            var fixture2 = new Fixture();
+            fixture2.SentryUnityOptions!.Dsn = "fixture_2_dsn";
             var manifest1 = WithAndroidManifest(basePath => _fixture.GetSut().ModifyManifest(basePath));
             var manifest2 = WithAndroidManifest((basePath) =>
             {
@@ -270,8 +268,9 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             Debug.Log($"Manifest 1 (before):\n{manifest1}");
             Debug.Log($"Manifest 2 (after):\n{manifest2}");
-            Assert.True(manifest1.Contains("sentry.dsn"));
-            Assert.False(manifest2.Contains("sentry.dsn"));
+            Assert.True(manifest1.Contains($"io.sentry.dsn\" android:value=\"{_fixture.SentryUnityOptions!.Dsn}"));
+            Assert.False(manifest2.Contains($"io.sentry.dsn\" android:value=\"{_fixture.SentryUnityOptions!.Dsn}")); // Sanity check
+            Assert.True(manifest2.Contains($"io.sentry.dsn\" android:value=\"{fixture2.SentryUnityOptions!.Dsn}"));
         }
 
         [Test]
@@ -359,6 +358,149 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
+
+        [Test]
+        public void CopyAndroidSdkToGradleProject_AndroidNativeSupportEnabled_CopiesAndroidSdkToGradleProject()
+        {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var sut = _fixture.GetSut();
+
+            sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+            Assert.IsTrue(File.Exists(Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar")));
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void CopyAndroidSdkToGradleProject_AndroidNativeSupportDisabledButSdkAlreadyCopied_RemovesAndroidSdkFromGradleProject()
+        {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var androidSdk = Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar");
+            File.Create(androidSdk);
+
+            _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+            var sut = _fixture.GetSut();
+
+            sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+            Assert.IsFalse(File.Exists(androidSdk));
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_GradleFileNotFound_ThrowsFileNotFoundException()
+        {
+            var brokenBasePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var sut = _fixture.GetSut();
+
+            Assert.Throws<FileNotFoundException>(() => sut.AddAndroidSdkDependencies(brokenBasePath));
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportEnabled_AddsDependencies()
+        {
+            // Arrange
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var sut = _fixture.GetSut();
+
+            // Act
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Assert
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            Assert.IsTrue(File.Exists(gradleFilePath));
+
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent);
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportEnabledAndDependenciesAlreadyAdded_LogsAndReturns()
+        {
+            // Arrange
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            var testLogger = new TestLogger();
+            _fixture.SentryUnityOptions!.DiagnosticLogger = testLogger;
+            var sut = _fixture.GetSut();
+
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Act
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Assert
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            Assert.IsTrue(File.Exists(gradleFilePath));
+
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent); // Sanity check
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Debug &&
+                log.message.Contains("Android SDK dependencies already added. Skipping.")));
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportDisabledButEnabledPreviously_RemovesDependencies()
+        {
+            // Arrange
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            // Using the sut here to emulate previous build run with Android support enabled
+            var previousBuildSut = _fixture.GetSut();
+            previousBuildSut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent); // Sanity check
+
+            _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+            var sut = _fixture.GetSut();
+
+            // Act
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Assert
+            gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.DoesNotContain(AndroidManifestConfiguration.SDKDependencies, gradleContent);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportDisabled_DoesNotAddDependencies()
+        {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+            var sut = _fixture.GetSut();
+
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.DoesNotContain(AndroidManifestConfiguration.SDKDependencies, gradleContent); // Sanity check
+        }
+
 
         private string WithAndroidManifest(Action<string> callback)
         {
