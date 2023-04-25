@@ -28,30 +28,12 @@ namespace Sentry.Unity.Tests
         {
             LogAssert.ignoreFailingMessages = true; // The TestHttpClientHandler will complain about timing out (and it should!)
 
-            using var _ = InitSentrySdk();
+            using var _ = SentryTests.InitSentrySdk(testHttpClientHandler:_testHttpClientHandler);
 
             SentrySdk.CaptureException(new Exception("Error: HTTP/1.1 502 Bad Gateway" + _identifyingEventValue));
 
             var createdEvent = _testHttpClientHandler.GetEvent(_identifyingEventValue, _eventReceiveTimeout);
             Assert.AreEqual(string.Empty, createdEvent);
-        }
-
-        internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
-        {
-            SentryUnity.Init(options =>
-            {
-                options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-                options.CreateHttpClientHandler = () => _testHttpClientHandler;
-
-                configure?.Invoke(options);
-            });
-
-            return new SentryDisposable();
-        }
-
-        private sealed class SentryDisposable : IDisposable
-        {
-            public void Dispose() => SentrySdk.Close();
         }
     }
 }
