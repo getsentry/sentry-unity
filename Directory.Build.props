@@ -11,7 +11,7 @@
     <SignAssembly>false</SignAssembly>
 
     <!-- This is the default for our lowest supported version 2019 LTS: netstandard2.0 -->
-    <!-- It gets overridden in the test/props -->
+    <!-- The TargetFramework gets overridden depending on the UnityVersion here and in test/props -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- The RepoRoot gets used in the conditional propertygroup for finding the Unity version -->
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))/</RepoRoot>
@@ -27,6 +27,11 @@
     <UnitySampleProjectUnityVersion>$(RepoRoot)samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt</UnitySampleProjectUnityVersion>
     <ProjectSettingsFileContent>$([System.IO.File]::ReadAllText($(UnitySampleProjectUnityVersion)))</ProjectSettingsFileContent>
     <UnityVersion>$([System.Text.RegularExpressions.Regex]::Match("$(ProjectSettingsFileContent)", ": +([^\s]+)").Groups[1].Value)</UnityVersion>
+  </PropertyGroup>
+
+  <!-- Starting with 2022 the UnityEngine targets netstandard2.1 -->
+  <PropertyGroup Condition="$(UnityVersion.StartsWith('2022'))">
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
