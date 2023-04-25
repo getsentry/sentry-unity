@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK filters `Bad Gateway` Exceptions of type `Exception` by default ([#1293](https://github.com/getsentry/sentry-unity/pull/1293))
+
 ### Dependencies
 
 - Bump CLI from v2.16.1 to v2.17.4 ([#1288](https://github.com/getsentry/sentry-unity/pull/1288), [#1289](https://github.com/getsentry/sentry-unity/pull/1289))
