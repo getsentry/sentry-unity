@@ -5,7 +5,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests
 {
-    public class UnitySocketExceptionFilterTests
+    public class UnityWebExceptionFilterTests
     {
         private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
         private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(0.5f);
@@ -16,18 +16,18 @@ namespace Sentry.Unity.Tests
 
         [Test]
         public void Filter_FiltersBadGatewayExceptionsOfTypeException() =>
-            Assert.IsTrue(new UnitySocketExceptionFilter().Filter(new System.Net.Sockets.SocketException(10049)));
+            Assert.IsTrue(new UnityWebExceptionFilter().Filter(new System.Net.WebException(UnityWebExceptionFilter.Message)));
 
         [Test]
-        public void Init_WithDefaultOptions_DoesNotSendFilteredSocketExceptions()
+        public void Init_WithDefaultOptions_DoesNotSendFilteredWebExceptions()
         {
             LogAssert.ignoreFailingMessages = true; // The TestHttpClientHandler will complain about timing out (and it should!)
 
             using var _ = SentryTests.InitSentrySdk(testHttpClientHandler:_testHttpClientHandler);
 
-            SentrySdk.CaptureException(new System.Net.Sockets.SocketException(10049)); // The requested address is not valid in this context
+            SentrySdk.CaptureException(new System.Net.WebException(UnityWebExceptionFilter.Message));
 
-            var createdEvent = _testHttpClientHandler.GetEvent(UnitySocketExceptionFilter.Message, _eventReceiveTimeout);
+            var createdEvent = _testHttpClientHandler.GetEvent(UnityWebExceptionFilter.Message, _eventReceiveTimeout);
             Assert.AreEqual(string.Empty, createdEvent);
         }
     }
