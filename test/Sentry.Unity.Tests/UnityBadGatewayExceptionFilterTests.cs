@@ -21,7 +21,7 @@ namespace Sentry.Unity.Tests
 
         [Test]
         public void Filter_FiltersBadGatewayExceptionsOfTypeException() =>
-            Assert.IsTrue(new UnityBadGatewayExceptionFilter().Filter(new Exception("Error: HTTP/1.1 502 Bad Gateway")));
+            Assert.IsTrue(new UnityBadGatewayExceptionFilter().Filter(new Exception(UnityBadGatewayExceptionFilter.Message)));
 
         [Test]
         public void Init_WithDefaultOptions_DoesNotSendBadGatewayExceptions()
@@ -30,7 +30,7 @@ namespace Sentry.Unity.Tests
 
             using var _ = InitSentrySdk();
 
-            SentrySdk.CaptureException(new Exception("Error: HTTP/1.1 502 Bad Gateway" + _identifyingEventValue));
+            SentrySdk.CaptureException(new Exception(UnityBadGatewayExceptionFilter.Message + _identifyingEventValue));
 
             var createdEvent = _testHttpClientHandler.GetEvent(_identifyingEventValue, _eventReceiveTimeout);
             Assert.AreEqual(string.Empty, createdEvent);
