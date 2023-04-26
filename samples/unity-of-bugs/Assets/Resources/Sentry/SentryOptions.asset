@@ -29,6 +29,9 @@ MonoBehaviour:
   <ScreenshotQuality>k__BackingField: 2
   <ScreenshotCompression>k__BackingField: 75
   <AttachViewHierarchy>k__BackingField: 1
+  <MaxViewHierarchyRootObjects>k__BackingField: 100
+  <MaxViewHierarchyObjectChildCount>k__BackingField: 20
+  <MaxViewHierarchyDepth>k__BackingField: 10
   <BreadcrumbsForLogs>k__BackingField: 1
   <BreadcrumbsForWarnings>k__BackingField: 1
   <BreadcrumbsForAsserts>k__BackingField: 1
@@ -46,6 +49,9 @@ MonoBehaviour:
   <MaxQueueItems>k__BackingField: 30
   <AnrDetectionEnabled>k__BackingField: 1
   <AnrTimeout>k__BackingField: 5000
+  <FilterBadGatewayExceptions>k__BackingField: 1
+  <FilterWebExceptions>k__BackingField: 1
+  <FilterSocketExceptions>k__BackingField: 1
   <IosNativeSupportEnabled>k__BackingField: 1
   <AndroidNativeSupportEnabled>k__BackingField: 1
   <WindowsNativeSupportEnabled>k__BackingField: 1
