@@ -50,17 +50,17 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             {
                 GUILayout.Label("Automatic Exception Filter", EditorStyles.boldLabel);
 
-                options.FilterBadGatewayExceptions =  EditorGUILayout.Toggle(
+                options.FilterBadGatewayExceptions = EditorGUILayout.Toggle(
                     new GUIContent("BadGatewayException", "Whether the SDK automatically filters Bad Gateway " +
                                                   "exceptions before they are being sent to Sentry."),
                     options.FilterBadGatewayExceptions);
 
-                options.FilterWebExceptions =  EditorGUILayout.Toggle(
+                options.FilterWebExceptions = EditorGUILayout.Toggle(
                     new GUIContent("WebException", "Whether the SDK automatically filters " +
                                                     "System.Net.WebException before they are being sent to Sentry."),
                     options.FilterWebExceptions);
 
-                options.FilterSocketExceptions =  EditorGUILayout.Toggle(
+                options.FilterSocketExceptions = EditorGUILayout.Toggle(
                     new GUIContent("SocketException", "Whether the SDK automatically filters " +
                                                       "System.Net.Sockets.SocketException with error code '10049' from " +
                                                       "being sent to Sentry."),
