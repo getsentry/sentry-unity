@@ -23,7 +23,7 @@ namespace Sentry.Unity.Tests
         {
             LogAssert.ignoreFailingMessages = true; // The TestHttpClientHandler will complain about timing out (and it should!)
 
-            using var _ = SentryTests.InitSentrySdk(testHttpClientHandler:_testHttpClientHandler);
+            using var _ = SentryTests.InitSentrySdk(testHttpClientHandler: _testHttpClientHandler);
 
             SentrySdk.CaptureException(new System.Net.Sockets.SocketException(10049)); // The requested address is not valid in this context
 
