@@ -80,6 +80,10 @@ namespace Sentry.Unity
         [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
         [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
 
+        [field: SerializeField] public bool FilterBadGatewayExceptions { get; set; } = true;
+        [field: SerializeField] public bool FilterWebExceptions { get; set; } = true;
+        [field: SerializeField] public bool FilterSocketExceptions { get; set; } = true;
+
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
@@ -177,6 +181,33 @@ namespace Sentry.Unity
 
             options.SetupLogging();
 
+            HandlePlatformRestrictions(options, application);
+            HandleExceptionFilter(options);
+
+            if (!AnrDetectionEnabled)
+            {
+                options.DisableAnrIntegration();
+            }
+
+            if (!isBuilding)
+            {
+                if (RuntimeOptionsConfiguration != null)
+                {
+                    RuntimeOptionsConfiguration.Configure(options);
+                }
+
+                // Doing this after the configure callback to allow users to programmatically opt out
+                if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
+                {
+                    options.AddIl2CppExceptionProcessor(unityInfo);
+                }
+            }
+
+            return options;
+        }
+
+        private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application)
+        {
             if (IsKnownPlatform(application))
             {
                 options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
@@ -203,27 +234,24 @@ namespace Sentry.Unity
                     options.AutoSessionTracking = false;
                 }
             }
+        }
 
-            if (!isBuilding)
+        private void HandleExceptionFilter(SentryUnityOptions options)
+        {
+            if (!FilterBadGatewayExceptions)
             {
-                if (RuntimeOptionsConfiguration != null)
-                {
-                    RuntimeOptionsConfiguration.Configure(options);
-                }
-
-                // Doing this after the configure callback to allow users to programmatically opt out
-                if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
-                {
-                    options.AddIl2CppExceptionProcessor(unityInfo);
-                }
-
-                if (!AnrDetectionEnabled)
-                {
-                    options.DisableAnrIntegration();
-                }
+                options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
             }
 
-            return options;
+            if (!FilterWebExceptions)
+            {
+                options.RemoveExceptionFilter<UnityWebExceptionFilter>();
+            }
+
+            if (!FilterSocketExceptions)
+            {
+                options.RemoveExceptionFilter<UnitySocketExceptionFilter>();
+            }
         }
 
         internal bool ShouldDebug(bool isEditorPlayer)
