@@ -76,6 +76,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Head
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryEvent.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryException.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryFrame.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryGeo.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryHub.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryId.h
@@ -157,6 +158,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryError.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryEvent.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryException.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryFrame.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryGeo.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryHttpStatusCodeRange.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryHub.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryId.h

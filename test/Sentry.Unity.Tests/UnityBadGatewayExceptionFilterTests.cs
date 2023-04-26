@@ -21,7 +21,8 @@ namespace Sentry.Unity.Tests
 
         [Test]
         public void Filter_FiltersBadGatewayExceptionsOfTypeException() =>
-            Assert.IsTrue(new UnityBadGatewayExceptionFilter().Filter(new Exception("Error: HTTP/1.1 502 Bad Gateway")));
+
+        Assert.IsTrue(new UnityBadGatewayExceptionFilter().Filter(new Exception(UnityBadGatewayExceptionFilter.Message)));
 
         [Test]
         public void Init_WithDefaultOptions_DoesNotSendBadGatewayExceptions()
@@ -30,10 +31,28 @@ namespace Sentry.Unity.Tests
 
             using var _ = SentryTests.InitSentrySdk(testHttpClientHandler:_testHttpClientHandler);
 
-            SentrySdk.CaptureException(new Exception("Error: HTTP/1.1 502 Bad Gateway" + _identifyingEventValue));
+            SentrySdk.CaptureException(new Exception(UnityBadGatewayExceptionFilter.Message + _identifyingEventValue));
 
             var createdEvent = _testHttpClientHandler.GetEvent(_identifyingEventValue, _eventReceiveTimeout);
             Assert.AreEqual(string.Empty, createdEvent);
+        }
+
+        internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
+        {
+            SentryUnity.Init(options =>
+            {
+                options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
+                options.CreateHttpClientHandler = () => _testHttpClientHandler;
+
+                configure?.Invoke(options);
+            });
+
+            return new SentryDisposable();
+        }
+
+        private sealed class SentryDisposable : IDisposable
+        {
+            public void Dispose() => SentrySdk.Close();
         }
     }
 }
