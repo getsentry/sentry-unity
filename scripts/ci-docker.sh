@@ -50,6 +50,7 @@ $suexec $container chown -R $uid /usr/share/unity3d/config/
 
 # Workaround for missing libMonoPosixHelper.so
 if [[ $unityPrefix -eq 2019 ]]; then
+    $suexec $container apt-get update
     $suexec $container apt-get install mono-devel
 fi
 
