@@ -270,6 +270,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Start the Unity docker container
+        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
+
       # Workaround for missing libMonoPosixHelper.so
       # See https://github.com/getsentry/sentry-unity/pull/1295
       # TODO: How to get this into the container ahead of time?
@@ -278,12 +284,6 @@ jobs:
         run: |
           docker exec --user root unity apt-get update
           docker exec --user root unity apt-get -y -q install mono-develop
-
-      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
-
-      - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
-        shell: bash
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
