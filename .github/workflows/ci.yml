@@ -270,6 +270,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # Workaround for missing libMonoPosixHelper.so
+      # See https://github.com/getsentry/sentry-unity/pull/1295
+      # TODO: How to get this into the container ahead of time?
+      - name: Install mono-develop
+        if: ${{ matrix.unity-version == '2019' }}
+        run: |
+          docker exec --user root unity apt-get update
+          docker exec --user root unity apt-get -y -q install mono-develop
+
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Start the Unity docker container
