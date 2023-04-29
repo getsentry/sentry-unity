@@ -279,11 +279,11 @@ jobs:
       # Workaround for missing libMonoPosixHelper.so
       # See https://github.com/getsentry/sentry-unity/pull/1295
       # TODO: How to get this into the container ahead of time?
-      - name: Install mono-develop
+      - name: Install mono-devel
         if: ${{ matrix.unity-version == '2019' }}
         run: |
           docker exec --user root unity apt-get update
-          docker exec --user root unity apt-get -y -q install mono-develop
+          docker exec --user root unity apt-get -y -q install mono-devel
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
