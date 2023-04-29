@@ -49,9 +49,11 @@ echo $licenseConfig | $suexec -i $container sh -c "cat > /usr/share/unity3d/conf
 $suexec $container chown -R $uid /usr/share/unity3d/config/
 
 # Workaround for missing libMonoPosixHelper.so
+# See https://github.com/getsentry/sentry-dotnet/issues/2327
+# TODO: How to get this into the container earlier?
 if [[ $unityPrefix -eq 2019 ]]; then
     $suexec $container apt-get update
-    $suexec $container apt-get install mono-devel
+    $suexec $container apt-get -y install mono-devel
 fi
 
 # Unity 2021+ tries to write to this directory during asset import...
