@@ -201,7 +201,7 @@ jobs:
   # and reduces concurrency because of Unity licence limits.
   smoke-test-create:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: Prepare Smoke Test ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} Prepare Smoke Test
     runs-on: ubuntu-latest
     needs: [package-validation]
     strategy:
@@ -253,7 +253,7 @@ jobs:
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Build Smoke Test
     needs: [smoke-test-create]
     runs-on: ubuntu-latest
     strategy:
@@ -354,7 +354,7 @@ jobs:
 
   desktop-smoke-test:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: Run ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
     needs: [smoke-test-create]
     runs-on: ${{ matrix.os }}-latest
     strategy:
@@ -430,7 +430,7 @@ jobs:
   android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: Run Android ${{ matrix.api-level }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} Run Smoke Test
     uses: ./.github/workflows/android-smoke-test-wrapper.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -455,7 +455,7 @@ jobs:
   mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: Compile ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }}  Compile Smoke Test
     runs-on: ${{ matrix.platform == 'iOS' && 'macos' || 'ubuntu' }}-latest
     strategy:
       fail-fast: false
@@ -520,7 +520,7 @@ jobs:
   ios-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: Run iOS ${{ matrix.ios }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
     runs-on: macos-12
     strategy:
       fail-fast: false
@@ -575,7 +575,7 @@ jobs:
   smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: Run  ${{ matrix.platform }} Unity ${{ matrix.unity-version }} Smoke Test
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
