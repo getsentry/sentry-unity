@@ -535,7 +535,7 @@ jobs:
         # Also make sure to match the versions available here:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-        ios: ['12.4', '14.5', '15.4', latest] # last updated October 2022
+        ios: ['14.5', '15.4', latest] # last updated October 2022
 
     steps:
       - name: Checkout
