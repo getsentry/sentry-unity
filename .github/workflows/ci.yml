@@ -276,6 +276,14 @@ jobs:
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
 
+      # Workaround for missing libMonoPosixHelper.so
+      # See https://github.com/getsentry/sentry-unity/pull/1295
+      - name: Install mono-devel
+        if: ${{ matrix.unity-version == '2019' }}
+        run: |
+          docker exec --user root unity apt-get update
+          docker exec --user root unity apt-get -y -q install mono-devel
+
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
         with:
