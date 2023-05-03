@@ -535,15 +535,15 @@ jobs:
       matrix:
         unity-version: ['2019', '2020', '2021', '2022']
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
-        # That page also shows which iPhones are supported with whith iOS version, therefore we don't need to test
-        # iOS 13 and 14 because there are no devices that support those version while not supporting iOS 15.
-        # On the other hand https://developer.apple.com/support/app-store/ shows 14 % phones and 18 % tablets use iOS 14
-        # as of May 31, 2022. Therefore, let's stick to testing iOS 14 until 2023.
+        # https://developer.apple.com/support/app-store/ shows that of all iOS devices 
+        # - `iOS 16`: 71%
+        # - `iOS 15`: 20 %
+        # - the rest: 8 %
+        # as of May 2, 2023. Therefore, let's stick to testing iOS 15 and `latest` for now.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
-        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-        ios: ['12.4', '14.5', '15.4', latest] # last updated October 2022
+        ios: ['15.5', latest] # last updated May 2023
 
     steps:
       - name: Checkout
