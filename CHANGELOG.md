@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed an issue where the SDK would throw a `NullReferenceException` when trying to capture a log message ([#1309](https://github.com/getsentry/sentry-unity/pull/1309))
 - Fixed the `BreadcrumbsForErrors` checkbox on the config window ([#1306](https://github.com/getsentry/sentry-unity/pull/1306))
 - The SDK filters `Bad Gateway` Exceptions of type `Exception` by default ([#1293](https://github.com/getsentry/sentry-unity/pull/1293))
 
