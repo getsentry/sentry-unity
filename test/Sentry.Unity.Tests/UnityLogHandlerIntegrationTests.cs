@@ -19,7 +19,7 @@ namespace Sentry.Unity.Tests
             public UnityLogHandlerIntegration GetSut()
             {
                 var application = new TestApplication();
-                var integration = new UnityLogHandlerIntegration(application);
+                var integration = new UnityLogHandlerIntegration(SentryOptions, application);
                 integration.Register(Hub, SentryOptions);
                 return integration;
             }

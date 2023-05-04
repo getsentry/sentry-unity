@@ -8,9 +8,9 @@ namespace Sentry.Unity.Integrations
 {
     internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     {
-        internal readonly ErrorTimeDebounce ErrorTimeDebounce = new(TimeSpan.FromSeconds(1));
-        internal readonly LogTimeDebounce LogTimeDebounce = new(TimeSpan.FromSeconds(1));
-        internal readonly WarningTimeDebounce WarningTimeDebounce = new(TimeSpan.FromSeconds(1));
+        internal readonly ErrorTimeDebounce ErrorTimeDebounce;
+        internal readonly LogTimeDebounce LogTimeDebounce;
+        internal readonly WarningTimeDebounce WarningTimeDebounce;
 
         private readonly IApplication _application;
 
@@ -19,9 +19,13 @@ namespace Sentry.Unity.Integrations
 
         private ILogHandler _unityLogHandler = null!; // Set during register
 
-        public UnityLogHandlerIntegration(IApplication? application = null)
+        public UnityLogHandlerIntegration( SentryUnityOptions options, IApplication? application = null)
         {
             _application = application ?? ApplicationAdapter.Instance;
+
+            LogTimeDebounce = new LogTimeDebounce(options.DebounceTimeLog);
+            WarningTimeDebounce = new WarningTimeDebounce(options.DebounceTimeWarning);
+            ErrorTimeDebounce = new ErrorTimeDebounce(options.DebounceTimeError);
         }
 
         public void Register(IHub hub, SentryOptions sentryOptions)
