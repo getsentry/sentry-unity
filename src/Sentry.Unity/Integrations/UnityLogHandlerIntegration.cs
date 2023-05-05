@@ -19,7 +19,7 @@ namespace Sentry.Unity.Integrations
 
         private ILogHandler _unityLogHandler = null!; // Set during register
 
-        public UnityLogHandlerIntegration( SentryUnityOptions options, IApplication? application = null)
+        public UnityLogHandlerIntegration(SentryUnityOptions options, IApplication? application = null)
         {
             _application = application ?? ApplicationAdapter.Instance;
 
