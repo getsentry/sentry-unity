@@ -77,7 +77,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.BreadcrumbsForAsserts);
             options.BreadcrumbsForErrors = EditorGUILayout.Toggle(
                 new GUIContent("Error", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogError'."),
-                options.BreadcrumbsForLogs);
+                options.BreadcrumbsForErrors);
             options.BreadcrumbsForExceptions = EditorGUILayout.Toggle(
                 new GUIContent("Exception", "Whether the SDK automatically adds breadcrumbs for exceptions and 'Debug.LogException'."),
                 options.BreadcrumbsForExceptions);

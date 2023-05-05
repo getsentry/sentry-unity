@@ -201,7 +201,7 @@ jobs:
   # and reduces concurrency because of Unity licence limits.
   smoke-test-create:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: Prepare Smoke Test ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} Prepare Smoke Test
     runs-on: ubuntu-latest
     needs: [package-validation]
     strategy:
@@ -253,7 +253,7 @@ jobs:
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: Build ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Build Smoke Test
     needs: [smoke-test-create]
     runs-on: ubuntu-latest
     strategy:
@@ -275,6 +275,14 @@ jobs:
       - name: Start the Unity docker container
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
+
+      # Workaround for missing libMonoPosixHelper.so
+      # See https://github.com/getsentry/sentry-unity/pull/1295
+      - name: Install mono-devel
+        if: ${{ matrix.unity-version == '2019' }}
+        run: |
+          docker exec --user root unity apt-get update
+          docker exec --user root unity apt-get -y -q install mono-devel
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
@@ -354,7 +362,7 @@ jobs:
 
   desktop-smoke-test:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: Run ${{ matrix.os }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
     needs: [smoke-test-create]
     runs-on: ${{ matrix.os }}-latest
     strategy:
@@ -430,7 +438,7 @@ jobs:
   android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: Run Android ${{ matrix.api-level }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} Run Smoke Test
     uses: ./.github/workflows/android-smoke-test-wrapper.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -455,7 +463,7 @@ jobs:
   mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: Compile ${{ matrix.platform }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }}  Compile Smoke Test
     runs-on: ${{ matrix.platform == 'iOS' && 'macos' || 'ubuntu' }}-latest
     strategy:
       fail-fast: false
@@ -520,22 +528,22 @@ jobs:
   ios-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: Run iOS ${{ matrix.ios }} Smoke Test - ${{ matrix.unity-version }}
+    name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
     runs-on: macos-12
     strategy:
       fail-fast: false
       matrix:
         unity-version: ['2019', '2020', '2021', '2022']
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
-        # That page also shows which iPhones are supported with whith iOS version, therefore we don't need to test
-        # iOS 13 and 14 because there are no devices that support those version while not supporting iOS 15.
-        # On the other hand https://developer.apple.com/support/app-store/ shows 14 % phones and 18 % tablets use iOS 14
-        # as of May 31, 2022. Therefore, let's stick to testing iOS 14 until 2023.
+        # https://developer.apple.com/support/app-store/ shows that of all iOS devices 
+        # - `iOS 16`: 71%
+        # - `iOS 15`: 20 %
+        # - the rest: 8 %
+        # as of May 2, 2023. Therefore, let's stick to testing iOS 15 and `latest` for now.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
-        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-        ios: ['12.4', '14.5', '15.4', latest] # last updated October 2022
+        ios: ['15.5', latest] # last updated May 2023
 
     steps:
       - name: Checkout
@@ -575,7 +583,7 @@ jobs:
   smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: Run  ${{ matrix.platform }} Unity ${{ matrix.unity-version }} Smoke Test
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
