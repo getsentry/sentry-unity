@@ -16,6 +16,9 @@ MonoBehaviour:
   <Dsn>k__BackingField: https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880
   <CaptureInEditor>k__BackingField: 1
   <EnableLogDebouncing>k__BackingField: 0
+  <DebounceTimeLog>k__BackingField: 1000
+  <DebounceTimeWarning>k__BackingField: 1000
+  <DebounceTimeError>k__BackingField: 1000
   <TracesSampleRate>k__BackingField: 1
   <AutoStartupTraces>k__BackingField: 1
   <AutoSceneLoadTraces>k__BackingField: 1
@@ -29,6 +32,9 @@ MonoBehaviour:
   <ScreenshotQuality>k__BackingField: 2
   <ScreenshotCompression>k__BackingField: 75
   <AttachViewHierarchy>k__BackingField: 1
+  <MaxViewHierarchyRootObjects>k__BackingField: 100
+  <MaxViewHierarchyObjectChildCount>k__BackingField: 20
+  <MaxViewHierarchyDepth>k__BackingField: 10
   <BreadcrumbsForLogs>k__BackingField: 1
   <BreadcrumbsForWarnings>k__BackingField: 1
   <BreadcrumbsForAsserts>k__BackingField: 1
