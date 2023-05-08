@@ -38,6 +38,16 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
+        public void CaptureLogFormat_ParamArgsContainNull_CaptureEvent()
+        {
+            var sut = _fixture.GetSut();
+
+            sut.CaptureLogFormat(LogType.Error, null, "{0}: {1}", new object[] { null!, null! });
+
+            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
+        }
+
+        [Test]
         public void CaptureLogFormat_LogContainsSentryTag_NotCaptured()
         {
             var sut = _fixture.GetSut();
