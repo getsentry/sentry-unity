@@ -104,7 +104,7 @@ namespace Sentry.Unity.Integrations
             }
 
             // The SDK sets "Sentry" as tag when logging and we're not capturing SDK internal logs. Expected format: "{0}: {1}"
-            if (args.Length > 1 && args[0].Equals("Sentry"))
+            if (args.Length > 1 && "Sentry".Equals(args[0])) // Checking it this way around because `args[0]` could be null
             {
                 return;
             }
