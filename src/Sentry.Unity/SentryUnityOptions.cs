@@ -51,6 +51,22 @@ namespace Sentry.Unity
         /// </summary>
         public bool EnableLogDebouncing { get; set; } = false;
 
+        /// <summary>
+        /// Timespan between sending events of LogType.Log
+        /// </summary>
+        public TimeSpan DebounceTimeLog { get; set; } = TimeSpan.FromSeconds(1);
+
+        /// <summary>
+        /// Timespan between sending events of LogType.Warning
+        /// </summary>
+        public TimeSpan DebounceTimeWarning { get; set; } = TimeSpan.FromSeconds(1);
+
+        /// <summary>
+        /// Timespan between sending events of LogType.Assert, LogType.Exception and LogType.Error
+        /// </summary>
+        public TimeSpan DebounceTimeError { get; set; } = TimeSpan.FromSeconds(1);
+
+
         private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
 
         /// <summary>
@@ -217,7 +233,7 @@ namespace Sentry.Unity
             this.AddEventProcessor(processor);
             this.AddTransactionProcessor(processor);
 
-            this.AddIntegration(new UnityLogHandlerIntegration());
+            this.AddIntegration(new UnityLogHandlerIntegration(this));
             this.AddIntegration(new AnrIntegration(behaviour));
             this.AddIntegration(new UnityScopeIntegration(behaviour, application));
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
