@@ -543,7 +543,7 @@ jobs:
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-        ios: ['15.5', latest] # last updated May 2023
+        ios: ['15.4', latest] # last updated May 2023
 
     steps:
       - name: Checkout
