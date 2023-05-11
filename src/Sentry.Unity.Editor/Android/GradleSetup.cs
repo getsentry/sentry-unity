@@ -64,10 +64,23 @@ namespace Sentry.Unity.Editor.Android
 
             for (var i = 0; i < lines.Length; i++)
             {
+                var line = lines[i];
                 // There are potentially multiple, nested scopes. We cannot add ourselves to the ones within 'buildscript'
-                if (lines[i].Contains("buildscript"))
+                if (line.Contains("buildscript"))
                 {
-                    i = FindClosingBracket(lines, i);
+                    var startIndex = i;
+
+                    // In case the '{' is on the next line
+                    if (line.Contains("{"))
+                    {
+                        startIndex += 0;
+                    }
+                    else if (lines[startIndex + 1].Contains("{"))
+                    {
+                        startIndex += 1;
+                    }
+
+                    i = FindClosingBracket(lines, startIndex);
                 }
                 else if (lines[i].Contains(scope))
                 {
@@ -100,16 +113,6 @@ namespace Sentry.Unity.Editor.Android
         private static int FindClosingBracket(string[] lines, int startIndex)
         {
             var openBrackets = 0;
-
-            // In case the '{' is on the next line
-            if (lines[startIndex].Contains("{"))
-            {
-                startIndex += 1;
-            }
-            else if (lines[startIndex + 1].Contains("{"))
-            {
-                startIndex += 2;
-            }
 
             for (var i = startIndex + 1; i < lines.Length; i++)
             {
