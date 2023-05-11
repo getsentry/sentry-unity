@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK filters `System.Net.WebException` and `System.Net.Sockets.SocketException` by default ([#1294](https://github.com/getsentry/sentry-unity/pull/1294))
 - The SDK no longer runs performance auto instrumentation with the SDK disabled ([#1314](https://github.com/getsentry/sentry-unity/pull/1314))
 - Fixed an issue where the SDK would throw a `NullReferenceException` when trying to capture a log message ([#1309](https://github.com/getsentry/sentry-unity/pull/1309))
 - Fixed the `BreadcrumbsForErrors` checkbox on the config window ([#1306](https://github.com/getsentry/sentry-unity/pull/1306))

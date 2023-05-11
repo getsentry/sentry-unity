@@ -9,29 +9,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
         internal static void Display(ScriptableSentryUnityOptions options, SentryCliOptions? cliOptions)
         {
             {
-                options.Debug = EditorGUILayout.BeginToggleGroup(
-                    new GUIContent("Enable Debug Output", "Whether the Sentry SDK should print its " +
-                                                          "diagnostic logs to the console."),
-                    options.Debug);
-
-                options.DebugOnlyInEditor = EditorGUILayout.Toggle(
-                    new GUIContent("Only In Editor", "Only print logs when in the editor. Development " +
-                                                     "builds of the player will not include Sentry's SDK diagnostics."),
-                    options.DebugOnlyInEditor);
-
-                options.DiagnosticLevel = (SentryLevel)EditorGUILayout.EnumPopup(
-                    new GUIContent("Verbosity Level", "The minimum level allowed to be printed to the console. " +
-                                                      "Log messages with a level below this level are dropped."),
-                    options.DiagnosticLevel);
-
-                EditorGUILayout.EndToggleGroup();
-            }
-
-            EditorGUILayout.Space();
-            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-            EditorGUILayout.Space();
-
-            {
                 options.AutoSessionTracking = EditorGUILayout.BeginToggleGroup(
                     new GUIContent("Auto Session Tracking", "Whether the SDK should start and end sessions " +
                                                             "automatically. If the timeout is reached the old session will" +
@@ -62,8 +39,32 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                        "before an ANR event is reported.\nDefault: 5000ms"),
                     options.AnrTimeout);
                 options.AnrTimeout = Math.Max(0, options.AnrTimeout);
-                ;
+
                 EditorGUILayout.EndToggleGroup();
+            }
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            {
+                GUILayout.Label("Automatic Exception Filter", EditorStyles.boldLabel);
+
+                options.FilterBadGatewayExceptions = EditorGUILayout.Toggle(
+                    new GUIContent("BadGatewayException", "Whether the SDK automatically filters Bad Gateway " +
+                                                  "exceptions before they are being sent to Sentry."),
+                    options.FilterBadGatewayExceptions);
+
+                options.FilterWebExceptions = EditorGUILayout.Toggle(
+                    new GUIContent("WebException", "Whether the SDK automatically filters " +
+                                                    "System.Net.WebException before they are being sent to Sentry."),
+                    options.FilterWebExceptions);
+
+                options.FilterSocketExceptions = EditorGUILayout.Toggle(
+                    new GUIContent("SocketException", "Whether the SDK automatically filters " +
+                                                      "System.Net.Sockets.SocketException with error code '10049' from " +
+                                                      "being sent to Sentry."),
+                    options.FilterSocketExceptions);
             }
 
             EditorGUILayout.Space();

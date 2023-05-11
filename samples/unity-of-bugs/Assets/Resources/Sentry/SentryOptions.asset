@@ -52,6 +52,9 @@ MonoBehaviour:
   <MaxQueueItems>k__BackingField: 30
   <AnrDetectionEnabled>k__BackingField: 1
   <AnrTimeout>k__BackingField: 5000
+  <FilterBadGatewayExceptions>k__BackingField: 1
+  <FilterWebExceptions>k__BackingField: 1
+  <FilterSocketExceptions>k__BackingField: 1
   <IosNativeSupportEnabled>k__BackingField: 1
   <AndroidNativeSupportEnabled>k__BackingField: 1
   <WindowsNativeSupportEnabled>k__BackingField: 1
