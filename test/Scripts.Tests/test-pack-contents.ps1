@@ -44,6 +44,12 @@ try {
     {
         Write-Host  "Package contents do not match snapshot."
         $result | Format-Table -AutoSize
+
+        Write-Host  "the snapshot content"
+        Write-Output $snapshotContent
+
+        Write-Host  "the snapshot file"
+        Write-Output (Get-Content $snapshotFile)
         exit 3
     }
 } finally {
