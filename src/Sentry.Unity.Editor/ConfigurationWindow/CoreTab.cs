@@ -59,7 +59,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUILayout.Space();
 
             {
-                options.EnableLogDebouncing = EditorGUILayout.Toggle(
+                options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
                     new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
                                                             "same type if they are more frequent than once per second."),
                     options.EnableLogDebouncing);
@@ -82,6 +82,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                             "the SDK sends it again."),
                     options.DebounceTimeError);
                 options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
+
+                EditorGUILayout.EndToggleGroup();
             }
 
             EditorGUILayout.Space();
