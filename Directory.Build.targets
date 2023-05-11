@@ -188,13 +188,7 @@ Expected to exist:
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
     <Exec WorkingDirectory="$(SentryAndroidRoot)" EnvironmentVariables="JAVA_HOME=$(JAVA_HOME_17_X64)"
-          Command="./gradlew
-            -PsentryAndroidSdkName=sentry.native.android.unity
-            sentry-android-core:publishAllPublicationsToUnityMavenRepository
-            sentry-android-ndk:publishAllPublicationsToUnityMavenRepository
-            sentry:publishAllPublicationsToUnityMavenRepository
-            sentry-android:publishAllPublicationsToUnityMavenRepository
-            --no-daemon --stacktrace --warning-mode none" />
+          Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity sentry-android-core:publishAllPublicationsToUnityMavenRepository sentry-android-ndk:publishAllPublicationsToUnityMavenRepository sentry:publishAllPublicationsToUnityMavenRepository sentry-android:publishAllPublicationsToUnityMavenRepository --no-daemon --stacktrace --warning-mode none" />
 
     <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp -r build/unityMaven $(SentryAndroidArtifactsDestination)" />
 
