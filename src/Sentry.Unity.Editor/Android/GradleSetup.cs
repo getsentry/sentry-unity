@@ -10,10 +10,10 @@ namespace Sentry.Unity.Editor.Android
     {
         private readonly IDiagnosticLogger _logger;
 
-        private const string LocalRepository = @"maven { url ""${project(':unityLibrary').projectDir}/android-sdk-repository"" }";
-        private const string RepositoryScopeName = "repositories";
-        private const string SdkDependencies = "implementation ('io.sentry:sentry-android:+') { exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }";
-        private const string DependencyScopeName = "dependencies";
+        public const string LocalRepository = @"maven { url ""${project(':unityLibrary').projectDir}/android-sdk-repository"" }";
+        public const string RepositoryScopeName = "repositories";
+        public const string SdkDependencies = "implementation ('io.sentry:sentry-android:+') { exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }";
+        public const string DependencyScopeName = "dependencies";
 
         private readonly string _rootGradle;
         private readonly string _unityLibraryGradle;
@@ -51,7 +51,7 @@ namespace Sentry.Unity.Editor.Android
             File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
         }
 
-        private string InsertIntoScope(string gradleContent, string scope, string insertion)
+        internal string InsertIntoScope(string gradleContent, string scope, string insertion)
         {
             if (gradleContent.Contains(insertion))
             {
@@ -100,6 +100,17 @@ namespace Sentry.Unity.Editor.Android
         private static int FindClosingBracket(string[] lines, int startIndex)
         {
             var openBrackets = 0;
+
+            // In case the '{' is on the next line
+            if (lines[startIndex].Contains("{"))
+            {
+                startIndex += 1;
+            }
+            else if (lines[startIndex + 1].Contains("{"))
+            {
+                startIndex += 2;
+            }
+
             for (var i = startIndex + 1; i < lines.Length; i++)
             {
                 if (lines[i].Contains("{"))
@@ -123,7 +134,7 @@ namespace Sentry.Unity.Editor.Android
         private static string RemoveFromGradleContent(string gradleContent, string toRemove)
             => gradleContent.Contains(toRemove) ? gradleContent.Replace(toRemove, "") : gradleContent;
 
-        private static string LoadGradleScript(string path)
+        internal static string LoadGradleScript(string path)
         {
             if (!File.Exists(path))
             {
