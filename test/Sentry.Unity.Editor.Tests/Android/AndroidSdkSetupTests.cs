@@ -10,57 +10,50 @@ namespace Sentry.Unity.Editor.Tests.Android
 {
     public class AndroidSdkSetupTests
     {
-        private class Fixture
-        {
-            public TestLogger Logger { get; set; }
-            public string FakeProjectPath { get; set; }
-            public string UnityProjectPath { get; set; }
-            public string GradleProjectPath { get; set; }
-
-            public Fixture()
-            {
-                Logger = new TestLogger();
-                FakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                UnityProjectPath = Path.Combine(FakeProjectPath, "UnityProject");
-                GradleProjectPath = Path.Combine(FakeProjectPath, "GradleProject");
-            }
-
-            public AndroidSdkSetup GetSut()
-                => new(Logger, UnityProjectPath, GradleProjectPath);
-        }
+        private TestLogger Logger { get; set; } = new();
+        private string FakeProjectPath { get; set; } = null!;
+        private string UnityProjectPath { get; set; } = null!;
+        private string GradleProjectPath { get; set; } = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _fixture = new Fixture();
-            DebugSymbolUploadTests.SetupFakeProject(_fixture.FakeProjectPath);
+            FakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            UnityProjectPath = Path.Combine(FakeProjectPath, "UnityProject");
+            GradleProjectPath = Path.Combine(FakeProjectPath, "GradleProject");
+
+            DebugSymbolUploadTests.SetupFakeProject(FakeProjectPath);
         }
 
         [TearDown]
-        public void TearDown() => Directory.Delete(_fixture.FakeProjectPath, true);
-
-        private Fixture _fixture = null!; // created through SetUp
+        public void TearDown()
+        {
+            if (Directory.Exists(FakeProjectPath))
+            {
+                Directory.Delete(FakeProjectPath, true);
+            }
+        }
 
         [Test]
         public void AddAndroidSdk_AddsSdkToGradleProject()
         {
-            var sut = _fixture.GetSut();
+            var sut = new AndroidSdkSetup(Logger, UnityProjectPath, GradleProjectPath);
 
             sut.AddAndroidSdk();
 
-            Assert.IsTrue(Directory.Exists(Path.Combine(_fixture.GradleProjectPath, "unityLibrary", "android-sdk-repository")));
+            Assert.IsTrue(Directory.Exists(Path.Combine(GradleProjectPath, "unityLibrary", "android-sdk-repository")));
         }
 
         [Test]
         public void AddAndroidSdk_SdkAlreadyExists_LogsAndSkips()
         {
-            var sut = _fixture.GetSut();
+            var sut = new AndroidSdkSetup(Logger, UnityProjectPath, GradleProjectPath);
             sut.AddAndroidSdk();
 
             sut.AddAndroidSdk();
 
-            Assert.IsTrue(Directory.Exists(Path.Combine(_fixture.GradleProjectPath, "unityLibrary", "android-sdk-repository"))); // sanity check
-            Assert.IsTrue(_fixture.Logger.Logs.Any(log =>
+            Assert.IsTrue(Directory.Exists(Path.Combine(GradleProjectPath, "unityLibrary", "android-sdk-repository"))); // sanity check
+            Assert.IsTrue(Logger.Logs.Any(log =>
                 log.logLevel == SentryLevel.Debug &&
                 log.message.Contains("Android SDK already detected")));
         }
@@ -68,8 +61,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void RemoveAndroidSdk_SdkExists_RemovesSdkFromGradleProject()
         {
-            var expectedSdkDirectoryPath = Path.Combine(_fixture.GradleProjectPath, "unityLibrary", "android-sdk-repository");
-            var sut = _fixture.GetSut();
+            var expectedSdkDirectoryPath = Path.Combine(GradleProjectPath, "unityLibrary", "android-sdk-repository");
+            var sut = new AndroidSdkSetup(Logger, UnityProjectPath, GradleProjectPath);
             sut.AddAndroidSdk();
             Assert.IsTrue(Directory.Exists(expectedSdkDirectoryPath)); // Sanity check
 
@@ -81,11 +74,11 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         public void RemoveAndroidSdk_SdkDoesNotExist_Skips()
         {
-            var sut = _fixture.GetSut();
+            var sut = new AndroidSdkSetup(Logger, UnityProjectPath, GradleProjectPath);
 
             sut.RemoveAndroidSdk();
 
-            Assert.IsFalse(Directory.Exists(Path.Combine(_fixture.GradleProjectPath, "unityLibrary", "android-sdk-repository"))); // sanity check
+            Assert.IsFalse(Directory.Exists(Path.Combine(GradleProjectPath, "unityLibrary", "android-sdk-repository"))); // sanity check
         }
     }
 }
