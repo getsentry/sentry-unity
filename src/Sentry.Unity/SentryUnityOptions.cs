@@ -239,7 +239,10 @@ namespace Sentry.Unity
             this.AddIntegration(new UnityBeforeSceneLoadIntegration());
             this.AddIntegration(new SceneManagerIntegration());
             this.AddIntegration(new SessionIntegration(behaviour));
+
             this.AddExceptionFilter(new UnityBadGatewayExceptionFilter());
+            this.AddExceptionFilter(new UnityWebExceptionFilter());
+            this.AddExceptionFilter(new UnitySocketExceptionFilter());
 
             IsGlobalModeEnabled = true;
 

@@ -87,5 +87,23 @@ namespace Sentry.Unity
         /// </summary>
         public static void DisableAnrIntegration(this SentryUnityOptions options) =>
             options.RemoveIntegration<AnrIntegration>();
+
+        /// <summary>
+        /// Disables the automatic filtering of Bad Gateway exception of type Exception.
+        /// </summary>
+        public static void DisableBadGatewayExceptionFilter(this SentryUnityOptions options) =>
+            options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
+
+        /// <summary>
+        /// Disables the automatic filtering of System.Net.WebException.
+        /// </summary>
+        public static void DisableWebExceptionFilter(this SentryUnityOptions options) =>
+            options.RemoveExceptionFilter<UnityWebExceptionFilter>();
+
+        /// <summary>
+        /// Disables the automatic filtering of System.Net.Sockets.SocketException with error code 10049.
+        /// </summary>
+        public static void DisableSocketExceptionFilter(this SentryUnityOptions options) =>
+            options.RemoveExceptionFilter<UnitySocketExceptionFilter>();
     }
 }

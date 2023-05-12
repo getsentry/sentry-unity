@@ -21,14 +21,15 @@ namespace Sentry.Unity.Tests
 
         [Test]
         public void Filter_FiltersBadGatewayExceptionsOfTypeException() =>
-            Assert.IsTrue(new UnityBadGatewayExceptionFilter().Filter(new Exception(UnityBadGatewayExceptionFilter.Message)));
+
+        Assert.IsTrue(new UnityBadGatewayExceptionFilter().Filter(new Exception(UnityBadGatewayExceptionFilter.Message)));
 
         [Test]
         public void Init_WithDefaultOptions_DoesNotSendBadGatewayExceptions()
         {
             LogAssert.ignoreFailingMessages = true; // The TestHttpClientHandler will complain about timing out (and it should!)
 
-            using var _ = InitSentrySdk();
+            using var _ = SentryTests.InitSentrySdk(testHttpClientHandler: _testHttpClientHandler);
 
             SentrySdk.CaptureException(new Exception(UnityBadGatewayExceptionFilter.Message + _identifyingEventValue));
 
