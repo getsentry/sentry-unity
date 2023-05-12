@@ -71,15 +71,11 @@ namespace Sentry.Unity.Editor.Android
                     var startIndex = i;
 
                     // In case the '{' is on the next line
-                    if (line.Contains("{"))
-                    {
-                        startIndex += 0;
-                    }
-                    else if (lines[startIndex + 1].Contains("{"))
+                    if (!line.Contains("{") && lines[startIndex + 1].Contains("{"))
                     {
                         startIndex += 1;
                     }
-
+                    
                     i = FindClosingBracket(lines, startIndex);
                 }
                 else if (lines[i].Contains(scope))
