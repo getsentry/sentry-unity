@@ -1,10 +1,13 @@
 allprojects {
-    buildscript {
-        repositories {
-            google()
-            jcenter()
+    repositories {
+        google()
+        jcenter()
+        flatDir {
+            dirs "${project(':unityLibrary').projectDir}/libs"
         }
+    }
 
+    buildscript {
         dependencies {
             // If you are changing the Android Gradle Plugin version, make sure it is compatible with the Gradle version preinstalled with Unity
             // See which Gradle version is preinstalled with Unity here https://docs.unity3d.com/Manual/android-gradle-overview.html
@@ -13,13 +16,10 @@ allprojects {
             classpath 'com.android.tools.build:gradle:4.0.1'
             classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31'
         }
-    }
 
-    repositories {
-        google()
-        jcenter()
-        flatDir {
-            dirs "${project(':unityLibrary').projectDir}/libs"
+        repositories {
+            google()
+            jcenter()
         }
     }
 }
