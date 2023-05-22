@@ -1,0 +1,14 @@
+allprojects {
+    repositories {
+        maven { url "${project(':unityLibrary').projectDir}/android-sdk-repository" }
+        google()
+        jcenter()
+        flatDir {
+            dirs "${project(':unityLibrary').projectDir}/libs"
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

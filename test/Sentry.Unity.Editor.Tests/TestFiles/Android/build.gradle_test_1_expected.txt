@@ -16,6 +16,7 @@ allprojects {
     }
 
     repositories {
+        maven { url "${project(':unityLibrary').projectDir}/android-sdk-repository" }
         google()
         jcenter()
         flatDir {

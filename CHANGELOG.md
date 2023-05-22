@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed native support build integration for Android ([#1318](https://github.com/getsentry/sentry-unity/pull/1318))
 - The SDK filters `System.Net.WebException` and `System.Net.Sockets.SocketException` by default ([#1294](https://github.com/getsentry/sentry-unity/pull/1294))
 - The SDK no longer runs performance auto instrumentation with the SDK disabled ([#1314](https://github.com/getsentry/sentry-unity/pull/1314))
 - Fixed an issue where the SDK would throw a `NullReferenceException` when trying to capture a log message ([#1309](https://github.com/getsentry/sentry-unity/pull/1309))
@@ -16,9 +17,9 @@
 
 ### Dependencies
 
-- Bump CLI from v2.16.1 to v2.17.5 ([#1288](https://github.com/getsentry/sentry-unity/pull/1288), [#1289](https://github.com/getsentry/sentry-unity/pull/1289), [#1299](https://github.com/getsentry/sentry-unity/pull/1299))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2175)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.16.1...2.17.5)
+- Bump CLI from v2.16.1 to v2.18.0 ([#1288](https://github.com/getsentry/sentry-unity/pull/1288), [#1289](https://github.com/getsentry/sentry-unity/pull/1289), [#1299](https://github.com/getsentry/sentry-unity/pull/1299), [#1329](https://github.com/getsentry/sentry-unity/pull/1329))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2180)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.16.1...2.18.0)
 - Bump Cocoa SDK from v8.3.3 to v8.7.2 ([#1285](https://github.com/getsentry/sentry-unity/pull/1285), [#1298](https://github.com/getsentry/sentry-unity/pull/1298), [#1316](https://github.com/getsentry/sentry-unity/pull/1316), [#1326](https://github.com/getsentry/sentry-unity/pull/1326))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#872)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.3.3...8.7.2)
