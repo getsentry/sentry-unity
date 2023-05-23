@@ -204,7 +204,7 @@ namespace Sentry.Unity.Editor.Native
                     break;
             }
 
-            var cliArgs = "upload-dif ";
+            var cliArgs = "debug-files upload ";
             if (!isMono)
             {
                 cliArgs += "--il2cpp-mapping ";
