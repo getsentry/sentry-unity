@@ -67,7 +67,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.Dsn = expectedOptions.Dsn;
             scriptableOptions.CaptureInEditor = expectedOptions.CaptureInEditor;
             scriptableOptions.EnableLogDebouncing = expectedOptions.EnableLogDebouncing;
-            scriptableOptions.TracesSampleRate = expectedOptions.TracesSampleRate;
+            scriptableOptions.TracesSampleRate = (double)expectedOptions.TracesSampleRate;
             scriptableOptions.AutoSessionTracking = expectedOptions.AutoSessionTracking;
             scriptableOptions.AutoSessionTrackingInterval = (int)expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
             scriptableOptions.AttachStacktrace = expectedOptions.AttachStacktrace;

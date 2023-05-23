@@ -24,6 +24,11 @@ namespace Sentry.Unity.Tests.Stubs
             return evt.EventId;
         }
 
+        public SentryId CaptureEvent(SentryEvent evt, Hint? hint, Scope? scope = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public void CaptureUserFeedback(UserFeedback userFeedback)
         {
             throw new NotImplementedException();
@@ -31,6 +36,11 @@ namespace Sentry.Unity.Tests.Stubs
 
         public void CaptureTransaction(Transaction transaction)
         {
+        }
+
+        public void CaptureTransaction(Transaction transaction, Hint? hint)
+        {
+            throw new NotImplementedException();
         }
 
         public void CaptureSession(SessionUpdate sessionUpdate)
