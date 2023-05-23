@@ -75,7 +75,7 @@ namespace Sentry.Unity.Editor.Android
                     {
                         startIndex += 1;
                     }
-                    
+
                     i = FindClosingBracket(lines, startIndex);
                 }
                 else if (lines[i].Contains(scope))
