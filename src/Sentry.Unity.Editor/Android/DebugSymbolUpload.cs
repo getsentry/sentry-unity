@@ -52,7 +52,7 @@ namespace Sentry.Unity.Editor.Android
                 text += "        exec {{\n";
                 text += "            environment 'SENTRY_PROPERTIES', './sentry.properties'\n";
                 text += "            executable '{0}'\n";
-                text += "            args = ['debug-files upload'{1}]\n";
+                text += "            args = ['debug-files', 'upload'{1}]\n";
                 if (!_isExporting)
                 {
                     text += "            standardOutput sentryLogFile\n";
