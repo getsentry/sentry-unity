@@ -2,7 +2,7 @@ using UnityEngine;
 using Sentry.Unity;
 
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/BuildTimeConfiguration.asset", menuName = "Sentry/BuildTimeConfiguration", order = 999)]
-public class BuildTimeConfiguration : Sentry.Unity.SentryBuildTimeOptionsConfiguration
+public class BuildTimeConfiguration : SentryBuildTimeOptionsConfiguration
 {
     /// Called during app build. Changes made here will affect build-time processing, symbol upload, etc.
     /// Additionally, because iOS, macOS and Android native error handling is configured at build time,
