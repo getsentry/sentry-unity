@@ -25,8 +25,8 @@ public class RuntimeConfiguration : SentryRuntimeOptionsConfiguration
             options.Enabled = false;
         }
 
-        // BeforeSend is only relevant at runtime.
-        options.SetBeforeSend((sentryEvent, hint) =>
+        // BeforeSend is only relevant at runtime. It wouldn't hurt to be set at build time, just wouldn't do anything.
+        options.SetBeforeSend((sentryEvent, _) =>
         {
             if (sentryEvent.Tags.ContainsKey("SomeTag"))
             {
@@ -35,11 +35,6 @@ public class RuntimeConfiguration : SentryRuntimeOptionsConfiguration
             }
 
             return sentryEvent;
-        });
-
-        options.SetBeforeSend((@event, hint) =>
-        {
-            return @event;
         });
 
         Debug.Log(nameof(RuntimeConfiguration) + "::Configure() finished");
