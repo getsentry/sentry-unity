@@ -57,6 +57,7 @@ namespace Sentry.Unity
         public Lazy<string>? DeviceType => new(() => SystemInfo.deviceType.ToString());
         public string? CpuDescription => SystemInfo.processorType;
         public string? DeviceName => SystemInfo.deviceName;
+
         public Lazy<string> DeviceUniqueIdentifier => new(() => SystemInfo.deviceUniqueIdentifier);
         public Lazy<string> DeviceModel => new(() => SystemInfo.deviceModel);
         /// <summary>

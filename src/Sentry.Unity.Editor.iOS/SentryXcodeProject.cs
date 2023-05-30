@@ -23,7 +23,7 @@ namespace Sentry.Unity.Editor.iOS
         private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
         private readonly string _uploadScript = @"
 process_upload_symbols() {{
-    ./{0} upload-dif --force-foreground {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
+    ./{0} debug-files upload --force-foreground {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
 }}
 
 export SENTRY_PROPERTIES=sentry.properties
