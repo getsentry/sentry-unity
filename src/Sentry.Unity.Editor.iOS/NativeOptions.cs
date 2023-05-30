@@ -41,6 +41,11 @@ static SentryOptions* getSentryOptions()
         return nil;
     }}
 
+    {(options.FilterBadGatewayExceptions ? @"options.beforeSend = ^SentryEvent * _Nullable(SentryEvent * _Nonnull event) {
+        if ([event.request.url containsString:@""operate-sdk-telemetry.unity3d.com""]) return nil;
+        return event;
+    };" : "")}
+
     return options;
 }}";
 
