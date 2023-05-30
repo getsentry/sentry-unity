@@ -1,9 +1,10 @@
+using Sentry;
 using UnityEngine;
 using Sentry.Unity;
 using UnityEngine.SceneManagement;
 
 [CreateAssetMenu(fileName = "Assets/Resources/Sentry/RuntimeConfiguration.asset", menuName = "Sentry/RuntimeConfiguration", order = 999)]
-public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfiguration
+public class RuntimeConfiguration : SentryRuntimeOptionsConfiguration
 {
     /// Called at the player startup by SentryInitialization.
     /// You can alter configuration for the C# error handling and also
@@ -25,7 +26,7 @@ public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfigurati
         }
 
         // BeforeSend is only relevant at runtime. It wouldn't hurt to be set at build time, just wouldn't do anything.
-        options.BeforeSend = sentryEvent =>
+        options.SetBeforeSend((sentryEvent, _) =>
         {
             if (sentryEvent.Tags.ContainsKey("SomeTag"))
             {
@@ -34,7 +35,7 @@ public class RuntimeConfiguration : Sentry.Unity.SentryRuntimeOptionsConfigurati
             }
 
             return sentryEvent;
-        };
+        });
 
         Debug.Log(nameof(RuntimeConfiguration) + "::Configure() finished");
     }
