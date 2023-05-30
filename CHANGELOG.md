@@ -5,6 +5,7 @@
 ### Fixes
 
 - Updated sample configure callback to use the new `BeforeSend`methods that allow the use of `Hints` ([#1341](https://github.com/getsentry/sentry-unity/pull/1341))
+- Updated the Sentry CLI command to upload debug symbols ([#1336](https://github.com/getsentry/sentry-unity/pull/1336))
 
 ### Feature
 
@@ -23,7 +24,6 @@
 
 ### Fixes
 
-- Updated the Sentry CLI command to upload debug symbols ([#1336](https://github.com/getsentry/sentry-unity/pull/1336))
 - Fixed native support build integration for Android ([#1318](https://github.com/getsentry/sentry-unity/pull/1318))
 - The SDK filters `System.Net.WebException` and `System.Net.Sockets.SocketException` by default ([#1294](https://github.com/getsentry/sentry-unity/pull/1294))
 - The SDK no longer runs performance auto instrumentation with the SDK disabled ([#1314](https://github.com/getsentry/sentry-unity/pull/1314))
