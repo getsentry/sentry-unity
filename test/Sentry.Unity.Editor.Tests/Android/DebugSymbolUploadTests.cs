@@ -142,7 +142,7 @@ gradle\.taskGraph\.whenReady {
         exec {
             environment 'SENTRY_PROPERTIES', '\./sentry\.properties'
             executable '\./fake-sentry-cli'
-            args = \['upload-dif', '--il2cpp-mapping', '--include-sources', project\.rootDir\]
+            args = \['debug-files', 'upload', '--il2cpp-mapping', '--include-sources', project\.rootDir\]
         }
     }
 }
@@ -160,7 +160,7 @@ gradle\.taskGraph\.whenReady {
         exec {
             environment 'SENTRY_PROPERTIES', '\./sentry\.properties'
             executable '[^\]]+[^.]/fake-sentry-cli'
-            args = \['upload-dif', '--il2cpp-mapping', '--include-sources', [^\]]+\]
+            args = \['debug-files', 'upload', '--il2cpp-mapping', '--include-sources', [^\]]+\]
             standardOutput sentryLogFile
             errorOutput sentryLogFile
         }
