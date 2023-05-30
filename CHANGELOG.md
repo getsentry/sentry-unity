@@ -6,6 +6,10 @@
 
 - Updated sample configure callback to use the new `BeforeSend`methods that allow the use of `Hints` ([#1341](https://github.com/getsentry/sentry-unity/pull/1341))
 
+### Feature
+
+- Added automatic filtering of `BadGatewayExceptions` originating from Unity telemetry on the native iOS layer ([#1345](https://github.com/getsentry/sentry-unity/pull/1345))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.7.2 to v8.7.3 ([#1342](https://github.com/getsentry/sentry-unity/pull/1342))
