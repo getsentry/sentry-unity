@@ -140,6 +140,11 @@ namespace Sentry.Unity
         public TimeSpan AnrTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
+        /// Whether the SDK should automatically filter `Bad Gateway Exceptions` caused by Unity.
+        /// </summary>
+        public bool FilterBadGatewayExceptions { get; set; } = true;
+
+        /// <summary>
         /// Whether the SDK should add native support for iOS
         /// </summary>
         public bool IosNativeSupportEnabled { get; set; } = true;

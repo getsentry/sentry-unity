@@ -60,5 +60,35 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
             File.Delete(testOptionsFileName);
         }
+
+        [Test]
+        public void CreateOptionsFile_FilterBadGatewayEnabled_AddsFiltering()
+        {
+            const string testOptionsFileName = "testOptions.m";
+
+            NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = true });
+
+            Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
+
+            var nativeOptions = File.ReadAllText(testOptionsFileName);
+            StringAssert.Contains("event.request.url containsString:@\"operate-sdk-telemetry.unity3d.com\"", nativeOptions);
+
+            File.Delete(testOptionsFileName);
+        }
+
+        [Test]
+        public void CreateOptionsFile_FilterBadGatewayDisabled_DoesNotAddFiltering()
+        {
+            const string testOptionsFileName = "testOptions.m";
+
+            NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = false });
+
+            Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
+
+            var nativeOptions = File.ReadAllText(testOptionsFileName);
+            StringAssert.DoesNotContain("event.request.url containsString:@\"operate-sdk-telemetry.unity3d.com\"", nativeOptions);
+
+            File.Delete(testOptionsFileName);
+        }
     }
 }

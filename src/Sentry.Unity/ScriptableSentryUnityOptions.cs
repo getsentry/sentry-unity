@@ -160,6 +160,7 @@ namespace Sentry.Unity
                 Debug = ShouldDebug(application.IsEditor && !isBuilding),
                 DiagnosticLevel = DiagnosticLevel,
                 AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
+                FilterBadGatewayExceptions = FilterBadGatewayExceptions,
                 IosNativeSupportEnabled = IosNativeSupportEnabled,
                 AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
                 WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
@@ -187,26 +188,23 @@ namespace Sentry.Unity
 
             options.SetupLogging();
 
+            // This has to happen in between options object creation and updating the options based on programmatic changes
+            if (!isBuilding && RuntimeOptionsConfiguration != null)
+            {
+                RuntimeOptionsConfiguration.Configure(options);
+            }
+
+            if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
+            {
+                options.AddIl2CppExceptionProcessor(unityInfo);
+            }
+
             HandlePlatformRestrictions(options, application);
             HandleExceptionFilter(options);
 
             if (!AnrDetectionEnabled)
             {
                 options.DisableAnrIntegration();
-            }
-
-            if (!isBuilding)
-            {
-                if (RuntimeOptionsConfiguration != null)
-                {
-                    RuntimeOptionsConfiguration.Configure(options);
-                }
-
-                // Doing this after the configure callback to allow users to programmatically opt out
-                if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
-                {
-                    options.AddIl2CppExceptionProcessor(unityInfo);
-                }
             }
 
             return options;
@@ -244,7 +242,7 @@ namespace Sentry.Unity
 
         private void HandleExceptionFilter(SentryUnityOptions options)
         {
-            if (!FilterBadGatewayExceptions)
+            if (!options.FilterBadGatewayExceptions)
             {
                 options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
             }
