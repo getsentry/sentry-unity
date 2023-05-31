@@ -64,6 +64,22 @@ namespace Sentry.Unity.Editor.iOS
                         "during a previous build. Select 'Replace' when exporting the project to create a clean project.");
                 }
 
+                try
+                {
+                    logger.LogDebug("Copying the NoOp bride to the output project.");
+
+                    // The Unity SDK expects the bridge to be there. The Xcode build will break during linking otherwise.
+                    var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.NoOpBridgeName));
+                    CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
+
+                    using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
+                    sentryXcodeProject.AddSentryNativeBridge();
+                }
+                catch (Exception e)
+                {
+                    logger.LogError("Failed to add the Sentry NoOp bridge to the output project.", e);
+                }
+
                 return;
             }
 
@@ -71,13 +87,12 @@ namespace Sentry.Unity.Editor.iOS
 
             try
             {
-                // The Sentry.xcframework ends in '~' to stop Unity from trying to import the .frameworks.
-                // Otherwise, Unity tries to export those with the XCode build.
-                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "Sentry.xcframework~"));
-                CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", "Sentry.xcframework"), logger);
+                // The Sentry.xcframework ends in '~' to hide it from Unity. Otherwise, Unity tries to export it with the XCode build.
+                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
+                CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
 
-                var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "SentryNativeBridge.m"));
-                CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), "SentryNativeBridge.m"), logger);
+                var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.BridgeName));
+                CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
 
                 using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
                 sentryXcodeProject.AddSentryFramework();

@@ -16,6 +16,7 @@ namespace Sentry.Unity.Editor.iOS
     {
         internal const string FrameworkName = "Sentry.xcframework";
         internal const string BridgeName = "SentryNativeBridge.m";
+        internal const string NoOpBridgeName = "SentryNativeBridgeNoOp.m";
         internal const string OptionsName = "SentryOptions.m";
         internal const string SymbolUploadPhaseName = "SymbolUpload";
 
