@@ -30,7 +30,7 @@ namespace Sentry.Unity.Editor.Android
             }
 
             _logger.LogInfo("Copying the Android SDK to '{0}'.", _targetAndroidSdkPath);
-            CopyDirectory(_androidSdkPath, _targetAndroidSdkPath);
+            SentryFileUtil.CopyDirectory(_androidSdkPath, _targetAndroidSdkPath);
         }
 
         public void RemoveAndroidSdk()
@@ -39,30 +39,6 @@ namespace Sentry.Unity.Editor.Android
             {
                 _logger.LogInfo("Removing the Android SDK from the output project.");
                 Directory.Delete(_targetAndroidSdkPath, true);
-            }
-        }
-
-        private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
-        {
-            var directory = new DirectoryInfo(sourceDirectory);
-            if (!directory.Exists)
-            {
-                throw new DirectoryNotFoundException($"Source directory not found: {directory.FullName}");
-            }
-
-            var subDirectories = directory.GetDirectories();
-            Directory.CreateDirectory(destinationDirectory);
-
-            foreach (var file in directory.GetFiles())
-            {
-                var targetFilePath = Path.Combine(destinationDirectory, file.Name);
-                file.CopyTo(targetFilePath);
-            }
-
-            foreach (var subDirectory in subDirectories)
-            {
-                var newDestinationDir = Path.Combine(destinationDirectory, subDirectory.Name);
-                CopyDirectory(subDirectory.FullName, newDestinationDir);
             }
         }
     }
