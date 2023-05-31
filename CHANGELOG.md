@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes 
+
+- Fixed Xcode linking error with the SDK disabled ([#1352](https://github.com/getsentry/sentry-unity/pull/1352))
+
 ### Dependencies
 
 - Bump Native SDK from v0.6.2 to v0.6.3 ([#1349](https://github.com/getsentry/sentry-unity/pull/1349))
