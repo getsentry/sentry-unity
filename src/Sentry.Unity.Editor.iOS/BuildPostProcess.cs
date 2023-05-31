@@ -112,7 +112,7 @@ namespace Sentry.Unity.Editor.iOS
                 var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.BridgeName));
                 CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
 
-                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
+                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
                 sentryXcodeProject.AddSentryFramework();
                 sentryXcodeProject.AddSentryNativeBridge();
                 sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
@@ -120,9 +120,11 @@ namespace Sentry.Unity.Editor.iOS
 
                 if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
                 {
+                    logger.LogInfo("Automatic symbol upload enabled. Adding script to build phase.");
+
                     SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
                     SentryCli.SetupSentryCli(pathToProject, RuntimePlatform.OSXEditor);
-                    sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, cliOptions);
+                    sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions);
                 }
                 else if (options.Il2CppLineNumberSupportEnabled)
                 {

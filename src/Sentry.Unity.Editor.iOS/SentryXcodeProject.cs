@@ -42,6 +42,7 @@ else
 fi
 ";
 
+        private readonly IDiagnosticLogger? _logger = null;
         private readonly Type _pbxProjectType = null!;              // Set in constructor or throws
         private readonly Type _pbxProjectExtensionsType = null!;    // Set in constructor or throws
         private readonly object _project = null!;                   // Set in constructor or throws
@@ -52,8 +53,9 @@ fi
         private string _mainTargetGuid = null!;             // Set when opening the project
         private string _unityFrameworkTargetGuid = null!;   // Set when opening the project
 
-        internal SentryXcodeProject(string projectRoot)
+        internal SentryXcodeProject(string projectRoot, IDiagnosticLogger? logger = null)
         {
+            _logger = logger;
             var xcodeAssembly = Assembly.Load("UnityEditor.iOS.Extensions.Xcode");
             _pbxProjectType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PBXProject");
             _pbxProjectExtensionsType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.Extensions.PBXProjectExtensions");
@@ -65,9 +67,9 @@ fi
                 .Invoke(null, new[] { _projectRoot });
         }
 
-        public static SentryXcodeProject Open(string path)
+        public static SentryXcodeProject Open(string path, IDiagnosticLogger? logger = null)
         {
-            var xcodeProject = new SentryXcodeProject(path);
+            var xcodeProject = new SentryXcodeProject(path, logger);
             xcodeProject.ReadFromProjectFile();
 
             return xcodeProject;
@@ -75,6 +77,8 @@ fi
 
         internal void ReadFromProjectFile()
         {
+            _logger?.LogInfo("Reading the Xcode project file.");
+
             if (!File.Exists(_projectPath))
             {
                 throw new FileNotFoundException("Could not locate generated Xcode project at", _projectPath);
@@ -86,10 +90,14 @@ fi
                 .Invoke(_project, null);
             _unityFrameworkTargetGuid = (string)_pbxProjectType.GetMethod("GetUnityFrameworkTargetGuid", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, null);
+
+            _logger?.LogDebug("Successfully read the Xcode project file.");
         }
 
         public void AddSentryFramework()
         {
+            _logger?.LogInfo("Adding the Sentry framework.");
+
             var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
             var frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
@@ -117,16 +125,22 @@ fi
             var addFileToBuildSectionMethod = _pbxProjectType.GetMethod("AddFileToBuildSection", new[] { typeof(string), typeof(string), typeof(string) });
             addFileToBuildSectionMethod.Invoke(_project, new object[] { _mainTargetGuid, mainBuildPhaseGuid, frameworkGuid });
             addFileToBuildSectionMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, unityFrameworkBuildPhaseGuid, frameworkGuid });
+
+            _logger?.LogDebug("Successfully added the Sentry framework.");
         }
 
         public void AddSentryNativeBridge()
         {
+            _logger?.LogInfo("Adding the Sentry Native Bridge.");
+
             var relativeBridgePath = Path.Combine("Libraries", SentryPackageInfo.GetName(), BridgeName);
             var bridgeGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { relativeBridgePath, relativeBridgePath, 1 }); // 1 is PBXSourceTree.Source
 
             _pbxProjectType.GetMethod("AddFileToBuild", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new[] { _unityFrameworkTargetGuid, bridgeGuid });
+
+            _logger?.LogDebug("Successfully added the Sentry Native Bridge.");
         }
 
         // Used for testing
@@ -136,11 +150,13 @@ fi
                 .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
         }
 
-        public void AddBuildPhaseSymbolUpload(IDiagnosticLogger? logger, SentryCliOptions sentryCliOptions)
+        public void AddBuildPhaseSymbolUpload(SentryCliOptions sentryCliOptions)
         {
+            _logger?.LogInfo("Adding automated debug symbol upload script to build phase.");
+
             if (MainTargetContainsSymbolUploadBuildPhase())
             {
-                logger?.LogDebug("Build phase '{0}' already added.", SymbolUploadPhaseName);
+                _logger?.LogDebug("Build phase '{0}' already added.", SymbolUploadPhaseName);
                 return;
             }
 
@@ -153,13 +169,19 @@ fi
 
             _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
                 .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", uploadScript });
+
+            _logger?.LogDebug("Successfully added automated debug symbol upload script to build phase.");
         }
 
         public void AddNativeOptions(SentryUnityOptions options, Action<string, SentryUnityOptions> nativeOptionFileCreation)
         {
+            _logger?.LogInfo("Adding native options.");
+
             nativeOptionFileCreation.Invoke(Path.Combine(_projectRoot, _optionsPath), options);
             _pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
                 .Invoke(_project, new object[] { _optionsPath, _optionsPath, 1 }); // 1 is PBXSourceTree.Source
+
+            _logger?.LogDebug("Successfully added native options.");
         }
 
         public void AddSentryToMain(SentryUnityOptions options) =>
