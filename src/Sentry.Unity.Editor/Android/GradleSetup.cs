@@ -81,7 +81,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 var line = lines[i];
                 // There are potentially multiple, nested scopes. We cannot add ourselves to the ones within 'buildscript'
-                if(ScopesToSkip.Any(line.Contains))
+                if (ScopesToSkip.Any(line.Contains))
                 {
                     var startIndex = i;
 
