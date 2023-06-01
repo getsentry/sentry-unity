@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEditor.Build;
 
 namespace Sentry.Unity.Editor.Android
@@ -29,13 +30,13 @@ namespace Sentry.Unity.Editor.Android
             _unityLibraryGradle = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
         }
 
-        public void UpdateGradleProject()
+        public void UpdateGradleProject(IApplication? application = null)
         {
             _logger.LogInfo("Adding Sentry to the gradle project.");
 
             // Starting with 2022.3.0f1 the root build.gradle updated to use the "new" way of importing plugins via `id`
             // Instead, dependency repositories get handled in the `settings.gradle` at the root
-            var gradleFilePath = SentryUnityVersion.IsNewerOrEqualThan("2022.3")
+            var gradleFilePath = SentryUnityVersion.IsNewerOrEqualThan("2022.3", application)
                 ? _settingsGradle
                 : _rootGradle;
 
@@ -51,14 +52,20 @@ namespace Sentry.Unity.Editor.Android
             File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
         }
 
-        public void ClearGradleProject()
+        public void ClearGradleProject(IApplication? application = null)
         {
             _logger.LogInfo("Removing Sentry from the gradle project.");
 
-            _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _rootGradle);
-            var rootGradleContent = LoadGradleScript(_rootGradle);
-            rootGradleContent = RemoveFromGradleContent(rootGradleContent, LocalRepository);
-            File.WriteAllText(_rootGradle, rootGradleContent);
+            // Starting with 2022.3.0f1 the root build.gradle updated to use the "new" way of importing plugins via `id`
+            // Instead, dependency repositories get handled in the `settings.gradle` at the root
+            var gradleFilePath = SentryUnityVersion.IsNewerOrEqualThan("2022.3", application)
+                ? _settingsGradle
+                : _rootGradle;
+
+            _logger.LogDebug("Removing modifications from '{0}'", gradleFilePath);
+            var gradleContent = LoadGradleScript(gradleFilePath);
+            gradleContent = RemoveFromGradleContent(gradleContent, LocalRepository);
+            File.WriteAllText(gradleFilePath, gradleContent);
 
             _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
             var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
