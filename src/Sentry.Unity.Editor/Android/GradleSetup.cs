@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Sentry.Extensibility;
 using UnityEditor.Build;
 
@@ -14,25 +15,37 @@ namespace Sentry.Unity.Editor.Android
         public const string RepositoryScopeName = "repositories";
         public const string SdkDependencies = "implementation ('io.sentry:sentry-android:+') { exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }";
         public const string DependencyScopeName = "dependencies";
+        public static readonly List<string> ScopesToSkip = new() { "buildscript", "pluginManagement" };
 
         private readonly string _rootGradle;
+        private readonly string _settingsGradle;
         private readonly string _unityLibraryGradle;
 
         public GradleSetup(IDiagnosticLogger logger, string gradleProjectPath)
         {
             _logger = logger;
             _rootGradle = Path.Combine(gradleProjectPath, "build.gradle");
+            _settingsGradle = Path.Combine(gradleProjectPath, "settings.gradle");
             _unityLibraryGradle = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
         }
 
         public void UpdateGradleProject()
         {
-            _logger.LogInfo("Modifying the 'build.gradle' file at {0}", _rootGradle);
-            var rootGradleContent = LoadGradleScript(_rootGradle);
-            rootGradleContent = InsertIntoScope(rootGradleContent, RepositoryScopeName, LocalRepository);
-            File.WriteAllText(_rootGradle, rootGradleContent);
+            _logger.LogInfo("Adding Sentry to the gradle project.");
 
-            _logger.LogInfo("Modifying the 'build.gradle' file at {0}", _unityLibraryGradle);
+            // Starting with 2022.3.0f1 the root build.gradle updated to use the "new" way of importing plugins via `id`
+            // Instead, dependency repositories get handled in the `settings.gradle` at the root
+            var gradleFilePath = SentryUnityVersion.IsNewerOrEqualThan("2022.3")
+                ? _settingsGradle
+                : _rootGradle;
+
+            _logger.LogDebug("Updating the gradle file at '{0}'", gradleFilePath);
+
+            var gradleContent = LoadGradleScript(gradleFilePath);
+            gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
+            File.WriteAllText(gradleFilePath, gradleContent);
+
+            _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
             var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
             unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
             File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
@@ -40,12 +53,14 @@ namespace Sentry.Unity.Editor.Android
 
         public void ClearGradleProject()
         {
-            _logger.LogInfo("Removing modifications from the 'build.gradle' file at {0}", _rootGradle);
+            _logger.LogInfo("Removing Sentry from the gradle project.");
+
+            _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _rootGradle);
             var rootGradleContent = LoadGradleScript(_rootGradle);
             rootGradleContent = RemoveFromGradleContent(rootGradleContent, LocalRepository);
             File.WriteAllText(_rootGradle, rootGradleContent);
 
-            _logger.LogInfo("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
+            _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
             var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
             unityLibraryGradleContent = RemoveFromGradleContent(unityLibraryGradleContent, SdkDependencies);
             File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
@@ -66,7 +81,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 var line = lines[i];
                 // There are potentially multiple, nested scopes. We cannot add ourselves to the ones within 'buildscript'
-                if (line.Contains("buildscript"))
+                if(ScopesToSkip.Any(line.Contains))
                 {
                     var startIndex = i;
 
