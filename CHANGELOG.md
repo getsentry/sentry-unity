@@ -5,12 +5,16 @@
 ### Fixes 
 
 - Fixed Xcode linking error with the SDK disabled ([#1352](https://github.com/getsentry/sentry-unity/pull/1352))
+- Fixes Android native integration in the gradle output project for builds with Unity 2022.3 and newer ([#1354](https://github.com/getsentry/sentry-unity/pull/1354))
 
 ### Dependencies
 
 - Bump Native SDK from v0.6.2 to v0.6.3 ([#1349](https://github.com/getsentry/sentry-unity/pull/1349))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#063)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.6.2...0.6.3)
+- Bump Java SDK from v6.20.0 to v6.21.0 ([#1353](https://github.com/getsentry/sentry-unity/pull/1353))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6210)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.20.0...6.21.0)
 
 ## 1.4.0
 
