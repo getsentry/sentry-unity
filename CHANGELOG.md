@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixes Android native integration in the gradle output project for builds with Unity 2022.3 and newer ([#1354](https://github.com/getsentry/sentry-unity/pull/1354))
+
 ### Dependencies
 
 - Bump Native SDK from v0.6.2 to v0.6.3 ([#1349](https://github.com/getsentry/sentry-unity/pull/1349))
