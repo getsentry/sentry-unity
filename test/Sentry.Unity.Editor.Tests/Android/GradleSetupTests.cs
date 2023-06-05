@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Editor.Tests.Android
 {
@@ -42,13 +44,17 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void UpdateGradleProject_ModifiesGradleFiles()
+        [TestCase("2019.3", "build.gradle")]
+        [TestCase("2020.3", "build.gradle")]
+        [TestCase("2021.3", "build.gradle")]
+        [TestCase("2022.3", "settings.gradle")]
+        public void UpdateGradleProject_ModifiesGradleFiles(string unityVersion, string rootGradleFileName)
         {
             var sut = new GradleSetup(Logger, GradleProjectPath);
 
-            sut.UpdateGradleProject();
+            sut.UpdateGradleProject(new TestApplication(unityVersion: unityVersion));
 
-            var rootGradleFilePath = Path.Combine(GradleProjectPath, "build.gradle");
+            var rootGradleFilePath = Path.Combine(GradleProjectPath, rootGradleFileName);
             var rootGradleContent = File.ReadAllText(rootGradleFilePath);
             StringAssert.Contains(GradleSetup.LocalRepository, rootGradleContent);
 
@@ -58,14 +64,18 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void UpdateGradleProject_GradleAlreadyModified_LogsAndReturns()
+        [TestCase("2019.3", "build.gradle")]
+        [TestCase("2020.3", "build.gradle")]
+        [TestCase("2021.3", "build.gradle")]
+        [TestCase("2022.3", "settings.gradle")]
+        public void UpdateGradleProject_GradleAlreadyModified_LogsAndReturns(string unityVersion, string rootGradleFileName)
         {
             var sut = new GradleSetup(Logger, GradleProjectPath);
-            sut.UpdateGradleProject();
+            sut.UpdateGradleProject(new TestApplication(unityVersion: unityVersion));
 
-            sut.UpdateGradleProject();
+            sut.UpdateGradleProject(new TestApplication(unityVersion: unityVersion));
 
-            var rootGradleFilePath = Path.Combine(GradleProjectPath, "build.gradle");
+            var rootGradleFilePath = Path.Combine(GradleProjectPath, rootGradleFileName);
             var rootGradleContent = File.ReadAllText(rootGradleFilePath);
             StringAssert.Contains(GradleSetup.LocalRepository, rootGradleContent); // Sanity check
 
@@ -79,12 +89,16 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        public void ClearGradleProject_GradleFilesModified_RemovesModification()
+        [TestCase("2019.3", "build.gradle")]
+        [TestCase("2020.3", "build.gradle")]
+        [TestCase("2021.3", "build.gradle")]
+        [TestCase("2022.3", "settings.gradle")]
+        public void ClearGradleProject_GradleFilesModified_RemovesModification(string unityVersion, string rootGradleFileName)
         {
             var sut = new GradleSetup(Logger, GradleProjectPath);
-            sut.UpdateGradleProject();
+            sut.UpdateGradleProject(new TestApplication(unityVersion: unityVersion));
 
-            var rootGradleFilePath = Path.Combine(GradleProjectPath, "build.gradle");
+            var rootGradleFilePath = Path.Combine(GradleProjectPath, rootGradleFileName);
             var rootGradleContent = File.ReadAllText(rootGradleFilePath);
             StringAssert.Contains(GradleSetup.LocalRepository, rootGradleContent); // Sanity check
 
@@ -92,7 +106,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var unityLibraryGradleContent = File.ReadAllText(unityLibraryGradleFilePath);
             StringAssert.Contains(GradleSetup.SdkDependencies, unityLibraryGradleContent); // Sanity check
 
-            sut.ClearGradleProject();
+            sut.ClearGradleProject(new TestApplication(unityVersion: unityVersion));
 
             rootGradleContent = File.ReadAllText(rootGradleFilePath);
             StringAssert.DoesNotContain(GradleSetup.LocalRepository, rootGradleContent); // Sanity check
