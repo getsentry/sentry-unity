@@ -51,45 +51,80 @@ namespace Sentry.Unity.Editor.iOS
             {
                 logger.LogWarning("iOS native support disabled because Sentry has not been configured. " +
                                   "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
+
+                SetupNoOpBridge(logger, pathToProject);
                 return;
             }
 
             if (!IsNativeSupportEnabled(options, logger))
             {
-                var main = File.ReadAllText(Path.Combine(pathToProject, SentryXcodeProject.MainPath));
-                if (NativeMain.ContainsSentry(main, logger))
+                var mainPath = Path.Combine(pathToProject, SentryXcodeProject.MainPath);
+                if (File.Exists(mainPath))
                 {
-                    throw new BuildFailedException(
-                        "The iOS native support has been disabled but the exported project has been modified " +
-                        "during a previous build. Select 'Replace' when exporting the project to create a clean project.");
+                    var main = File.ReadAllText(mainPath);
+                    if (NativeMain.ContainsSentry(main, logger))
+                    {
+                        throw new BuildFailedException(
+                            "The iOS native support has been disabled but the exported project has been modified " +
+                            "during a previous build. Select 'Replace' when exporting the project to create a clean project.");
+                    }
                 }
 
+                SetupNoOpBridge(logger, pathToProject);
                 return;
             }
 
+            SetupSentry(options, cliOptions, logger, pathToProject);
+        }
+
+        internal static void SetupNoOpBridge(IDiagnosticLogger logger, string pathToProject)
+        {
+            try
+            {
+                logger.LogDebug("Copying the NoOp bride to the output project.");
+
+                // The Unity SDK expects the bridge to be there. The Xcode build will break during linking otherwise.
+                var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.NoOpBridgeName));
+                CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
+
+                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
+                sentryXcodeProject.AddSentryNativeBridge();
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Failed to add the Sentry NoOp bridge to the output project.", e);
+            }
+        }
+
+        internal static void SetupSentry(SentryUnityOptions options,
+            SentryCliOptions? cliOptions,
+            IDiagnosticLogger logger,
+            string pathToProject)
+        {
             logger.LogInfo("Attempting to add Sentry to the Xcode project.");
 
             try
             {
-                // The Sentry.xcframework ends in '~' to stop Unity from trying to import the .frameworks.
-                // Otherwise, Unity tries to export those with the XCode build.
-                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "Sentry.xcframework~"));
-                CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", "Sentry.xcframework"), logger);
+                // The Sentry.xcframework ends in '~' to hide it from Unity. Otherwise, Unity tries to export it with the XCode build.
+                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
+                CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
 
-                var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", "SentryNativeBridge.m"));
-                CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), "SentryNativeBridge.m"), logger);
+                var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.BridgeName));
+                CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
 
-                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
+                using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
                 sentryXcodeProject.AddSentryFramework();
                 sentryXcodeProject.AddSentryNativeBridge();
                 sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
                 sentryXcodeProject.AddSentryToMain(options);
 
-                if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is true)
+                if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
                 {
+                    logger.LogInfo("Automatic symbol upload enabled. Adding script to build phase.");
+
                     SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
                     SentryCli.SetupSentryCli(pathToProject, RuntimePlatform.OSXEditor);
-                    sentryXcodeProject.AddBuildPhaseSymbolUpload(logger, cliOptions);
+                    sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions);
                 }
                 else if (options.Il2CppLineNumberSupportEnabled)
                 {

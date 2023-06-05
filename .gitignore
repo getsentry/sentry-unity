@@ -38,6 +38,7 @@ package-dev/Plugins/*/Sentry/crashpad_handler*
 
 # required to be excluded on all platforms because we don't want Unity to copy it during build
 !package-dev/**/SentryNativeBridge.m.meta
+!package-dev/**/SentryNativeBridgeNoOp.m.meta
 
 # Android SDK files
 package-dev/Plugins/Android/Sentry~/*

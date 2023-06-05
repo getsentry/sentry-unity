@@ -1,7 +1,9 @@
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
 
@@ -27,7 +29,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
                 };
             }
 
-            public SentryXcodeProject GetSut() => new(ProjectRoot);
+            public SentryXcodeProject GetSut() => new(ProjectRoot, TestLogger);
         }
 
         private Fixture _fixture = new();
@@ -139,7 +141,7 @@ namespace Sentry.Unity.Editor.iOS.Tests
             xcodeProject.ReadFromProjectFile();
 
             var didContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
-            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger, new SentryCliOptions());
+            xcodeProject.AddBuildPhaseSymbolUpload(new SentryCliOptions());
             var doesContainUploadPhase = xcodeProject.MainTargetContainsSymbolUploadBuildPhase();
 
             Assert.IsFalse(didContainUploadPhase);
@@ -153,13 +155,15 @@ namespace Sentry.Unity.Editor.iOS.Tests
             var xcodeProject = _fixture.GetSut();
             xcodeProject.ReadFromProjectFile();
 
-            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger, new SentryCliOptions());
-            xcodeProject.AddBuildPhaseSymbolUpload(_fixture.Options.DiagnosticLogger, new SentryCliOptions());
+            xcodeProject.AddBuildPhaseSymbolUpload(new SentryCliOptions());
+            xcodeProject.AddBuildPhaseSymbolUpload(new SentryCliOptions());
 
             var actualBuildPhaseOccurence = Regex.Matches(xcodeProject.ProjectToString(),
                 Regex.Escape(SentryXcodeProject.SymbolUploadPhaseName)).Count;
 
-            Assert.AreEqual(1, _fixture.TestLogger.Logs.Count);
+            Assert.IsTrue(_fixture.TestLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Debug &&
+                log.message.Contains("already added."))); // Sanity check
             Assert.AreEqual(expectedBuildPhaseOccurence, actualBuildPhaseOccurence);
         }
     }
