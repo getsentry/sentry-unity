@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed an issue triggering an error `Failed to find the closing bracket` when using custom gradle files ([#1359](https://github.com/getsentry/sentry-unity/pull/1359))
+
 ### Dependencies
 
 - Bump Native SDK from v0.6.2 to v0.6.3 ([#1349](https://github.com/getsentry/sentry-unity/pull/1349))
