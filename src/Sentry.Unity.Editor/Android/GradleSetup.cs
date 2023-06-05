@@ -112,11 +112,13 @@ namespace Sentry.Unity.Editor.Android
 
             for (var i = startIndex + 1; i < lines.Length; i++)
             {
-                if (lines[i].Contains("{"))
+                var line = lines[i];
+                if (line.Contains("{"))
                 {
                     openBrackets++;
                 }
-                else if (lines[i].Contains("}"))
+
+                if (line.Contains("}"))
                 {
                     if (openBrackets == 0)
                     {
