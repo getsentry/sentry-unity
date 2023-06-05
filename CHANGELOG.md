@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed an issue triggering an error `Failed to find the closing bracket` when using custom gradle files ([#1359](https://github.com/getsentry/sentry-unity/pull/1359))
 - Fixes Android native integration in the gradle output project for builds with Unity 2022.3 and newer ([#1354](https://github.com/getsentry/sentry-unity/pull/1354))
 
 ### Dependencies
