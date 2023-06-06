@@ -87,7 +87,7 @@ namespace Sentry.Unity
                     // whereas the native stack trace is sorted from callee to caller.
                     var frame = sentryStacktrace.Frames[i];
                     var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    var mainImageUUID = NormalizeUUID(nativeStackTrace.ImageUuid);
+                    var mainImageUUID = NormalizeUuid(nativeStackTrace.ImageUuid);
 
                     // TODO should we do this for all addresses or only relative ones?
                     //      If the former, we should also update `frame.InstructionAddress` down below.
@@ -129,7 +129,7 @@ namespace Sentry.Unity
                         }
 
                         // First, try to find the image among the loaded ones, otherwise create a dummy one.
-                        mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUUID(info.Image.DebugId), mainImageUUID))?.Image;
+                        mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
                         mainLibImage ??= new DebugImage
                         {
                             Type = Application.platform switch
@@ -194,8 +194,21 @@ namespace Sentry.Unity
         // native (contains dashes, all lower-case) & what Unity gives us (no dashes, uppercase).
         // On Linux, the image also has shorter UUID coming from Unity, e.g. 3028cb80b0712541,
         // while native image UUID we get is 3028cb80-b071-2541-0000-000000000000.
-        private static string? NormalizeUUID(string? value) =>
-            value?.ToLowerInvariant().Replace("-", "").TrimEnd(new char[] { '0' });
+        private static string? NormalizeUuid(string? value)
+        {
+            if (value is null)
+            {
+                return null;
+            }
+
+            var normalizedUuid = value.ToLowerInvariant().Replace("-", "");
+            if (normalizedUuid.Length > 32)
+            {
+                normalizedUuid.Remove(32);
+            }
+
+            return normalizedUuid;
+        }
 
         private class DebugImageInfo
         {
