@@ -194,7 +194,7 @@ namespace Sentry.Unity
         // native (contains dashes, all lower-case) & what Unity gives us (no dashes, uppercase).
         // On Linux, the image also has shorter UUID coming from Unity, e.g. 3028cb80b0712541,
         // while native image UUID we get is 3028cb80-b071-2541-0000-000000000000.
-        private static string? NormalizeUuid(string? value)
+        internal static string? NormalizeUuid(string? value)
         {
             if (value is null)
             {
