@@ -194,13 +194,18 @@ namespace Sentry.Unity
         // native (contains dashes, all lower-case) & what Unity gives us (no dashes, uppercase).
         // On Linux, the image also has shorter UUID coming from Unity, e.g. 3028cb80b0712541,
         // while native image UUID we get is 3028cb80-b071-2541-0000-000000000000.
+<<<<<<< Updated upstream
         private static string? NormalizeUuid(string? value)
+=======
+        private static string? NormalizeUUID(string? value)
+>>>>>>> Stashed changes
         {
             if (value is null)
             {
                 return null;
             }
 
+<<<<<<< Updated upstream
             var normalizedUuid = value.ToLowerInvariant().Replace("-", "");
             if (normalizedUuid.Length > 32)
             {
@@ -208,6 +213,11 @@ namespace Sentry.Unity
             }
 
             return normalizedUuid;
+=======
+            value = value.ToLowerInvariant();
+            value = value.Replace("-0000-000000000000", "");
+            return value.Replace("-", "");
+>>>>>>> Stashed changes
         }
 
         private class DebugImageInfo
