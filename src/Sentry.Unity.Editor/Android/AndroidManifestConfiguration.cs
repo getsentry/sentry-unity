@@ -29,8 +29,7 @@ namespace Sentry.Unity.Editor.Android
                 () => SentryScriptableObject.ConfiguredBuildTimeOptions(),
                 isDevelopmentBuild: EditorUserBuildSettings.development,
                 scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
-        {
-        }
+        { }
 
         // Testing
         internal AndroidManifestConfiguration(
@@ -48,7 +47,7 @@ namespace Sentry.Unity.Editor.Android
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
-            if (PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) != ScriptingImplementation.IL2CPP)
+            if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
             {
                 if (_options is { AndroidNativeSupportEnabled: true })
                 {
