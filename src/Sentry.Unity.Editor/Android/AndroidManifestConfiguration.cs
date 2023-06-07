@@ -26,7 +26,7 @@ namespace Sentry.Unity.Editor.Android
 
         public AndroidManifestConfiguration()
             : this(
-                () => SentryScriptableObject.ConfiguredBuildTimeOptions(),
+                SentryScriptableObject.ConfiguredBuildTimeOptions,
                 isDevelopmentBuild: EditorUserBuildSettings.development,
                 scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
         { }
