@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Sentry.Unity
 {
@@ -67,10 +68,18 @@ namespace Sentry.Unity
                     var sdkVersion = version.GetStatic<int>("SDK_INT");
                     if (sdkVersion >= 32)
                     {
-                        // Unity's built-in fallback
-                        return "<unknown>";
+                        try
+                        {
+                            return SystemInfo.deviceName;
+                        }
+                        catch (AndroidJavaException)
+                        {
+                            // Unity's built-in fallback
+                            return "<unknown>";
+                        }
                     }
                 }
+
                 return SystemInfo.deviceName;
             }
         }
