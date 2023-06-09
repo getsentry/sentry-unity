@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fixed debug image UUID normalization ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
+
 ## 1.4.1
 
 ### Fixes 
