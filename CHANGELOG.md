@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Fixed debug image UUID normalization ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
+- Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
 
 ## 1.4.1
 
