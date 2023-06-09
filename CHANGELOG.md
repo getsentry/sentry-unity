@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The SDK no longer causes an exception during initialiation on Android API level 32 and newer ([#1365](https://github.com/getsentry/sentry-unity/pull/1365))
+
 ## 1.4.1
 
 ### Fixes 
