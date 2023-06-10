@@ -84,6 +84,12 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                              "capture errors written in languages such as Java, Kotlin, C and C++."),
                     options.AndroidNativeSupportEnabled);
 
+                if (options.AndroidNativeSupportEnabled
+                    && PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) != ScriptingImplementation.IL2CPP)
+                {
+                    EditorGUILayout.HelpBox("Android native support requires IL2CPP scripting backend and is currently unsupported on Mono.", MessageType.Warning);
+                }
+
                 options.WindowsNativeSupportEnabled = EditorGUILayout.Toggle(
                     new GUIContent("Windows Native Support", "Whether to enable native crashes support on Windows."),
                     options.WindowsNativeSupportEnabled);
