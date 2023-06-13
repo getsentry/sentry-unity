@@ -15,7 +15,6 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from threading import Thread, Lock
 
 host = '127.0.0.1'
@@ -140,14 +139,13 @@ appServerThread = Thread(target=appServer.serve_forever)
 appServerThread.start()
 time.sleep(1)
 
+
 class TestDriver:
     def __init__(self):
         options = Options()
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         options.add_argument('--headless')
-        d = {}
-        d['goog:loggingPrefs'] = {'browser': 'ALL'}
-        options.set_capability('cloud:options', d)
+        options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
         self.driver = webdriver.Chrome(options=options)
         self.driver.get('http://{}:{}?test=smoke'.format(host, port))
         self.messages = []
