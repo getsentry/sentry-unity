@@ -145,10 +145,10 @@ class TestDriver:
         options = Options()
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         options.add_argument('--headless')
-        d = DesiredCapabilities.CHROME
+        d = {}
         d['goog:loggingPrefs'] = {'browser': 'ALL'}
-        self.driver = webdriver.Chrome(
-            options=options, desired_capabilities=d)
+        options.set_capability('cloud:options', d)
+        self.driver = webdriver.Chrome(options=options)
         self.driver.get('http://{}:{}?test=smoke'.format(host, port))
         self.messages = []
 
