@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -13,7 +12,6 @@ namespace Sentry.Unity.Editor.Android
         private readonly IDiagnosticLogger _logger;
 
         internal const string RelativeBuildOutputPathOld = "Temp/StagingArea/symbols";
-        internal const string RelativeBuildOutputPathOldMono = "Temp/StagingArea/symbols";
         internal const string RelativeGradlePathOld = "Temp/gradleOut";
         internal const string RelativeBuildOutputPathNew = "Library/Bee/artifacts/Android";
         internal const string RelativeAndroidPathNew = "Library/Bee/Android";
@@ -21,7 +19,6 @@ namespace Sentry.Unity.Editor.Android
         private readonly string _unityProjectPath;
         private readonly string _gradleProjectPath;
         private readonly string _gradleScriptPath;
-        private readonly ScriptingImplementation _scriptingBackend;
         private readonly bool _isExporting;
 
         private readonly SentryCliOptions? _cliOptions;
@@ -69,7 +66,6 @@ namespace Sentry.Unity.Editor.Android
             SentryCliOptions? cliOptions,
             string unityProjectPath,
             string gradleProjectPath,
-            ScriptingImplementation scriptingBackend,
             bool isExporting = false,
             IApplication? application = null)
         {
@@ -78,7 +74,6 @@ namespace Sentry.Unity.Editor.Android
             _unityProjectPath = unityProjectPath;
             _gradleProjectPath = gradleProjectPath;
             _gradleScriptPath = Path.Combine(_gradleProjectPath, "build.gradle");
-            _scriptingBackend = scriptingBackend;
             _isExporting = isExporting;
 
             _cliOptions = cliOptions;
@@ -102,7 +97,7 @@ namespace Sentry.Unity.Editor.Android
             }
 
             var uploadDifArguments = ", '--il2cpp-mapping'";
-            if (_cliOptions?.UploadSources ?? false)
+            if (_cliOptions != null && _cliOptions.UploadSources)
             {
                 uploadDifArguments += ", '--include-sources'";
             }
@@ -192,19 +187,13 @@ namespace Sentry.Unity.Editor.Android
             if (IsNewBuildingBackend(application))
             {
                 _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
-                if (_scriptingBackend == ScriptingImplementation.IL2CPP)
-                {
-                    paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew));
-                }
+                paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew));
                 paths.Add(Path.Combine(_unityProjectPath, RelativeAndroidPathNew));
             }
             else
             {
                 _logger.LogInfo("Unity version 2021.1 or older detected. Root for symbols upload: 'Temp'.");
-                if (_scriptingBackend == ScriptingImplementation.IL2CPP)
-                {
-                    paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld));
-                }
+                paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld));
                 paths.Add(Path.Combine(_unityProjectPath, RelativeGradlePathOld));
             }
             return paths;

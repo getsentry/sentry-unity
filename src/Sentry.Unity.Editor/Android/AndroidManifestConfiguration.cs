@@ -26,11 +26,10 @@ namespace Sentry.Unity.Editor.Android
 
         public AndroidManifestConfiguration()
             : this(
-                () => SentryScriptableObject.ConfiguredBuildTimeOptions(),
+                SentryScriptableObject.ConfiguredBuildTimeOptions,
                 isDevelopmentBuild: EditorUserBuildSettings.development,
                 scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
-        {
-        }
+        { }
 
         // Testing
         internal AndroidManifestConfiguration(
@@ -48,6 +47,16 @@ namespace Sentry.Unity.Editor.Android
 
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
+            if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
+            {
+                if (_options is { AndroidNativeSupportEnabled: true })
+                {
+                    _logger.LogWarning("Android native support requires IL2CPP scripting backend and is currently unsupported on Mono.");
+                }
+
+                return;
+            }
+
             ModifyManifest(basePath);
 
             var unityProjectPath = Directory.GetParent(Application.dataPath).FullName;
@@ -156,8 +165,7 @@ namespace Sentry.Unity.Editor.Android
         internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
         {
             var disableSymbolsUpload = false;
-            var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath,
-                PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android), EditorUserBuildSettings.exportAsGoogleAndroidProject);
+            var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, EditorUserBuildSettings.exportAsGoogleAndroidProject);
 
             if (_options is not { Enabled: true, AndroidNativeSupportEnabled: true })
             {
