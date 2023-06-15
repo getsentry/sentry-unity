@@ -7,6 +7,12 @@
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
 - Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
 
+### Dependencies
+
+- Bump CLI from v2.18.1 to v2.19.0 ([#1372](https://github.com/getsentry/sentry-unity/pull/1372))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2190)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.18.1...2.19.0)
+
 ## 1.4.1
 
 ### Fixes 
