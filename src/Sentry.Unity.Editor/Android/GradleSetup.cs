@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEditor.Build;
@@ -15,8 +14,7 @@ namespace Sentry.Unity.Editor.Android
 
         public const string LocalRepository = @"maven { url ""${project(':unityLibrary').projectDir}/android-sdk-repository"" }";
         public const string RepositoryScopeName = "repositories";
-        public static readonly string SdkDependencies =
-            $"implementation ('io.sentry:sentry-android:{GetAndroidSdkVersion()}') {{ exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }}";
+        public static readonly string SdkDependencies = $"implementation ('io.sentry:sentry-android:{GetAndroidSdkVersion()}') {{ exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }}";
         public const string DependencyScopeName = "dependencies";
         public const string MavenCentralWithoutFilter = "mavenCentral()";
         public const string MavenCentralWithFilter = "mavenCentral { content { excludeGroupByRegex \"io\\\\.sentry.*\" } }";
@@ -133,7 +131,7 @@ namespace Sentry.Unity.Editor.Android
             return string.Join("\n", modifiedLines.ToArray());
         }
 
-        private string SetMavenCentralFilter(string gradleContent)
+        internal string SetMavenCentralFilter(string gradleContent)
         {
             if (gradleContent.Contains(MavenCentralWithFilter))
             {
