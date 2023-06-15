@@ -41,7 +41,6 @@ namespace Sentry.Unity.Editor.Tests.Android
                 new SentryCliOptions() { UploadSources = true },
                 UnityProjectPath,
                 GradleProjectPath,
-                ScriptingImplementation.IL2CPP,
                 IsExporting,
                 Application
             );

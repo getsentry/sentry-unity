@@ -7,6 +7,22 @@
 - Bump Java SDK from v6.21.0 to v6.22.0 ([#1363](https://github.com/getsentry/sentry-unity/pull/1363))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6220)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.21.0...6.22.0)
+### Fixes
+
+- Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
+- Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
+
+### Dependencies
+
+- Bump .NET SDK from v3.33.0 to v3.33.1 ([#1370](https://github.com/getsentry/sentry-unity/pull/1370))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3331)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.33.0...3.33.1)
+- Bump CLI from v2.18.1 to v2.19.0 ([#1372](https://github.com/getsentry/sentry-unity/pull/1372))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2190)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.18.1...2.19.0)
+- Bump Cocoa SDK from v8.7.3 to v8.7.4 ([#1371](https://github.com/getsentry/sentry-unity/pull/1371))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#874)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.7.3...8.7.4)
 
 ## 1.4.1
 

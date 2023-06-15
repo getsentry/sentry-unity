@@ -24,11 +24,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 options.CaptureInEditor = EditorGUILayout.Toggle(
                     new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
                     options.CaptureInEditor);
-
-                options.EnableLogDebouncing = EditorGUILayout.Toggle(
-                    new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the same type if " +
-                                                            "they are more frequent than once per second."),
-                    options.EnableLogDebouncing);
             }
 
             EditorGUILayout.Space();
