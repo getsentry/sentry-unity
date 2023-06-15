@@ -7,6 +7,12 @@
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
 - Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.7.3 to v8.7.4 ([#1371](https://github.com/getsentry/sentry-unity/pull/1371))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#874)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.7.3...8.7.4)
+
 ## 1.4.1
 
 ### Fixes 
