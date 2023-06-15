@@ -19,7 +19,7 @@ namespace Sentry.Unity.Editor.Android
             $"implementation ('io.sentry:sentry-android:{GetAndroidSdkVersion()}') {{ exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }}";
         public const string DependencyScopeName = "dependencies";
         public const string MavenCentralWithoutFilter = "mavenCentral()";
-        public const string MavenCentralWithFilter = "mavenCentral { content { excludeGroupByRegex \"io\\.sentry.*\" } }";
+        public const string MavenCentralWithFilter = "mavenCentral { content { excludeGroupByRegex \"io\\\\.sentry.*\" } }";
         public static readonly List<string> ScopesToSkip = new() { "buildscript", "pluginManagement" };
 
         private readonly string _rootGradle;
