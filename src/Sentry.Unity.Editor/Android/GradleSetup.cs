@@ -152,7 +152,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 if (lines[i].Contains(MavenCentralWithoutFilter))
                 {
-                    lines[i] = MavenCentralWithFilter;
+                    lines[i] = lines[i].Replace(MavenCentralWithoutFilter, MavenCentralWithFilter);
                     break;
                 }
             }
