@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEditor.Build;
@@ -14,9 +15,11 @@ namespace Sentry.Unity.Editor.Android
 
         public const string LocalRepository = @"maven { url ""${project(':unityLibrary').projectDir}/android-sdk-repository"" }";
         public const string RepositoryScopeName = "repositories";
-        public readonly string SdkDependencies =
+        public static readonly string SdkDependencies =
             $"implementation ('io.sentry:sentry-android:{GetAndroidSdkVersion()}') {{ exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }}";
         public const string DependencyScopeName = "dependencies";
+        public const string MavenCentralWithoutFilter = "mavenCentral()";
+        public const string MavenCentralWithFilter = "mavenCentral { content { excludeGroupByRegex \"io\\.sentry.*\" } }";
         public static readonly List<string> ScopesToSkip = new() { "buildscript", "pluginManagement" };
 
         private readonly string _rootGradle;
@@ -37,20 +40,32 @@ namespace Sentry.Unity.Editor.Android
 
             // Starting with 2022.3.0f1 the root build.gradle updated to use the "new" way of importing plugins via `id`
             // Instead, dependency repositories get handled in the `settings.gradle` at the root
-            var gradleFilePath = SentryUnityVersion.IsNewerOrEqualThan("2022.3", application)
-                ? _settingsGradle
-                : _rootGradle;
+            if (SentryUnityVersion.IsNewerOrEqualThan("2022.3", application))
+            {
+                _logger.LogDebug("Updating the gradle file at '{0}'", _settingsGradle);
+                var gradleContent = LoadGradleScript(_settingsGradle);
+                gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
+                gradleContent = SetMavenCentralFilter(gradleContent);
+                File.WriteAllText(_settingsGradle, gradleContent);
 
-            _logger.LogDebug("Updating the gradle file at '{0}'", gradleFilePath);
+                _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
+                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
+                unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
+                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
+            }
+            else
+            {
+                _logger.LogDebug("Updating the gradle file at '{0}'", _rootGradle);
+                var gradleContent = LoadGradleScript(_rootGradle);
+                gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
+                File.WriteAllText(_rootGradle, gradleContent);
 
-            var gradleContent = LoadGradleScript(gradleFilePath);
-            gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
-            File.WriteAllText(gradleFilePath, gradleContent);
-
-            _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
-            var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
-            unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
-            File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
+                _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
+                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
+                unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
+                unityLibraryGradleContent = SetMavenCentralFilter(unityLibraryGradleContent);
+                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
+            }
         }
 
         public void ClearGradleProject(IApplication? application = null)
@@ -59,19 +74,32 @@ namespace Sentry.Unity.Editor.Android
 
             // Starting with 2022.3.0f1 the root build.gradle updated to use the "new" way of importing plugins via `id`
             // Instead, dependency repositories get handled in the `settings.gradle` at the root
-            var gradleFilePath = SentryUnityVersion.IsNewerOrEqualThan("2022.3", application)
-                ? _settingsGradle
-                : _rootGradle;
+            if (SentryUnityVersion.IsNewerOrEqualThan("2022.3", application))
+            {
+                _logger.LogDebug("Removing modifications from '{0}'", _settingsGradle);
+                var gradleContent = LoadGradleScript(_settingsGradle);
+                gradleContent = RemoveFromGradleContent(gradleContent, LocalRepository);
+                gradleContent = gradleContent.Replace(MavenCentralWithFilter, MavenCentralWithoutFilter);
+                File.WriteAllText(_settingsGradle, gradleContent);
 
-            _logger.LogDebug("Removing modifications from '{0}'", gradleFilePath);
-            var gradleContent = LoadGradleScript(gradleFilePath);
-            gradleContent = RemoveFromGradleContent(gradleContent, LocalRepository);
-            File.WriteAllText(gradleFilePath, gradleContent);
+                _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
+                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
+                unityLibraryGradleContent = RemoveFromGradleContent(unityLibraryGradleContent, SdkDependencies);
+                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
+            }
+            else
+            {
+                _logger.LogDebug("Removing modifications from '{0}'", _rootGradle);
+                var gradleContent = LoadGradleScript(_rootGradle);
+                gradleContent = RemoveFromGradleContent(gradleContent, LocalRepository);
+                File.WriteAllText(_rootGradle, gradleContent);
 
-            _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
-            var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
-            unityLibraryGradleContent = RemoveFromGradleContent(unityLibraryGradleContent, SdkDependencies);
-            File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
+                _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
+                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
+                unityLibraryGradleContent = RemoveFromGradleContent(unityLibraryGradleContent, SdkDependencies);
+                unityLibraryGradleContent = unityLibraryGradleContent.Replace(MavenCentralWithFilter, MavenCentralWithoutFilter);
+                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
+            }
         }
 
         internal string InsertIntoScope(string gradleContent, string scope, string insertion)
@@ -83,31 +111,7 @@ namespace Sentry.Unity.Editor.Android
             }
 
             var lines = gradleContent.Split('\n');
-            var scopeStart = -1;
-
-            for (var i = 0; i < lines.Length; i++)
-            {
-                var line = lines[i];
-                // There are potentially multiple, nested scopes. We cannot add ourselves to the ones within 'buildscript'
-                if (ScopesToSkip.Any(line.Contains))
-                {
-                    var startIndex = i;
-
-                    // In case the '{' is on the next line
-                    if (!line.Contains("{") && lines[startIndex + 1].Contains("{"))
-                    {
-                        startIndex += 1;
-                    }
-
-                    i = FindClosingBracket(lines, startIndex);
-                }
-                else if (lines[i].Contains(scope))
-                {
-                    scopeStart = i;
-                    break;
-                }
-            }
-
+            var scopeStart = FindBeginningOfScope(lines, scope);
             if (scopeStart == -1)
             {
                 throw new BuildFailedException($"Failed to find scope '{scope}'.");
@@ -127,6 +131,60 @@ namespace Sentry.Unity.Editor.Android
             modifiedLines.Insert(scopeStart + lineOffset, lineToInsert);
 
             return string.Join("\n", modifiedLines.ToArray());
+        }
+
+        private string SetMavenCentralFilter(string gradleContent)
+        {
+            if (gradleContent.Contains(MavenCentralWithFilter))
+            {
+                _logger.LogDebug("The MavenFilter has already been set. Skipping.");
+                return gradleContent;
+            }
+
+            var lines = gradleContent.Split('\n');
+            var scopeStart = FindBeginningOfScope(lines, RepositoryScopeName);
+            if (scopeStart == -1)
+            {
+                throw new BuildFailedException($"Failed to find scope '{RepositoryScopeName}'.");
+            }
+
+            for (var i = scopeStart; i < lines.Length; i++)
+            {
+                if (lines[i].Contains(MavenCentralWithoutFilter))
+                {
+                    lines[i] = MavenCentralWithFilter;
+                    break;
+                }
+            }
+
+            return string.Join("\n", lines.ToArray());
+        }
+
+        private int FindBeginningOfScope(string[] lines, string scope)
+        {
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                // There are potentially multiple, nested scopes. We cannot add ourselves to the ones listed in `ScopesToSkip`
+                if (ScopesToSkip.Any(line.Contains))
+                {
+                    var startIndex = i;
+
+                    // In case the '{' is on the next line
+                    if (!line.Contains("{") && lines[startIndex + 1].Contains("{"))
+                    {
+                        startIndex += 1;
+                    }
+
+                    i = FindClosingBracket(lines, startIndex);
+                }
+                else if (lines[i].Contains(scope))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private static int FindClosingBracket(string[] lines, int startIndex)
@@ -162,10 +220,16 @@ namespace Sentry.Unity.Editor.Android
             var directories = Directory.GetDirectories(sdkPath);
             if (directories.Length != 1)
             {
-                throw new DirectoryNotFoundException($"Failed to find versioned directory at '{sdkPath}'.");
+                throw new DirectoryNotFoundException($"Failed to fetch Android SDK version. Unexpected directories found: '{directories}'");
             }
 
-            return directories[0];
+            var sdkVersion = new DirectoryInfo(directories[0]).Name;
+            if (sdkVersion is null)
+            {
+                throw new DirectoryNotFoundException($"Failed to fetch the Android SDK version from the plugin path '{sdkPath}'.");
+            }
+
+            return sdkVersion;
         }
 
         private static string RemoveFromGradleContent(string gradleContent, string toRemove)
