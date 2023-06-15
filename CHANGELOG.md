@@ -2,11 +2,6 @@
 
 ## Unreleased
 
-### Dependencies
-
-- Bump Java SDK from v6.21.0 to v6.22.0 ([#1363](https://github.com/getsentry/sentry-unity/pull/1363))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6220)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.21.0...6.22.0)
 ### Fixes
 
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
@@ -23,6 +18,9 @@
 - Bump Cocoa SDK from v8.7.3 to v8.7.4 ([#1371](https://github.com/getsentry/sentry-unity/pull/1371))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#874)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.7.3...8.7.4)
+- Bump Java SDK from v6.21.0 to v6.22.0 ([#1363](https://github.com/getsentry/sentry-unity/pull/1363))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6220)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.21.0...6.22.0)
 
 ## 1.4.1
 
