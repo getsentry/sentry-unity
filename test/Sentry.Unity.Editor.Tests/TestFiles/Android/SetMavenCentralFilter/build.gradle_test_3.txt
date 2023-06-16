@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+
         gradlePluginPortal()
         google()
         mavenCentral()
@@ -12,6 +13,8 @@ include ':launcher', ':unityLibrary'
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        maven { url "${project(':unityLibrary').projectDir}/android-sdk-repository" }
+
         google()
         mavenCentral()
         flatDir {

@@ -14,7 +14,7 @@ namespace Sentry.Unity.Editor.Android
 
         public const string LocalRepository = @"maven { url ""${project(':unityLibrary').projectDir}/android-sdk-repository"" }";
         public const string RepositoryScopeName = "repositories";
-        public static readonly string SdkDependencies = "implementation ('io.sentry:sentry-android:+') {{ exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }}";
+        public const string SdkDependencies = "implementation ('io.sentry:sentry-android:+') { exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }";
         public const string DependencyScopeName = "dependencies";
         public const string MavenCentralWithoutFilter = "mavenCentral()";
         public const string MavenCentralWithFilter = "mavenCentral { content { excludeGroupByRegex \"io\\\\.sentry.*\" } }";
@@ -41,12 +41,14 @@ namespace Sentry.Unity.Editor.Android
             if (SentryUnityVersion.IsNewerOrEqualThan("2022.3", application))
             {
                 _logger.LogDebug("Updating the gradle file at '{0}'", _settingsGradle);
+
                 var gradleContent = LoadGradleScript(_settingsGradle);
                 gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
                 gradleContent = SetMavenCentralFilter(gradleContent);
                 File.WriteAllText(_settingsGradle, gradleContent);
 
                 _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
+
                 var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
                 unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
                 File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
@@ -54,11 +56,13 @@ namespace Sentry.Unity.Editor.Android
             else
             {
                 _logger.LogDebug("Updating the gradle file at '{0}'", _rootGradle);
+
                 var gradleContent = LoadGradleScript(_rootGradle);
                 gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
                 File.WriteAllText(_rootGradle, gradleContent);
 
                 _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
+
                 var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
                 unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
                 unityLibraryGradleContent = SetMavenCentralFilter(unityLibraryGradleContent);
