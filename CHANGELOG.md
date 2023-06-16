@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Setting Android SDK version explicit to prevent version conflicts with remote repositories ([#1378](https://github.com/getsentry/sentry-unity/pull/1387))
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
 - Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
 
