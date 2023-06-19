@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed an Android build issue where Sentry options would be cached with the first build until Editor restart ([#1379](https://github.com/getsentry/sentry-unity/pull/1379))
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
 - Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
 
