@@ -155,10 +155,10 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        [TestCase("SetMavenCentralFilter/build.gradle_test_1")]
-        [TestCase("SetMavenCentralFilter/build.gradle_test_2")]
-        [TestCase("SetMavenCentralFilter/build.gradle_test_3")]
-        public void SetMavenCentralFilter_ResultMatchesExpected(string testCaseFileName)
+        [TestCase("ApplyMavenCentralFilter/build.gradle_test_1")]
+        [TestCase("ApplyMavenCentralFilter/build.gradle_test_2")]
+        [TestCase("ApplyMavenCentralFilter/build.gradle_test_3")]
+        public void ApplyMavenCentralFilter_ResultMatchesExpected(string testCaseFileName)
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var testCasePath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + ".txt");
@@ -168,7 +168,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var gradleContent = File.ReadAllText(testCasePath);
             var sut = new GradleSetup(Logger, GradleProjectPath);
 
-            var actualResult = sut.SetMavenCentralFilter(gradleContent);
+            var actualResult = sut.ApplyMavenCentralFilter(gradleContent);
 
             StringAssert.AreEqualIgnoringCase(actualResult, expectedGradleContent);
         }

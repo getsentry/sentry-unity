@@ -38,36 +38,21 @@ namespace Sentry.Unity.Editor.Android
 
             // Starting with 2022.3.0f1 the root build.gradle updated to use the "new" way of importing plugins via `id`
             // Instead, dependency repositories get handled in the `settings.gradle` at the root
-            if (SentryUnityVersion.IsNewerOrEqualThan("2022.3", application))
-            {
-                _logger.LogDebug("Updating the gradle file at '{0}'", _settingsGradle);
+            var rootGradleFile = (SentryUnityVersion.IsNewerOrEqualThan("2022.3", application)) ? _settingsGradle : _rootGradle;
 
-                var gradleContent = LoadGradleScript(_settingsGradle);
-                gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
-                gradleContent = SetMavenCentralFilter(gradleContent);
-                File.WriteAllText(_settingsGradle, gradleContent);
+            _logger.LogDebug("Updating the gradle file at '{0}'", rootGradleFile);
 
-                _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
+            var gradleContent = LoadGradleScript(rootGradleFile);
+            gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
+            gradleContent = ApplyMavenCentralFilter(gradleContent);
+            File.WriteAllText(rootGradleFile, gradleContent);
 
-                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
-                unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
-                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
-            }
-            else
-            {
-                _logger.LogDebug("Updating the gradle file at '{0}'", _rootGradle);
+            _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
 
-                var gradleContent = LoadGradleScript(_rootGradle);
-                gradleContent = InsertIntoScope(gradleContent, RepositoryScopeName, LocalRepository);
-                File.WriteAllText(_rootGradle, gradleContent);
-
-                _logger.LogDebug("Updating the gradle file at '{0}'", _unityLibraryGradle);
-
-                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
-                unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
-                unityLibraryGradleContent = SetMavenCentralFilter(unityLibraryGradleContent);
-                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
-            }
+            var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
+            unityLibraryGradleContent = InsertIntoScope(unityLibraryGradleContent, DependencyScopeName, SdkDependencies);
+            unityLibraryGradleContent = ApplyMavenCentralFilter(unityLibraryGradleContent);
+            File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
         }
 
         public void ClearGradleProject(IApplication? application = null)
@@ -76,32 +61,20 @@ namespace Sentry.Unity.Editor.Android
 
             // Starting with 2022.3.0f1 the root build.gradle updated to use the "new" way of importing plugins via `id`
             // Instead, dependency repositories get handled in the `settings.gradle` at the root
-            if (SentryUnityVersion.IsNewerOrEqualThan("2022.3", application))
-            {
-                _logger.LogDebug("Removing modifications from '{0}'", _settingsGradle);
-                var gradleContent = LoadGradleScript(_settingsGradle);
-                gradleContent = RemoveFromGradleContent(gradleContent, LocalRepository);
-                gradleContent = gradleContent.Replace(MavenCentralWithFilter, MavenCentralWithoutFilter);
-                File.WriteAllText(_settingsGradle, gradleContent);
+            var rootGradleFile = (SentryUnityVersion.IsNewerOrEqualThan("2022.3", application)) ? _settingsGradle : _rootGradle;
 
-                _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
-                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
-                unityLibraryGradleContent = RemoveFromGradleContent(unityLibraryGradleContent, SdkDependencies);
-                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
-            }
-            else
-            {
-                _logger.LogDebug("Removing modifications from '{0}'", _rootGradle);
-                var gradleContent = LoadGradleScript(_rootGradle);
-                gradleContent = RemoveFromGradleContent(gradleContent, LocalRepository);
-                File.WriteAllText(_rootGradle, gradleContent);
+            _logger.LogDebug("Removing modifications from '{0}'", rootGradleFile);
 
-                _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
-                var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
-                unityLibraryGradleContent = RemoveFromGradleContent(unityLibraryGradleContent, SdkDependencies);
-                unityLibraryGradleContent = unityLibraryGradleContent.Replace(MavenCentralWithFilter, MavenCentralWithoutFilter);
-                File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
-            }
+            var gradleContent = LoadGradleScript(rootGradleFile);
+            gradleContent = RemoveFromGradleContent(gradleContent, LocalRepository);
+            gradleContent = gradleContent.Replace(MavenCentralWithFilter, MavenCentralWithoutFilter);
+            File.WriteAllText(rootGradleFile, gradleContent);
+
+            _logger.LogDebug("Removing modifications from the 'build.gradle' file at {0}", _unityLibraryGradle);
+            var unityLibraryGradleContent = LoadGradleScript(_unityLibraryGradle);
+            unityLibraryGradleContent = RemoveFromGradleContent(unityLibraryGradleContent, SdkDependencies);
+            unityLibraryGradleContent = unityLibraryGradleContent.Replace(MavenCentralWithFilter, MavenCentralWithoutFilter);
+            File.WriteAllText(_unityLibraryGradle, unityLibraryGradleContent);
         }
 
         internal string InsertIntoScope(string gradleContent, string scope, string insertion)
@@ -135,19 +108,23 @@ namespace Sentry.Unity.Editor.Android
             return string.Join("\n", modifiedLines.ToArray());
         }
 
-        internal string SetMavenCentralFilter(string gradleContent)
+        internal string ApplyMavenCentralFilter(string gradleContent)
         {
+            _logger.LogDebug("Applying MavenFilter.");
+
             if (gradleContent.Contains(MavenCentralWithFilter))
             {
-                _logger.LogDebug("The MavenFilter has already been set. Skipping.");
+                _logger.LogDebug("The filter for maven central has already been set. Skipping.");
                 return gradleContent;
             }
 
             var lines = gradleContent.Split('\n');
+
             var scopeStart = FindBeginningOfScope(lines, RepositoryScopeName);
             if (scopeStart == -1)
             {
-                throw new BuildFailedException($"Failed to find scope '{RepositoryScopeName}'.");
+                _logger.LogDebug($"Did not find the scope '{RepositoryScopeName}' to apply the filter for maven central. Skipping.");
+                return gradleContent;
             }
 
             for (var i = scopeStart; i < lines.Length; i++)
