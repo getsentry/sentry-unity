@@ -72,7 +72,7 @@ namespace Sentry.Unity
                         {
                             return SystemInfo.deviceName;
                         }
-                        catch (AndroidJavaException)
+                        catch
                         {
                             // Unity's built-in fallback
                             return "<unknown>";
