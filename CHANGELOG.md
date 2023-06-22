@@ -7,6 +7,10 @@
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
 - Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
 
+### Feature
+
+- When building for iOS, the debug symbol upload now works irrespective of whether `Bitcode` is enabled or not ([#1381](https://github.com/getsentry/sentry-unity/pull/1381))
+
 ### Dependencies
 
 - Bump .NET SDK from v3.33.0 to v3.33.1 ([#1370](https://github.com/getsentry/sentry-unity/pull/1370))
