@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Setting Android SDK version explicit to prevent version conflicts with remote repositories ([#1378](https://github.com/getsentry/sentry-unity/pull/1387))
 - Set debug symbol upload logging to debug verbosity ([#1373](https://github.com/getsentry/sentry-unity/pull/1373))
 - The SDK no longer causes an exception during initialiation on Android API level 32 and newer ([#1365](https://github.com/getsentry/sentry-unity/pull/1365))
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
