@@ -172,14 +172,14 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             StringAssert.AreEqualIgnoringCase(actualResult, expectedGradleContent);
 
-        [Test]
-        public void GetAndroidSdkVersion_ReturnsLocalPluginVersion()
-        {
-            var sdkPath = Path.Combine(UnityProjectPath, GradleSetup.PluginPath);
+            [Test]
+            public void GetAndroidSdkVersion_ReturnsLocalPluginVersion()
+            {
+                var sdkPath = Path.Combine(UnityProjectPath, GradleSetup.PluginPath);
 
-            var actualVersion = GradleSetup.GetAndroidSdkVersion(sdkPath);
+                var actualVersion = GradleSetup.GetAndroidSdkVersion(sdkPath);
 
-            Assert.AreEqual("1.2.3", actualVersion); // expected version based on the testfiles
+                Assert.AreEqual("1.2.3", actualVersion); // expected version based on the testfiles
+            }
         }
     }
-}
