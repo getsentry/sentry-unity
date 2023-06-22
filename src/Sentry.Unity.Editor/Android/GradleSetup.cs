@@ -12,9 +12,12 @@ namespace Sentry.Unity.Editor.Android
     {
         private readonly IDiagnosticLogger _logger;
 
+        internal static readonly string PluginPath =
+            Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~", "io", "sentry", "sentry");
+
         public const string LocalRepository = @"maven { url ""${project(':unityLibrary').projectDir}/android-sdk-repository"" }";
         public const string RepositoryScopeName = "repositories";
-        public const string SdkDependencies = "implementation ('io.sentry:sentry-android:+') { exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }";
+        public static readonly string SdkDependencies = $"implementation ('io.sentry:sentry-android:{GetAndroidSdkVersion()}') {{ exclude group: 'androidx.core' exclude group: 'androidx.lifecycle' }}";
         public const string DependencyScopeName = "dependencies";
         public const string MavenCentralWithoutFilter = "mavenCentral()";
         public const string MavenCentralWithFilter = "mavenCentral { content { excludeGroupByRegex \"io\\\\.sentry.*\" } }";
@@ -190,6 +193,25 @@ namespace Sentry.Unity.Editor.Android
             }
 
             throw new BuildFailedException("Failed to find the closing bracket.");
+        }
+
+        internal static string GetAndroidSdkVersion(string? sdkPath = null)
+        {
+            sdkPath ??= PluginPath;
+
+            var directories = Directory.GetDirectories(sdkPath);
+            if (directories.Length != 1)
+            {
+                throw new DirectoryNotFoundException($"Failed to fetch Android SDK version. Unexpected directories found: '{directories}'");
+            }
+
+            var sdkVersion = new DirectoryInfo(directories[0]).Name;
+            if (sdkVersion is null)
+            {
+                throw new DirectoryNotFoundException($"Failed to fetch the Android SDK version from the plugin path '{sdkPath}'.");
+            }
+
+            return sdkVersion;
         }
 
         private static string RemoveFromGradleContent(string gradleContent, string toRemove)
