@@ -5,20 +5,28 @@
 ### Fixes
 
 - Set debug symbol upload logging to debug verbosity ([#1373](https://github.com/getsentry/sentry-unity/pull/1373))
+- The SDK no longer causes an exception during initialiation on Android API level 32 and newer ([#1365](https://github.com/getsentry/sentry-unity/pull/1365))
 - Suspending Android native support for Mono builds to prevent C# exceptions form causing crashes ([#1362](https://github.com/getsentry/sentry-unity/pull/1362))
 - Fixed an issue where the debug image UUID normalization would malform the UUID leading to a failed symbolication ([#1361](https://github.com/getsentry/sentry-unity/pull/1361))
+
+### Feature
+
+- When building for iOS, the debug symbol upload now works irrespective of whether `Bitcode` is enabled or not ([#1381](https://github.com/getsentry/sentry-unity/pull/1381))
 
 ### Dependencies
 
 - Bump .NET SDK from v3.33.0 to v3.33.1 ([#1370](https://github.com/getsentry/sentry-unity/pull/1370))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3331)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.33.0...3.33.1)
-- Bump CLI from v2.18.1 to v2.19.0 ([#1372](https://github.com/getsentry/sentry-unity/pull/1372))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2190)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.18.1...2.19.0)
-- Bump Cocoa SDK from v8.7.3 to v8.7.4 ([#1371](https://github.com/getsentry/sentry-unity/pull/1371))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#874)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.7.3...8.7.4)
+- Bump CLI from v2.18.1 to v2.19.1 ([#1372](https://github.com/getsentry/sentry-unity/pull/1372), [#1374](https://github.com/getsentry/sentry-unity/pull/1374))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2191)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.18.1...2.19.1)
+- Bump Cocoa SDK from v8.7.3 to v8.8.0 ([#1371](https://github.com/getsentry/sentry-unity/pull/1371), [#1376](https://github.com/getsentry/sentry-unity/pull/1376))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#880)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.7.3...8.8.0)
+- Bump Java SDK from v6.21.0 to v6.23.0 ([#1363](https://github.com/getsentry/sentry-unity/pull/1363), [#1375](https://github.com/getsentry/sentry-unity/pull/1375))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6230)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.21.0...6.23.0)
 
 ## 1.4.1
 

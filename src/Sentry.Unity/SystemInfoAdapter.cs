@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Sentry.Unity
 {
@@ -56,7 +57,32 @@ namespace Sentry.Unity
         public bool? SupportsVibration => SystemInfo.supportsVibration;
         public Lazy<string>? DeviceType => new(() => SystemInfo.deviceType.ToString());
         public string? CpuDescription => SystemInfo.processorType;
-        public string? DeviceName => SystemInfo.deviceName;
+        public string? DeviceName
+        {
+            get
+            {
+                // Workaround for https://github.com/getsentry/sentry-unity/issues/1322 -
+                if (Application.platform == RuntimePlatform.Android)
+                {
+                    using var version = new AndroidJavaClass("android.os.Build$VERSION");
+                    var sdkVersion = version.GetStatic<int>("SDK_INT");
+                    if (sdkVersion >= 32)
+                    {
+                        try
+                        {
+                            return SystemInfo.deviceName;
+                        }
+                        catch
+                        {
+                            // Unity's built-in fallback
+                            return "<unknown>";
+                        }
+                    }
+                }
+
+                return SystemInfo.deviceName;
+            }
+        }
 
         public Lazy<string> DeviceUniqueIdentifier => new(() => SystemInfo.deviceUniqueIdentifier);
         public Lazy<string> DeviceModel => new(() => SystemInfo.deviceModel);

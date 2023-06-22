@@ -28,17 +28,11 @@ process_upload_symbols() {{
 }}
 
 export SENTRY_PROPERTIES=sentry.properties
-if [ ""$ENABLE_BITCODE"" = ""NO"" ] ; then
-    echo ""Uploading debug symbols (Bitcode disabled).""
+if [ ""$ACTION"" = ""install"" ] ; then
+    echo ""Uploading debug symbols and bcsymbolmaps.""
     process_upload_symbols
 else
-    echo ""Bitcode is enabled""
-    if [ ""$ACTION"" = ""install"" ] ; then
-        echo ""Uploading debug symbols and bcsymbolmaps (Bitcode enabled).""
-        process_upload_symbols
-    else
-        echo ""Skipping debug symbol upload because Bitcode is enabled and this is a non-install build.""
-    fi
+    echo ""Skipping debug symbol upload because this is a non-install build.""
 fi
 ";
 
