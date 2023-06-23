@@ -84,7 +84,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         [TestCase("2020.3", "build.gradle")]
         [TestCase("2021.3", "build.gradle")]
         [TestCase("2022.3", "settings.gradle")]
-        public void UpdateGradleProject_GradleAlreadyModified_LogsAndReturns(string unityVersion, string rootGradleFileName)
+        public void UpdateGradleProject_GradleAlreadyModified_LogsAndReturns(string unityVersion,
+            string rootGradleFileName)
         {
             var sut = new GradleSetup(Logger, GradleProjectPath);
             sut.UpdateGradleProject(new TestApplication(unityVersion: unityVersion));
@@ -109,7 +110,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         [TestCase("2020.3", "build.gradle")]
         [TestCase("2021.3", "build.gradle")]
         [TestCase("2022.3", "settings.gradle")]
-        public void ClearGradleProject_GradleFilesModified_RemovesModification(string unityVersion, string rootGradleFileName)
+        public void ClearGradleProject_GradleFilesModified_RemovesModification(string unityVersion,
+            string rootGradleFileName)
         {
             var sut = new GradleSetup(Logger, GradleProjectPath);
             sut.UpdateGradleProject(new TestApplication(unityVersion: unityVersion));
@@ -143,13 +145,15 @@ namespace Sentry.Unity.Editor.Tests.Android
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var testCasePath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + ".txt");
-            var testCaseExpectedPath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
+            var testCaseExpectedPath =
+                Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
             var expectedGradleContent = File.ReadAllText(testCaseExpectedPath);
 
             var gradleContent = File.ReadAllText(testCasePath);
             var sut = new GradleSetup(Logger, GradleProjectPath);
 
-            var actualResult = sut.InsertIntoScope(gradleContent, GradleSetup.RepositoryScopeName, GradleSetup.LocalRepository);
+            var actualResult = sut.InsertIntoScope(gradleContent, GradleSetup.RepositoryScopeName,
+                GradleSetup.LocalRepository);
 
             StringAssert.AreEqualIgnoringCase(actualResult, expectedGradleContent);
         }
@@ -162,7 +166,8 @@ namespace Sentry.Unity.Editor.Tests.Android
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var testCasePath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + ".txt");
-            var testCaseExpectedPath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
+            var testCaseExpectedPath =
+                Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
             var expectedGradleContent = File.ReadAllText(testCaseExpectedPath);
 
             var gradleContent = File.ReadAllText(testCasePath);
@@ -171,15 +176,16 @@ namespace Sentry.Unity.Editor.Tests.Android
             var actualResult = sut.ApplyMavenCentralFilter(gradleContent);
 
             StringAssert.AreEqualIgnoringCase(actualResult, expectedGradleContent);
+        }
 
-            [Test]
-            public void GetAndroidSdkVersion_ReturnsLocalPluginVersion()
-            {
-                var sdkPath = Path.Combine(UnityProjectPath, GradleSetup.PluginPath);
+        [Test]
+        public void GetAndroidSdkVersion_ReturnsLocalPluginVersion()
+        {
+            var sdkPath = Path.Combine(UnityProjectPath, GradleSetup.PluginPath);
 
-                var actualVersion = GradleSetup.GetAndroidSdkVersion(sdkPath);
+            var actualVersion = GradleSetup.GetAndroidSdkVersion(sdkPath);
 
-                Assert.AreEqual("1.2.3", actualVersion); // expected version based on the testfiles
-            }
+            Assert.AreEqual("1.2.3", actualVersion); // expected version based on the testfiles
         }
     }
+}
