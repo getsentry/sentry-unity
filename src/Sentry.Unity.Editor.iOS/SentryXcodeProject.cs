@@ -23,17 +23,9 @@ namespace Sentry.Unity.Editor.iOS
         internal static readonly string MainPath = Path.Combine("MainApp", "main.mm");
         private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
         private readonly string _uploadScript = @"
-process_upload_symbols() {{
-    ./{0} debug-files upload --force-foreground {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
-}}
-
 export SENTRY_PROPERTIES=sentry.properties
-if [ ""$ACTION"" = ""install"" ] ; then
-    echo ""Uploading debug symbols and bcsymbolmaps.""
-    process_upload_symbols
-else
-    echo ""Skipping debug symbol upload because this is a non-install build.""
-fi
+echo ""Uploading debug symbols and bcsymbolmaps.""
+./{0} debug-files upload --force-foreground {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
 ";
 
         private readonly IDiagnosticLogger? _logger = null;
