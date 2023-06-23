@@ -12,7 +12,17 @@ using UnityEngine;
 namespace Sentry.Unity.Editor.Android
 {
     // https://github.com/getsentry/sentry-java/blob/d3764bfc97eed22564a1e23ba96fa73ad2685498/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L83-L217
-    public class AndroidManifestConfiguration : IPostGenerateGradleAndroidProject
+    public class PostGenerateGradleAndroidProject : IPostGenerateGradleAndroidProject
+    {
+        public int callbackOrder { get; } = 1;
+        public void OnPostGenerateGradleAndroidProject(string basePath)
+        {
+            var androidManifestConfiguration = new AndroidManifestConfiguration();
+            androidManifestConfiguration.OnPostGenerateGradleAndroidProject(basePath);
+        }
+    }
+
+    public class AndroidManifestConfiguration
     {
         private readonly SentryUnityOptions? _options;
         private readonly SentryCliOptions? _sentryCliOptions;
@@ -20,9 +30,6 @@ namespace Sentry.Unity.Editor.Android
 
         private readonly bool _isDevelopmentBuild;
         private readonly ScriptingImplementation _scriptingImplementation;
-
-        // Lower levels are called first.
-        public int callbackOrder => 1;
 
         public AndroidManifestConfiguration()
             : this(

@@ -4,6 +4,8 @@
 
 ### Fixes
 
+- Fixed an Android build issue where Sentry options would be cached with the first build until Editor restart ([#1379](https://github.com/getsentry/sentry-unity/pull/1379))
+- Adding a remote repository filter to the gradle project ([#1367](https://github.com/getsentry/sentry-unity/pull/1367))
 - Setting Android SDK version explicit to prevent version conflicts with remote repositories ([#1378](https://github.com/getsentry/sentry-unity/pull/1387))
 - Set debug symbol upload logging to debug verbosity ([#1373](https://github.com/getsentry/sentry-unity/pull/1373))
 - The SDK no longer causes an exception during initialiation on Android API level 32 and newer ([#1365](https://github.com/getsentry/sentry-unity/pull/1365))
