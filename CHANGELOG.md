@@ -13,6 +13,9 @@
 - Bump Native SDK from v0.6.4 to v0.6.5 ([#1392](https://github.com/getsentry/sentry-unity/pull/1392))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#065)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.6.4...0.6.5)
+- Bump .NET SDK from v3.33.1 to v3.34.0 ([#1398](https://github.com/getsentry/sentry-unity/pull/1398))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3340)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.33.1...3.34.0)
 
 ## 1.5.0
 
