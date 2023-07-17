@@ -35,12 +35,12 @@ namespace Sentry.Unity.Editor.Android
                 var pattern = string.Empty;
                 if (gradle.Contains("consumerProguardFiles"))
                 {
-                    _logger.LogDebug("Detected `consumerProguardFiles`. Adding Sentry rules.");
+                    _logger.LogDebug("Detected `consumerProguardFiles`. Removing Sentry rules.");
                     pattern = @"(\s+consumerProguardFiles .*), *'";
                 }
                 else if (gradle.Contains("proguardFiles"))
                 {
-                    _logger.LogDebug("Detected `proguardFiles`. Adding Sentry rules.");
+                    _logger.LogDebug("Detected `proguardFiles`. Removing Sentry rules.");
                     pattern = @"(\s+proguardFiles .*), *'";
                 }
 
