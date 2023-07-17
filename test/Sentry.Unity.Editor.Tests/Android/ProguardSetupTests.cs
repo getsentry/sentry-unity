@@ -69,23 +69,6 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        [TestCase("AddingProguard/build.gradle_test_1")]
-        [TestCase("AddingProguard/build.gradle_test_2")]
-        public void AddsRulesToGradleScript_ContainsConsumerProguardRules_MatchesExptectedOutput(string testCaseFileName)
-        {
-            var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var testCasePath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + ".txt");
-            var expectedPath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
-
-            var actualOutputPath = Path.Combine(_outputPath, "build.gradle");
-            File.Copy(testCasePath, actualOutputPath, true);
-
-            GetSut().AddToGradleProject();
-
-            StringAssert.AreEqualIgnoringCase(File.ReadAllText(expectedPath), File.ReadAllText(actualOutputPath));
-        }
-
-        [Test]
         [TestCase("\n")]
         [TestCase("\r\n")]
         public void AddsRuleToGradleScript(string lineSeparator)
@@ -115,33 +98,37 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        [TestCase(false)]
-        [TestCase(true)]
-        public void RemovesRuleFromGradleScript(bool existsBefore)
+        [TestCase("AddingProguard/build.gradle_test_1")]
+        [TestCase("AddingProguard/build.gradle_test_2")]
+        public void AddsRulesToGradleScript_ContainsConsumerProguardRules_MatchesExpectedOutput(string testCaseFileName)
         {
-            var gradleScript = Path.Combine(_outputPath, "build.gradle");
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var testCasePath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + ".txt");
+            var expectedPath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
 
-            var expectedFinalScript = @"
-android {
-    defaultConfig {
-        consumerProguardFiles 'proguard-unity.txt', 'proguard-user.txt', 'other-proguard.txt'
-    }
-}
-";
+            var actualOutputPath = Path.Combine(_outputPath, "build.gradle");
+            File.Copy(testCasePath, actualOutputPath, true);
 
-            File.WriteAllText(gradleScript, existsBefore ? @"
-android {
-    defaultConfig {
-        consumerProguardFiles 'proguard-unity.txt', 'proguard-user.txt', '" + ProguardSetup.RuleFileName + @"', 'other-proguard.txt'
-    }
-}
-" : expectedFinalScript);
+            GetSut().AddToGradleProject();
 
-            var sut = GetSut();
+            StringAssert.AreEqualIgnoringCase(File.ReadAllText(expectedPath), File.ReadAllText(actualOutputPath));
+        }
 
-            sut.RemoveFromGradleProject();
+        [Test]
+        [TestCase("AddingProguard/build.gradle_test_1")]
+        [TestCase("AddingProguard/build.gradle_test_2")]
+        public void RemovesRuleFromGradleScript(string testCaseFileName)
+        {
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var testCasePath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
+            var expectedPath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + ".txt");
 
-            Assert.AreEqual(File.ReadAllText(gradleScript), expectedFinalScript);
+            var actualOutputPath = Path.Combine(_outputPath, "build.gradle");
+            File.Copy(testCasePath, actualOutputPath, true);
+
+            GetSut().RemoveFromGradleProject();
+
+            StringAssert.AreEqualIgnoringCase(File.ReadAllText(expectedPath), File.ReadAllText(actualOutputPath));
         }
     }
 }
