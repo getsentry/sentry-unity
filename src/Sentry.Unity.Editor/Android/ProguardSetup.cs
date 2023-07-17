@@ -32,7 +32,19 @@ namespace Sentry.Unity.Editor.Android
             }
             else
             {
-                var gradleNew = Regex.Replace(gradle, @"(\s+consumerProguardFiles .*), *'" + RuleFileName + "'", "$1");
+                var pattern = string.Empty;
+                if (gradle.Contains("consumerProguardFiles"))
+                {
+                    _logger.LogDebug("Detected `consumerProguardFiles`. Adding Sentry rules.");
+                    pattern = @"(\s+consumerProguardFiles .*), *'";
+                }
+                else if (gradle.Contains("proguardFiles"))
+                {
+                    _logger.LogDebug("Detected `proguardFiles`. Adding Sentry rules.");
+                    pattern = @"(\s+proguardFiles .*), *'";
+                }
+
+                var gradleNew = Regex.Replace(gradle, pattern + RuleFileName + "'", "$1");
                 if (gradle.Length == gradleNew.Length)
                 {
                     throw new Exception($"Couldn't remove Proguard rule {RuleFileName} from {_gradleScriptPath}.");
@@ -66,10 +78,26 @@ namespace Sentry.Unity.Editor.Android
             }
             else
             {
-                var gradleNew = Regex.Replace(gradle, @"(\s+consumerProguardFiles [^\r\n]*)", "$1, '" + RuleFileName + "'");
+                string pattern;
+                if (gradle.Contains("consumerProguardFiles"))
+                {
+                    _logger.LogDebug("Detected `consumerProguardFiles`. Adding Sentry rules.");
+                    pattern = @"(\s+consumerProguardFiles [^\r\n]*)";
+                }
+                else if (gradle.Contains("proguardFiles"))
+                {
+                    _logger.LogDebug("Detected `proguardFiles`. Adding Sentry rules.");
+                    pattern = @"(\s+proguardFiles [^\r\n]*)";
+                }
+                else
+                {
+                    throw new Exception($"Failed to find 'proguard rule section' in gradle file at: {_gradleScriptPath} - no `consumerProguardFiles` or `proguardFiles` found.");
+                }
+
+                var gradleNew = Regex.Replace(gradle, pattern, "$1, '" + RuleFileName + "'");
                 if (gradle.Length == gradleNew.Length)
                 {
-                    throw new Exception($"Couldn't add Proguard rule {RuleFileName} to {_gradleScriptPath} - no `consumerProguardFiles` found.");
+                    throw new Exception($"Couldn't add Proguard rule {RuleFileName} to {_gradleScriptPath}.");
                 }
                 File.WriteAllText(_gradleScriptPath, gradleNew);
             }
