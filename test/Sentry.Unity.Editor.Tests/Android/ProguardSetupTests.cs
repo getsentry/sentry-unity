@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Android;
@@ -65,6 +66,23 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             Assert.True(File.Exists(ruleFile));
             Assert.GreaterOrEqual(File.ReadAllText(ruleFile).Length, 1);
+        }
+
+        [Test]
+        [TestCase("AddingProguard/build.gradle_test_1")]
+        [TestCase("AddingProguard/build.gradle_test_2")]
+        public void AddsRulesToGradleScript_ContainsConsumerProguardRules_MatchesExptectedOutput(string testCaseFileName)
+        {
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var testCasePath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + ".txt");
+            var expectedPath = Path.Combine(assemblyPath, "TestFiles", "Android", testCaseFileName + "_expected.txt");
+
+            var actualOutputPath = Path.Combine(_outputPath, "build.gradle");
+            File.Copy(testCasePath, actualOutputPath, true);
+
+            GetSut().AddToGradleProject();
+
+            StringAssert.AreEqualIgnoringCase(File.ReadAllText(expectedPath), File.ReadAllText(actualOutputPath));
         }
 
         [Test]
