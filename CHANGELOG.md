@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK now handles proguardfiles sections indicated by both `consumerProguardFiles` and `proguardFiles` ([#1401](https://github.com/getsentry/sentry-unity/pull/1401))
+
 ### Dependencies
 
 - Bump CLI from v2.19.1 to v2.19.4 ([#1387](https://github.com/getsentry/sentry-unity/pull/1387), [#1388](https://github.com/getsentry/sentry-unity/pull/1388))
