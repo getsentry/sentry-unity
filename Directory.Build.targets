@@ -187,33 +187,17 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)." />
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" EnvironmentVariables="JAVA_HOME=$(JAVA_HOME_17_X64)"
-          Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity sentry-android-core:publishAllPublicationsToUnityMavenRepository sentry-android-ndk:publishAllPublicationsToUnityMavenRepository sentry:publishAllPublicationsToUnityMavenRepository sentry-android:publishAllPublicationsToUnityMavenRepository --no-daemon --stacktrace --warning-mode none" />
-
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp -r build/unityMaven $(SentryAndroidArtifactsDestination)" />
-
-    <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
-  </Target>
-
-  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
-  <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-          And $([MSBuild]::IsOsPlatform('Windows'))
-          And !Exists('$(SentryWindowsArtifactsDestination)sentry.dll')" BeforeTargets="BeforeBuild">
-    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
-
-    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
-
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -S ."></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" EnvironmentVariables="JAVA_HOME=$(JAVA_HOME_17_X64)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" />
 
     <ItemGroup>
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.dll" />
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.pdb" />
+      <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
+      <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp sentry/build/libs/sentry*.jar $(SentryAndroidArtifactsDestination)sentry.jar" />
+
+    <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
   </Target>
 
   <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
