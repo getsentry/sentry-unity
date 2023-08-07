@@ -200,6 +200,27 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
   </Target>
 
+  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
+  <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+          And $([MSBuild]::IsOsPlatform('Windows'))
+          And !Exists('$(SentryWindowsArtifactsDestination)sentry.dll')" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
+
+    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
+
+    <ItemGroup>
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.dll" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.pdb" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')" />
+  </Target>
+
   <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
   <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Linux'))
