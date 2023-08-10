@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Resolved the internal dependency issue with the Android SDK that lead to build time issues like `runtime.jar is missing` and `ClassNotFoundException` during runtime ([#1417](https://github.com/getsentry/sentry-unity/pull/1417))
 - The SDK now handles proguardfiles sections indicated by both `consumerProguardFiles` and `proguardFiles` ([#1401](https://github.com/getsentry/sentry-unity/pull/1401))
 
 ### Dependencies

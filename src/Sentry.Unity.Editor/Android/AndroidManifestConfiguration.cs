@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
@@ -30,6 +31,10 @@ namespace Sentry.Unity.Editor.Android
 
         private readonly bool _isDevelopmentBuild;
         private readonly ScriptingImplementation _scriptingImplementation;
+
+        public const string SDKDependencies = @"
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')";
 
         public AndroidManifestConfiguration()
             : this(
@@ -69,8 +74,8 @@ namespace Sentry.Unity.Editor.Android
             var unityProjectPath = Directory.GetParent(Application.dataPath).FullName;
             var gradleProjectPath = Directory.GetParent(basePath).FullName;
 
-            SetupAndroidSdk(unityProjectPath, gradleProjectPath);
-            SetupGradle(gradleProjectPath);
+            CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+            AddAndroidSdkDependencies(gradleProjectPath);
             SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
             SetupProguard(gradleProjectPath);
         }
@@ -244,47 +249,81 @@ namespace Sentry.Unity.Editor.Android
             }
         }
 
-        private void SetupAndroidSdk(string unityProjectPath, string gradleProjectPath)
+        internal void CopyAndroidSdkToGradleProject(string unityProjectPath, string gradlePath)
         {
-            var sdkSetup = new AndroidSdkSetup(_logger, unityProjectPath, gradleProjectPath);
-            var nativeSupportEnabled = _options is { Enabled: true, AndroidNativeSupportEnabled: true };
+            var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
+            var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
 
-            try
+            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
             {
-                if (nativeSupportEnabled)
+                if (!Directory.Exists(androidSdkPath))
                 {
-                    sdkSetup.AddAndroidSdk();
+                    throw new DirectoryNotFoundException($"Failed to find the Android SDK at '{androidSdkPath}'.");
                 }
-                else
+
+                _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
+                foreach (var file in Directory.GetFiles(androidSdkPath))
                 {
-                    sdkSetup.RemoveAndroidSdk();
+                    var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (!File.Exists(destinationFile))
+                    {
+                        File.Copy(file, destinationFile);
+                    }
                 }
             }
-            catch (Exception e)
+            else
             {
-                _logger.LogError($"Failed to {(nativeSupportEnabled ? "add" : "remove")} the Android SDK to the gradle project", e);
+                _logger.LogInfo("Removing the Android SDK from the output project.");
+                foreach (var file in Directory.GetFiles(androidSdkPath))
+                {
+                    var fileToDelete = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (File.Exists(fileToDelete))
+                    {
+                        File.Delete(fileToDelete);
+                    }
+                }
             }
         }
 
-        private void SetupGradle(string gradleProjectPath)
+        internal void AddAndroidSdkDependencies(string gradleProjectPath)
         {
-            var gradleSetup = new GradleSetup(_logger, gradleProjectPath);
-            var nativeSupportEnabled = _options is { Enabled: true, AndroidNativeSupportEnabled: true };
+            const string regexPattern = @"(dependencies\s\{\n).+";
 
-            try
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            if (!File.Exists(gradleFilePath))
             {
-                if (nativeSupportEnabled)
-                {
-                    gradleSetup.UpdateGradleProject();
-                }
-                else
-                {
-                    gradleSetup.ClearGradleProject();
-                }
+                throw new FileNotFoundException($"Failed to find 'build.gradle' at '{gradleFilePath}'.");
             }
-            catch (Exception e)
+
+            var gradle = File.ReadAllText(gradleFilePath);
+
+            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
             {
-                _logger.LogError($"Failed to {(nativeSupportEnabled ? "modify" : "clear")} the 'build.gradle' files.", e);
+                if (gradle.Contains(SDKDependencies))
+                {
+                    _logger.LogDebug("Android SDK dependencies already added. Skipping.");
+                    return;
+                }
+
+                _logger.LogInfo("Adding Android SDK dependencies to 'build.gradle'.");
+
+                var regex = new Regex(regexPattern);
+                var match = regex.Match(gradle);
+                if (!match.Success)
+                {
+                    throw new ArgumentException($"Failed to add Sentry Android dependencies to 'build.gradle'.\n{gradle}", nameof(gradle));
+                }
+
+                File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, SDKDependencies));
+            }
+            else
+            {
+                if (gradle.Contains(SDKDependencies))
+                {
+                    _logger.LogInfo("Android SDK dependencies have previously been added. Removing them.");
+
+                    File.WriteAllText(gradleFilePath, gradle.Replace(SDKDependencies, ""));
+                }
             }
         }
 

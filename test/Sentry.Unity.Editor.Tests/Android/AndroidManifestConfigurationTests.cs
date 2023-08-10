@@ -359,6 +359,148 @@ namespace Sentry.Unity.Editor.Tests.Android
             Directory.Delete(Path.GetFullPath(dsuFixture.FakeProjectPath), true);
         }
 
+        [Test]
+        public void CopyAndroidSdkToGradleProject_AndroidNativeSupportEnabled_CopiesAndroidSdkToGradleProject()
+        {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var sut = _fixture.GetSut();
+
+            sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+            Assert.IsTrue(File.Exists(Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar")));
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void CopyAndroidSdkToGradleProject_AndroidNativeSupportDisabledButSdkAlreadyCopied_RemovesAndroidSdkFromGradleProject()
+        {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var androidSdk = Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar");
+            File.Create(androidSdk);
+
+            _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+            var sut = _fixture.GetSut();
+
+            sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+            Assert.IsFalse(File.Exists(androidSdk));
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_GradleFileNotFound_ThrowsFileNotFoundException()
+        {
+            var brokenBasePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var sut = _fixture.GetSut();
+
+            Assert.Throws<FileNotFoundException>(() => sut.AddAndroidSdkDependencies(brokenBasePath));
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportEnabled_AddsDependencies()
+        {
+            // Arrange
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+            var sut = _fixture.GetSut();
+
+            // Act
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Assert
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            Assert.IsTrue(File.Exists(gradleFilePath));
+
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent);
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportEnabledAndDependenciesAlreadyAdded_LogsAndReturns()
+        {
+            // Arrange
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            var testLogger = new TestLogger();
+            _fixture.SentryUnityOptions!.DiagnosticLogger = testLogger;
+            var sut = _fixture.GetSut();
+
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Act
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Assert
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            Assert.IsTrue(File.Exists(gradleFilePath));
+
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent); // Sanity check
+
+            Assert.IsTrue(testLogger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Debug &&
+                log.message.Contains("Android SDK dependencies already added. Skipping.")));
+
+            Directory.Delete(fakeProjectPath, true);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportDisabledButEnabledPreviously_RemovesDependencies()
+        {
+            // Arrange
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            // Using the sut here to emulate previous build run with Android support enabled
+            var previousBuildSut = _fixture.GetSut();
+            previousBuildSut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.Contains(AndroidManifestConfiguration.SDKDependencies, gradleContent); // Sanity check
+
+            _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+            var sut = _fixture.GetSut();
+
+            // Act
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            // Assert
+            gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.DoesNotContain(AndroidManifestConfiguration.SDKDependencies, gradleContent);
+        }
+
+        [Test]
+        public void AddAndroidSdkDependencies_AndroidSupportDisabled_DoesNotAddDependencies()
+        {
+            var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+            DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+            _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+            var sut = _fixture.GetSut();
+
+            sut.AddAndroidSdkDependencies(gradleProjectPath);
+
+            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
+            var gradleContent = File.ReadAllText(gradleFilePath);
+            StringAssert.DoesNotContain(AndroidManifestConfiguration.SDKDependencies, gradleContent); // Sanity check
+        }
+
         private string WithAndroidManifest(Action<string> callback)
         {
             var basePath = GetFakeManifestFileBasePath();
