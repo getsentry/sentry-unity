@@ -11,7 +11,7 @@ namespace Sentry.Unity.Tests
                 options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
                 if (testHttpClientHandler is not null)
                 {
-                    options.CreateHttpClientHandler = () => testHttpClientHandler;
+                    options.CreateHttpMessageHandler = () => testHttpClientHandler;
                 }
 
                 configure?.Invoke(options);

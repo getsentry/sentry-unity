@@ -188,7 +188,7 @@ namespace Sentry.Unity.Tests
             using var firstDisposable = InitSentrySdk(o =>
             {
                 o.Dsn = "http://publickey@localhost:8000/12345";
-                o.CreateHttpClientHandler = () => firstHttpClientHandler;
+                o.CreateHttpMessageHandler = () => firstHttpClientHandler;
             });
 
             using var secondDisposable = InitSentrySdk(); // uses the default test DSN
@@ -330,7 +330,7 @@ namespace Sentry.Unity.Tests
             SentryUnity.Init(options =>
             {
                 options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-                options.CreateHttpClientHandler = () => _testHttpClientHandler;
+                options.CreateHttpMessageHandler = () => _testHttpClientHandler;
 
                 configure?.Invoke(options);
             });
