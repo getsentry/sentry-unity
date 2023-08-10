@@ -97,6 +97,17 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
+        public BaggageHeader? GetBaggage()
+        {
+            throw new NotImplementedException();
+        }
+
+        public TransactionContext ContinueTrace(SentryTraceHeader? traceHeader, BaggageHeader? baggageHeader, string? name = null,
+            string? operation = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public void StartSession()
         {
             // TODO: test sessions
