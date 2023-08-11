@@ -9,9 +9,9 @@
 
 ### Dependencies
 
-- Bump CLI from v2.19.1 to v2.20.4 ([#1387](https://github.com/getsentry/sentry-unity/pull/1387), [#1388](https://github.com/getsentry/sentry-unity/pull/1388), [#1405](https://github.com/getsentry/sentry-unity/pull/1405), [#1408](https://github.com/getsentry/sentry-unity/pull/1408), [#1410](https://github.com/getsentry/sentry-unity/pull/1410), [#1412](https://github.com/getsentry/sentry-unity/pull/1412))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2204)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.19.1...2.20.4)
+- Bump CLI from v2.19.1 to v2.20.5 ([#1387](https://github.com/getsentry/sentry-unity/pull/1387), [#1388](https://github.com/getsentry/sentry-unity/pull/1388), [#1405](https://github.com/getsentry/sentry-unity/pull/1405), [#1408](https://github.com/getsentry/sentry-unity/pull/1408), [#1410](https://github.com/getsentry/sentry-unity/pull/1410), [#1412](https://github.com/getsentry/sentry-unity/pull/1412), [#1419](https://github.com/getsentry/sentry-unity/pull/1419))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2205)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.19.1...2.20.5)
 - Bump Java SDK from v6.24.0 to v6.27.0 ([#1390](https://github.com/getsentry/sentry-unity/pull/1390), [#1396](https://github.com/getsentry/sentry-unity/pull/1396), [#1400](https://github.com/getsentry/sentry-unity/pull/1400), [#1403](https://github.com/getsentry/sentry-unity/pull/1403), [#1407](https://github.com/getsentry/sentry-unity/pull/1407))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6270)
   - [diff](https://github.com/getsentry/sentry-java/compare/6.24.0...6.27.0)
