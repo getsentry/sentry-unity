@@ -1,7 +1,5 @@
-using System;
 using System.IO;
 using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
