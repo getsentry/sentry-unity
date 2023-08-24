@@ -3,6 +3,7 @@ using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Sentry.Unity
 {
@@ -102,6 +103,8 @@ namespace Sentry.Unity
             RenderTexture.ReleaseTemporary(renderTextureResized);
 
             var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
+            Object.Destroy(screenshot);
+
             _options.DiagnosticLogger?.Log(SentryLevel.Debug,
                     "Screenshot captured at {0}x{1}: {2} bytes", null, width, height, bytes.Length);
             return bytes;
