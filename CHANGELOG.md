@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The screenshot capture no longer leaks memory ([#1427](https://github.com/getsentry/sentry-unity/pull/1427))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.9.4 to v8.10.0 ([#1422](https://github.com/getsentry/sentry-unity/pull/1422), [#1424](https://github.com/getsentry/sentry-unity/pull/1424), [#1425](https://github.com/getsentry/sentry-unity/pull/1425))
