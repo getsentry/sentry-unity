@@ -1,7 +1,6 @@
 using System.IO;
 using Sentry.Extensibility;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Sentry.Unity
 {
