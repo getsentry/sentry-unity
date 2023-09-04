@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK no longer creates transactions with their start date set to Jan 01, 001 [#1423](https://github.com/getsentry/sentry-unity/pull/1423)
 - The screenshot capture no longer leaks memory ([#1427](https://github.com/getsentry/sentry-unity/pull/1427))
 
 ### Dependencies
