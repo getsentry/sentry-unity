@@ -42,6 +42,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/
 Plugins/iOS/Sentry.xcframework~/Info.plist
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/dSYMs/
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Info.plist
+Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivacyInfo.xcprivacy
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Sentry
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/_CodeSignature/CodeResources
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/NSData+SentryCompression.h
@@ -125,6 +126,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/dSYMs/Sentry.framewor
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Info.plist
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivacyInfo.xcprivacy
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Sentry
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/NSData+SentryCompression.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/NSDate+SentryExtras.h
