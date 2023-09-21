@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Fixes
+
+- Fixed an issue with the Android dependency setup when using a custom `mainTemplate.gradle` ([#1446](https://github.com/getsentry/sentry-unity/pull/1446))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.10.0 to v8.11.0 ([#1433](https://github.com/getsentry/sentry-unity/pull/1433))
