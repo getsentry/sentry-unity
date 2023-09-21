@@ -1,30 +1,92 @@
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.0'
+
+classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31'}
+}
+
 allprojects {
     repositories {
-        maven { url "${project(':unityLibrary').projectDir}/android-sdk-repository" }
         google()
         jcenter()
         flatDir {
-            dirs "${project(':unityLibrary').projectDir}/libs"
-        }
-    }
-
-    buildscript {
-        dependencies {
-            // If you are changing the Android Gradle Plugin version, make sure it is compatible with the Gradle version preinstalled with Unity
-            // See which Gradle version is preinstalled with Unity here https://docs.unity3d.com/Manual/android-gradle-overview.html
-            // See official Gradle and Android Gradle Plugin compatibility table here https://developer.android.com/studio/releases/gradle-plugin#updating-gradle
-            // To specify a custom Gradle version in Unity, go do "Preferences > External Tools", uncheck "Gradle Installed with Unity (recommended)" and specify a path to a custom Gradle version
-            classpath 'com.android.tools.build:gradle:4.0.1'
-            classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31'
-        }
-
-        repositories {
-            google()
-            jcenter()
+            dirs 'libs'
         }
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+
+dependencies {
+
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+	implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+	implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.31'
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion '30.0.2'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+consumerProguardFiles 'proguard-unity.txt', 'proguard-user.txt', 'proguard-sentry-unity.pro'
+        minSdkVersion 22
+        targetSdkVersion 30
+
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+        versionCode 1
+        versionName '0.1'
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    aaptOptions {
+         noCompress = ['.ress', '.resource', '.obb'] + unityStreamingAssets.tokenize(', ')
+         ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt', 'proguard-user.txt'
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt', 'proguard-user.txt'
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    packagingOptions {
+        doNotStrip '*/arm64-v8a/*.so'
+    }
+
+
+}
+repositories {
+	mavenCentral()
 }
