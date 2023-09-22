@@ -8,7 +8,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.0'
 
-**BUILD_SCRIPT_DEPS**}
+id 'org.jetbrains.kotlin.android' version '1.7.22' apply false}
 }
 
 allprojects {
@@ -22,17 +22,19 @@ allprojects {
 }
 
 apply plugin: 'com.android.library'
-**APPLY_PLUGINS**
+apply plugin: 'kotlin-android'
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 	implementation 'androidx.security:security-crypto:1.1.0-alpha06'
-**DEPS**}
+
+}
 
 android {
-    compileSdkVersion **APIVERSION**
-    buildToolsVersion '**BUILDTOOLS**'
+    compileSdkVersion 33
+    buildToolsVersion '32.0.0'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -40,15 +42,15 @@ android {
     }
 
     defaultConfig {
-consumerProguardFiles 'proguard-unity.txt'**USER_PROGUARD**
-        minSdkVersion **MINSDKVERSION**
-        targetSdkVersion **TARGETSDKVERSION**
+consumerProguardFiles 'proguard-unity.txt', 'proguard-user.txt'
+        minSdkVersion 22
+        targetSdkVersion 33
 
         ndk {
-            abiFilters **ABIFILTERS**
+            abiFilters 'arm64-v8a'
         }
-        versionCode **VERSIONCODE**
-        versionName '**VERSIONNAME**'
+        versionCode 1
+        versionName '0.1'
     }
 
     lintOptions {
@@ -58,21 +60,26 @@ consumerProguardFiles 'proguard-unity.txt'**USER_PROGUARD**
     aaptOptions {
          noCompress = ['.ress', '.resource', '.obb'] + unityStreamingAssets.tokenize(', ')
          ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
-    }**SIGN**
+    }
 
     buildTypes {
         debug {
-            minifyEnabled **MINIFY_DEBUG**
+            minifyEnabled false
 
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt'**USER_PROGUARD**
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt', 'proguard-user.txt'
             jniDebuggable true
         }
         release {
-            minifyEnabled **MINIFY_RELEASE**
+            minifyEnabled false
 
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt'**USER_PROGUARD****SIGNCONFIG**
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt', 'proguard-user.txt'
+            signingConfig signingConfigs.debug
         }
-    }**PACKAGING_OPTIONS**
-**BUILT_APK_LOCATION**
+    }
 
-}**REPOSITORIES****SOURCE_BUILD_SETUP**
+    packagingOptions {
+        doNotStrip '*/arm64-v8a/*.so'
+    }
+
+
+}

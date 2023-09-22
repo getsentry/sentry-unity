@@ -1,31 +1,35 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.22'
+}
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.31'
+repositories {
+    mavenCentral()
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion '30.0.2'
+    ndkPath "/Applications/Unity/Hub/Editor/2023.1.14f1/PlaybackEngines/AndroidPlayer/NDK"
+    compileSdkVersion 33
+    buildToolsVersion "32.0.0"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     defaultConfig {
+        consumerProguardFiles "proguard-unity.txt", "proguard-user.txt"
+        versionName "0.1"
         minSdkVersion 22
-        targetSdkVersion 30
-        ndk {
-            abiFilters 'arm64-v8a'
-        }
+        targetSdkVersion 33
         versionCode 1
-        versionName '0.1'
-        consumerProguardFiles 'proguard-unity.txt', 'proguard-user.txt', 'proguard-sentry-unity.pro'
+
+        ndk {
+            abiFilters "arm64-v8a"
+        }
     }
 
     lintOptions {
@@ -33,17 +37,17 @@ android {
     }
 
     aaptOptions {
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
         noCompress = ['.unity3d', '.ress', '.resource', '.obb', '.bundle', '.unityexp'] + unityStreamingAssets.tokenize(', ')
-        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
     }
 
     packagingOptions {
-        doNotStrip '*/arm64-v8a/*.so'
+        doNotStrip "*/arm64-v8a/*.so"
     }
+
+    namespace "com.unity3d.player"
 }
-repositories {
-	mavenCentral()
-}
+
 
 def getSdkDir() {
     Properties local = new Properties()
@@ -57,13 +61,16 @@ def BuildIl2Cpp(String workingDir, String configuration, String architecture, St
     commandLineArgs.add("--platform=Android")
     commandLineArgs.add("--architecture=" + architecture)
     commandLineArgs.add("--outputpath=" + workingDir + "/src/main/jniLibs/" + abi + "/libil2cpp.so")
-    commandLineArgs.add("--libil2cpp-static")
     commandLineArgs.add("--baselib-directory=" + workingDir + "/src/main/jniStaticLibs/" + abi)
     commandLineArgs.add("--configuration=" + configuration)
     commandLineArgs.add("--dotnetprofile=unityaot-linux")
+    commandLineArgs.add("--enable-debugger")
+    commandLineArgs.add("--usymtool-path=" + workingDir + "/src/main/Il2CppOutputProject/usymtool")
     commandLineArgs.add("--profiler-report")
     commandLineArgs.add("--profiler-output-file=" + workingDir + "/build/il2cpp_"+ abi + "_" + configuration + "/il2cpp_conv.traceevents")
     commandLineArgs.add("--print-command-line")
+    commandLineArgs.add("--static-lib-il2-cpp")
+    commandLineArgs.add("--data-folder=" + workingDir + "/src/main/Il2CppOutputProject/Source/il2cppOutput/data")
     commandLineArgs.add("--generatedcppdir=" + workingDir + "/src/main/Il2CppOutputProject/Source/il2cppOutput")
     commandLineArgs.add("--cachedirectory=" + workingDir + "/build/il2cpp_"+ abi + "_" + configuration + "/il2cpp_cache")
     commandLineArgs.add("--tool-chain-path=" + android.ndkDirectory)
@@ -71,10 +78,8 @@ def BuildIl2Cpp(String workingDir, String configuration, String architecture, St
         commandLineArgs.add("--additional-libraries=" + workingDir + "/src/main/jniStaticLibs/" + abi + "/" + fileName)
     }
     def executableExtension = ""
-    if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+    if (org.gradle.internal.os.OperatingSystem.current().isWindows())
         executableExtension = ".exe"
-        commandLineArgs = commandLineArgs*.replace('\"', '\\\"')
-    }
     exec {
         executable workingDir + "/src/main/Il2CppOutputProject/IL2CPP/build/deploy/il2cpp" + executableExtension
         args commandLineArgs
@@ -102,6 +107,3 @@ android {
         }
     }
 }
-
-
-

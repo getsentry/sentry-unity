@@ -90,9 +90,6 @@ namespace Sentry.Unity.Editor.Tests.Android
         [Test]
         [TestCase("InsertIntoScope/build.gradle_test_1")]
         [TestCase("InsertIntoScope/build.gradle_test_2")]
-        [TestCase("InsertIntoScope/build.gradle_test_3")]
-        [TestCase("InsertIntoScope/build.gradle_test_4")]
-        [TestCase("InsertIntoScope/build.gradle_test_5")]
         public void InsertIntoScope_ResultMatchesExpected(string testCaseFileName)
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);

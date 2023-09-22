@@ -12,8 +12,7 @@ namespace Sentry.Unity.Editor.Android
         private readonly IDiagnosticLogger _logger;
 
         public const string DependencyScopeName = "dependencies";
-        public const string SdkDependencies = @"
-    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+        public const string SdkDependencies = @"implementation(name: 'sentry-android-ndk-release', ext:'aar')
     implementation(name: 'sentry-android-core-release', ext:'aar')";
         public static readonly List<string> ScopesToSkip = new() { "buildscript", "pluginManagement" };
 
