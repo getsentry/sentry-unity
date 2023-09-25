@@ -196,7 +196,7 @@ namespace Sentry.Unity
         }
 
         // Available in Unity `2013.3.12f1` (and later)
-        // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
+        // Il2CppObject* il2cpp_gchandle_get_target(Il2CppGCHandle gchandle)
         [DllImport("__Internal")]
         private static extern IntPtr il2cpp_gchandle_get_target(IntPtr gchandle);
 #else
