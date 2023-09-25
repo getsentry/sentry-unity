@@ -190,20 +190,14 @@ namespace Sentry.Unity
         }
 
 #if UNITY_2023
-        private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle)
-        {
-            return il2cpp_gchandle_get_target(gchandle);
-        }
+        private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle) => il2cpp_gchandle_get_target(gchandle);
 
         // Available in Unity `2013.3.12f1` (and later)
         // Il2CppObject* il2cpp_gchandle_get_target(Il2CppGCHandle gchandle)
         [DllImport("__Internal")]
         private static extern IntPtr il2cpp_gchandle_get_target(IntPtr gchandle);
 #else
-        private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle)
-        {
-            return il2cpp_gchandle_get_target(gchandle.ToInt32());
-        }
+        private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle) => il2cpp_gchandle_get_target(gchandle.ToInt32());
 
         // Available in Unity `2019.4.34f1` (and later)
         // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
