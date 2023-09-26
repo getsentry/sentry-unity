@@ -90,8 +90,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     EditorGUILayout.HelpBox("Android native support requires IL2CPP scripting backend and is currently unsupported on Mono.", MessageType.Warning);
                 }
 
-                EditorGUI.BeginDisabledGroup(!options.AndroidNativeSupportEnabled);
                 EditorGUI.indentLevel++;
+                EditorGUI.BeginDisabledGroup(!options.AndroidNativeSupportEnabled);
                 options.NdkIntegrationEnabled = EditorGUILayout.Toggle(
                     new GUIContent("NDK Integration", "Whether to enable NDK Integration to capture" +
                                                               "errors written in languages such C and C++."),
@@ -101,8 +101,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     new GUIContent("NDK Scope Sync", "Whether the SDK should sync the scope to the NDK layer."),
                     options.NdkScopeSyncEnabled);
                 EditorGUI.EndDisabledGroup();
-                EditorGUI.indentLevel--;
                 EditorGUI.EndDisabledGroup();
+                EditorGUI.indentLevel--;
 
                 options.WindowsNativeSupportEnabled = EditorGUILayout.Toggle(
                     new GUIContent("Windows Native Support", "Whether to enable native crashes support on Windows."),
