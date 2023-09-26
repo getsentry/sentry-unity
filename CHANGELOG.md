@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Feature
+
+- The SDK now surfaces options to opt out of the Android `NDK integration` and `NDK Scope Sync`([#1452](https://github.com/getsentry/sentry-unity/pull/1452))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.10.0 to v8.11.0 ([#1433](https://github.com/getsentry/sentry-unity/pull/1433))
