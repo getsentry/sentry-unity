@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Feature
+
+- The SDK now surfaces options to opt out of the Android `NDK integration` and `NDK Scope Sync`([#1452](https://github.com/getsentry/sentry-unity/pull/1452))
+
 ### Fixes
 
 - Fixed IL2CPP line number processor to no longer crash in Unity 2023 builds ([#1450](https://github.com/getsentry/sentry-unity/pull/1450))

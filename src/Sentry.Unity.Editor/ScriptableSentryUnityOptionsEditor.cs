@@ -78,6 +78,10 @@ namespace Sentry.Unity.Editor
 
             EditorGUILayout.Toggle("iOS Native Support", options.IosNativeSupportEnabled);
             EditorGUILayout.Toggle("Android Native Support", options.AndroidNativeSupportEnabled);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.Toggle("NDK Integration", options.NdkIntegrationEnabled);
+            EditorGUILayout.Toggle("NDK Scope Sync", options.NdkScopeSyncEnabled);
+            EditorGUI.indentLevel--;
             EditorGUILayout.Toggle("Windows Native Support", options.WindowsNativeSupportEnabled);
             EditorGUILayout.Toggle("macOS Native Support", options.MacosNativeSupportEnabled);
             EditorGUILayout.Toggle("Linux Native Support", options.LinuxNativeSupportEnabled);
