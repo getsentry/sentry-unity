@@ -140,7 +140,7 @@ namespace Sentry.Unity
             ;
 #else
             = new Il2CppMethods(
-                il2cpp_gchandle_get_target,
+                Il2CppGcHandleGetTargetShim,
                 Il2CppNativeStackTraceShim,
                 il2cpp_free);
 
@@ -189,10 +189,21 @@ namespace Sentry.Unity
             return Marshal.PtrToStringAnsi(debugIdPtr);
         }
 
+#if UNITY_2023
+        private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle) => il2cpp_gchandle_get_target(gchandle);
+
+        // Available in Unity `2013.3.12f1` (and later)
+        // Il2CppObject* il2cpp_gchandle_get_target(Il2CppGCHandle gchandle)
+        [DllImport("__Internal")]
+        private static extern IntPtr il2cpp_gchandle_get_target(IntPtr gchandle);
+#else
+        private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle) => il2cpp_gchandle_get_target(gchandle.ToInt32());
+
         // Available in Unity `2019.4.34f1` (and later)
         // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
         [DllImport("__Internal")]
         private static extern IntPtr il2cpp_gchandle_get_target(int gchandle);
+#endif
 
         // Available in Unity `2019.4.34f1` (and later)
         // void il2cpp_free(void* ptr)

@@ -25,7 +25,7 @@ namespace Sentry.Unity
         public Il2CppFree Il2CppFree { get; }
     }
 
-    public delegate IntPtr Il2CppGcHandleGetTarget(int gchandle);
+    public delegate IntPtr Il2CppGcHandleGetTarget(IntPtr gchandle);
     public delegate void Il2CppNativeStackTrace(
         IntPtr exc,
         out IntPtr addresses,
