@@ -163,11 +163,11 @@ namespace Sentry.Unity.Editor.Android
             androidManifest.SetAttachScreenshot(false);
 
             // Disabling the native in favor of the C# layer for now
+            androidManifest.SetNdkEnabled(_options.NdkIntegrationEnabled);
+            androidManifest.SetNdkScopeSync(_options.NdkScopeSyncEnabled);
             androidManifest.SetAutoSessionTracking(false);
             androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
             androidManifest.SetAnr(false);
-            // TODO: We need an opt-out for this:
-            androidManifest.SetNdkScopeSync(true);
 
             // TODO: All SentryOptions and create specific Android options
 
@@ -438,6 +438,9 @@ namespace Sentry.Unity.Editor.Android
 
         internal void SetAnr(bool enableAnr)
             => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr.ToString());
+
+        internal void SetNdkEnabled(bool enableNdk)
+            => SetMetaData($"{SentryPrefix}.ndk.enable", enableNdk.ToString());
 
         internal void SetNdkScopeSync(bool enableNdkScopeSync)
             => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
