@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed IL2CPP line number processor to no longer crash in Unity 2023 builds ([#1450](https://github.com/getsentry/sentry-unity/pull/1450))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.10.0 to v8.12.0 ([#1433](https://github.com/getsentry/sentry-unity/pull/1433), [#1445](https://github.com/getsentry/sentry-unity/pull/1445))

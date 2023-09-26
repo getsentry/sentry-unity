@@ -322,7 +322,7 @@ namespace Sentry.Unity
             var addresses = IntPtr.Zero;
             try
             {
-                var gchandle = GCHandle.ToIntPtr(gch).ToInt32();
+                var gchandle = GCHandle.ToIntPtr(gch);
                 var addr = _il2CppMethods.Il2CppGcHandleGetTarget(gchandle);
 
                 var numFrames = 0;
