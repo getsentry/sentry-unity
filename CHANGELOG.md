@@ -2,21 +2,26 @@
 
 ## Unreleased
 
-## Fixes
+### Feature
 
+- The SDK now surfaces options to opt out of the Android `NDK integration` and `NDK Scope Sync`([#1452](https://github.com/getsentry/sentry-unity/pull/1452))
+
+### Fixes
+
+- Fixed IL2CPP line number processor to no longer crash in Unity 2023 builds ([#1450](https://github.com/getsentry/sentry-unity/pull/1450))
 - Fixed an issue with the Android dependency setup when using a custom `mainTemplate.gradle` ([#1446](https://github.com/getsentry/sentry-unity/pull/1446))
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.10.0 to v8.11.0 ([#1433](https://github.com/getsentry/sentry-unity/pull/1433))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8110)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.10.0...8.11.0)
+- Bump Cocoa SDK from v8.10.0 to v8.13.0 ([#1433](https://github.com/getsentry/sentry-unity/pull/1433), [#1445](https://github.com/getsentry/sentry-unity/pull/1445), [#1451](https://github.com/getsentry/sentry-unity/pull/1451))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8130)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.10.0...8.13.0)
 - Bump .NET SDK from v3.36.0 to v3.39.1 ([#1436](https://github.com/getsentry/sentry-unity/pull/1436), [#1443](https://github.com/getsentry/sentry-unity/pull/1443))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3391)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.36.0...3.39.1)
-- Bump CLI from v2.20.6 to v2.20.7 ([#1437](https://github.com/getsentry/sentry-unity/pull/1437))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2207)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.20.6...2.20.7)
+- Bump CLI from v2.20.6 to v2.21.1 ([#1437](https://github.com/getsentry/sentry-unity/pull/1437), [#1447](https://github.com/getsentry/sentry-unity/pull/1447), [#1449](https://github.com/getsentry/sentry-unity/pull/1449))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2211)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.20.6...2.21.1)
 
 ## 1.5.2
 

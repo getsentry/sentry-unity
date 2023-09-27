@@ -89,6 +89,8 @@ namespace Sentry.Unity
 
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool NdkIntegrationEnabled { get; set; } = true;
+        [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
@@ -163,6 +165,7 @@ namespace Sentry.Unity
                 FilterBadGatewayExceptions = FilterBadGatewayExceptions,
                 IosNativeSupportEnabled = IosNativeSupportEnabled,
                 AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
+                NdkIntegrationEnabled = NdkIntegrationEnabled,
                 WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
                 MacosNativeSupportEnabled = MacosNativeSupportEnabled,
                 LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
