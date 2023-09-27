@@ -32,10 +32,6 @@ namespace Sentry.Unity.Editor.Android
         private readonly bool _isDevelopmentBuild;
         private readonly ScriptingImplementation _scriptingImplementation;
 
-        public const string SDKDependencies = @"
-    implementation(name: 'sentry-android-ndk-release', ext:'aar')
-    implementation(name: 'sentry-android-core-release', ext:'aar')";
-
         public AndroidManifestConfiguration()
             : this(
                 SentryScriptableObject.ConfiguredBuildTimeOptions,
@@ -174,6 +170,64 @@ namespace Sentry.Unity.Editor.Android
             _ = androidManifest.Save();
         }
 
+        internal void CopyAndroidSdkToGradleProject(string unityProjectPath, string gradlePath)
+        {
+            var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
+            var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
+
+            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
+            {
+                if (!Directory.Exists(androidSdkPath))
+                {
+                    throw new DirectoryNotFoundException($"Failed to find the Android SDK at '{androidSdkPath}'.");
+                }
+
+                _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
+                foreach (var file in Directory.GetFiles(androidSdkPath))
+                {
+                    var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (!File.Exists(destinationFile))
+                    {
+                        File.Copy(file, destinationFile);
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogInfo("Removing the Android SDK from the output project.");
+                foreach (var file in Directory.GetFiles(androidSdkPath))
+                {
+                    var fileToDelete = Path.Combine(targetPath, Path.GetFileName(file));
+                    if (File.Exists(fileToDelete))
+                    {
+                        File.Delete(fileToDelete);
+                    }
+                }
+            }
+        }
+
+        internal void AddAndroidSdkDependencies(string gradleProjectPath)
+        {
+            var tool = new GradleSetup(_logger, gradleProjectPath);
+            var nativeSupportEnabled = _options is { Enabled: true, AndroidNativeSupportEnabled: true };
+
+            try
+            {
+                if (nativeSupportEnabled)
+                {
+                    tool.UpdateGradleProject();
+                }
+                else
+                {
+                    tool.ClearGradleProject();
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Failed to {(nativeSupportEnabled ? "add" : "remove")} Android Dependencies in the gradle project", e);
+            }
+        }
+
         internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
         {
             var disableSymbolsUpload = false;
@@ -246,84 +300,6 @@ namespace Sentry.Unity.Editor.Android
             catch (Exception e)
             {
                 _logger.LogError($"Failed to {(nativeSupportEnabled ? "add" : "remove")} Proguard rules in the gradle project", e);
-            }
-        }
-
-        internal void CopyAndroidSdkToGradleProject(string unityProjectPath, string gradlePath)
-        {
-            var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
-            var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
-
-            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
-            {
-                if (!Directory.Exists(androidSdkPath))
-                {
-                    throw new DirectoryNotFoundException($"Failed to find the Android SDK at '{androidSdkPath}'.");
-                }
-
-                _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
-                foreach (var file in Directory.GetFiles(androidSdkPath))
-                {
-                    var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
-                    if (!File.Exists(destinationFile))
-                    {
-                        File.Copy(file, destinationFile);
-                    }
-                }
-            }
-            else
-            {
-                _logger.LogInfo("Removing the Android SDK from the output project.");
-                foreach (var file in Directory.GetFiles(androidSdkPath))
-                {
-                    var fileToDelete = Path.Combine(targetPath, Path.GetFileName(file));
-                    if (File.Exists(fileToDelete))
-                    {
-                        File.Delete(fileToDelete);
-                    }
-                }
-            }
-        }
-
-        internal void AddAndroidSdkDependencies(string gradleProjectPath)
-        {
-            const string regexPattern = @"(dependencies\s\{\n).+";
-
-            var gradleFilePath = Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle");
-            if (!File.Exists(gradleFilePath))
-            {
-                throw new FileNotFoundException($"Failed to find 'build.gradle' at '{gradleFilePath}'.");
-            }
-
-            var gradle = File.ReadAllText(gradleFilePath);
-
-            if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
-            {
-                if (gradle.Contains(SDKDependencies))
-                {
-                    _logger.LogDebug("Android SDK dependencies already added. Skipping.");
-                    return;
-                }
-
-                _logger.LogInfo("Adding Android SDK dependencies to 'build.gradle'.");
-
-                var regex = new Regex(regexPattern);
-                var match = regex.Match(gradle);
-                if (!match.Success)
-                {
-                    throw new ArgumentException($"Failed to add Sentry Android dependencies to 'build.gradle'.\n{gradle}", nameof(gradle));
-                }
-
-                File.WriteAllText(gradleFilePath, gradle.Insert(match.Index + match.Length, SDKDependencies));
-            }
-            else
-            {
-                if (gradle.Contains(SDKDependencies))
-                {
-                    _logger.LogInfo("Android SDK dependencies have previously been added. Removing them.");
-
-                    File.WriteAllText(gradleFilePath, gradle.Replace(SDKDependencies, ""));
-                }
             }
         }
 

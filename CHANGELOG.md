@@ -9,6 +9,7 @@
 ### Fixes
 
 - Fixed IL2CPP line number processor to no longer crash in Unity 2023 builds ([#1450](https://github.com/getsentry/sentry-unity/pull/1450))
+- Fixed an issue with the Android dependency setup when using a custom `mainTemplate.gradle` ([#1446](https://github.com/getsentry/sentry-unity/pull/1446))
 
 ### Dependencies
 
