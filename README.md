@@ -17,7 +17,7 @@ Sentry SDK for Unity
 
 Install it via `UPM`:
 ```
-https://github.com/getsentry/unity.git#1.5.2
+https://github.com/getsentry/unity.git#1.6.0
 ```
 
 ## Documentation
