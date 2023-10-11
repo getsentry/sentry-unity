@@ -1,7 +1,7 @@
 using Sentry.Integrations;
 using UnityEngine.SceneManagement;
 
-namespace Sentry.Unity
+namespace Sentry.Unity.Integrations
 {
     internal class SceneManagerIntegration : ISdkIntegration
     {
@@ -15,8 +15,6 @@ namespace Sentry.Unity
 
         public void Register(IHub hub, SentryOptions options)
         {
-            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registering SceneManager integration.");
-
             _sceneManager.SceneLoaded += OnSceneManagerOnSceneLoaded;
             _sceneManager.SceneUnloaded += SceneManagerOnSceneUnloaded;
             _sceneManager.ActiveSceneChanged += SceneManagerOnActiveSceneChanged;
