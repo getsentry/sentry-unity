@@ -271,7 +271,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@v1.3.0
+        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8
         with:
           android: false
           dotnet: false
