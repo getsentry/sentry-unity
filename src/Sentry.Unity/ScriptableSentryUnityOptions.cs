@@ -191,10 +191,15 @@ namespace Sentry.Unity
 
             options.SetupLogging();
 
-            // This has to happen in between options object creation and updating the options based on programmatic changes
-            if (!isBuilding && RuntimeOptionsConfiguration != null)
+            if (!isBuilding)
             {
-                RuntimeOptionsConfiguration.Configure(options);
+                if (RuntimeOptionsConfiguration != null)
+                {
+                    // This has to happen in between options object creation and updating the options based on programmatic changes
+                    RuntimeOptionsConfiguration.Configure(options);
+                }
+
+                HandlePlatformRestrictions(options, application, unityInfo);
             }
 
             if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
@@ -202,7 +207,6 @@ namespace Sentry.Unity
                 options.AddIl2CppExceptionProcessor(unityInfo);
             }
 
-            HandlePlatformRestrictions(options, application);
             HandleExceptionFilter(options);
 
             if (!AnrDetectionEnabled)
@@ -213,9 +217,9 @@ namespace Sentry.Unity
             return options;
         }
 
-        private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application)
+        private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
         {
-            if (IsKnownPlatform(application))
+            if (unityInfo?.IsKnownPlatform() == true)
             {
                 options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
             }
@@ -269,21 +273,6 @@ namespace Sentry.Unity
             }
 
             return Debug;
-        }
-
-        internal bool IsKnownPlatform(IApplication? application = null)
-        {
-            application ??= ApplicationAdapter.Instance;
-            return application.Platform
-                is RuntimePlatform.Android
-                or RuntimePlatform.IPhonePlayer
-                or RuntimePlatform.WindowsEditor
-                or RuntimePlatform.WindowsPlayer
-                or RuntimePlatform.OSXEditor
-                or RuntimePlatform.OSXPlayer
-                or RuntimePlatform.LinuxEditor
-                or RuntimePlatform.LinuxPlayer
-                or RuntimePlatform.WebGLPlayer;
         }
     }
 }

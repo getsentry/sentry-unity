@@ -1,4 +1,5 @@
 using System;
+using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity
 {
@@ -6,6 +7,7 @@ namespace Sentry.Unity
     {
         public bool IL2CPP { get; }
         public Il2CppMethods? Il2CppMethods { get; }
+        public bool IsKnownPlatform();
     }
 
     public class Il2CppMethods

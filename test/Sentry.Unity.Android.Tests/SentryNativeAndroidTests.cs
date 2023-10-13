@@ -98,5 +98,6 @@ namespace Sentry.Unity.Android.Tests
         public bool IL2CPP { get; set; }
         public string? Platform { get; }
         public Il2CppMethods? Il2CppMethods { get; }
+        public bool IsKnownPlatform() => true;
     }
 }
