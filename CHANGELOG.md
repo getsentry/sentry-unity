@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Fixes
+
+- Added the dedicated server platforms to the known platforms to prevent the SDK from interpreting them as restricted platforms (i.e. disabling offline caching, session tracking) ([#1468](https://github.com/getsentry/sentry-unity/pull/1468))
+
 ### Dependencies
 
 - Bump CLI from v2.21.1 to v2.21.2 ([#1454](https://github.com/getsentry/sentry-unity/pull/1454))
