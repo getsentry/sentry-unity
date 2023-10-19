@@ -27,7 +27,7 @@ namespace Sentry.Unity.iOS
                     }
                     options.ScopeObserver = new NativeScopeObserver("iOS", options);
                     break;
-                case RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer:
+                case RuntimePlatform.OSXPlayer:
                     if (!options.MacosNativeSupportEnabled)
                     {
                         return;

@@ -269,5 +269,25 @@ namespace Sentry.Unity
 #endif
 #pragma warning restore 8632
 #endif
+
+        public bool IsKnownPlatform()
+        {
+            return Application.platform
+                is RuntimePlatform.Android
+                or RuntimePlatform.IPhonePlayer
+                or RuntimePlatform.WindowsEditor
+                or RuntimePlatform.WindowsPlayer
+                or RuntimePlatform.OSXEditor
+                or RuntimePlatform.OSXPlayer
+                or RuntimePlatform.LinuxEditor
+                or RuntimePlatform.LinuxPlayer
+                or RuntimePlatform.WebGLPlayer
+#if UNITY_2021_3_OR_NEWER
+                or RuntimePlatform.LinuxServer
+                or RuntimePlatform.WindowsServer
+                or RuntimePlatform.OSXServer
+#endif
+                ;
+        }
     }
 }
