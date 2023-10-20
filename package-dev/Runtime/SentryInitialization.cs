@@ -272,20 +272,21 @@ namespace Sentry.Unity
 
         public bool IsKnownPlatform()
         {
-            return Application.platform
-                is RuntimePlatform.Android
-                or RuntimePlatform.IPhonePlayer
-                or RuntimePlatform.WindowsEditor
-                or RuntimePlatform.WindowsPlayer
-                or RuntimePlatform.OSXEditor
-                or RuntimePlatform.OSXPlayer
-                or RuntimePlatform.LinuxEditor
-                or RuntimePlatform.LinuxPlayer
-                or RuntimePlatform.WebGLPlayer
+            var platform = Application.platform;
+            return platform == RuntimePlatform.Android ||
+                   platform == RuntimePlatform.IPhonePlayer ||
+                   platform == RuntimePlatform.WindowsEditor ||
+                   platform == RuntimePlatform.WindowsPlayer ||
+                   platform == RuntimePlatform.OSXEditor ||
+                   platform == RuntimePlatform.OSXPlayer ||
+                   platform == RuntimePlatform.LinuxEditor ||
+                   platform == RuntimePlatform.LinuxPlayer ||
+                   platform == RuntimePlatform.WebGLPlayer
 #if UNITY_2021_3_OR_NEWER
-                or RuntimePlatform.LinuxServer
-                or RuntimePlatform.WindowsServer
-                or RuntimePlatform.OSXServer
+                   ||
+                   platform == RuntimePlatform.LinuxServer ||
+                   platform == RuntimePlatform.WindowsServer ||
+                   platform == RuntimePlatform.OSXServer
 #endif
                 ;
         }
