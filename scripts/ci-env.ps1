@@ -14,7 +14,7 @@ switch ($name) {
         return "2021.3.31f1"
     }
     "unity2022" {
-        return "2022.1.23f1"
+        return "2022.3.11f1"
     }
     Default {
         throw "Unkown variable '$name'"
