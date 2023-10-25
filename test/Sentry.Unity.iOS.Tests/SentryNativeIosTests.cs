@@ -9,7 +9,8 @@ namespace Sentry.Unity.iOS.Tests
         public bool IL2CPP { get; set; }
         public string? Platform { get; }
         public Il2CppMethods? Il2CppMethods { get; }
-        public bool IsKnownPlatform() => true;
+        public bool IsKnownPlatform() => throw new NotImplementedException();
+        public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform) => throw new NotImplementedException();
     }
 
     public class SentryNativeCocoaTests
