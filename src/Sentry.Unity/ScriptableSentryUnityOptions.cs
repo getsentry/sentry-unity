@@ -191,7 +191,13 @@ namespace Sentry.Unity
 
             options.SetupLogging();
 
-            if (!isBuilding &&  RuntimeOptionsConfiguration != null)
+            // Bail early if we're building the player.
+            if (isBuilding)
+            {
+                return options;
+            }
+
+            if (RuntimeOptionsConfiguration != null)
             {
                 // This has to happen in between options object creation and updating the options based on programmatic changes
                 RuntimeOptionsConfiguration.Configure(options);

@@ -26,7 +26,7 @@ namespace Sentry.Unity.Native
                 return;
             }
 
-            if (!SentryNativeBridge.Init(options))
+            if (!SentryNativeBridge.Init(options, sentryUnityInfo))
             {
                 options.DiagnosticLogger?
                     .LogWarning("Sentry native initialization failed - native crashes are not captured.");

@@ -8,6 +8,7 @@ namespace Sentry.Unity
         public bool IL2CPP { get; }
         public Il2CppMethods? Il2CppMethods { get; }
         public bool IsKnownPlatform();
+        public bool IsLinux();
         public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform);
     }
 

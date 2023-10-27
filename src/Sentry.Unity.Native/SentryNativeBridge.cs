@@ -17,9 +17,9 @@ namespace Sentry.Unity.Native
 
         public static bool CrashedLastRun;
 
-        public static bool Init(SentryUnityOptions options)
+        public static bool Init(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
         {
-            _isLinux = ApplicationAdapter.Instance.Platform is RuntimePlatform.LinuxPlayer;
+            _isLinux = sentryUnityInfo.IsLinux();
 
             var cOptions = sentry_options_new();
 
