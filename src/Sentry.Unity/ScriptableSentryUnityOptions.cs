@@ -153,6 +153,7 @@ namespace Sentry.Unity
                 SendDefaultPii = SendDefaultPii,
                 IsEnvironmentUser = IsEnvironmentUser,
                 MaxCacheItems = MaxCacheItems,
+                CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null,
                 InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
                 SampleRate = SampleRate == 1.0f ? null : SampleRate, // To skip the random check for dropping events
                 ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
@@ -221,11 +222,7 @@ namespace Sentry.Unity
 
         private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
         {
-            if (unityInfo?.IsKnownPlatform() == true)
-            {
-                options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
-            }
-            else
+            if (unityInfo?.IsKnownPlatform() == false)
             {
                 // This is only provided on a best-effort basis for other than the explicitly supported platforms.
                 if (options.BackgroundWorker is null)
@@ -234,10 +231,11 @@ namespace Sentry.Unity
                     options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
                 }
 
+                // Disable offline caching regardless whether is was enabled or not.
+                options.CacheDirectoryPath = null;
                 if (EnableOfflineCaching)
                 {
                     options.DiagnosticLogger?.LogDebug("Platform support for offline caching is unknown: disabling.");
-                    options.CacheDirectoryPath = null;
                 }
 
                 // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
