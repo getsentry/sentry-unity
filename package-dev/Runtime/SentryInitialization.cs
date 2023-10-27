@@ -273,7 +273,7 @@ namespace Sentry.Unity
         public bool IsKnownPlatform()
         {
             var platform = Application.platform;
-            var known =
+            return
 					platform == RuntimePlatform.Android ||
                    	platform == RuntimePlatform.IPhonePlayer ||
                    	platform == RuntimePlatform.WindowsEditor ||
@@ -290,16 +290,22 @@ namespace Sentry.Unity
                    	platform == RuntimePlatform.LinuxServer
 #endif
                 ;
+        }
 
-            Console.WriteLine("Is known platform: " + known);
-            return known;
+        public bool IsLinux()
+        {
+            var platform = Application.platform;
+            return
+                platform == RuntimePlatform.LinuxPlayer
+#if UNITY_2021_3_OR_NEWER
+                   	|| platform == RuntimePlatform.LinuxServer
+#endif
+                ;
         }
 
 		public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform)
 		{
-            Console.WriteLine("is native support enabled?");
-
-			switch (platform)
+            switch (platform)
             {
 				case RuntimePlatform.Android:
                     return options.AndroidNativeSupportEnabled;
