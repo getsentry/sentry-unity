@@ -4,30 +4,14 @@ using UnityEngine;
 
 namespace Sentry.Unity.iOS.Tests
 {
-    public class TestSentryUnityInfo : ISentryUnityInfo
-    {
-        public bool IL2CPP { get; set; }
-        public string? Platform { get; }
-        public Il2CppMethods? Il2CppMethods { get; }
-        public bool IsKnownPlatform() => throw new NotImplementedException();
-        public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform) => throw new NotImplementedException();
-    }
-
     public class SentryNativeCocoaTests
     {
-        private TestSentryUnityInfo _sentryUnityInfo = null!;
-
-        [SetUp]
-        public void SetUp()
-        {
-            _sentryUnityInfo = new TestSentryUnityInfo { IL2CPP = false };
-        }
-
         [Test]
         public void Configure_DefaultConfiguration_iOS()
         {
+            var unityInfo = new TestUnityInfo { IL2CPP = false };
             var options = new SentryUnityOptions();
-            SentryNativeCocoa.Configure(options, _sentryUnityInfo, RuntimePlatform.IPhonePlayer);
+            SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.IPhonePlayer);
             Assert.IsAssignableFrom<NativeScopeObserver>(options.ScopeObserver);
             Assert.IsNotNull(options.CrashedLastRun);
             Assert.True(options.EnableScopeSync);
@@ -36,8 +20,9 @@ namespace Sentry.Unity.iOS.Tests
         [Test]
         public void Configure_NativeSupportDisabled_iOS()
         {
+            var unityInfo = new TestUnityInfo(true, false) { IL2CPP = false };
             var options = new SentryUnityOptions { IosNativeSupportEnabled = false };
-            SentryNativeCocoa.Configure(options, _sentryUnityInfo, RuntimePlatform.IPhonePlayer);
+            SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.IPhonePlayer);
             Assert.Null(options.ScopeObserver);
             Assert.Null(options.CrashedLastRun);
             Assert.False(options.EnableScopeSync);
@@ -46,18 +31,20 @@ namespace Sentry.Unity.iOS.Tests
         [Test]
         public void Configure_DefaultConfiguration_macOS()
         {
+            var unityInfo = new TestUnityInfo { IL2CPP = false };
             var options = new SentryUnityOptions();
             // Note: can't test macOS - throws because it tries to call SentryCocoaBridgeProxy.Init()
             // but the bridge isn't loaded now...
             Assert.Throws<EntryPointNotFoundException>(() =>
-                SentryNativeCocoa.Configure(options, _sentryUnityInfo, RuntimePlatform.OSXPlayer));
+                SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.OSXPlayer));
         }
 
         [Test]
         public void Configure_NativeSupportDisabled_macOS()
         {
+            var unityInfo = new TestUnityInfo(true, false) { IL2CPP = false };
             var options = new SentryUnityOptions { MacosNativeSupportEnabled = false };
-            SentryNativeCocoa.Configure(options, _sentryUnityInfo, RuntimePlatform.OSXPlayer);
+            SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.OSXPlayer);
             Assert.Null(options.ScopeObserver);
             Assert.Null(options.CrashedLastRun);
             Assert.False(options.EnableScopeSync);

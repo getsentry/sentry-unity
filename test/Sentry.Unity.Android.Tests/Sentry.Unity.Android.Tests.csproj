@@ -7,4 +7,10 @@
     <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Android/Sentry.Unity.Android.csproj" Private="false" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../SharedClasses/*.cs">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
 </Project>

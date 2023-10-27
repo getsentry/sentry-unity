@@ -122,11 +122,11 @@ namespace Sentry.Unity
             return null;
         }
 
-        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
+        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            var options = new SentryUnityOptions(isBuilding, unityInfo, application)
+            var options = new SentryUnityOptions(isBuilding, application)
             {
                 Enabled = Enabled,
                 Dsn = Dsn,
@@ -191,15 +191,10 @@ namespace Sentry.Unity
 
             options.SetupLogging();
 
-            if (!isBuilding)
+            if (!isBuilding &&  RuntimeOptionsConfiguration != null)
             {
-                if (RuntimeOptionsConfiguration != null)
-                {
-                    // This has to happen in between options object creation and updating the options based on programmatic changes
-                    RuntimeOptionsConfiguration.Configure(options);
-                }
-
-                HandlePlatformRestrictions(options, application, unityInfo);
+                // This has to happen in between options object creation and updating the options based on programmatic changes
+                RuntimeOptionsConfiguration.Configure(options);
             }
 
             if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
@@ -207,6 +202,7 @@ namespace Sentry.Unity
                 options.AddIl2CppExceptionProcessor(unityInfo);
             }
 
+            HandlePlatformRestrictions(options, application, unityInfo);
             HandleExceptionFilter(options);
 
             if (!AnrDetectionEnabled)

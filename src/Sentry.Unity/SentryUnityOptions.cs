@@ -231,9 +231,9 @@ namespace Sentry.Unity
 
         internal List<string> SdkIntegrationNames { get; set; } = new();
 
-        public SentryUnityOptions() : this(false, null, ApplicationAdapter.Instance) { }
+        public SentryUnityOptions() : this(false, ApplicationAdapter.Instance) { }
 
-        internal SentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication application) :
+        internal SentryUnityOptions(bool isBuilding, IApplication application) :
             this(SentryMonoBehaviour.Instance, application, isBuilding)
         { }
 

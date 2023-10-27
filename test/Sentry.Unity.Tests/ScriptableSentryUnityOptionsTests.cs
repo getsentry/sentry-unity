@@ -18,6 +18,8 @@ namespace Sentry.Unity.Tests
                 productName: "TestApplication",
                 version: "0.1.0",
                 persistentDataPath: "test/persistent/data/path");
+
+            public TestUnityInfo UnityInfo { get; set; } = new();
         }
 
         class TestOptionsConfiguration : SentryRuntimeOptionsConfiguration
@@ -88,7 +90,7 @@ namespace Sentry.Unity.Tests
             scriptableOptions.DebugOnlyInEditor = false; // Affects Debug otherwise
             scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, null, _fixture.Application);
+            var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.UnityInfo, _fixture.Application);
 
             AssertOptions(expectedOptions, optionsActual);
         }
@@ -116,22 +118,18 @@ namespace Sentry.Unity.Tests
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
             scriptableOptions.RuntimeOptionsConfiguration = optionsConfiguration;
 
-            scriptableOptions.ToSentryUnityOptions(isBuilding);
+            scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.UnityInfo);
 
             Assert.AreEqual(optionsConfiguration.GotCalled, !isBuilding);
         }
 
         [Test]
-        [TestCase(RuntimePlatform.Switch)]
-        [TestCase(RuntimePlatform.PS4)]
-        [TestCase(RuntimePlatform.PS5)]
-        [TestCase(RuntimePlatform.XboxOne)]
-        public void ToSentryUnityOptions_UnknownPlatforms_DoesNotAccessDisk(RuntimePlatform targetPlatform)
+        public void ToSentryUnityOptions_UnknownPlatforms_DoesNotAccessDisk()
         {
             var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-            _fixture.Application.Platform = targetPlatform;
+            _fixture.UnityInfo = new TestUnityInfo(false);
 
-            var options = scriptableOptions.ToSentryUnityOptions(false, null, _fixture.Application);
+            var options = scriptableOptions.ToSentryUnityOptions(false, _fixture.UnityInfo, _fixture.Application);
 
             Assert.IsNull(options.CacheDirectoryPath);
             Assert.IsFalse(options.AutoSessionTracking);
