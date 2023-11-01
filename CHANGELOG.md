@@ -16,6 +16,9 @@
 - Bump .NET SDK from v3.39.1 to v3.40.1 ([#1464](https://github.com/getsentry/sentry-unity/pull/1464))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3401)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.39.1...3.40.1)
+- Bump Java SDK from v6.32.0-9-g0404ea31 to v6.32.0 ([#1471](https://github.com/getsentry/sentry-unity/pull/1471))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#6320)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.32.0-9-g0404ea31...6.32.0)
 
 ## 1.6.0
 
