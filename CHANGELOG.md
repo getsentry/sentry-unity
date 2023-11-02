@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## Fixes
+## Feature
 
 - Added the dedicated server platforms to the known platforms to prevent the SDK from interpreting them as restricted platforms (i.e. disabling offline caching, session tracking) ([#1468](https://github.com/getsentry/sentry-unity/pull/1468))
 
