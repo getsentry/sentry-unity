@@ -17,8 +17,6 @@ namespace Sentry.Unity.Integrations
                 : null;
 
             hub.AddBreadcrumb(message: "BeforeSceneLoad", category: "scene.beforeload", data: data);
-
-            options.DiagnosticLogger?.Log(SentryLevel.Debug, "Registered BeforeSceneLoad integration.");
         }
     }
 }
