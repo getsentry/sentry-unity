@@ -7,7 +7,7 @@ imageVariant=$(echo "$2" | tr '[:upper:]' '[:lower:]')
 licenseConfig=$3
 
 container="unity"
-image="unityci/editor:ubuntu-$unityVersion-$imageVariant-2.0.0"
+image="unityci/editor:ubuntu-$unityVersion-$imageVariant-3.0.0"
 cwd="${GITHUB_WORKSPACE:-$(pwd)}"
 user="gh"
 uid=$(id -u)
