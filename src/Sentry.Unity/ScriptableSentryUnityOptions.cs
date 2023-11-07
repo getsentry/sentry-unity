@@ -122,11 +122,11 @@ namespace Sentry.Unity
             return null;
         }
 
-        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
+        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
         {
             application ??= ApplicationAdapter.Instance;
 
-            var options = new SentryUnityOptions(isBuilding, unityInfo, application)
+            var options = new SentryUnityOptions(isBuilding, application)
             {
                 Enabled = Enabled,
                 Dsn = Dsn,
@@ -153,6 +153,7 @@ namespace Sentry.Unity
                 SendDefaultPii = SendDefaultPii,
                 IsEnvironmentUser = IsEnvironmentUser,
                 MaxCacheItems = MaxCacheItems,
+                CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null,
                 InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
                 SampleRate = SampleRate == 1.0f ? null : SampleRate, // To skip the random check for dropping events
                 ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
@@ -191,9 +192,15 @@ namespace Sentry.Unity
 
             options.SetupLogging();
 
-            // This has to happen in between options object creation and updating the options based on programmatic changes
-            if (!isBuilding && RuntimeOptionsConfiguration != null)
+            // Bail early if we're building the player.
+            if (isBuilding)
             {
+                return options;
+            }
+
+            if (RuntimeOptionsConfiguration != null)
+            {
+                // This has to happen in between options object creation and updating the options based on programmatic changes
                 RuntimeOptionsConfiguration.Configure(options);
             }
 
@@ -202,7 +209,7 @@ namespace Sentry.Unity
                 options.AddIl2CppExceptionProcessor(unityInfo);
             }
 
-            HandlePlatformRestrictions(options, application);
+            HandlePlatformRestrictions(options, application, unityInfo);
             HandleExceptionFilter(options);
 
             if (!AnrDetectionEnabled)
@@ -213,13 +220,9 @@ namespace Sentry.Unity
             return options;
         }
 
-        private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application)
+        private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
         {
-            if (IsKnownPlatform(application))
-            {
-                options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
-            }
-            else
+            if (unityInfo?.IsKnownPlatform() == false)
             {
                 // This is only provided on a best-effort basis for other than the explicitly supported platforms.
                 if (options.BackgroundWorker is null)
@@ -228,10 +231,11 @@ namespace Sentry.Unity
                     options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
                 }
 
+                // Disable offline caching regardless whether is was enabled or not.
+                options.CacheDirectoryPath = null;
                 if (EnableOfflineCaching)
                 {
                     options.DiagnosticLogger?.LogDebug("Platform support for offline caching is unknown: disabling.");
-                    options.CacheDirectoryPath = null;
                 }
 
                 // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
@@ -269,21 +273,6 @@ namespace Sentry.Unity
             }
 
             return Debug;
-        }
-
-        internal bool IsKnownPlatform(IApplication? application = null)
-        {
-            application ??= ApplicationAdapter.Instance;
-            return application.Platform
-                is RuntimePlatform.Android
-                or RuntimePlatform.IPhonePlayer
-                or RuntimePlatform.WindowsEditor
-                or RuntimePlatform.WindowsPlayer
-                or RuntimePlatform.OSXEditor
-                or RuntimePlatform.OSXPlayer
-                or RuntimePlatform.LinuxEditor
-                or RuntimePlatform.LinuxPlayer
-                or RuntimePlatform.WebGLPlayer;
         }
     }
 }

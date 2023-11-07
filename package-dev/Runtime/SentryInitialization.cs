@@ -69,7 +69,7 @@ namespace Sentry.Unity
 #elif SENTRY_NATIVE_ANDROID
                     SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE
-                    SentryNative.Configure(options);
+                    SentryNative.Configure(options, sentryUnityInfo);
 #elif SENTRY_WEBGL
                     SentryWebGL.Configure(options);
 #endif
@@ -269,5 +269,65 @@ namespace Sentry.Unity
 #endif
 #pragma warning restore 8632
 #endif
+
+        public bool IsKnownPlatform()
+        {
+            var platform = Application.platform;
+            return
+					platform == RuntimePlatform.Android ||
+                   	platform == RuntimePlatform.IPhonePlayer ||
+                   	platform == RuntimePlatform.WindowsEditor ||
+                   	platform == RuntimePlatform.WindowsPlayer ||
+                   	platform == RuntimePlatform.OSXEditor ||
+                   	platform == RuntimePlatform.OSXPlayer ||
+                   	platform == RuntimePlatform.LinuxEditor ||
+                   	platform == RuntimePlatform.LinuxPlayer ||
+					platform == RuntimePlatform.WebGLPlayer
+#if UNITY_2021_3_OR_NEWER
+                   	||
+				   	platform == RuntimePlatform.WindowsServer ||
+					platform == RuntimePlatform.OSXServer ||
+                   	platform == RuntimePlatform.LinuxServer
+#endif
+                ;
+        }
+
+        public bool IsLinux()
+        {
+            var platform = Application.platform;
+            return
+                platform == RuntimePlatform.LinuxPlayer
+#if UNITY_2021_3_OR_NEWER
+                   	|| platform == RuntimePlatform.LinuxServer
+#endif
+                ;
+        }
+
+		public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform)
+		{
+            switch (platform)
+            {
+				case RuntimePlatform.Android:
+                    return options.AndroidNativeSupportEnabled;
+                case RuntimePlatform.IPhonePlayer:
+                    return options.IosNativeSupportEnabled;
+                case RuntimePlatform.WindowsPlayer:
+                    return options.WindowsNativeSupportEnabled;
+                case RuntimePlatform.OSXPlayer:
+                    return options.MacosNativeSupportEnabled;
+                case RuntimePlatform.LinuxPlayer:
+                    return options.LinuxNativeSupportEnabled;
+#if UNITY_2021_3_OR_NEWER
+                case RuntimePlatform.WindowsServer:
+                    return options.WindowsNativeSupportEnabled;
+                case RuntimePlatform.OSXServer:
+                    return options.MacosNativeSupportEnabled;
+                case RuntimePlatform.LinuxServer:
+                    return options.LinuxNativeSupportEnabled;
+#endif
+                default:
+                    return false;
+            }
+		}
     }
 }

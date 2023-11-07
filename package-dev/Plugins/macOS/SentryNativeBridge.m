@@ -24,10 +24,15 @@ int SentryNativeBridgeLoadLibrary()
     if (loadStatus == -1) {
         loadStatus = 0; // init to "error"
         do {
+            // The default path from the executable to the dylib within a .app
             void *dylib = dlopen("@executable_path/../PlugIns/Sentry.dylib", RTLD_LAZY);
             if (!dylib) {
-                NSLog(@"Sentry (bridge): Couldn't load Sentry.dylib - dlopen() failed");
-                break;
+                // Fallback path for the dedicated server setup
+                dylib = dlopen("@executable_path/PlugIns/Sentry.dylib", RTLD_LAZY);
+                if (!dylib) {
+                    NSLog(@"Sentry (bridge): Couldn't load Sentry.dylib - dlopen() failed");
+                    break;
+                }
             }
 
             LOAD_CLASS_OR_BREAK(SentrySDK)

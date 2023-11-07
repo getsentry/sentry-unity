@@ -1,4 +1,6 @@
+using System;
 using Sentry.Extensibility;
+using Sentry.PlatformAbstractions;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -13,36 +15,30 @@ namespace Sentry.Unity.iOS
         /// Configures the native support.
         /// </summary>
         /// <param name="options">The Sentry Unity options to use.</param>
+        /// <param name="sentryUnityInfo">Infos about the current Unity environment</param>
         public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo) =>
             Configure(options, sentryUnityInfo, ApplicationAdapter.Instance.Platform);
 
         internal static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
         {
-            switch (platform)
+            if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
             {
-                case RuntimePlatform.IPhonePlayer:
-                    if (!options.IosNativeSupportEnabled)
-                    {
-                        return;
-                    }
-                    options.ScopeObserver = new NativeScopeObserver("iOS", options);
-                    break;
-                case RuntimePlatform.OSXPlayer:
-                    if (!options.MacosNativeSupportEnabled)
-                    {
-                        return;
-                    }
-                    if (!SentryCocoaBridgeProxy.Init(options))
-                    {
-                        options.DiagnosticLogger?.LogWarning("Failed to initialize the native SDK");
-                        return;
-                    }
-                    options.ScopeObserver = new NativeScopeObserver("macOS", options);
-                    break;
-                default:
-                    options.DiagnosticLogger?
-                        .LogWarning("Cocoa SentryNative.Configure() called for unsupported platform: '{0}'", platform);
+                options.DiagnosticLogger?.LogDebug("Native support is not enabled for: '{0}'", platform);
+                return;
+            }
+
+            if (platform == RuntimePlatform.IPhonePlayer)
+            {
+                options.ScopeObserver = new NativeScopeObserver("iOS", options);
+            }
+            else
+            {
+                if (!SentryCocoaBridgeProxy.Init(options))
+                {
+                    options.DiagnosticLogger?.LogWarning("Failed to initialize the native SDK");
                     return;
+                }
+                options.ScopeObserver = new NativeScopeObserver("macOS", options);
             }
 
             options.NativeContextWriter = new NativeContextWriter();
