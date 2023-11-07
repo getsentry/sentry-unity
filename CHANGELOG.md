@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased
+## 1.7.0
+
+### Various fixes & improvements
+
+- feat: Dedicated Server support (#1468) by @bitsandfoxes
+- chore: update modules/sentry-cocoa to 8.15.0 (#1479) by @github-actions
+- chore: update modules/sentry-cocoa to 8.14.2 (#1473) by @github-actions
+- chore: update modules/sentry-cocoa to 8.14.1 (#1472) by @github-actions
+- chore(deps): update .NET SDK to v3.40.1 (#1464) by @github-actions
+- chore: update modules/sentry-cocoa to 8.13.1 (#1466) by @github-actions
+- chore: update modules/sentry-cli.properties to 2.21.2 (#1454) by @github-actions
+- chore: update modules/sentry-native to 0.6.6 (#1457) by @github-actions
 
 ### Feature
 
