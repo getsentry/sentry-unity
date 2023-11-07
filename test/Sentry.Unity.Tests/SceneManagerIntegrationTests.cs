@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine.SceneManagement;
 
