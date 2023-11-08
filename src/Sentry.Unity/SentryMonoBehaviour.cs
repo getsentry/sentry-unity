@@ -91,34 +91,15 @@ namespace Sentry.Unity
         }
 
         /// <summary>
-        /// To receive Leaving/Resuming events on Android.
-        /// <remarks>
-        /// On Android, when the on-screen keyboard is enabled, it causes a OnApplicationFocus(false) event.
-        /// Additionally, if you press "Home" at the moment the keyboard is enabled, the OnApplicationFocus() event is
-        /// not called, but OnApplicationPause() is called instead.
-        /// </remarks>
-        /// <seealso href="https://docs.unity3d.com/2019.4/Documentation/ScriptReference/MonoBehaviour.OnApplicationPause.html"/>
+        /// To receive Pause events.
         /// </summary>
-        internal void OnApplicationPause(bool pauseStatus)
-        {
-            if (Application.Platform == RuntimePlatform.Android)
-            {
-                UpdatePauseStatus(pauseStatus);
-            }
-        }
+        internal void OnApplicationPause(bool pauseStatus) => UpdatePauseStatus(pauseStatus);
 
         /// <summary>
-        /// To receive Leaving/Resuming events on all platforms except Android.
+        /// To receive Focus events.
         /// </summary>
         /// <param name="hasFocus"></param>
-        internal void OnApplicationFocus(bool hasFocus)
-        {
-            // To avoid event duplication on Android since the pause event will be handled via OnApplicationPause
-            if (Application.Platform != RuntimePlatform.Android)
-            {
-                UpdatePauseStatus(!hasFocus);
-            }
-        }
+        internal void OnApplicationFocus(bool hasFocus) => UpdatePauseStatus(!hasFocus);
 
         // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
         private void OnApplicationQuit() => Destroy(gameObject);
