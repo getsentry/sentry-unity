@@ -172,7 +172,7 @@ namespace Sentry.Unity.NativeUtils
                                 result.Add(new DebugImage()
                                 {
                                     CodeFile = GetValueString(cItem, "code_file"),
-                                    ImageAddress = GetValueString(cItem, "image_addr"),
+                                    ImageAddress = GetValueInt(cItem, "image_addr"),
                                     ImageSize = GetValueInt(cItem, "image_size"),
                                     DebugFile = GetValueString(cItem, "debug_file"),
                                     DebugId = GetValueString(cItem, "debug_id"),

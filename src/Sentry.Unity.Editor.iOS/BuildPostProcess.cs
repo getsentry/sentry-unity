@@ -92,7 +92,7 @@ namespace Sentry.Unity.Editor.iOS
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to add the Sentry NoOp bridge to the output project.", e);
+                logger.LogError(e, "Failed to add the Sentry NoOp bridge to the output project.");
             }
         }
 
@@ -133,7 +133,7 @@ namespace Sentry.Unity.Editor.iOS
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to add the Sentry framework to the generated Xcode project", e);
+                logger.LogError(e, "Failed to add the Sentry framework to the generated Xcode project");
                 return;
             }
 

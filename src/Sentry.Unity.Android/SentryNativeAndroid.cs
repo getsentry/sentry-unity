@@ -51,7 +51,7 @@ namespace Sentry.Unity.Android
                 catch (Exception e)
                 {
                     options.DiagnosticLogger?.LogError(
-                        "Failed to reinstall backend. Captured native crashes will miss scope data and tag.", e);
+                        e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
                 }
 
                 options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);

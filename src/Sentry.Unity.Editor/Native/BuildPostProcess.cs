@@ -57,7 +57,7 @@ namespace Sentry.Unity.Editor.Native
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to add the Sentry native integration to the built application", e);
+                logger.LogError(e, "Failed to add the Sentry native integration to the built application");
                 throw new BuildFailedException("Sentry Native BuildPostProcess failed");
             }
         }
