@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump CLI from v2.21.2 to v2.21.3 ([#1485](https://github.com/getsentry/sentry-unity/pull/1485))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2213)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.21.3)
+
 ## 1.7.0
 
 ### Feature
