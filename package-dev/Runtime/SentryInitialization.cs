@@ -42,9 +42,9 @@ namespace Sentry.Unity
     public static class SentryInitialization
     {
         public const string StartupTransactionOperation = "app.start";
-        public static ISpan InitSpan;
+        public static ISpanTracer InitSpan;
         private const string InitSpanOperation = "runtime.init";
-        public static ISpan SubSystemRegistrationSpan;
+        public static ISpanTracer SubSystemRegistrationSpan;
         private const string SubSystemSpanOperation = "runtime.init.subsystem";
 
 #if SENTRY_WEBGL

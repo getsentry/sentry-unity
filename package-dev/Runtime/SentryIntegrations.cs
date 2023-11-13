@@ -48,11 +48,11 @@ namespace Sentry.Unity
 #if !SENTRY_WEBGL
     public class StartupTracingIntegration : ISdkIntegration
     {
-        private static ISpan AfterAssembliesSpan;
+        private static ISpanTracer AfterAssembliesSpan;
         private const string AfterAssembliesSpanOperation = "runtime.init.afterassemblies";
-        private static ISpan SplashScreenSpan;
+        private static ISpanTracer SplashScreenSpan;
         private const string SplashScreenSpanOperation = "runtime.init.splashscreen";
-        private static ISpan FirstSceneLoadSpan;
+        private static ISpanTracer FirstSceneLoadSpan;
         private const string FirstSceneLoadSpanOperation = "runtime.init.firstscene";
 
         // Flag to make sure we create spans through the runtime initialization only once

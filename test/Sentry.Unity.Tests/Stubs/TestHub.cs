@@ -29,6 +29,11 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
+        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null, Hint? hint = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public void CaptureUserFeedback(UserFeedback userFeedback)
         {
             throw new NotImplementedException();
@@ -77,17 +82,17 @@ namespace Sentry.Unity.Tests.Stubs
         }
 
         public SentryId LastEventId { get; }
-        public ITransaction StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
+        public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
         {
             throw new NotImplementedException();
         }
 
-        public void BindException(Exception exception, ISpan span)
+        public void BindException(Exception exception, ISpanTracer span)
         {
             throw new NotImplementedException();
         }
 
-        public ISpan? GetSpan()
+        public ISpanTracer? GetSpan()
         {
             throw new NotImplementedException();
         }
@@ -135,6 +140,11 @@ namespace Sentry.Unity.Tests.Stubs
         }
 
         public SentryId CaptureEvent(SentryEvent evt, Action<Scope> configureScope)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SentryId CaptureEvent(SentryEvent evt, Hint? hint, Action<Scope> configureScope)
         {
             throw new NotImplementedException();
         }
