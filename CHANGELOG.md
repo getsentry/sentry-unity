@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+-  Fix SIGSEV, SIGABRT and SIGBUS crashes happening after/around the August Google Play System update, see [#2955](https://github.com/getsentry/sentry-java/issues/2955) for more details (fix provided by Native SDK bump) ([#1491](https://github.com/getsentry/sentry-unity/pull/1491))
+
 ### Dependencies
 
 - Bump CLI from v2.21.2 to v2.21.3 ([#1485](https://github.com/getsentry/sentry-unity/pull/1485))
