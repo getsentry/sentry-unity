@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.1-beta.1
 
 ### Fixes
 
