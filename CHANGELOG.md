@@ -2,7 +2,24 @@
 
 ## Unreleased
 
-## Feature
+### Dependencies
+
+- Bump CLI from v2.21.2 to v2.21.5 ([#1485](https://github.com/getsentry/sentry-unity/pull/1485), [#1494](https://github.com/getsentry/sentry-unity/pull/1494), [#1495](https://github.com/getsentry/sentry-unity/pull/1495))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2215)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.21.5)
+- Bump Cocoa SDK from v8.15.0 to v8.15.2 ([#1486](https://github.com/getsentry/sentry-unity/pull/1486), [#1489](https://github.com/getsentry/sentry-unity/pull/1489))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8152)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.15.0...8.15.2)
+- Bump .NET SDK from v3.40.1 to v3.41.0 ([#1487](https://github.com/getsentry/sentry-unity/pull/1487))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3410)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.40.1...3.41.0)
+- Bump Native SDK from v0.6.6 to v0.6.7 ([#1493](https://github.com/getsentry/sentry-unity/pull/1493))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#067)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.6.6...0.6.7)
+
+## 1.7.0
+
+### Feature
 
 - Added the dedicated server platforms to the known platforms to prevent the SDK from interpreting them as restricted platforms (i.e. disabling offline caching, session tracking) ([#1468](https://github.com/getsentry/sentry-unity/pull/1468))
 
