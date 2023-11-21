@@ -63,7 +63,7 @@ namespace Sentry.Unity
         public event Action? ApplicationPausing;
 
         // Keeping internal track of running state because OnApplicationPause and OnApplicationFocus get called during startup and would fire false resume events
-        private bool _isRunning = true;
+        internal bool _isRunning = true;
 
         private IApplication? _application;
         internal IApplication Application
