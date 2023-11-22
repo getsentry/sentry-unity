@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed an issue with the SDK failing to properly detect application pause and focus lost events and creating false positive ANR events (specifically on Android) ([#1484](https://github.com/getsentry/sentry-unity/pull/1484))
+
 ### Dependencies
 
 - Bump CLI from v2.21.2 to v2.21.5 ([#1485](https://github.com/getsentry/sentry-unity/pull/1485), [#1494](https://github.com/getsentry/sentry-unity/pull/1494), [#1495](https://github.com/getsentry/sentry-unity/pull/1495))
