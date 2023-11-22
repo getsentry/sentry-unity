@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.NativeUtils

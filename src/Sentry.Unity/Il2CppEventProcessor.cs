@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.NativeUtils;
 using UnityEngine;
