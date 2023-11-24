@@ -1,13 +1,10 @@
 # Changelog
 
-## 1.7.1-beta.1
+## Unreleased
 
 ### Fixes
 
 -  Fix SIGSEV, SIGABRT and SIGBUS crashes happening after/around the August Google Play System update, see [#2955](https://github.com/getsentry/sentry-java/issues/2955) for more details (fix provided by Native SDK bump) ([#1491](https://github.com/getsentry/sentry-unity/pull/1491))
-
-### Fixes
-
 - Fixed an issue with the SDK failing to properly detect application pause and focus lost events and creating false positive ANR events (specifically on Android) ([#1484](https://github.com/getsentry/sentry-unity/pull/1484))
 
 ### Dependencies
