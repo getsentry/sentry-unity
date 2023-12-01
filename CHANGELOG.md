@@ -2,8 +2,26 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump CLI from v2.21.2 to v2.22.2 [#1501](https://github.com/getsentry/sentry-unity/pull/1501)
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2222)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.22.2)
+- Bump Cocoa SDK from v8.16.1 to v8.17.0 [#1503](https://github.com/getsentry/sentry-unity/pull/1503)
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8170)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.17.0)
+- Bump .NET SDK from v3.41.2 to v3.41.3 [#1505](https://github.com/getsentry/sentry-unity/pull/1505)
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3413)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.40.1...3.41.2)
+- Bump Java SDK from v7.0.0-1-g2a3dd50f to v7.0.0 ([#1506](https://github.com/getsentry/sentry-unity/pull/1506))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#700)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.0.0-1-g2a3dd50f...7.0.0)
+
+## 1.7.1
+
 ### Fixes
 
+-  Fix SIGSEV, SIGABRT and SIGBUS crashes happening after/around the August Google Play System update, see [#2955](https://github.com/getsentry/sentry-java/issues/2955) for more details (fix provided by Native SDK bump) ([#1491](https://github.com/getsentry/sentry-unity/pull/1491))
 - Fixed an issue with the SDK failing to properly detect application pause and focus lost events and creating false positive ANR events (specifically on Android) ([#1484](https://github.com/getsentry/sentry-unity/pull/1484))
 
 ### Dependencies
@@ -14,6 +32,12 @@
 - Bump Cocoa SDK from v8.15.0 to v8.17.0 ([#1486](https://github.com/getsentry/sentry-unity/pull/1486), [#1489](https://github.com/getsentry/sentry-unity/pull/1489), [#1497](https://github.com/getsentry/sentry-unity/pull/1497), [#1499](https://github.com/getsentry/sentry-unity/pull/1499), [#1503](https://github.com/getsentry/sentry-unity/pull/1503))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8170)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.15.0...8.17.0)
+- Bump CLI from v2.21.2 to v2.21.5 ([#1485](https://github.com/getsentry/sentry-unity/pull/1485), [#1494](https://github.com/getsentry/sentry-unity/pull/1494), [#1495](https://github.com/getsentry/sentry-unity/pull/1495))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2215)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.21.5)
+- Bump Cocoa SDK from v8.15.0 to v8.16.1 ([#1486](https://github.com/getsentry/sentry-unity/pull/1486), [#1489](https://github.com/getsentry/sentry-unity/pull/1489), [#1497](https://github.com/getsentry/sentry-unity/pull/1497), [#1499](https://github.com/getsentry/sentry-unity/pull/1499))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8161)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.15.0...8.16.1)
 - Bump .NET SDK from v3.40.1 to v3.41.2 ([#1487](https://github.com/getsentry/sentry-unity/pull/1487), [#1498](https://github.com/getsentry/sentry-unity/pull/1498), [#1500](https://github.com/getsentry/sentry-unity/pull/1500))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3412)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.40.1...3.41.2)
