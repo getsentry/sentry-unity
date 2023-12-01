@@ -8,11 +8,11 @@ namespace Sentry.Unity.Tests
     {
         private class Fixture
         {
-            public SentryMonoBehaviour GetSut(RuntimePlatform platform)
+            public SentryMonoBehaviour GetSut()
             {
                 var gameObject = new GameObject("PauseTest");
                 var sentryMonoBehaviour = gameObject.AddComponent<SentryMonoBehaviour>();
-                sentryMonoBehaviour.Application = new TestApplication(platform: platform);
+                sentryMonoBehaviour.Application = new TestApplication();
 
                 return sentryMonoBehaviour;
             }
@@ -24,11 +24,11 @@ namespace Sentry.Unity.Tests
         public void SetUp() => _fixture = new Fixture();
 
         [Test]
-        public void OnApplicationPause_OnAndroid_ApplicationPausingTriggered()
+        public void OnApplicationPause_PauseStatusTrue_ApplicationPausingInvoked()
         {
             var wasPausingCalled = false;
 
-            var sut = _fixture.GetSut(RuntimePlatform.Android);
+            var sut = _fixture.GetSut();
             sut.ApplicationPausing += () => wasPausingCalled = true;
 
             sut.OnApplicationPause(true);
@@ -37,72 +37,11 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void OnApplicationPause_NotOnAndroid_ApplicationPausingNotTriggered()
+        public void OnApplicationFocus_FocusFalse_ApplicationPausingInvoked()
         {
             var wasPausingCalled = false;
 
-            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
-            sut.ApplicationPausing += () => wasPausingCalled = true;
-
-            sut.OnApplicationPause(true);
-
-            Assert.IsFalse(wasPausingCalled);
-        }
-
-        [Test]
-        public void OnApplicationPause_OnAndroid_ApplicationPausingTriggeredOnlyOnce()
-        {
-            var pauseEventTriggerCounter = 0;
-
-            var sut = _fixture.GetSut(RuntimePlatform.Android);
-            sut.ApplicationPausing += () => pauseEventTriggerCounter++;
-
-            sut.OnApplicationPause(true);
-            sut.OnApplicationPause(true);
-
-            Assert.AreEqual(1, pauseEventTriggerCounter);
-        }
-
-        [Test]
-        public void OnApplicationPause_OnAndroid_PausingIsRequiredBeforeApplicationResumingTrigger()
-        {
-            var wasPausingCalled = false;
-            var wasResumingCalled = false;
-
-            var sut = _fixture.GetSut(RuntimePlatform.Android);
-            sut.ApplicationPausing += () => wasPausingCalled = true;
-            sut.ApplicationResuming += () => wasResumingCalled = true;
-
-            sut.OnApplicationPause(false);
-
-            Assert.IsFalse(wasResumingCalled);
-
-            sut.OnApplicationPause(true);
-            sut.OnApplicationPause(false);
-
-            Assert.IsTrue(wasPausingCalled);
-            Assert.IsTrue(wasResumingCalled);
-        }
-
-        [Test]
-        public void OnApplicationFocus_OnAndroid_ApplicationPausingNotTriggered()
-        {
-            var wasPausingCalled = false;
-
-            var sut = _fixture.GetSut(RuntimePlatform.Android);
-            sut.ApplicationPausing += () => wasPausingCalled = true;
-
-            sut.OnApplicationFocus(false);
-
-            Assert.IsFalse(wasPausingCalled);
-        }
-
-        [Test]
-        public void OnApplicationFocus_NotOnAndroid_ApplicationPausingTriggered()
-        {
-            var wasPausingCalled = false;
-
-            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
+            var sut = _fixture.GetSut();
             sut.ApplicationPausing += () => wasPausingCalled = true;
 
             sut.OnApplicationFocus(false);
@@ -111,38 +50,33 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void OnApplicationFocus_NotOnAndroid_ApplicationPausingTriggeredOnlyOnce()
+        public void UpdatePauseStatus_PausedTwice_ApplicationPausingInvokedOnlyOnce()
         {
-            var pauseEventTriggerCounter = 0;
+            var counter = 0;
 
-            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
-            sut.ApplicationPausing += () => pauseEventTriggerCounter++;
+            var sut = _fixture.GetSut();
+            sut.ApplicationPausing += () => counter++;
 
-            sut.OnApplicationFocus(false);
-            sut.OnApplicationFocus(false);
+            sut.UpdatePauseStatus(true);
+            sut.UpdatePauseStatus(true);
 
-            Assert.AreEqual(1, pauseEventTriggerCounter);
+            Assert.AreEqual(1, counter);
         }
 
         [Test]
-        public void OnApplicationFocus_NotOnAndroid_PausingIsRequiredBeforeApplicationResumingTrigger()
+        public void UpdatePauseStatus_ResumedTwice_ApplicationResumingInvokedOnlyOnce()
         {
-            var wasPausingCalled = false;
-            var wasResumingCalled = false;
+            var counter = 0;
 
-            var sut = _fixture.GetSut(RuntimePlatform.IPhonePlayer);
-            sut.ApplicationPausing += () => wasPausingCalled = true;
-            sut.ApplicationResuming += () => wasResumingCalled = true;
+            var sut = _fixture.GetSut();
+            sut.ApplicationResuming += () => counter++;
+            // We need to pause it first to resume it.
+            sut.UpdatePauseStatus(true);
 
-            sut.OnApplicationFocus(true);
+            sut.UpdatePauseStatus(false);
+            sut.UpdatePauseStatus(false);
 
-            Assert.IsFalse(wasResumingCalled);
-
-            sut.OnApplicationFocus(false);
-            sut.OnApplicationFocus(true);
-
-            Assert.IsTrue(wasPausingCalled);
-            Assert.IsTrue(wasResumingCalled);
+            Assert.AreEqual(1, counter);
         }
     }
 }
