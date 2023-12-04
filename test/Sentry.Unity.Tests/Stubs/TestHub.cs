@@ -43,6 +43,10 @@ namespace Sentry.Unity.Tests.Stubs
         {
         }
 
+        public void CaptureTransaction(Transaction transaction, Scope? scope, Hint? hint)
+        {
+        }
+
         public void CaptureTransaction(Transaction transaction, Hint? hint)
         {
             throw new NotImplementedException();
@@ -87,12 +91,12 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
-        public void BindException(Exception exception, ISpanTracer span)
+        public void BindException(Exception exception, ISpan span)
         {
             throw new NotImplementedException();
         }
 
-        public ISpanTracer? GetSpan()
+        ISpan? IHub.GetSpan()
         {
             throw new NotImplementedException();
         }
