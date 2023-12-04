@@ -25,7 +25,7 @@ namespace Sentry.Unity.Json
             }
             catch (Exception e)
             {
-                logger?.LogError(exception:e,"Failed to serialize value of type \"{0}\"", value.GetType());
+                logger?.LogError(exception: e, "Failed to serialize value of type \"{0}\"", value.GetType());
                 return null;
             }
         }
