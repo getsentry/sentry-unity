@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -165,8 +166,11 @@ namespace Sentry.Unity.Tests
                     Assert.AreEqual(sysInfo.DeviceModel!.Value, @event.Contexts.Device.Model);
                     Assert.AreEqual(sysInfo.DeviceUniqueIdentifier!.Value, @event.Contexts.Device.DeviceUniqueIdentifier);
                     Assert.AreEqual(sysInfo.IsDebugBuild!.Value ? "debug" : "release", @event.Contexts.App.BuildType);
-                    var unityContext = (Unity.Protocol.Unity)@event.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
-                    Assert.AreEqual(sysInfo.TargetFrameRate!.Value, unityContext.TargetFrameRate);
+
+                    @event.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var unityProtocolObject);
+                    var unityContext = unityProtocolObject as Unity.Protocol.Unity;
+                    Assert.IsNotNull(unityContext);
+                    Assert.AreEqual(sysInfo.TargetFrameRate!.Value, unityContext!.TargetFrameRate);
                     Assert.AreEqual(sysInfo.CopyTextureSupport!.Value, unityContext.CopyTextureSupport);
                     Assert.AreEqual(sysInfo.RenderingThreadingMode!.Value, unityContext.RenderingThreadingMode);
                 }
@@ -179,7 +183,15 @@ namespace Sentry.Unity.Tests
                     Assert.IsNull(@event.Contexts.Device.DeviceUniqueIdentifier);
                     Assert.IsNull(@event.Contexts.App.BuildType);
                     // TODO Assert.IsNull( @event.Contexts.App.StartTime);
-                    var unityContext = (Unity.Protocol.Unity)@event.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
+
+
+                    Unity.Protocol.Unity? unityContext;
+                    if (!@event.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var contextValue) || (unityContext = contextValue as Unity.Protocol.Unity) == null)
+                    {
+                        unityContext = new Unity.Protocol.Unity();
+                        @event.Contexts[Unity.Protocol.Unity.Type] = unityContext;
+                    }
+
                     Assert.IsNull(unityContext.TargetFrameRate);
                     Assert.IsNull(unityContext.CopyTextureSupport);
                     Assert.IsNull(unityContext.RenderingThreadingMode);
@@ -449,8 +461,10 @@ namespace Sentry.Unity.Tests
             sut.ConfigureScope(scope);
 
             // assert
-            var unityProtocol = (Unity.Protocol.Unity)scope.Contexts.GetOrAdd(Unity.Protocol.Unity.Type, _ => new Unity.Protocol.Unity());
-            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.EditorVersion, unityProtocol.EditorVersion);
+            scope.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var unityProtocolObject);
+            var unityProtocol = unityProtocolObject as Unity.Protocol.Unity;
+            Assert.IsNotNull(unityProtocol);
+            Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.EditorVersion, unityProtocol!.EditorVersion);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.InstallMode, unityProtocol.InstallMode);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.TargetFrameRate!.Value, unityProtocol.TargetFrameRate);
             Assert.AreEqual(_sentryMonoBehaviour.SentrySystemInfo.CopyTextureSupport!.Value, unityProtocol.CopyTextureSupport);
