@@ -18,20 +18,10 @@ namespace Sentry.Unity.Tests.Stubs
         }
         public bool IsEnabled { get; }
 
-        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null)
+        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null, Hint? hint = null)
         {
             _capturedEvents.Add(evt);
             return evt.EventId;
-        }
-
-        public SentryId CaptureEvent(SentryEvent evt, Hint? hint, Scope? scope = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null, Hint? hint = null)
-        {
-            throw new NotImplementedException();
         }
 
         public void CaptureUserFeedback(UserFeedback userFeedback)
