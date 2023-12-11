@@ -27,7 +27,7 @@ namespace Sentry.Unity
             {
                 Dsn = "http://publickey@localhost:8000/12345",
                 TracesSampleRate = 1.0f,
-                CreateHttpClientHandler = () => _testHttpClientHandler
+                CreateHttpMessageHandler = () => _testHttpClientHandler
             };
         }
 
