@@ -3,11 +3,10 @@
 ## Unreleased
 
 ### Dependencies
-
 - Bump CLI from v2.21.2 to v2.22.3 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2223)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.22.3)
-- Bump Cocoa SDK from v8.16.1 to v8.17.0 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508))
+- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8171)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.17.1)
 - Bump .NET SDK from v3.41.2 to v3.41.3 [#1505](https://github.com/getsentry/sentry-unity/pull/1505)
