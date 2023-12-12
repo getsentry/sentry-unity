@@ -48,6 +48,16 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUILayout.Space();
 
             {
+                options.CaptureFailedRequests = EditorGUILayout.Toggle(
+                    new GUIContent("Capture Failed Requests", "Whether the SDK should capture failed HTTP requests."),
+                    options.CaptureFailedRequests);
+            }
+            
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            {
                 GUILayout.Label("Automatic Exception Filter", EditorStyles.boldLabel);
 
                 options.FilterBadGatewayExceptions = EditorGUILayout.Toggle(
@@ -78,15 +88,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     new GUIContent("iOS Native Support", "Whether to enable Native iOS support to capture" +
                                                          "errors written in languages such as Objective-C, Swift, C and C++."),
                     options.IosNativeSupportEnabled);
-
-                EditorGUI.indentLevel++;
-                EditorGUI.BeginDisabledGroup(!options.IosNativeSupportEnabled);
-                options.IosCaptureHttpClientErrors = EditorGUILayout.Toggle(
-                    new GUIContent("HTTP Client Errors", "Whether the SDK should automatically capture " +
-                                                      "native HTTP client errors on iOS."),
-                    options.IosCaptureHttpClientErrors);
-                EditorGUI.EndDisabledGroup();
-                EditorGUI.indentLevel--;
 
                 options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
                     new GUIContent("Android Native Support", "Whether to enable Native Android support to " +

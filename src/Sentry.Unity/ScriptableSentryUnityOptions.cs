@@ -83,12 +83,13 @@ namespace Sentry.Unity
         [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
         [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
 
+        [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
+
         [field: SerializeField] public bool FilterBadGatewayExceptions { get; set; } = true;
         [field: SerializeField] public bool FilterWebExceptions { get; set; } = true;
         [field: SerializeField] public bool FilterSocketExceptions { get; set; } = true;
 
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool IosCaptureHttpClientErrors { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool NdkIntegrationEnabled { get; set; } = true;
         [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;
