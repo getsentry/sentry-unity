@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Added `CaptureFailedRequests` now also appiles to the native SDK on `iOS` ([#1514](https://github.com/getsentry/sentry-unity/pull/1514))
+
 ### Dependencies
 
 - Bump CLI from v2.21.2 to v2.22.3 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502))
