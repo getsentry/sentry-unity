@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Added `CaptureFailedRequests` now also appiles to the native SDK on `iOS` ([#1514](https://github.com/getsentry/sentry-unity/pull/1514))
+- Setting `CaptureFailedRequests` now also correctly to the native SDK on `iOS` ([#1514](https://github.com/getsentry/sentry-unity/pull/1514))
 
 ### Dependencies
 
