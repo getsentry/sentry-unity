@@ -52,7 +52,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     new GUIContent("Capture Failed Requests", "Whether the SDK should capture failed HTTP requests."),
                     options.CaptureFailedRequests);
             }
-            
+
             EditorGUILayout.Space();
             EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
             EditorGUILayout.Space();
