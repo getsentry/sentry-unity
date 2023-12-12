@@ -82,7 +82,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 EditorGUI.indentLevel++;
                 EditorGUI.BeginDisabledGroup(!options.IosNativeSupportEnabled);
                 options.IosCaptureHttpClientErrors = EditorGUILayout.Toggle(
-                    new GUIContent("Capture HTTP Client Errors", "Whether the SDK should automatically capture" +
+                    new GUIContent("HTTP Client Errors", "Whether the SDK should automatically capture " +
                                                       "native HTTP client errors on iOS."),
                     options.IosCaptureHttpClientErrors);
                 EditorGUI.EndDisabledGroup();
