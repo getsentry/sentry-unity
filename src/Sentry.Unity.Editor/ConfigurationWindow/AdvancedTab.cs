@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -48,9 +50,48 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
             EditorGUILayout.Space();
 
             {
-                options.CaptureFailedRequests = EditorGUILayout.Toggle(
-                    new GUIContent("Capture Failed Requests", "Whether the SDK should capture failed HTTP requests."),
+                options.CaptureFailedRequests = EditorGUILayout.BeginToggleGroup(
+                    new GUIContent("Capture Failed HTTP Requests", "Whether the SDK should capture failed HTTP requests."),
                     options.CaptureFailedRequests);
+
+                var rangeCount = options.FailedRequestStatusCodes.Count / 2;
+                rangeCount = EditorGUILayout.IntField(
+                    new GUIContent("Failed Status Codes", "The HTTP status codes to capture."),
+                    rangeCount);
+
+                // Because it's a range, we need to double the count
+                rangeCount *= 2;
+
+                if (rangeCount <= 0)
+                {
+                    options.FailedRequestStatusCodes.Clear();
+                }
+
+                if (rangeCount < options.FailedRequestStatusCodes.Count)
+                {
+                    options.FailedRequestStatusCodes.RemoveRange(rangeCount, options.FailedRequestStatusCodes.Count - rangeCount);
+                }
+
+                if (rangeCount > options.FailedRequestStatusCodes.Count)
+                {
+                    var rangedToAdd = rangeCount - options.FailedRequestStatusCodes.Count;
+                    for (var i = 0; i < rangedToAdd; i++)
+                    {
+                        options.FailedRequestStatusCodes.Add(500);
+                    }
+                }
+
+                for (var i = 0; i < options.FailedRequestStatusCodes.Count; i+=2)
+                {
+                    GUILayout.BeginHorizontal();
+
+                    EditorGUILayout.IntField("Start", options.FailedRequestStatusCodes[i]);
+                    EditorGUILayout.IntField("End", options.FailedRequestStatusCodes[i + 1]);
+
+                    GUILayout.EndHorizontal();
+                }
+
+                EditorGUILayout.EndToggleGroup();
             }
 
             EditorGUILayout.Space();
