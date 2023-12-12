@@ -81,7 +81,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     }
                 }
 
-                for (var i = 0; i < options.FailedRequestStatusCodes.Count; i+=2)
+                for (var i = 0; i < options.FailedRequestStatusCodes.Count; i += 2)
                 {
                     GUILayout.BeginHorizontal();
 
