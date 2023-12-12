@@ -27,6 +27,7 @@ static SentryOptions* getSentryOptions()
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @NO,
+        @""enableCaptureFailedRequests"": @""{ToObjCString(options.IosCaptureHttpClientErrors)}"",
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
         @""attachScreenshot"" : @""{options.AttachScreenshot}"",
         @""release"" : @""{options.Release}"",

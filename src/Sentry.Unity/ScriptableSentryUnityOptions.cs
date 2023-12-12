@@ -88,6 +88,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool FilterSocketExceptions { get; set; } = true;
 
         [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
+        [field: SerializeField] public bool IosCaptureHttpClientErrors { get; set; } = true;
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool NdkIntegrationEnabled { get; set; } = true;
         [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;

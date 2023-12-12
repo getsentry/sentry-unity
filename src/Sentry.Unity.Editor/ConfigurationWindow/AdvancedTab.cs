@@ -79,6 +79,15 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                                                          "errors written in languages such as Objective-C, Swift, C and C++."),
                     options.IosNativeSupportEnabled);
 
+                EditorGUI.indentLevel++;
+                EditorGUI.BeginDisabledGroup(!options.IosNativeSupportEnabled);
+                options.IosCaptureHttpClientErrors = EditorGUILayout.Toggle(
+                    new GUIContent("Capture HTTP Client Errors", "Whether the SDK should automatically capture" +
+                                                      "native HTTP client errors on iOS."),
+                    options.IosCaptureHttpClientErrors);
+                EditorGUI.EndDisabledGroup();
+                EditorGUI.indentLevel--;
+
                 options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
                     new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
                                                              "capture errors written in languages such as Java, Kotlin, C and C++."),

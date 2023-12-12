@@ -150,6 +150,11 @@ namespace Sentry.Unity
         public bool IosNativeSupportEnabled { get; set; } = true;
 
         /// <summary>
+        /// Whether the SDK should capture native HTTP client errors on iOS
+        /// </summary>
+        public bool IosCaptureHttpClientErrors { get; set; } = true;
+
+        /// <summary>
         /// Whether the SDK should add native support for Android
         /// </summary>
         public bool AndroidNativeSupportEnabled { get; set; } = true;
