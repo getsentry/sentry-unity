@@ -82,14 +82,14 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     if (rangeCount > options.FailedRequestStatusCodes.Count)
                     {
                         var rangedToAdd = rangeCount - options.FailedRequestStatusCodes.Count;
-                        for (var i = 0; i < rangedToAdd; i+=2)
+                        for (var i = 0; i < rangedToAdd; i += 2)
                         {
                             options.FailedRequestStatusCodes.Add(500);
                             options.FailedRequestStatusCodes.Add(599);
                         }
                     }
 
-                    for (var i = 0; i < options.FailedRequestStatusCodes.Count; i+=2)
+                    for (var i = 0; i < options.FailedRequestStatusCodes.Count; i += 2)
                     {
                         GUILayout.BeginHorizontal();
 
@@ -99,7 +99,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                         GUILayout.EndHorizontal();
                     }
                 }
-                
+
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.EndToggleGroup();
             }
