@@ -72,10 +72,19 @@ static SentryOptions* getSentryOptions()
             };
         }
 
-        private static string GetFailedRequestStatusCodesArray(IEnumerable<HttpStatusCodeRange> httpStatusCodeRanges)
+        private static string GetFailedRequestStatusCodesArray(IList<HttpStatusCodeRange> httpStatusCodeRanges)
         {
-            var nativeRanges = httpStatusCodeRanges.Select(range => $"@{{ @\"start\": @{range.Start}, @\"end\": @{range.End} }}").ToList();
-            return string.Join(", ", nativeRanges);
+            var codeRanges = string.Empty;
+            for (var i = 0; i < httpStatusCodeRanges.Count; i++)
+            {
+                codeRanges += $"[[SentryHttpStatusCodeRange alloc] initWithMin:{httpStatusCodeRanges[i].Start} max:{httpStatusCodeRanges[i].End}]";
+                if (i < httpStatusCodeRanges.Count - 1)
+                {
+                    codeRanges += ", ";
+                }
+            }
+
+            return codeRanges;
         }
     }
 }
