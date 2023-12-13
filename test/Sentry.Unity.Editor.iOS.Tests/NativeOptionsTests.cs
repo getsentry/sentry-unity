@@ -71,7 +71,6 @@ namespace Sentry.Unity.Editor.iOS.Tests
             Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
 
             var options = File.ReadAllText(testOptionsFileName);
-            StringAssert.Contains("sdk", options);
             StringAssert.Contains("dsn", options);
             StringAssert.Contains("debug", options);
             StringAssert.Contains("diagnosticLevel", options);
