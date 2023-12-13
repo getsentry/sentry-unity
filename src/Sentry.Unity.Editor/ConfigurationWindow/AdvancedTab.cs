@@ -8,6 +8,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     internal static class AdvancedTab
     {
+        private static bool UnfoldFailedStatusCodeRanges = false;
+
         internal static void Display(ScriptableSentryUnityOptions options, SentryCliOptions? cliOptions)
         {
             {
@@ -51,46 +53,53 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
             {
                 options.CaptureFailedRequests = EditorGUILayout.BeginToggleGroup(
-                    new GUIContent("Capture Failed HTTP Requests", "Whether the SDK should capture failed HTTP requests."),
+                    new GUIContent("Capture Failed HTTP Requests",
+                        "Whether the SDK should capture failed HTTP requests. This works out of the box for iOS only" +
+                        "For the C# layer you need to add the 'SentryHttpMessageHandler' to your HTTP Client."),
                     options.CaptureFailedRequests);
 
-                var rangeCount = options.FailedRequestStatusCodes.Count / 2;
-                rangeCount = EditorGUILayout.IntField(
-                    new GUIContent("Failed Status Codes", "The HTTP status codes to capture."),
-                    rangeCount);
-
-                // Because it's a range, we need to double the count
-                rangeCount *= 2;
-
-                if (rangeCount <= 0)
+                UnfoldFailedStatusCodeRanges = EditorGUILayout.BeginFoldoutHeaderGroup(UnfoldFailedStatusCodeRanges, "Failed Status Codes Ranges");
+                if (UnfoldFailedStatusCodeRanges)
                 {
-                    options.FailedRequestStatusCodes.Clear();
-                }
+                    var rangeCount = options.FailedRequestStatusCodes.Count / 2;
+                    rangeCount = EditorGUILayout.IntField(
+                        new GUIContent("Status Codes Range Count", "The amount of ranges of HTTP status codes to capture."),
+                        rangeCount);
 
-                if (rangeCount < options.FailedRequestStatusCodes.Count)
-                {
-                    options.FailedRequestStatusCodes.RemoveRange(rangeCount, options.FailedRequestStatusCodes.Count - rangeCount);
-                }
+                    // Because it's a range, we need to double the count
+                    rangeCount *= 2;
 
-                if (rangeCount > options.FailedRequestStatusCodes.Count)
-                {
-                    var rangedToAdd = rangeCount - options.FailedRequestStatusCodes.Count;
-                    for (var i = 0; i < rangedToAdd; i++)
+                    if (rangeCount <= 0)
                     {
-                        options.FailedRequestStatusCodes.Add(500);
+                        options.FailedRequestStatusCodes.Clear();
+                    }
+
+                    if (rangeCount < options.FailedRequestStatusCodes.Count)
+                    {
+                        options.FailedRequestStatusCodes.RemoveRange(rangeCount, options.FailedRequestStatusCodes.Count - rangeCount);
+                    }
+
+                    if (rangeCount > options.FailedRequestStatusCodes.Count)
+                    {
+                        var rangedToAdd = rangeCount - options.FailedRequestStatusCodes.Count;
+                        for (var i = 0; i < rangedToAdd; i+=2)
+                        {
+                            options.FailedRequestStatusCodes.Add(500);
+                            options.FailedRequestStatusCodes.Add(599);
+                        }
+                    }
+
+                    for (var i = 0; i < options.FailedRequestStatusCodes.Count; i+=2)
+                    {
+                        GUILayout.BeginHorizontal();
+
+                        options.FailedRequestStatusCodes[i] = EditorGUILayout.IntField("Start", options.FailedRequestStatusCodes[i]);
+                        options.FailedRequestStatusCodes[i + 1] = EditorGUILayout.IntField("End", options.FailedRequestStatusCodes[i + 1]);
+
+                        GUILayout.EndHorizontal();
                     }
                 }
-
-                for (var i = 0; i < options.FailedRequestStatusCodes.Count; i+=2)
-                {
-                    GUILayout.BeginHorizontal();
-
-                    EditorGUILayout.IntField("Start", options.FailedRequestStatusCodes[i]);
-                    EditorGUILayout.IntField("End", options.FailedRequestStatusCodes[i + 1]);
-
-                    GUILayout.EndHorizontal();
-                }
-
+                EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.EndToggleGroup();
             }
 

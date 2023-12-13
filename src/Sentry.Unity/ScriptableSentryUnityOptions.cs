@@ -86,6 +86,7 @@ namespace Sentry.Unity
 
         [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
 
+        // We hold the status codes as a list of ints to be able to serialize it in the editor.
         [field: SerializeField] public List<int> FailedRequestStatusCodes { get; set;} = new() { 500, 599 };
 
         [field: SerializeField] public bool FilterBadGatewayExceptions { get; set; } = true;
