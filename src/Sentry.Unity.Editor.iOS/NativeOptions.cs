@@ -22,7 +22,6 @@ static SentryOptions* getSentryOptions()
     [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
 
     NSDictionary* optionsDictionary = @{{
-        @""sdk"" : @{{ @""name"": @""sentry.cocoa.unity"" }},
         @""dsn"" : @""{options.Dsn}"",
         @""debug"" : @{ToObjCString(options.Debug)},
         @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.DiagnosticLevel)}"",
