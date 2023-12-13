@@ -62,6 +62,33 @@ namespace Sentry.Unity.Editor.iOS.Tests
         }
 
         [Test]
+        public void CreateOptionsFile_NewSentryOptions_ContainsBaseOptions()
+        {
+            const string testOptionsFileName = "testOptions.m";
+
+            NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
+
+            Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
+
+            var options = File.ReadAllText(testOptionsFileName);
+            StringAssert.Contains("sdk", options);
+            StringAssert.Contains("dsn", options);
+            StringAssert.Contains("debug", options);
+            StringAssert.Contains("diagnosticLevel", options);
+            StringAssert.Contains("maxBreadcrumbs", options);
+            StringAssert.Contains("maxCacheItems", options);
+            StringAssert.Contains("enableAutoSessionTracking", options);
+            StringAssert.Contains("enableAppHangTracking", options);
+            StringAssert.Contains("enableCaptureFailedRequests", options);
+            StringAssert.Contains("sendDefaultPii", options);
+            StringAssert.Contains("attachScreenshot", options);
+            StringAssert.Contains("release", options);
+            StringAssert.Contains("environment", options);
+
+            File.Delete(testOptionsFileName);
+        }
+
+        [Test]
         public void CreateOptionsFile_FilterBadGatewayEnabled_AddsFiltering()
         {
             const string testOptionsFileName = "testOptions.m";

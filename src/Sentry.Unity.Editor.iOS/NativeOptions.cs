@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -8,6 +10,7 @@ namespace Sentry.Unity.Editor.iOS
 
         internal static string Generate(SentryUnityOptions options)
         {
+            var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
             var nativeOptions = $@"#import <Foundation/Foundation.h>
 #import <Sentry/SentryOptions+HybridSDKs.h>
 
@@ -28,6 +31,7 @@ static SentryOptions* getSentryOptions()
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @NO,
         @""enableCaptureFailedRequests"": @""{ToObjCString(options.CaptureFailedRequests)}"",
+        @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
         @""attachScreenshot"" : @""{options.AttachScreenshot}"",
         @""release"" : @""{options.Release}"",
@@ -66,6 +70,13 @@ static SentryOptions* getSentryOptions()
                 SentryLevel.Fatal => "fatal",
                 _ => "none"
             };
+        }
+
+        // Add this method to your C# code
+        private static string GetFailedRequestStatusCodesArray(IEnumerable<HttpStatusCodeRange> httpStatusCodeRanges)
+        {
+            var nativeRanges = httpStatusCodeRanges.Select(range => $"@{{ @\"start\": @{range.Start}, @\"end\": @{range.End} }}").ToList();
+            return string.Join(", ", nativeRanges);
         }
     }
 }
