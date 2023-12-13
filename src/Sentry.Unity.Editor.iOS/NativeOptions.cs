@@ -30,7 +30,7 @@ static SentryOptions* getSentryOptions()
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @NO,
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
-        @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
+        @""attachScreenshot"" : @""{{options.AttachScreenshot}}"",
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}""
     }};
