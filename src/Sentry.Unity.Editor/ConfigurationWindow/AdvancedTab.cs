@@ -99,6 +99,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                         GUILayout.EndHorizontal();
                     }
                 }
+                
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.EndToggleGroup();
             }

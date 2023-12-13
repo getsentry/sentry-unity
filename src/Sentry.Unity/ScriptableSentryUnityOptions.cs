@@ -198,7 +198,7 @@ namespace Sentry.Unity
             options.AddBreadcrumbsForLogType[LogType.Exception] = BreadcrumbsForExceptions;
 
             options.FailedRequestStatusCodes = new List<HttpStatusCodeRange>();
-            for (var i = 0; i < FailedRequestStatusCodes.Count; i+=2)
+            for (var i = 0; i < FailedRequestStatusCodes.Count; i += 2)
             {
                 options.FailedRequestStatusCodes.Add(
                     new HttpStatusCodeRange(FailedRequestStatusCodes[i], FailedRequestStatusCodes[i + 1]));
