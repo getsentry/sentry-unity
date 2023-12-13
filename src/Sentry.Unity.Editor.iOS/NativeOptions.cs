@@ -72,7 +72,6 @@ static SentryOptions* getSentryOptions()
             };
         }
 
-        // Add this method to your C# code
         private static string GetFailedRequestStatusCodesArray(IEnumerable<HttpStatusCodeRange> httpStatusCodeRanges)
         {
             var nativeRanges = httpStatusCodeRanges.Select(range => $"@{{ @\"start\": @{range.Start}, @\"end\": @{range.End} }}").ToList();
