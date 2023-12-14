@@ -13,6 +13,7 @@ namespace Sentry.Unity.Editor.iOS
             var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
             var nativeOptions = $@"#import <Foundation/Foundation.h>
 #import <Sentry/SentryOptions+HybridSDKs.h>
+#import <Sentry/PrivateSentrySDKOnly.h>
 
 // IMPORTANT: Changes to this file will be lost!
 // This file is generated during the Xcode project creation.
@@ -21,8 +22,9 @@ namespace Sentry.Unity.Editor.iOS
 
 static SentryOptions* getSentryOptions()
 {{
+    [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
+
     NSDictionary* optionsDictionary = @{{
-        @""sdk"" : @{{ @""name"": @""sentry.cocoa.unity"" }},
         @""dsn"" : @""{options.Dsn}"",
         @""debug"" : @{ToObjCString(options.Debug)},
         @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.DiagnosticLevel)}"",
@@ -33,7 +35,7 @@ static SentryOptions* getSentryOptions()
         @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
         @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
-        @""attachScreenshot"" : @""{options.AttachScreenshot}"",
+        @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}""
     }};

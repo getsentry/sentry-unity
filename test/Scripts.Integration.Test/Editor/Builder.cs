@@ -85,7 +85,11 @@ public class Builder
         BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
     }
     public static void BuildIOSProject() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
-    public static void BuildWebGLPlayer() => BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL);
+    public static void BuildWebGLPlayer()
+    {
+        PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
+        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL);
+    }
 
     public static Dictionary<string, string> ParseCommandLineArguments()
     {
