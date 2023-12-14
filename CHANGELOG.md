@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed screenshots not being attached to iOS native crashes ([#1517](https://github.com/getsentry/sentry-unity/pull/1517))
+
 ### Dependencies
 
 - Bump CLI from v2.21.2 to v2.22.3 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502))
