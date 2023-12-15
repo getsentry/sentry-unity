@@ -47,7 +47,7 @@ namespace Sentry.Unity
             }
             catch (Exception exception)
             {
-                _sentryOptions.DiagnosticLogger?.LogError(exception:exception, "{0} processing failed.", nameof(SentryEvent));
+                _sentryOptions.DiagnosticLogger?.LogError(exception: exception, "{0} processing failed.", nameof(SentryEvent));
             }
         }
 
