@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,6 +8,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     internal static class AdvancedTab
     {
+        private static bool UnfoldFailedStatusCodeRanges = false;
+
         internal static void Display(ScriptableSentryUnityOptions options, SentryCliOptions? cliOptions)
         {
             {
@@ -40,6 +44,63 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     options.AnrTimeout);
                 options.AnrTimeout = Math.Max(0, options.AnrTimeout);
 
+                EditorGUILayout.EndToggleGroup();
+            }
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            {
+                options.CaptureFailedRequests = EditorGUILayout.BeginToggleGroup(
+                    new GUIContent("Capture Failed HTTP Requests",
+                        "Whether the SDK should capture failed HTTP requests. This works out of the box for iOS only" +
+                        "For the C# layer you need to add the 'SentryHttpMessageHandler' to your HTTP Client."),
+                    options.CaptureFailedRequests);
+
+                UnfoldFailedStatusCodeRanges = EditorGUILayout.BeginFoldoutHeaderGroup(UnfoldFailedStatusCodeRanges, "Failed Status Codes Ranges");
+                if (UnfoldFailedStatusCodeRanges)
+                {
+                    var rangeCount = options.FailedRequestStatusCodes.Count / 2;
+                    rangeCount = EditorGUILayout.IntField(
+                        new GUIContent("Status Codes Range Count", "The amount of ranges of HTTP status codes to capture."),
+                        rangeCount);
+
+                    // Because it's a range, we need to double the count
+                    rangeCount *= 2;
+
+                    if (rangeCount <= 0)
+                    {
+                        options.FailedRequestStatusCodes.Clear();
+                    }
+
+                    if (rangeCount < options.FailedRequestStatusCodes.Count)
+                    {
+                        options.FailedRequestStatusCodes.RemoveRange(rangeCount, options.FailedRequestStatusCodes.Count - rangeCount);
+                    }
+
+                    if (rangeCount > options.FailedRequestStatusCodes.Count)
+                    {
+                        var rangedToAdd = rangeCount - options.FailedRequestStatusCodes.Count;
+                        for (var i = 0; i < rangedToAdd; i += 2)
+                        {
+                            options.FailedRequestStatusCodes.Add(500);
+                            options.FailedRequestStatusCodes.Add(599);
+                        }
+                    }
+
+                    for (var i = 0; i < options.FailedRequestStatusCodes.Count; i += 2)
+                    {
+                        GUILayout.BeginHorizontal();
+
+                        options.FailedRequestStatusCodes[i] = EditorGUILayout.IntField("Start", options.FailedRequestStatusCodes[i]);
+                        options.FailedRequestStatusCodes[i + 1] = EditorGUILayout.IntField("End", options.FailedRequestStatusCodes[i + 1]);
+
+                        GUILayout.EndHorizontal();
+                    }
+                }
+
+                EditorGUILayout.EndFoldoutHeaderGroup();
                 EditorGUILayout.EndToggleGroup();
             }
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- It's now possible enable to `CaptureFailedRequests` and the statuscode ranges via the editor. These also apply to the native SDK on `iOS` ([#1514](https://github.com/getsentry/sentry-unity/pull/1514))
+
 ### Fixes
 
 - Fixed screenshots not being attached to iOS native crashes ([#1517](https://github.com/getsentry/sentry-unity/pull/1517))
