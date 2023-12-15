@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Sentry.Unity.Editor.iOS
 {
@@ -8,8 +10,10 @@ namespace Sentry.Unity.Editor.iOS
 
         internal static string Generate(SentryUnityOptions options)
         {
+            var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
             var nativeOptions = $@"#import <Foundation/Foundation.h>
 #import <Sentry/SentryOptions+HybridSDKs.h>
+#import <Sentry/PrivateSentrySDKOnly.h>
 
 // IMPORTANT: Changes to this file will be lost!
 // This file is generated during the Xcode project creation.
@@ -18,8 +22,9 @@ namespace Sentry.Unity.Editor.iOS
 
 static SentryOptions* getSentryOptions()
 {{
+    [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
+
     NSDictionary* optionsDictionary = @{{
-        @""sdk"" : @{{ @""name"": @""sentry.cocoa.unity"" }},
         @""dsn"" : @""{options.Dsn}"",
         @""debug"" : @{ToObjCString(options.Debug)},
         @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.DiagnosticLevel)}"",
@@ -27,8 +32,10 @@ static SentryOptions* getSentryOptions()
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @NO,
+        @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
+        @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
-        @""attachScreenshot"" : @""{options.AttachScreenshot}"",
+        @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}""
     }};
@@ -65,6 +72,21 @@ static SentryOptions* getSentryOptions()
                 SentryLevel.Fatal => "fatal",
                 _ => "none"
             };
+        }
+
+        private static string GetFailedRequestStatusCodesArray(IList<HttpStatusCodeRange> httpStatusCodeRanges)
+        {
+            var codeRanges = string.Empty;
+            for (var i = 0; i < httpStatusCodeRanges.Count; i++)
+            {
+                codeRanges += $"[[SentryHttpStatusCodeRange alloc] initWithMin:{httpStatusCodeRanges[i].Start} max:{httpStatusCodeRanges[i].End}]";
+                if (i < httpStatusCodeRanges.Count - 1)
+                {
+                    codeRanges += ", ";
+                }
+            }
+
+            return codeRanges;
         }
     }
 }

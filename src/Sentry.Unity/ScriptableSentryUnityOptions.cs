@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
@@ -83,6 +84,11 @@ namespace Sentry.Unity
         [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
         [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
 
+        [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
+
+        // We hold the status codes as a list of ints to be able to serialize it in the editor.
+        [field: SerializeField] public List<int> FailedRequestStatusCodes { get; set; } = new() { 500, 599 };
+
         [field: SerializeField] public bool FilterBadGatewayExceptions { get; set; } = true;
         [field: SerializeField] public bool FilterWebExceptions { get; set; } = true;
         [field: SerializeField] public bool FilterSocketExceptions { get; set; } = true;
@@ -163,6 +169,7 @@ namespace Sentry.Unity
                 Debug = ShouldDebug(application.IsEditor && !isBuilding),
                 DiagnosticLevel = DiagnosticLevel,
                 AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
+                CaptureFailedRequests = CaptureFailedRequests,
                 FilterBadGatewayExceptions = FilterBadGatewayExceptions,
                 IosNativeSupportEnabled = IosNativeSupportEnabled,
                 AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
@@ -189,6 +196,13 @@ namespace Sentry.Unity
             options.AddBreadcrumbsForLogType[LogType.Assert] = BreadcrumbsForAsserts;
             options.AddBreadcrumbsForLogType[LogType.Error] = BreadcrumbsForErrors;
             options.AddBreadcrumbsForLogType[LogType.Exception] = BreadcrumbsForExceptions;
+
+            options.FailedRequestStatusCodes = new List<HttpStatusCodeRange>();
+            for (var i = 0; i < FailedRequestStatusCodes.Count; i += 2)
+            {
+                options.FailedRequestStatusCodes.Add(
+                    new HttpStatusCodeRange(FailedRequestStatusCodes[i], FailedRequestStatusCodes[i + 1]));
+            }
 
             options.SetupLogging();
 

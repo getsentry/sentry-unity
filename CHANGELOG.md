@@ -2,20 +2,28 @@
 
 ## Unreleased
 
+### Features
+
+- It's now possible enable to `CaptureFailedRequests` and the statuscode ranges via the editor. These also apply to the native SDK on `iOS` ([#1514](https://github.com/getsentry/sentry-unity/pull/1514))
+
+### Fixes
+
+- Fixed screenshots not being attached to iOS native crashes ([#1517](https://github.com/getsentry/sentry-unity/pull/1517))
+
 ### Dependencies
 
 - Bump CLI from v2.21.2 to v2.22.3 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2223)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.22.3)
-- Bump Cocoa SDK from v8.16.1 to v8.17.0 [#1503](https://github.com/getsentry/sentry-unity/pull/1503)
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8170)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.17.0)
+- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8171)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.17.1)
 - Bump .NET SDK from v3.41.2 to v3.41.3 [#1505](https://github.com/getsentry/sentry-unity/pull/1505)
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3413)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.40.1...3.41.2)
-- Bump Java SDK from v7.0.0-1-g2a3dd50f to v7.0.0 ([#1506](https://github.com/getsentry/sentry-unity/pull/1506))
+- Bump Java SDK from v6.27.0 to v7.0.0 ([#1506](https://github.com/getsentry/sentry-unity/pull/1506))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#700)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.0.0-1-g2a3dd50f...7.0.0)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.27.0...7.0.0)
 
 ## 1.7.1
 
