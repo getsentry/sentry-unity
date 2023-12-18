@@ -131,7 +131,7 @@ namespace Sentry.Unity
                         }
 
                         // First, try to find the image among the loaded ones, otherwise create a dummy one.
-                        mainLibImage ??= _debugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
+                        mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
                         mainLibImage ??= new DebugImage
                         {
                             Type = UnityInfo.GetDebugImageType(Application.platform),
@@ -218,7 +218,7 @@ namespace Sentry.Unity
 
         private static IDiagnosticLogger? Logger;
 
-        private readonly Lazy<List<DebugImageInfo>> _debugImagesSorted = new(() =>
+        private static readonly Lazy<List<DebugImageInfo>> DebugImagesSorted = new(() =>
         {
             var result = new List<DebugImageInfo>();
 
@@ -258,7 +258,7 @@ namespace Sentry.Unity
 
         private DebugImage? FindDebugImageContainingAddress(ulong instructionAddress)
         {
-            var list = _debugImagesSorted.Value;
+            var list = DebugImagesSorted.Value;
 
             // Manual binary search implementation on "value in range".
             var lowerBound = 0;
