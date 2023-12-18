@@ -328,38 +328,38 @@ namespace Sentry.Unity
                 default:
                     return false;
             }
+        }
 
-            public bool IsSupportedBySentryNative(RuntimePlatform platform)
-            {
-                return platform ==
-                       RuntimePlatform.Android
-                       || RuntimePlatform.LinuxPlayer
-                       || RuntimePlatform.WindowsPlayer
-#if UNITY_2021_3_OR_NEWER
-                        || RuntimePlatform.WindowsServer
-                        || RuntimePlatform.OSXServer
-                        || RuntimePlatform.LinuxServer
-#endif
-                    ;
-            }
 
-            public string GetDebugImageType(RuntimePlatform platform)
-            {
-                platform switch
-                {
-                    RuntimePlatform.Android => "elf",
-                    RuntimePlatform.IPhonePlayer => "macho",
-                    RuntimePlatform.OSXPlayer => "macho",
-                    RuntimePlatform.LinuxPlayer => "elf",
-                    RuntimePlatform.WindowsPlayer => "pe",
+        public bool IsSupportedBySentryNative(RuntimePlatform platform)
+        {
+            return platform == RuntimePlatform.Android
+                   || platform == RuntimePlatform.LinuxPlayer
+                   || platform == RuntimePlatform.WindowsPlayer
 #if UNITY_2021_3_OR_NEWER
-                    RuntimePlatform.WindowsServer => "pe",
-                    RuntimePlatform.OSXServer => "macho",
-                    RuntimePlatform.LinuxServer => "elf",
+                   || platform == RuntimePlatform.WindowsServer
+                   || platform == RuntimePlatform.OSXServer
+                   || platform == RuntimePlatform.LinuxServer
 #endif
-                    _ => "unknown"
-                };
-            }
+                ;
+        }
+
+        public string GetDebugImageType(RuntimePlatform platform)
+        {
+            return platform switch
+            {
+                RuntimePlatform.Android => "elf",
+                RuntimePlatform.IPhonePlayer => "macho",
+                RuntimePlatform.OSXPlayer => "macho",
+                RuntimePlatform.LinuxPlayer => "elf",
+                RuntimePlatform.WindowsPlayer => "pe",
+#if UNITY_2021_3_OR_NEWER
+                RuntimePlatform.WindowsServer => "pe",
+                RuntimePlatform.OSXServer => "macho",
+                RuntimePlatform.LinuxServer => "elf",
+#endif
+                _ => "unknown"
+            };
         }
     }
 }
