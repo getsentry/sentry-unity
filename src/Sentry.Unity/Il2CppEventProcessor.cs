@@ -256,7 +256,7 @@ namespace Sentry.Unity
             return result;
         });
 
-        private DebugImage? FindDebugImageContainingAddress(ulong instructionAddress)
+        private static DebugImage? FindDebugImageContainingAddress(ulong instructionAddress)
         {
             var list = DebugImagesSorted.Value;
 
