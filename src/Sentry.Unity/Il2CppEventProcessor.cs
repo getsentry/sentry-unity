@@ -223,37 +223,35 @@ namespace Sentry.Unity
             var result = new List<DebugImageInfo>();
 
             // Only on platforms where we actually use sentry-native.
-            if (!UnityInfo.IsSupportedBySentryNative(Application.platform))
+            if (UnityInfo.IsSupportedBySentryNative(Application.platform))
             {
-                return result;
-            }
-
-            var nativeDebugImages = C.DebugImages.Value;
-            foreach (var image in nativeDebugImages)
-            {
-                if (image.ImageSize is null)
+                var nativeDebugImages = C.DebugImages.Value;
+                foreach (var image in nativeDebugImages)
                 {
-                    Logger?.Log(SentryLevel.Debug,
-                        "Skipping debug image '{0}' (CodeId {1} | DebugId: {2}) because its size is NULL",
-                        null, image.CodeFile, image.CodeId, image.DebugId);
-                    continue;
-                }
-
-                var info = new DebugImageInfo(image);
-                var i = 0;
-                for (; i < result.Count; i++)
-                {
-                    if (info.StartAddress < result[i].StartAddress)
+                    if (image.ImageSize is null)
                     {
-                        // insert at index `i`, all the rest have a larger start address
-                        break;
+                        Logger?.Log(SentryLevel.Debug,
+                            "Skipping debug image '{0}' (CodeId {1} | DebugId: {2}) because its size is NULL",
+                            null, image.CodeFile, image.CodeId, image.DebugId);
+                        continue;
                     }
-                }
-                result.Insert(i, info);
 
-                Logger?.Log(SentryLevel.Debug,
-                    "Found debug image '{0}' (CodeId {1} | DebugId: {2}) with addresses between {3:X8} and {4:X8}",
-                    null, image.CodeFile, image.CodeId, image.DebugId, info.StartAddress, info.EndAddress);
+                    var info = new DebugImageInfo(image);
+                    var i = 0;
+                    for (; i < result.Count; i++)
+                    {
+                        if (info.StartAddress < result[i].StartAddress)
+                        {
+                            // insert at index `i`, all the rest have a larger start address
+                            break;
+                        }
+                    }
+                    result.Insert(i, info);
+
+                    Logger?.Log(SentryLevel.Debug,
+                        "Found debug image '{0}' (CodeId {1} | DebugId: {2}) with addresses between {3:X8} and {4:X8}",
+                        null, image.CodeFile, image.CodeId, image.DebugId, info.StartAddress, info.EndAddress);
+                }
             }
             return result;
         });
