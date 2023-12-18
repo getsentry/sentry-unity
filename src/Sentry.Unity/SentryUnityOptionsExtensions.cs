@@ -67,7 +67,7 @@ namespace Sentry.Unity
         {
             if (unityInfo.Il2CppMethods is not null)
             {
-                options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options, unityInfo.Il2CppMethods));
+                options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options, unityInfo));
             }
             else
             {

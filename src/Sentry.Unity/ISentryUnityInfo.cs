@@ -10,6 +10,8 @@ namespace Sentry.Unity
         public bool IsKnownPlatform();
         public bool IsLinux();
         public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform);
+        public bool IsSupportedBySentryNative(RuntimePlatform platform);
+        public string GetDebugImageType(RuntimePlatform platform);
     }
 
     public class Il2CppMethods
