@@ -13,12 +13,14 @@ namespace Sentry.Unity
     internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
     {
         private readonly SentryUnityOptions _options;
+        private static ISentryUnityInfo UnityInfo = null!; // private static will be initialized in the constructor
         private readonly Il2CppMethods _il2CppMethods;
 
-        public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, Il2CppMethods il2CppMethods)
+        public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, ISentryUnityInfo unityInfo)
         {
             _options = options;
-            _il2CppMethods = il2CppMethods;
+            UnityInfo = unityInfo;
+            _il2CppMethods = unityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(unityInfo.Il2CppMethods), "Unity IL2CPP methods are not available.");
 
             _options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
         }
@@ -94,7 +96,7 @@ namespace Sentry.Unity
                     var instructionAddress = (ulong)nativeFrame.ToInt64();
 
                     // We cannot determine whether this frame is a main library frame just from the address
-                    // because even relative address on the frame may correspond to an absolute addres of a loaded library.
+                    // because even relative address on the frame may correspond to an absolute address of a loaded library.
                     // Therefore, if the frame package matches known prefixes, we assume it's a GameAssembly frame.
                     var isMainLibFrame = frame.Package is not null && (
                         frame.Package.StartsWith("UnityEngine.", StringComparison.InvariantCultureIgnoreCase) ||
@@ -132,15 +134,7 @@ namespace Sentry.Unity
                         mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
                         mainLibImage ??= new DebugImage
                         {
-                            Type = Application.platform switch
-                            {
-                                RuntimePlatform.Android => "elf",
-                                RuntimePlatform.IPhonePlayer => "macho",
-                                RuntimePlatform.OSXPlayer => "macho",
-                                RuntimePlatform.LinuxPlayer => "elf",
-                                RuntimePlatform.WindowsPlayer => "pe",
-                                _ => "unknown"
-                            },
+                            Type = UnityInfo.GetDebugImageType(Application.platform),
                             // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
                             // A null/missing `CodeFile` however would lead to a processing error in sentry.
                             // Since the code file is not strictly necessary for processing, we just fall back to
@@ -229,8 +223,7 @@ namespace Sentry.Unity
             var result = new List<DebugImageInfo>();
 
             // Only on platforms where we actually use sentry-native.
-            if (ApplicationAdapter.Instance.Platform
-                is RuntimePlatform.WindowsPlayer or RuntimePlatform.Android or RuntimePlatform.LinuxPlayer)
+            if (UnityInfo.IsSupportedBySentryNative(Application.platform))
             {
                 var nativeDebugImages = C.DebugImages.Value;
                 foreach (var image in nativeDebugImages)

@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- The SDK no longer fails to resolve the debug symbol type on dedicated server builds ([#1522](https://github.com/getsentry/sentry-unity/pull/1522))
 - Fixed screenshots not being attached to iOS native crashes ([#1517](https://github.com/getsentry/sentry-unity/pull/1517))
 
 ### Dependencies
