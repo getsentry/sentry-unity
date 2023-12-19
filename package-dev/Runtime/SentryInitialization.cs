@@ -346,20 +346,29 @@ namespace Sentry.Unity
 
         public string GetDebugImageType(RuntimePlatform platform)
         {
-            return platform switch
+            switch (platform)
             {
-                RuntimePlatform.Android => "elf",
-                RuntimePlatform.IPhonePlayer => "macho",
-                RuntimePlatform.OSXPlayer => "macho",
-                RuntimePlatform.LinuxPlayer => "elf",
-                RuntimePlatform.WindowsPlayer => "pe",
+                case RuntimePlatform.Android:
+                    return "elf";
+                case RuntimePlatform.IPhonePlayer:
+                    return "macho";
+                case RuntimePlatform.OSXPlayer:
+                    return "macho";
+                case RuntimePlatform.LinuxPlayer:
+                    return "elf";
+                case RuntimePlatform.WindowsPlayer:
+                    return "pe";
 #if UNITY_2021_3_OR_NEWER
-                RuntimePlatform.WindowsServer => "pe",
-                RuntimePlatform.OSXServer => "macho",
-                RuntimePlatform.LinuxServer => "elf",
+                case RuntimePlatform.WindowsServer:
+                    return "pe";
+                case RuntimePlatform.OSXServer:
+                    return "macho";
+                case RuntimePlatform.LinuxServer:
+                    return "elf";
 #endif
-                _ => "unknown"
-            };
+                default:
+                    return "unknown";
+            }
         }
     }
 }
