@@ -524,7 +524,7 @@ jobs:
             if ("${{ matrix.unity-version }}" -eq "2022")
             {
               $file = "samples/IntegrationTest/Build/unityLibrary/build.gradle"
-              Get-Content $file | Where-Object { $_ -notmatch'ndkPath "/Applications/Unity/Hub/Editor/.*/PlaybackEngines/AndroidPlayer/NDK"' } | Set-Content $file 
+              Get-Content $file | Where-Object { $_ -notmatch'ndkPath ".*/AndroidPlayer/NDK"' } | Set-Content $file 
             }
           }
           ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
