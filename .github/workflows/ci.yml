@@ -519,6 +519,12 @@ jobs:
           {
             # Replace local.properties so that it doesn't reference Unity built-in SDK & NDK (not available in this job).
             @("sdk.dir=$($env:ANDROID_SDK_ROOT)", "ndk.dir=${{ steps.setup-ndk.outputs.ndk-path }}") | Out-File "samples/IntegrationTest/Build/local.properties"
+
+            # The template changed with 2022 to have set the 'ndkPath' directly in the build.gradle. Removing it fall back to the local.properties
+            if ("${{ matrix.unity-version }}" -eq "2022")
+            {
+              Get-Content unityLibrary/build.gradle | Where-Object { $_ -notmatch '^ndkPath' } | Out-File unityLibrary/build.gradle
+            }
           }
           ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
