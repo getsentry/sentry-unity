@@ -529,6 +529,17 @@ jobs:
           }
           ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
+      - name: Upload IntegrationTest project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-testitest-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: |
+            samples/IntegrationTest
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
       - name: Upload app
         uses: actions/upload-artifact@v3
         with:
