@@ -523,7 +523,7 @@ jobs:
             # The template changed with 2022 to have set the 'ndkPath' directly in the build.gradle. Removing it fall back to the local.properties
             if ("${{ matrix.unity-version }}" -eq "2022")
             {
-              Get-Content unityLibrary/build.gradle | Where-Object { $_ -notmatch '^ndkPath' } | Out-File unityLibrary/build.gradle
+              Get-Content "samples/IntegrationTest/Build/unityLibrary/build.gradle" | Where-Object { $_ -notmatch '^ndkPath' } | Out-File "samples/IntegrationTest/Build/unityLibrary/build.gradle"
             }
           }
           ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
