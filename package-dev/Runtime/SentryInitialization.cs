@@ -328,6 +328,47 @@ namespace Sentry.Unity
                 default:
                     return false;
             }
-		}
+        }
+
+
+        public bool IsSupportedBySentryNative(RuntimePlatform platform)
+        {
+            return platform == RuntimePlatform.Android
+                   || platform == RuntimePlatform.LinuxPlayer
+                   || platform == RuntimePlatform.WindowsPlayer
+#if UNITY_2021_3_OR_NEWER
+                   || platform == RuntimePlatform.WindowsServer
+                   || platform == RuntimePlatform.OSXServer
+                   || platform == RuntimePlatform.LinuxServer
+#endif
+                ;
+        }
+
+        public string GetDebugImageType(RuntimePlatform platform)
+        {
+            switch (platform)
+            {
+                case RuntimePlatform.Android:
+                    return "elf";
+                case RuntimePlatform.IPhonePlayer:
+                    return "macho";
+                case RuntimePlatform.OSXPlayer:
+                    return "macho";
+                case RuntimePlatform.LinuxPlayer:
+                    return "elf";
+                case RuntimePlatform.WindowsPlayer:
+                    return "pe";
+#if UNITY_2021_3_OR_NEWER
+                case RuntimePlatform.WindowsServer:
+                    return "pe";
+                case RuntimePlatform.OSXServer:
+                    return "macho";
+                case RuntimePlatform.LinuxServer:
+                    return "elf";
+#endif
+                default:
+                    return "unknown";
+            }
+        }
     }
 }

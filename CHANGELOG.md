@@ -8,22 +8,23 @@
 
 ### Fixes
 
+- The SDK no longer fails to resolve the debug symbol type on dedicated server builds ([#1522](https://github.com/getsentry/sentry-unity/pull/1522))
 - Fixed screenshots not being attached to iOS native crashes ([#1517](https://github.com/getsentry/sentry-unity/pull/1517))
 
 ### Dependencies
 
-- Bump CLI from v2.21.2 to v2.22.3 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2223)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.22.3)
-- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8171)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.17.1)
+- Bump CLI from v2.21.2 to v2.23.1 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502), [#1525](https://github.com/getsentry/sentry-unity/pull/1525))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2231)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.23.1)
+- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508), [#1520](https://github.com/getsentry/sentry-unity/pull/1520))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8172)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.17.2)
 - Bump .NET SDK from v3.41.2 to v3.41.3 [#1505](https://github.com/getsentry/sentry-unity/pull/1505)
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3413)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.40.1...3.41.2)
-- Bump Java SDK from v6.27.0 to v7.0.0 ([#1506](https://github.com/getsentry/sentry-unity/pull/1506))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#700)
-  - [diff](https://github.com/getsentry/sentry-java/compare/6.27.0...7.0.0)
+- Bump Java SDK from v6.27.0 to v7.1.0 ([#1506](https://github.com/getsentry/sentry-unity/pull/1506), [#1523](https://github.com/getsentry/sentry-unity/pull/1523))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#710)
+  - [diff](https://github.com/getsentry/sentry-java/compare/6.27.0...7.1.0)
 
 ## 1.7.1
 
