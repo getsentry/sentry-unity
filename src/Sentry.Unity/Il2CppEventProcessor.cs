@@ -94,7 +94,9 @@ namespace Sentry.Unity
 
                     // TODO should we do this for all addresses or only relative ones?
                     //      If the former, we should also update `frame.InstructionAddress` down below.
-                    var instructionAddress = nativeFrame.ToInt64();
+                    var instructionAddress = (ulong)nativeFrame.ToInt64();
+
+                    _options.DiagnosticLogger?.LogDebug("Instruction Address: {0:X8}", instructionAddress);
 
                     // We cannot determine whether this frame is a main library frame just from the address
                     // because even relative address on the frame may correspond to an absolute address of a loaded library.
@@ -152,10 +154,10 @@ namespace Sentry.Unity
                         }
                     }
 
-                    long imageAddress = 0;
+                    ulong imageAddress = 0;
                     if (image.ImageAddress != null)
                     {
-                        imageAddress = image.ImageAddress.Value;
+                        imageAddress = (ulong)image.ImageAddress.Value;
                     }
                     isRelativeAddress ??= instructionAddress < imageAddress;
 
@@ -163,14 +165,14 @@ namespace Sentry.Unity
                     {
                         // Shift the instruction address to be absolute.
                         instructionAddress += imageAddress;
-                        frame.InstructionAddress = instructionAddress;
+                        frame.InstructionAddress = (long)instructionAddress;
                     }
 
                     // sanity check that the instruction fits inside the range
                     var logLevel = SentryLevel.Debug;
                     if (image.ImageSize is not null)
                     {
-                        if (instructionAddress < imageAddress || instructionAddress > imageAddress + image.ImageSize)
+                        if (instructionAddress < imageAddress || instructionAddress > imageAddress + (ulong)image.ImageSize)
                         {
                             logLevel = SentryLevel.Warning;
                             notes ??= ".";
@@ -208,21 +210,21 @@ namespace Sentry.Unity
         private class DebugImageInfo
         {
             public readonly DebugImage Image;
-            public readonly long StartAddress;
-            public readonly long EndAddress;
+            public readonly ulong StartAddress;
+            public readonly ulong EndAddress;
 
             public DebugImageInfo(DebugImage image)
             {
                 Image = image;
                 if (image.ImageAddress != null)
                 {
-                    StartAddress = image.ImageAddress.Value;
+                    StartAddress = (ulong)image.ImageAddress.Value;
                 }
 
-                EndAddress = StartAddress + image.ImageSize!.Value;
+                EndAddress = StartAddress + (ulong)image.ImageSize!.Value;
             }
 
-            public bool ContainsAddress(long address) => StartAddress <= address && address <= EndAddress;
+            public bool ContainsAddress(ulong address) => StartAddress <= address && address <= EndAddress;
         }
 
         private static IDiagnosticLogger? Logger;
@@ -265,7 +267,7 @@ namespace Sentry.Unity
             return result;
         });
 
-        private static DebugImage? FindDebugImageContainingAddress(long instructionAddress)
+        private static DebugImage? FindDebugImageContainingAddress(ulong instructionAddress)
         {
             var list = DebugImagesSorted.Value;
 
