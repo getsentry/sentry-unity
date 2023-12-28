@@ -96,8 +96,6 @@ namespace Sentry.Unity
                     //      If the former, we should also update `frame.InstructionAddress` down below.
                     var instructionAddress = (ulong)nativeFrame.ToInt64();
 
-                    _options.DiagnosticLogger?.LogDebug("Instruction Address: {0:X8}", instructionAddress);
-
                     // We cannot determine whether this frame is a main library frame just from the address
                     // because even relative address on the frame may correspond to an absolute address of a loaded library.
                     // Therefore, if the frame package matches known prefixes, we assume it's a GameAssembly frame.
