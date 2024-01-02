@@ -94,7 +94,7 @@ namespace Sentry.Unity
 
                     // TODO should we do this for all addresses or only relative ones?
                     //      If the former, we should also update `frame.InstructionAddress` down below.
-                    var instructionAddress = (long)nativeFrame.ToInt64();
+                    var instructionAddress = nativeFrame.ToInt64();
 
                     // We cannot determine whether this frame is a main library frame just from the address
                     // because even relative address on the frame may correspond to an absolute address of a loaded library.
