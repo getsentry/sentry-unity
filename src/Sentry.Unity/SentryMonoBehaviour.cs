@@ -48,17 +48,11 @@ namespace Sentry.Unity
     {
         /// <summary>
         /// Hook to receive an event when the application gains focus.
-        /// <remarks>
-        /// Listens to OnApplicationFocus for all platforms except Android, where we listen to OnApplicationPause.
-        /// </remarks>
         /// </summary>
         public event Action? ApplicationResuming;
 
         /// <summary>
         /// Hook to receive an event when the application loses focus.
-        /// <remarks>
-        /// Listens to OnApplicationFocus for all platforms except Android, where we listen to OnApplicationPause.
-        /// </remarks>
         /// </summary>
         public event Action? ApplicationPausing;
 
@@ -76,7 +70,10 @@ namespace Sentry.Unity
             set => _application = value;
         }
 
-        internal void UpdatePauseStatus(bool paused)
+        /// <summary>
+        /// Updates the SDK's internal pause status
+        /// </summary>
+        public void UpdatePauseStatus(bool paused)
         {
             if (paused && _isRunning)
             {
