@@ -18,13 +18,13 @@ namespace Sentry.Unity.Tests.TestBehaviours
             LogAssert.ignoreFailingMessages = true;
             DebugLogError(message);
         });
-        public void DebugLogException(string message)
+        public void DebugLogException(string message) => Debug.LogException(new Exception(message));
+
+        public void DebugLogExceptionInTask(string message) => Task.Run(() =>
         {
             // Don't fail test if an exception is thrown via 'SendMessage'. We want to continue.
             LogAssert.ignoreFailingMessages = true;
-            Debug.LogException(new Exception(message));
-        }
-
-        public void DebugLogExceptionInTask(string message) => Task.Run(() => DebugLogException(message));
+            DebugLogException(message);
+        });
     }
 }
