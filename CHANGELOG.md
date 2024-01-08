@@ -4,6 +4,7 @@
 
 ### Features
 
+- The static `SentryMonoBehaviour` now has it's `UpdatePauseStatus` public, allowing users to manually update the SDK's internal pause status. This helps work around false positive ANR events when using plugins that take away control from the game i.e. ad frameworks like AppLovin or Ironsource ([#1529](https://github.com/getsentry/sentry-unity/pull/1529))
 - It's now possible enable to `CaptureFailedRequests` and the statuscode ranges via the editor. These also apply to the native SDK on `iOS` ([#1514](https://github.com/getsentry/sentry-unity/pull/1514))
 
 ### Fixes
