@@ -4,6 +4,9 @@
 
 ### Dependencies
 
+- Bump CLI from v2.24.1 to v2.25.0 ([#1534](https://github.com/getsentry/sentry-unity/pull/1534))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2250)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.24.1...2.25.0)
 - Bump Native SDK from v0.6.7 to v0.7.0 ([#1535](https://github.com/getsentry/sentry-unity/pull/1535))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#070)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.6.7...0.7.0)
