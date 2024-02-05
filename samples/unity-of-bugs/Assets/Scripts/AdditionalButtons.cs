@@ -10,7 +10,7 @@ public class AdditionalButtons : MonoBehaviour
     {
         SentrySdk.ConfigureScope(s =>
         {
-            s.User = new User
+            s.User = new SentryUser
             {
                 Email = "ant@farm.bug",
                 Username = "ant",
