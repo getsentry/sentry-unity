@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sentry.Protocol.Envelopes;
+using NUnit.Framework;
 
 namespace Sentry.Unity.Tests.Stubs
 {
@@ -15,6 +17,7 @@ namespace Sentry.Unity.Tests.Stubs
         public TestHub(bool isEnabled = true)
         {
             IsEnabled = isEnabled;
+            Metrics = null!; // TODO: Don't do it like that
         }
         public bool IsEnabled { get; }
 
@@ -29,21 +32,26 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
-        public void CaptureTransaction(Transaction transaction)
+        public void CaptureTransaction(SentryTransaction transaction)
         {
         }
 
-        public void CaptureTransaction(Transaction transaction, Scope? scope, Hint? hint)
+        public void CaptureTransaction(SentryTransaction transaction, Scope? scope, Hint? hint)
         {
         }
 
-        public void CaptureTransaction(Transaction transaction, Hint? hint)
+        public void CaptureTransaction(SentryTransaction transaction, Hint? hint)
         {
             throw new NotImplementedException();
         }
 
         public void CaptureSession(SessionUpdate sessionUpdate)
         {
+        }
+
+        public bool CaptureEnvelope(Envelope envelope)
+        {
+            throw new NotImplementedException();
         }
 
         public Task FlushAsync(TimeSpan timeout)
@@ -76,6 +84,8 @@ namespace Sentry.Unity.Tests.Stubs
         }
 
         public SentryId LastEventId { get; }
+        public IMetricAggregator Metrics { get; }
+
         public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
         {
             throw new NotImplementedException();

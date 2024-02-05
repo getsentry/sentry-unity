@@ -353,7 +353,7 @@ namespace Sentry.Unity.Tests
             var unityEventProcessor = new UnityEventProcessor(sentryOptions, _sentryMonoBehaviour);
             var scope = new Scope(sentryOptions);
             var sentryEvent = new SentryEvent();
-            var transaction = new Transaction("name", "operation");
+            var transaction = new SentryTransaction("name", "operation");
 
             // act
             _sentryMonoBehaviour.CollectData();
