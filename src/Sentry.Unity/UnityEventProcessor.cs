@@ -19,7 +19,7 @@ namespace Sentry.Unity
             _mainThreadData = sentryMonoBehaviour.MainThreadData;
         }
 
-        public Transaction Process(Transaction transaction)
+        public SentryTransaction? Process(SentryTransaction transaction)
         {
             SetEventContext(transaction);
             return transaction;

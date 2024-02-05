@@ -46,7 +46,7 @@ namespace Sentry.Unity.Native
             options.DefaultUserId = AnalyticsSessionInfo.userId;
             if (options.DefaultUserId is not null)
             {
-                options.ScopeObserver.SetUser(new User { Id = options.DefaultUserId });
+                options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
             }
 
             // Note: we must actually call the function now and on every other call use the value we get here.

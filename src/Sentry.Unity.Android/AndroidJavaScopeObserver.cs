@@ -45,7 +45,7 @@ namespace Sentry.Unity.Android
             sentry.CallStatic("removeTag", key);
         }
 
-        public override void SetUserImpl(User user)
+        public override void SetUserImpl(SentryUser user)
         {
             AndroidJNI.AttachCurrentThread();
 
