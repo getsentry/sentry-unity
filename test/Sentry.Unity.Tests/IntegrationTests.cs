@@ -272,7 +272,7 @@ namespace Sentry.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator DebugLogException_InTask_IsCapturedAndIsMainThreadIsTrue()
+        public IEnumerator DebugLogException_InTask_IsCapturedAndIsMainThreadIsFalse()
         {
             yield return SetupSceneCoroutine("1_BugFarm");
 

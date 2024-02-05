@@ -2,8 +2,29 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump CLI from v2.24.1 to v2.27.0 ([#1534](https://github.com/getsentry/sentry-unity/pull/1534), [#1539](https://github.com/getsentry/sentry-unity/pull/1539), [#1540](https://github.com/getsentry/sentry-unity/pull/1540), [#1542](https://github.com/getsentry/sentry-unity/pull/1542), [#1547](https://github.com/getsentry/sentry-unity/pull/1547))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2270)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.24.1...2.27.0)
+- Bump Native SDK from v0.6.7 to v0.7.0 ([#1535](https://github.com/getsentry/sentry-unity/pull/1535))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#070)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.6.7...0.7.0)
+- Bump Java SDK from v7.1.0 to v7.3.0 ([#1538](https://github.com/getsentry/sentry-unity/pull/1538), [#1548](https://github.com/getsentry/sentry-unity/pull/1548))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#730)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.1.0...7.3.0)
+- Bump .NET SDK from v3.41.3 to v3.41.4 ([#1544](https://github.com/getsentry/sentry-unity/pull/1544))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3414)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.41.3...3.41.4)
+- Bump Cocoa SDK from v8.18.0 to v8.20.0 ([#1545](https://github.com/getsentry/sentry-unity/pull/1545), [#1549](https://github.com/getsentry/sentry-unity/pull/1549))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8200)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.18.0...8.20.0)
+
+## 1.8.0
+
 ### Features
 
+- The static `SentryMonoBehaviour` now has it's `UpdatePauseStatus` public, allowing users to manually update the SDK's internal pause status. This helps work around false positive ANR events when using plugins that take away control from the game i.e. ad frameworks like AppLovin or Ironsource ([#1529](https://github.com/getsentry/sentry-unity/pull/1529))
 - It's now possible enable to `CaptureFailedRequests` and the statuscode ranges via the editor. These also apply to the native SDK on `iOS` ([#1514](https://github.com/getsentry/sentry-unity/pull/1514))
 
 ### Fixes
@@ -13,12 +34,12 @@
 
 ### Dependencies
 
-- Bump CLI from v2.21.2 to v2.23.1 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502), [#1525](https://github.com/getsentry/sentry-unity/pull/1525))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2231)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.23.1)
-- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508), [#1520](https://github.com/getsentry/sentry-unity/pull/1520))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8172)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.17.2)
+- Bump CLI from v2.21.2 to v2.24.1 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502), [#1525](https://github.com/getsentry/sentry-unity/pull/1525), [#1528](https://github.com/getsentry/sentry-unity/pull/1528), [#1532](https://github.com/getsentry/sentry-unity/pull/1532))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2241)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.24.1)
+- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508), [#1520](https://github.com/getsentry/sentry-unity/pull/1520), [#1530](https://github.com/getsentry/sentry-unity/pull/1530))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8180)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.18.0)
 - Bump .NET SDK from v3.41.2 to v3.41.3 [#1505](https://github.com/getsentry/sentry-unity/pull/1505)
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#3413)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/3.40.1...3.41.2)
