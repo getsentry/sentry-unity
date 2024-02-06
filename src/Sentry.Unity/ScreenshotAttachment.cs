@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity
 {
-    internal class ScreenshotAttachment : Attachment
+    internal class ScreenshotAttachment : SentryAttachment
     {
         public ScreenshotAttachment(IAttachmentContent content)
             : base(AttachmentType.Default, content, "screenshot.jpg", "image/jpeg") { }

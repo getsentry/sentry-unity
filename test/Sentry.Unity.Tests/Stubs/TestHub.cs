@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sentry.Protocol.Envelopes;
-using NUnit.Framework;
 
 namespace Sentry.Unity.Tests.Stubs
 {
@@ -21,7 +20,7 @@ namespace Sentry.Unity.Tests.Stubs
         }
         public bool IsEnabled { get; }
 
-        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null, Hint? hint = null)
+        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null, SentryHint? hint = null)
         {
             _capturedEvents.Add(evt);
             return evt.EventId;
@@ -36,11 +35,11 @@ namespace Sentry.Unity.Tests.Stubs
         {
         }
 
-        public void CaptureTransaction(SentryTransaction transaction, Scope? scope, Hint? hint)
+        public void CaptureTransaction(SentryTransaction transaction, Scope? scope, SentryHint? hint)
         {
         }
 
-        public void CaptureTransaction(SentryTransaction transaction, Hint? hint)
+        public void CaptureTransaction(SentryTransaction transaction, SentryHint? hint)
         {
             throw new NotImplementedException();
         }
@@ -148,7 +147,7 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
-        public SentryId CaptureEvent(SentryEvent evt, Hint? hint, Action<Scope> configureScope)
+        public SentryId CaptureEvent(SentryEvent evt, SentryHint? hint, Action<Scope> configureScope)
         {
             throw new NotImplementedException();
         }
