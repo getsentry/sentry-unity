@@ -142,6 +142,7 @@ namespace Sentry.Unity
             = new Il2CppMethods(
                 Il2CppGcHandleGetTargetShim,
                 Il2CppNativeStackTraceShim,
+                Il2CppNativeStackTraceCurrentThreadShim,
                 il2cpp_free);
 
 #pragma warning disable 8632
@@ -233,6 +234,27 @@ namespace Sentry.Unity
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
         [DllImport("__Internal")]
         private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out IntPtr imageUUID, out IntPtr imageName);
+
+        private static void Il2CppNativeStackTraceCurrentThreadShim(out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
+        {
+            imageName = null;
+
+            var uuidBuffer = IntPtr.Zero;
+
+            get_current_thread_native_stack_trace(out addresses, out numFrames, out uuidBuffer);
+
+            try
+            {
+                imageUUID = SanitizeDebugId(uuidBuffer);
+            }
+            finally
+            {
+                il2cpp_free(uuidBuffer);
+            }
+        }
+
+        [DllImport("__Internal")]
+        private static extern void get_current_thread_native_stack_trace(out IntPtr addresses, out int numFrames, out IntPtr imageUUID);
 #else
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
