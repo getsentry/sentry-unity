@@ -62,126 +62,131 @@ namespace Sentry.Unity
 
                 _options.DiagnosticLogger?.LogDebug("NativeStackTrace Image: '{0}' (UUID: {1})", nativeStackTrace.ImageName, nativeStackTrace.ImageUuid);
 
-                // Unity by definition only builds a single library which we add once to our list of debug images.
-                // We use this when we encounter stack frames with relative addresses.
-                // We want to use an address that is definitely outside of any address range used by real libraries.
-                // Canonical addresses on x64 leave a gap in the middle of the address space, which is unused.
-                // This is a range of addresses that we should be able to safely use.
-                // See https://en.wikipedia.org/wiki/X86-64#Virtual_address_space_details
-                var mainLibOffset = (ulong)1 << 63;
-                DebugImage? mainLibImage = null;
-
-                // TODO do we really want to continue if these two don't match?
-                //      Wouldn't it cause invalid frame info?
-                var nativeLen = nativeStackTrace.Frames.Length;
-                var eventLen = sentryStacktrace.Frames.Count;
-                if (nativeLen != eventLen)
-                {
-                    _options.DiagnosticLogger?.LogWarning(
-                        "Native and sentry stack trace lengths don't match '({0} != {1})' - this may cause invalid stack traces.",
-                        nativeLen, eventLen);
-                }
-
-                var len = Math.Min(eventLen, nativeLen);
-                for (var i = 0; i < len; i++)
-                {
-                    // The sentry stack trace is sorted parent->child (caller->callee),
-                    // whereas the native stack trace is sorted from callee to caller.
-                    var frame = sentryStacktrace.Frames[i];
-                    var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                    var mainImageUUID = NormalizeUuid(nativeStackTrace.ImageUuid);
-
-                    // TODO should we do this for all addresses or only relative ones?
-                    //      If the former, we should also update `frame.InstructionAddress` down below.
-                    var instructionAddress = (ulong)nativeFrame.ToInt64();
-
-                    // We cannot determine whether this frame is a main library frame just from the address
-                    // because even relative address on the frame may correspond to an absolute address of a loaded library.
-                    // Therefore, if the frame package matches known prefixes, we assume it's a GameAssembly frame.
-                    var isMainLibFrame = frame.Package is not null && (
-                        frame.Package.StartsWith("UnityEngine.", StringComparison.InvariantCultureIgnoreCase) ||
-                        frame.Package.StartsWith("Assembly-CSharp", StringComparison.InvariantCultureIgnoreCase)
-                    );
-
-                    string? notes = null;
-                    DebugImage? image = null;
-                    bool? isRelativeAddress = null;
-                    if (!isMainLibFrame)
-                    {
-                        image = FindDebugImageContainingAddress(instructionAddress);
-                        if (image is null)
-                        {
-                            isRelativeAddress = true;
-                            notes = "because it looks like a relative address.";
-                            // falls through to the next `if (image is null)`
-                        }
-                        else
-                        {
-                            isRelativeAddress = false;
-                            notes = "because it looks like an absolute address inside the range of this debug image.";
-                        }
-                    }
-
-                    if (image is null)
-                    {
-                        if (mainImageUUID is null)
-                        {
-                            _options.DiagnosticLogger?.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
-                            continue;
-                        }
-
-                        // First, try to find the image among the loaded ones, otherwise create a dummy one.
-                        mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
-                        mainLibImage ??= new DebugImage
-                        {
-                            Type = UnityInfo.GetDebugImageType(Application.platform),
-                            // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
-                            // A null/missing `CodeFile` however would lead to a processing error in sentry.
-                            // Since the code file is not strictly necessary for processing, we just fall back to
-                            // a sentinel value here.
-                            CodeFile = string.IsNullOrEmpty(nativeStackTrace.ImageName) ? "GameAssembly.fallback" : nativeStackTrace.ImageName,
-                            DebugId = mainImageUUID,
-                            ImageAddress = $"0x{mainLibOffset:X8}",
-                        };
-
-                        image = mainLibImage;
-                        if (isMainLibFrame)
-                        {
-                            notes ??= $"based on frame package name ({frame.Package}).";
-                        }
-                    }
-
-                    var imageAddress = Convert.ToUInt64(image.ImageAddress, 16);
-                    isRelativeAddress ??= instructionAddress < imageAddress;
-
-                    if (isRelativeAddress is true)
-                    {
-                        // Shift the instruction address to be absolute.
-                        instructionAddress += imageAddress;
-                        frame.InstructionAddress = $"0x{instructionAddress:X8}";
-                    }
-
-                    // sanity check that the instruction fits inside the range
-                    var logLevel = SentryLevel.Debug;
-                    if (image.ImageSize is not null)
-                    {
-                        if (instructionAddress < imageAddress || instructionAddress > imageAddress + (ulong)image.ImageSize)
-                        {
-                            logLevel = SentryLevel.Warning;
-                            notes ??= ".";
-                            notes += " However, the instruction address falls out of the range of the debug image.";
-                        }
-                    }
-
-                    _options.DiagnosticLogger?.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
-                        null, frame.Function, instructionAddress, nativeFrame.ToInt64(), image.CodeFile, notes ?? "");
-
-                    _ = usedImages.Add(image);
-                }
+                ProcessNativeCallStack(sentryStacktrace, nativeStackTrace, usedImages);
             }
 
             sentryEvent.DebugImages ??= new List<DebugImage>();
             sentryEvent.DebugImages.AddRange(usedImages);
+        }
+
+        private void ProcessNativeCallStack(SentryStackTrace sentryStacktrace, NativeStackTrace nativeStackTrace, HashSet<DebugImage> usedImages)
+        {
+            // Unity by definition only builds a single library which we add once to our list of debug images.
+            // We use this when we encounter stack frames with relative addresses.
+            // We want to use an address that is definitely outside of any address range used by real libraries.
+            // Canonical addresses on x64 leave a gap in the middle of the address space, which is unused.
+            // This is a range of addresses that we should be able to safely use.
+            // See https://en.wikipedia.org/wiki/X86-64#Virtual_address_space_details
+            var mainLibOffset = (ulong)1 << 63;
+            DebugImage? mainLibImage = null;
+
+            // TODO do we really want to continue if these two don't match?
+            //      Wouldn't it cause invalid frame info?
+            var nativeLen = nativeStackTrace.Frames.Length;
+            var eventLen = sentryStacktrace.Frames.Count;
+            if (nativeLen != eventLen)
+            {
+                _options.DiagnosticLogger?.LogWarning(
+                    "Native and sentry stack trace lengths don't match '({0} != {1})' - this may cause invalid stack traces.",
+                    nativeLen, eventLen);
+            }
+
+            var len = Math.Min(eventLen, nativeLen);
+            for (var i = 0; i < len; i++)
+            {
+                // The sentry stack trace is sorted parent->child (caller->callee),
+                // whereas the native stack trace is sorted from callee to caller.
+                var frame = sentryStacktrace.Frames[i];
+                var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
+                var mainImageUUID = NormalizeUuid(nativeStackTrace.ImageUuid);
+
+                // TODO should we do this for all addresses or only relative ones?
+                //      If the former, we should also update `frame.InstructionAddress` down below.
+                var instructionAddress = (ulong)nativeFrame.ToInt64();
+
+                // We cannot determine whether this frame is a main library frame just from the address
+                // because even relative address on the frame may correspond to an absolute address of a loaded library.
+                // Therefore, if the frame package matches known prefixes, we assume it's a GameAssembly frame.
+                var isMainLibFrame = frame.Package is not null && (
+                    frame.Package.StartsWith("UnityEngine.", StringComparison.InvariantCultureIgnoreCase) ||
+                    frame.Package.StartsWith("Assembly-CSharp", StringComparison.InvariantCultureIgnoreCase)
+                );
+
+                string? notes = null;
+                DebugImage? image = null;
+                bool? isRelativeAddress = null;
+                if (!isMainLibFrame)
+                {
+                    image = FindDebugImageContainingAddress(instructionAddress);
+                    if (image is null)
+                    {
+                        isRelativeAddress = true;
+                        notes = "because it looks like a relative address.";
+                        // falls through to the next `if (image is null)`
+                    }
+                    else
+                    {
+                        isRelativeAddress = false;
+                        notes = "because it looks like an absolute address inside the range of this debug image.";
+                    }
+                }
+
+                if (image is null)
+                {
+                    if (mainImageUUID is null)
+                    {
+                        _options.DiagnosticLogger?.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
+                        continue;
+                    }
+
+                    // First, try to find the image among the loaded ones, otherwise create a dummy one.
+                    mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
+                    mainLibImage ??= new DebugImage
+                    {
+                        Type = UnityInfo.GetDebugImageType(Application.platform),
+                        // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
+                        // A null/missing `CodeFile` however would lead to a processing error in sentry.
+                        // Since the code file is not strictly necessary for processing, we just fall back to
+                        // a sentinel value here.
+                        CodeFile = string.IsNullOrEmpty(nativeStackTrace.ImageName) ? "GameAssembly.fallback" : nativeStackTrace.ImageName,
+                        DebugId = mainImageUUID,
+                        ImageAddress = $"0x{mainLibOffset:X8}",
+                    };
+
+                    image = mainLibImage;
+                    if (isMainLibFrame)
+                    {
+                        notes ??= $"based on frame package name ({frame.Package}).";
+                    }
+                }
+
+                var imageAddress = Convert.ToUInt64(image.ImageAddress, 16);
+                isRelativeAddress ??= instructionAddress < imageAddress;
+
+                if (isRelativeAddress is true)
+                {
+                    // Shift the instruction address to be absolute.
+                    instructionAddress += imageAddress;
+                    frame.InstructionAddress = $"0x{instructionAddress:X8}";
+                }
+
+                // sanity check that the instruction fits inside the range
+                var logLevel = SentryLevel.Debug;
+                if (image.ImageSize is not null)
+                {
+                    if (instructionAddress < imageAddress || instructionAddress > imageAddress + (ulong)image.ImageSize)
+                    {
+                        logLevel = SentryLevel.Warning;
+                        notes ??= ".";
+                        notes += " However, the instruction address falls out of the range of the debug image.";
+                    }
+                }
+
+                _options.DiagnosticLogger?.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
+                    null, frame.Function, instructionAddress, nativeFrame.ToInt64(), image.CodeFile, notes ?? "");
+
+                _ = usedImages.Add(image);
+            }
         }
 
         // Normalizes Debug Image UUID so that we can compare the ones coming from
@@ -305,23 +310,34 @@ namespace Sentry.Unity
             yield return exception;
         }
 
-        private NativeStackTrace GetNativeStackTrace(Exception e)
+        private NativeStackTrace GetNativeStackTrace(Exception? e)
         {
-            // Create a `GCHandle` for the exception, which we can then use to
+            // Create a `GCHandle` for the exception (if any), which we can then use to
             // essentially get a pointer to the underlying `Il2CppException` C++ object.
-            var gch = GCHandle.Alloc(e);
-            // The `il2cpp_native_stack_trace` allocates and writes the native
+            GCHandle gch = default;
+
+            // The following code allocates and writes the native
             // instruction pointers to the `addresses`/`numFrames` out-parameters.
             var addresses = IntPtr.Zero;
             try
             {
-                var gchandle = GCHandle.ToIntPtr(gch);
-                var addr = _il2CppMethods.Il2CppGcHandleGetTarget(gchandle);
-
                 var numFrames = 0;
                 string? imageUuid = null;
                 string? imageName = null;
-                _il2CppMethods.Il2CppNativeStackTrace(addr, out addresses, out numFrames, out imageUuid, out imageName);
+
+                if (e != null)
+                {
+                    gch = GCHandle.Alloc(e);
+
+                    var gchandle = GCHandle.ToIntPtr(gch);
+                    var addr = _il2CppMethods.Il2CppGcHandleGetTarget(gchandle);
+
+                    _il2CppMethods.Il2CppNativeStackTrace(addr, out addresses, out numFrames, out imageUuid, out imageName);
+                }
+                else
+                {
+                    _il2CppMethods.Il2CppNativeStackTraceCurrentThread(out addresses, out numFrames, out imageUuid, out imageName);
+                }
 
                 // Convert the C-Array to a managed "C#" Array, and free the underlying memory.
                 var frames = new IntPtr[numFrames];
@@ -336,8 +352,11 @@ namespace Sentry.Unity
             }
             finally
             {
-                // We are done with the `GCHandle`.
-                gch.Free();
+                if (gch.IsAllocated)
+                {
+                    // We are done with the `GCHandle`.
+                    gch.Free();
+                }
 
                 if (addresses != IntPtr.Zero)
                 {
