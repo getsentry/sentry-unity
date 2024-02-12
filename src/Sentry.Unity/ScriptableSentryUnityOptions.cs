@@ -64,7 +64,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool BreadcrumbsForErrors { get; set; } = true;
         [field: SerializeField] public bool BreadcrumbsForExceptions { get; set; } = true;
 
-        [field: SerializeField] public int MaxBreadcrumbs { get; set; } = Constants.DefaultMaxBreadcrumbs;
+        [field: SerializeField] public int MaxBreadcrumbs { get; set; } = SentryConstants.DefaultMaxBreadcrumbs;
 
         [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
         [field: SerializeField] public bool SendDefaultPii { get; set; }
