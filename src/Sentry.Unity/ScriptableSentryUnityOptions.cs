@@ -220,7 +220,7 @@ namespace Sentry.Unity
 
             if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
             {
-                options.AddIl2CppExceptionProcessor(unityInfo);
+                options.AddIl2CppEventProcessor(unityInfo);
             }
 
             HandlePlatformRestrictions(options, application, unityInfo);

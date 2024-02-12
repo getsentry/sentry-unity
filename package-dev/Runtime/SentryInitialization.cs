@@ -237,24 +237,25 @@ namespace Sentry.Unity
 
         private static void Il2CppNativeStackTraceCurrentThreadShim(out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
-            imageName = null;
-
             var uuidBuffer = IntPtr.Zero;
+            var imageNameBuffer = IntPtr.Zero;
 
-            get_current_thread_native_stack_trace(out addresses, out numFrames, out uuidBuffer);
+            get_current_thread_native_stack_trace(out addresses, out numFrames, out uuidBuffer, out imageNameBuffer);
 
             try
             {
                 imageUUID = SanitizeDebugId(uuidBuffer);
+                imageName = (imageNameBuffer == IntPtr.Zero) ? null : Marshal.PtrToStringAnsi(imageNameBuffer);
             }
             finally
             {
                 il2cpp_free(uuidBuffer);
+                il2cpp_free(imageNameBuffer);
             }
         }
 
         [DllImport("__Internal")]
-        private static extern void get_current_thread_native_stack_trace(out IntPtr addresses, out int numFrames, out IntPtr imageUUID);
+        private static extern void get_current_thread_native_stack_trace(out IntPtr addresses, out int numFrames, out IntPtr imageUUID, out IntPtr imageName);
 #else
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {

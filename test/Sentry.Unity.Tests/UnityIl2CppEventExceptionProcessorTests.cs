@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace Sentry.Unity.Tests
 {
-    public class UnityIl2CppEventExceptionProcessorTests
+    public class UnityIl2CppEventProcessorTests
     {
         [Test]
         [TestCase(null, null)]
@@ -13,7 +13,7 @@ namespace Sentry.Unity.Tests
         [TestCase("94552647-48dc-4fe4-ba75-7ccd3c43c44d-917f8072", "9455264748dc4fe4ba757ccd3c43c44d917f8072")]
         public void NormalizeUuid_ReturnValueMatchesExpected(string input, string expected)
         {
-            var actual = UnityIl2CppEventExceptionProcessor.NormalizeUuid(input);
+            var actual = UnityIl2CppEventProcessor.NormalizeUuid(input);
 
             Assert.AreEqual(actual, expected);
         }

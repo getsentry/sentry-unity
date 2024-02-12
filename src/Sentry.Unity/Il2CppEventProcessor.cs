@@ -10,19 +10,63 @@ using Application = UnityEngine.Application;
 
 namespace Sentry.Unity
 {
-    internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
+    internal class UnityIl2CppEventProcessor : ISentryEventProcessor, ISentryEventExceptionProcessor
     {
         private readonly SentryUnityOptions _options;
         private static ISentryUnityInfo UnityInfo = null!; // private static will be initialized in the constructor
         private readonly Il2CppMethods _il2CppMethods;
 
-        public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, ISentryUnityInfo unityInfo)
+        public UnityIl2CppEventProcessor(SentryUnityOptions options, ISentryUnityInfo unityInfo)
         {
             _options = options;
             UnityInfo = unityInfo;
             _il2CppMethods = unityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(unityInfo.Il2CppMethods), "Unity IL2CPP methods are not available.");
 
             _options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
+        }
+
+        public SentryEvent Process(SentryEvent @event)
+        {
+            _options.DiagnosticLogger?.LogDebug("Running Unity IL2CPP event processor on: Event {0}", @event.EventId);
+
+            var sentryExceptions = @event.SentryExceptions;
+            if (sentryExceptions?.Any() == true)
+            {
+                return @event;
+            }
+
+            var usedImages = new HashSet<DebugImage>();
+            Logger = _options.DiagnosticLogger;
+
+            if (@event.SentryThreads != null)
+            {
+                foreach (var thread in @event.SentryThreads)
+                {
+                    var sentryStacktrace = thread.Stacktrace;
+                    if (sentryStacktrace == null)
+                    {
+                        // We will only augment an existing stack trace with native
+                        // instructions, so with no stack trace, there is nothing to do
+                        return @event;
+                    }
+
+                    sentryStacktrace.AddressAdjustment =
+                        Application.platform == RuntimePlatform.Android
+                            ? InstructionAddressAdjustment.None
+                            : InstructionAddressAdjustment.All;
+
+                    var nativeStackTrace = GetNativeStackTrace();
+
+                    _options.DiagnosticLogger?.LogDebug("NativeStackTrace Image: '{0}' (UUID: {1})", nativeStackTrace.ImageName, nativeStackTrace.ImageUuid);
+
+                    ProcessNativeCallStack(sentryStacktrace, nativeStackTrace, usedImages);
+                }
+            }
+
+            @event.DebugImages ??= new List<DebugImage>();
+            @event.DebugImages.AddRange(usedImages);
+
+            return @event;
         }
 
         public void Process(Exception incomingException, SentryEvent sentryEvent)
@@ -310,7 +354,7 @@ namespace Sentry.Unity
             yield return exception;
         }
 
-        private NativeStackTrace GetNativeStackTrace(Exception? e)
+        private NativeStackTrace GetNativeStackTrace(Exception? e = null)
         {
             // Create a `GCHandle` for the exception (if any), which we can then use to
             // essentially get a pointer to the underlying `Il2CppException` C++ object.

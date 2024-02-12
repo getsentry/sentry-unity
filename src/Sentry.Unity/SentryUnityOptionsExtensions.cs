@@ -63,11 +63,13 @@ namespace Sentry.Unity
             }
         }
 
-        internal static void AddIl2CppExceptionProcessor(this SentryUnityOptions options, ISentryUnityInfo unityInfo)
+        internal static void AddIl2CppEventProcessor(this SentryUnityOptions options, ISentryUnityInfo unityInfo)
         {
             if (unityInfo.Il2CppMethods is not null)
             {
-                options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options, unityInfo));
+                var processor = new UnityIl2CppEventProcessor(options, unityInfo);
+                options.AddEventProcessor(processor);
+                options.AddExceptionProcessor(processor);
             }
             else
             {
