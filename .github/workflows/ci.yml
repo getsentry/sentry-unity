@@ -63,9 +63,7 @@ jobs:
         id: env
         run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
 
-      - name: Apply mask
-        shell: pwsh
-        run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo \"::add-mask::${{ secrets.LICENSE_SERVER_URL }}\"
 
       - name: Restore Unity Packages
         uses: actions/cache@v3
@@ -216,9 +214,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Apply mask
-        shell: pwsh
-        run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo \"::add-mask::${{ secrets.LICENSE_SERVER_URL }}\"
 
       - name: Start the Unity docker container
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
@@ -284,9 +280,7 @@ jobs:
           docker-images: false
           swap-storage: true      
 
-      - name: Apply mask
-        shell: pwsh
-        run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo \"::add-mask::${{ secrets.LICENSE_SERVER_URL }}\"
 
       - name: Start the Unity docker container
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
@@ -407,9 +401,7 @@ jobs:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: ${{ matrix.unity-modules }}
 
-      - name: Apply mask
-        shell: pwsh
-        run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo \"::add-mask::${{ secrets.LICENSE_SERVER_URL }}\"
 
       - name: Create Unity license config
         run: |
