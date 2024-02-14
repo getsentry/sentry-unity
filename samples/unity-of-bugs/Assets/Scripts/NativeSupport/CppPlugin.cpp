@@ -26,7 +26,7 @@ void throw_cpp()
     }
 }
 
-void get_current_thread_native_stack_trace(uintptr_t** addresses, int* numFrames, char* imageUUID)
+void get_current_thread_native_stack_trace(uintptr_t** addresses, int* numFrames, char* imageUUID, char* imageName)
 {
     *numFrames = il2cpp_current_thread_get_stack_depth();
 
@@ -37,9 +37,10 @@ void get_current_thread_native_stack_trace(uintptr_t** addresses, int* numFrames
         if (il2cpp_current_thread_get_frame_at(i, &frame)) {
             (*addresses)[i] = frame.raw_ip;
         }
-    }  
+    }
 
     imageUUID = il2cpp::os::Image::GetImageUUID();
+    imageName = il2cpp::os::Image::GetImageName();
 }
 
 
