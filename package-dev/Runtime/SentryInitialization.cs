@@ -16,6 +16,7 @@
 
 using System;
 using Sentry.Extensibility;
+using AOT;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -211,6 +212,70 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern void il2cpp_free(IntPtr ptr);
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct Il2CppStackFrameInfo
+        {
+            public IntPtr method;
+            public IntPtr raw_ip;
+
+            public int sourceCodeLineNumber;
+            public int ilOffset;
+
+            [MarshalAs(UnmanagedType.LPStr)]
+            public string filePath;
+        }
+
+        private static void Il2CppNativeStackTraceCurrentThreadShim(out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
+        {
+            var uuidBuffer = IntPtr.Zero;
+            var imageNameBuffer = IntPtr.Zero;
+
+            numFrames = il2cpp_current_thread_get_stack_depth();
+
+            var frames = new IntPtr[numFrames];
+
+            for(int i = 0; i < numFrames; ++i)
+            {
+                IntPtr farameInfoPtr = IntPtr.Zero;
+                try
+                {
+                    farameInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Il2CppStackFrameInfo>());
+                    var res = il2cpp_current_thread_get_frame_at(i, farameInfoPtr);
+                    if(res)
+                    {
+                        Il2CppStackFrameInfo frameInfo = Marshal.PtrToStructure<Il2CppStackFrameInfo>(farameInfoPtr);
+                        frames[i] = frameInfo.raw_ip;
+                    }
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(farameInfoPtr);
+                }
+            }
+
+            int size = Marshal.SizeOf(typeof(IntPtr)) * numFrames;
+            addresses = Marshal.AllocHGlobal(size);
+
+            Marshal.Copy(frames, 0, addresses, numFrames);
+
+            try
+            {
+                imageUUID = SanitizeDebugId(uuidBuffer);
+                imageName = (imageNameBuffer == IntPtr.Zero) ? null : Marshal.PtrToStringAnsi(imageNameBuffer);
+            }
+            finally
+            {
+                il2cpp_free(uuidBuffer);
+                il2cpp_free(imageNameBuffer);
+            }
+        }
+
+        [DllImport("__Internal")]
+        private static extern int il2cpp_current_thread_get_stack_depth();
+
+        [DllImport("__Internal")]
+        private static extern bool il2cpp_current_thread_get_frame_at(int offset, IntPtr frame);
+
 #if UNITY_2021_3_OR_NEWER
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
@@ -234,28 +299,6 @@ namespace Sentry.Unity
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
         [DllImport("__Internal")]
         private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out IntPtr imageUUID, out IntPtr imageName);
-
-        private static void Il2CppNativeStackTraceCurrentThreadShim(out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
-        {
-            var uuidBuffer = IntPtr.Zero;
-            var imageNameBuffer = IntPtr.Zero;
-
-            get_current_thread_native_stack_trace(out addresses, out numFrames, out uuidBuffer, out imageNameBuffer);
-
-            try
-            {
-                imageUUID = SanitizeDebugId(uuidBuffer);
-                imageName = (imageNameBuffer == IntPtr.Zero) ? null : Marshal.PtrToStringAnsi(imageNameBuffer);
-            }
-            finally
-            {
-                il2cpp_free(uuidBuffer);
-                il2cpp_free(imageNameBuffer);
-            }
-        }
-
-        [DllImport("__Internal")]
-        private static extern void get_current_thread_native_stack_trace(out IntPtr addresses, out int numFrames, out IntPtr imageUUID, out IntPtr imageName);
 #else
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {

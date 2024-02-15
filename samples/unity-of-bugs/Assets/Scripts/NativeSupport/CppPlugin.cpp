@@ -14,7 +14,6 @@ void crash_in_cpp()
 }
 
 extern "C" {
-
 void throw_cpp()
 {
     try {
@@ -25,23 +24,4 @@ void throw_cpp()
         throw;
     }
 }
-
-void get_current_thread_native_stack_trace(uintptr_t** addresses, int* numFrames, char* imageUUID, char* imageName)
-{
-    *numFrames = il2cpp_current_thread_get_stack_depth();
-
-    *addresses = static_cast<uintptr_t*>(il2cpp_alloc((*numFrames) * sizeof(uintptr_t)));
-
-    for (int32_t i = 0; i < *numFrames; ++i) {
-        Il2CppStackFrameInfo frame;
-        if (il2cpp_current_thread_get_frame_at(i, &frame)) {
-            (*addresses)[i] = frame.raw_ip;
-        }
-    }
-
-    imageUUID = il2cpp::os::Image::GetImageUUID();
-    imageName = il2cpp::os::Image::GetImageName();
-}
-
-
 }
