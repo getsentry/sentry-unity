@@ -1,9 +1,9 @@
-#include <exception>
-#include <iostream>
-#include <string>
 #include "il2cpp-api.h"
 #include "il2cpp-config.h"
 #include "os/Image.h"
+#include <exception>
+#include <iostream>
+#include <string>
 
 extern "C" {
 void crash_in_cpp()
