@@ -221,12 +221,12 @@ namespace Sentry.Unity
             public int sourceCodeLineNumber;
             public int ilOffset;
 
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string filePath;
+            public IntPtr filePath;
         }
 
         private static void Il2CppNativeStackTraceCurrentThreadShim(out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
+            // Currently there is no obvious way to obtain image UUID and name
             var uuidBuffer = IntPtr.Zero;
             var imageNameBuffer = IntPtr.Zero;
 
@@ -240,6 +240,8 @@ namespace Sentry.Unity
                 try
                 {
                     farameInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Il2CppStackFrameInfo>());
+
+                    // Is it reliable to query current stack trace here?
                     var res = il2cpp_current_thread_get_frame_at(i, farameInfoPtr);
                     if(res)
                     {
