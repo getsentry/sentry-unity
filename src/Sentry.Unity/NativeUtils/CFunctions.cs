@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.NativeUtils
@@ -172,7 +173,7 @@ namespace Sentry.Unity.NativeUtils
                                 result.Add(new DebugImage()
                                 {
                                     CodeFile = GetValueString(cItem, "code_file"),
-                                    ImageAddress = GetValueString(cItem, "image_addr"),
+                                    ImageAddress = Convert.ToInt64(GetValueString(cItem, "image_addr"), 16),
                                     ImageSize = GetValueInt(cItem, "image_size"),
                                     DebugFile = GetValueString(cItem, "debug_file"),
                                     DebugId = GetValueString(cItem, "debug_id"),

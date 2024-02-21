@@ -47,8 +47,8 @@ namespace Sentry.Unity.Editor
             }
             catch (Exception e)
             {
-                logger.LogError("Failed to add the performance auto instrumentation. " +
-                                 "The assembly has not been modified.", e);
+                logger.LogError(e, "Failed to add the performance auto instrumentation. " +
+                                 "The assembly has not been modified.");
             }
 
             stopwatch.Stop();

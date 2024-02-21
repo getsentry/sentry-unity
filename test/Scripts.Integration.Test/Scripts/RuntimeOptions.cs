@@ -27,7 +27,7 @@ public class RuntimeOptions : SentryRuntimeOptionsConfiguration
         options.TracesSampleRate = 1.0d;
         options.PerformanceAutoInstrumentationEnabled = true;
 
-        options.CreateHttpClientHandler = () => SmokeTester.t;
+        options.CreateHttpMessageHandler = () => SmokeTester.t;
         SmokeTester.CrashedLastRun = () =>
         {
             if (options.CrashedLastRun != null)

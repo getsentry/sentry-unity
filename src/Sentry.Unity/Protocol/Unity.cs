@@ -6,7 +6,7 @@ using Sentry.Unity.Extensions;
 
 namespace Sentry.Unity.Protocol
 {
-    public sealed class Unity : IJsonSerializable
+    public sealed class Unity : ISentryJsonSerializable
     {
         /// <summary>
         /// Tells Sentry which type of context this is.

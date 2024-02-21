@@ -224,7 +224,7 @@ namespace Sentry.Unity.Editor.Android
             }
             catch (Exception e)
             {
-                _logger.LogError($"Failed to {(nativeSupportEnabled ? "add" : "remove")} Android Dependencies in the gradle project", e);
+                _logger.LogError(e, $"Failed to {(nativeSupportEnabled ? "add" : "remove")} Android Dependencies in the gradle project");
             }
         }
 
@@ -277,7 +277,7 @@ namespace Sentry.Unity.Editor.Android
             }
             catch (Exception e)
             {
-                _logger.LogError("Failed to add the automatic symbols upload to the gradle project", e);
+                _logger.LogError(e, "Failed to add the automatic symbols upload to the gradle project");
             }
         }
 
@@ -299,7 +299,7 @@ namespace Sentry.Unity.Editor.Android
             }
             catch (Exception e)
             {
-                _logger.LogError($"Failed to {(nativeSupportEnabled ? "add" : "remove")} Proguard rules in the gradle project", e);
+                _logger.LogError(e, $"Failed to {(nativeSupportEnabled ? "add" : "remove")} Proguard rules in the gradle project");
             }
         }
 

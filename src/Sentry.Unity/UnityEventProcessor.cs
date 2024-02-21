@@ -19,7 +19,7 @@ namespace Sentry.Unity
             _mainThreadData = sentryMonoBehaviour.MainThreadData;
         }
 
-        public Transaction Process(Transaction transaction)
+        public SentryTransaction? Process(SentryTransaction transaction)
         {
             SetEventContext(transaction);
             return transaction;
@@ -47,7 +47,7 @@ namespace Sentry.Unity
             }
             catch (Exception exception)
             {
-                _sentryOptions.DiagnosticLogger?.LogError("{0} processing failed.", exception, nameof(SentryEvent));
+                _sentryOptions.DiagnosticLogger?.LogError(exception: exception, "{0} processing failed.", nameof(SentryEvent));
             }
         }
 

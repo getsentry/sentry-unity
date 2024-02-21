@@ -1,4 +1,3 @@
-using Sentry.Extensibility;
 using Sentry.Unity.Json;
 
 namespace Sentry.Unity
@@ -6,7 +5,7 @@ namespace Sentry.Unity
     /// <summary>
     /// Sentry Unity Scope Observer wrapper for the common behaviour accross platforms.
     /// </summary>
-    public abstract class ScopeObserver : Sentry.IScopeObserver
+    public abstract class ScopeObserver : IScopeObserver
     {
         private readonly SentryOptions _options;
         private readonly string _name;
@@ -65,7 +64,7 @@ namespace Sentry.Unity
 
         public abstract void UnsetTagImpl(string key);
 
-        public void SetUser(User? user)
+        public void SetUser(SentryUser? user)
         {
             if (user is null)
             {
@@ -82,7 +81,7 @@ namespace Sentry.Unity
             }
         }
 
-        public abstract void SetUserImpl(User user);
+        public abstract void SetUserImpl(SentryUser user);
 
         public abstract void UnsetUserImpl();
     }

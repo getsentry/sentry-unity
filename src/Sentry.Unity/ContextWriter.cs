@@ -13,7 +13,12 @@ namespace Sentry.Unity
     {
         public void Write(Scope scope)
         {
-            var unityContext = (Protocol.Unity)scope.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity());
+            if (!scope.Contexts.TryGetValue(Protocol.Unity.Type, out var getThatUnityContext))
+            {
+                getThatUnityContext = new Protocol.Unity();
+            }
+            var unityContext = (Protocol.Unity)getThatUnityContext;
+
             WriteScope(
                 scope.Contexts.App.StartTime?.ToString("o"),
                 scope.Contexts.App.BuildType,

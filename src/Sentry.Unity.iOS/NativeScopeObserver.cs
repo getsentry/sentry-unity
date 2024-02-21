@@ -21,7 +21,7 @@ namespace Sentry.Unity.iOS
 
         public override void UnsetTagImpl(string key) => SentryCocoaBridgeProxy.SentryNativeBridgeUnsetTag(key);
 
-        public override void SetUserImpl(User user) =>
+        public override void SetUserImpl(SentryUser user) =>
                 SentryCocoaBridgeProxy.SentryNativeBridgeSetUser(user.Email, user.Id, user.IpAddress, user.Username);
 
         public override void UnsetUserImpl() => SentryCocoaBridgeProxy.SentryNativeBridgeUnsetUser();

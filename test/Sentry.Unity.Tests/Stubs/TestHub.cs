@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sentry.Protocol.Envelopes;
 
 namespace Sentry.Unity.Tests.Stubs
 {
@@ -15,18 +16,14 @@ namespace Sentry.Unity.Tests.Stubs
         public TestHub(bool isEnabled = true)
         {
             IsEnabled = isEnabled;
+            Metrics = null!; // TODO: Don't do it like that
         }
         public bool IsEnabled { get; }
 
-        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null)
+        public SentryId CaptureEvent(SentryEvent evt, Scope? scope = null, SentryHint? hint = null)
         {
             _capturedEvents.Add(evt);
             return evt.EventId;
-        }
-
-        public SentryId CaptureEvent(SentryEvent evt, Hint? hint, Scope? scope = null)
-        {
-            throw new NotImplementedException();
         }
 
         public void CaptureUserFeedback(UserFeedback userFeedback)
@@ -34,17 +31,26 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
-        public void CaptureTransaction(Transaction transaction)
+        public void CaptureTransaction(SentryTransaction transaction)
         {
         }
 
-        public void CaptureTransaction(Transaction transaction, Hint? hint)
+        public void CaptureTransaction(SentryTransaction transaction, Scope? scope, SentryHint? hint)
+        {
+        }
+
+        public void CaptureTransaction(SentryTransaction transaction, SentryHint? hint)
         {
             throw new NotImplementedException();
         }
 
         public void CaptureSession(SessionUpdate sessionUpdate)
         {
+        }
+
+        public bool CaptureEnvelope(Envelope envelope)
+        {
+            throw new NotImplementedException();
         }
 
         public Task FlushAsync(TimeSpan timeout)
@@ -77,7 +83,9 @@ namespace Sentry.Unity.Tests.Stubs
         }
 
         public SentryId LastEventId { get; }
-        public ITransaction StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
+        public IMetricAggregator Metrics { get; }
+
+        public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
         {
             throw new NotImplementedException();
         }
@@ -87,7 +95,7 @@ namespace Sentry.Unity.Tests.Stubs
             throw new NotImplementedException();
         }
 
-        public ISpan? GetSpan()
+        ISpan? IHub.GetSpan()
         {
             throw new NotImplementedException();
         }
@@ -135,6 +143,11 @@ namespace Sentry.Unity.Tests.Stubs
         }
 
         public SentryId CaptureEvent(SentryEvent evt, Action<Scope> configureScope)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SentryId CaptureEvent(SentryEvent evt, SentryHint? hint, Action<Scope> configureScope)
         {
             throw new NotImplementedException();
         }

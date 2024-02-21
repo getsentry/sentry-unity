@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.NativeUtils;
 using UnityEngine;
@@ -68,7 +69,7 @@ namespace Sentry.Unity
                 // Canonical addresses on x64 leave a gap in the middle of the address space, which is unused.
                 // This is a range of addresses that we should be able to safely use.
                 // See https://en.wikipedia.org/wiki/X86-64#Virtual_address_space_details
-                var mainLibOffset = (ulong)1 << 63;
+                var mainLibOffset = long.MaxValue;
                 DebugImage? mainLibImage = null;
 
                 // TODO do we really want to continue if these two don't match?
@@ -93,7 +94,7 @@ namespace Sentry.Unity
 
                     // TODO should we do this for all addresses or only relative ones?
                     //      If the former, we should also update `frame.InstructionAddress` down below.
-                    var instructionAddress = (ulong)nativeFrame.ToInt64();
+                    var instructionAddress = nativeFrame.ToInt64();
 
                     // We cannot determine whether this frame is a main library frame just from the address
                     // because even relative address on the frame may correspond to an absolute address of a loaded library.
@@ -141,7 +142,7 @@ namespace Sentry.Unity
                             // a sentinel value here.
                             CodeFile = string.IsNullOrEmpty(nativeStackTrace.ImageName) ? "GameAssembly.fallback" : nativeStackTrace.ImageName,
                             DebugId = mainImageUUID,
-                            ImageAddress = $"0x{mainLibOffset:X8}",
+                            ImageAddress = mainLibOffset,
                         };
 
                         image = mainLibImage;
@@ -151,21 +152,21 @@ namespace Sentry.Unity
                         }
                     }
 
-                    var imageAddress = Convert.ToUInt64(image.ImageAddress, 16);
+                    var imageAddress = image.ImageAddress!.Value;
                     isRelativeAddress ??= instructionAddress < imageAddress;
 
                     if (isRelativeAddress is true)
                     {
                         // Shift the instruction address to be absolute.
                         instructionAddress += imageAddress;
-                        frame.InstructionAddress = $"0x{instructionAddress:X8}";
+                        frame.InstructionAddress = instructionAddress;
                     }
 
                     // sanity check that the instruction fits inside the range
                     var logLevel = SentryLevel.Debug;
                     if (image.ImageSize is not null)
                     {
-                        if (instructionAddress < imageAddress || instructionAddress > imageAddress + (ulong)image.ImageSize)
+                        if (instructionAddress < imageAddress || instructionAddress > imageAddress + image.ImageSize)
                         {
                             logLevel = SentryLevel.Warning;
                             notes ??= ".";
@@ -203,17 +204,17 @@ namespace Sentry.Unity
         private class DebugImageInfo
         {
             public readonly DebugImage Image;
-            public readonly ulong StartAddress;
-            public readonly ulong EndAddress;
+            public readonly long? StartAddress;
+            public readonly long? EndAddress;
 
             public DebugImageInfo(DebugImage image)
             {
                 Image = image;
-                StartAddress = Convert.ToUInt64(image.ImageAddress, 16);
-                EndAddress = StartAddress + (ulong)image.ImageSize!;
+                StartAddress = image.ImageAddress!.Value;
+                EndAddress = StartAddress + image.ImageSize!.Value;
             }
 
-            public bool ContainsAddress(ulong address) => StartAddress <= address && address <= EndAddress;
+            public bool ContainsAddress(long address) => StartAddress <= address && address <= EndAddress;
         }
 
         private static IDiagnosticLogger? Logger;
@@ -256,7 +257,7 @@ namespace Sentry.Unity
             return result;
         });
 
-        private static DebugImage? FindDebugImageContainingAddress(ulong instructionAddress)
+        private static DebugImage? FindDebugImageContainingAddress(long instructionAddress)
         {
             var list = DebugImagesSorted.Value;
 

@@ -52,7 +52,11 @@ namespace Sentry.Unity
             PopulateOperatingSystem(scope.Contexts.OperatingSystem);
             PopulateDevice(scope.Contexts.Device);
             PopulateGpu(scope.Contexts.Gpu);
-            PopulateUnity((Protocol.Unity)scope.Contexts.GetOrAdd(Protocol.Unity.Type, _ => new Protocol.Unity()));
+
+            var unity = new Protocol.Unity();
+            PopulateUnity(unity);
+            scope.Contexts.Add(Protocol.Unity.Type, unity);
+
             PopulateTags(scope.SetTag);
             PopulateUser(scope);
         }

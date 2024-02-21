@@ -213,7 +213,7 @@ namespace Sentry.Unity.Native
             }
             catch (Exception err)
             {
-                logger.LogError("Exception in native log forwarder.", err);
+                logger.LogError(err, "Exception in native log forwarder.");
             }
 
             if (message == null)

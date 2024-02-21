@@ -195,7 +195,7 @@ public class SmokeTester : MonoBehaviour
             scope.SetExtra("extra-key", 42);
             scope.AddBreadcrumb("scope-crumb");
             scope.SetTag("tag-key", "tag-value");
-            scope.User = new User()
+            scope.User = new SentryUser()
             {
                 Username = "username",
                 Email = "email@example.com",
