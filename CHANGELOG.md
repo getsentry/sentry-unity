@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.0
 
 This major release is based on the .NET 4.0 release and includes features like [Metrics](https://docs.sentry.io/platforms/dotnet/metrics/)(preview) and [Spotlight](https://spotlightjs.com/).
 
