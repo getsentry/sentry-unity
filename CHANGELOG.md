@@ -2,11 +2,15 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed potential crashes on Android devices by removing the use of the persistent scope observer ([#1555](https://github.com/getsentry/sentry-unity/pull/1555))
+
 ### Dependencies
 
-- Bump Java SDK from v7.3.0 to v7.4.0 ([#1569](https://github.com/getsentry/sentry-unity/pull/1569))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#740)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.3.0...7.4.0)
+- Bump Java SDK from v7.3.0 to v7.5.0 ([#1569](https://github.com/getsentry/sentry-unity/pull/1569), [#1555](https://github.com/getsentry/sentry-unity/pull/1555))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#750)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.3.0...7.5.0)
 
 ## 2.0.0
 

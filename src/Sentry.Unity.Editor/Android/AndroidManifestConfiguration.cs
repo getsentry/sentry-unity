@@ -164,6 +164,7 @@ namespace Sentry.Unity.Editor.Android
             androidManifest.SetAutoSessionTracking(false);
             androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
             androidManifest.SetAnr(false);
+            androidManifest.SetPersistentScopeObserver(false);
 
             // TODO: All SentryOptions and create specific Android options
 
@@ -414,6 +415,9 @@ namespace Sentry.Unity.Editor.Android
 
         internal void SetAnr(bool enableAnr)
             => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr.ToString());
+
+        internal void SetPersistentScopeObserver(bool enableScopePersistence)
+            => SetMetaData($"{SentryPrefix}.enable-scope-persistence", enableScopePersistence.ToString());
 
         internal void SetNdkEnabled(bool enableNdk)
             => SetMetaData($"{SentryPrefix}.ndk.enable", enableNdk.ToString());
