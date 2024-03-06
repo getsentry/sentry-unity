@@ -156,7 +156,10 @@ namespace Sentry.Unity.Integrations
             // 'OnQuitting' is invoked even when an uncaught exception happens in the ART. To make sure the .NET
             // SDK checks with the native layer on restart if the previous run crashed (through the CrashedLastRun callback)
             // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.
-            _hub?.PauseSession();
+            if (_sentryOptions?.AutoSessionTracking is true)
+            {
+                _hub?.PauseSession();
+            }
             _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
         }
 
