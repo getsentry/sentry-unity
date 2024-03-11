@@ -10,6 +10,9 @@
 - Bump CLI from v2.28.6 to v2.30.0 ([#1574](https://github.com/getsentry/sentry-unity/pull/1574), [#1578](https://github.com/getsentry/sentry-unity/pull/1578))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2300)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.28.6...2.30.0)
+- Bump Java SDK from v7.5.0 to v7.6.0 ([#1581](https://github.com/getsentry/sentry-unity/pull/1581))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#760)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.5.0...7.6.0)
 
 ## 2.0.1
 
