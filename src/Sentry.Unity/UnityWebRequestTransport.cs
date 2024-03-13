@@ -107,7 +107,7 @@ namespace Sentry.Unity
                 try
                 {
                     // Unity would throw if we tried to set content-type, content-length, or content-encoding
-                    if (header.Key.ToLowerInvariant() is not ("content-length" or "content-type" or "content-encoding"))
+                    if (!header.Key.StartsWith("content-", StringComparison.InvariantCultureIgnoreCase))
                     {
                         response.Headers.Add(header.Key, header.Value);
                     }
