@@ -48,6 +48,11 @@ namespace Sentry.Unity.Tests.Stubs
         {
         }
 
+        public SentryId CaptureCheckIn(string monitorSlug, CheckInStatus status, SentryId? sentryId = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool CaptureEnvelope(Envelope envelope)
         {
             throw new NotImplementedException();
