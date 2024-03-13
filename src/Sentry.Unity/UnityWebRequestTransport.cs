@@ -104,10 +104,17 @@ namespace Sentry.Unity
             var response = new HttpResponseMessage((HttpStatusCode)www.responseCode);
             foreach (var header in www.GetResponseHeaders())
             {
-                // Unity would throw if we tried to set content-type or content-length
-                if (header.Key.ToLowerInvariant() is not ("content-length" or "content-type" or "content-encoding"))
+                try
                 {
-                    response.Headers.Add(header.Key, header.Value);
+                    // Unity would throw if we tried to set content-type, content-length, or content-encoding
+                    if (header.Key.ToLowerInvariant() is not ("content-length" or "content-type" or "content-encoding"))
+                    {
+                        response.Headers.Add(header.Key, header.Value);
+                    }
+                }
+                catch (InvalidOperationException e)
+                {
+                    _options.DiagnosticLogger?.LogError(e, "Failed to extract response header: {0}", header.Key);
                 }
             }
             response.Content = new StringContent(www.downloadHandler.text);
