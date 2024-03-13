@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer throws `InvalidOperationExceptions` on platforms that rely on the `UnityWebRequestTransport` (i.e. Switch, Hololens) ([#1587](https://github.com/getsentry/sentry-unity/pull/1587))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.20.0 to v8.21.0 ([#1575](https://github.com/getsentry/sentry-unity/pull/1575))
