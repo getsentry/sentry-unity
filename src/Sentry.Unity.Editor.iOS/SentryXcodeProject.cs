@@ -82,25 +82,35 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
 
         public void AddSentryFramework()
         {
-            _logger?.LogInfo("Adding the Sentry framework.");
+            _logger?.LogInfo("Adding the build properties and flags.");
+            AddBuildProperties();
 
             var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
-            var frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
-                .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
 
-            // Embedding the framework because it's dynamic and needed at runtime
-            _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
-                .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
+            var hasAddedFramework = false;
+            var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new []{ typeof(string) });
+            if (hasFileMethod != null)
+                hasAddedFramework = (bool)hasFileMethod.Invoke(_project, new object[] { relativeFrameworkPath });
 
-            SetSearchPathBuildProperty("$(inherited)");
-            SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
+            string frameworkGuid;
+            if (hasAddedFramework)
+            {
+                _logger?.LogDebug("The Sentry framework is already added to the project.");
 
-            var setBuildPropertyMethod = _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) });
-            setBuildPropertyMethod.Invoke(_project, new object[] { _mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
-            setBuildPropertyMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
+                frameworkGuid = (string) _pbxProjectType.GetMethod("FindFileGuidByProjectPath", new []{ typeof(string) })
+                    .Invoke(_project, new object[] { relativeFrameworkPath });
+            }
+            else
+            {
+                _logger?.LogInfo("Adding the Sentry framework.");
 
-            _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
-                .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
+                frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
+                    .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
+
+                // Embedding the framework because it's dynamic and needed at runtime
+                _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
+                    .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
+            }
 
             // Getting the Link With Binary phase
             var getBuildPhaseMethod = _pbxProjectType.GetMethod("GetFrameworksBuildPhaseByTarget", new[] { typeof(string) });
@@ -113,6 +123,19 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
             addFileToBuildSectionMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, unityFrameworkBuildPhaseGuid, frameworkGuid });
 
             _logger?.LogDebug("Successfully added the Sentry framework.");
+        }
+
+        private void AddBuildProperties()
+        {
+            SetSearchPathBuildProperty("$(inherited)");
+            SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
+
+            var setBuildPropertyMethod = _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) });
+            setBuildPropertyMethod.Invoke(_project, new object[] { _mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
+            setBuildPropertyMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
+
+            _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+                .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
         }
 
         public void AddSentryNativeBridge()
