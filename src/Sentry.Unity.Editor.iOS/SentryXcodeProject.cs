@@ -88,7 +88,7 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
             var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
 
             var hasAddedFramework = false;
-            var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new []{ typeof(string) });
+            var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new[] { typeof(string) });
             if (hasFileMethod != null)
                 hasAddedFramework = (bool)hasFileMethod.Invoke(_project, new object[] { relativeFrameworkPath });
 
@@ -97,7 +97,7 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
             {
                 _logger?.LogDebug("The Sentry framework is already added to the project.");
 
-                frameworkGuid = (string) _pbxProjectType.GetMethod("FindFileGuidByProjectPath", new []{ typeof(string) })
+                frameworkGuid = (string)_pbxProjectType.GetMethod("FindFileGuidByProjectPath", new[] { typeof(string) })
                     .Invoke(_project, new object[] { relativeFrameworkPath });
             }
             else
