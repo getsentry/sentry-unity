@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- remove ios embed framework build phase duplication (#1558) ([#1595](https://github.com/getsentry/sentry-unity/pull/1595))
+
 ### Dependencies
 
 - Bump CLI from v2.30.1 to v2.30.2 ([#1589](https://github.com/getsentry/sentry-unity/pull/1589))
