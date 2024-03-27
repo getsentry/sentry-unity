@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,7 +6,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 {
     internal static class AdvancedTab
     {
-        private static bool UnfoldFailedStatusCodeRanges = false;
+        private static bool UnfoldFailedStatusCodeRanges;
 
         internal static void Display(ScriptableSentryUnityOptions options, SentryCliOptions? cliOptions)
         {
@@ -163,6 +161,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                     options.NdkScopeSyncEnabled);
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.EndDisabledGroup();
+                options.PostGenerateGradleProjectCallbackOrder = EditorGUILayout.IntField(
+                    new GUIContent("Android Callback Order", "Override the default callback order of " +
+                                                                               "Sentry Gradle modification script that adds Sentry dependencies " +
+                                                                               "to the gradle project files."),
+                    options.PostGenerateGradleProjectCallbackOrder);
                 EditorGUI.indentLevel--;
 
                 options.WindowsNativeSupportEnabled = EditorGUILayout.Toggle(

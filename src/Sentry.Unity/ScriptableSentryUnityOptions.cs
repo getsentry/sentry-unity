@@ -97,6 +97,7 @@ namespace Sentry.Unity
         [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool NdkIntegrationEnabled { get; set; } = true;
         [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;
+        [field: SerializeField] public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
         [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
         [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
