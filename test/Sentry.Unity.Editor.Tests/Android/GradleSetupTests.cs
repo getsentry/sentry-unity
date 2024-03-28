@@ -101,8 +101,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var gradleContent = File.ReadAllText(testCasePath);
             var sut = new GradleSetup(Logger, GradleProjectPath);
 
-            var actualResult = sut.InsertIntoScope(gradleContent, GradleSetup.DependencyScopeName,
-                GradleSetup.SdkDependencies);
+            var actualResult = sut.ReplaceGradleContents(gradleContent);
 
             StringAssert.AreEqualIgnoringCase(actualResult, expectedGradleContent);
         }
