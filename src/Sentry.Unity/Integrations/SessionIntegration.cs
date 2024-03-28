@@ -19,8 +19,6 @@ namespace Sentry.Unity.Integrations
                 return;
             }
 
-            options.DiagnosticLogger?.LogDebug("Registering Session integration.");
-
             _sentryMonoBehaviour.ApplicationResuming += () =>
             {
                 options.DiagnosticLogger?.LogDebug("Resuming session.");
