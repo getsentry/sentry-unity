@@ -214,6 +214,8 @@ namespace Sentry.Unity
 
             if (RuntimeOptionsConfiguration != null)
             {
+                options.DiagnosticLogger?.LogDebug("Calling into 'RuntimeConfiguration'.");
+
                 // This has to happen in between options object creation and updating the options based on programmatic changes
                 RuntimeOptionsConfiguration.Configure(options);
             }
@@ -238,6 +240,8 @@ namespace Sentry.Unity
         {
             if (unityInfo?.IsKnownPlatform() == false)
             {
+                options.DiagnosticLogger?.LogInfo("Running on an 'unknown' platform. Creating compatibilities to prevent crashes.");
+
                 // This is only provided on a best-effort basis for other than the explicitly supported platforms.
                 if (options.BackgroundWorker is null)
                 {
