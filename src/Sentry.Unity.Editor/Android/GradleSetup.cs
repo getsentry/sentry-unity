@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using Sentry.Extensibility;
 
 namespace Sentry.Unity.Editor.Android
@@ -66,7 +67,8 @@ namespace Sentry.Unity.Editor.Android
                 return fileContent;
             }
 
-            return fileContent.Replace(textToFind, textToInsert);
+            var regex = new Regex(Regex.Escape(textToFind));
+            return regex.Replace(fileContent, textToInsert, 1);
         }
 
         internal static string LoadGradleScript(string path)
