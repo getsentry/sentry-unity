@@ -2,14 +2,17 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 dependencies {
-    implementation(name: 'sentry-android-ndk-release', ext:'aar')
-    implementation(name: 'sentry-android-core-release', ext:'aar')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.22'
 }
 
 repositories {
     mavenCentral()
+}
+
+dependencies {
+	implementation(name: 'sentry-android-ndk-release', ext:'aar')
+	implementation(name: 'sentry-android-core-release', ext:'aar')
 }
 
 android {
