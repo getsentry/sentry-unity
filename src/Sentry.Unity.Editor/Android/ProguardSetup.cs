@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
-using UnityEditor;
 
 namespace Sentry.Unity.Editor.Android
 {
@@ -107,7 +104,7 @@ namespace Sentry.Unity.Editor.Android
         {
             if (!File.Exists(_gradleScriptPath))
             {
-                throw new FileNotFoundException($"Failed to find the gradle config.", _gradleScriptPath);
+                throw new FileNotFoundException("Failed to find the gradle config.", _gradleScriptPath);
             }
             return File.ReadAllText(_gradleScriptPath);
         }
