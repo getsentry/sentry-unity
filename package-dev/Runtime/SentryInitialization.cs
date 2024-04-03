@@ -69,6 +69,7 @@ namespace Sentry.Unity
 #elif SENTRY_NATIVE_ANDROID
                     SentryNativeAndroid.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE
+                    CrashReportHandler.enableCaptureExceptions = false;
                     SentryNative.Configure(options, sentryUnityInfo);
 #elif SENTRY_WEBGL
                     SentryWebGL.Configure(options);
