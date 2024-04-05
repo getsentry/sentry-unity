@@ -87,30 +87,25 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
 
             var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
 
-            var hasAddedFramework = false;
             var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new[] { typeof(string) });
             if (hasFileMethod != null)
-                hasAddedFramework = (bool)hasFileMethod.Invoke(_project, new object[] { relativeFrameworkPath });
-
-            string frameworkGuid;
-            if (hasAddedFramework)
             {
-                _logger?.LogDebug("The Sentry framework is already added to the project.");
-
-                frameworkGuid = (string)_pbxProjectType.GetMethod("FindFileGuidByProjectPath", new[] { typeof(string) })
-                    .Invoke(_project, new object[] { relativeFrameworkPath });
+                var hasAddedFramework = (bool)hasFileMethod.Invoke(_project, new object[] { relativeFrameworkPath });
+                if (hasAddedFramework)
+                {
+                    _logger?.LogDebug("Skipping. The Sentry framework has already been added to the project.");
+                    return;
+                }
             }
-            else
-            {
-                _logger?.LogInfo("Adding the Sentry framework.");
 
-                frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
-                    .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
+            _logger?.LogInfo("Adding the Sentry framework.");
 
-                // Embedding the framework because it's dynamic and needed at runtime
-                _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
-                    .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
-            }
+            var frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
+                .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
+
+            // Embedding the framework because it's dynamic and needed at runtime
+            _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
+                .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
 
             // Getting the Link With Binary phase
             var getBuildPhaseMethod = _pbxProjectType.GetMethod("GetFrameworksBuildPhaseByTarget", new[] { typeof(string) });
