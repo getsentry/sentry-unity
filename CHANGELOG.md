@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK no longer fails to capture native crashes on Windows. It now properly reinstalls the capturing backend during the initialization ([#1603](https://github.com/getsentry/sentry-unity/pull/1603))
 - When building for iOS, the SDK no longer adds its dependencies multiple times (#1558) ([#1595](https://github.com/getsentry/sentry-unity/pull/1595))
 
 ### Dependencies

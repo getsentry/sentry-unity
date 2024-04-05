@@ -104,6 +104,8 @@ namespace Sentry.Unity.Native
             }
         }
 
+        internal static void ReinstallBackend() => sentry_reinstall_backend();
+
         // libsentry.so
         [DllImport("sentry")]
         private static extern IntPtr sentry_options_new();
@@ -276,5 +278,8 @@ namespace Sentry.Unity.Native
 
         [DllImport("sentry")]
         private static extern int sentry_clear_crashed_last_run();
+
+        [DllImport("sentry")]
+        private static extern void sentry_reinstall_backend();
     }
 }
