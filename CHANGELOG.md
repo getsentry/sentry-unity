@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- remove ios embed framework build phase duplication (#1558) ([#1595](https://github.com/getsentry/sentry-unity/pull/1595))
+- When building for iOS, the SDK no longer adds its dependencies multiple times (#1558) ([#1595](https://github.com/getsentry/sentry-unity/pull/1595))
 
 ### Dependencies
 
