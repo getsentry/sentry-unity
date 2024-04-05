@@ -5,12 +5,16 @@
 ### Fixes
 
 - The SDK no longer fails to capture native crashes on Windows. It now properly reinstalls the capturing backend during the initialization ([#1603](https://github.com/getsentry/sentry-unity/pull/1603))
+- When building for iOS, the SDK no longer adds its dependencies multiple times (#1558) ([#1595](https://github.com/getsentry/sentry-unity/pull/1595))
 
 ### Dependencies
 
-- Bump CLI from v2.30.1 to v2.30.2 ([#1589](https://github.com/getsentry/sentry-unity/pull/1589))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2302)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.30.1...2.30.2)
+- Bump CLI from v2.30.1 to v2.31.0 ([#1589](https://github.com/getsentry/sentry-unity/pull/1589), [#1600](https://github.com/getsentry/sentry-unity/pull/1600))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2310)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.30.1...2.31.0)
+- Bump Native SDK from v0.7.0 to v0.7.2 ([#1596](https://github.com/getsentry/sentry-unity/pull/1596), [#1605](https://github.com/getsentry/sentry-unity/pull/1605))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#072)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.0...0.7.2)
 
 ## 2.0.2
 
