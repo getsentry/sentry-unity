@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When building for iOS, the SDK no longer adds its dependencies multiple times (#1558) ([#1595](https://github.com/getsentry/sentry-unity/pull/1595))
+
 ### Dependencies
 
 - Bump CLI from v2.30.1 to v2.31.0 ([#1589](https://github.com/getsentry/sentry-unity/pull/1589), [#1600](https://github.com/getsentry/sentry-unity/pull/1600))
