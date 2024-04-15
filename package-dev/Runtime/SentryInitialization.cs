@@ -131,7 +131,6 @@ namespace Sentry.Unity
 #endif
     }
 
-
     public class SentryUnityInfo : ISentryUnityInfo
     {
         public bool IL2CPP
