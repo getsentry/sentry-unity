@@ -70,5 +70,7 @@ namespace Sentry.Unity.Native
             }
             options.CrashedLastRun = () => crashedLastRun;
         }
+
+        public static void ReinstallBackend() => SentryNativeBridge.ReinstallBackend();
     }
 }
