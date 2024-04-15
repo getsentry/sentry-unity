@@ -69,11 +69,8 @@ namespace Sentry.Unity.Native
                 }
             }
             options.CrashedLastRun = () => crashedLastRun;
-
-            // At this point Unity has taken the signal handler and will not invoke our handler. So we register our
-            // backend once more to make sure user-defined data is available in the crash report and the SDK is able
-            // to capture the crash.
-            SentryNativeBridge.ReinstallBackend();
         }
+
+        public static void ReinstallBackend() => SentryNativeBridge.ReinstallBackend();
     }
 }

@@ -118,6 +118,17 @@ namespace Sentry.Unity
 #endif
             }
         }
+
+#if SENTRY_NATIVE
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void ReinstallBackend()
+        {
+            // At this point Unity has taken the signal handler and will not invoke our handler. So we register our
+            // backend once more to make sure user-defined data is available in the crash report and the SDK is able
+            // to capture the crash.
+            SentryNative.ReinstallBackend();
+        }
+#endif
     }
 
     public class SentryUnityInfo : ISentryUnityInfo
