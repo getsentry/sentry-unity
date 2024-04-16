@@ -153,7 +153,7 @@ Expected to exist:
     <Message Importance="High" Text="Creating xcconfig file to enable Bitcode." />
     <WriteLinesToFile File="$(SentryCocoaRoot)unity.xcconfig" Lines="ENABLE_BITCODE = YES" Overwrite="true" />
 
-    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --use-xcframeworks --no-skip-current --platform  --log-path $(SentryCocoaRoot)build.log" EnvironmentVariables="XCODE_XCCONFIG_FILE=unity.xcconfig" />
+    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --use-xcframeworks --no-skip-current --platform iOS --log-path $(SentryCocoaRoot)build.log" EnvironmentVariables="XCODE_XCCONFIG_FILE=unity.xcconfig" />
 
     <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
     <ItemGroup>
