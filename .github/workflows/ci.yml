@@ -32,11 +32,11 @@ jobs:
           - target: Android
             host: ubuntu-latest
           - target: iOS
-            host: macos-latest
+            host: macos-13
           - target: Linux
             host: ubuntu-latest
           - target: macOS
-            host: macos-latest
+            host: macos-13
           - target: Windows
             host: windows-latest
     uses: ./.github/workflows/sdk.yml
