@@ -14,7 +14,6 @@ namespace Sentry.Unity.Native
     /// <see href="https://github.com/getsentry/sentry-native"/>
     public static class SentryNativeBridge
     {
-
         public static bool CrashedLastRun;
 
         public static bool Init(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)

@@ -31,6 +31,14 @@ namespace Sentry.Unity
                 return Stream.Null;
             }
 
+            if (Screen.width == 0 || Screen.height == 0)
+            {
+                _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
+                // Returning a memory stream with a capacity of 1 so we can smoke-test the attempt to capture a screenshot in CI
+                return new MemoryStream(new byte[] { 0x00 });
+
+            }
+
             return new MemoryStream(CaptureScreenshot(Screen.width, Screen.height));
         }
 
