@@ -175,7 +175,7 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
     <Message Importance="High" Text="Building Sentry macOS SDK."></Message>
 
-    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --no-skip-current --platform macOS"></Exec>
+    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --no-skip-current --platform macOS S --log-path $(SentryCocoaRoot)build.log"></Exec>
 
     <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
     <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
