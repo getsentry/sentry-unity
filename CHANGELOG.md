@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixes
+
+- Add custom callback order for PostGeneratedGradle callback ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
+
+- Improve sentry gradle additions logic ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
+
 ### Dependencies
 
 - Bump CLI from v2.30.1 to v2.30.2 ([#1589](https://github.com/getsentry/sentry-unity/pull/1589))
