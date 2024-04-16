@@ -62,6 +62,15 @@ jobs:
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
+      - name: Upload build logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-build-${{ steps.env.outputs.submodules }}
+          path: ${{ steps.env.outputs.submodule }}/build.log
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.target }}-sdk
