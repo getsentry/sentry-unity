@@ -30,6 +30,8 @@ jobs:
           else
             submodules="modules/sentry-native"
           fi
+          
+          echo "submodulesPath=$submodules" >> $GITHUB_OUTPUT
           echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
 
       - name: Get submodule status
@@ -61,6 +63,14 @@ jobs:
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+
+      - name: Upload build logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ steps.env.outputs.submodulesPath }}/build.log
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
 
       - uses: actions/upload-artifact@v3
         with:
