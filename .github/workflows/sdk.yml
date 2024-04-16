@@ -68,7 +68,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
-          path: ${{ steps.env.outputs.submodulesPath }}/build-xcframework.log
+          path: ${{ steps.env.outputs.submodulesPath }}/build.log
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 

@@ -153,11 +153,11 @@ Expected to exist:
     <Message Importance="High" Text="Creating xcconfig file to enable Bitcode." />
     <WriteLinesToFile File="$(SentryCocoaRoot)unity.xcconfig" Lines="ENABLE_BITCODE = YES" Overwrite="true" />
 
-    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="make build-xcframework"></Exec>
+    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --use-xcframeworks --no-skip-current --platform iOS --log-path $(SentryCocoaRoot)build.log" EnvironmentVariables="XCODE_XCCONFIG_FILE=unity.xcconfig" />
 
     <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
     <ItemGroup>
-      <iOSDeviceBuildPath Include="$(SentryCocoaRoot)Carthage/Sentry-Dynamic.xcframework/**/*" />
+      <iOSDeviceBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/**/*" />
     </ItemGroup>
     <Copy SourceFiles="@(iOSDeviceBuildPath)" DestinationFiles="@(iOSDeviceBuildPath->'$(SentryiOSArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
     </Copy>
@@ -175,10 +175,10 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
     <Message Importance="High" Text="Building Sentry macOS SDK."></Message>
 
-    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="make build-xcframework"></Exec>
+    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --no-skip-current --platform macOS --log-path $(SentryCocoaRoot)build.log" />
 
-    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
-    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Sentry-Dynamic.xcframework/macos-arm64_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
+    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
+    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
