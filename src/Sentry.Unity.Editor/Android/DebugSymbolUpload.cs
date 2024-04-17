@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using UnityEditor;
 
 namespace Sentry.Unity.Editor.Android
 {
@@ -31,34 +31,34 @@ namespace Sentry.Unity.Editor.Android
         {
             get
             {
-                var text = "";
-                text += "// Credentials and project settings information are stored in the sentry.properties file\n";
-                text += "gradle.taskGraph.whenReady {{\n";
-                text += "    gradle.taskGraph.allTasks[-1].doLast {{\n";
+                var stringBuilder = new StringBuilder();
+                stringBuilder.AppendLine("// Credentials and project settings information are stored in the sentry.properties file");
+                stringBuilder.AppendLine("gradle.taskGraph.whenReady {{");
+                stringBuilder.AppendLine("gradle.taskGraph.allTasks[-1].doLast {{");
                 if (_isExporting)
                 {
-                    text += "        println 'Uploading symbols to Sentry.'\n";
+                    stringBuilder.AppendLine("        println 'Uploading symbols to Sentry.'");
                 }
                 else
                 {
                     var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
                     Directory.CreateDirectory(logsDir);
-                    text += "        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'\n";
-                    text += $"        def sentryLogFile = new FileOutputStream('{logsDir}/sentry-symbols-upload.log')\n";
+                    stringBuilder.AppendLine("        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'");
+                    stringBuilder.AppendLine($"        def sentryLogFile = new FileOutputStream('{logsDir}/sentry-symbols-upload.log')");
                 }
-                text += "        exec {{\n";
-                text += "            environment 'SENTRY_PROPERTIES', './sentry.properties'\n";
-                text += "            executable '{0}'\n";
-                text += "            args = ['debug-files', 'upload'{1}]\n";
+                stringBuilder.AppendLine("        exec {{");
+                stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
+                stringBuilder.AppendLine("            executable '{0}'");
+                stringBuilder.AppendLine("            args = ['debug-files', 'upload'{1}]");
                 if (!_isExporting)
                 {
-                    text += "            standardOutput sentryLogFile\n";
-                    text += "            errorOutput sentryLogFile\n";
+                    stringBuilder.AppendLine("            standardOutput sentryLogFile");
+                    stringBuilder.AppendLine("            errorOutput sentryLogFile");
                 }
-                text += "        }}\n";
-                text += "    }}\n";
-                text += "}}";
-                return text;
+                stringBuilder.AppendLine("        }}");
+                stringBuilder.AppendLine("    }}");
+                stringBuilder.AppendLine("}}");
+                return stringBuilder.ToString();
             }
         }// ConvertSlashes(_unityProjectPath)
 
