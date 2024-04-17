@@ -260,8 +260,7 @@ namespace Sentry.Unity.Editor.Android
                 mappingPathFormat = $"'{mappingPathFormat}'";
             }
 
-            var mappingPath = string.Format(mappingPathFormat, buildType);
-            Debug.LogWarning(mappingPath);
+            var mappingPath = mappingPathFormat.Replace("{0}", buildType);
             return mappingPath;
         }
 
