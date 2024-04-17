@@ -275,7 +275,7 @@ namespace Sentry.Unity.Editor.Android
                 var prop = buildSettingsType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
                 if (prop != null)
                 {
-                    var value = (int) prop.GetValue(null);
+                    var value = (int)prop.GetValue(null);
                     return value > 0;
                 }
             }
@@ -286,7 +286,7 @@ namespace Sentry.Unity.Editor.Android
                 var prop = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
                 if (prop != null)
                 {
-                    return (bool) prop.GetValue(null);
+                    return (bool)prop.GetValue(null);
                 }
             }
 
