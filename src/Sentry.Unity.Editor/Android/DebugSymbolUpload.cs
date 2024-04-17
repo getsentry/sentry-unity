@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Extensibility;
@@ -90,11 +91,7 @@ namespace Sentry.Unity.Editor.Android
 
         public void AppendUploadToGradleFile(string sentryCliPath)
         {
-            if (LoadGradleScript().Contains("sentry.properties"))
-            {
-                _logger.LogDebug("Symbol upload has already been added in a previous build.");
-                return;
-            }
+            RemoveUploadFromGradleFile();
 
             _logger.LogInfo("Appending debug symbols upload task to gradle file.");
 
@@ -221,10 +218,7 @@ namespace Sentry.Unity.Editor.Android
 
         private void CheckMapping(StringBuilder stringBuilder)
         {
-            var isDebug = EditorUserBuildSettings.development;
-            var shouldAddMappingUpload = isDebug ? PlayerSettings.Android.minifyDebug : PlayerSettings.Android.minifyRelease;
-
-            if (!shouldAddMappingUpload)
+            if (!ShouldUploadMapping())
                 return;
 
             stringBuilder.AppendLine("        println 'Uploading mapping file to Sentry.'");
@@ -237,7 +231,7 @@ namespace Sentry.Unity.Editor.Android
             stringBuilder.AppendLine("        exec {");
             stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
             stringBuilder.AppendLine($"            executable '{SentryCliMarker}'");
-            stringBuilder.AppendLine($"            args = ['upload-proguard', '{MappingPathMarker}']");
+            stringBuilder.AppendLine($"            args = ['upload-proguard', {MappingPathMarker}]");
             if (!_isExporting)
             {
                 stringBuilder.AppendLine("            standardOutput mappingLogFile");
@@ -252,13 +246,52 @@ namespace Sentry.Unity.Editor.Android
                 ? "Library/Bee/Android/Prj/IL2CPP/Gradle"
                 : "Temp/gradleOut";
 
-            var gradleProjectPath = Path.Combine(_unityProjectPath, gradleRelativePath);
-            const string mappingPathFormat = "launcher/build/outputs/mapping/{0}/mapping.txt";
+            string mappingPathFormat;
             var buildType = EditorUserBuildSettings.development ? "debug" : "release";
+            if (_isExporting)
+            {
+                mappingPathFormat =
+                    "file(\"${rootDir}/launcher/build/outputs/mapping/{0}/mapping.txt\").absolutePath";
+            }
+            else
+            {
+                var gradleProjectPath = Path.Combine(_unityProjectPath, gradleRelativePath);
+                mappingPathFormat = Path.Combine(gradleProjectPath, "launcher/build/outputs/mapping/{0}/mapping.txt");
+                mappingPathFormat = $"'{mappingPathFormat}'";
+            }
+
             var mappingPath = string.Format(mappingPathFormat, buildType);
-            var fullPath =  Path.Combine(gradleProjectPath, mappingPath);
-            Debug.LogWarning(fullPath);
-            return fullPath;
+            Debug.LogWarning(mappingPath);
+            return mappingPath;
+        }
+
+        private bool ShouldUploadMapping()
+        {
+            var isDebug = EditorUserBuildSettings.development;
+            var majorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
+            if (majorVersion < 2020)
+            {
+                var buildSettingsType = typeof(EditorUserBuildSettings);
+                var propertyName = isDebug ? "androidDebugMinification" : "androidReleaseMinification";
+                var prop = buildSettingsType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
+                if (prop != null)
+                {
+                    var value = (int) prop.GetValue(null);
+                    return value > 0;
+                }
+            }
+            else
+            {
+                var type = typeof(PlayerSettings.Android);
+                var propertyName = isDebug ? "minifyDebug" : "minifyRelease";
+                var prop = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
+                if (prop != null)
+                {
+                    return (bool) prop.GetValue(null);
+                }
+            }
+
+            return false;
         }
     }
 }
