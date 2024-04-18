@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Enable android mapping upload for minified builds ([#1626](https://github.com/getsentry/sentry-unity/pull/1626))
+
 ## 2.0.4
 
 ### Fixes
