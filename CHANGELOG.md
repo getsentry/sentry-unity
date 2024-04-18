@@ -6,6 +6,11 @@
 
 - Tweaked the SDK reinstalling the backend to capture native crashes on Windows. C++ exceptions are now getting properly captured again ([#1622](https://github.com/getsentry/sentry-unity/pull/1622))
 
+### Fixes
+
+-  Added options to control the order of the SDK's PostGeneratedGradle callback ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
+- The SDK now has a more robust way of dealing with custom gradle templates ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
+
 ### Dependencies
 
 - Bump Java SDK from v7.6.0 to v7.7.0 ([#1610](https://github.com/getsentry/sentry-unity/pull/1610))

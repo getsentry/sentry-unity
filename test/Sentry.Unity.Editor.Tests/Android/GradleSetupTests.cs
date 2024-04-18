@@ -69,7 +69,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             Assert.IsTrue(Logger.Logs.Any(log =>
                 log.logLevel == SentryLevel.Debug &&
-                log.message.Contains("The gradle file has already been updated. Skipping.")));
+                log.message.Contains(GradleSetup.DependenciesAddedMessage)));
         }
 
         [Test]
@@ -101,8 +101,7 @@ namespace Sentry.Unity.Editor.Tests.Android
             var gradleContent = File.ReadAllText(testCasePath);
             var sut = new GradleSetup(Logger, GradleProjectPath);
 
-            var actualResult = sut.InsertIntoScope(gradleContent, GradleSetup.DependencyScopeName,
-                GradleSetup.SdkDependencies);
+            var actualResult = sut.AddSentryToGradle(gradleContent);
 
             StringAssert.AreEqualIgnoringCase(actualResult, expectedGradleContent);
         }

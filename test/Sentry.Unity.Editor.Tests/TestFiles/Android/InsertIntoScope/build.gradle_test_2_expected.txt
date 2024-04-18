@@ -26,12 +26,15 @@ apply plugin: 'kotlin-android'
 
 
 dependencies {
-    implementation(name: 'sentry-android-ndk-release', ext:'aar')
-    implementation(name: 'sentry-android-core-release', ext:'aar')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 	implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 
+}
+
+dependencies {
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')
 }
 
 android {

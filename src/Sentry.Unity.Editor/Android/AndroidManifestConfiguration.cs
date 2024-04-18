@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
@@ -15,7 +14,22 @@ namespace Sentry.Unity.Editor.Android
     // https://github.com/getsentry/sentry-java/blob/d3764bfc97eed22564a1e23ba96fa73ad2685498/sentry-android-core/src/main/java/io/sentry/android/core/ManifestMetadataReader.java#L83-L217
     public class PostGenerateGradleAndroidProject : IPostGenerateGradleAndroidProject
     {
-        public int callbackOrder { get; } = 1;
+        public int callbackOrder
+        {
+            get
+            {
+                var result = 1;
+
+                var options = SentryScriptableObject.LoadOptions();
+                if (options != null)
+                {
+                    result = options.PostGenerateGradleProjectCallbackOrder;
+                }
+
+                return result;
+            }
+        }
+
         public void OnPostGenerateGradleAndroidProject(string basePath)
         {
             var androidManifestConfiguration = new AndroidManifestConfiguration();
