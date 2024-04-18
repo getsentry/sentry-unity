@@ -12,8 +12,8 @@ namespace Sentry.Unity.Editor.Android
         private const string SdkDependenciesFull = SdkDependencies + "\n}\n\n" + AndroidMarker;
 
         public const string SdkDependencies = @"dependencies {
-            implementation(name: 'sentry-android-ndk-release', ext:'aar')
-            implementation(name: 'sentry-android-core-release', ext:'aar')";
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')";
         public const string DependenciesAddedMessage = "The Sentry Gradle dependencies have already been added.";
         private readonly string _unityLibraryGradle;
 

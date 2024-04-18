@@ -33,8 +33,8 @@ dependencies {
 }
 
 dependencies {
-	implementation(name: 'sentry-android-ndk-release', ext:'aar')
-	implementation(name: 'sentry-android-core-release', ext:'aar')
+    implementation(name: 'sentry-android-ndk-release', ext:'aar')
+    implementation(name: 'sentry-android-core-release', ext:'aar')
 }
 
 android {
