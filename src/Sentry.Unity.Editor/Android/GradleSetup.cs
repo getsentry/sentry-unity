@@ -11,7 +11,9 @@ namespace Sentry.Unity.Editor.Android
         private const string AndroidMarker = "android {";
         private const string SdkDependenciesFull = SdkDependencies + "\n}\n\n" + AndroidMarker;
 
-        public const string SdkDependencies = "dependencies {\n\timplementation(name: 'sentry-android-ndk-release', ext:'aar')\n\timplementation(name: 'sentry-android-core-release', ext:'aar')";
+        public const string SdkDependencies = @"dependencies {
+            implementation(name: 'sentry-android-ndk-release', ext:'aar')
+            implementation(name: 'sentry-android-core-release', ext:'aar')";
         public const string DependenciesAddedMessage = "The Sentry Gradle dependencies have already been added.";
         private readonly string _unityLibraryGradle;
 
@@ -23,7 +25,7 @@ namespace Sentry.Unity.Editor.Android
 
         public void UpdateGradleProject()
         {
-            _logger.LogDebug("Adding Sentry to the gradle project.");
+            _logger.LogInfo("Adding Sentry to the gradle project.");
             var fileContent = LoadGradleScript(_unityLibraryGradle);
             fileContent = AddSentryToGradle(fileContent);
             File.WriteAllText(_unityLibraryGradle, fileContent);
@@ -31,7 +33,7 @@ namespace Sentry.Unity.Editor.Android
 
         public void ClearGradleProject()
         {
-            _logger.LogDebug("Removing Sentry from the gradle project.");
+            _logger.LogInfo("Removing Sentry from the gradle project.");
             var fileContent = LoadGradleScript(_unityLibraryGradle);
 
             if (!fileContent.Contains(SdkDependenciesFull))

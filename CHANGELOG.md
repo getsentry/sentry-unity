@@ -4,9 +4,8 @@
 
 ### Fixes
 
-- Add custom callback order for PostGeneratedGradle callback ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
-
-- Improve sentry gradle additions logic ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
+-  Added options to control the order of the SDK's PostGeneratedGradle callback ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
+- The SDK now has a more robust way of dealing with custom gradle templates ([#1624](https://github.com/getsentry/sentry-unity/pull/1624))
 
 ### Dependencies
 
