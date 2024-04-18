@@ -20,8 +20,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 var result = 1;
 
-                var optionsAssetPath = ScriptableSentryUnityOptions.GetConfigPath();
-                var options = AssetDatabase.LoadAssetAtPath<ScriptableSentryUnityOptions>(optionsAssetPath);
+                var options = SentryScriptableObject.LoadOptions();
                 if (options != null)
                 {
                     result = options.PostGenerateGradleProjectCallbackOrder;
