@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEditor;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android
 {
@@ -23,6 +21,7 @@ namespace Sentry.Unity.Editor.Android
         private readonly string _gradleProjectPath;
         private readonly string _gradleScriptPath;
         private readonly bool _isExporting;
+        private readonly bool _isMinifyEnabled;
 
         private readonly SentryCliOptions? _cliOptions;
         internal List<string> _symbolUploadPaths;
@@ -75,6 +74,7 @@ namespace Sentry.Unity.Editor.Android
             string unityProjectPath,
             string gradleProjectPath,
             bool isExporting = false,
+            bool minifyEnabled = false,
             IApplication? application = null)
         {
             _logger = logger;
@@ -83,6 +83,7 @@ namespace Sentry.Unity.Editor.Android
             _gradleProjectPath = gradleProjectPath;
             _gradleScriptPath = Path.Combine(_gradleProjectPath, "build.gradle");
             _isExporting = isExporting;
+            _isMinifyEnabled = minifyEnabled;
 
             _cliOptions = cliOptions;
             _symbolUploadPaths = GetSymbolUploadPaths(application);
@@ -218,7 +219,7 @@ namespace Sentry.Unity.Editor.Android
 
         private void CheckMapping(StringBuilder stringBuilder)
         {
-            if (!ShouldUploadMapping())
+            if (!_isMinifyEnabled)
                 return;
 
             stringBuilder.AppendLine("        println 'Uploading mapping file to Sentry.'");
@@ -262,35 +263,6 @@ namespace Sentry.Unity.Editor.Android
 
             var mappingPath = mappingPathFormat.Replace("{0}", buildType);
             return mappingPath;
-        }
-
-        private bool ShouldUploadMapping()
-        {
-            var isDebug = EditorUserBuildSettings.development;
-            var majorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
-            if (majorVersion < 2020)
-            {
-                var buildSettingsType = typeof(EditorUserBuildSettings);
-                var propertyName = isDebug ? "androidDebugMinification" : "androidReleaseMinification";
-                var prop = buildSettingsType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
-                if (prop != null)
-                {
-                    var value = (int)prop.GetValue(null);
-                    return value > 0;
-                }
-            }
-            else
-            {
-                var type = typeof(PlayerSettings.Android);
-                var propertyName = isDebug ? "minifyDebug" : "minifyRelease";
-                var prop = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
-                if (prop != null)
-                {
-                    return (bool)prop.GetValue(null);
-                }
-            }
-
-            return false;
         }
     }
 }
