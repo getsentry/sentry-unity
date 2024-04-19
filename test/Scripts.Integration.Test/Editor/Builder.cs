@@ -40,6 +40,16 @@ public class Builder
             PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
         }
 #endif
+        if (target == BuildTarget.Android)
+        {
+#if UNITY_2020_1_OR_NEWER
+            PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
+            PlayerSettings.Android.minifyWithR8 = true;
+#else
+            EditorUserBuildSettings.androidDebugMinification =
+                EditorUserBuildSettings.androidReleaseMinification = AndroidMinification.Proguard;
+#endif
+        }
 
         var buildPlayerOptions = new BuildPlayerOptions
         {
