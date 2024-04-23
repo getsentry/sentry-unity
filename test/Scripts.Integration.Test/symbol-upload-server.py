@@ -71,6 +71,10 @@ class Handler(BaseHTTPRequestHandler):
                 registerUpload(value['name'], len(value['chunks']))
             jsonResponse = jsonResponse.rstrip(',') + '}'
             self.writeJSON(jsonResponse)
+        elif self.isApi('api/0/projects/{}/{}/files/dsyms/'.format(apiOrg, apiProject)):
+            self.writeJSON('[]')
+        elif self.isApi('api/0/projects/{}/{}/reprocessing/'.format(apiOrg, apiProject)):
+            self.writeJSON('{}')
         else:
             self.end_headers()
 
