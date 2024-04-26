@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using Sentry.Extensibility;
@@ -246,7 +247,7 @@ namespace Sentry.Unity.Editor.Android
         internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
         {
             var disableSymbolsUpload = false;
-            var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, EditorUserBuildSettings.exportAsGoogleAndroidProject);
+            var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, EditorUserBuildSettings.exportAsGoogleAndroidProject, ShouldUploadMapping());
 
             if (_options is not { Enabled: true, AndroidNativeSupportEnabled: true })
             {
@@ -327,6 +328,35 @@ namespace Sentry.Unity.Editor.Android
                 .Append(Path.DirectorySeparatorChar)
                 .Append("AndroidManifest.xml")
                 .ToString();
+
+        private bool ShouldUploadMapping()
+        {
+            var isDebug = EditorUserBuildSettings.development;
+            var majorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
+            if (majorVersion < 2020)
+            {
+                var buildSettingsType = typeof(EditorUserBuildSettings);
+                var propertyName = isDebug ? "androidDebugMinification" : "androidReleaseMinification";
+                var prop = buildSettingsType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
+                if (prop != null)
+                {
+                    var value = (int)prop.GetValue(null);
+                    return value > 0;
+                }
+            }
+            else
+            {
+                var type = typeof(PlayerSettings.Android);
+                var propertyName = isDebug ? "minifyDebug" : "minifyRelease";
+                var prop = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Static);
+                if (prop != null)
+                {
+                    return (bool)prop.GetValue(null);
+                }
+            }
+
+            return false;
+        }
     }
 
     internal class AndroidXmlDocument : XmlDocument
