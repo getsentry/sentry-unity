@@ -6,6 +6,12 @@
 
 - The automatic debug symbol upload for Android builds now also picks up the ProGuard mapping file. ([#1626](https://github.com/getsentry/sentry-unity/pull/1626))
 
+### Dependencies
+
+- Bump CLI from v2.31.0 to v2.31.1 ([#1634](https://github.com/getsentry/sentry-unity/pull/1634))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2311)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.31.0...2.31.1)
+
 ## 2.0.4
 
 ### Fixes
