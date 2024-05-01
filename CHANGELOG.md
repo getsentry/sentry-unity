@@ -6,6 +6,12 @@
 
 - The automatic debug symbol upload for Android builds now also picks up the ProGuard mapping file. ([#1626](https://github.com/getsentry/sentry-unity/pull/1626))
 
+### Dependencies
+
+- Bump .NET SDK from v4.4.0 to v4.5.0 ([#1635](https://github.com/getsentry/sentry-unity/pull/1635))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#450)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.4.0...4.5.0)
+
 ## 2.0.4
 
 ### Fixes
