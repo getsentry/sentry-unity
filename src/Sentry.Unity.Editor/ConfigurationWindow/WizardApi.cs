@@ -36,11 +36,7 @@ namespace Sentry.Unity.Editor.WizardApi
     {
         public Organization? organization;
         public string? slug;
-        public string? name;
-        public string? platform;
         public List<Key>? keys;
-
-        public bool IsUnity => string.Equals(platform, "unity", StringComparison.InvariantCultureIgnoreCase);
     }
 
     [Serializable]

@@ -75,24 +75,6 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 EditorGUILayout.Space();
 
                 var blankEntry = new string(' ', 60);
-
-                // sort "unity" projects first
-                Response.projects.Sort((a, b) =>
-                {
-                    if (a.IsUnity == b.IsUnity)
-                    {
-                        return (a.name ?? "").CompareTo(b.name ?? "");
-                    }
-                    else if (a.IsUnity)
-                    {
-                        return -1;
-                    }
-                    else
-                    {
-                        return 1;
-                    }
-                });
-
                 var orgsAndProjects = Response.projects.GroupBy(k => k.organization!.name, v => v);
                 var orgs = orgsAndProjects.Select(k => k.Key).ToArray();
                 if (orgs.Length > 1)
@@ -105,7 +87,8 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 if (orgs.Length == 1 || _orgSelected > 0)
                 {
                     var projects = orgsAndProjects.Where(k => k.Key == orgs[_orgSelected]).SelectMany(p => p).ToArray();
-                    var projectNames = projects.Select(v => v.name).ToArray();
+
+                    var projectNames = projects.Select(v => v.slug).OrderBy(s => s).ToArray();
                     if (projectNames.Length > 1)
                     {
                         projectNames = projectNames.Prepend(blankEntry).ToArray();
@@ -115,7 +98,7 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
 
                     if (projects.Length == 1 || _projectSelected > 0)
                     {
-                        var project = projects.Where(p => p.name == projectNames[_projectSelected]).ToArray()[0];
+                        var project = projects.Where(p => p.slug == projectNames[_projectSelected]).ToArray()[0];
                         wizardConfiguration = new WizardConfiguration
                         {
                             Token = Response.apiKeys!.token,
