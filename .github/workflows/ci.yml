@@ -223,11 +223,6 @@ jobs:
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      - name: Build without Sentry SDK
-        # This hasn't broken for a long time, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
-        if: ${{ github.ref_name == 'main' }}
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
-
       - name: Download UPM package
         if: ${{ github.ref_name != 'main' }}
         uses: actions/download-artifact@v3
@@ -392,8 +387,6 @@ jobs:
           - os: macos
             unity-modules: mac-il2cpp
             unity-config-path: /Library/Application Support/Unity/config/
-    env:
-      UNITY_PATH: docker exec unity unity-editor
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -402,11 +395,18 @@ jobs:
         id: env
         run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
 
+      - name: Setup Unity
+        uses: getsentry/setup-unity@808f50b583a0b64714af332862e406d3ed459d07
+        with:
+          unity-version: ${{ steps.env.outputs.unityVersion }}
+          unity-modules: ${{ matrix.unity-modules }}
+
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
-      - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
-        shell: bash
+      - name: Create Unity license config
+        run: |
+          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
+          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@v3
@@ -415,6 +415,23 @@ jobs:
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
+
+      - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Download UPM package
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ github.sha }}
+
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
