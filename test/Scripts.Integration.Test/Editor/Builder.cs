@@ -18,6 +18,7 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
         DisableUnityAudio();
+        DisableProgressiveLightMapper();
         EditorUserBuildSettings.allowDebugging = false;
 
         // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
@@ -140,6 +141,17 @@ public class Builder
         var prop = serializedManager.FindProperty("m_DisableAudio");
         prop.boolValue = true;
         serializedManager.ApplyModifiedProperties();
+    }
+
+    // The Progressive Lightmapper does not work on silicone CPUs and there is no GPU in CI
+    private static void DisableProgressiveLightMapper()
+    {
+#if UNITY_2021_3_OR_NEWER
+        Lightmapping.lightingSettings = new LightingSettings
+        {
+            bakedGI = false
+        };
+#endif
     }
 }
 
