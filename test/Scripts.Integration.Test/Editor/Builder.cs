@@ -146,7 +146,7 @@ public class Builder
     // The Progressive Lightmapper does not work on silicone CPUs and there is no GPU in CI
     private static void DisableProgressiveLightMapper()
     {
-#if UNITY_2021_3_OR_NEWER
+#if UNITY_2021_OR_NEWER
         Lightmapping.lightingSettings = new LightingSettings
         {
             bakedGI = false
