@@ -18,7 +18,7 @@ jobs:
 
   try-2:
     needs: [try-1]
-    if: ${{ needs.try-1.outputs.outcome == 'failure' }}
+    if: ${{ needs.try-1.result == 'failure' }}
     uses: ./.github/workflows/android-smoke-test.yml
     with:
       unity-version: ${{ inputs.unity-version }}
@@ -27,7 +27,7 @@ jobs:
 
   try-3:
     needs: [try-2]
-    if: ${{ needs.try-2.outputs.outcome == 'failure' }}
+    if: ${{ needs.try-2.result == 'failure' }}
     uses: ./.github/workflows/android-smoke-test.yml
     with:
       unity-version: ${{ inputs.unity-version }}
