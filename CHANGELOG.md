@@ -8,6 +8,9 @@
 
 ### Dependencies
 
+- Bump .NET SDK from v4.4.0 to v4.5.0 ([#1635](https://github.com/getsentry/sentry-unity/pull/1635))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#450)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.4.0...4.5.0)
 - Bump CLI from v2.31.0 to v2.31.2 ([#1639](https://github.com/getsentry/sentry-unity/pull/1639))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2312)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.31.0...2.31.2)
