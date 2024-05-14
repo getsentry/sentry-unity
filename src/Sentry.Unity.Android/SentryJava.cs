@@ -20,10 +20,17 @@ namespace Sentry.Unity.Android
                 return null;
             }
 
-            using var sentry = GetSentryJava();
-            using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
-            using var options = hub?.Call<AndroidJavaObject>("getOptions");
-            return options?.Call<string>("getDistinctId");
+            try
+            {
+                using var sentry = GetSentryJava();
+                using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
+                using var options = hub?.Call<AndroidJavaObject>("getOptions");
+                return options?.Call<string>("getDistinctId");
+            }
+            finally
+            {
+                Detach();
+            }
         }
 
         /// <summary>
@@ -42,21 +49,40 @@ namespace Sentry.Unity.Android
             {
                 return null;
             }
-            using var sentry = GetSentryJava();
-            using var jo = sentry.CallStatic<AndroidJavaObject>("isCrashedLastRun");
-            return jo?.Call<bool>("booleanValue");
+
+            try
+            {
+                using var sentry = GetSentryJava();
+                using var jo = sentry.CallStatic<AndroidJavaObject>("isCrashedLastRun");
+                return jo?.Call<bool>("booleanValue");
+            }
+            finally
+            {
+                Detach();
+            }
         }
 
         public static void Close()
         {
-            if (Attach())
+            if (!Attach())
+            {
+                return;
+            }
+
+            try
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("close");
             }
+            finally
+            {
+                Detach();
+            }
         }
 
         private static bool Attach() => AndroidJNI.AttachCurrentThread() == 0;
+        private static void Detach() => AndroidJNI.DetachCurrentThread();
+
         private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public static void WriteScope(
@@ -76,7 +102,12 @@ namespace Sentry.Unity.Android
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel)
         {
-            if (Attach())
+            if (!Attach())
+            {
+                return;
+            }
+
+            try
             {
                 using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
                 gpu.SetIfNotNull("name", GpuName);
@@ -87,6 +118,7 @@ namespace Sentry.Unity.Android
                     using var integer = new AndroidJavaObject("java.lang.Integer", intVendorId);
                     gpu.Set("vendorId", integer);
                 }
+
                 gpu.SetIfNotNull("vendorName", GpuVendorName);
                 gpu.SetIfNotNull("memorySize", GpuMemorySize);
                 gpu.SetIfNotNull("apiType", GpuApiType);
@@ -100,6 +132,10 @@ namespace Sentry.Unity.Android
                     using var contexts = scope.Call<AndroidJavaObject>("getContexts");
                     contexts.Call("setGpu", gpu);
                 }));
+            }
+            finally
+            {
+                Detach();
             }
         }
 
