@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The SDK no longer crashes on Android versions 5 and 6 with native support enabled ([#1652](https://github.com/getsentry/sentry-unity/pull/1652))
+
 ## 2.0.5
 
 ### Fixes
