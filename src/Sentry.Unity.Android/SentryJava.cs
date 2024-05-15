@@ -47,7 +47,7 @@ namespace Sentry.Unity.Android
 
         public static void Close()
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("close");
@@ -73,13 +73,12 @@ namespace Sentry.Unity.Android
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel)
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
                 gpu.SetIfNotNull("name", GpuName);
                 gpu.SetIfNotNull("id", GpuId);
-                int intVendorId;
-                if (GpuVendorId is not null && int.TryParse(GpuVendorId, out intVendorId) && intVendorId != 0)
+                if (GpuVendorId is not null && int.TryParse(GpuVendorId, out var intVendorId) && intVendorId != 0)
                 {
                     using var integer = new AndroidJavaObject("java.lang.Integer", intVendorId);
                     gpu.Set("vendorId", integer);

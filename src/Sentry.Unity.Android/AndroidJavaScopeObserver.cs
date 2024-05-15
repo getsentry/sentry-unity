@@ -14,7 +14,7 @@ namespace Sentry.Unity.Android
 
         public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 using var sentry = GetSentryJava();
                 using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
@@ -29,7 +29,7 @@ namespace Sentry.Unity.Android
 
         public override void SetExtraImpl(string key, string? value)
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("setExtra", key, value);
@@ -37,7 +37,7 @@ namespace Sentry.Unity.Android
         }
         public override void SetTagImpl(string key, string value)
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("setTag", key, value);
@@ -46,7 +46,7 @@ namespace Sentry.Unity.Android
 
         public override void UnsetTagImpl(string key)
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("removeTag", key);
@@ -55,7 +55,7 @@ namespace Sentry.Unity.Android
 
         public override void SetUserImpl(SentryUser user)
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 AndroidJavaObject? javaUser = null;
                 try
@@ -77,7 +77,7 @@ namespace Sentry.Unity.Android
 
         public override void UnsetUserImpl()
         {
-            SentryJniExecutor.Run(() =>
+            SentryJniExecutor.FireAndForget(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("setUser", null);

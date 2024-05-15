@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
-    public static class SentryJniExecutor
+    internal static class SentryJniExecutor
     {
         public static TResult? Run<TResult>(Func<TResult?> jniOperation)
         {
@@ -34,17 +34,18 @@ namespace Sentry.Unity.Android
 
             if (exception is not null)
             {
-                Debug.LogException(exception);
+                // Adding the Sentry logger tag ensures we don't send this error to Sentry.
+                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {exception}");
             }
 
             return result;
         }
 
-        public static void Run(Action jniOperation)
+        public static void FireAndForget(Action jniOperation)
         {
             Exception? exception = null;
 
-            var thread = new Thread(() =>
+            new Thread(() =>
             {
                 if (AndroidJNI.AttachCurrentThread() != 0)
                 {
@@ -64,14 +65,12 @@ namespace Sentry.Unity.Android
                 {
                     AndroidJNI.DetachCurrentThread();
                 }
-            });
-
-            thread.Start();
-            thread.Join();
+            }).Start();
 
             if (exception is not null)
             {
-                Debug.LogException(exception);
+                // Adding the Sentry logger tag ensures we don't send this error to Sentry.
+                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {exception}");
             }
         }
     }
