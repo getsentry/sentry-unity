@@ -14,9 +14,9 @@ namespace Sentry.Unity.Android
     /// <see href="https://github.com/getsentry/sentry-java"/>
     internal static class SentryJava
     {
-        internal static string? GetInstallationId()
+        internal static string? GetInstallationId(IJniExecutor jniExecutor)
         {
-            return SentryJniExecutor.Run(() =>
+            return jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
@@ -35,9 +35,9 @@ namespace Sentry.Unity.Android
         /// True if the last run terminated in a crash. No otherwise.
         /// If the SDK wasn't able to find this information, null is returned.
         /// </returns>
-        public static bool? CrashedLastRun()
+        public static bool? CrashedLastRun(IJniExecutor jniExecutor)
         {
-            return SentryJniExecutor.Run(() =>
+            return jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 using var jo = sentry.CallStatic<AndroidJavaObject>("isCrashedLastRun");
@@ -45,9 +45,9 @@ namespace Sentry.Unity.Android
             });
         }
 
-        public static void Close()
+        public static void Close(IJniExecutor jniExecutor)
         {
-            SentryJniExecutor.FireAndForget(() =>
+            jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("close");
@@ -57,6 +57,7 @@ namespace Sentry.Unity.Android
         private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public static void WriteScope(
+            IJniExecutor jniExecutor,
             int? GpuId,
             string? GpuName,
             string? GpuVendorName,
@@ -73,7 +74,7 @@ namespace Sentry.Unity.Android
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel)
         {
-            SentryJniExecutor.FireAndForget(() =>
+            jniExecutor.Run(() =>
             {
                 using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
                 gpu.SetIfNotNull("name", GpuName);
