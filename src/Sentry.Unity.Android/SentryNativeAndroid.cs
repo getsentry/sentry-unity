@@ -36,7 +36,6 @@ namespace Sentry.Unity.Android
             options.EnableScopeSync = true;
             options.CrashedLastRun = () =>
             {
-                Debug.Log("Calling crashed last run");
                 var crashedLastRun = SentryJava.CrashedLastRun(JniExecutor);
                 if (crashedLastRun is null)
                 {
