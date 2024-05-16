@@ -43,17 +43,17 @@ namespace Sentry.Unity.Android
                             _taskCompletionSource?.SetResult(null);
                             break;
                         case Func<bool?> func1:
-                        {
-                            var result = func1.Invoke();
-                            _taskCompletionSource?.SetResult(result);
-                            break;
-                        }
+                            {
+                                var result = func1.Invoke();
+                                _taskCompletionSource?.SetResult(result);
+                                break;
+                            }
                         case Func<string?> func2:
-                        {
-                            var result = func2.Invoke();
-                            _taskCompletionSource?.SetResult(result);
-                            break;
-                        }
+                            {
+                                var result = func2.Invoke();
+                                _taskCompletionSource?.SetResult(result);
+                                break;
+                            }
                         default:
                             throw new ArgumentException("Invalid type for _currentTask.");
                     }
