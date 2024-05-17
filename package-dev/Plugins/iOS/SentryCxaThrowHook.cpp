@@ -1,5 +1,6 @@
 #include <dlfcn.h>
 #include <typeinfo>
+#include <pthread.h>
 
 extern "C"
 {
