@@ -1,7 +1,5 @@
 using System;
 using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity.Android
@@ -11,7 +9,8 @@ namespace Sentry.Unity.Android
     /// </summary>
     public static class SentryNativeAndroid
     {
-        private static IJniExecutor JniExecutor = new JniExecutor();
+        internal static int? AndroidSdkVersion;
+        internal static IJniExecutor JniExecutor = new JniExecutor();
 
         /// <summary>
         /// Configures the native Android support.
@@ -24,9 +23,8 @@ namespace Sentry.Unity.Android
                 return;
             }
 
-            using var version = new AndroidJavaClass("android.os.Build$VERSION");
-            var sdkVersion = version.GetStatic<int>("SDK_INT");
-            if (sdkVersion <= 23)
+            AndroidSdkVersion ??= GetAndroidSdkVersion();
+            if (AndroidSdkVersion is null or <= 23)
             {
                 JniExecutor = new JniExecutorWithBackgroundWorker();
             }
@@ -69,6 +67,25 @@ namespace Sentry.Unity.Android
 
             options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);
             options.DefaultUserId = SentryJava.GetInstallationId(JniExecutor);
+        }
+
+        private static int? GetAndroidSdkVersion(IDiagnosticLogger? logger = null)
+        {
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                try
+                {
+                    using var version = new AndroidJavaClass("android.os.Build$VERSION");
+                    return version.GetStatic<int>("SDK_INT");
+                }
+                catch (Exception e)
+                {
+                    logger?.LogError(
+                        e, "Failed to read Android SDK version. Falling back to JNI Execution on background worker.");
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
