@@ -25,9 +25,16 @@ namespace Sentry.Unity.Android
         {
             AndroidJNI.AttachCurrentThread();
 
-            while (!_shutdownSource.IsCancellationRequested)
+            var waitHandles = new [] { _taskEvent, _shutdownSource.Token.WaitHandle };
+
+            while (true)
             {
-                _taskEvent.WaitOne();
+                var index = WaitHandle.WaitAny(waitHandles);
+                if (index > 0)
+                {
+                    // We only care about the _taskEvent
+                    continue;
+                }
 
                 if (_currentTask is null)
                 {
