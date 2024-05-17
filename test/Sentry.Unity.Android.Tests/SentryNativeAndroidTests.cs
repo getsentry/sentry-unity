@@ -33,19 +33,6 @@ namespace Sentry.Unity.Android.Tests
                     _originalReinstallSentryNativeBackendStrategy)!;
 
         [Test]
-        [TestCase(32, typeof(JniExecutor))]
-        [TestCase(23, typeof(JniExecutorWithBackgroundWorker))]
-        [TestCase(null, typeof(JniExecutorWithBackgroundWorker))]
-        public void Configure_AndroidSdkVersions_SetsJniExecutor(int? androidSdkVersion, Type expectedJniExecutorType)
-        {
-            var options = new SentryUnityOptions();
-            SentryNativeAndroid.AndroidSdkVersion = androidSdkVersion;
-            SentryNativeAndroid.Configure(options, _sentryUnityInfo);
-
-            Assert.AreEqual(expectedJniExecutorType, SentryNativeAndroid.JniExecutor.GetType());
-        }
-
-        [Test]
         public void Configure_DefaultConfiguration_SetsScopeObserver()
         {
             var options = new SentryUnityOptions();

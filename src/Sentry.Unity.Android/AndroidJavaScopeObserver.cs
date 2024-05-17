@@ -8,18 +8,18 @@ namespace Sentry.Unity.Android
     /// <see href="https://github.com/getsentry/sentry-java"/>
     public class AndroidJavaScopeObserver : ScopeObserver
     {
-        private readonly IJniExecutor _executor;
+        private readonly JniExecutor _jniExecutor;
 
-        public AndroidJavaScopeObserver(SentryOptions options, IJniExecutor executor) : base("Android", options)
+        public AndroidJavaScopeObserver(SentryOptions options, JniExecutor jniExecutor) : base("Android", options)
         {
-            _executor = executor;
+            _jniExecutor = jniExecutor;
         }
 
         private AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
         {
-            _executor.Run(() =>
+            _jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
@@ -34,7 +34,7 @@ namespace Sentry.Unity.Android
 
         public override void SetExtraImpl(string key, string? value)
         {
-            _executor.Run(() =>
+            _jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("setExtra", key, value);
@@ -42,7 +42,7 @@ namespace Sentry.Unity.Android
         }
         public override void SetTagImpl(string key, string value)
         {
-            _executor.Run(() =>
+            _jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("setTag", key, value);
@@ -51,7 +51,7 @@ namespace Sentry.Unity.Android
 
         public override void UnsetTagImpl(string key)
         {
-            _executor.Run(() =>
+            _jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("removeTag", key);
@@ -60,7 +60,7 @@ namespace Sentry.Unity.Android
 
         public override void SetUserImpl(SentryUser user)
         {
-            _executor.Run(() =>
+            _jniExecutor.Run(() =>
             {
                 AndroidJavaObject? javaUser = null;
                 try
@@ -82,7 +82,7 @@ namespace Sentry.Unity.Android
 
         public override void UnsetUserImpl()
         {
-            _executor.Run(() =>
+            _jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("setUser", null);
