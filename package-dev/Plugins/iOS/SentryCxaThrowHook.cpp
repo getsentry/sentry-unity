@@ -35,9 +35,9 @@ extern "C"
     void __cxa_rethrow()
     {
         pthread_mutex_lock(&guard);
-        if (!orig_cxa_throw) // Try to load the sentry cocoa hook
+        if (!orig_cxa_rethrow) // Try to load the sentry cocoa hook
             orig_cxa_rethrow = (cxa_rethrow_type)dlsym(RTLD_DEFAULT, "__sentry_cxa_rethrow");
-        if (!orig_cxa_throw) // Try to load the default __cxa_throw method
+        if (!orig_cxa_rethrow) // Try to load the default __cxa_rethrow method
             orig_cxa_rethrow = (cxa_rethrow_type)dlsym(RTLD_NEXT, "__cxa_rethrow");
         pthread_mutex_unlock(&guard);
         
@@ -49,3 +49,4 @@ extern "C"
         __builtin_unreachable();
     }
 }
+
