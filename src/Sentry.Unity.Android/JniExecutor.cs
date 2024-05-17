@@ -25,7 +25,7 @@ namespace Sentry.Unity.Android
         {
             AndroidJNI.AttachCurrentThread();
 
-            var waitHandles = new [] { _taskEvent, _shutdownSource.Token.WaitHandle };
+            var waitHandles = new[] { _taskEvent, _shutdownSource.Token.WaitHandle };
 
             while (true)
             {
