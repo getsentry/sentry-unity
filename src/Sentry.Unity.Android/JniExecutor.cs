@@ -7,9 +7,9 @@ namespace Sentry.Unity.Android
 {
     public class JniExecutor
     {
-        private readonly AutoResetEvent _taskEvent;
         private readonly CancellationTokenSource _shutdownSource;
-        private Delegate? _currentTask;
+        private readonly AutoResetEvent _taskEvent;
+        private Delegate _currentTask = null!; // The current task will always be set together with the task event
 
         private TaskCompletionSource<object?>? _taskCompletionSource;
 
@@ -33,11 +33,6 @@ namespace Sentry.Unity.Android
                 if (index > 0)
                 {
                     // We only care about the _taskEvent
-                    continue;
-                }
-
-                if (_currentTask is null)
-                {
                     break;
                 }
 
@@ -72,10 +67,6 @@ namespace Sentry.Unity.Android
                 catch (Exception e)
                 {
                     _taskCompletionSource?.SetException(e);
-                }
-                finally
-                {
-                    _currentTask = null;
                 }
             }
 
@@ -118,10 +109,8 @@ namespace Sentry.Unity.Android
 
         public void Dispose()
         {
-            _currentTask = null;
-            _taskEvent.Set();
-            _taskEvent.Dispose();
             _shutdownSource.Cancel();
+            _taskEvent.Dispose();
         }
     }
 }
