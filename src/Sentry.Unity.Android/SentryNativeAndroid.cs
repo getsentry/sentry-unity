@@ -10,6 +10,7 @@ namespace Sentry.Unity.Android
     public static class SentryNativeAndroid
     {
         private static JniExecutor? JniExecutor;
+        
         /// <summary>
         /// Configures the native Android support.
         /// </summary>
