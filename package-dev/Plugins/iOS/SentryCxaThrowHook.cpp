@@ -1,4 +1,5 @@
 #include <dlfcn.h>
+#include <typeinfo>
 
 extern "C"
 {
