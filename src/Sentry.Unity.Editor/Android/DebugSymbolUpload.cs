@@ -69,7 +69,7 @@ namespace Sentry.Unity.Editor.Android
                 stringBuilder.AppendLine("tasks.build.finalizedBy sentryUploadSymbols");
                 return stringBuilder.ToString();
             }
-        }// ConvertSlashes(_unityProjectPath)
+        }
 
         public DebugSymbolUpload(IDiagnosticLogger logger,
             SentryCliOptions? cliOptions,
