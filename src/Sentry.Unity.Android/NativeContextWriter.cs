@@ -4,6 +4,13 @@ namespace Sentry.Unity.Android
 {
     internal class NativeContextWriter : ContextWriter
     {
+        private readonly JniExecutor _jniExecutor;
+
+        public NativeContextWriter(JniExecutor jniExecutor)
+        {
+            _jniExecutor = jniExecutor;
+        }
+
         protected override void WriteScope(
             string? AppStartTime,
             string? AppBuildType,
@@ -44,6 +51,7 @@ namespace Sentry.Unity.Android
             // the "unity" context, but it doesn't seem so useful and the effort to do is larger because there's no
             // class for it in Java - not sure how we could add a generic context object in Java...
             SentryJava.WriteScope(
+                _jniExecutor,
                 GpuId,
                 GpuName,
                 GpuVendorName,
