@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using UnityEngine;
 
 namespace Sentry.Unity.Android
@@ -13,17 +14,15 @@ namespace Sentry.Unity.Android
     /// <see href="https://github.com/getsentry/sentry-java"/>
     internal static class SentryJava
     {
-        internal static string? GetInstallationId()
+        internal static string? GetInstallationId(JniExecutor jniExecutor)
         {
-            if (!Attach())
+            return jniExecutor.Run(() =>
             {
-                return null;
-            }
-
-            using var sentry = GetSentryJava();
-            using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
-            using var options = hub?.Call<AndroidJavaObject>("getOptions");
-            return options?.Call<string>("getDistinctId");
+                using var sentry = GetSentryJava();
+                using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
+                using var options = hub?.Call<AndroidJavaObject>("getOptions");
+                return options?.Call<string>("getDistinctId");
+            });
         }
 
         /// <summary>
@@ -36,30 +35,29 @@ namespace Sentry.Unity.Android
         /// True if the last run terminated in a crash. No otherwise.
         /// If the SDK wasn't able to find this information, null is returned.
         /// </returns>
-        public static bool? CrashedLastRun()
+        public static bool? CrashedLastRun(JniExecutor jniExecutor)
         {
-            if (!Attach())
+            return jniExecutor.Run(() =>
             {
-                return null;
-            }
-            using var sentry = GetSentryJava();
-            using var jo = sentry.CallStatic<AndroidJavaObject>("isCrashedLastRun");
-            return jo?.Call<bool>("booleanValue");
+                using var sentry = GetSentryJava();
+                using var jo = sentry.CallStatic<AndroidJavaObject>("isCrashedLastRun");
+                return jo?.Call<bool>("booleanValue");
+            });
         }
 
-        public static void Close()
+        public static void Close(JniExecutor jniExecutor)
         {
-            if (Attach())
+            jniExecutor.Run(() =>
             {
                 using var sentry = GetSentryJava();
                 sentry.CallStatic("close");
-            }
+            });
         }
 
-        private static bool Attach() => AndroidJNI.AttachCurrentThread() == 0;
         private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public static void WriteScope(
+            JniExecutor jniExecutor,
             int? GpuId,
             string? GpuName,
             string? GpuVendorName,
@@ -76,17 +74,17 @@ namespace Sentry.Unity.Android
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel)
         {
-            if (Attach())
+            jniExecutor.Run(() =>
             {
                 using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
                 gpu.SetIfNotNull("name", GpuName);
                 gpu.SetIfNotNull("id", GpuId);
-                int intVendorId;
-                if (GpuVendorId is not null && int.TryParse(GpuVendorId, out intVendorId) && intVendorId != 0)
+                if (GpuVendorId is not null && int.TryParse(GpuVendorId, out var intVendorId) && intVendorId != 0)
                 {
                     using var integer = new AndroidJavaObject("java.lang.Integer", intVendorId);
                     gpu.Set("vendorId", integer);
                 }
+
                 gpu.SetIfNotNull("vendorName", GpuVendorName);
                 gpu.SetIfNotNull("memorySize", GpuMemorySize);
                 gpu.SetIfNotNull("apiType", GpuApiType);
@@ -100,7 +98,7 @@ namespace Sentry.Unity.Android
                     using var contexts = scope.Call<AndroidJavaObject>("getContexts");
                     contexts.Call("setGpu", gpu);
                 }));
-            }
+            });
         }
 
         private static void SetIfNotNull<T>(this AndroidJavaObject javaObject, string property, T? value, string? valueClass = null)
