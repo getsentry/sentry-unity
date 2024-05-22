@@ -21,6 +21,8 @@ namespace Sentry.Unity.iOS
 
         internal static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
         {
+            options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Cocoa SDK");
+
             if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
             {
                 options.DiagnosticLogger?.LogDebug("Native support is not enabled for: '{0}'", platform);

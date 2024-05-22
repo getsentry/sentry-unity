@@ -10,15 +10,18 @@ namespace Sentry.Unity.Android
     public static class SentryNativeAndroid
     {
         private static JniExecutor? JniExecutor;
-        
+
         /// <summary>
         /// Configures the native Android support.
         /// </summary>
         /// <param name="options">The Sentry Unity options to use.</param>
         public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
         {
+            options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Android SDK");
+
             if (!options.AndroidNativeSupportEnabled)
             {
+                options.DiagnosticLogger?.LogDebug("Native support is not enabled for Android");
                 return;
             }
 
