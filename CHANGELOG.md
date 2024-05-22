@@ -7,7 +7,7 @@
 ### Fixes
 
 - For Android, we updated the debug symbol upload task on Gradle, to be guaranteed to run last ([#1657](https://github.com/getsentry/sentry-unity/pull/1657))
-- The SDK now has improved stacktraces for C++ exceptions ([#1655](https://github.com/getsentry/sentry-unity/pull/1655))
+- The SDK now has improved stacktraces for C++ exceptions on iOS ([#1655](https://github.com/getsentry/sentry-unity/pull/1655))
 - The SDK no longer crashes on Android versions 5 and 6 with native support enabled ([#1652](https://github.com/getsentry/sentry-unity/pull/1652))
 
 ### Dependencies
