@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+
+
 ### Fixes
 
+- The SDK now has improved stacktraces for C++ exceptions ([#1655](https://github.com/getsentry/sentry-unity/pull/1655))
 - The SDK no longer crashes on Android versions 5 and 6 with native support enabled ([#1652](https://github.com/getsentry/sentry-unity/pull/1652))
 
 ### Dependencies

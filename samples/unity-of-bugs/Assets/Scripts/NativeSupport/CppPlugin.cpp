@@ -14,8 +14,7 @@ extern "C" {
 void throw_cpp()
 {
     try {
-        // throws std::length_error
-        std::string("1").substr(2);
+        throw std::runtime_error("test");
     } catch (const std::exception &e) {
         std::cout << e.what() << '\n';
         throw;
