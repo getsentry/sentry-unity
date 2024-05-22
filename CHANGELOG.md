@@ -2,10 +2,9 @@
 
 ## Unreleased
 
-- change gradle task syntax and placement ([#1657](https://github.com/getsentry/sentry-unity/pull/1657))
-
 ### Fixes
 
+- Updated the symbol upload task on Gradle to be guaranteed to run last ([#1657](https://github.com/getsentry/sentry-unity/pull/1657))
 - The SDK no longer crashes on Android versions 5 and 6 with native support enabled ([#1652](https://github.com/getsentry/sentry-unity/pull/1652))
 
 ### Dependencies
