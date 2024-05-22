@@ -25,7 +25,7 @@ namespace Sentry.Unity.iOS
 
             if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
             {
-                options.DiagnosticLogger?.LogDebug("Native support is not enabled for: '{0}'", platform);
+                options.DiagnosticLogger?.LogDebug("Native support is disabled for: '{0}'", platform);
                 return;
             }
 

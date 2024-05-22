@@ -21,7 +21,7 @@ namespace Sentry.Unity.Android
 
             if (!options.AndroidNativeSupportEnabled)
             {
-                options.DiagnosticLogger?.LogDebug("Native support is not enabled for Android");
+                options.DiagnosticLogger?.LogDebug("Native support is disabled for Android");
                 return;
             }
 
