@@ -39,6 +39,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine("// Credentials and project settings information are stored in the sentry.properties file");
+                stringBuilder.AppendLine("afterEvaluate {");
                 stringBuilder.AppendLine("task sentryUploadSymbols {");
                 stringBuilder.AppendLine("    doLast {");
                 if (_isExporting)
@@ -68,6 +69,7 @@ namespace Sentry.Unity.Editor.Android
                 stringBuilder.AppendLine(string.Empty);
                 stringBuilder.AppendLine("tasks.assembleDebug.finalizedBy sentryUploadSymbols");
                 stringBuilder.AppendLine("tasks.assembleRelease.finalizedBy sentryUploadSymbols");
+                stringBuilder.AppendLine("}");
                 return stringBuilder.ToString();
             }
         }
