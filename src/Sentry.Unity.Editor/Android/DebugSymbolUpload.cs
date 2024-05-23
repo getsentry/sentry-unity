@@ -54,8 +54,8 @@ namespace Sentry.Unity.Editor.Android
                     stringBuilder.AppendLine($"        def sentryLogFile = new FileOutputStream('{logsDir}/sentry-symbols-upload.log')");
                 }
                 stringBuilder.AppendLine("        exec {");
-                stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', file(\"${rootDir}/sentry.properties\").absolutePath");
-                stringBuilder.AppendLine($"            executable {SentryCliMarker}");
+                stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
+                stringBuilder.AppendLine($"            executable '{SentryCliMarker}'");
                 stringBuilder.AppendLine($"            args = ['debug-files', 'upload'{UploadArgsMarker}]");
                 if (!_isExporting)
                 {
@@ -116,11 +116,10 @@ namespace Sentry.Unity.Editor.Android
             if (_isExporting)
             {
                 uploadDifArguments += ", project.rootDir";
-                sentryCliPath = $"file(\"${{rootDir}}/{Path.GetFileName(sentryCliPath)}\").absolutePath";
+                sentryCliPath = $"./{Path.GetFileName(sentryCliPath)}";
             }
             else
             {
-                sentryCliPath = $"'{sentryCliPath}'";
                 foreach (var symbolUploadPath in _symbolUploadPaths)
                 {
                     if (Directory.Exists(symbolUploadPath))
@@ -236,8 +235,8 @@ namespace Sentry.Unity.Editor.Android
                 stringBuilder.AppendLine($"        def mappingLogFile = new FileOutputStream('{logsDir}/sentry-mapping-upload.log')");
             }
             stringBuilder.AppendLine("        exec {");
-            stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', file(\"${rootDir}/sentry.properties\").absolutePath");
-            stringBuilder.AppendLine($"            executable {SentryCliMarker}");
+            stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
+            stringBuilder.AppendLine($"            executable '{SentryCliMarker}'");
             stringBuilder.AppendLine($"            args = ['upload-proguard', {MappingPathMarker}]");
             if (!_isExporting)
             {

@@ -138,7 +138,7 @@ namespace Sentry.Unity.Editor.Tests.Android
         println 'Uploading mapping file to Sentry.'
         def mappingLogFile = new FileOutputStream\('[^\s]+\/UnityProject\/Logs\/sentry-mapping-upload\.log'\)
         exec {
-            environment 'SENTRY_PROPERTIES', file\(""\${rootDir}\/sentry\.properties""\)\.absolutePath
+            environment 'SENTRY_PROPERTIES', '.\/sentry.properties'
             executable '[^\]]+[^.]\/fake-sentry-cli'
             args = \['upload-proguard', [^\]]+\]
             standardOutput mappingLogFile
@@ -148,8 +148,8 @@ namespace Sentry.Unity.Editor.Tests.Android
             const string mappingTaskExport = @"
         println 'Uploading mapping file to Sentry.'
         exec {
-            environment 'SENTRY_PROPERTIES', file\(""\${rootDir}\/sentry\.properties""\)\.absolutePath
-            executable file\(""\${rootDir}\/fake-sentry-cli""\)\.absolutePath
+            environment 'SENTRY_PROPERTIES', '.\/sentry.properties'
+            executable '\.\/fake-sentry-cli'
             args = \['upload-proguard', (.*?)\]
         }";
 
@@ -164,8 +164,8 @@ task sentryUploadSymbols {
     doLast {
         println 'Uploading symbols to Sentry\.'
         exec {
-            environment 'SENTRY_PROPERTIES', file\(""\${rootDir}\/sentry\.properties""\)\.absolutePath
-            executable file\(""\${rootDir}\/fake-sentry-cli""\)\.absolutePath
+            environment 'SENTRY_PROPERTIES', '.\/sentry.properties'
+            executable '\.\/fake-sentry-cli'
             args = \['debug-files', 'upload', '--il2cpp-mapping', '--include-sources', project\.rootDir\]
         }{0}
     }
@@ -184,7 +184,7 @@ task sentryUploadSymbols {
         println 'Uploading symbols to Sentry\. You can find the full log in \.\/Logs\/sentry-symbols-upload\.log \(the file content may not be strictly sequential because it\\'s a merge of two streams\)\.'
         def sentryLogFile = new FileOutputStream\('[^\s]+\/UnityProject\/Logs\/sentry-symbols-upload\.log'\)
         exec {
-            environment 'SENTRY_PROPERTIES', file\(""\${rootDir}\/sentry\.properties""\)\.absolutePath
+            environment 'SENTRY_PROPERTIES', '.\/sentry.properties'
             executable '[^\]]+[^.]\/fake-sentry-cli'
             args = \['debug-files', 'upload', '--il2cpp-mapping', '--include-sources', [^\]]+\]
             standardOutput sentryLogFile
