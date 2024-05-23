@@ -20,6 +20,8 @@ namespace Sentry.Unity.Native
         /// <param name="sentryUnityInfo">Infos about the current Unity environment</param>
         public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
         {
+            options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Native SDK");
+
             if (!sentryUnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
             {
                 options.DiagnosticLogger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);

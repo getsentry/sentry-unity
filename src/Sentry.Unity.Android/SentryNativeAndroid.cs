@@ -17,8 +17,11 @@ namespace Sentry.Unity.Android
         /// <param name="options">The Sentry Unity options to use.</param>
         public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
         {
+            options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Android SDK");
+
             if (!options.AndroidNativeSupportEnabled)
             {
+                options.DiagnosticLogger?.LogDebug("Native support is disabled for Android");
                 return;
             }
 
