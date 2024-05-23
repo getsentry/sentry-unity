@@ -284,9 +284,10 @@ namespace Sentry.Unity.Editor.Android
                 // In practice, users should be able to build the project on any platform, regardless of where Unity
                 // ran. In that case, we would either need to include all CLI binaries and switch in Gradle, or let
                 // gradle download CLI on demand (relevant code could be taken from sentry-java repo?).
+                var launcherDirectory = Path.Combine(gradleProjectPath, "launcher");
                 var sentryCliPath = SentryCli.SetupSentryCli(
-                    EditorUserBuildSettings.exportAsGoogleAndroidProject ? gradleProjectPath : null);
-                SentryCli.CreateSentryProperties(gradleProjectPath, _sentryCliOptions!, _options!);
+                    EditorUserBuildSettings.exportAsGoogleAndroidProject ? launcherDirectory : null);
+                SentryCli.CreateSentryProperties(launcherDirectory, _sentryCliOptions!, _options!);
                 symbolsUpload.TryCopySymbolsToGradleProject();
 
                 symbolsUpload.AppendUploadToGradleFile(sentryCliPath);

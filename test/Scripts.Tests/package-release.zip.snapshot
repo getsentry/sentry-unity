@@ -33,6 +33,8 @@ Plugins/macOS/Sentry/Sentry.dylib
 Plugins/macOS/Sentry/Sentry.dylib.dSYM
 Plugins/macOS/Sentry/Sentry.dylib.dSYM.meta
 Plugins/macOS/Sentry/Sentry.dylib.meta
+Plugins/iOS/SentryCxaThrowHook.cpp
+Plugins/iOS/SentryCxaThrowHook.cpp.meta
 Plugins/iOS/SentryNativeBridge.m
 Plugins/iOS/SentryNativeBridge.m.meta
 Plugins/iOS/SentryNativeBridgeNoOp.m
