@@ -1,0 +1,66 @@
+apply plugin: 'com.android.application'
+
+dependencies {
+    implementation project(':unityLibrary')
+    }
+
+android {
+    compileSdkVersion 33
+    buildToolsVersion '30.0.2'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion 22
+        targetSdkVersion 33
+        applicationId 'com.DefaultCompany.unityofbugs'
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+        versionCode 1
+        versionName '0.1'
+    }
+
+    aaptOptions {
+        noCompress = ['.unity3d', '.ress', '.resource', '.obb', '.bundle', '.unityexp'] + unityStreamingAssets.tokenize(', ')
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            signingConfig signingConfigs.debug
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    packagingOptions {
+        doNotStrip '*/armeabi-v7a/*.so'
+        doNotStrip '*/arm64-v8a/*.so'
+    }
+
+    bundle {
+        language {
+            enableSplit = false
+        }
+        density {
+            enableSplit = false
+        }
+        abi {
+            enableSplit = true
+        }
+    }
+}
