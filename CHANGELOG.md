@@ -7,6 +7,12 @@
 - Bump .NET SDK from v4.6.2 to v4.7.0 ([#1665](https://github.com/getsentry/sentry-unity/pull/1665))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#470)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.6.2...4.7.0)
+- Bump Native SDK from v0.7.4 to v0.7.5 ([#1668](https://github.com/getsentry/sentry-unity/pull/1668))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#075)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.4...0.7.5)
+- Bump CLI from v2.31.2 to v2.32.1 ([#1669](https://github.com/getsentry/sentry-unity/pull/1669))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2321)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.31.2...2.32.1)
 
 ## 2.0.6
 
