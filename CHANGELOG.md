@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Do not fail Unity build if the symbol upload task fails for Android ([#1672](https://github.com/getsentry/sentry-unity/pull/1672))
+
 ### Dependencies
 
 - Bump .NET SDK from v4.6.2 to v4.7.0 ([#1665](https://github.com/getsentry/sentry-unity/pull/1665))
