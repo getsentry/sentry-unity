@@ -74,7 +74,7 @@ namespace Sentry.Unity.Editor.Android
                 {
                     stringBuilder.AppendLine("        } catch (exception) {");
                     stringBuilder.AppendLine("            def file = new File(logFilePath)");
-                    stringBuilder.AppendLine("            file.append(\"\\n ===ERROR===${exception}\")");
+                    stringBuilder.AppendLine("            file.append('===ERROR===' + exception)");
                     stringBuilder.AppendLine("        }");
                 }
                 CheckMapping(stringBuilder);
@@ -249,7 +249,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
                 Directory.CreateDirectory(logsDir);
-                stringBuilder.AppendLine($"        def mappingLogFilePath = '{logsDir}/sentry-symbols-mapping.log'");
+                stringBuilder.AppendLine($"        def mappingLogFilePath = '{logsDir}/sentry-mapping-upload.log'");
                 stringBuilder.AppendLine($"        def mappingLogFile = new FileOutputStream(mappingLogFilePath)");
                 stringBuilder.AppendLine("        try {");
             }
@@ -268,7 +268,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 stringBuilder.AppendLine("        } catch (exception) {");
                 stringBuilder.AppendLine("            def file = new File(mappingLogFilePath)");
-                stringBuilder.AppendLine("            file.append(\"\\n ===ERROR===${exception}\")");
+                stringBuilder.AppendLine("            file.append('===ERROR===' + exception)");
                 stringBuilder.AppendLine("        }");
             }
         }

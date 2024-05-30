@@ -39,6 +39,12 @@ namespace Sentry.Unity.Editor.Android
                 return;
             }
 
+            if (EditorUserBuildSettings.exportAsGoogleAndroidProject)
+            {
+                _logger.LogDebug("The task is not executed during export. Will not validate the upload task.");
+                return;
+            }
+
             // ReSharper disable once Unity.NoNullPropagation
             if (!(_sentryCliOptions?.UploadSymbols ?? false))
             {
@@ -60,6 +66,7 @@ namespace Sentry.Unity.Editor.Android
                 _logger.LogWarning($"Symbol upload task error: {symbolError}");
                 _logger.LogWarning("Symbol upload log file content:");
                 LogFileContent(symbolLog);
+                File.WriteAllText(symbolUploadLogPath, symbolLog); // Clean up the log file
             }
 
             var mappingUploadLogPath = Path.Combine(unityProjectPath, "Logs", DebugSymbolUpload.MappingUploadLogName);
@@ -68,6 +75,7 @@ namespace Sentry.Unity.Editor.Android
                 _logger.LogWarning($"Mapping upload task error: {mappingError}");
                 _logger.LogWarning("Mapping upload log file content:");
                 LogFileContent(mappingLog);
+                File.WriteAllText(mappingUploadLogPath, mappingLog); // Clean up the log file
             }
         }
 
