@@ -48,13 +48,10 @@ jobs:
       - name: Find the latest Unity version
         id: version-select
         run: |
-          $page = Invoke-WebRequest -UseBasicParsing -Uri 'https://unity3d.com/get-unity/download/archive'
-          $hubPrefix = "unityhub://"
-          $items = $page.Links.Href | Select-String -Pattern $hubPrefix | ForEach-Object { $_.ToString().Substring($hubPrefix.Length) }
-          $items = $items | Select-String -Pattern "${{ matrix.unity-prefix }}"
-          $version,$changeset = $items[0].ToString().split("/")
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "changeset=$changeset" >> $env:GITHUB_OUTPUT
+          $page = Invoke-WebRequest -UseBasicParsing -Uri 'https://unity.com/releases/editor/archive'
+          $latest = $page.RawContent | Select-String -Pattern '\"unityhub://(${{ matrix.unity-prefix }}[a-z0-9.-]+)/([a-z0-9]+)\\'
+          "version=$($latest.Matches.Groups[1].value)" >> $env:GITHUB_OUTPUT
+          "changeset=$($latest.Matches.Groups[2].value)" >> $env:GITHUB_OUTPUT
           echo "Latest version: $version ($changeset)"
 
       - uses: actions/checkout@v3
