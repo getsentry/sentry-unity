@@ -207,7 +207,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
