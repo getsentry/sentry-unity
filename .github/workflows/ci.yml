@@ -372,7 +372,7 @@ jobs:
 
   desktop-smoke-test:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
+    name: ${{ matrix.unity-version }} ${{ matrix.os }} Run Smoke Test
     needs: [smoke-test-create]
     runs-on: ${{ matrix.os }}-latest
     strategy:
@@ -439,7 +439,7 @@ jobs:
       - name: Build with Sentry SDK
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
 
-      - name: Run Smoke Test
+      os name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
       - name: Run Crash Test
@@ -448,7 +448,7 @@ jobs:
   android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} Run Smoke Test
+    name: ${{ matrix.unity-version }} Android ${{ matrix.api-os }} Run Smoke Test
     uses: ./.github/workflows/android-smoke-test-wrapper.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -545,7 +545,7 @@ jobs:
   ios-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
+    name: ${{ matrix.unity-version }} iOS ${{ matrix.os }} Run Smoke Test
     runs-on: macos-12
     strategy:
       fail-fast: false
@@ -600,7 +600,7 @@ jobs:
   smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
+    name: ${{ matrix.unity-version }} ${{ matrix.os }} Run Smoke Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -627,7 +627,7 @@ jobs:
           pip3 install --upgrade --user selenium urllib3 requests
           python3 scripts/smoke-test-webgl.py "samples/IntegrationTest/Build"
 
-      - name: Run Smoke Test (Linux)
+      os name: Run Smoke Test (Linux)
         if: ${{ matrix.platform == 'Linux' }}
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
