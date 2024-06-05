@@ -68,7 +68,7 @@ namespace Sentry.Unity.Android
                 }
                 catch (Exception e)
                 {
-                    Debug.unityLogger.LogException(e);
+                    Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
                 }
             }
 
