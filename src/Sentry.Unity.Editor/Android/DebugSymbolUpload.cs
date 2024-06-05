@@ -17,6 +17,9 @@ namespace Sentry.Unity.Editor.Android
         internal const string RelativeBuildOutputPathNew = "Library/Bee/artifacts/Android";
         internal const string RelativeAndroidPathNew = "Library/Bee/Android";
 
+        internal const string SymbolUploadLogName = "sentry-symbols-upload.log";
+        internal const string MappingUploadLogName = "sentry-mapping-upload.log";
+
         private readonly string _unityProjectPath;
         private readonly string _gradleProjectPath;
         private readonly string _gradleScriptPath;
@@ -51,8 +54,11 @@ namespace Sentry.Unity.Editor.Android
                     var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
                     Directory.CreateDirectory(logsDir);
                     stringBuilder.AppendLine("        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'");
-                    stringBuilder.AppendLine($"        def sentryLogFile = new FileOutputStream('{logsDir}/sentry-symbols-upload.log')");
+                    stringBuilder.AppendLine($"        def logFilePath = '{logsDir}/{SymbolUploadLogName}'");
+                    stringBuilder.AppendLine("        def sentryLogFile = new FileOutputStream(logFilePath)");
+                    stringBuilder.AppendLine("        try {");
                 }
+
                 stringBuilder.AppendLine("        exec {");
                 stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
                 stringBuilder.AppendLine($"            executable '{SentryCliMarker}'");
@@ -62,7 +68,15 @@ namespace Sentry.Unity.Editor.Android
                     stringBuilder.AppendLine("            standardOutput sentryLogFile");
                     stringBuilder.AppendLine("            errorOutput sentryLogFile");
                 }
+
                 stringBuilder.AppendLine("        }");
+                if (!_isExporting)
+                {
+                    stringBuilder.AppendLine("        } catch (exception) {");
+                    stringBuilder.AppendLine("            def file = new File(logFilePath)");
+                    stringBuilder.AppendLine("            file.append('===ERROR===' + exception)");
+                    stringBuilder.AppendLine("        }");
+                }
                 CheckMapping(stringBuilder);
                 stringBuilder.AppendLine("    }");
                 stringBuilder.AppendLine("}");
@@ -151,6 +165,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 throw new FileNotFoundException($"Failed to find the gradle config.", _gradleScriptPath);
             }
+
             return File.ReadAllText(_gradleScriptPath);
         }
 
@@ -187,6 +202,7 @@ namespace Sentry.Unity.Editor.Android
                 {
                     continue;
                 }
+
                 foreach (var sourcePath in Directory.GetFiles(symbolUploadPath, "*.so", SearchOption.AllDirectories))
                 {
                     var targetPath = sourcePath.Replace(symbolUploadPath, targetRoot);
@@ -213,6 +229,7 @@ namespace Sentry.Unity.Editor.Android
                 paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathOld));
                 paths.Add(Path.Combine(_unityProjectPath, RelativeGradlePathOld));
             }
+
             return paths;
         }
 
@@ -232,7 +249,9 @@ namespace Sentry.Unity.Editor.Android
             {
                 var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
                 Directory.CreateDirectory(logsDir);
-                stringBuilder.AppendLine($"        def mappingLogFile = new FileOutputStream('{logsDir}/sentry-mapping-upload.log')");
+                stringBuilder.AppendLine($"        def mappingLogFilePath = '{logsDir}/{MappingUploadLogName}'");
+                stringBuilder.AppendLine($"        def mappingLogFile = new FileOutputStream(mappingLogFilePath)");
+                stringBuilder.AppendLine("        try {");
             }
             stringBuilder.AppendLine("        exec {");
             stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
@@ -243,7 +262,15 @@ namespace Sentry.Unity.Editor.Android
                 stringBuilder.AppendLine("            standardOutput mappingLogFile");
                 stringBuilder.AppendLine("            errorOutput mappingLogFile");
             }
+
             stringBuilder.AppendLine("        }");
+            if (!_isExporting)
+            {
+                stringBuilder.AppendLine("        } catch (exception) {");
+                stringBuilder.AppendLine("            def file = new File(mappingLogFilePath)");
+                stringBuilder.AppendLine("            file.append('===ERROR===' + exception)");
+                stringBuilder.AppendLine("        }");
+            }
         }
 
         private string GetMappingFilePath(IApplication? application)
