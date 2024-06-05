@@ -13,12 +13,14 @@ namespace Sentry.Unity.Android
 
         private TaskCompletionSource<object?>? _taskCompletionSource;
 
+        private readonly object _lock = new object();
+
         public JniExecutor()
         {
             _taskEvent = new AutoResetEvent(false);
             _shutdownSource = new CancellationTokenSource();
 
-            new Thread(DoWork) { IsBackground = true }.Start();
+            new Thread(DoWork) { IsBackground = true, Name = "SentryJniExecutorThread" }.Start();
         }
 
         private void DoWork()
@@ -66,7 +68,7 @@ namespace Sentry.Unity.Android
                 }
                 catch (Exception e)
                 {
-                    _taskCompletionSource?.SetException(e);
+                    Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
                 }
             }
 
@@ -75,35 +77,41 @@ namespace Sentry.Unity.Android
 
         public TResult? Run<TResult>(Func<TResult?> jniOperation)
         {
-            _taskCompletionSource = new TaskCompletionSource<object?>();
-            _currentTask = jniOperation;
-            _taskEvent.Set();
-
-            try
+            lock (_lock)
             {
-                return (TResult?)_taskCompletionSource.Task.GetAwaiter().GetResult();
-            }
-            catch (Exception e)
-            {
-                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
-            }
+                _taskCompletionSource = new TaskCompletionSource<object?>();
+                _currentTask = jniOperation;
+                _taskEvent.Set();
 
-            return default;
+                try
+                {
+                    return (TResult?)_taskCompletionSource.Task.GetAwaiter().GetResult();
+                }
+                catch (Exception e)
+                {
+                    Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+                }
+
+                return default;
+            }
         }
 
         public void Run(Action jniOperation)
         {
-            _taskCompletionSource = new TaskCompletionSource<object?>();
-            _currentTask = jniOperation;
-            _taskEvent.Set();
+            lock (_lock)
+            {
+                _taskCompletionSource = new TaskCompletionSource<object?>();
+                _currentTask = jniOperation;
+                _taskEvent.Set();
 
-            try
-            {
-                _taskCompletionSource.Task.Wait();
-            }
-            catch (Exception e)
-            {
-                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+                try
+                {
+                    _taskCompletionSource.Task.Wait();
+                }
+                catch (Exception e)
+                {
+                    Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+                }
             }
         }
 
