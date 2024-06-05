@@ -10,7 +10,7 @@ param(
 $UnityPath = FormatUnityPath $UnityPath
 
 $unityArgs = @( `
-        "-quit", "-batchmode", "-nographics", "-projectPath ", $NewProjectPath, `
+        "-quit", "-batchmode", "-nographics", "-projectPath -disable-assembly-updater ", $NewProjectPath, `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
         "-buildTimeOptionsScript", "BuildTimeOptions", `
         "-runtimeOptionsScript", "RuntimeOptions", `
