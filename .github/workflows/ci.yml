@@ -372,7 +372,7 @@ jobs:
 
   desktop-smoke-test:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
+    name: ${{ matrix.unity-version }} ${{ matrix.os }} Run Smoke Test
     needs: [smoke-test-create]
     runs-on: ${{ matrix.os }}-latest
     strategy:
