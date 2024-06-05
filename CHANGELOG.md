@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer causes deadlocks during synchronization with the native layer on Android ([#1679](https://github.com/getsentry/sentry-unity/pull/1679))
 - When targeting Android, builds no longer fail due to errors during symbol upload. These get logged to the console instead ([#1672](https://github.com/getsentry/sentry-unity/pull/1672))
 
 ### Dependencies
