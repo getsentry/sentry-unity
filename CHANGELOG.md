@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer causes deadlocks during synchronization with the native layer on Android ([#1679](https://github.com/getsentry/sentry-unity/pull/1679))
+
 ### Dependencies
 
 - Bump .NET SDK from v4.6.2 to v4.7.0 ([#1665](https://github.com/getsentry/sentry-unity/pull/1665))
