@@ -54,7 +54,7 @@ namespace Sentry.Unity.Editor.Android
                     var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
                     Directory.CreateDirectory(logsDir);
                     stringBuilder.AppendLine("        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'");
-                    stringBuilder.AppendLine($"        def logFilePath = '{logsDir}/sentry-symbols-upload.log'");
+                    stringBuilder.AppendLine($"        def logFilePath = '{logsDir}/{SymbolUploadLogName}'");
                     stringBuilder.AppendLine("        def sentryLogFile = new FileOutputStream(logFilePath)");
                     stringBuilder.AppendLine("        try {");
                 }
@@ -249,7 +249,7 @@ namespace Sentry.Unity.Editor.Android
             {
                 var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
                 Directory.CreateDirectory(logsDir);
-                stringBuilder.AppendLine($"        def mappingLogFilePath = '{logsDir}/sentry-mapping-upload.log'");
+                stringBuilder.AppendLine($"        def mappingLogFilePath = '{logsDir}/{MappingUploadLogName}'");
                 stringBuilder.AppendLine($"        def mappingLogFile = new FileOutputStream(mappingLogFilePath)");
                 stringBuilder.AppendLine("        try {");
             }
