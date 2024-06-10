@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added a flag whether to ignore CLI errors during symbol and mapping uploads
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.27.0 to v8.28.0 ([#1685](https://github.com/getsentry/sentry-unity/pull/1685))
