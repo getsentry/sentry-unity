@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added a flag whether to ignore CLI errors during symbol and mapping uploads ([#1687](https://github.com/getsentry/sentry-unity/pull/1687))
+- Added an `IgnoreCliErrors` to the Sentry-CLI options, allowing you to ignore errors during symbol and mapping upload ([#1687](https://github.com/getsentry/sentry-unity/pull/1687))
 
 ### Dependencies
 
