@@ -40,7 +40,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             internal DebugSymbolUpload GetSut() => new(
                 new UnityLogger(new SentryOptions(), UnityTestLogger),
-                new SentryCliOptions() { UploadSources = true, IgnoreCliErrors = IgnoreCliErrors},
+                new SentryCliOptions() { UploadSources = true, IgnoreCliErrors = IgnoreCliErrors },
                 UnityProjectPath,
                 GradleProjectPath,
                 IsExporting,
