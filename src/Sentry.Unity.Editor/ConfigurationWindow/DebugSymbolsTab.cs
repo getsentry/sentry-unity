@@ -21,6 +21,10 @@ namespace Sentry.Unity.Editor.ConfigurationWindow
                 new GUIContent("Upload Sources", "Whether your source code should be uploaded to Sentry, so the stack trace in Sentry has the relevant code next to it."),
                 cliOptions.UploadSources);
 
+            cliOptions.IgnoreCliErrors = EditorGUILayout.Toggle(
+                new GUIContent("Ignore CLI Errors", "Whether to ignore the Sentry CLI errors during the build. If this is ON, the errors will be logged, but the build will succeed."),
+                cliOptions.IgnoreCliErrors);
+
             EditorGUILayout.EndToggleGroup();
 
             cliOptions.Auth = EditorGUILayout.TextField(

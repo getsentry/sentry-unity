@@ -25,6 +25,7 @@ namespace Sentry.Unity.Editor.Android
         private readonly string _gradleScriptPath;
         private readonly bool _isExporting;
         private readonly bool _isMinifyEnabled;
+        private readonly bool _ignoreCliErrors;
 
         private readonly SentryCliOptions? _cliOptions;
         private readonly List<string> _symbolUploadPaths;
@@ -56,7 +57,10 @@ namespace Sentry.Unity.Editor.Android
                     stringBuilder.AppendLine("        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'");
                     stringBuilder.AppendLine($"        def logFilePath = '{logsDir}/{SymbolUploadLogName}'");
                     stringBuilder.AppendLine("        def sentryLogFile = new FileOutputStream(logFilePath)");
-                    stringBuilder.AppendLine("        try {");
+                    if (_ignoreCliErrors)
+                    {
+                        stringBuilder.AppendLine("        try {");
+                    }
                 }
 
                 stringBuilder.AppendLine("        exec {");
@@ -70,7 +74,7 @@ namespace Sentry.Unity.Editor.Android
                 }
 
                 stringBuilder.AppendLine("        }");
-                if (!_isExporting)
+                if (!_isExporting && _ignoreCliErrors)
                 {
                     stringBuilder.AppendLine("        } catch (exception) {");
                     stringBuilder.AppendLine("            def file = new File(logFilePath)");
@@ -103,6 +107,7 @@ namespace Sentry.Unity.Editor.Android
             _gradleScriptPath = Path.Combine(_gradleProjectPath, "launcher/build.gradle");
             _isExporting = isExporting;
             _isMinifyEnabled = minifyEnabled;
+            _ignoreCliErrors = cliOptions != null && cliOptions.IgnoreCliErrors;
 
             _cliOptions = cliOptions;
             _symbolUploadPaths = GetSymbolUploadPaths(application);
@@ -251,7 +256,10 @@ namespace Sentry.Unity.Editor.Android
                 Directory.CreateDirectory(logsDir);
                 stringBuilder.AppendLine($"        def mappingLogFilePath = '{logsDir}/{MappingUploadLogName}'");
                 stringBuilder.AppendLine($"        def mappingLogFile = new FileOutputStream(mappingLogFilePath)");
-                stringBuilder.AppendLine("        try {");
+                if (!_isExporting && _ignoreCliErrors)
+                {
+                    stringBuilder.AppendLine("        try {");
+                }
             }
             stringBuilder.AppendLine("        exec {");
             stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
@@ -264,7 +272,7 @@ namespace Sentry.Unity.Editor.Android
             }
 
             stringBuilder.AppendLine("        }");
-            if (!_isExporting)
+            if (!_isExporting && _ignoreCliErrors)
             {
                 stringBuilder.AppendLine("        } catch (exception) {");
                 stringBuilder.AppendLine("            def file = new File(mappingLogFilePath)");
