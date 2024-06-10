@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added an `IgnoreCliErrors` to the Sentry-CLI options, allowing you to ignore errors during symbol and mapping upload ([#1687](https://github.com/getsentry/sentry-unity/pull/1687))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.27.0 to v8.28.0 ([#1685](https://github.com/getsentry/sentry-unity/pull/1685))

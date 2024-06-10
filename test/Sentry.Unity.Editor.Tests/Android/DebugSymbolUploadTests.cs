@@ -22,6 +22,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             public bool IsExporting { get; set; }
             public bool IsMinifyEnabled { get; set; }
+            public bool IgnoreCliErrors { get; set; }
             public TestApplication Application { get; set; }
 
             public Fixture()
@@ -39,7 +40,7 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             internal DebugSymbolUpload GetSut() => new(
                 new UnityLogger(new SentryOptions(), UnityTestLogger),
-                new SentryCliOptions() { UploadSources = true },
+                new SentryCliOptions() { UploadSources = true, IgnoreCliErrors = IgnoreCliErrors },
                 UnityProjectPath,
                 GradleProjectPath,
                 IsExporting,
@@ -122,14 +123,19 @@ namespace Sentry.Unity.Editor.Tests.Android
         }
 
         [Test]
-        [TestCase(false, false)]
-        [TestCase(true, false)]
-        [TestCase(true, true)]
-        [TestCase(false, true)]
-        public void AppendUploadToGradleFile_AllRequirementsMet_AppendsUploadTask(bool isExporting, bool addMapping)
+        [TestCase(false, false, false)]
+        [TestCase(true, false, false)]
+        [TestCase(true, true, false)]
+        [TestCase(false, true, false)]
+        [TestCase(false, false, true)]
+        [TestCase(true, false, true)]
+        [TestCase(true, true, true)]
+        [TestCase(false, true, true)]
+        public void AppendUploadToGradleFile_AllRequirementsMet_AppendsUploadTask(bool isExporting, bool addMapping, bool ignoreCliErrors)
         {
             _fixture.IsExporting = isExporting;
             _fixture.IsMinifyEnabled = addMapping;
+            _fixture.IgnoreCliErrors = ignoreCliErrors;
             var sut = _fixture.GetSut();
 
             sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
@@ -147,8 +153,13 @@ namespace Sentry.Unity.Editor.Tests.Android
 
             if (!isExporting)
             {
-                keywords.Add("try {");
                 keywords.Add("logFilePath");
+            }
+
+            if (!isExporting && ignoreCliErrors)
+            {
+                keywords.Add("try {");
+                keywords.Add("} catch");
             }
 
             if (addMapping)

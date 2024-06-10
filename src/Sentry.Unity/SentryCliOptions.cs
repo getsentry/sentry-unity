@@ -21,6 +21,7 @@ namespace Sentry.Unity
         [field: SerializeField] public string? Auth { get; set; }
         [field: SerializeField] public string? Organization { get; set; }
         [field: SerializeField] public string? Project { get; set; }
+        [field: SerializeField] public bool IgnoreCliErrors { get; set; } = false;
 
         internal static string GetConfigPath(string? notDefaultConfigName = null)
             => $"Assets/Plugins/Sentry/{notDefaultConfigName ?? ConfigName}.asset";
