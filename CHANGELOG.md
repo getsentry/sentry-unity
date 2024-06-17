@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDKs loglevel now also applies to sentry-cli logging ([#1693](https://github.com/getsentry/sentry-unity/pull/1693))
+- When targeting Android, sentry-cli will now log to the editor console ([#1693](https://github.com/getsentry/sentry-unity/pull/1691))
+
 ### Features
 
 - Added an `IgnoreCliErrors` to the Sentry-CLI options, allowing you to ignore errors during symbol and mapping upload ([#1687](https://github.com/getsentry/sentry-unity/pull/1687))
+
 
 ### Dependencies
 
