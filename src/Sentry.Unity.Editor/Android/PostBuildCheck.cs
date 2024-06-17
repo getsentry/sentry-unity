@@ -60,23 +60,40 @@ namespace Sentry.Unity.Editor.Android
             }
 
             var unityProjectPath = projectDir.FullName;
+            CheckUploadSymbolLogs(unityProjectPath);
+            CheckUploadMappingLogs(unityProjectPath);
+        }
+
+        private void CheckUploadSymbolLogs(string unityProjectPath)
+        {
             var symbolUploadLogPath = Path.Combine(unityProjectPath, "Logs", DebugSymbolUpload.SymbolUploadLogName);
-            if (HasError(symbolUploadLogPath, out var symbolError, out var symbolLog))
+            var hasSymbolError = HasError(symbolUploadLogPath, out var symbolError, out var symbolLog);
+            if (hasSymbolError)
             {
                 _logger.LogWarning($"Symbol upload task error: {symbolError}");
-                _logger.LogWarning("Symbol upload log file content:");
-                LogFileContent(symbolLog);
-                File.WriteAllText(symbolUploadLogPath, symbolLog); // Clean up the log file
+            }
+
+            LogFileContent("Symbol upload log file content:", symbolLog, hasSymbolError);
+            File.WriteAllText(symbolUploadLogPath, symbolLog); // Clean up the log file
+        }
+
+        private void CheckUploadMappingLogs(string unityProjectPath)
+        {
+            if (!AndroidUtils.ShouldUploadMapping())
+            {
+                _logger.LogDebug("Minification is disabled. Will not check upload mapping task result.");
+                return;
             }
 
             var mappingUploadLogPath = Path.Combine(unityProjectPath, "Logs", DebugSymbolUpload.MappingUploadLogName);
-            if (HasError(mappingUploadLogPath, out var mappingError, out var mappingLog))
+            var hasMappingError = HasError(mappingUploadLogPath, out var mappingError, out var mappingLog);
+            if (hasMappingError)
             {
                 _logger.LogWarning($"Mapping upload task error: {mappingError}");
-                _logger.LogWarning("Mapping upload log file content:");
-                LogFileContent(mappingLog);
-                File.WriteAllText(mappingUploadLogPath, mappingLog); // Clean up the log file
             }
+
+            LogFileContent("Mapping upload log file content:", mappingLog, hasMappingError);
+            File.WriteAllText(mappingUploadLogPath, mappingLog); // Clean up the log file
         }
 
         private bool HasError(string filePath, out string error, out string fileContent)
@@ -91,6 +108,7 @@ namespace Sentry.Unity.Editor.Android
             var text = File.ReadAllText(filePath);
             if (!text.Contains(errorMarker))
             {
+                fileContent = text;
                 return false;
             }
 
@@ -105,19 +123,33 @@ namespace Sentry.Unity.Editor.Android
             return !string.IsNullOrEmpty(error);
         }
 
-        private void LogFileContent(string fileContent)
+        private void LogFileContent(string title, string fileContent, bool hasError)
         {
+            var logFunction = new Action<string>(message =>
+            {
+                if (hasError)
+                {
+                    Debug.LogWarning(message);
+                }
+                else
+                {
+                    Debug.Log(message);
+                }
+            });
+
+            logFunction(title);
+
             const int maxLogLength = 8192;
             if (fileContent.Length < maxLogLength)
             {
-                Debug.LogWarning(fileContent);
+                logFunction(fileContent);
                 return;
             }
 
             for (var i = 0; i < fileContent.Length; i += maxLogLength)
             {
                 var chunkLength = maxLogLength + i > fileContent.Length ? fileContent.Length - i : maxLogLength;
-                Debug.LogWarning(fileContent.Substring(i, chunkLength));
+                logFunction(fileContent.Substring(i, chunkLength));
             }
         }
     }
