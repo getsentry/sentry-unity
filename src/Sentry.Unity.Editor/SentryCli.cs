@@ -30,7 +30,7 @@ namespace Sentry.Unity.Editor
             properties.WriteLine($"defaults.project={cliOptions.Project}");
             properties.WriteLine($"auth.token={cliOptions.Auth}");
             properties.WriteLine("dif.max_item_size=10485760"); // 10 MiB
-            properties.WriteLine("log.level=debug");
+            properties.WriteLine($"log.level={options.DiagnosticLevel.ToCliLogLevel()}");
 
             return propertiesFile;
         }
@@ -111,6 +111,19 @@ namespace Sentry.Unity.Editor
                 }
             }
             return string.IsNullOrEmpty(result) ? null : result;
+        }
+
+        private static string ToCliLogLevel(this SentryLevel level)
+        {
+            return level switch
+            {
+                SentryLevel.Debug => "debug",
+                SentryLevel.Info => "info",
+                SentryLevel.Warning => "warn",
+                SentryLevel.Error => "error",
+                SentryLevel.Fatal => "error",
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            };
         }
     }
 }
