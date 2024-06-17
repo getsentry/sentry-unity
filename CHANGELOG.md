@@ -8,7 +8,7 @@
 
 ### Fixes
 
-- Fix symbol upload task hook for exported projects ([#1692](https://github.com/getsentry/sentry-unity/pull/1692))
+- When exporting Android projects, the SDK will now correctly add the symbol upload at the end of bundling ([#1692](https://github.com/getsentry/sentry-unity/pull/1692))
 
 ### Dependencies
 
