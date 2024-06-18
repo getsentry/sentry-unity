@@ -11,6 +11,10 @@
 
 - Added an `IgnoreCliErrors` to the Sentry-CLI options, allowing you to ignore errors during symbol and mapping upload ([#1687](https://github.com/getsentry/sentry-unity/pull/1687))
 
+### Fixes
+
+- When exporting Android projects, the SDK will now correctly add the symbol upload at the end of bundling ([#1692](https://github.com/getsentry/sentry-unity/pull/1692))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.27.0 to v8.29.0 ([#1685](https://github.com/getsentry/sentry-unity/pull/1685), [#1690](https://github.com/getsentry/sentry-unity/pull/1690))

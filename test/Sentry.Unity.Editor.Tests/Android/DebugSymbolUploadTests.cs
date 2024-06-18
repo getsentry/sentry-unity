@@ -155,6 +155,11 @@ namespace Sentry.Unity.Editor.Tests.Android
             {
                 keywords.Add("logFilePath");
             }
+            else
+            {
+                keywords.Add("tasks.bundleDebug.finalizedBy sentryUploadSymbols");
+                keywords.Add("tasks.bundleRelease.finalizedBy sentryUploadSymbols");
+            }
 
             if (!isExporting && ignoreCliErrors)
             {
