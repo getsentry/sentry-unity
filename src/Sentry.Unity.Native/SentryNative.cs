@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
@@ -28,10 +29,19 @@ namespace Sentry.Unity.Native
                 return;
             }
 
-            if (!SentryNativeBridge.Init(options, sentryUnityInfo))
+            try
+            {
+                if (!SentryNativeBridge.Init(options, sentryUnityInfo))
+                {
+                    options.DiagnosticLogger?
+                        .LogWarning("Sentry native initialization failed - native crashes are not captured.");
+                    return;
+                }
+            }
+            catch (Exception e)
             {
                 options.DiagnosticLogger?
-                    .LogWarning("Sentry native initialization failed - native crashes are not captured.");
+                    .LogError(e, "Sentry native initialization failed - native crashes are not captured.");
                 return;
             }
 
