@@ -87,12 +87,8 @@ namespace Sentry.Unity.Editor.Android
                 stringBuilder.AppendLine(string.Empty);
                 stringBuilder.AppendLine("tasks.assembleDebug.finalizedBy sentryUploadSymbols");
                 stringBuilder.AppendLine("tasks.assembleRelease.finalizedBy sentryUploadSymbols");
-
-                if (_isExporting)
-                {
-                    stringBuilder.AppendLine("tasks.bundleDebug.finalizedBy sentryUploadSymbols");
-                    stringBuilder.AppendLine("tasks.bundleRelease.finalizedBy sentryUploadSymbols");
-                }
+                stringBuilder.AppendLine("tasks.bundleDebug.finalizedBy sentryUploadSymbols");
+                stringBuilder.AppendLine("tasks.bundleRelease.finalizedBy sentryUploadSymbols");
 
                 stringBuilder.AppendLine("}");
                 return stringBuilder.ToString();
