@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK no longer throws an exception when failing to initialize the native SDK ([#1693](https://github.com/getsentry/sentry-unity/pull/1695))
 - On iOS, UnityWebRequests no longer break due to the native SDK appending the request URL a second time ([#1699](https://github.com/getsentry/sentry-unity/pull/1699))
 - The SDKs loglevel now also applies to sentry-cli logging ([#1693](https://github.com/getsentry/sentry-unity/pull/1693))
 - When targeting Android, sentry-cli will now log to the editor console ([#1693](https://github.com/getsentry/sentry-unity/pull/1691))
