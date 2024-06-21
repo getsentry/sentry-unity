@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- On iOS, UnityWebRequests no longer break due to the native SDK appending the request URL a second time ([#1699](https://github.com/getsentry/sentry-unity/pull/1699))
 - The SDKs loglevel now also applies to sentry-cli logging ([#1693](https://github.com/getsentry/sentry-unity/pull/1693))
 - When targeting Android, sentry-cli will now log to the editor console ([#1693](https://github.com/getsentry/sentry-unity/pull/1691))
 - Fixed an issue with the SDK failing to automatically uploading debug symbols when exporting an `.aab` when targeting Android ([#1698](https://github.com/getsentry/sentry-unity/pull/1698))
