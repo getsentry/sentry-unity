@@ -148,17 +148,14 @@ namespace Sentry.Unity.Editor.Tests.Android
                 "sentry.properties",
                 "args = ['debug-files', 'upload', '--il2cpp-mapping', '--include-sources'",
                 "tasks.assembleDebug.finalizedBy sentryUploadSymbols",
-                "tasks.assembleRelease.finalizedBy sentryUploadSymbols"
+                "tasks.assembleRelease.finalizedBy sentryUploadSymbols",
+                "tasks.bundleDebug.finalizedBy sentryUploadSymbols",
+                "tasks.bundleRelease.finalizedBy sentryUploadSymbols"
             };
 
             if (!isExporting)
             {
                 keywords.Add("logFilePath");
-            }
-            else
-            {
-                keywords.Add("tasks.bundleDebug.finalizedBy sentryUploadSymbols");
-                keywords.Add("tasks.bundleRelease.finalizedBy sentryUploadSymbols");
             }
 
             if (!isExporting && ignoreCliErrors)

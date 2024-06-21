@@ -37,7 +37,8 @@ static SentryOptions* getSentryOptions()
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
         @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
         @""release"" : @""{options.Release}"",
-        @""environment"" : @""{options.Environment}""
+        @""environment"" : @""{options.Environment}"",
+        @""enableNetworkBreadcrumbs"" : @NO
     }};
 
     NSError *error = nil;
