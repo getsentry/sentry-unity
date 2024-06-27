@@ -49,6 +49,12 @@ namespace Sentry.Unity.Tests.Stubs
         }
 
         public SentryId CaptureCheckIn(string monitorSlug, CheckInStatus status, SentryId? sentryId = null, TimeSpan? duration = null,
+            Scope? scope = null, Action<SentryMonitorOptions>? configureMonitorOptions = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SentryId CaptureCheckIn(string monitorSlug, CheckInStatus status, SentryId? sentryId = null, TimeSpan? duration = null,
             Scope? scope = null)
         {
             throw new NotImplementedException();
