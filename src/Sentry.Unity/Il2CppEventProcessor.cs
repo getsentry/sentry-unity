@@ -109,7 +109,7 @@ namespace Sentry.Unity
                     bool? isRelativeAddress = null;
                     if (!isMainLibFrame)
                     {
-                        image = FindDebugImageContainingAddress(instructionAddress);
+                        image = FindDebugImageContainingAddress(_options, instructionAddress);
                         if (image is null)
                         {
                             isRelativeAddress = true;
@@ -132,7 +132,7 @@ namespace Sentry.Unity
                         }
 
                         // First, try to find the image among the loaded ones, otherwise create a dummy one.
-                        mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
+                        mainLibImage ??= GetSortedDebugImages(_options).Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
                         mainLibImage ??= new DebugImage
                         {
                             Type = UnityInfo.GetDebugImageType(Application.platform),
@@ -219,12 +219,20 @@ namespace Sentry.Unity
 
         private static IDiagnosticLogger? Logger;
 
-        private static readonly Lazy<List<DebugImageInfo>> DebugImagesSorted = new(() =>
+        private static List<DebugImageInfo>? DebugImagesSorted;
+
+        private static List<DebugImageInfo> GetSortedDebugImages(SentryUnityOptions options)
         {
-            var result = new List<DebugImageInfo>();
+            if (DebugImagesSorted is not null)
+            {
+                return DebugImagesSorted;
+            }
+
+            DebugImagesSorted = new List<DebugImageInfo>();
 
             // Only on platforms where we actually use sentry-native.
-            if (UnityInfo.IsSupportedBySentryNative(Application.platform))
+            if (UnityInfo.IsSupportedBySentryNative(Application.platform) &&
+                UnityInfo.IsNativeSupportEnabled(options, Application.platform))
             {
                 var nativeDebugImages = C.DebugImages.Value;
                 foreach (var image in nativeDebugImages)
@@ -239,27 +247,28 @@ namespace Sentry.Unity
 
                     var info = new DebugImageInfo(image);
                     var i = 0;
-                    for (; i < result.Count; i++)
+                    for (; i < DebugImagesSorted.Count; i++)
                     {
-                        if (info.StartAddress < result[i].StartAddress)
+                        if (info.StartAddress < DebugImagesSorted[i].StartAddress)
                         {
                             // insert at index `i`, all the rest have a larger start address
                             break;
                         }
                     }
-                    result.Insert(i, info);
+                    DebugImagesSorted.Insert(i, info);
 
                     Logger?.Log(SentryLevel.Debug,
                         "Found debug image '{0}' (CodeId {1} | DebugId: {2}) with addresses between {3:X8} and {4:X8}",
                         null, image.CodeFile, image.CodeId, image.DebugId, info.StartAddress, info.EndAddress);
                 }
             }
-            return result;
-        });
 
-        private static DebugImage? FindDebugImageContainingAddress(long instructionAddress)
+            return DebugImagesSorted;
+        }
+
+        private static DebugImage? FindDebugImageContainingAddress(SentryUnityOptions options, long instructionAddress)
         {
-            var list = DebugImagesSorted.Value;
+            var list = GetSortedDebugImages(options);
 
             // Manual binary search implementation on "value in range".
             var lowerBound = 0;
