@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The IL2CPP exception processor no longer fails when the native support has been disabled ([#1708](https://github.com/getsentry/sentry-unity/pull/1708))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.29.1 to v8.30.0 ([#1702](https://github.com/getsentry/sentry-unity/pull/1702))
