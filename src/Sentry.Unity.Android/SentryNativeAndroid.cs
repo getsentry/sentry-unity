@@ -1,6 +1,7 @@
 using System;
 using Sentry.Extensibility;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace Sentry.Unity.Android
 {
@@ -64,7 +65,23 @@ namespace Sentry.Unity.Android
             }
 
             options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);
+
             options.DefaultUserId = SentryJava.GetInstallationId(JniExecutor);
+            if (string.IsNullOrEmpty(options.DefaultUserId))
+            {
+                // In case we can't get an installation ID we create one and sync that down to the native layer
+                options.DiagnosticLogger?.LogDebug("Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
+
+                options.DefaultUserId = AnalyticsSessionInfo.userId;
+                if (options.DefaultUserId is not null)
+                {
+                    options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
+                }
+                else
+                {
+                    options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
+                }
+            }
         }
 
         /// <summary>

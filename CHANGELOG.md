@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Added a fallback for user.id on Android and iOS in case none could be extracted from the native layer ([#1710](https://github.com/getsentry/sentry-unity/pull/1710))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.29.1 to v8.30.0 ([#1702](https://github.com/getsentry/sentry-unity/pull/1702))
