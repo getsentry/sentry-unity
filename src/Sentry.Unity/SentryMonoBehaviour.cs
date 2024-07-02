@@ -130,7 +130,11 @@ namespace Sentry.Unity
             // delay on the UI and we're safe to do it on the main thread.
             MainThreadData.MainThreadId = SentrySystemInfo.MainThreadId;
             MainThreadData.ProcessorCount = SentrySystemInfo.ProcessorCount;
+
             MainThreadData.OperatingSystem = SentrySystemInfo.OperatingSystem;
+            Debug.Log("HUEHUE");
+            Debug.Log(MainThreadData.OperatingSystem);
+
             MainThreadData.CpuDescription = SentrySystemInfo.CpuDescription;
             MainThreadData.SupportsVibration = SentrySystemInfo.SupportsVibration;
             MainThreadData.DeviceName = SentrySystemInfo.DeviceName;
