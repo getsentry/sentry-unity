@@ -13,22 +13,23 @@ namespace Sentry.Unity
 {
     internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcessor
     {
-        private readonly SentryUnityOptions _options;
+        private static SentryUnityOptions Options = null!; // private static will be initialized in the constructor
         private static ISentryUnityInfo UnityInfo = null!; // private static will be initialized in the constructor
         private readonly Il2CppMethods _il2CppMethods;
 
         public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, ISentryUnityInfo unityInfo)
         {
-            _options = options;
+            Options = options;
             UnityInfo = unityInfo;
-            _il2CppMethods = unityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(unityInfo.Il2CppMethods), "Unity IL2CPP methods are not available.");
+            _il2CppMethods = unityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(unityInfo.Il2CppMethods),
+                "Unity IL2CPP methods are not available.");
 
-            _options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
+            Options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
         }
 
         public void Process(Exception incomingException, SentryEvent sentryEvent)
         {
-            _options.DiagnosticLogger?.LogDebug("Running Unity IL2CPP event exception processor on: Event {0}", sentryEvent.EventId);
+            Options.DiagnosticLogger?.LogDebug("Running Unity IL2CPP event exception processor on: Event {0}", sentryEvent.EventId);
 
             var sentryExceptions = sentryEvent.SentryExceptions;
             if (sentryExceptions == null)
@@ -38,7 +39,6 @@ namespace Sentry.Unity
 
             var exceptions = EnumerateChainedExceptions(incomingException);
             var usedImages = new HashSet<DebugImage>();
-            Logger = _options.DiagnosticLogger;
 
             // Unity usually produces stack traces with relative offsets in the GameAssembly library.
             // However, at least on Unity 2020 built Windows player, the offsets seem to be absolute.
@@ -61,7 +61,7 @@ namespace Sentry.Unity
 
                 var nativeStackTrace = GetNativeStackTrace(exception);
 
-                _options.DiagnosticLogger?.LogDebug("NativeStackTrace Image: '{0}' (UUID: {1})", nativeStackTrace.ImageName, nativeStackTrace.ImageUuid);
+                Options.DiagnosticLogger?.LogDebug("NativeStackTrace Image: '{0}' (UUID: {1})", nativeStackTrace.ImageName, nativeStackTrace.ImageUuid);
 
                 // Unity by definition only builds a single library which we add once to our list of debug images.
                 // We use this when we encounter stack frames with relative addresses.
@@ -78,7 +78,7 @@ namespace Sentry.Unity
                 var eventLen = sentryStacktrace.Frames.Count;
                 if (nativeLen != eventLen)
                 {
-                    _options.DiagnosticLogger?.LogWarning(
+                    Options.DiagnosticLogger?.LogWarning(
                         "Native and sentry stack trace lengths don't match '({0} != {1})' - this may cause invalid stack traces.",
                         nativeLen, eventLen);
                 }
@@ -127,7 +127,7 @@ namespace Sentry.Unity
                     {
                         if (mainImageUUID is null)
                         {
-                            _options.DiagnosticLogger?.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
+                            Options.DiagnosticLogger?.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
                             continue;
                         }
 
@@ -174,7 +174,7 @@ namespace Sentry.Unity
                         }
                     }
 
-                    _options.DiagnosticLogger?.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
+                    Options.DiagnosticLogger?.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
                         null, frame.Function, instructionAddress, nativeFrame.ToInt64(), image.CodeFile, notes ?? "");
 
                     _ = usedImages.Add(image);
@@ -217,21 +217,20 @@ namespace Sentry.Unity
             public bool ContainsAddress(long address) => StartAddress <= address && address <= EndAddress;
         }
 
-        private static IDiagnosticLogger? Logger;
-
         private static readonly Lazy<List<DebugImageInfo>> DebugImagesSorted = new(() =>
         {
             var result = new List<DebugImageInfo>();
 
             // Only on platforms where we actually use sentry-native.
-            if (UnityInfo.IsSupportedBySentryNative(Application.platform))
+            if (UnityInfo.IsSupportedBySentryNative(Application.platform) &&
+                UnityInfo.IsNativeSupportEnabled(Options, Application.platform))
             {
                 var nativeDebugImages = C.DebugImages.Value;
                 foreach (var image in nativeDebugImages)
                 {
                     if (image.ImageSize is null)
                     {
-                        Logger?.Log(SentryLevel.Debug,
+                        Options.DiagnosticLogger?.Log(SentryLevel.Debug,
                             "Skipping debug image '{0}' (CodeId {1} | DebugId: {2}) because its size is NULL",
                             null, image.CodeFile, image.CodeId, image.DebugId);
                         continue;
@@ -249,7 +248,7 @@ namespace Sentry.Unity
                     }
                     result.Insert(i, info);
 
-                    Logger?.Log(SentryLevel.Debug,
+                    Options.DiagnosticLogger?.Log(SentryLevel.Debug,
                         "Found debug image '{0}' (CodeId {1} | DebugId: {2}) with addresses between {3:X8} and {4:X8}",
                         null, image.CodeFile, image.CodeId, image.DebugId, info.StartAddress, info.EndAddress);
                 }
