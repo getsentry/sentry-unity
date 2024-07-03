@@ -24,6 +24,8 @@ namespace Sentry.Unity.Android.Tests
                     _fakeReinstallSentryNativeBackendStrategy);
             _reinstallCalled = false;
             _sentryUnityInfo = new TestUnityInfo { IL2CPP = false };
+
+            SentryNativeAndroid.JniExecutor = new TestJniExecutor();
         }
 
         [TearDown]
