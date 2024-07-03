@@ -4,9 +4,9 @@ namespace Sentry.Unity.Android
 {
     internal class NativeContextWriter : ContextWriter
     {
-        private readonly JniExecutor _jniExecutor;
+        private readonly IJniExecutor _jniExecutor;
 
-        public NativeContextWriter(JniExecutor jniExecutor)
+        public NativeContextWriter(IJniExecutor jniExecutor)
         {
             _jniExecutor = jniExecutor;
         }

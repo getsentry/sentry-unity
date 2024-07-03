@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
-    public class JniExecutor
+    public class JniExecutor : IJniExecutor
     {
         private readonly CancellationTokenSource _shutdownSource;
         private readonly AutoResetEvent _taskEvent;

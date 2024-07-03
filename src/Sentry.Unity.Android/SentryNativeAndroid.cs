@@ -10,7 +10,7 @@ namespace Sentry.Unity.Android
     /// </summary>
     public static class SentryNativeAndroid
     {
-        private static JniExecutor? JniExecutor;
+        internal static IJniExecutor? JniExecutor;
 
         /// <summary>
         /// Configures the native Android support.
@@ -26,7 +26,7 @@ namespace Sentry.Unity.Android
                 return;
             }
 
-            JniExecutor = new JniExecutor();
+            JniExecutor ??= new JniExecutor();
 
             options.NativeContextWriter = new NativeContextWriter(JniExecutor);
             options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);

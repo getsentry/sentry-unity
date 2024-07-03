@@ -14,7 +14,7 @@ namespace Sentry.Unity.Android
     /// <see href="https://github.com/getsentry/sentry-java"/>
     internal static class SentryJava
     {
-        internal static string? GetInstallationId(JniExecutor jniExecutor)
+        internal static string? GetInstallationId(IJniExecutor jniExecutor)
         {
             return jniExecutor.Run(() =>
             {
@@ -35,7 +35,7 @@ namespace Sentry.Unity.Android
         /// True if the last run terminated in a crash. No otherwise.
         /// If the SDK wasn't able to find this information, null is returned.
         /// </returns>
-        public static bool? CrashedLastRun(JniExecutor jniExecutor)
+        public static bool? CrashedLastRun(IJniExecutor jniExecutor)
         {
             return jniExecutor.Run(() =>
             {
@@ -45,7 +45,7 @@ namespace Sentry.Unity.Android
             });
         }
 
-        public static void Close(JniExecutor jniExecutor)
+        public static void Close(IJniExecutor jniExecutor)
         {
             jniExecutor.Run(() =>
             {
@@ -57,7 +57,7 @@ namespace Sentry.Unity.Android
         private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public static void WriteScope(
-            JniExecutor jniExecutor,
+            IJniExecutor jniExecutor,
             int? GpuId,
             string? GpuName,
             string? GpuVendorName,
