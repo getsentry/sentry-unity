@@ -4,6 +4,30 @@ using UnityEngine;
 
 namespace Sentry.Unity.Android
 {
+    internal interface ISentryJava
+    {
+        public string? GetInstallationId(IJniExecutor jniExecutor);
+        public bool? CrashedLastRun(IJniExecutor jniExecutor);
+        public void Close(IJniExecutor jniExecutor);
+        public void WriteScope(
+            IJniExecutor jniExecutor,
+            int? GpuId,
+            string? GpuName,
+            string? GpuVendorName,
+            int? GpuMemorySize,
+            string? GpuNpotSupport,
+            string? GpuVersion,
+            string? GpuApiType,
+            int? GpuMaxTextureSize,
+            bool? GpuSupportsDrawCallInstancing,
+            bool? GpuSupportsRayTracing,
+            bool? GpuSupportsComputeShaders,
+            bool? GpuSupportsGeometryShaders,
+            string? GpuVendorId,
+            bool? GpuMultiThreadedRendering,
+            string? GpuGraphicsShaderLevel);
+    }
+
     /// <summary>
     /// JNI access to `sentry-java` methods.
     /// </summary>
@@ -12,9 +36,9 @@ namespace Sentry.Unity.Android
     /// and `sentry-java` maven packages.
     /// </remarks>
     /// <see href="https://github.com/getsentry/sentry-java"/>
-    internal static class SentryJava
+    internal class SentryJava : ISentryJava
     {
-        internal static string? GetInstallationId(IJniExecutor jniExecutor)
+        public string? GetInstallationId(IJniExecutor jniExecutor)
         {
             return jniExecutor.Run(() =>
             {
@@ -35,7 +59,7 @@ namespace Sentry.Unity.Android
         /// True if the last run terminated in a crash. No otherwise.
         /// If the SDK wasn't able to find this information, null is returned.
         /// </returns>
-        public static bool? CrashedLastRun(IJniExecutor jniExecutor)
+        public bool? CrashedLastRun(IJniExecutor jniExecutor)
         {
             return jniExecutor.Run(() =>
             {
@@ -45,7 +69,7 @@ namespace Sentry.Unity.Android
             });
         }
 
-        public static void Close(IJniExecutor jniExecutor)
+        public void Close(IJniExecutor jniExecutor)
         {
             jniExecutor.Run(() =>
             {
@@ -56,7 +80,7 @@ namespace Sentry.Unity.Android
 
         private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-        public static void WriteScope(
+        public void WriteScope(
             IJniExecutor jniExecutor,
             int? GpuId,
             string? GpuName,
@@ -101,28 +125,6 @@ namespace Sentry.Unity.Android
             });
         }
 
-        private static void SetIfNotNull<T>(this AndroidJavaObject javaObject, string property, T? value, string? valueClass = null)
-        {
-            if (value is not null)
-            {
-                if (valueClass is null)
-                {
-                    javaObject.Set(property, value!);
-                }
-                else
-                {
-                    using var valueObject = new AndroidJavaObject(valueClass, value!);
-                    javaObject.Set(property, valueObject);
-                }
-            }
-        }
-
-        private static void SetIfNotNull(this AndroidJavaObject javaObject, string property, int? value) =>
-            SetIfNotNull(javaObject, property, value, "java.lang.Integer");
-
-        private static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool? value) =>
-            SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
-
         // Implements the io.sentry.ScopeCallback interface.
         internal class ScopeCallback : AndroidJavaProxy
         {
@@ -155,5 +157,30 @@ namespace Sentry.Unity.Android
                 return null;
             }
         }
+    }
+
+    internal static class AndroidJavaObjectExtension
+    {
+        public static void SetIfNotNull<T>(this AndroidJavaObject javaObject, string property, T? value, string? valueClass = null)
+        {
+            if (value is not null)
+            {
+                if (valueClass is null)
+                {
+                    javaObject.Set(property, value!);
+                }
+                else
+                {
+                    using var valueObject = new AndroidJavaObject(valueClass, value!);
+                    javaObject.Set(property, valueObject);
+                }
+            }
+        }
+
+        public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, int? value) =>
+            SetIfNotNull(javaObject, property, value, "java.lang.Integer");
+
+        public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool? value) =>
+            SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
     }
 }

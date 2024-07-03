@@ -11,6 +11,7 @@ namespace Sentry.Unity.Android
     public static class SentryNativeAndroid
     {
         internal static IJniExecutor? JniExecutor;
+        internal static ISentryJava? SentryJava;
 
         /// <summary>
         /// Configures the native Android support.
@@ -27,8 +28,9 @@ namespace Sentry.Unity.Android
             }
 
             JniExecutor ??= new JniExecutor();
+            SentryJava ??= new SentryJava();
 
-            options.NativeContextWriter = new NativeContextWriter(JniExecutor);
+            options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
             options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);
             options.EnableScopeSync = true;
             options.CrashedLastRun = () =>
@@ -95,7 +97,7 @@ namespace Sentry.Unity.Android
             // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
             // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
             JniExecutor ??= new JniExecutor();
-            SentryJava.Close(JniExecutor);
+            SentryJava?.Close(JniExecutor);
             JniExecutor.Dispose();
         }
     }

@@ -5,10 +5,12 @@ namespace Sentry.Unity.Android
     internal class NativeContextWriter : ContextWriter
     {
         private readonly IJniExecutor _jniExecutor;
+        private readonly ISentryJava _sentryJava;
 
-        public NativeContextWriter(IJniExecutor jniExecutor)
+        public NativeContextWriter(IJniExecutor jniExecutor, ISentryJava sentryJava)
         {
             _jniExecutor = jniExecutor;
+            _sentryJava = sentryJava;
         }
 
         protected override void WriteScope(
@@ -50,7 +52,7 @@ namespace Sentry.Unity.Android
             // We're only setting the missing contexts, the rest is configured by sentry-java.  We could also sync
             // the "unity" context, but it doesn't seem so useful and the effort to do is larger because there's no
             // class for it in Java - not sure how we could add a generic context object in Java...
-            SentryJava.WriteScope(
+            _sentryJava.WriteScope(
                 _jniExecutor,
                 GpuId,
                 GpuName,
