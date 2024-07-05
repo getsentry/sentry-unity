@@ -26,6 +26,8 @@ namespace Sentry.Unity.Android
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel);
+
+        public bool IsSentryJavaPresent();
     }
 
     /// <summary>
@@ -38,6 +40,8 @@ namespace Sentry.Unity.Android
     /// <see href="https://github.com/getsentry/sentry-java"/>
     internal class SentryJava : ISentryJava
     {
+        private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+
         public string? GetInstallationId(IJniExecutor jniExecutor)
         {
             return jniExecutor.Run(() =>
@@ -77,8 +81,6 @@ namespace Sentry.Unity.Android
                 sentry.CallStatic("close");
             });
         }
-
-        private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public void WriteScope(
             IJniExecutor jniExecutor,
@@ -123,6 +125,20 @@ namespace Sentry.Unity.Android
                     contexts.Call("setGpu", gpu);
                 }));
             });
+        }
+
+        public bool IsSentryJavaPresent()
+        {
+            try
+            {
+                _ = GetSentryJava();
+            }
+            catch (AndroidJavaException)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         // Implements the io.sentry.ScopeCallback interface.
