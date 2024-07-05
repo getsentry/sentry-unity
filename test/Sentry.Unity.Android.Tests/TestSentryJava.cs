@@ -33,7 +33,8 @@ namespace Sentry.Unity.Android.Tests
             bool? GpuSupportsGeometryShaders,
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
-            string? GpuGraphicsShaderLevel) { }
+            string? GpuGraphicsShaderLevel)
+        { }
 
         public bool IsSentryJavaPresent() => true;
     }
