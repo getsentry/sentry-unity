@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK now checks whether the Android SDK is available before attempting to initialize it. This prevents `AndroidJavaException: java.lang.ClassNotFoundException: io.sentry.Sentry` from being thrown ([#1714](https://github.com/getsentry/sentry-unity/pull/1714))
 - Added a fallback for user.id on Android and iOS in case none could be extracted from the native layer ([#1710](https://github.com/getsentry/sentry-unity/pull/1710))
 
 ### Dependencies
