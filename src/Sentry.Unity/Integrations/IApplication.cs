@@ -27,9 +27,9 @@ public sealed class ApplicationAdapter : IApplication
 
     private ApplicationAdapter()
     {
-            Application.logMessageReceivedThreaded += OnLogMessageReceived;
-            Application.quitting += OnQuitting;
-        }
+        Application.logMessageReceivedThreaded += OnLogMessageReceived;
+        Application.quitting += OnQuitting;
+    }
 
     public event Application.LogCallback? LogMessageReceived;
 

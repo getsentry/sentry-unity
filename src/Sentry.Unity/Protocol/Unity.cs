@@ -63,37 +63,37 @@ public sealed class Unity : ISentryJsonSerializable
 
     public void WriteTo(Utf8JsonWriter writer, IDiagnosticLogger? logger)
     {
-            writer.WriteStartObject();
+        writer.WriteStartObject();
 
-            writer.WriteString("type", Type);
+        writer.WriteString("type", Type);
 
-            if (!string.IsNullOrWhiteSpace(EditorVersion))
-            {
-                writer.WriteString("editor_version", EditorVersion);
-            }
-
-            if (!string.IsNullOrWhiteSpace(InstallMode))
-            {
-                writer.WriteString("install_mode", InstallMode);
-            }
-
-            if (!string.IsNullOrWhiteSpace(CopyTextureSupport))
-            {
-                writer.WriteString("copy_texture_support", CopyTextureSupport);
-            }
-
-            if (!string.IsNullOrWhiteSpace(RenderingThreadingMode))
-            {
-                writer.WriteString("rendering_threading_mode", RenderingThreadingMode);
-            }
-
-            if (!string.IsNullOrWhiteSpace(TargetFrameRate))
-            {
-                writer.WriteString("target_frame_rate", TargetFrameRate);
-            }
-
-            writer.WriteEndObject();
+        if (!string.IsNullOrWhiteSpace(EditorVersion))
+        {
+            writer.WriteString("editor_version", EditorVersion);
         }
+
+        if (!string.IsNullOrWhiteSpace(InstallMode))
+        {
+            writer.WriteString("install_mode", InstallMode);
+        }
+
+        if (!string.IsNullOrWhiteSpace(CopyTextureSupport))
+        {
+            writer.WriteString("copy_texture_support", CopyTextureSupport);
+        }
+
+        if (!string.IsNullOrWhiteSpace(RenderingThreadingMode))
+        {
+            writer.WriteString("rendering_threading_mode", RenderingThreadingMode);
+        }
+
+        if (!string.IsNullOrWhiteSpace(TargetFrameRate))
+        {
+            writer.WriteString("target_frame_rate", TargetFrameRate);
+        }
+
+        writer.WriteEndObject();
+    }
 
     public static Unity FromJson(JsonElement json)
         => new()
@@ -107,12 +107,12 @@ public sealed class Unity : ISentryJsonSerializable
 
     public string ToJsonString(IDiagnosticLogger? logger = null)
     {
-            using var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream);
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
 
-            WriteTo(writer, logger);
-            writer.Flush();
+        WriteTo(writer, logger);
+        writer.Flush();
 
-            return Encoding.UTF8.GetString(stream.ToArray());
-        }
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
 }

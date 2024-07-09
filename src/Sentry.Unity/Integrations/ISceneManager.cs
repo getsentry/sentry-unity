@@ -27,17 +27,17 @@ internal sealed class SceneManagerAdapter : ISceneManager
 
     private SceneManagerAdapter()
     {
-            SceneManager.sceneLoaded += (scene, mode)
-                => SceneLoaded?.Invoke(new SceneAdapter(scene.name), mode);
+        SceneManager.sceneLoaded += (scene, mode)
+            => SceneLoaded?.Invoke(new SceneAdapter(scene.name), mode);
 
-            SceneManager.sceneUnloaded += scene
-                => SceneUnloaded?.Invoke(new SceneAdapter(scene.name));
+        SceneManager.sceneUnloaded += scene
+            => SceneUnloaded?.Invoke(new SceneAdapter(scene.name));
 
-            SceneManager.activeSceneChanged += (sceneFrom, sceneTo) =>
-            {
-                ActiveSceneChanged?.Invoke(
-                    new SceneAdapter(sceneFrom.name),
-                    new SceneAdapter(sceneTo.name));
-            };
-        }
+        SceneManager.activeSceneChanged += (sceneFrom, sceneTo) =>
+        {
+            ActiveSceneChanged?.Invoke(
+                new SceneAdapter(sceneFrom.name),
+                new SceneAdapter(sceneTo.name));
+        };
+    }
 }

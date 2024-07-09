@@ -10,72 +10,72 @@ internal static class C
 {
     internal static void SetValueIfNotNull(sentry_value_t obj, string key, string? value)
     {
-            if (value is not null)
-            {
-                _ = sentry_value_set_by_key(obj, key, sentry_value_new_string(value));
-            }
+        if (value is not null)
+        {
+            _ = sentry_value_set_by_key(obj, key, sentry_value_new_string(value));
         }
+    }
 
     internal static void SetValueIfNotNull(sentry_value_t obj, string key, int? value)
     {
-            if (value.HasValue)
-            {
-                _ = sentry_value_set_by_key(obj, key, sentry_value_new_int32(value.Value));
-            }
+        if (value.HasValue)
+        {
+            _ = sentry_value_set_by_key(obj, key, sentry_value_new_int32(value.Value));
         }
+    }
 
     internal static void SetValueIfNotNull(sentry_value_t obj, string key, bool? value)
     {
-            if (value.HasValue)
-            {
-                _ = sentry_value_set_by_key(obj, key, sentry_value_new_bool(value.Value ? 1 : 0));
-            }
+        if (value.HasValue)
+        {
+            _ = sentry_value_set_by_key(obj, key, sentry_value_new_bool(value.Value ? 1 : 0));
         }
+    }
 
     internal static void SetValueIfNotNull(sentry_value_t obj, string key, double? value)
     {
-            if (value.HasValue)
-            {
-                _ = sentry_value_set_by_key(obj, key, sentry_value_new_double(value.Value));
-            }
+        if (value.HasValue)
+        {
+            _ = sentry_value_set_by_key(obj, key, sentry_value_new_double(value.Value));
         }
+    }
 
     internal static sentry_value_t? GetValueOrNul(sentry_value_t obj, string key)
     {
-            var cValue = sentry_value_get_by_key(obj, key);
-            return sentry_value_is_null(cValue) == 0 ? cValue : null;
-        }
+        var cValue = sentry_value_get_by_key(obj, key);
+        return sentry_value_is_null(cValue) == 0 ? cValue : null;
+    }
 
     internal static string? GetValueString(sentry_value_t obj, string key)
     {
-            if (GetValueOrNul(obj, key) is { } cValue)
+        if (GetValueOrNul(obj, key) is { } cValue)
+        {
+            var cString = sentry_value_as_string(cValue);
+            if (cString != IntPtr.Zero)
             {
-                var cString = sentry_value_as_string(cValue);
-                if (cString != IntPtr.Zero)
-                {
-                    return Marshal.PtrToStringAnsi(cString);
-                }
+                return Marshal.PtrToStringAnsi(cString);
             }
-            return null;
         }
+        return null;
+    }
 
     internal static int? GetValueInt(sentry_value_t obj, string key)
     {
-            if (GetValueOrNul(obj, key) is { } cValue)
-            {
-                return sentry_value_as_int32(cValue);
-            }
-            return null;
+        if (GetValueOrNul(obj, key) is { } cValue)
+        {
+            return sentry_value_as_int32(cValue);
         }
+        return null;
+    }
 
     internal static double? GetValueDouble(sentry_value_t obj, string key)
     {
-            if (GetValueOrNul(obj, key) is { } cValue)
-            {
-                return sentry_value_as_double(cValue);
-            }
-            return null;
+        if (GetValueOrNul(obj, key) is { } cValue)
+        {
+            return sentry_value_as_double(cValue);
         }
+        return null;
+    }
 
     [DllImport("sentry")]
     internal static extern sentry_value_t sentry_value_new_object();
@@ -152,50 +152,50 @@ internal static class C
 
     private static IEnumerable<DebugImage> LoadDebugImages()
     {
-            var result = new List<DebugImage>();
+        var result = new List<DebugImage>();
+        try
+        {
+            var cList = sentry_get_modules_list();
             try
             {
-                var cList = sentry_get_modules_list();
-                try
+                if (!IsNull(cList))
                 {
-                    if (!IsNull(cList))
+                    var len = sentry_value_get_length(cList).ToUInt32();
+                    for (uint i = 0; i < len; i++)
                     {
-                        var len = sentry_value_get_length(cList).ToUInt32();
-                        for (uint i = 0; i < len; i++)
+                        var cItem = sentry_value_get_by_index(cList, (UIntPtr)i);
+                        if (!IsNull(cItem))
                         {
-                            var cItem = sentry_value_get_by_index(cList, (UIntPtr)i);
-                            if (!IsNull(cItem))
+                            // See possible values present in `cItem` in the following files (or their latest versions)
+                            // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L81
+                            // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L24
+                            // * https://github.com/getsentry/sentry-native/blob/c5c31e56d36bed37fa5422750a591f44502edb41/src/modulefinder/sentry_modulefinder_linux.c#L465
+                            result.Add(new DebugImage()
                             {
-                                // See possible values present in `cItem` in the following files (or their latest versions)
-                                // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L81
-                                // * https://github.com/getsentry/sentry-native/blob/8faa78298da68d68043f0c3bd694f756c0e95dfa/src/modulefinder/sentry_modulefinder_windows.c#L24
-                                // * https://github.com/getsentry/sentry-native/blob/c5c31e56d36bed37fa5422750a591f44502edb41/src/modulefinder/sentry_modulefinder_linux.c#L465
-                                result.Add(new DebugImage()
-                                {
-                                    CodeFile = GetValueString(cItem, "code_file"),
-                                    ImageAddress = Convert.ToInt64(GetValueString(cItem, "image_addr"), 16),
-                                    ImageSize = GetValueInt(cItem, "image_size"),
-                                    DebugFile = GetValueString(cItem, "debug_file"),
-                                    DebugId = GetValueString(cItem, "debug_id"),
-                                    CodeId = GetValueString(cItem, "code_id"),
-                                    Type = GetValueString(cItem, "type"),
-                                });
-                            }
+                                CodeFile = GetValueString(cItem, "code_file"),
+                                ImageAddress = Convert.ToInt64(GetValueString(cItem, "image_addr"), 16),
+                                ImageSize = GetValueInt(cItem, "image_size"),
+                                DebugFile = GetValueString(cItem, "debug_file"),
+                                DebugId = GetValueString(cItem, "debug_id"),
+                                CodeId = GetValueString(cItem, "code_id"),
+                                Type = GetValueString(cItem, "type"),
+                            });
                         }
                     }
                 }
-                finally
-                {
-                    sentry_value_decref(cList);
-                }
             }
-            catch (Exception e)
+            finally
             {
-                // Adding the Sentry logger tag ensures we don't send this error to Sentry.
-                Debug.unityLogger.Log(LogType.Error, UnityLogger.LogTag, $"Error loading the list of debug images: {e}");
+                sentry_value_decref(cList);
             }
-            return result;
         }
+        catch (Exception e)
+        {
+            // Adding the Sentry logger tag ensures we don't send this error to Sentry.
+            Debug.unityLogger.Log(LogType.Error, UnityLogger.LogTag, $"Error loading the list of debug images: {e}");
+        }
+        return result;
+    }
 
     // Returns a new reference to an immutable, frozen list.
     // The reference must be released with `sentry_value_decref`.
