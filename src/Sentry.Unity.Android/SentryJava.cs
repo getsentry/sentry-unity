@@ -26,7 +26,6 @@ namespace Sentry.Unity.Android
             string? GpuVendorId,
             bool? GpuMultiThreadedRendering,
             string? GpuGraphicsShaderLevel);
-
         public bool IsSentryJavaPresent();
     }
 
@@ -81,6 +80,8 @@ namespace Sentry.Unity.Android
                 sentry.CallStatic("close");
             });
         }
+
+        private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
         public void WriteScope(
             IJniExecutor jniExecutor,

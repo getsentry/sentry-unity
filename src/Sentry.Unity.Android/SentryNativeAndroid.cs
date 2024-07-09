@@ -1,5 +1,6 @@
 using System;
 using Sentry.Extensibility;
+using UnityEngine;
 using UnityEngine.Analytics;
 
 namespace Sentry.Unity.Android
@@ -81,8 +82,10 @@ namespace Sentry.Unity.Android
                 // In case we can't get an installation ID we create one and sync that down to the native layer
                 options.DiagnosticLogger?.LogDebug("Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
 
+                // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
+                // It's a randomly generated GUID that gets created immediately after installation helping
+                // to identify the same instance of the game
                 options.DefaultUserId = AnalyticsSessionInfo.userId;
-
                 if (options.DefaultUserId is not null)
                 {
                     options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
@@ -110,7 +113,7 @@ namespace Sentry.Unity.Android
             // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
             // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
             JniExecutor ??= new JniExecutor();
-            SentryJava.Close(JniExecutor);
+            SentryJava?.Close(JniExecutor);
             JniExecutor.Dispose();
         }
     }
