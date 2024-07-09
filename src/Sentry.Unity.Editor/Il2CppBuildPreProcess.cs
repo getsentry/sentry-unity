@@ -3,7 +3,6 @@ using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEngine;
 
 namespace Sentry.Unity.Editor;
 
