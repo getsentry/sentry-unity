@@ -6,11 +6,11 @@ namespace Sentry.Unity.Android
     /// Scope Observer for Android through Java (JNI).
     /// </summary>
     /// <see href="https://github.com/getsentry/sentry-java"/>
-    public class AndroidJavaScopeObserver : ScopeObserver
+    internal class AndroidJavaScopeObserver : ScopeObserver
     {
-        private readonly JniExecutor _jniExecutor;
+        private readonly IJniExecutor _jniExecutor;
 
-        public AndroidJavaScopeObserver(SentryOptions options, JniExecutor jniExecutor) : base("Android", options)
+        public AndroidJavaScopeObserver(SentryOptions options, IJniExecutor jniExecutor) : base("Android", options)
         {
             _jniExecutor = jniExecutor;
         }

@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using NUnit.Framework;
-using Sentry.Unity;
-using UnityEngine;
 
 namespace Sentry.Unity.Android.Tests
 {
@@ -24,6 +22,9 @@ namespace Sentry.Unity.Android.Tests
                     _fakeReinstallSentryNativeBackendStrategy);
             _reinstallCalled = false;
             _sentryUnityInfo = new TestUnityInfo { IL2CPP = false };
+
+            SentryNativeAndroid.JniExecutor = new TestJniExecutor();
+            SentryNativeAndroid.SentryJava = new TestSentryJava();
         }
 
         [TearDown]
@@ -91,6 +92,18 @@ namespace Sentry.Unity.Android.Tests
             var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
             SentryNativeAndroid.Configure(options, _sentryUnityInfo);
             Assert.False(_reinstallCalled);
+        }
+
+        [Test]
+        public void Configure_NoInstallationIdReturned_SetsNewDefaultUserId()
+        {
+            var options = new SentryUnityOptions();
+            var sentryJava = SentryNativeAndroid.SentryJava as TestSentryJava;
+            Assert.NotNull(sentryJava);
+            sentryJava!.InstallationId = string.Empty;
+
+            SentryNativeAndroid.Configure(options, _sentryUnityInfo);
+            Assert.False(string.IsNullOrEmpty(options.DefaultUserId));
         }
     }
 }
