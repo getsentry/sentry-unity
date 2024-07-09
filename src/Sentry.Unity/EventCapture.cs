@@ -1,7 +1,6 @@
-namespace Sentry.Unity
+namespace Sentry.Unity;
+
+internal interface IEventCapture
 {
-    internal interface IEventCapture
-    {
-        SentryId Capture(SentryEvent sentryEvent);
-    }
+    SentryId Capture(SentryEvent sentryEvent);
 }

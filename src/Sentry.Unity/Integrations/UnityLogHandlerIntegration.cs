@@ -4,23 +4,23 @@ using Sentry.Integrations;
 using Sentry.Protocol;
 using UnityEngine;
 
-namespace Sentry.Unity.Integrations
+namespace Sentry.Unity.Integrations;
+
+internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 {
-    internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
+    internal readonly ErrorTimeDebounce ErrorTimeDebounce;
+    internal readonly LogTimeDebounce LogTimeDebounce;
+    internal readonly WarningTimeDebounce WarningTimeDebounce;
+
+    private readonly IApplication _application;
+
+    private IHub? _hub;
+    private SentryUnityOptions? _sentryOptions;
+
+    private ILogHandler _unityLogHandler = null!; // Set during register
+
+    public UnityLogHandlerIntegration(SentryUnityOptions options, IApplication? application = null)
     {
-        internal readonly ErrorTimeDebounce ErrorTimeDebounce;
-        internal readonly LogTimeDebounce LogTimeDebounce;
-        internal readonly WarningTimeDebounce WarningTimeDebounce;
-
-        private readonly IApplication _application;
-
-        private IHub? _hub;
-        private SentryUnityOptions? _sentryOptions;
-
-        private ILogHandler _unityLogHandler = null!; // Set during register
-
-        public UnityLogHandlerIntegration(SentryUnityOptions options, IApplication? application = null)
-        {
             _application = application ?? ApplicationAdapter.Instance;
 
             LogTimeDebounce = new LogTimeDebounce(options.DebounceTimeLog);
@@ -28,8 +28,8 @@ namespace Sentry.Unity.Integrations
             ErrorTimeDebounce = new ErrorTimeDebounce(options.DebounceTimeError);
         }
 
-        public void Register(IHub hub, SentryOptions sentryOptions)
-        {
+    public void Register(IHub hub, SentryOptions sentryOptions)
+    {
             _hub = hub;
             _sentryOptions = sentryOptions as SentryUnityOptions;
             if (_sentryOptions is null)
@@ -51,8 +51,8 @@ namespace Sentry.Unity.Integrations
             _application.Quitting += OnQuitting;
         }
 
-        public void LogException(Exception exception, UnityEngine.Object context)
-        {
+    public void LogException(Exception exception, UnityEngine.Object context)
+    {
             try
             {
                 CaptureException(exception, context);
@@ -64,8 +64,8 @@ namespace Sentry.Unity.Integrations
             }
         }
 
-        internal void CaptureException(Exception exception, UnityEngine.Object? context)
-        {
+    internal void CaptureException(Exception exception, UnityEngine.Object? context)
+    {
             if (_hub?.IsEnabled is not true)
             {
                 return;
@@ -87,8 +87,8 @@ namespace Sentry.Unity.Integrations
             }
         }
 
-        public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
-        {
+    public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
+    {
             try
             {
                 CaptureLogFormat(logType, context, format, args);
@@ -100,8 +100,8 @@ namespace Sentry.Unity.Integrations
             }
         }
 
-        internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
-        {
+    internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
+    {
             if (_hub?.IsEnabled is not true)
             {
                 return;
@@ -144,8 +144,8 @@ namespace Sentry.Unity.Integrations
             }
         }
 
-        private void OnQuitting()
-        {
+    private void OnQuitting()
+    {
             _sentryOptions?.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
 
             // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
@@ -163,26 +163,25 @@ namespace Sentry.Unity.Integrations
             _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
         }
 
-        private static SentryLevel ToEventTagType(LogType logType)
-            => logType switch
-            {
-                LogType.Assert => SentryLevel.Error,
-                LogType.Error => SentryLevel.Error,
-                LogType.Exception => SentryLevel.Error,
-                LogType.Log => SentryLevel.Info,
-                LogType.Warning => SentryLevel.Warning,
-                _ => SentryLevel.Fatal
-            };
+    private static SentryLevel ToEventTagType(LogType logType)
+        => logType switch
+        {
+            LogType.Assert => SentryLevel.Error,
+            LogType.Error => SentryLevel.Error,
+            LogType.Exception => SentryLevel.Error,
+            LogType.Log => SentryLevel.Info,
+            LogType.Warning => SentryLevel.Warning,
+            _ => SentryLevel.Fatal
+        };
 
-        private static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
-            => logType switch
-            {
-                LogType.Assert => BreadcrumbLevel.Error,
-                LogType.Error => BreadcrumbLevel.Error,
-                LogType.Exception => BreadcrumbLevel.Error,
-                LogType.Log => BreadcrumbLevel.Info,
-                LogType.Warning => BreadcrumbLevel.Warning,
-                _ => BreadcrumbLevel.Info
-            };
-    }
+    private static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
+        => logType switch
+        {
+            LogType.Assert => BreadcrumbLevel.Error,
+            LogType.Error => BreadcrumbLevel.Error,
+            LogType.Exception => BreadcrumbLevel.Error,
+            LogType.Log => BreadcrumbLevel.Info,
+            LogType.Warning => BreadcrumbLevel.Warning,
+            _ => BreadcrumbLevel.Info
+        };
 }

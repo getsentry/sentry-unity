@@ -1,32 +1,32 @@
 using System;
 using UnityEngine.SceneManagement;
 
-namespace Sentry.Unity
+namespace Sentry.Unity;
+
+// Accessors if UnityEngine.Scene do P/Invoke so we should map what we need only
+internal readonly struct SceneAdapter
 {
-    // Accessors if UnityEngine.Scene do P/Invoke so we should map what we need only
-    internal readonly struct SceneAdapter
+    public string Name { get; }
+    public SceneAdapter(string name) => Name = name;
+}
+
+internal interface ISceneManager
+{
+    public event Action<SceneAdapter, LoadSceneMode> SceneLoaded;
+    public event Action<SceneAdapter> SceneUnloaded;
+    public event Action<SceneAdapter, SceneAdapter> ActiveSceneChanged;
+}
+
+internal sealed class SceneManagerAdapter : ISceneManager
+{
+    public event Action<SceneAdapter, LoadSceneMode>? SceneLoaded;
+    public event Action<SceneAdapter>? SceneUnloaded;
+    public event Action<SceneAdapter, SceneAdapter>? ActiveSceneChanged;
+
+    public static readonly SceneManagerAdapter Instance = new();
+
+    private SceneManagerAdapter()
     {
-        public string Name { get; }
-        public SceneAdapter(string name) => Name = name;
-    }
-
-    internal interface ISceneManager
-    {
-        public event Action<SceneAdapter, LoadSceneMode> SceneLoaded;
-        public event Action<SceneAdapter> SceneUnloaded;
-        public event Action<SceneAdapter, SceneAdapter> ActiveSceneChanged;
-    }
-
-    internal sealed class SceneManagerAdapter : ISceneManager
-    {
-        public event Action<SceneAdapter, LoadSceneMode>? SceneLoaded;
-        public event Action<SceneAdapter>? SceneUnloaded;
-        public event Action<SceneAdapter, SceneAdapter>? ActiveSceneChanged;
-
-        public static readonly SceneManagerAdapter Instance = new();
-
-        private SceneManagerAdapter()
-        {
             SceneManager.sceneLoaded += (scene, mode)
                 => SceneLoaded?.Invoke(new SceneAdapter(scene.name), mode);
 
@@ -40,5 +40,4 @@ namespace Sentry.Unity
                     new SceneAdapter(sceneTo.name));
             };
         }
-    }
 }

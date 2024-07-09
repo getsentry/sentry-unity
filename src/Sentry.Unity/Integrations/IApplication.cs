@@ -2,59 +2,58 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Sentry.Unity.Integrations
+namespace Sentry.Unity.Integrations;
+
+internal interface IApplication
 {
-    internal interface IApplication
-    {
-        event Application.LogCallback LogMessageReceived;
-        event Action Quitting;
-        string ActiveSceneName { get; }
-        bool IsEditor { get; }
-        string ProductName { get; }
-        string Version { get; }
-        string BuildGUID { get; }
-        string UnityVersion { get; }
-        string PersistentDataPath { get; }
-        RuntimePlatform Platform { get; }
-    }
+    event Application.LogCallback LogMessageReceived;
+    event Action Quitting;
+    string ActiveSceneName { get; }
+    bool IsEditor { get; }
+    string ProductName { get; }
+    string Version { get; }
+    string BuildGUID { get; }
+    string UnityVersion { get; }
+    string PersistentDataPath { get; }
+    RuntimePlatform Platform { get; }
+}
 
-    /// <summary>
-    /// Semi-internal class to be used by other Sentry.Unity assemblies
-    /// </summary>
-    public sealed class ApplicationAdapter : IApplication
-    {
-        public static readonly ApplicationAdapter Instance = new();
+/// <summary>
+/// Semi-internal class to be used by other Sentry.Unity assemblies
+/// </summary>
+public sealed class ApplicationAdapter : IApplication
+{
+    public static readonly ApplicationAdapter Instance = new();
 
-        private ApplicationAdapter()
-        {
+    private ApplicationAdapter()
+    {
             Application.logMessageReceivedThreaded += OnLogMessageReceived;
             Application.quitting += OnQuitting;
         }
 
-        public event Application.LogCallback? LogMessageReceived;
+    public event Application.LogCallback? LogMessageReceived;
 
-        public event Action? Quitting;
+    public event Action? Quitting;
 
-        public string ActiveSceneName => SceneManager.GetActiveScene().name;
+    public string ActiveSceneName => SceneManager.GetActiveScene().name;
 
-        public bool IsEditor => Application.isEditor;
+    public bool IsEditor => Application.isEditor;
 
-        public string ProductName => Application.productName;
+    public string ProductName => Application.productName;
 
-        public string Version => Application.version;
+    public string Version => Application.version;
 
-        public string BuildGUID => Application.buildGUID;
+    public string BuildGUID => Application.buildGUID;
 
-        public string UnityVersion => Application.unityVersion;
+    public string UnityVersion => Application.unityVersion;
 
-        public string PersistentDataPath => Application.persistentDataPath;
+    public string PersistentDataPath => Application.persistentDataPath;
 
-        public RuntimePlatform Platform => Application.platform;
+    public RuntimePlatform Platform => Application.platform;
 
-        private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
-            => LogMessageReceived?.Invoke(condition, stackTrace, type);
+    private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
+        => LogMessageReceived?.Invoke(condition, stackTrace, type);
 
-        private void OnQuitting()
-            => Quitting?.Invoke();
-    }
+    private void OnQuitting()
+        => Quitting?.Invoke();
 }

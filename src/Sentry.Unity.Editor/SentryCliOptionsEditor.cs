@@ -1,26 +1,25 @@
 using UnityEditor;
 
-namespace Sentry.Unity.Editor
+namespace Sentry.Unity.Editor;
+
+[CustomEditor(typeof(SentryCliOptions))]
+public class SentryCliOptionsEditor : UnityEditor.Editor
 {
-    [CustomEditor(typeof(SentryCliOptions))]
-    public class SentryCliOptionsEditor : UnityEditor.Editor
+    public override void OnInspectorGUI()
     {
-        public override void OnInspectorGUI()
+        if (target is not SentryCliOptions cliOptions)
         {
-            if (target is not SentryCliOptions cliOptions)
-            {
-                return;
-            }
-
-            EditorGUI.BeginDisabledGroup(true);
-
-            EditorGUILayout.Toggle("Enable Symbols Upload", cliOptions.UploadSymbols);
-            EditorGUILayout.Toggle("Enable Dev Symbols Upload", cliOptions.UploadDevelopmentSymbols);
-            EditorGUILayout.TextField("Auth-Token", cliOptions.Auth);
-            EditorGUILayout.TextField("Org-Slug", cliOptions.Organization);
-            EditorGUILayout.TextField("Project Name", cliOptions.Project);
-
-            EditorGUI.EndDisabledGroup();
+            return;
         }
+
+        EditorGUI.BeginDisabledGroup(true);
+
+        EditorGUILayout.Toggle("Enable Symbols Upload", cliOptions.UploadSymbols);
+        EditorGUILayout.Toggle("Enable Dev Symbols Upload", cliOptions.UploadDevelopmentSymbols);
+        EditorGUILayout.TextField("Auth-Token", cliOptions.Auth);
+        EditorGUILayout.TextField("Org-Slug", cliOptions.Organization);
+        EditorGUILayout.TextField("Project Name", cliOptions.Project);
+
+        EditorGUI.EndDisabledGroup();
     }
 }

@@ -3,28 +3,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Sentry.Unity.Android
+namespace Sentry.Unity.Android;
+
+internal class JniExecutor : IJniExecutor
 {
-    internal class JniExecutor : IJniExecutor
+    private readonly CancellationTokenSource _shutdownSource;
+    private readonly AutoResetEvent _taskEvent;
+    private Delegate _currentTask = null!; // The current task will always be set together with the task event
+
+    private TaskCompletionSource<object?>? _taskCompletionSource;
+
+    private readonly object _lock = new object();
+
+    public JniExecutor()
     {
-        private readonly CancellationTokenSource _shutdownSource;
-        private readonly AutoResetEvent _taskEvent;
-        private Delegate _currentTask = null!; // The current task will always be set together with the task event
-
-        private TaskCompletionSource<object?>? _taskCompletionSource;
-
-        private readonly object _lock = new object();
-
-        public JniExecutor()
-        {
             _taskEvent = new AutoResetEvent(false);
             _shutdownSource = new CancellationTokenSource();
 
             new Thread(DoWork) { IsBackground = true, Name = "SentryJniExecutorThread" }.Start();
         }
 
-        private void DoWork()
-        {
+    private void DoWork()
+    {
             AndroidJNI.AttachCurrentThread();
 
             var waitHandles = new[] { _taskEvent, _shutdownSource.Token.WaitHandle };
@@ -75,8 +75,8 @@ namespace Sentry.Unity.Android
             AndroidJNI.DetachCurrentThread();
         }
 
-        public TResult? Run<TResult>(Func<TResult?> jniOperation)
-        {
+    public TResult? Run<TResult>(Func<TResult?> jniOperation)
+    {
             lock (_lock)
             {
                 _taskCompletionSource = new TaskCompletionSource<object?>();
@@ -96,8 +96,8 @@ namespace Sentry.Unity.Android
             }
         }
 
-        public void Run(Action jniOperation)
-        {
+    public void Run(Action jniOperation)
+    {
             lock (_lock)
             {
                 _taskCompletionSource = new TaskCompletionSource<object?>();
@@ -115,10 +115,9 @@ namespace Sentry.Unity.Android
             }
         }
 
-        public void Dispose()
-        {
+    public void Dispose()
+    {
             _shutdownSource.Cancel();
             _taskEvent.Dispose();
         }
-    }
 }

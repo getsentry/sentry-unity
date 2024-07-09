@@ -1,17 +1,16 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
-namespace Sentry.Unity.Editor.iOS
+namespace Sentry.Unity.Editor.iOS;
+
+internal static class NativeOptions
 {
-    internal static class NativeOptions
-    {
-        public static void CreateFile(string path, SentryUnityOptions options) => File.WriteAllText(path, Generate(options));
+    public static void CreateFile(string path, SentryUnityOptions options) => File.WriteAllText(path, Generate(options));
 
-        internal static string Generate(SentryUnityOptions options)
-        {
-            var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
-            var nativeOptions = $@"#import <Foundation/Foundation.h>
+    internal static string Generate(SentryUnityOptions options)
+    {
+        var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
+        var nativeOptions = $@"#import <Foundation/Foundation.h>
 #import <Sentry/SentryOptions+HybridSDKs.h>
 #import <Sentry/PrivateSentrySDKOnly.h>
 
@@ -57,37 +56,36 @@ static SentryOptions* getSentryOptions()
     return options;
 }}";
 
-            return nativeOptions;
-        }
+        return nativeOptions;
+    }
 
-        private static string ToObjCString(bool b) => b ? "YES" : "NO";
+    private static string ToObjCString(bool b) => b ? "YES" : "NO";
 
-        private static string ToNativeDiagnosticLevel(SentryLevel sentryLevel)
+    private static string ToNativeDiagnosticLevel(SentryLevel sentryLevel)
+    {
+        return sentryLevel switch
         {
-            return sentryLevel switch
-            {
-                SentryLevel.Debug => "debug",
-                SentryLevel.Info => "info",
-                SentryLevel.Warning => "warning",
-                SentryLevel.Error => "error",
-                SentryLevel.Fatal => "fatal",
-                _ => "none"
-            };
-        }
+            SentryLevel.Debug => "debug",
+            SentryLevel.Info => "info",
+            SentryLevel.Warning => "warning",
+            SentryLevel.Error => "error",
+            SentryLevel.Fatal => "fatal",
+            _ => "none"
+        };
+    }
 
-        private static string GetFailedRequestStatusCodesArray(IList<HttpStatusCodeRange> httpStatusCodeRanges)
+    private static string GetFailedRequestStatusCodesArray(IList<HttpStatusCodeRange> httpStatusCodeRanges)
+    {
+        var codeRanges = string.Empty;
+        for (var i = 0; i < httpStatusCodeRanges.Count; i++)
         {
-            var codeRanges = string.Empty;
-            for (var i = 0; i < httpStatusCodeRanges.Count; i++)
+            codeRanges += $"[[SentryHttpStatusCodeRange alloc] initWithMin:{httpStatusCodeRanges[i].Start} max:{httpStatusCodeRanges[i].End}]";
+            if (i < httpStatusCodeRanges.Count - 1)
             {
-                codeRanges += $"[[SentryHttpStatusCodeRange alloc] initWithMin:{httpStatusCodeRanges[i].Start} max:{httpStatusCodeRanges[i].End}]";
-                if (i < httpStatusCodeRanges.Count - 1)
-                {
-                    codeRanges += ", ";
-                }
+                codeRanges += ", ";
             }
-
-            return codeRanges;
         }
+
+        return codeRanges;
     }
 }

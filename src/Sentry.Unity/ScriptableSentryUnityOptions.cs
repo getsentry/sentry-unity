@@ -4,122 +4,122 @@ using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
-namespace Sentry.Unity
+namespace Sentry.Unity;
+
+public class ScriptableSentryUnityOptions : ScriptableObject
 {
-    public class ScriptableSentryUnityOptions : ScriptableObject
+    /// <summary>
+    /// Relative to Assets/Resources
+    /// </summary>
+    internal const string ConfigRootFolder = "Sentry";
+
+    /// <summary>
+    /// Main Sentry config name for Unity
+    /// </summary>
+    internal const string ConfigName = "SentryOptions";
+
+    /// <summary>
+    /// Path for the config for Unity
+    /// </summary>
+    public static string GetConfigPath(string? notDefaultConfigName = null)
+        => $"Assets/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.asset";
+
+    [field: SerializeField] public bool Enabled { get; set; } = true;
+
+    [field: SerializeField] public string? Dsn { get; set; }
+    [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
+
+    [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
+    [field: SerializeField] public int DebounceTimeLog { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+    [field: SerializeField] public int DebounceTimeWarning { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+    [field: SerializeField] public int DebounceTimeError { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+
+    [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
+    [field: SerializeField] public bool AutoStartupTraces { get; set; } = true;
+    [field: SerializeField] public bool AutoSceneLoadTraces { get; set; } = true;
+    [field: SerializeField] public bool AutoAwakeTraces { get; set; } = false;
+
+    [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
+
+    /// <summary>
+    /// Interval in milliseconds a session terminates if put in the background.
+    /// </summary>
+    [field: SerializeField] public int AutoSessionTrackingInterval { get; set; } = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
+
+    [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
+    [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
+    [field: SerializeField] public bool AttachStacktrace { get; set; }
+    [field: SerializeField] public bool AttachScreenshot { get; set; }
+    [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
+    [field: SerializeField] public int ScreenshotCompression { get; set; } = 75;
+
+    [field: SerializeField] public bool AttachViewHierarchy { get; set; } = false;
+    [field: SerializeField] public int MaxViewHierarchyRootObjects { get; set; } = 100;
+    [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
+    [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
+
+    [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
+    [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
+    [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
+    [field: SerializeField] public bool BreadcrumbsForErrors { get; set; } = true;
+    [field: SerializeField] public bool BreadcrumbsForExceptions { get; set; } = true;
+
+    [field: SerializeField] public int MaxBreadcrumbs { get; set; } = SentryConstants.DefaultMaxBreadcrumbs;
+
+    [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
+    [field: SerializeField] public bool SendDefaultPii { get; set; }
+    [field: SerializeField] public bool IsEnvironmentUser { get; set; }
+
+    [field: SerializeField] public bool EnableOfflineCaching { get; set; } = true;
+    [field: SerializeField] public int MaxCacheItems { get; set; } = 30;
+
+    /// <summary>
+    /// Time in milliseconds for flushing the cache at startup
+    /// </summary>
+    [field: SerializeField] public int InitCacheFlushTimeout { get; set; } = (int)TimeSpan.Zero.TotalMilliseconds;
+    [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
+    [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
+    [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
+
+    [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
+    [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+
+    [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
+
+    // We hold the status codes as a list of ints to be able to serialize it in the editor.
+    [field: SerializeField] public List<int> FailedRequestStatusCodes { get; set; } = new() { 500, 599 };
+
+    [field: SerializeField] public bool FilterBadGatewayExceptions { get; set; } = true;
+    [field: SerializeField] public bool FilterWebExceptions { get; set; } = true;
+    [field: SerializeField] public bool FilterSocketExceptions { get; set; } = true;
+
+    [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
+    [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
+    [field: SerializeField] public bool NdkIntegrationEnabled { get; set; } = true;
+    [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;
+    [field: SerializeField] public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
+    [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
+    [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
+    [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
+
+    [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+
+    [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
+    [field: SerializeField] public SentryBuildTimeOptionsConfiguration? BuildTimeOptionsConfiguration { get; set; }
+
+    [field: SerializeField] public bool Debug { get; set; } = true;
+    [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
+    [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; } = SentryLevel.Warning;
+
+    /// <summary>
+    /// Loads the ScriptableSentryUnityOptions from `Resource`.
+    /// </summary>
+    /// <returns>The SentryUnityOptions generated from the ScriptableSentryUnityOptions</returns>
+    /// <remarks>
+    /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
+    /// </remarks>
+    public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
     {
-        /// <summary>
-        /// Relative to Assets/Resources
-        /// </summary>
-        internal const string ConfigRootFolder = "Sentry";
-
-        /// <summary>
-        /// Main Sentry config name for Unity
-        /// </summary>
-        internal const string ConfigName = "SentryOptions";
-
-        /// <summary>
-        /// Path for the config for Unity
-        /// </summary>
-        public static string GetConfigPath(string? notDefaultConfigName = null)
-            => $"Assets/Resources/{ConfigRootFolder}/{notDefaultConfigName ?? ConfigName}.asset";
-
-        [field: SerializeField] public bool Enabled { get; set; } = true;
-
-        [field: SerializeField] public string? Dsn { get; set; }
-        [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
-
-        [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
-        [field: SerializeField] public int DebounceTimeLog { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
-        [field: SerializeField] public int DebounceTimeWarning { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
-        [field: SerializeField] public int DebounceTimeError { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
-
-        [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
-        [field: SerializeField] public bool AutoStartupTraces { get; set; } = true;
-        [field: SerializeField] public bool AutoSceneLoadTraces { get; set; } = true;
-        [field: SerializeField] public bool AutoAwakeTraces { get; set; } = false;
-
-        [field: SerializeField] public bool AutoSessionTracking { get; set; } = true;
-
-        /// <summary>
-        /// Interval in milliseconds a session terminates if put in the background.
-        /// </summary>
-        [field: SerializeField] public int AutoSessionTrackingInterval { get; set; } = (int)TimeSpan.FromSeconds(30).TotalMilliseconds;
-
-        [field: SerializeField] public string ReleaseOverride { get; set; } = string.Empty;
-        [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
-        [field: SerializeField] public bool AttachStacktrace { get; set; }
-        [field: SerializeField] public bool AttachScreenshot { get; set; }
-        [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
-        [field: SerializeField] public int ScreenshotCompression { get; set; } = 75;
-
-        [field: SerializeField] public bool AttachViewHierarchy { get; set; } = false;
-        [field: SerializeField] public int MaxViewHierarchyRootObjects { get; set; } = 100;
-        [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
-        [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
-
-        [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
-        [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
-        [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
-        [field: SerializeField] public bool BreadcrumbsForErrors { get; set; } = true;
-        [field: SerializeField] public bool BreadcrumbsForExceptions { get; set; } = true;
-
-        [field: SerializeField] public int MaxBreadcrumbs { get; set; } = SentryConstants.DefaultMaxBreadcrumbs;
-
-        [field: SerializeField] public ReportAssembliesMode ReportAssembliesMode { get; set; } = ReportAssembliesMode.Version;
-        [field: SerializeField] public bool SendDefaultPii { get; set; }
-        [field: SerializeField] public bool IsEnvironmentUser { get; set; }
-
-        [field: SerializeField] public bool EnableOfflineCaching { get; set; } = true;
-        [field: SerializeField] public int MaxCacheItems { get; set; } = 30;
-
-        /// <summary>
-        /// Time in milliseconds for flushing the cache at startup
-        /// </summary>
-        [field: SerializeField] public int InitCacheFlushTimeout { get; set; } = (int)TimeSpan.Zero.TotalMilliseconds;
-        [field: SerializeField] public float SampleRate { get; set; } = 1.0f;
-        [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
-        [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
-
-        [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
-        [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
-
-        [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
-
-        // We hold the status codes as a list of ints to be able to serialize it in the editor.
-        [field: SerializeField] public List<int> FailedRequestStatusCodes { get; set; } = new() { 500, 599 };
-
-        [field: SerializeField] public bool FilterBadGatewayExceptions { get; set; } = true;
-        [field: SerializeField] public bool FilterWebExceptions { get; set; } = true;
-        [field: SerializeField] public bool FilterSocketExceptions { get; set; } = true;
-
-        [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool NdkIntegrationEnabled { get; set; } = true;
-        [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;
-        [field: SerializeField] public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
-        [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
-        [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
-
-        [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
-
-        [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
-        [field: SerializeField] public SentryBuildTimeOptionsConfiguration? BuildTimeOptionsConfiguration { get; set; }
-
-        [field: SerializeField] public bool Debug { get; set; } = true;
-        [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
-        [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; } = SentryLevel.Warning;
-
-        /// <summary>
-        /// Loads the ScriptableSentryUnityOptions from `Resource`.
-        /// </summary>
-        /// <returns>The SentryUnityOptions generated from the ScriptableSentryUnityOptions</returns>
-        /// <remarks>
-        /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
-        /// </remarks>
-        public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
-        {
             var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
             if (scriptableOptions is not null)
             {
@@ -129,8 +129,8 @@ namespace Sentry.Unity
             return null;
         }
 
-        internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
-        {
+    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
+    {
             application ??= ApplicationAdapter.Instance;
 
             var options = new SentryUnityOptions(isBuilding, application)
@@ -235,8 +235,8 @@ namespace Sentry.Unity
             return options;
         }
 
-        private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
-        {
+    private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
+    {
             if (unityInfo?.IsKnownPlatform() == false)
             {
                 // This is only provided on a best-effort basis for other than the explicitly supported platforms.
@@ -262,8 +262,8 @@ namespace Sentry.Unity
             }
         }
 
-        private void HandleExceptionFilter(SentryUnityOptions options)
-        {
+    private void HandleExceptionFilter(SentryUnityOptions options)
+    {
             if (!options.FilterBadGatewayExceptions)
             {
                 options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
@@ -280,8 +280,8 @@ namespace Sentry.Unity
             }
         }
 
-        internal bool ShouldDebug(bool isEditorPlayer)
-        {
+    internal bool ShouldDebug(bool isEditorPlayer)
+    {
             if (!isEditorPlayer)
             {
                 return !DebugOnlyInEditor && Debug;
@@ -289,5 +289,4 @@ namespace Sentry.Unity
 
             return Debug;
         }
-    }
 }
