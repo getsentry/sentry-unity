@@ -120,173 +120,173 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     /// </remarks>
     public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
     {
-            var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
-            if (scriptableOptions is not null)
-            {
-                return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
-            }
-
-            return null;
+        var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
+        if (scriptableOptions is not null)
+        {
+            return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
         }
+
+        return null;
+    }
 
     internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
     {
-            application ??= ApplicationAdapter.Instance;
+        application ??= ApplicationAdapter.Instance;
 
-            var options = new SentryUnityOptions(isBuilding, application)
-            {
-                Enabled = Enabled,
-                Dsn = Dsn,
-                CaptureInEditor = CaptureInEditor,
-                EnableLogDebouncing = EnableLogDebouncing,
-                DebounceTimeLog = TimeSpan.FromMilliseconds(DebounceTimeLog),
-                DebounceTimeWarning = TimeSpan.FromMilliseconds(DebounceTimeWarning),
-                DebounceTimeError = TimeSpan.FromMilliseconds(DebounceTimeError),
-                TracesSampleRate = TracesSampleRate,
-                AutoStartupTraces = AutoStartupTraces,
-                AutoSceneLoadTraces = AutoSceneLoadTraces,
-                AutoSessionTracking = AutoSessionTracking,
-                AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
-                AttachStacktrace = AttachStacktrace,
-                AttachScreenshot = AttachScreenshot,
-                ScreenshotQuality = ScreenshotQuality,
-                ScreenshotCompression = ScreenshotCompression,
-                AttachViewHierarchy = AttachViewHierarchy,
-                MaxViewHierarchyRootObjects = MaxViewHierarchyRootObjects,
-                MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
-                MaxViewHierarchyDepth = MaxViewHierarchyDepth,
-                MaxBreadcrumbs = MaxBreadcrumbs,
-                ReportAssembliesMode = ReportAssembliesMode,
-                SendDefaultPii = SendDefaultPii,
-                IsEnvironmentUser = IsEnvironmentUser,
-                MaxCacheItems = MaxCacheItems,
-                CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null,
-                InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
-                SampleRate = SampleRate == 1.0f ? null : SampleRate, // To skip the random check for dropping events
-                ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
-                MaxQueueItems = MaxQueueItems,
-                // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
-                // need to set it here directly.
-                Debug = ShouldDebug(application.IsEditor && !isBuilding),
-                DiagnosticLevel = DiagnosticLevel,
-                AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
-                CaptureFailedRequests = CaptureFailedRequests,
-                FilterBadGatewayExceptions = FilterBadGatewayExceptions,
-                IosNativeSupportEnabled = IosNativeSupportEnabled,
-                AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
-                NdkIntegrationEnabled = NdkIntegrationEnabled,
-                WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
-                MacosNativeSupportEnabled = MacosNativeSupportEnabled,
-                LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
-                Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
-                PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
-            };
+        var options = new SentryUnityOptions(isBuilding, application)
+        {
+            Enabled = Enabled,
+            Dsn = Dsn,
+            CaptureInEditor = CaptureInEditor,
+            EnableLogDebouncing = EnableLogDebouncing,
+            DebounceTimeLog = TimeSpan.FromMilliseconds(DebounceTimeLog),
+            DebounceTimeWarning = TimeSpan.FromMilliseconds(DebounceTimeWarning),
+            DebounceTimeError = TimeSpan.FromMilliseconds(DebounceTimeError),
+            TracesSampleRate = TracesSampleRate,
+            AutoStartupTraces = AutoStartupTraces,
+            AutoSceneLoadTraces = AutoSceneLoadTraces,
+            AutoSessionTracking = AutoSessionTracking,
+            AutoSessionTrackingInterval = TimeSpan.FromMilliseconds(AutoSessionTrackingInterval),
+            AttachStacktrace = AttachStacktrace,
+            AttachScreenshot = AttachScreenshot,
+            ScreenshotQuality = ScreenshotQuality,
+            ScreenshotCompression = ScreenshotCompression,
+            AttachViewHierarchy = AttachViewHierarchy,
+            MaxViewHierarchyRootObjects = MaxViewHierarchyRootObjects,
+            MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
+            MaxViewHierarchyDepth = MaxViewHierarchyDepth,
+            MaxBreadcrumbs = MaxBreadcrumbs,
+            ReportAssembliesMode = ReportAssembliesMode,
+            SendDefaultPii = SendDefaultPii,
+            IsEnvironmentUser = IsEnvironmentUser,
+            MaxCacheItems = MaxCacheItems,
+            CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null,
+            InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
+            SampleRate = SampleRate == 1.0f ? null : SampleRate, // To skip the random check for dropping events
+            ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
+            MaxQueueItems = MaxQueueItems,
+            // Because SentryOptions.Debug is used inside the .NET SDK to setup the ConsoleLogger we
+            // need to set it here directly.
+            Debug = ShouldDebug(application.IsEditor && !isBuilding),
+            DiagnosticLevel = DiagnosticLevel,
+            AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
+            CaptureFailedRequests = CaptureFailedRequests,
+            FilterBadGatewayExceptions = FilterBadGatewayExceptions,
+            IosNativeSupportEnabled = IosNativeSupportEnabled,
+            AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
+            NdkIntegrationEnabled = NdkIntegrationEnabled,
+            WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
+            MacosNativeSupportEnabled = MacosNativeSupportEnabled,
+            LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
+            Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
+            PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
+        };
 
-            if (!string.IsNullOrWhiteSpace(ReleaseOverride))
-            {
-                options.Release = ReleaseOverride;
-            }
+        if (!string.IsNullOrWhiteSpace(ReleaseOverride))
+        {
+            options.Release = ReleaseOverride;
+        }
 
-            if (!string.IsNullOrWhiteSpace(EnvironmentOverride))
-            {
-                options.Environment = EnvironmentOverride;
-            }
+        if (!string.IsNullOrWhiteSpace(EnvironmentOverride))
+        {
+            options.Environment = EnvironmentOverride;
+        }
 
-            options.AddBreadcrumbsForLogType[LogType.Log] = BreadcrumbsForLogs;
-            options.AddBreadcrumbsForLogType[LogType.Warning] = BreadcrumbsForWarnings;
-            options.AddBreadcrumbsForLogType[LogType.Assert] = BreadcrumbsForAsserts;
-            options.AddBreadcrumbsForLogType[LogType.Error] = BreadcrumbsForErrors;
-            options.AddBreadcrumbsForLogType[LogType.Exception] = BreadcrumbsForExceptions;
+        options.AddBreadcrumbsForLogType[LogType.Log] = BreadcrumbsForLogs;
+        options.AddBreadcrumbsForLogType[LogType.Warning] = BreadcrumbsForWarnings;
+        options.AddBreadcrumbsForLogType[LogType.Assert] = BreadcrumbsForAsserts;
+        options.AddBreadcrumbsForLogType[LogType.Error] = BreadcrumbsForErrors;
+        options.AddBreadcrumbsForLogType[LogType.Exception] = BreadcrumbsForExceptions;
 
-            options.FailedRequestStatusCodes = new List<HttpStatusCodeRange>();
-            for (var i = 0; i < FailedRequestStatusCodes.Count; i += 2)
-            {
-                options.FailedRequestStatusCodes.Add(
-                    new HttpStatusCodeRange(FailedRequestStatusCodes[i], FailedRequestStatusCodes[i + 1]));
-            }
+        options.FailedRequestStatusCodes = new List<HttpStatusCodeRange>();
+        for (var i = 0; i < FailedRequestStatusCodes.Count; i += 2)
+        {
+            options.FailedRequestStatusCodes.Add(
+                new HttpStatusCodeRange(FailedRequestStatusCodes[i], FailedRequestStatusCodes[i + 1]));
+        }
 
-            options.SetupLogging();
+        options.SetupLogging();
 
-            // Bail early if we're building the player.
-            if (isBuilding)
-            {
-                return options;
-            }
-
-            if (RuntimeOptionsConfiguration != null)
-            {
-                // This has to happen in between options object creation and updating the options based on programmatic changes
-                RuntimeOptionsConfiguration.Configure(options);
-            }
-
-            if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
-            {
-                options.AddIl2CppExceptionProcessor(unityInfo);
-            }
-
-            HandlePlatformRestrictions(options, application, unityInfo);
-            HandleExceptionFilter(options);
-
-            if (!AnrDetectionEnabled)
-            {
-                options.DisableAnrIntegration();
-            }
-
+        // Bail early if we're building the player.
+        if (isBuilding)
+        {
             return options;
         }
 
+        if (RuntimeOptionsConfiguration != null)
+        {
+            // This has to happen in between options object creation and updating the options based on programmatic changes
+            RuntimeOptionsConfiguration.Configure(options);
+        }
+
+        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
+        {
+            options.AddIl2CppExceptionProcessor(unityInfo);
+        }
+
+        HandlePlatformRestrictions(options, application, unityInfo);
+        HandleExceptionFilter(options);
+
+        if (!AnrDetectionEnabled)
+        {
+            options.DisableAnrIntegration();
+        }
+
+        return options;
+    }
+
     private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
     {
-            if (unityInfo?.IsKnownPlatform() == false)
+        if (unityInfo?.IsKnownPlatform() == false)
+        {
+            // This is only provided on a best-effort basis for other than the explicitly supported platforms.
+            if (options.BackgroundWorker is null)
             {
-                // This is only provided on a best-effort basis for other than the explicitly supported platforms.
-                if (options.BackgroundWorker is null)
-                {
-                    options.DiagnosticLogger?.LogDebug("Platform support for background thread execution is unknown: using WebBackgroundWorker.");
-                    options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
-                }
+                options.DiagnosticLogger?.LogDebug("Platform support for background thread execution is unknown: using WebBackgroundWorker.");
+                options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
+            }
 
-                // Disable offline caching regardless whether is was enabled or not.
-                options.CacheDirectoryPath = null;
-                if (EnableOfflineCaching)
-                {
-                    options.DiagnosticLogger?.LogDebug("Platform support for offline caching is unknown: disabling.");
-                }
+            // Disable offline caching regardless whether is was enabled or not.
+            options.CacheDirectoryPath = null;
+            if (EnableOfflineCaching)
+            {
+                options.DiagnosticLogger?.LogDebug("Platform support for offline caching is unknown: disabling.");
+            }
 
-                // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
-                if (options.AutoSessionTracking)
-                {
-                    options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
-                    options.AutoSessionTracking = false;
-                }
+            // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
+            if (options.AutoSessionTracking)
+            {
+                options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
+                options.AutoSessionTracking = false;
             }
         }
+    }
 
     private void HandleExceptionFilter(SentryUnityOptions options)
     {
-            if (!options.FilterBadGatewayExceptions)
-            {
-                options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
-            }
-
-            if (!FilterWebExceptions)
-            {
-                options.RemoveExceptionFilter<UnityWebExceptionFilter>();
-            }
-
-            if (!FilterSocketExceptions)
-            {
-                options.RemoveExceptionFilter<UnitySocketExceptionFilter>();
-            }
+        if (!options.FilterBadGatewayExceptions)
+        {
+            options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
         }
+
+        if (!FilterWebExceptions)
+        {
+            options.RemoveExceptionFilter<UnityWebExceptionFilter>();
+        }
+
+        if (!FilterSocketExceptions)
+        {
+            options.RemoveExceptionFilter<UnitySocketExceptionFilter>();
+        }
+    }
 
     internal bool ShouldDebug(bool isEditorPlayer)
     {
-            if (!isEditorPlayer)
-            {
-                return !DebugOnlyInEditor && Debug;
-            }
-
-            return Debug;
+        if (!isEditorPlayer)
+        {
+            return !DebugOnlyInEditor && Debug;
         }
+
+        return Debug;
+    }
 }
