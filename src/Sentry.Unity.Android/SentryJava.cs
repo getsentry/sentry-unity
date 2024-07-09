@@ -81,8 +81,6 @@ namespace Sentry.Unity.Android
             });
         }
 
-        private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
-
         public void WriteScope(
             IJniExecutor jniExecutor,
             int? GpuId,
