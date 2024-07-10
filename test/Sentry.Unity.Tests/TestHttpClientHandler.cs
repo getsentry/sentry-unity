@@ -7,71 +7,70 @@ using System.Threading;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
-namespace Sentry.Unity.Tests
+namespace Sentry.Unity.Tests;
+
+public class TestHttpClientHandler : HttpClientHandler
 {
-    public class TestHttpClientHandler : HttpClientHandler
+    private readonly string name;
+
+    private readonly List<string> _requests = new();
+    private readonly AutoResetEvent _requestReceived = new(false);
+
+    public TestHttpClientHandler(string name = "TestHttpClientHandler")
     {
-        private readonly string name;
+        this.name = name;
+    }
 
-        private readonly List<string> _requests = new();
-        private readonly AutoResetEvent _requestReceived = new(false);
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        Receive(request);
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+    }
 
-        public TestHttpClientHandler(string name = "TestHttpClientHandler")
+    private void Receive(HttpRequestMessage message)
+    {
+        var messageText = message.Content.ReadAsStringAsync().Result;
+        lock (_requests)
         {
-            this.name = name;
+            _requests.Add(messageText);
+            _requestReceived.Set();
         }
+    }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-            CancellationToken cancellationToken)
+    public string GetEvent(string identifier, TimeSpan timeout)
+    {
+        // Check all the already received requests
+        lock (_requests)
         {
-            Receive(request);
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-        }
-
-        private void Receive(HttpRequestMessage message)
-        {
-            var messageText = message.Content.ReadAsStringAsync().Result;
-            lock (_requests)
+            var eventRequest = _requests.Find(r => r.Contains(identifier));
+            if (!string.IsNullOrEmpty(eventRequest))
             {
-                _requests.Add(messageText);
-                _requestReceived.Set();
+                Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
+                return eventRequest;
             }
         }
 
-        public string GetEvent(string identifier, TimeSpan timeout)
+        // While within timeout: check every newly received request
+        var stopwatch = Stopwatch.StartNew();
+        while (stopwatch.Elapsed < timeout)
         {
-            // Check all the already received requests
-            lock (_requests)
+            if (_requestReceived.WaitOne(TimeSpan.FromMilliseconds(16))) // Once per frame
             {
-                var eventRequest = _requests.Find(r => r.Contains(identifier));
-                if (!string.IsNullOrEmpty(eventRequest))
+                lock (_requests)
                 {
-                    Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
-                    return eventRequest;
-                }
-            }
-
-            // While within timeout: check every newly received request
-            var stopwatch = Stopwatch.StartNew();
-            while (stopwatch.Elapsed < timeout)
-            {
-                if (_requestReceived.WaitOne(TimeSpan.FromMilliseconds(16))) // Once per frame
-                {
-                    lock (_requests)
+                    if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(identifier))
                     {
-                        if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(identifier))
-                        {
-                            var eventRequest = _requests[_requests.Count - 1];
-                            Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
+                        var eventRequest = _requests[_requests.Count - 1];
+                        Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
 
-                            return eventRequest;
-                        }
+                        return eventRequest;
                     }
                 }
             }
-
-            Debug.LogError($"{UnityLogger.LogTag}{name} timed out waiting for an event.");
-            return string.Empty;
         }
+
+        Debug.LogError($"{UnityLogger.LogTag}{name} timed out waiting for an event.");
+        return string.Empty;
     }
 }
