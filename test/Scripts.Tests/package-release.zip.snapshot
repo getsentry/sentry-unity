@@ -110,6 +110,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Head
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryTransactionContext.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryUser.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryUserFeedback.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Headers/SentryWithoutUIKit.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Modules/module.modulemap
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios-simulator.abi.json
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios-simulator.private.swiftinterface
@@ -197,6 +198,7 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryTraceHe
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryTransactionContext.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryUser.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryUserFeedback.h
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Headers/SentryWithoutUIKit.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/module.modulemap
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.abi.json
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.private.swiftinterface
