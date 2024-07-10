@@ -141,10 +141,12 @@ internal class SentryJava : ISentryJava
     internal class ScopeCallback : AndroidJavaProxy
     {
         private readonly Action<AndroidJavaObject> _callback;
+
         public ScopeCallback(Action<AndroidJavaObject> callback) : base("io.sentry.ScopeCallback")
         {
             _callback = callback;
         }
+
         // Note: defining the method should be enough with the default Invoke(), but in reality it doesn't work:
         // No such proxy method: Sentry.Unity.Android.SentryJava+ScopeCallback.run(UnityEngine.AndroidJavaObject)
         //   public void run(AndroidJavaObject scope) => UnityEngine.Debug.Log("run() invoked");

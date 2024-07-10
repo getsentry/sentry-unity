@@ -22,83 +22,78 @@ public static class SentryNativeAndroid
 
         if (!options.AndroidNativeSupportEnabled)
         {
-            options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Android SDK");
+            options.DiagnosticLogger?.LogDebug("Native support is disabled for Android");
+            return;
+        }
 
-            if (!options.AndroidNativeSupportEnabled)
+        if (!SentryJava.IsSentryJavaPresent())
+        {
+            options.DiagnosticLogger?.LogError("Android Native Support has been enabled but the " +
+                                               "Sentry Java SDK is missing. This could have been caused by a mismatching" +
+                                               "build time / runtime configuration. Please make sure you have " +
+                                               "Android Native Support enabled during build time.");
+            return;
+        }
+
+        JniExecutor ??= new JniExecutor();
+
+        options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
+        options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);
+        options.EnableScopeSync = true;
+        options.CrashedLastRun = () =>
+        {
+            var crashedLastRun = SentryJava.CrashedLastRun(JniExecutor);
+            if (crashedLastRun is null)
             {
-                options.DiagnosticLogger?.LogDebug("Native support is disabled for Android");
-                return;
+                // Could happen if the Android SDK wasn't initialized before the .NET layer.
+                options.DiagnosticLogger?
+                    .LogWarning(
+                        "Unclear from the native SDK if the previous run was a crash. Assuming it was not.");
+                crashedLastRun = false;
+            }
+            else
+            {
+                options.DiagnosticLogger?
+                    .LogDebug("Native Android SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
             }
 
-            if (!SentryJava.IsSentryJavaPresent())
+            return crashedLastRun.Value;
+        };
+
+        try
+        {
+            options.DiagnosticLogger?.LogDebug("Reinstalling native backend.");
+
+            // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
+            // So we register our backend once more to make sure user-defined data is available in the crash report.
+            SentryNative.ReinstallBackend();
+        }
+        catch (Exception e)
+        {
+            options.DiagnosticLogger?.LogError(
+                e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
+        }
+
+        options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);
+
+        options.DefaultUserId = SentryJava.GetInstallationId(JniExecutor);
+        if (string.IsNullOrEmpty(options.DefaultUserId))
+        {
+            // In case we can't get an installation ID we create one and sync that down to the native layer
+            options.DiagnosticLogger?.LogDebug(
+                "Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
+
+            // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
+            // It's a randomly generated GUID that gets created immediately after installation helping
+            // to identify the same instance of the game
+            options.DefaultUserId = AnalyticsSessionInfo.userId;
+            if (options.DefaultUserId is not null)
             {
-                options.DiagnosticLogger?.LogError("Android Native Support has been enabled but the " +
-                                                   "Sentry Java SDK is missing. This could have been caused by a mismatching" +
-                                                   "build time / runtime configuration. Please make sure you have " +
-                                                   "Android Native Support enabled during build time.");
-                return;
+                options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
             }
-
-            JniExecutor ??= new JniExecutor();
-
-            options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
-            options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);
-            options.EnableScopeSync = true;
-            options.CrashedLastRun = () =>
+            else
             {
-                var crashedLastRun = SentryJava.CrashedLastRun(JniExecutor);
-                if (crashedLastRun is null)
-                {
-                    // Could happen if the Android SDK wasn't initialized before the .NET layer.
-                    options.DiagnosticLogger?
-                        .LogWarning(
-                            "Unclear from the native SDK if the previous run was a crash. Assuming it was not.");
-                    crashedLastRun = false;
-                }
-                else
-                {
-                    options.DiagnosticLogger?
-                        .LogDebug("Native Android SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
-                }
-
-                return crashedLastRun.Value;
-            };
-
-            try
-            {
-                options.DiagnosticLogger?.LogDebug("Reinstalling native backend.");
-
-                // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
-                // So we register our backend once more to make sure user-defined data is available in the crash report.
-                SentryNative.ReinstallBackend();
-            }
-            catch (Exception e)
-            {
-                options.DiagnosticLogger?.LogError(
-                    e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
-            }
-
-            options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);
-
-            options.DefaultUserId = SentryJava.GetInstallationId(JniExecutor);
-            if (string.IsNullOrEmpty(options.DefaultUserId))
-            {
-                // In case we can't get an installation ID we create one and sync that down to the native layer
-                options.DiagnosticLogger?.LogDebug(
-                    "Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
-
-                // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
-                // It's a randomly generated GUID that gets created immediately after installation helping
-                // to identify the same instance of the game
-                options.DefaultUserId = AnalyticsSessionInfo.userId;
-                if (options.DefaultUserId is not null)
-                {
-                    options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
-                }
-                else
-                {
-                    options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
-                }
+                options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
             }
         }
     }
