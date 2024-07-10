@@ -1,36 +1,35 @@
 using Sentry.Extensibility;
 using Sentry.Integrations;
 
-namespace Sentry.Unity.Integrations
+namespace Sentry.Unity.Integrations;
+
+internal class SessionIntegration : ISdkIntegration
 {
-    internal class SessionIntegration : ISdkIntegration
+    private readonly SentryMonoBehaviour _sentryMonoBehaviour;
+
+    public SessionIntegration(SentryMonoBehaviour sentryMonoBehaviour)
     {
-        private readonly SentryMonoBehaviour _sentryMonoBehaviour;
+        _sentryMonoBehaviour = sentryMonoBehaviour;
+    }
 
-        public SessionIntegration(SentryMonoBehaviour sentryMonoBehaviour)
+    public void Register(IHub hub, SentryOptions options)
+    {
+        if (!options.AutoSessionTracking)
         {
-            _sentryMonoBehaviour = sentryMonoBehaviour;
+            return;
         }
 
-        public void Register(IHub hub, SentryOptions options)
+        options.DiagnosticLogger?.LogDebug("Registering Session integration.");
+
+        _sentryMonoBehaviour.ApplicationResuming += () =>
         {
-            if (!options.AutoSessionTracking)
-            {
-                return;
-            }
-
-            options.DiagnosticLogger?.LogDebug("Registering Session integration.");
-
-            _sentryMonoBehaviour.ApplicationResuming += () =>
-            {
-                options.DiagnosticLogger?.LogDebug("Resuming session.");
-                hub.ResumeSession();
-            };
-            _sentryMonoBehaviour.ApplicationPausing += () =>
-            {
-                options.DiagnosticLogger?.LogDebug("Pausing session.");
-                hub.PauseSession();
-            };
-        }
+            options.DiagnosticLogger?.LogDebug("Resuming session.");
+            hub.ResumeSession();
+        };
+        _sentryMonoBehaviour.ApplicationPausing += () =>
+        {
+            options.DiagnosticLogger?.LogDebug("Pausing session.");
+            hub.PauseSession();
+        };
     }
 }

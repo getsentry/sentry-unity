@@ -1,21 +1,20 @@
 using System;
 
-namespace Sentry.Unity.Android.Tests
+namespace Sentry.Unity.Android.Tests;
+
+public class TestJniExecutor : IJniExecutor
 {
-    public class TestJniExecutor : IJniExecutor
+    public TResult? Run<TResult>(Func<TResult?> jniOperation)
     {
-        public TResult? Run<TResult>(Func<TResult?> jniOperation)
-        {
-            return default;
-        }
+        return default;
+    }
 
-        public void Run(Action jniOperation)
-        {
-        }
+    public void Run(Action jniOperation)
+    {
+    }
 
-        public void Dispose()
-        {
-            // TODO release managed resources here
-        }
+    public void Dispose()
+    {
+        // TODO release managed resources here
     }
 }

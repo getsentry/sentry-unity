@@ -10,265 +10,264 @@ using UnityEditor.Build;
 using UnityEditor.Callbacks;
 using System.Diagnostics;
 
-namespace Sentry.Unity.Editor.Native
+namespace Sentry.Unity.Editor.Native;
+
+public static class BuildPostProcess
 {
-    public static class BuildPostProcess
+    [PostProcessBuild(1)]
+    public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
-        [PostProcessBuild(1)]
-        public static void OnPostProcessBuild(BuildTarget target, string executablePath)
+        var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
+        if (targetGroup is not BuildTargetGroup.Standalone)
         {
-            var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-            if (targetGroup is not BuildTargetGroup.Standalone)
-            {
-                return;
-            }
-
-            var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
-            var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
-            var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
-
-            try
-            {
-                if (options is null)
-                {
-                    logger.LogWarning("Native support disabled because Sentry has not been configured. " +
-                                      "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
-                    return;
-                }
-
-                if (!options.IsValid())
-                {
-                    logger.LogDebug("Native support disabled.");
-                    return;
-                }
-
-                if (!IsEnabledForPlatform(target, options))
-                {
-                    logger.LogDebug("Native support for the current platform is disabled in the configuration.");
-                    return;
-                }
-
-                logger.LogDebug("Adding native support.");
-
-                var buildOutputDir = Path.GetDirectoryName(executablePath);
-                var executableName = Path.GetFileName(executablePath);
-                AddCrashHandler(logger, target, buildOutputDir, executableName);
-                UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to add the Sentry native integration to the built application");
-                throw new BuildFailedException("Sentry Native BuildPostProcess failed");
-            }
+            return;
         }
 
-        private static bool IsEnabledForPlatform(BuildTarget target, SentryUnityOptions options) => target switch
-        {
-            BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
-            BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
-            BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
-            _ => false,
-        };
+        var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
+        var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
+        var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 
-        private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName)
+        try
         {
-            string crashpadPath;
-            if (target is BuildTarget.StandaloneWindows64)
+            if (options is null)
             {
-                crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
-            }
-            else if (target is BuildTarget.StandaloneLinux64)
-            {
-                // No standalone crash handler for Linux - uses built-in breakpad.
+                logger.LogWarning("Native support disabled because Sentry has not been configured. " +
+                                  "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
                 return;
             }
-            else if (target is BuildTarget.StandaloneOSX)
+
+            if (!options.IsValid())
             {
-                // No standalone crash handler for macOS - uses built-in handler in sentry-cocoa.
+                logger.LogDebug("Native support disabled.");
                 return;
+            }
+
+            if (!IsEnabledForPlatform(target, options))
+            {
+                logger.LogDebug("Native support for the current platform is disabled in the configuration.");
+                return;
+            }
+
+            logger.LogDebug("Adding native support.");
+
+            var buildOutputDir = Path.GetDirectoryName(executablePath);
+            var executableName = Path.GetFileName(executablePath);
+            AddCrashHandler(logger, target, buildOutputDir, executableName);
+            UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to add the Sentry native integration to the built application");
+            throw new BuildFailedException("Sentry Native BuildPostProcess failed");
+        }
+    }
+
+    private static bool IsEnabledForPlatform(BuildTarget target, SentryUnityOptions options) => target switch
+    {
+        BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
+        BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
+        BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
+        _ => false,
+    };
+
+    private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName)
+    {
+        string crashpadPath;
+        if (target is BuildTarget.StandaloneWindows64)
+        {
+            crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
+        }
+        else if (target is BuildTarget.StandaloneLinux64)
+        {
+            // No standalone crash handler for Linux - uses built-in breakpad.
+            return;
+        }
+        else if (target is BuildTarget.StandaloneOSX)
+        {
+            // No standalone crash handler for macOS - uses built-in handler in sentry-cocoa.
+            return;
+        }
+        else
+        {
+            throw new ArgumentException($"Unsupported build target: {target}");
+        }
+
+        crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
+        var targetPath = Path.Combine(buildOutputDir, Path.GetFileName(crashpadPath));
+        logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
+        File.Copy(crashpadPath, targetPath, true);
+    }
+
+    private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+    {
+        var projectDir = Directory.GetParent(Application.dataPath).FullName;
+        if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
+        {
+            if (options.Il2CppLineNumberSupportEnabled)
+            {
+                logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
+            }
+
+            return;
+        }
+
+        logger.LogInfo("Uploading debugging information using sentry-cli in {0}", buildOutputDir);
+
+        var paths = "";
+        Func<string, bool> addPath = (string name) =>
+        {
+            var fullPath = Path.Combine(buildOutputDir, name);
+            if (fullPath.Contains("*") || Directory.Exists(fullPath) || File.Exists(fullPath))
+            {
+                paths += $" \"{name}\"";
+                logger.LogDebug($"Adding '{name}' to the debug-info upload");
+                return true;
             }
             else
             {
-                throw new ArgumentException($"Unsupported build target: {target}");
+                logger.LogWarning($"Couldn't find '{name}' - debug symbol upload will be incomplete");
+                return false;
             }
+        };
 
-            crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
-            var targetPath = Path.Combine(buildOutputDir, Path.GetFileName(crashpadPath));
-            logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
-            File.Copy(crashpadPath, targetPath, true);
+        Action<string, string[]> addFilesMatching = (string directory, string[] includePatterns) =>
+        {
+            Matcher matcher = new();
+            matcher.AddIncludePatterns(includePatterns);
+            foreach (string file in matcher.GetResultsInFullPath(directory))
+            {
+                addPath(file);
+            }
+        };
+
+        addPath(executableName);
+
+        switch (target)
+        {
+            case BuildTarget.StandaloneWindows64:
+                addPath("UnityPlayer.dll");
+                addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
+
+                if (isMono)
+                {
+                    addPath("MonoBleedingEdge/EmbedRuntime");
+                    addFilesMatching(buildOutputDir, new[] { "*.pdb" });
+
+                    // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
+                    // './Temp/ManagedSymbols/'. We want the one in 'Temp/ManagedSymbols/' specifically.
+                    var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
+                    if (Directory.Exists(managedSymbolsDirectory))
+                    {
+                        addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
+                    }
+                }
+                else // IL2CPP
+                {
+                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                    addPath("GameAssembly.dll");
+                }
+                break;
+            case BuildTarget.StandaloneLinux64:
+                addPath("GameAssembly.so");
+                addPath("UnityPlayer.so");
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
+
+                if (isMono)
+                {
+                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
+                    addFilesMatching(buildOutputDir, new[] { "*.debug" });
+
+                    var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
+                    if (Directory.Exists(managedSymbolsDirectory))
+                    {
+                        addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
+                    }
+                }
+                else // IL2CPP
+                {
+                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                }
+                break;
+            case BuildTarget.StandaloneOSX:
+                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
+
+                if (isMono)
+                { }
+                else // IL2CPP
+                {
+                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                }
+                break;
+            default:
+                logger.LogError($"Symbol upload for '{target}' is currently not supported.");
+                break;
         }
 
-        private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+        var cliArgs = "debug-files upload ";
+        if (!isMono)
         {
-            var projectDir = Directory.GetParent(Application.dataPath).FullName;
-            if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
-            {
-                if (options.Il2CppLineNumberSupportEnabled)
-                {
-                    logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
-                }
+            cliArgs += "--il2cpp-mapping ";
+        }
+        if (cliOptions.UploadSources)
+        {
+            cliArgs += "--include-sources ";
+        }
+        cliArgs += paths;
 
-                return;
+        // Configure the process using the StartInfo properties.
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = SentryCli.SetupSentryCli(),
+                WorkingDirectory = buildOutputDir,
+                Arguments = cliArgs,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
             }
+        };
 
-            logger.LogInfo("Uploading debugging information using sentry-cli in {0}", buildOutputDir);
+        var propertiesFile = SentryCli.CreateSentryProperties(buildOutputDir, cliOptions, options);
+        try
+        {
+            process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
 
-            var paths = "";
-            Func<string, bool> addPath = (string name) =>
+            DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
             {
-                var fullPath = Path.Combine(buildOutputDir, name);
-                if (fullPath.Contains("*") || Directory.Exists(fullPath) || File.Exists(fullPath))
+                if (!string.IsNullOrEmpty(e.Data))
                 {
-                    paths += $" \"{name}\"";
-                    logger.LogDebug($"Adding '{name}' to the debug-info upload");
-                    return true;
-                }
-                else
-                {
-                    logger.LogWarning($"Couldn't find '{name}' - debug symbol upload will be incomplete");
-                    return false;
-                }
-            };
-
-            Action<string, string[]> addFilesMatching = (string directory, string[] includePatterns) =>
-            {
-                Matcher matcher = new();
-                matcher.AddIncludePatterns(includePatterns);
-                foreach (string file in matcher.GetResultsInFullPath(directory))
-                {
-                    addPath(file);
-                }
-            };
-
-            addPath(executableName);
-
-            switch (target)
-            {
-                case BuildTarget.StandaloneWindows64:
-                    addPath("UnityPlayer.dll");
-                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
-                    addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
-
-                    if (isMono)
+                    var msg = e.Data.Trim();
+                    var msgLower = msg.ToLowerInvariant();
+                    var level = SentryLevel.Info;
+                    if (msgLower.StartsWith("error"))
                     {
-                        addPath("MonoBleedingEdge/EmbedRuntime");
-                        addFilesMatching(buildOutputDir, new[] { "*.pdb" });
-
-                        // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
-                        // './Temp/ManagedSymbols/'. We want the one in 'Temp/ManagedSymbols/' specifically.
-                        var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
-                        if (Directory.Exists(managedSymbolsDirectory))
-                        {
-                            addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
-                        }
+                        level = SentryLevel.Error;
                     }
-                    else // IL2CPP
+                    else if (msgLower.StartsWith("warn"))
                     {
-                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
-                        addPath("GameAssembly.dll");
+                        level = SentryLevel.Warning;
                     }
-                    break;
-                case BuildTarget.StandaloneLinux64:
-                    addPath("GameAssembly.so");
-                    addPath("UnityPlayer.so");
-                    addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
 
-                    if (isMono)
-                    {
-                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
-                        addFilesMatching(buildOutputDir, new[] { "*.debug" });
-
-                        var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
-                        if (Directory.Exists(managedSymbolsDirectory))
-                        {
-                            addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
-                        }
-                    }
-                    else // IL2CPP
-                    {
-                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
-                    }
-                    break;
-                case BuildTarget.StandaloneOSX:
-                    addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
-
-                    if (isMono)
-                    { }
-                    else // IL2CPP
-                    {
-                        addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
-                    }
-                    break;
-                default:
-                    logger.LogError($"Symbol upload for '{target}' is currently not supported.");
-                    break;
-            }
-
-            var cliArgs = "debug-files upload ";
-            if (!isMono)
-            {
-                cliArgs += "--il2cpp-mapping ";
-            }
-            if (cliOptions.UploadSources)
-            {
-                cliArgs += "--include-sources ";
-            }
-            cliArgs += paths;
-
-            // Configure the process using the StartInfo properties.
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = SentryCli.SetupSentryCli(),
-                    WorkingDirectory = buildOutputDir,
-                    Arguments = cliArgs,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
+                    // Remove the level and timestamp from the beginning of the message.
+                    // INFO    2022-06-20 15:10:03.613794800 +02:00
+                    msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
+                    logger.Log(level, "sentry-cli: {0}", null, msg);
                 }
             };
 
-            var propertiesFile = SentryCli.CreateSentryProperties(buildOutputDir, cliOptions, options);
-            try
-            {
-                process.StartInfo.EnvironmentVariables["SENTRY_PROPERTIES"] = propertiesFile;
-
-                DataReceivedEventHandler logForwarder = (object sender, DataReceivedEventArgs e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        var msg = e.Data.Trim();
-                        var msgLower = msg.ToLowerInvariant();
-                        var level = SentryLevel.Info;
-                        if (msgLower.StartsWith("error"))
-                        {
-                            level = SentryLevel.Error;
-                        }
-                        else if (msgLower.StartsWith("warn"))
-                        {
-                            level = SentryLevel.Warning;
-                        }
-
-                        // Remove the level and timestamp from the beginning of the message.
-                        // INFO    2022-06-20 15:10:03.613794800 +02:00
-                        msg = Regex.Replace(msg, "^[a-zA-Z]+ +[0-9\\-]{10} [0-9:]{8}\\.[0-9]+ \\+[0-9:]{5} +", "");
-                        logger.Log(level, "sentry-cli: {0}", null, msg);
-                    }
-                };
-
-                process.OutputDataReceived += logForwarder;
-                process.ErrorDataReceived += logForwarder;
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
-            }
-            finally
-            {
-                File.Delete(propertiesFile);
-            }
+            process.OutputDataReceived += logForwarder;
+            process.ErrorDataReceived += logForwarder;
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+        }
+        finally
+        {
+            File.Delete(propertiesFile);
         }
     }
 }

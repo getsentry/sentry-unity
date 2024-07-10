@@ -3,122 +3,121 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Sentry.Unity.Android
+namespace Sentry.Unity.Android;
+
+internal class JniExecutor : IJniExecutor
 {
-    internal class JniExecutor : IJniExecutor
+    private readonly CancellationTokenSource _shutdownSource;
+    private readonly AutoResetEvent _taskEvent;
+    private Delegate _currentTask = null!; // The current task will always be set together with the task event
+
+    private TaskCompletionSource<object?>? _taskCompletionSource;
+
+    private readonly object _lock = new object();
+
+    public JniExecutor()
     {
-        private readonly CancellationTokenSource _shutdownSource;
-        private readonly AutoResetEvent _taskEvent;
-        private Delegate _currentTask = null!; // The current task will always be set together with the task event
+        _taskEvent = new AutoResetEvent(false);
+        _shutdownSource = new CancellationTokenSource();
 
-        private TaskCompletionSource<object?>? _taskCompletionSource;
+        new Thread(DoWork) { IsBackground = true, Name = "SentryJniExecutorThread" }.Start();
+    }
 
-        private readonly object _lock = new object();
+    private void DoWork()
+    {
+        AndroidJNI.AttachCurrentThread();
 
-        public JniExecutor()
+        var waitHandles = new[] { _taskEvent, _shutdownSource.Token.WaitHandle };
+
+        while (true)
         {
-            _taskEvent = new AutoResetEvent(false);
-            _shutdownSource = new CancellationTokenSource();
-
-            new Thread(DoWork) { IsBackground = true, Name = "SentryJniExecutorThread" }.Start();
-        }
-
-        private void DoWork()
-        {
-            AndroidJNI.AttachCurrentThread();
-
-            var waitHandles = new[] { _taskEvent, _shutdownSource.Token.WaitHandle };
-
-            while (true)
+            var index = WaitHandle.WaitAny(waitHandles);
+            if (index > 0)
             {
-                var index = WaitHandle.WaitAny(waitHandles);
-                if (index > 0)
-                {
-                    // We only care about the _taskEvent
-                    break;
-                }
+                // We only care about the _taskEvent
+                break;
+            }
 
-                try
+            try
+            {
+                // Matching the type of the `_currentTask` exactly. The result gets cast to the expected type
+                // when returning from the blocking call.
+                switch (_currentTask)
                 {
-                    // Matching the type of the `_currentTask` exactly. The result gets cast to the expected type
-                    // when returning from the blocking call.
-                    switch (_currentTask)
+                    case Action action:
                     {
-                        case Action action:
-                            {
-                                action.Invoke();
-                                _taskCompletionSource?.SetResult(null);
-                                break;
-                            }
-                        case Func<bool?> func1:
-                            {
-                                var result = func1.Invoke();
-                                _taskCompletionSource?.SetResult(result);
-                                break;
-                            }
-                        case Func<string?> func2:
-                            {
-                                var result = func2.Invoke();
-                                _taskCompletionSource?.SetResult(result);
-                                break;
-                            }
-                        default:
-                            throw new ArgumentException("Invalid type for _currentTask.");
+                        action.Invoke();
+                        _taskCompletionSource?.SetResult(null);
+                        break;
                     }
-                }
-                catch (Exception e)
-                {
-                    Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+                    case Func<bool?> func1:
+                    {
+                        var result = func1.Invoke();
+                        _taskCompletionSource?.SetResult(result);
+                        break;
+                    }
+                    case Func<string?> func2:
+                    {
+                        var result = func2.Invoke();
+                        _taskCompletionSource?.SetResult(result);
+                        break;
+                    }
+                    default:
+                        throw new ArgumentException("Invalid type for _currentTask.");
                 }
             }
-
-            AndroidJNI.DetachCurrentThread();
-        }
-
-        public TResult? Run<TResult>(Func<TResult?> jniOperation)
-        {
-            lock (_lock)
+            catch (Exception e)
             {
-                _taskCompletionSource = new TaskCompletionSource<object?>();
-                _currentTask = jniOperation;
-                _taskEvent.Set();
-
-                try
-                {
-                    return (TResult?)_taskCompletionSource.Task.GetAwaiter().GetResult();
-                }
-                catch (Exception e)
-                {
-                    Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
-                }
-
-                return default;
+                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
             }
         }
 
-        public void Run(Action jniOperation)
+        AndroidJNI.DetachCurrentThread();
+    }
+
+    public TResult? Run<TResult>(Func<TResult?> jniOperation)
+    {
+        lock (_lock)
         {
-            lock (_lock)
+            _taskCompletionSource = new TaskCompletionSource<object?>();
+            _currentTask = jniOperation;
+            _taskEvent.Set();
+
+            try
             {
-                _taskCompletionSource = new TaskCompletionSource<object?>();
-                _currentTask = jniOperation;
-                _taskEvent.Set();
+                return (TResult?)_taskCompletionSource.Task.GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+            }
 
-                try
-                {
-                    _taskCompletionSource.Task.Wait();
-                }
-                catch (Exception e)
-                {
-                    Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
-                }
+            return default;
+        }
+    }
+
+    public void Run(Action jniOperation)
+    {
+        lock (_lock)
+        {
+            _taskCompletionSource = new TaskCompletionSource<object?>();
+            _currentTask = jniOperation;
+            _taskEvent.Set();
+
+            try
+            {
+                _taskCompletionSource.Task.Wait();
+            }
+            catch (Exception e)
+            {
+                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
             }
         }
+    }
 
-        public void Dispose()
-        {
-            _shutdownSource.Cancel();
-            _taskEvent.Dispose();
-        }
+    public void Dispose()
+    {
+        _shutdownSource.Cancel();
+        _taskEvent.Dispose();
     }
 }
