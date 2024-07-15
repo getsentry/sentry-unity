@@ -10,9 +10,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.29.1 to v8.30.0 ([#1702](https://github.com/getsentry/sentry-unity/pull/1702))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8300)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.1...8.30.0)
+- Bump Cocoa SDK from v8.29.1 to v8.30.1 ([#1702](https://github.com/getsentry/sentry-unity/pull/1702), [#1720](https://github.com/getsentry/sentry-unity/pull/1720))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8301)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.1...8.30.1)
 - Bump .NET SDK from v4.7.0 to v4.9.0 ([#1704](https://github.com/getsentry/sentry-unity/pull/1704), [#1711](https://github.com/getsentry/sentry-unity/pull/1711), [#1723](https://github.com/getsentry/sentry-unity/pull/1723))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#490)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.7.0...4.9.0)
