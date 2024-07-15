@@ -10,7 +10,7 @@ namespace Sentry.Unity.Android;
 public static class SentryNativeAndroid
 {
     internal static IJniExecutor? JniExecutor;
-    internal static ISentryJava? SentryJava;
+    internal static ISentryJava SentryJava = new SentryJava();
 
     /// <summary>
     /// Configures the native Android support.
@@ -26,8 +26,16 @@ public static class SentryNativeAndroid
             return;
         }
 
+        if (!SentryJava.IsSentryJavaPresent())
+        {
+            options.DiagnosticLogger?.LogError("Android Native Support has been enabled but the " +
+                                               "Sentry Java SDK is missing. This could have been caused by a mismatching" +
+                                               "build time / runtime configuration. Please make sure you have " +
+                                               "Android Native Support enabled during build time.");
+            return;
+        }
+
         JniExecutor ??= new JniExecutor();
-        SentryJava ??= new SentryJava();
 
         options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
         options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);
@@ -39,7 +47,8 @@ public static class SentryNativeAndroid
             {
                 // Could happen if the Android SDK wasn't initialized before the .NET layer.
                 options.DiagnosticLogger?
-                    .LogWarning("Unclear from the native SDK if the previous run was a crash. Assuming it was not.");
+                    .LogWarning(
+                        "Unclear from the native SDK if the previous run was a crash. Assuming it was not.");
                 crashedLastRun = false;
             }
             else
@@ -71,7 +80,8 @@ public static class SentryNativeAndroid
         if (string.IsNullOrEmpty(options.DefaultUserId))
         {
             // In case we can't get an installation ID we create one and sync that down to the native layer
-            options.DiagnosticLogger?.LogDebug("Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
+            options.DiagnosticLogger?.LogDebug(
+                "Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
 
             // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
             // It's a randomly generated GUID that gets created immediately after installation helping
@@ -93,6 +103,11 @@ public static class SentryNativeAndroid
     /// </summary>
     public static void Close(IDiagnosticLogger? logger = null)
     {
+        if (!SentryJava.IsSentryJavaPresent())
+        {
+            return;
+        }
+
         // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
         logger?.LogDebug("Closing the sentry-java SDK");
 
