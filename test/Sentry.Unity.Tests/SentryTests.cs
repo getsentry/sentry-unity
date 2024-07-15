@@ -1,28 +1,27 @@
 using System;
 
-namespace Sentry.Unity.Tests
+namespace Sentry.Unity.Tests;
+
+public static class SentryTests
 {
-    public static class SentryTests
+    internal static IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null, TestHttpClientHandler? testHttpClientHandler = null)
     {
-        internal static IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null, TestHttpClientHandler? testHttpClientHandler = null)
+        SentryUnity.Init(options =>
         {
-            SentryUnity.Init(options =>
+            options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
+            if (testHttpClientHandler is not null)
             {
-                options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-                if (testHttpClientHandler is not null)
-                {
-                    options.CreateHttpMessageHandler = () => testHttpClientHandler;
-                }
+                options.CreateHttpMessageHandler = () => testHttpClientHandler;
+            }
 
-                configure?.Invoke(options);
-            });
+            configure?.Invoke(options);
+        });
 
-            return new SentryDisposable();
-        }
+        return new SentryDisposable();
+    }
 
-        private sealed class SentryDisposable : IDisposable
-        {
-            public void Dispose() => SentrySdk.Close();
-        }
+    private sealed class SentryDisposable : IDisposable
+    {
+        public void Dispose() => SentrySdk.Close();
     }
 }
