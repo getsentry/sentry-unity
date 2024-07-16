@@ -25,6 +25,7 @@ internal interface ISentryJava
         string? GpuVendorId,
         bool? GpuMultiThreadedRendering,
         string? GpuGraphicsShaderLevel);
+    public bool IsSentryJavaPresent();
 }
 
 /// <summary>
@@ -37,6 +38,8 @@ internal interface ISentryJava
 /// <see href="https://github.com/getsentry/sentry-java"/>
 internal class SentryJava : ISentryJava
 {
+    private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+
     public string? GetInstallationId(IJniExecutor jniExecutor)
     {
         return jniExecutor.Run(() =>
@@ -77,8 +80,6 @@ internal class SentryJava : ISentryJava
         });
     }
 
-    private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
-
     public void WriteScope(
         IJniExecutor jniExecutor,
         int? GpuId,
@@ -107,14 +108,12 @@ internal class SentryJava : ISentryJava
                 using var integer = new AndroidJavaObject("java.lang.Integer", intVendorId);
                 gpu.Set("vendorId", integer);
             }
-
             gpu.SetIfNotNull("vendorName", GpuVendorName);
             gpu.SetIfNotNull("memorySize", GpuMemorySize);
             gpu.SetIfNotNull("apiType", GpuApiType);
             gpu.SetIfNotNull("multiThreadedRendering", GpuMultiThreadedRendering);
             gpu.SetIfNotNull("version", GpuVersion);
             gpu.SetIfNotNull("npotSupport", GpuNpotSupport);
-
             using var sentry = GetSentryJava();
             sentry.CallStatic("configureScope", new ScopeCallback(scope =>
             {
@@ -122,6 +121,20 @@ internal class SentryJava : ISentryJava
                 contexts.Call("setGpu", gpu);
             }));
         });
+    }
+
+    public bool IsSentryJavaPresent()
+    {
+        try
+        {
+            _ = GetSentryJava();
+        }
+        catch (AndroidJavaException)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     // Implements the io.sentry.ScopeCallback interface.
@@ -175,10 +188,8 @@ internal static class AndroidJavaObjectExtension
             }
         }
     }
-
     public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, int? value) =>
         SetIfNotNull(javaObject, property, value, "java.lang.Integer");
-
     public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool? value) =>
         SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
 }

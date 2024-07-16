@@ -2,16 +2,31 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.30.1 to v8.31.1 ([#1726](https://github.com/getsentry/sentry-unity/pull/1726))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8311)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.30.1...8.31.1)
+- Bump Java SDK from v7.11.0 to v7.12.0 ([#1725](https://github.com/getsentry/sentry-unity/pull/1725))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7120)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.11.0...7.12.0)
+- Bump CLI from v2.32.1 to v2.32.2 ([#1724](https://github.com/getsentry/sentry-unity/pull/1724))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2322)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.32.1...2.32.2)
+
+## 2.1.1
+
 ### Fixes
 
 - Added a fallback for user.id on Android and iOS in case none could be extracted from the native layer ([#1710](https://github.com/getsentry/sentry-unity/pull/1710))
 - The IL2CPP exception processor no longer fails when the native support has been disabled ([#1708](https://github.com/getsentry/sentry-unity/pull/1708))
+- The SDK now checks whether the Android SDK is available before attempting to initialize it. This prevents `AndroidJavaException: java.lang.ClassNotFoundException: io.sentry.Sentry` from being thrown ([#1714](https://github.com/getsentry/sentry-unity/pull/1714))
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.29.1 to v8.30.0 ([#1702](https://github.com/getsentry/sentry-unity/pull/1702))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8300)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.1...8.30.0)
+- Bump Cocoa SDK from v8.29.1 to v8.30.1 ([#1702](https://github.com/getsentry/sentry-unity/pull/1702), [#1720](https://github.com/getsentry/sentry-unity/pull/1720))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8301)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.29.1...8.30.1)
 - Bump .NET SDK from v4.7.0 to v4.9.0 ([#1704](https://github.com/getsentry/sentry-unity/pull/1704), [#1711](https://github.com/getsentry/sentry-unity/pull/1711), [#1723](https://github.com/getsentry/sentry-unity/pull/1723))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#490)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.7.0...4.9.0)

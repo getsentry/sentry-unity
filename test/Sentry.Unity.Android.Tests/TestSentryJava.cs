@@ -5,15 +5,9 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public string? GetInstallationId(IJniExecutor jniExecutor)
-    {
-        return InstallationId;
-    }
+    public string? GetInstallationId(IJniExecutor jniExecutor) => InstallationId;
 
-    public bool? CrashedLastRun(IJniExecutor jniExecutor)
-    {
-        return IsCrashedLastRun;
-    }
+    public bool? CrashedLastRun(IJniExecutor jniExecutor) => IsCrashedLastRun;
 
     public void Close(IJniExecutor jniExecutor) { }
 
@@ -35,4 +29,6 @@ internal class TestSentryJava : ISentryJava
         bool? GpuMultiThreadedRendering,
         string? GpuGraphicsShaderLevel)
     { }
+
+    public bool IsSentryJavaPresent() => true;
 }
