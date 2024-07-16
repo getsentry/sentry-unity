@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Java SDK from v7.11.0 to v7.12.0 ([#1725](https://github.com/getsentry/sentry-unity/pull/1725))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7120)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.11.0...7.12.0)
+
 ## 2.1.1
 
 ### Fixes
