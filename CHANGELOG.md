@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Fixes
+
+- The SDK no longer causes games to crash out of the box on platforms that have disk access restrictions (i.e. Nintendo Switch) ([#1728](https://github.com/getsentry/sentry-unity/pull/1728))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.30.1 to v8.31.1 ([#1726](https://github.com/getsentry/sentry-unity/pull/1726))

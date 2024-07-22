@@ -259,6 +259,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
                 options.AutoSessionTracking = false;
             }
+
+            // Requires file access
+            if (options.TracesSampleRate > 0.0f)
+            {
+                options.DiagnosticLogger?.LogDebug("Platform support for tracing is unknown: disabling.");
+                options.TracesSampleRate = null;
+            }
         }
     }
 
