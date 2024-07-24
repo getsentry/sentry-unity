@@ -200,7 +200,7 @@ namespace Sentry.Unity
             return Marshal.PtrToStringAnsi(debugIdPtr);
         }
 
-#if UNITY_2023
+#if UNITY_2023_1_OR_NEWER
         private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle) => il2cpp_gchandle_get_target(gchandle);
 
         // Available in Unity `2013.3.12f1` (and later)
