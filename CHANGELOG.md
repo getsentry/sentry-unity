@@ -5,6 +5,7 @@
 ## Fixes
 
 - The SDK no longer causes games to crash out of the box on platforms that have disk access restrictions (i.e. Nintendo Switch) ([#1728](https://github.com/getsentry/sentry-unity/pull/1728))
+- IL2CPP in Unity 6 ([#1735](https://github.com/getsentry/sentry-unity/pull/1735))
 
 ### Dependencies
 
