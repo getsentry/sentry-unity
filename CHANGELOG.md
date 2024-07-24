@@ -2,12 +2,6 @@
 
 ## Unreleased
 
-### Dependencies
-
-- Bump CLI from v2.32.2 to v2.33.0 ([#1733](https://github.com/getsentry/sentry-unity/pull/1733))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2330)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.32.2...2.33.0)
-
 ## Fixes
 
 - The SDK no longer causes games to crash out of the box on platforms that have disk access restrictions (i.e. Nintendo Switch) ([#1728](https://github.com/getsentry/sentry-unity/pull/1728))
@@ -21,6 +15,9 @@
 - Bump Java SDK from v7.11.0 to v7.12.0 ([#1725](https://github.com/getsentry/sentry-unity/pull/1725))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7120)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.11.0...7.12.0)
+- Bump CLI from v2.32.2 to v2.33.0 ([#1733](https://github.com/getsentry/sentry-unity/pull/1733))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2330)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.32.2...2.33.0)
 - Bump CLI from v2.32.1 to v2.32.2 ([#1724](https://github.com/getsentry/sentry-unity/pull/1724))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2322)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.32.1...2.32.2)
