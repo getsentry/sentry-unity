@@ -179,6 +179,7 @@ public class AndroidManifestConfiguration
         androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
         androidManifest.SetAnr(false);
         androidManifest.SetPersistentScopeObserver(false);
+        androidManifest.SetReplay(1.0, 1.0);
 
         // TODO: All SentryOptions and create specific Android options
 
@@ -443,6 +444,21 @@ internal class AndroidManifest : AndroidXmlDocument
         => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
 
     internal void SetDebug(bool debug) => SetMetaData($"{SentryPrefix}.debug", debug ? "true" : "false");
+
+    internal void SetReplay(double? sessionSampleRate, double? errorSampleRate)
+    {
+        if (sessionSampleRate != null)
+        {
+            // https://github.com/getsentry/sentry-java/issues/3603
+            // SetMetaData($"{SentryPrefix}.session-replay.session-sample-rate", sessionSampleRate.ToString());
+            SetMetaData($"{SentryPrefix}.session-replay.session-sample-rate", "1.0");
+        }
+        if (errorSampleRate != null)
+        {
+            // SetMetaData($"{SentryPrefix}.session-replay.error-sample-rate", errorSampleRate.ToString());
+            SetMetaData($"{SentryPrefix}.session-replay.error-sample-rate", "1.0");
+        }
+    }
 
     // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
     internal void SetLevel(SentryLevel level) =>

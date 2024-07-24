@@ -220,6 +220,7 @@ Plugins/Android/proguard-sentry-unity.pro
 Plugins/Android/proguard-sentry-unity.pro.meta
 Plugins/Android/Sentry~/sentry-android-core-release.aar
 Plugins/Android/Sentry~/sentry-android-ndk-release.aar
+Plugins/Android/Sentry~/sentry-android-replay-release.aar
 Plugins/Android/Sentry~/sentry.jar
 Plugins/Windows/Sentry.meta
 Plugins/Windows/Sentry/crashpad_handler.exe
