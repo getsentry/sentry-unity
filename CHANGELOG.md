@@ -2,17 +2,7 @@
 
 ## 2.1.2
 
-### Various fixes & improvements
-
-- fix: IL2CPP in Unity 6 (#1735) by @tustanivsky
-- ci: dependency review action (#1732) by @mdtro
-- chore: update modules/sentry-cli.properties to 2.33.0 (#1733) by @github-actions
-- fix: Disable tracing on unknown platforms (#1728) by @bitsandfoxes
-- chore: update modules/sentry-cocoa to 8.31.1 (#1726) by @github-actions
-- chore: update modules/sentry-java to 7.12.0 (#1725) by @github-actions
-- chore: update modules/sentry-cli.properties to 2.32.2 (#1724) by @github-actions
-
-## Fixes
+### Fixes
 
 - The SDK no longer causes games to crash out of the box on platforms that have disk access restrictions (i.e. Nintendo Switch) ([#1728](https://github.com/getsentry/sentry-unity/pull/1728))
 - The SDK no longer causes crashes on Unity 6 in an attempt to provide line numbers ([#1735](https://github.com/getsentry/sentry-unity/pull/1735))
