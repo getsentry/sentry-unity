@@ -34,7 +34,7 @@ jobs:
           - target: iOS
             host: macos-13
           - target: Linux
-            host: ubuntu-latest
+            host: ubuntu-20.04
           - target: macOS
             host: macos-13
           - target: Windows
