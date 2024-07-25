@@ -207,7 +207,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
@@ -259,7 +259,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
         platform: ['Android', 'WebGL', 'Linux', 'iOS']
         include:
           - platform: Linux
@@ -378,7 +378,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
         os: ['windows', 'macos']
         include:
           - os: windows
@@ -457,7 +457,7 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [27, 28, 29, 30, 31] # last updated October 2022
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
         include:
           # API 21 is barely used but let's check it as the minimum supported version for now.
           - api-level: 21
@@ -478,7 +478,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
         platform: ['Android', 'iOS']
         include:
           # See supported version in https://docs.unity3d.com/2022.2/Documentation/Manual/android-sdksetup.html
@@ -550,7 +550,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices 
         # - `iOS 16`: 71%
@@ -605,7 +605,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ['2019', '2020', '2021', '2022']
+        unity-version: ['2019', '2020', '2021', '2022', '2023']
         platform: ['WebGL', 'Linux']
     steps:
       - name: Checkout
