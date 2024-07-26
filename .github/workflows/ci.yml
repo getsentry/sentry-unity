@@ -521,10 +521,12 @@ jobs:
             @("sdk.dir=$($env:ANDROID_SDK_ROOT)", "ndk.dir=${{ steps.setup-ndk.outputs.ndk-path }}") | Out-File "samples/IntegrationTest/Build/local.properties"
 
             # The template changed with 2022 to have set the 'ndkPath' directly in the build.gradle. Removing it fall back to the local.properties
-            if ("${{ matrix.unity-version }}" -eq "2022")
+            if ([int]("${{ matrix.unity-version }}") -gt 2022) {
             {
               $file = "samples/IntegrationTest/Build/unityLibrary/build.gradle"
-              Get-Content $file | Where-Object { $_ -notmatch'ndkPath ".*/AndroidPlayer/NDK"' } | Set-Content $file 
+              $fileContent = Get-Content -Path $file
+              $filteredContent = $fileContent | Where-Object { $_ -notmatch 'ndkPath.*AndroidPlayer/NDK"' }
+              $filteredContent | Set-Content -Path $file
             }
           }
           ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
