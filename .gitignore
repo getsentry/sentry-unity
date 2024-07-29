@@ -1,5 +1,6 @@
 .vs/
 .vsconfig
+.vscode
 *.user
 .idea/
 .DS_Store
