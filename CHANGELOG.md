@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK now correctly uses forward slashes when modifying the gradle project when setting up debug symbol and mapping upload ([#1747](https://github.com/getsentry/sentry-unity/pull/1747))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.6 to v0.7.7 ([#1744](https://github.com/getsentry/sentry-unity/pull/1744))
