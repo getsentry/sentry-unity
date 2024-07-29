@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK no longer throws `System.DllNotFoundException` during initialization when running a headless Linux server build ([#1748](https://github.com/getsentry/sentry-unity/pull/1748))
 - The SDK now correctly uses forward slashes when modifying the gradle project when setting up debug symbol and mapping upload ([#1747](https://github.com/getsentry/sentry-unity/pull/1747))
 
 ### Dependencies
