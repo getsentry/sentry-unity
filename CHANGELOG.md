@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- System.DllNotFoundException during Sentry initialization in Unity Headless Linux Server build ([#1748](https://github.com/getsentry/sentry-unity/pull/1748))
+
 ## 2.1.2
 
 ### Various fixes & improvements
