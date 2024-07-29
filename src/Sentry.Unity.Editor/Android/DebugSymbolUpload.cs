@@ -305,6 +305,7 @@ internal class DebugSymbolUpload
         }
 
         var mappingPath = mappingPathFormat.Replace("{0}", buildType);
-        return mappingPath;
+        // Make sure the slashes are uniform (and forward)
+        return ConvertSlashes(mappingPath);
     }
 }
