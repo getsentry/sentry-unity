@@ -145,7 +145,7 @@ jobs:
           ./scripts/pack.ps1
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         with:
           name: ${{ github.sha }}
@@ -162,7 +162,7 @@ jobs:
 
       - name: Upload test artifacts (playmode)
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Test results (playmode)
           path: artifacts/test/playmode
@@ -172,7 +172,7 @@ jobs:
 
       - name: Upload test artifacts (editmode)
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Test results (editmode)
           path: artifacts/test/editmode
@@ -244,7 +244,7 @@ jobs:
         run: tar -cvzf test-project.tar.gz samples/IntegrationTest
 
       - name: Upload project
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: smoke-test-${{ matrix.unity-version }}
           if-no-files-found: error
@@ -353,7 +353,7 @@ jobs:
           tar -cvzf test-app.tar.gz samples/IntegrationTest/Build
 
       - name: Upload test app
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
           if-no-files-found: error
@@ -363,7 +363,7 @@ jobs:
 
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}
           path: |
@@ -534,7 +534,7 @@ jobs:
           ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
 
       - name: Upload app
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: testapp-${{ matrix.platform }}-compiled-${{ matrix.unity-version }}
           # Collect app but ignore the files that are not required for the test.
