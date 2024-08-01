@@ -187,15 +187,19 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)." />
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" EnvironmentVariables="JAVA_HOME=$(JAVA_HOME_17_X64)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" />
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" EnvironmentVariables="JAVA_HOME=$(JAVA_HOME_17_X64)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease  :sentry-android-replay:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" />
 
     <ItemGroup>
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" />
+      <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-replay/build/outputs/aar/sentry-android-replay-release.aar" />
     </ItemGroup>
-
     <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp sentry/build/libs/sentry*.jar $(SentryAndroidArtifactsDestination)sentry.jar" />
+
+    <ItemGroup>
+      <SentryJarArtifact Include="$(SentryAndroidRoot)/sentry/build/libs/sentry*.jar" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SentryJarArtifact)" DestinationFiles="@(SentryJarArtifact->'$(SentryAndroidArtifactsDestination)sentry.jar')" />
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
   </Target>
