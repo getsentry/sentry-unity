@@ -85,7 +85,7 @@ jobs:
 
       - name: Upload artifacts on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: testapp-android-logs-${{ inputs.api-level }}-${{ inputs.unity-version }}-${{ inputs.try }}
           path: ${{ env.ARTIFACTS_PATH }}
