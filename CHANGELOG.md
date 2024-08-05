@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fix `SentryMonoBehavior` instance being removed on scene switch in WebGL ([#1754](https://github.com/getsentry/sentry-unity/pull/1754))
+
 ### Dependencies
 
 - Bump Java SDK from v7.12.0 to v7.13.0 ([#1751](https://github.com/getsentry/sentry-unity/pull/1751))
