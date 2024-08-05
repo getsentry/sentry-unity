@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix `SentryMonoBehavior` instance being removed on scene switch in WebGL ([#1754](https://github.com/getsentry/sentry-unity/pull/1754))
+
 ## 2.1.3
 
 ### Fixes
