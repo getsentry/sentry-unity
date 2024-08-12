@@ -120,7 +120,15 @@ public partial class SentryMonoBehaviour
 
     // Note: Awake is called only once and synchronously while the object is built.
     // We want to do it this way instead of a StartCoroutine() so that we have the context info ASAP.
-    private void Awake() => CollectData();
+    private void Awake()
+    {
+        // This prevents object from being destroyed when unloading the scene since using HideFlags.HideAndDontSave
+        // doesn't guarantee its persistence on all platforms i.e. WebGL
+        // (see https://github.com/getsentry/sentry-unity/issues/1678 for more details)
+        DontDestroyOnLoad(gameObject);
+        
+        CollectData();
+    }
 
     internal void CollectData()
     {
