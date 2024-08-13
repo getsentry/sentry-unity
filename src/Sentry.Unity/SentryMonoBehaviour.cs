@@ -126,7 +126,7 @@ public partial class SentryMonoBehaviour
         // doesn't guarantee its persistence on all platforms i.e. WebGL
         // (see https://github.com/getsentry/sentry-unity/issues/1678 for more details)
         DontDestroyOnLoad(gameObject);
-        
+
         CollectData();
     }
 
