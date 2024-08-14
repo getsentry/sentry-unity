@@ -27,7 +27,7 @@ MonoBehaviour:
   <AutoSessionTrackingInterval>k__BackingField: 30000
   <ReleaseOverride>k__BackingField: 
   <EnvironmentOverride>k__BackingField: 
-  <AttachStacktrace>k__BackingField: 0
+  <AttachStacktrace>k__BackingField: 1
   <AttachScreenshot>k__BackingField: 1
   <ScreenshotQuality>k__BackingField: 2
   <ScreenshotCompression>k__BackingField: 75
@@ -42,8 +42,8 @@ MonoBehaviour:
   <BreadcrumbsForExceptions>k__BackingField: 1
   <MaxBreadcrumbs>k__BackingField: 100
   <ReportAssembliesMode>k__BackingField: 1
-  <SendDefaultPii>k__BackingField: 0
-  <IsEnvironmentUser>k__BackingField: 0
+  <SendDefaultPii>k__BackingField: 1
+  <IsEnvironmentUser>k__BackingField: 1
   <EnableOfflineCaching>k__BackingField: 1
   <MaxCacheItems>k__BackingField: 30
   <InitCacheFlushTimeout>k__BackingField: 2000
@@ -52,6 +52,8 @@ MonoBehaviour:
   <MaxQueueItems>k__BackingField: 30
   <AnrDetectionEnabled>k__BackingField: 1
   <AnrTimeout>k__BackingField: 5000
+  <CaptureFailedRequests>k__BackingField: 1
+  <FailedRequestStatusCodes>k__BackingField: f401000057020000
   <FilterBadGatewayExceptions>k__BackingField: 1
   <FilterWebExceptions>k__BackingField: 1
   <FilterSocketExceptions>k__BackingField: 1

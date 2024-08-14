@@ -9,6 +9,9 @@ public class BugFarmButtons : MonoBehaviour
     private void Awake()
     {
         Debug.Log("Sample 🐛");
+
+        Debug.LogError("AwakeError");
+        Debug.LogException(new Exception("AwakeException"));
     }
 
     private void Start()
