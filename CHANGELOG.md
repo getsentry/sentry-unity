@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fix `SentryMonoBehavior` instance being removed on scene switch in WebGL ([#1754](https://github.com/getsentry/sentry-unity/pull/1754))
+
+### Dependencies
+
+- Bump Java SDK from v7.12.0 to v7.14.0 ([#1751](https://github.com/getsentry/sentry-unity/pull/1751), [#1762](https://github.com/getsentry/sentry-unity/pull/1762))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7140)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.12.0...7.14.0)
+- Bump Cocoa SDK from v8.32.0 to v8.33.0 ([#1760](https://github.com/getsentry/sentry-unity/pull/1760))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8330)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.32.0...8.33.0)
+- Bump Native SDK from v0.7.7 to v0.7.8 ([#1756](https://github.com/getsentry/sentry-unity/pull/1756))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#078)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.7...0.7.8)
+- Bump CLI from v2.33.0 to v2.33.1 ([#1753](https://github.com/getsentry/sentry-unity/pull/1753))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2331)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.33.0...2.33.1)
+- Bump .NET SDK from v4.9.0 to v4.10.0 ([#1765](https://github.com/getsentry/sentry-unity/pull/1765))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#4100)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.9.0...4.10.0)
+
 ## 2.1.3
 
 ### Fixes
