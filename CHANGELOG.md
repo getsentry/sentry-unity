@@ -11,9 +11,9 @@
 - Bump Java SDK from v7.12.0 to v7.14.0 ([#1751](https://github.com/getsentry/sentry-unity/pull/1751), [#1771](https://github.com/getsentry/sentry-unity/pull/1771))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7140)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.12.0...7.14.0)
-- Bump Cocoa SDK from v8.32.0 to v8.33.0 ([#1760](https://github.com/getsentry/sentry-unity/pull/1760))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8330)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.32.0...8.33.0)
+- Bump Cocoa SDK from v8.32.0 to v8.34.0 ([#1760](https://github.com/getsentry/sentry-unity/pull/1760), [#1766](https://github.com/getsentry/sentry-unity/pull/1766))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8340)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.32.0...8.34.0)
 - Bump Native SDK from v0.7.7 to v0.7.8 ([#1756](https://github.com/getsentry/sentry-unity/pull/1756))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#078)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.7...0.7.8)
@@ -23,6 +23,9 @@
 - Bump .NET SDK from v4.9.0 to v4.10.2 ([#1765](https://github.com/getsentry/sentry-unity/pull/1765), [#1765](https://github.com/getsentry/sentry-unity/pull/1765))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#4100)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.9.0...4.10.2)
+- Bump .NET SDK from v4.9.0 to v4.10.1 ([#1765](https://github.com/getsentry/sentry-unity/pull/1765), [#1768](https://github.com/getsentry/sentry-unity/pull/1768))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#4101)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.9.0...4.10.1)
 
 ## 2.1.3
 
