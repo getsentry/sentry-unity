@@ -4,7 +4,8 @@
 
 ### Fixes
 
-- Fix `SentryMonoBehavior` instance being removed on scene switch in WebGL ([#1754](https://github.com/getsentry/sentry-unity/pull/1754))
+- The SDK no longer deadlocks during the game shutting down when targeting WebGL ([#1771](https://github.com/getsentry/sentry-unity/pull/1771))
+- The SDK no longer fails to report errors after switching scenes when targeting WebGL ([#1754](https://github.com/getsentry/sentry-unity/pull/1754))
 
 ### Dependencies
 
