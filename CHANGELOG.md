@@ -4,12 +4,15 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.34.0 to v8.35.1 ([#1770](https://github.com/getsentry/sentry-unity/pull/1770), [#1776](https://github.com/getsentry/sentry-unity/pull/1776))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8351)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.34.0...8.35.1)
 - Bump CLI from v2.33.1 to v2.34.1 ([#1781](https://github.com/getsentry/sentry-unity/pull/1781))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2341)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.33.1...2.34.1)
+- Bump Cocoa SDK from v8.34.0 to v8.36.0 ([#1770](https://github.com/getsentry/sentry-unity/pull/1770), [#1776](https://github.com/getsentry/sentry-unity/pull/1776), [#1778](https://github.com/getsentry/sentry-unity/pull/1778))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8360)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.34.0...8.36.0)
+- Bump Native SDK from v0.7.8 to v0.7.9 ([#1780](https://github.com/getsentry/sentry-unity/pull/1780))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#079)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.8...0.7.9)
 
 ## 2.1.4
 
