@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+# Fixes
+
+- The update of the Cocoa dependency resolves various crashes on Apple platforms
+
 ### Dependencies
 
 - Bump CLI from v2.33.1 to v2.34.1 ([#1781](https://github.com/getsentry/sentry-unity/pull/1781))
