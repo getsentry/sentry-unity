@@ -381,14 +381,15 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2020", "2021", "2022"]
-        os: ["windows", "macos"]
+        # os: ["windows", "macos"]
+        os: ["windows"]
         include:
           - os: windows
             unity-modules: windows-il2cpp
             unity-config-path: C:/ProgramData/Unity/config/
-          - os: macos
-            unity-modules: mac-il2cpp
-            unity-config-path: /Library/Application Support/Unity/config/
+          # - os: macos
+          #   unity-modules: mac-il2cpp
+          #   unity-config-path: /Library/Application Support/Unity/config/
     steps:
       - name: Checkout
         uses: actions/checkout@v3
