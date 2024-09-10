@@ -37,7 +37,7 @@ internal class DebugSymbolUpload
     private const string UploadArgsMarker = "UPLOAD_ARGS";
     private const string MappingPathMarker = "MAPPING_PATH";
 
-    private string _symbolUploadTaskFormat
+    private string SymbolUploadTaskFormat
     {
         get
         {
@@ -137,6 +137,8 @@ internal class DebugSymbolUpload
 
         if (_isExporting)
         {
+            _logger.LogInfo("Project is exporting. Setting upload-dif to 'project.rootDir'");
+
             uploadDifArguments += ", project.rootDir";
             sentryCliPath = $"./{Path.GetFileName(sentryCliPath)}";
         }
@@ -144,8 +146,10 @@ internal class DebugSymbolUpload
         {
             foreach (var symbolUploadPath in _symbolUploadPaths)
             {
+                _logger.LogInfo("Setting upload-dif paths");
                 if (Directory.Exists(symbolUploadPath))
                 {
+                    _logger.LogDebug("Adding '{0}'", symbolUploadPath);
                     uploadDifArguments += $", '{ConvertSlashes(symbolUploadPath)}'";
                 }
                 else
@@ -155,7 +159,7 @@ internal class DebugSymbolUpload
             }
         }
 
-        var symbolUploadText = _symbolUploadTaskFormat;
+        var symbolUploadText = SymbolUploadTaskFormat;
         symbolUploadText = symbolUploadText.Trim();
         symbolUploadText = symbolUploadText.Replace(SentryCliMarker, sentryCliPath);
         symbolUploadText = symbolUploadText.Replace(UploadArgsMarker, uploadDifArguments);
@@ -179,7 +183,7 @@ internal class DebugSymbolUpload
 
     public void RemoveUploadFromGradleFile()
     {
-        _logger.LogDebug("Removing the upload task from the gradle project.");
+        _logger.LogDebug("Attempting to remove the previous upload task from the gradle project.");
         var gradleBuildFile = LoadGradleScript();
         if (!gradleBuildFile.Contains("sentry.properties"))
         {
@@ -225,7 +229,12 @@ internal class DebugSymbolUpload
     internal List<string> GetSymbolUploadPaths(IApplication? application = null)
     {
         var paths = new List<string>();
-        if (IsNewBuildingBackend(application))
+        if (IsNewerThanUnity6(application))
+        {
+            _logger.LogInfo("Unity version 6.0 or newer detected. Root for symbols upload: 'Library'.");
+            paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew));
+        }
+        else if (IsNewerThanUnity2021_2(application))
         {
             _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
             paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew));
@@ -241,8 +250,11 @@ internal class DebugSymbolUpload
         return paths;
     }
 
-    // Starting from 2021.2 Unity caches the build output inside 'Library' instead of 'Temp'
-    internal static bool IsNewBuildingBackend(IApplication? application = null) => SentryUnityVersion.IsNewerOrEqualThan("2021.2", application);
+    // Starting with Unity 2021.2 the build-process caches the build output inside 'Library' instead of 'Temp'
+    internal static bool IsNewerThanUnity2021_2(IApplication? application = null) => SentryUnityVersion.IsNewerOrEqualThan("2021.2", application);
+
+    // Starting Unity 6 the build process no longer caches symbols in 'Library/Bee/Android'
+    internal static bool IsNewerThanUnity6(IApplication? application = null) => SentryUnityVersion.IsNewerOrEqualThan("6000.0", application);
 
     // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
     internal static string ConvertSlashes(string path) => path.Replace(@"\", "/");
@@ -286,7 +298,7 @@ internal class DebugSymbolUpload
 
     private string GetMappingFilePath(IApplication? application)
     {
-        var gradleRelativePath = IsNewBuildingBackend(application)
+        var gradleRelativePath = IsNewerThanUnity2021_2(application)
             ? "Library/Bee/Android/Prj/IL2CPP/Gradle"
             : "Temp/gradleOut";
 

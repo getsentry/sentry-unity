@@ -11,27 +11,41 @@ public class Builder
 {
     public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group)
     {
+        Debug.Log("Builder: Starting to build");
+
         var args = ParseCommandLineArguments();
         ValidateArguments(args);
 
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
+        EditorUserBuildSettings.allowDebugging = false;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
+
         DisableUnityAudio();
         DisableProgressiveLightMapper();
-        EditorUserBuildSettings.allowDebugging = false;
 
         // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
+        Debug.Log("Builder: Setting IL2CPP generation to OptimizeSize");
 #if UNITY_2022_1_OR_NEWER
         PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
 #elif UNITY_2021_2_OR_NEWER
         EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
 #endif
 
-        // Disable optimizations to reduce the build time.
+        Debug.Log("Builder: Creating BuildPlayerOptions");
+        var buildPlayerOptions = new BuildPlayerOptions
+        {
+            locationPathName = args["buildPath"],
+            target = target,
+            targetGroup = group,
+            options = BuildOptions.StrictMode
+        };
+
+        Debug.Log("Builder: Disabling optimizations to reduce build time");
 #if UNITY_2021_2_OR_NEWER
         // TODO Linux fails with `free(): invalid pointer` in the smoke-test, after everthing seems to have shut down.
-        if (target != BuildTarget.StandaloneLinux64) {
+        if (target != BuildTarget.StandaloneLinux64)
+        {
             PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
         }
 #else
@@ -41,69 +55,102 @@ public class Builder
             PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
         }
 #endif
+
         if (target == BuildTarget.Android)
         {
-            Directory.CreateDirectory("Build");
+            Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
 #else
             EditorUserBuildSettings.androidDebugMinification =
                 EditorUserBuildSettings.androidReleaseMinification = AndroidMinification.Proguard;
 #endif
+
+#if UNITY_6000_0_OR_NEWER
+            Debug.Log("Builder: Setting target architectures");
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
+
+            Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
+            buildPlayerOptions.options = BuildOptions.AcceptExternalModificationsToPlayer;
+
+            Debug.Log($"Builder: Double-checking for export options: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
+#endif
         }
 
-        var buildPlayerOptions = new BuildPlayerOptions
-        {
-            locationPathName = args["buildPath"],
-            target = target,
-            targetGroup = group,
-            options = BuildOptions.StrictMode,
-        };
-
+        Debug.Log("Builder: Checking for SmokeTest scene");
         if (File.Exists("Assets/Scenes/SmokeTest.unity"))
         {
+            Debug.Log("Builder: Adding SmokeTest.unity to scenes");
             buildPlayerOptions.scenes = new[] { "Assets/Scenes/SmokeTest.unity" };
         }
 
+        Debug.Log("Builder: Starting build");
         var report = BuildPipeline.BuildPlayer(buildPlayerOptions);
         var summary = report.summary;
 
-        Debug.Log("Build result at outputPath: " + summary.outputPath);
+        Debug.Log("Builder: Build result at outputPath: " + summary.outputPath);
 
         switch (summary.result)
         {
             case BuildResult.Succeeded:
-                Debug.Log($"Build succeeded: {summary.totalSize} bytes");
+                Debug.Log($"Builder: Build succeeded: {summary.totalSize} bytes");
                 break;
             default:
-                Debug.Log($"Build result: {summary.result} with {summary.totalErrors}" + $" error{(summary.totalErrors > 1 ? "s" : "")}.");
+                Debug.Log($"Builder: Build result: {summary.result} with {summary.totalErrors}" + $" error{(summary.totalErrors > 1 ? "s" : "")}.");
                 throw new Exception("Build failed, see details above.");
         }
 
         if (summary.totalWarnings > 0)
         {
-            Debug.Log($"Build succeeded with {summary.totalWarnings} warning{(summary.totalWarnings > 1 ? "s" : "")}.");
+            Debug.Log($"Builder: Build succeeded with {summary.totalWarnings} warning{(summary.totalWarnings > 1 ? "s" : "")}.");
         }
     }
 
-    public static void BuildWindowsIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone);
-    public static void BuildMacIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
-    public static void BuildLinuxIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
-    public static void BuildAndroidIl2CPPPlayer() => BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
+    public static void BuildWindowsIl2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Windows IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone);
+    }
+    public static void BuildMacIl2CPPPlayer()
+    {
+        Debug.Log("Builder: Building macOS IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
+    }
+    public static void BuildLinuxIl2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Linux IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
+    }
+    public static void BuildAndroidIl2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Android IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
+    }
     public static void BuildAndroidIl2CPPProject()
     {
+        Debug.Log("Builder: Building Android IL2CPP Project");
+
+        Debug.Log($"Builder: Checking it again: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
+        Debug.Log("Builder: Setting export settings 'exportAsGoogleAndroidProject' to 'true'");
+                
         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
         BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
     }
-    public static void BuildIOSProject() => BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
+    public static void BuildIOSProject()
+    {
+        Debug.Log("Builder: Building iOS Project");
+        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
+    }
     public static void BuildWebGLPlayer()
     {
+        Debug.Log("Builder: Building WebGL Player");
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
         BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL);
     }
 
     public static Dictionary<string, string> ParseCommandLineArguments()
     {
+        Debug.Log("Builder: Parsing command line arguments");
         var commandLineArguments = new Dictionary<string, string>();
         var args = Environment.GetCommandLineArgs();
 
@@ -126,6 +173,7 @@ public class Builder
 
     private static void ValidateArguments(Dictionary<string, string> args)
     {
+        Debug.Log("Builder: Validating command line arguments");
         if (!args.ContainsKey("buildPath") || string.IsNullOrWhiteSpace(args["buildPath"]))
         {
             throw new Exception("No valid '-buildPath' has been provided.");

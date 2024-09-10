@@ -50,7 +50,9 @@ public class AndroidManifestConfiguration
         : this(
             SentryScriptableObject.ConfiguredBuildTimeOptions,
             isDevelopmentBuild: EditorUserBuildSettings.development,
+#pragma warning disable CS0618
             scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
+#pragma warning restore CS0618
     { }
 
     // Testing
@@ -246,7 +248,10 @@ public class AndroidManifestConfiguration
     internal void SetupSymbolsUpload(string unityProjectPath, string gradleProjectPath)
     {
         var disableSymbolsUpload = false;
-        var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, EditorUserBuildSettings.exportAsGoogleAndroidProject, AndroidUtils.ShouldUploadMapping());
+        var isExporting = EditorUserBuildSettings.exportAsGoogleAndroidProject;
+        _logger.LogInfo("The project is exporting: '{0}'", isExporting);
+
+        var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, isExporting, AndroidUtils.ShouldUploadMapping());
 
         if (_options is not { Enabled: true, AndroidNativeSupportEnabled: true })
         {
@@ -278,17 +283,18 @@ public class AndroidManifestConfiguration
         try
         {
             _logger.LogInfo("Adding automated debug symbols upload to the gradle project.");
+
             // TODO this currently copies the CLI for the current platform, thus making the exported project only
             // build properly on the same platform as it was exported from (Linux->Linux, Windows->Windows, etc.).
             // In practice, users should be able to build the project on any platform, regardless of where Unity
             // ran. In that case, we would either need to include all CLI binaries and switch in Gradle, or let
             // gradle download CLI on demand (relevant code could be taken from sentry-java repo?).
             var launcherDirectory = Path.Combine(gradleProjectPath, "launcher");
-            var sentryCliPath = SentryCli.SetupSentryCli(
-                EditorUserBuildSettings.exportAsGoogleAndroidProject ? launcherDirectory : null);
-            SentryCli.CreateSentryProperties(launcherDirectory, _sentryCliOptions!, _options!);
-            symbolsUpload.TryCopySymbolsToGradleProject();
+            var sentryCliPath = SentryCli.SetupSentryCli(isExporting ? launcherDirectory : null);
 
+            SentryCli.CreateSentryProperties(launcherDirectory, _sentryCliOptions!, _options!);
+
+            symbolsUpload.TryCopySymbolsToGradleProject();
             symbolsUpload.AppendUploadToGradleFile(sentryCliPath);
         }
         catch (Exception e)

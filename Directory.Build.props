@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <!-- Starting with 2022 the UnityEngine targets netstandard2.1 -->
-  <PropertyGroup Condition="$(UnityVersion.StartsWith('2022'))">
+  <PropertyGroup Condition="$(UnityVersion.StartsWith('2022')) Or $(UnityVersion.StartsWith('6000'))">
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 

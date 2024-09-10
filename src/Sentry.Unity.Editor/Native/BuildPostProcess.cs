@@ -25,7 +25,9 @@ public static class BuildPostProcess
 
         var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
+#pragma warning disable CS0618
         var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
+#pragma warning restore CS0618
 
         try
         {

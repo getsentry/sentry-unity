@@ -14,7 +14,9 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
+#pragma warning disable CS0618
         if (PlayerSettings.GetScriptingBackend(report.summary.platformGroup) != ScriptingImplementation.IL2CPP)
+#pragma warning restore CS0618
         {
             return;
         }
