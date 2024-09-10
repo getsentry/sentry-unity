@@ -42,13 +42,28 @@ function GetTestAppName
     }
 }
 
-$NewProjectName = "IntegrationTest"
+function GetNewProjectName
+{
+    return "IntegrationTest$Global:UnityVersionInUse"
+}
 
-#New Integration Project paths
+function GetNewProjectPath
+{
+    return "$(ProjectRoot)/samples/$(GetNewProjectName)"
+}
+
+function GetNewProjectBuildPath
+{
+    return "$(GetNewProjectPath)/Build"
+}
+
+function GetNewProjectAssetsPath
+{
+    return "$(GetNewProjectPath)/Assets"
+}
+
 $Global:NewProjectPathCache = $null
-$NewProjectPath = "$(ProjectRoot)/samples/$NewProjectName"
-$NewProjectBuildPath = "$NewProjectPath/Build"
-$NewProjectAssetsPath = "$NewProjectPath/Assets"
+$Global:UnityVersionInUse = $null
 
 $UnityOfBugsPath = "$(ProjectRoot)/samples/unity-of-bugs"
 

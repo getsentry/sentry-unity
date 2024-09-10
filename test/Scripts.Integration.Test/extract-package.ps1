@@ -1,4 +1,7 @@
-. ./test/Scripts.Integration.Test/globals.ps1
+if (-not $Global:NewProjectPathCache)
+{
+    . ./test/Scripts.Integration.Test/globals.ps1
+}
 
 # Check if SDK is packed.
 $packageFile = "package-release.zip"

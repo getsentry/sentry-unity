@@ -12,7 +12,12 @@ param(
     [switch] $Rebuild
 )
 
-. ./test/Scripts.Integration.Test/globals.ps1
+if (-not $Global:NewProjectPathCache)
+{
+    . ./test/Scripts.Integration.Test/globals.ps1
+}
+
+$Global:UnityVersionInUse = $UnityVersion
 
 $UnityPath = $null
 
@@ -45,9 +50,9 @@ If ($Clean)
     {
         Remove-Item -Path $PackageReleaseOutput -Recurse -Force -Confirm:$false
     }
-    If (Test-Path -Path $NewProjectPath)
+    If (Test-Path -Path $(GetNewProjectPath))
     {
-        Remove-Item -Path $NewProjectPath -Recurse -Force -Confirm:$false
+        Remove-Item -Path $(GetNewProjectPath) -Recurse -Force -Confirm:$false
     }
 }
 
@@ -61,14 +66,14 @@ If (-not(Test-Path -Path $PackageReleaseOutput) -Or $Repack)
 }
 
 # Support recreating the integration test project without cleaning the SDK build (and repackaging).
-if ($Recreate -and (Test-Path -Path $NewProjectPath))
+if ($Recreate -and (Test-Path -Path $(GetNewProjectPath)))
 {
-    Remove-Item -Path $NewProjectPath -Recurse -Force -Confirm:$false
+    Remove-Item -Path $(GetNewProjectPath) -Recurse -Force -Confirm:$false
 }
 
-If (-not(Test-Path -Path "$NewProjectPath"))
+If (-not(Test-Path -Path "$(GetNewProjectPath)"))
 {
-    Write-Host "Creating Project"
+    Write-Host "Creating Project at '$(GetNewProjectPath)'"
     ./test/Scripts.Integration.Test/create-project.ps1 "$UnityPath"
     Write-Host "Adding Sentry"
     ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath"
@@ -76,14 +81,16 @@ If (-not(Test-Path -Path "$NewProjectPath"))
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols
 }
 
-$buildDir = "Samples/IntegrationTest/Build"
-
-If ($Rebuild -or -not(Test-Path -Path $buildDir))
+If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
 {
     Write-Host "Building Project"
 
     If (("iOS", "Android-Export") -contains $Platform)
     {
+        # Workaround for having `exportAsGoogleAndroidProject` remain `false` in Unity 6 on first build
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
+        Remove-Item -Path $(GetNewProjectBuildPath) -Recurse -Force -Confirm:$false
+
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
         & "./scripts/smoke-test-$($Platform -eq 'iOS' ? 'ios' : 'android').ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
     }

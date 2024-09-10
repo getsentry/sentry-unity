@@ -6,6 +6,11 @@ param (
     [string] $UnityVersion = ""
 )
 
+if (-not $Global:NewProjectPathCache)
+{
+    . ./test/Scripts.Integration.Test/globals.ps1
+}
+
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
 # GITHUB_WORKSPACE is the root folder where the project is stored.
@@ -17,7 +22,7 @@ Write-Host "#################################################"
 
 if ($IsIntegrationTest)
 {
-    $BuildDir = "samples/IntegrationTest/Build"
+    $BuildDir = $(GetNewProjectBuildPath)
     $ApkFileName = "test.apk"
     $ProcessName = "com.DefaultCompany.IntegrationTest"
 

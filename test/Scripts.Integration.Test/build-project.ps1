@@ -5,15 +5,19 @@
     [Switch] $CheckSymbols
 )
 
-. ./test/Scripts.Integration.Test/globals.ps1
+if (-not $Global:NewProjectPathCache)
+{
+    . ./test/Scripts.Integration.Test/globals.ps1
+}
+
 . ./test/Scripts.Integration.Test/common.ps1
 
 $unityPath = FormatUnityPath $UnityPath
 $buildMethod = BuildMethodFor $Platform
-$outputPath = "$NewProjectBuildPath/$(GetTestAppName $buildMethod)"
+$outputPath = "$(GetNewProjectBuildPath)/$(GetTestAppName $buildMethod)"
 
 Write-Host "Executing ${buildMethod}:"
-$unityArgs = @("-batchmode", "-projectPath ", "$NewProjectPath", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
+$unityArgs = @("-batchmode", "-projectPath ", "$(GetNewProjectPath)", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
 
 if ($CheckSymbols)
 {
@@ -33,4 +37,4 @@ if ($Platform -eq "Android-Export")
 }
 
 Write-Host "Project built successfully" -ForegroundColor Green
-Get-ChildItem $NewProjectBuildPath
+Get-ChildItem $(GetNewProjectBuildPath)
