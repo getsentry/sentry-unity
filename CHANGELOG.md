@@ -4,9 +4,9 @@
 
 ### Dependencies
 
-- Bump CLI from v2.34.1 to v2.35.0 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2350)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.35.0)
+- Bump CLI from v2.34.1 to v2.36.0 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2360)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.0)
 
 ## 2.1.5
 
