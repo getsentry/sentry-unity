@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -51,7 +52,7 @@ internal abstract class AnrWatchDog
     protected readonly int SleepIntervalMs;
     protected readonly IDiagnosticLogger? Logger;
     protected readonly SentryMonoBehaviour MonoBehaviour;
-    internal event EventHandler<ApplicationNotResponding> OnApplicationNotResponding = delegate { };
+    internal event EventHandler<ApplicationNotRespondingException> OnApplicationNotResponding = delegate { };
     protected bool Paused { get; private set; } = false;
 
     internal AnrWatchDog(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, TimeSpan detectionTimeout)
@@ -77,7 +78,7 @@ internal abstract class AnrWatchDog
         {
             var message = $"Application not responding for at least {DetectionTimeoutMs} ms.";
             Logger?.LogInfo("Detected an ANR event: {0}", message);
-            OnApplicationNotResponding?.Invoke(this, new ApplicationNotResponding(message));
+            OnApplicationNotResponding?.Invoke(this, new ApplicationNotRespondingException(message));
         }
     }
 }
@@ -191,11 +192,4 @@ internal class AnrWatchDogSingleThreaded : AnrWatchDog
             yield return waitForSeconds;
         }
     }
-}
-
-internal class ApplicationNotResponding : Exception
-{
-    internal ApplicationNotResponding() : base() { }
-    internal ApplicationNotResponding(string message) : base(message) { }
-    internal ApplicationNotResponding(string message, Exception innerException) : base(message, innerException) { }
 }
