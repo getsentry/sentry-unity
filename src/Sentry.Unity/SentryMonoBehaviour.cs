@@ -98,90 +98,12 @@ public partial class SentryMonoBehaviour
 
     // The GameObject has to destroy itself since it was created with HideFlags.HideAndDontSave
     private void OnApplicationQuit() => Destroy(gameObject);
-}
 
-/// <summary>
-/// Main thread data collector.
-/// </summary>
-public partial class SentryMonoBehaviour
-{
-    internal readonly MainThreadData MainThreadData = new();
-
-    private ISentrySystemInfo? _sentrySystemInfo;
-    internal ISentrySystemInfo SentrySystemInfo
-    {
-        get
-        {
-            _sentrySystemInfo ??= SentrySystemInfoAdapter.Instance;
-            return _sentrySystemInfo;
-        }
-        set => _sentrySystemInfo = value;
-    }
-
-    // Note: Awake is called only once and synchronously while the object is built.
-    // We want to do it this way instead of a StartCoroutine() so that we have the context info ASAP.
     private void Awake()
     {
         // This prevents object from being destroyed when unloading the scene since using HideFlags.HideAndDontSave
         // doesn't guarantee its persistence on all platforms i.e. WebGL
         // (see https://github.com/getsentry/sentry-unity/issues/1678 for more details)
         DontDestroyOnLoad(gameObject);
-
-        CollectData();
-    }
-
-    internal void CollectData()
-    {
-        // Note: Awake() runs on the main thread. The following code just reads a couple of variables so there's no
-        // delay on the UI and we're safe to do it on the main thread.
-        MainThreadData.MainThreadId = SentrySystemInfo.MainThreadId;
-        MainThreadData.ProcessorCount = SentrySystemInfo.ProcessorCount;
-        MainThreadData.OperatingSystem = SentrySystemInfo.OperatingSystem;
-        MainThreadData.CpuDescription = SentrySystemInfo.CpuDescription;
-        MainThreadData.SupportsVibration = SentrySystemInfo.SupportsVibration;
-        MainThreadData.DeviceName = SentrySystemInfo.DeviceName;
-        MainThreadData.SystemMemorySize = SentrySystemInfo.SystemMemorySize;
-        MainThreadData.GraphicsDeviceId = SentrySystemInfo.GraphicsDeviceId;
-        MainThreadData.GraphicsDeviceName = SentrySystemInfo.GraphicsDeviceName;
-        MainThreadData.GraphicsDeviceVendor = SentrySystemInfo.GraphicsDeviceVendor;
-        MainThreadData.GraphicsMemorySize = SentrySystemInfo.GraphicsMemorySize;
-        MainThreadData.NpotSupport = SentrySystemInfo.NpotSupport;
-        MainThreadData.GraphicsDeviceVersion = SentrySystemInfo.GraphicsDeviceVersion;
-        MainThreadData.GraphicsDeviceType = SentrySystemInfo.GraphicsDeviceType;
-        MainThreadData.MaxTextureSize = SentrySystemInfo.MaxTextureSize;
-        MainThreadData.SupportsDrawCallInstancing = SentrySystemInfo.SupportsDrawCallInstancing;
-        MainThreadData.SupportsRayTracing = SentrySystemInfo.SupportsRayTracing;
-        MainThreadData.SupportsComputeShaders = SentrySystemInfo.SupportsComputeShaders;
-        MainThreadData.SupportsGeometryShaders = SentrySystemInfo.SupportsGeometryShaders;
-        MainThreadData.GraphicsShaderLevel = SentrySystemInfo.GraphicsShaderLevel;
-        MainThreadData.EditorVersion = SentrySystemInfo.EditorVersion;
-        MainThreadData.InstallMode = SentrySystemInfo.InstallMode;
-        if (MainThreadData.IsMainThread())
-        {
-            MainThreadData.DeviceType = SentrySystemInfo.DeviceType?.Value;
-            MainThreadData.DeviceUniqueIdentifier = SentrySystemInfo.DeviceUniqueIdentifier?.Value;
-            MainThreadData.DeviceModel = SentrySystemInfo.DeviceModel?.Value;
-            MainThreadData.GraphicsDeviceVendorId = SentrySystemInfo.GraphicsDeviceVendorId?.Value;
-            MainThreadData.GraphicsMultiThreaded = SentrySystemInfo.GraphicsMultiThreaded?.Value;
-            MainThreadData.IsDebugBuild = SentrySystemInfo.IsDebugBuild?.Value;
-            MainThreadData.TargetFrameRate = SentrySystemInfo.TargetFrameRate?.Value;
-            MainThreadData.CopyTextureSupport = SentrySystemInfo.CopyTextureSupport?.Value;
-            MainThreadData.RenderingThreadingMode = SentrySystemInfo.RenderingThreadingMode?.Value;
-            MainThreadData.StartTime = SentrySystemInfo.StartTime?.Value;
-        }
-        else
-        {
-            // Note: while this shouldn't ever occur, we want to make sure there are some values instead of UB.
-            MainThreadData.DeviceType = null;
-            MainThreadData.DeviceUniqueIdentifier = null;
-            MainThreadData.DeviceModel = null;
-            MainThreadData.GraphicsDeviceVendorId = null;
-            MainThreadData.GraphicsMultiThreaded = null;
-            MainThreadData.IsDebugBuild = null;
-            MainThreadData.TargetFrameRate = null;
-            MainThreadData.CopyTextureSupport = null;
-            MainThreadData.RenderingThreadingMode = null;
-            MainThreadData.StartTime = null;
-        }
     }
 }

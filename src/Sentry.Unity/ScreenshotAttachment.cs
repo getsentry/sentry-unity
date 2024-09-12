@@ -12,12 +12,10 @@ internal class ScreenshotAttachment : SentryAttachment
 
 internal class ScreenshotAttachmentContent : IAttachmentContent
 {
-    private readonly SentryMonoBehaviour _behaviour;
     private readonly SentryUnityOptions _options;
 
-    public ScreenshotAttachmentContent(SentryUnityOptions options, SentryMonoBehaviour behaviour)
+    public ScreenshotAttachmentContent(SentryUnityOptions options)
     {
-        _behaviour = behaviour;
         _options = options;
     }
 
@@ -25,7 +23,7 @@ internal class ScreenshotAttachmentContent : IAttachmentContent
     {
         // Note: we need to check explicitly that we're on the same thread. While Unity would throw otherwise
         // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
-        if (!_behaviour.MainThreadData.IsMainThread())
+        if (!MainThreadData.IsMainThread())
         {
             _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
             return Stream.Null;

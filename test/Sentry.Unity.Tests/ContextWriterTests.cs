@@ -31,7 +31,7 @@ public sealed class ContextWriterTests
     public void Arguments()
     {
         // arrange
-        var sysInfo = _sentryMonoBehaviour.SentrySystemInfo = new TestSentrySystemInfo
+        var sysInfo = new TestSentrySystemInfo
         {
             OperatingSystem = "OperatingSystem",
             ProcessorCount = 1,
@@ -78,7 +78,7 @@ public sealed class ContextWriterTests
         };
 
         // act
-        _sentryMonoBehaviour.CollectData();
+        MainThreadData.CollectData(sysInfo);
         SentryUnity.Init(options);
         Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
