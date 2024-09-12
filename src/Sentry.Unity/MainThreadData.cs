@@ -69,7 +69,7 @@ internal static class MainThreadData
 
     public static DateTimeOffset? StartTime { get; set; }
 
-    public static bool IsMainThread()
+    internal static bool IsMainThread()
         => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
