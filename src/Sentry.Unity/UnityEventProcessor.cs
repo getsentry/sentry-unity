@@ -11,12 +11,10 @@ internal class UnityEventProcessor :
     ISentryTransactionProcessor
 {
     private readonly SentryUnityOptions _sentryOptions;
-    private readonly MainThreadData _mainThreadData;
 
-    public UnityEventProcessor(SentryUnityOptions sentryOptions, SentryMonoBehaviour sentryMonoBehaviour)
+    public UnityEventProcessor(SentryUnityOptions sentryOptions)
     {
         _sentryOptions = sentryOptions;
-        _mainThreadData = sentryMonoBehaviour.MainThreadData;
     }
 
     public SentryTransaction? Process(SentryTransaction transaction)
@@ -43,7 +41,7 @@ internal class UnityEventProcessor :
             // that it got added last or that there was not an integration added at a later point
             PopulateSdkIntegrations(sentryEvent.Sdk);
             // TODO revisit which tags we should be adding by default
-            sentryEvent.SetTag("unity.is_main_thread", _mainThreadData.IsMainThread().ToTagValue());
+            sentryEvent.SetTag("unity.is_main_thread", MainThreadData.IsMainThread().ToTagValue());
         }
         catch (Exception exception)
         {
@@ -53,7 +51,7 @@ internal class UnityEventProcessor :
 
     private void PopulateDevice(Device device)
     {
-        if (!_mainThreadData.IsMainThread())
+        if (!MainThreadData.IsMainThread())
         {
             return;
         }

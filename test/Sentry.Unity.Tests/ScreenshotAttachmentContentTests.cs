@@ -11,7 +11,7 @@ public class ScreenshotAttachmentTests
     {
         public SentryUnityOptions Options = new() { AttachScreenshot = true };
 
-        public ScreenshotAttachmentContent GetSut() => new(Options, SentryMonoBehaviour.Instance);
+        public ScreenshotAttachmentContent GetSut() => new(Options);
     }
 
     private Fixture _fixture = null!;

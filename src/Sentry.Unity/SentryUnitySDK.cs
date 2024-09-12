@@ -53,14 +53,14 @@ internal class SentryUnitySdk
         {
             SentrySdk.ConfigureScope(s =>
                 s.AddAttachment(new ScreenshotAttachment(
-                    new ScreenshotAttachmentContent(options, SentryMonoBehaviour.Instance))));
+                    new ScreenshotAttachmentContent(options))));
         }
 
         if (options.AttachViewHierarchy)
         {
             SentrySdk.ConfigureScope(s =>
                 s.AddAttachment(new ViewHierarchyAttachment(
-                    new UnityViewHierarchyAttachmentContent(options, SentryMonoBehaviour.Instance))));
+                    new UnityViewHierarchyAttachmentContent(options))));
         }
 
         if (options.NativeContextWriter is { } contextWriter)

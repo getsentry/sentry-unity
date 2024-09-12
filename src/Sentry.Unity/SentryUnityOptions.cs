@@ -244,7 +244,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
         this.AddInAppExclude("UnityEngine");
         this.AddInAppExclude("UnityEditor");
-        var processor = new UnityEventProcessor(this, behaviour);
+        var processor = new UnityEventProcessor(this);
         this.AddEventProcessor(processor);
         this.AddTransactionProcessor(processor);
 

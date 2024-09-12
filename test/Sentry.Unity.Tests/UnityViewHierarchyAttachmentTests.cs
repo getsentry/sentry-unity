@@ -12,7 +12,7 @@ public class UnityViewHierarchyAttachmentTests
     {
         public SentryUnityOptions Options = new() { AttachViewHierarchy = true };
 
-        public UnityViewHierarchyAttachmentContent GetSut() => new(Options, SentryMonoBehaviour.Instance);
+        public UnityViewHierarchyAttachmentContent GetSut() => new(Options);
     }
 
     private Fixture _fixture = null!;
