@@ -6,23 +6,53 @@
 
 # Basics
 
-## Machine Setup
+## Quick Start
 
 ### Install Unity
 
-We recommend using [Unity Hub](https://unity3d.com/get-unity/download). The specific version to download can be found [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1).
-
-You'll need the following modules to be added in order to use Sentry Unity:
- * Android Build Support.
- * iOS Build Support.
- * IL2CPP Build Support for your platform.
- * (optional) WebGL Build Support
+1. Install [Unity Hub](https://unity3d.com/get-unity/download).
+2. [Optional] Download the Unity version specified [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1).
+3. Required modules:
+   * Android Build Support
+   * iOS Build Support
+   * IL2CPP Build Support for your platform
+   * (optional) WebGL Build Support
+4. If you installed a different version than #3: Add that version as `UNITY_VERSION` to the path (i.e. `export UNITY_VERSION=2022.3.44f1`)
 
 ### Install PowerShell Global tool
 
 ```
 dotnet tool install --global PowerShell
 ```
+
+### Install GitHub CLI
+
+You can either download the newest release of [here](https://github.com/cli/cli/releases), or if you're on macOS use `brew install gh`. You'll need to log in through the commandline.
+
+## Get the code
+
+Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
+
+## Download the Native SDKs
+
+You can save some time on the initial build by downloading the prebuild Native SDK artifacts from the last successful build of the `main` branch (requires [GH CLI](https://cli.github.com/) to be installed locally).
+
+`dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity`
+
+## Build the project
+
+[Optional] The build process tries to infer the Unity version by looking up the unity-of-bugs `ProjectVersion.txt`. If you've got a different version installed you can overwrite this behaviour by setting the `UNITY_VERSION` on the path, i.e. adding `export UNITY_VERSION=2022.3.44f1` to your `.zshenv`.
+
+To build the whole project (including native SDKs if you've skipped the previous step), run:
+
+`dotnet build`
+
+> Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
+> The submodule will be restored as a result of `dotnet build`.
+
+## Advanced Setup
+
+This section details the setup required to be able to build the individual Native SDKs.
 
 ### Setup for building the Java SDK
 
@@ -57,54 +87,23 @@ Sentry Native is a sub module from Sentry Unity and for building it, currently r
 * Install [CMake](https://cmake.org/download/).
 * A supported C/C++ compiler.
 
-## Get the code
-
-Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
-
-## Build the project
-
-[Optional] You can save some time on the initial build by downloading the prebuild Native SDK artifacts from the last successful build of the `main` branch (requires [GH CLI](https://cli.github.com/) to be installed locally).
-
-`dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity`
-
-To build the whole project (including native SDKs if you've skipped the previous step), run:
-
-`dotnet build`
-
-> Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
-> The submodule will be restored as a result of `dotnet build`.
-> The Unity editor is also loaded via the build if needed to restore any UPM package required by the project, like testing libraries.
-
 ### Run tests
 
 ```sh
 dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release test/Sentry.Unity.Tests
 ```
 
-### Smoke test by building and running a player with IL2CPP:
+### Running CI integration tests locally
 
-```sh
- dotnet msbuild /t:"Build;UnityBuildStandalonePlayerIL2CPP;UnitySmokeTestStandalonePlayerIL2CPP"  test/Sentry.Unity.Tests
+CI makes use of a handful of scripts for creating, exporting, building and smoke-testing builds for desktop and mobile platforms. We've added a script to make use of that functionality to emulate (and debug) our integration tests locally.
+
+```pwsh
+ pwsh ./test/Scripts.Integration.Test/integration-test.ps1 -Platform "Android-Export" -UnityVersion "6000"
 ```
 
-After this you can open your IDE (i.e: Visual Studio or Rider) and Unity Editor for development.
+Please refer to the script to make use of any optional parameters.
 
 # Advanced and Troubleshooting
-
-## Finding the Unity installation
-
-The `UnityPath` in `src/Directory.Build.targets` does a lookup at different locations to find Unity.
-This is different per operating system. The repository is configured for Windows and macOS. You can adjust it as needed:
-
-```xml
-<Project>
-  <!-- Other properties & groups -->
-  <PropertyGroup>
-    <UnityPath Condition="<YOUR_PATH_CONDITION>">YOUR_PATH</UnityPath>
-  </PropertyGroup>
-</Project>
-```
-> There is a configuration in place already. Just make sure it works for you or reconfigure for your needs.
 
 ## Project Structure
 
