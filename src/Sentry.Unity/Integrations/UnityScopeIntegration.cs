@@ -18,7 +18,7 @@ internal class UnityScopeIntegration : ISdkIntegration
 {
     private readonly IApplication _application;
 
-    public UnityScopeIntegration(SentryMonoBehaviour monoBehaviour, IApplication application)
+    public UnityScopeIntegration(IApplication application)
     {
         _application = application;
     }
