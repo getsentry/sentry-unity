@@ -4,6 +4,7 @@
 
 ### Features
 
+- Added a hook `IsMainThread` to the options to allow overwriting of the logic to determine whether the currently active thread is the main thread ([#1803](https://github.com/getsentry/sentry-unity/pull/1803))
 - Contexts, such as `device` and `gpu` that the SDK retrieves during the game's startup is now available even earlier and irrespective whether an error was captured on the main or on a background thread ([#1802](https://github.com/getsentry/sentry-unity/pull/1802))
 
 ### Dependencies
