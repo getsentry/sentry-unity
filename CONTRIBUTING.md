@@ -63,6 +63,8 @@ Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd
 
 ## Build the project
 
+[Optional] The build process tries to infer the Unity version by looking up the unity-of-bugs `ProjectVersion.txt`. You can overwrite this behaviour by setting the `UNITY_VERSION` on the path, i.e. adding `export UNITY_VERSION=2022.3.44f1` to your .zshenv 
+
 [Optional] You can save some time on the initial build by downloading the prebuild Native SDK artifacts from the last successful build of the `main` branch (requires [GH CLI](https://cli.github.com/) to be installed locally).
 
 `dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity`
@@ -73,7 +75,6 @@ To build the whole project (including native SDKs if you've skipped the previous
 
 > Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
 > The submodule will be restored as a result of `dotnet build`.
-> The Unity editor is also loaded via the build if needed to restore any UPM package required by the project, like testing libraries.
 
 ### Run tests
 
