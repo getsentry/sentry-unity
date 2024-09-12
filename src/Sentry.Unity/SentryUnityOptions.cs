@@ -194,6 +194,11 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public bool PerformanceAutoInstrumentationEnabled { get; set; } = false;
 
+    /// <summary>
+    /// Allows to overwrite the check to determine whether the current thread is the main thread
+    /// </summary>
+    public Func<bool> IsMainThread { get; set; } = MainThreadData.IsMainThread;
+
     // This option is hidden due to incompatibility between IL2CPP and Enhanced mode.
     private new StackTraceMode StackTraceMode { get; set; }
 

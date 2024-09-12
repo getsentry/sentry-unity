@@ -22,7 +22,7 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
     {
         // Note: we need to check explicitly that we're on the same thread. While Unity would throw otherwise
         // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
-        if (!MainThreadData.IsMainThread())
+        if (!_options.IsMainThread())
         {
             _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
             return Stream.Null;
