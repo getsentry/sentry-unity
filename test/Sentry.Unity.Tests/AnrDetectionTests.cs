@@ -6,6 +6,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Tests;
@@ -43,7 +44,7 @@ public class AnrDetectionTests
     [UnityTest]
     public IEnumerator DetectsStuckUI([ValueSource(nameof(MultiThreadingTestValues))] bool multiThreaded)
     {
-        ApplicationNotResponding? arn = null;
+        ApplicationNotRespondingException? arn = null;
         _sut = CreateWatchDog(multiThreaded);
         _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
@@ -71,7 +72,7 @@ public class AnrDetectionTests
     [UnityTest]
     public IEnumerator DoesntReportWorkingUI([ValueSource(nameof(MultiThreadingTestValues))] bool multiThreaded)
     {
-        ApplicationNotResponding? arn = null;
+        ApplicationNotRespondingException? arn = null;
         _sut = CreateWatchDog(multiThreaded);
         _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
@@ -90,7 +91,7 @@ public class AnrDetectionTests
     [TestCase(false)]
     public void DoesntReportShortlyStuckUI(bool multiThreaded)
     {
-        ApplicationNotResponding? arn = null;
+        ApplicationNotRespondingException? arn = null;
         _sut = CreateWatchDog(multiThreaded);
         _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
@@ -103,7 +104,7 @@ public class AnrDetectionTests
     [UnityTest]
     public IEnumerator DoesntReportWhilePaused([ValueSource(nameof(MultiThreadingTestValues))] bool multiThreaded)
     {
-        ApplicationNotResponding? arn = null;
+        ApplicationNotRespondingException? arn = null;
         _sut = CreateWatchDog(multiThreaded);
         _sut.OnApplicationNotResponding += (_, e) => arn = e;
 
@@ -132,7 +133,7 @@ public class AnrDetectionTests
     [UnityTest]
     public IEnumerator IsNotAffectedByTimeScale()
     {
-        ApplicationNotResponding? anr = null;
+        ApplicationNotRespondingException? anr = null;
         _sut = CreateWatchDog(true);
         _sut.OnApplicationNotResponding += (_, e) => anr = e;
 
