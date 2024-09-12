@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added an `ApplicationNotRespondingException` type that allows filtering of ANR events ([#1800](https://github.com/getsentry/sentry-unity/pull/1800))
+
 ### Dependencies
 
 - Bump CLI from v2.34.1 to v2.36.1 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796))
