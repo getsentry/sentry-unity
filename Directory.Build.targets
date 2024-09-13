@@ -342,6 +342,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
   </Target>
 
   <!-- Locate the TestRunner.dlls by filling the wildcard with the template version number. 3d is the default template -->
+  <!-- Unity 6 introduced an additional 3d template: template.3d-high-end & template.3d-cross-platform -->
   <UsingTask TaskName="LocateTestRunner" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <UnityLibcache ParameterType="System.String" Required="true" />
@@ -354,7 +355,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       <Code Type="Fragment" Language="cs">
         <![CDATA[
 var directories = Directory.GetDirectories(UnityLibcache, "com.unity.template.3d-*");
-if (directories.Length == 1)
+if (directories.Length >= 1)
 {
     TestRunnerPath = Path.Combine(directories[0], "ScriptAssemblies");
     Log.LogMessage("Found TestRunner path at: " + TestRunnerPath);

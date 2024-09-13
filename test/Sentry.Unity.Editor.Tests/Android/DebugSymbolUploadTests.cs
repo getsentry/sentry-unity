@@ -71,7 +71,7 @@ public class DebugSymbolUploadTests
     {
         _fixture.Application = new TestApplication(unityVersion: unityVersion);
 
-        var actualIsNewBuildingBackend = DebugSymbolUpload.IsNewBuildingBackend(_fixture.Application);
+        var actualIsNewBuildingBackend = DebugSymbolUpload.IsNewerThanUnity2021_2(_fixture.Application);
 
         Assert.AreEqual(expectedIsNewBuildingBackend, actualIsNewBuildingBackend);
     }

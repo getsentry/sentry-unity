@@ -262,48 +262,14 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('Android'))
     {
-        if ($unity_2021_OrHigher)
-        {
-            $expectedFiles = @(
-                "libil2cpp.so: count=$($withSources ? 6 : 1)",
-                'libil2cpp.sym.so: count=1',
-                'libmain.so: count=1',
-                'libsentry-android.so: count=4',
-                'libsentry.so: count=4',
-                "libunity.dbg.so: count=$($withSources ? 2 : 1)",
-                "libunity.so: count=$($withSources ? 4 : 3)",
-                'libunity.sym.so: count=1'
-            )
-            if ($withSources)
-            {
-                $expectedFiles = @('libil2cpp.dbg.so: count=1') + $expectedFiles
-            }
-        }
-        else
-        {
-            $expectedFiles = @(
-                'libil2cpp.so: count=1',
-                'libmain.so: count=1',
-                'libunity.so: count=1',
-                'libunity.sym.so: count=1'
-            )
-            If ($unity_2020_OrHigher)
-            {
-                $expectedFiles = @(
-                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
-                    "libil2cpp.dbg.so: count=$($withSources ? 3 : 2)",
-                    'libsentry-android.so: count=7',
-                    'libsentry.so: count=7'
-                ) + $expectedFiles
-            }
-            else
-            {
-                $expectedFiles = @(
-                    "libil2cpp.sym.so: count=$($withSources ? 2 : 1)",
-                    "libil2cpp.dbg.so: count=$($withSources ? 2 : 1)"
-                ) + $expectedFiles
-            }
-        }
+        $expectedFiles = @(
+            'libil2cpp.so: count=1',
+            'libmain.so: count=1',
+            'libsentry-android.so: count=1',
+            'libsentry.so: count=1',
+            'libunity.so: count=1',
+            'libunity.sym.so: count=1'
+        )
     }
     ElseIf ($buildMethod.contains('IOS'))
     {

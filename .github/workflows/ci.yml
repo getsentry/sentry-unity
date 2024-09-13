@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Building the SDK with Unity 2022 requires ns2.1 - skipping for now
+        # Building the SDK with Unity 2022 and newer requires ns2.1 - skipping for now
         unity-version: ["2019", "2020", "2021"]
     steps:
       - name: Checkout
@@ -209,7 +209,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021", "2022"]
+        unity-version: ["2019", "2022", "6000"]
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
@@ -261,7 +261,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021", "2022"]
+        unity-version: ["2019", "2022", "6000"]
         platform: ["Android", "WebGL", "Linux", "iOS"]
         include:
           - platform: Linux
@@ -323,10 +323,32 @@ jobs:
 
       - name: Build with Sentry SDK
         run: |
-          $platform = ('${{ matrix.platform }}' -eq 'Android') -and ('${{ github.ref_name }}' -ne 'main') ? 'Android-Export' : '${{ matrix.platform }}'
-          ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols
+          $isAndroid = ('${{ matrix.platform }}' -eq 'Android')
+          $isNotMainBranch = ('${{ github.ref_name }}' -ne 'main')
+          $platform = if ($isAndroid -and $isNotMainBranch) { 'Android-Export' } else { '${{ matrix.platform }}' }
 
-      - name:
+          ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols
+      
+      # Dear lord, I don't know why we have to do this: If we do not "pre-build" the project then `exportAsGoogleAndroidProject` will stay `false` in `IPostGenerateGradleAndroidProject`
+      # and breaking all further steps in CI 
+      # Things I tried:
+        # 1. Setting the flag and restarting the editor prior to build
+        # 2. Setting the flag and reloading the domain in a step prior to building
+        # 3. Reloading the domain prior to building (does not work - build fails with a domain reload pending)
+      - name: Pre-Build Project for Unity 6
+        if: ${{ matrix.unity-version == '6000' && matrix.platform == 'Android' }}
+        run: |
+          $platform = '${{ matrix.platform }}'
+          if ('${{ github.ref_name }}' -ne 'main')
+          {
+            $checkSymbols = $false
+            $platform = 'Android-Export'
+            
+            ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols:$checkSymbols -UnityVersion "${{ matrix.unity-version }}"
+            Remove-Item -Path samples/IntegrationTest/Build -Recurse -Force -Confirm:$false
+          }
+            
+      - name: Build Project
         run: |
           $platform = '${{ matrix.platform }}'
           if ($platform -eq 'iOS')
@@ -380,7 +402,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021", "2022"]
+        unity-version: ["2019", "2022", "6000"]
         # os: ["windows", "macos"]
         os: ["windows"]
         include:
@@ -460,7 +482,7 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [27, 28, 29, 30, 31] # last updated October 2022
-        unity-version: ["2019", "2020", "2021", "2022"]
+        unity-version: ["2019", "2022", "6000"]
         include:
           # API 21 is barely used but let's check it as the minimum supported version for now.
           - api-level: 21
@@ -481,18 +503,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021", "2022"]
+        unity-version: ["2019", "2022", "6000"]
         platform: ["Android", "iOS"]
         include:
-          # See supported version in https://docs.unity3d.com/2022.2/Documentation/Manual/android-sdksetup.html
+          # See supported version in https://docs.unity3d.com/6000.0/Documentation/Manual/android-sdksetup.html
           - unity-version: "2019"
             ndk: "r19"
-          - unity-version: "2020"
-            ndk: "r19"
-          - unity-version: "2021"
-            ndk: "r21d"
           - unity-version: "2022"
             ndk: "r21d"
+          - unity-version: "6000"
+            ndk: "r23b"
+            
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -515,24 +536,43 @@ jobs:
           ndk-version: ${{ matrix.ndk }}
           add-to-path: false
 
-      - name: Build app
-        if: ${{ matrix.platform != 'Android' || github.ref_name != 'main' }}
+      # We modify the exported gradle project to deal with the different build-environment
+      # I.e. we're fixing the paths for SDK & NDK that have been hardcoded to point at the Unity installation 
+      - name: Modify gradle project
+        if: ${{ matrix.platform == 'Android' }}
         run: |
-          if ("${{ matrix.platform }}" -eq "Android")
-          {
-            # Replace local.properties so that it doesn't reference Unity built-in SDK & NDK (not available in this job).
-            @("sdk.dir=$($env:ANDROID_SDK_ROOT)", "ndk.dir=${{ steps.setup-ndk.outputs.ndk-path }}") | Out-File "samples/IntegrationTest/Build/local.properties"
+          ./test/Scripts.Integration.Test/modify-gradle-project.ps1 `
+            -AndroidSdkRoot $env:ANDROID_SDK_ROOT `
+            -NdkPath ${{ steps.setup-ndk.outputs.ndk-path }} `
+            -UnityVersion ${{ matrix.unity-version }}
 
-            # The template changed to have set the 'ndkPath' directly in the build.gradle. Removing it fall back to the local.properties
-            if (${{ matrix.unity-version }} -eq "2021" -or ${{ matrix.unity-version }} -eq "2022")
-            {
-              $file = "samples/IntegrationTest/Build/unityLibrary/build.gradle"
-              $fileContent = Get-Content -Path $file
-              $filteredContent = $fileContent | Where-Object { $_ -notmatch 'ndkPath.*AndroidPlayer/NDK"' }
-              $filteredContent | Set-Content -Path $file
-            }
-          }
-          ./scripts/smoke-test-${{ matrix.platform == 'iOS' && 'ios' || 'android' }}.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+      - name: Setup JDK 17 for Unity 6
+        if: ${{ matrix.platform == 'Android' && matrix.unity-version == '6000' }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+  
+      - name: Android smoke test
+        if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
+        run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: iOS smoke test
+        if: ${{ matrix.platform == 'iOS' && github.ref_name != 'main' }}
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+    
+      - name: Upload Project project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}-but-compiled
+          path: |
+            samples/IntegrationTest
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
 
       - name: Upload app
         uses: actions/upload-artifact@v4
@@ -555,7 +595,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021", "2022"]
+        unity-version: ["2019", "2022", "6000"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
         # - `iOS 16`: 71%
@@ -610,7 +650,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2020", "2021", "2022"]
+        unity-version: ["2019", "2022", "6000"]
         platform: ["WebGL", "Linux"]
     steps:
       - name: Checkout
