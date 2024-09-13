@@ -29,27 +29,27 @@ if ("$TestAppPath" -eq "")
 {
     If ($IsMacOS)
     {
-        $TestAppPath = "$NewProjectBuildPath/test.app/Contents/MacOS/$NewProjectName"
+        $TestAppPath = "$(GetNewProjectBuildPath)/test.app/Contents/MacOS/$(GetNewProjectName)"
         if ("$AppDataDir" -eq "")
         {
-            $AppDataDir = "$env:HOME/Library/Logs/DefaultCompany/$NewProjectName/"
+            $AppDataDir = "$env:HOME/Library/Logs/DefaultCompany/$(GetNewProjectName)/"
         }
     }
     ElseIf ($IsWindows)
     {
-        $TestAppPath = "$NewProjectBuildPath/test.exe"
+        $TestAppPath = "$(GetNewProjectBuildPath)/test.exe"
         if ("$AppDataDir" -eq "")
         {
-            $AppDataDir = "$env:UserProfile\AppData\LocalLow\DefaultCompany\$NewProjectName\"
+            $AppDataDir = "$env:UserProfile\AppData\LocalLow\DefaultCompany\$(GetNewProjectName)\"
         }
     }
     ElseIf ($IsLinux)
     {
-        $TestAppPath = "$NewProjectBuildPath/test"
+        $TestAppPath = "$(GetNewProjectBuildPath)/test"
         chmod +x $TestAppPath
         if ("$AppDataDir" -eq "")
         {
-            $AppDataDir = "$env:HOME/.config/unity3d/DefaultCompany/$NewProjectName/"
+            $AppDataDir = "$env:HOME/.config/unity3d/DefaultCompany/$(GetNewProjectName)/"
         }
     }
     Else

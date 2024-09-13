@@ -4,13 +4,17 @@ param(
     [Switch] $CheckSymbols
 )
 
-. ./test/Scripts.Integration.Test/globals.ps1
+if (-not $Global:NewProjectPathCache)
+{
+    . ./test/Scripts.Integration.Test/globals.ps1
+}
+
 . ./test/Scripts.Integration.Test/common.ps1
 
 $UnityPath = FormatUnityPath $UnityPath
 
 $unityArgs = @( `
-        "-quit", "-batchmode", "-nographics", "-disable-assembly-updater", "-projectPath ", $NewProjectPath, `
+        "-quit", "-batchmode", "-nographics", "-disable-assembly-updater", "-projectPath ", $(GetNewProjectPath), `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
         "-buildTimeOptionsScript", "BuildTimeOptions", `
         "-runtimeOptionsScript", "RuntimeOptions", `
@@ -26,7 +30,7 @@ function AssertPathExists([string] $Path)
     }
 }
 
-AssertPathExists "$NewProjectAssetsPath/Plugins/Sentry/SentryCliOptions.asset"
-AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/BuildTimeOptions.asset"
-AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/SentryOptions.asset"
-AssertPathExists "$NewProjectAssetsPath/Resources/Sentry/RuntimeOptions.asset"
+AssertPathExists "$(GetNewProjectAssetsPath)/Plugins/Sentry/SentryCliOptions.asset"
+AssertPathExists "$(GetNewProjectAssetsPath)/Resources/Sentry/BuildTimeOptions.asset"
+AssertPathExists "$(GetNewProjectAssetsPath)/Resources/Sentry/SentryOptions.asset"
+AssertPathExists "$(GetNewProjectAssetsPath)/Resources/Sentry/RuntimeOptions.asset"
