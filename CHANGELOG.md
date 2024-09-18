@@ -7,6 +7,10 @@
 - Contexts, such as `device` and `gpu` that the SDK retrieves during the game's startup is now available even earlier and irrespective whether an error was captured on the main or on a background thread ([#1802](https://github.com/getsentry/sentry-unity/pull/1802))
 - Added an `ApplicationNotRespondingException` type that allows filtering of ANR events ([#1800](https://github.com/getsentry/sentry-unity/pull/1800))
 
+### Fixes
+
+- Change access modifier to `private` for stack trace mode option setter ([#1806](https://github.com/getsentry/sentry-unity/pull/1806))
+
 ### Dependencies
 
 - Bump CLI from v2.34.1 to v2.36.1 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796))
