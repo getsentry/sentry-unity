@@ -9,12 +9,12 @@
 
 ### Dependencies
 
-- Bump CLI from v2.34.1 to v2.36.1 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2361)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.1)
 - Bump Native SDK from v0.7.9 to v0.7.10 ([#1809](https://github.com/getsentry/sentry-unity/pull/1809))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0710)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.9...0.7.10)
+- Bump CLI from v2.34.1 to v2.36.2 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796), [#1810](https://github.com/getsentry/sentry-unity/pull/1810))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2362)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.2)
 
 ## 2.1.5
 
