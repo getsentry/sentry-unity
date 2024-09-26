@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK now automatically opts-out of all file-writing operations on `unknown platforms` like the Nintendo Switch ([#1814](https://github.com/getsentry/sentry-unity/pull/1814))
+
 ### Features
 
 - Contexts, such as `device` and `gpu` that the SDK retrieves during the game's startup is now available even earlier and irrespective whether an error was captured on the main or on a background thread ([#1802](https://github.com/getsentry/sentry-unity/pull/1802))
