@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- The gpu.vendorId is now properly passed as a String to sentry-java ([#1813](https://github.com/getsentry/sentry-unity/pull/1813))
+- The SDK no longer passes a mangled `gpu.vendorId` to the Android native layer ([#1813](https://github.com/getsentry/sentry-unity/pull/1813))
 
 ### Features
 
