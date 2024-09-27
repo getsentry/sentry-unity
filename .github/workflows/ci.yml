@@ -75,8 +75,8 @@ jobs:
             temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Docker Login
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }} 
@@ -225,8 +225,8 @@ jobs:
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Docker Login
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }} 
@@ -298,8 +298,8 @@ jobs:
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Docker Login
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }} 
