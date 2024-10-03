@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests;
@@ -25,9 +26,12 @@ public class UnityWebExceptionFilterTests
 
         using var _ = SentryTests.InitSentrySdk(testHttpClientHandler: _testHttpClientHandler);
 
-        SentrySdk.CaptureException(new System.Net.WebException(UnityWebExceptionFilter.Message));
+        var message = UnityWebExceptionFilter.Message + Guid.NewGuid();
+        SentrySdk.CaptureException(new System.Net.WebException(message));
 
-        var createdEvent = _testHttpClientHandler.GetEvent(UnityWebExceptionFilter.Message, _eventReceiveTimeout);
+        var createdEvent = _testHttpClientHandler.GetEvent(message, _eventReceiveTimeout);
+        Debug.Log("captured event was:");
+        Debug.Log(createdEvent);
         Assert.AreEqual(string.Empty, createdEvent);
     }
 }
