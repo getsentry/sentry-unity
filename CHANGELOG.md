@@ -2,8 +2,15 @@
 
 ## Unreleased
 
+### API Changes
+
+- The `SentrySdk.Metrics` module is deprecated and will be removed in the next major release. 
+  Sentry will reject all metrics sent after October 7, 2024.
+  Learn more: https://sentry.zendesk.com/hc/en-us/articles/26369339769883-Upcoming-API-Changes-to-Metrics  ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
+
 ### Fixes
 
+- The SDK no longer freezes the game during shutdown when targeting WebGL ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
 - The SDK no longer passes a mangled `gpu.vendorId` to the Android native layer ([#1813](https://github.com/getsentry/sentry-unity/pull/1813))
 
 ### Features
