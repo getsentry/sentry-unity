@@ -11,6 +11,8 @@
 ### Fixes
 
 - The SDK no longer freezes the game during shutdown when targeting WebGL ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
+### Fixes
+
 - The SDK no longer passes a mangled `gpu.vendorId` to the Android native layer ([#1813](https://github.com/getsentry/sentry-unity/pull/1813))
 
 ### Features
@@ -26,6 +28,9 @@
 - Bump CLI from v2.34.1 to v2.36.4 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796), [#1810](https://github.com/getsentry/sentry-unity/pull/1810), [#1815](https://github.com/getsentry/sentry-unity/pull/1815), [#1819](https://github.com/getsentry/sentry-unity/pull/1819))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2364)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.4)
+- Bump CLI from v2.34.1 to v2.36.5 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796), [#1810](https://github.com/getsentry/sentry-unity/pull/1810), [#1815](https://github.com/getsentry/sentry-unity/pull/1815), [#1819](https://github.com/getsentry/sentry-unity/pull/1819), [#1820](https://github.com/getsentry/sentry-unity/pull/1820))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2365)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.5)
 
 ## 2.1.5
 
