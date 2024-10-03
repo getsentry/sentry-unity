@@ -103,11 +103,7 @@ internal class SentryJava : ISentryJava
             using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
             gpu.SetIfNotNull("name", GpuName);
             gpu.SetIfNotNull("id", GpuId);
-            if (GpuVendorId is not null && int.TryParse(GpuVendorId, out var intVendorId) && intVendorId != 0)
-            {
-                using var integer = new AndroidJavaObject("java.lang.Integer", intVendorId);
-                gpu.Set("vendorId", integer);
-            }
+            gpu.SetIfNotNull("vendorId", GpuVendorId);
             gpu.SetIfNotNull("vendorName", GpuVendorName);
             gpu.SetIfNotNull("memorySize", GpuMemorySize);
             gpu.SetIfNotNull("apiType", GpuApiType);
