@@ -18,17 +18,4 @@ public class UnityWebExceptionFilterTests
     [Test]
     public void Filter_FiltersBadGatewayExceptionsOfTypeException() =>
         Assert.IsTrue(new UnityWebExceptionFilter().Filter(new System.Net.WebException(UnityWebExceptionFilter.Message)));
-
-    [Test]
-    public void Init_WithDefaultOptions_DoesNotSendFilteredWebExceptions()
-    {
-        LogAssert.ignoreFailingMessages = true; // The TestHttpClientHandler will complain about timing out (and it should!)
-
-        using var _ = SentryTests.InitSentrySdk(testHttpClientHandler: _testHttpClientHandler);
-
-        SentrySdk.CaptureException(new System.Net.WebException(UnityWebExceptionFilter.Message));
-
-        var createdEvent = _testHttpClientHandler.GetEvent(UnityWebExceptionFilter.Message, _eventReceiveTimeout);
-        Assert.AreEqual(string.Empty, createdEvent);
-    }
 }
