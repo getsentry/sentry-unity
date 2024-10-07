@@ -9,7 +9,7 @@
 
 ### Fixes
 
-- Change access modifier to `private` for stack trace mode option setter ([#1806](https://github.com/getsentry/sentry-unity/pull/1806))
+- Change access modifier of `StackTraceMode` to `private` to avoid pitfall ([#1806](https://github.com/getsentry/sentry-unity/pull/1806))
 
 ### Dependencies
 
