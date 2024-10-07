@@ -84,6 +84,9 @@ public class Builder
             Debug.Log("Builder: Setting target architectures");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
 
+            Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
+            buildPlayerOptions.options = BuildOptions.AcceptExternalModificationsToPlayer;
+
             Debug.Log($"Builder: Double-checking for export options: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
 #endif
         }
