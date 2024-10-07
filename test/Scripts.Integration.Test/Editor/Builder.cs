@@ -59,10 +59,12 @@ public class Builder
         if (target == BuildTarget.Android)
         {
             // Android does not support appending builds. We make sure the directory is clean
-            if (Directory.Exists(args["buildPath"]))
+                        // Android does not support appending builds. We make sure the directory is clean
+            var outputDir = Path.GetDirectoryName(args["buildPath"]);
+            if (Directory.Exists(outputDir))
             {
                 Debug.Log("Builder: Cleaning the buildPath");
-                Directory.Delete(args["buildPath"], true);
+                Directory.Delete(outputDir, true);
             }
 
 #if !UNITY_6000_0_OR_NEWER
