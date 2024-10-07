@@ -67,6 +67,15 @@ public class Builder
 #endif
 
 #if UNITY_6000_0_OR_NEWER
+            // Android does not support appending builds. We make sure the directory does not exist
+            Debug.Log("Builder: Attempting to clean the buildPath");
+
+            if (Directory.Exists(args["buildPath"]))
+            {
+                Debug.Log("Builder: Cleaning the buildPath");
+                Directory.Delete(args["buildPath"], true);
+            }
+
             Debug.Log("Builder: Setting target architectures");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
 
