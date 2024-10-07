@@ -65,8 +65,8 @@ public class Builder
                 Directory.Delete(args["buildPath"], true);
             }
 
-            Debug.Log("Builder: Creating buildpath directory");
-            Directory.CreateDirectory(args["buildPath"]);
+            // Debug.Log("Builder: Creating buildpath directory");
+            // Directory.CreateDirectory(args["buildPath"]);
 
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
