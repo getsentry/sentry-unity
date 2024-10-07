@@ -210,10 +210,7 @@ jobs:
         # ./test/Scripts.Tests/test-pack-contents.ps1 accept
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
-  # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`. If running on the `main`
-  # branch, the project doesn't include Sentry SDK because in that case we test building with & without it.
-  # We could just create the project later in `smoke-test-build` but then it's executed for each job in the matrix
-  # and reduces concurrency because of Unity licence limits.
+  # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`.
   smoke-test-create:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     name: ${{ matrix.unity-version }} Prepare Smoke Test
@@ -244,20 +241,6 @@ jobs:
 
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
-
-      - name: Download UPM package
-        if: ${{ github.ref_name != 'main' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ github.sha }}
-
-      - name: Extract UPM package
-        if: ${{ github.ref_name != 'main' }}
-        run: ./test/Scripts.Integration.Test/extract-package.ps1
-
-      - name: Add Sentry to the project
-        if: ${{ github.ref_name != 'main' }}
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -331,11 +314,6 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-      - name: Build without Sentry SDK
-        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
-        if: ${{ github.ref_name == 'main' }}
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
-
       - name: Download UPM package
         uses: actions/download-artifact@v4
         with:
@@ -345,8 +323,12 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Build without Sentry SDK
+        # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
+        if: ${{ github.ref_name == 'main' }}
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Build with Sentry SDK
         run: |
@@ -482,7 +464,6 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry

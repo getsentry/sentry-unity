@@ -58,14 +58,19 @@ public class Builder
 
         if (target == BuildTarget.Android)
         {
-            // Android does not support appending builds. We make sure the directory does not exist
-            Debug.Log("Builder: Attempting to clean the buildPath");
-
+            // Android does not support appending builds. We make sure the directory is clean
             if (Directory.Exists(args["buildPath"]))
             {
                 Debug.Log("Builder: Cleaning the buildPath");
                 Directory.Delete(args["buildPath"], true);
             }
+
+#if !UNITY_6000_0_OR_NEWER
+            // Unity 6 does not like the build folder already being present and will error with
+            // The destination path collides with existing folder. Please delete '/sentry-unity/samples/IntegrationTest/Build/' before retrying the operation.
+            Debug.Log("Builder: Creating buildpath directory");
+            Directory.CreateDirectory(args["buildPath"]);
+#endif
 
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
