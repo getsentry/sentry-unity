@@ -65,8 +65,8 @@ public class Builder
                 Directory.Delete(args["buildPath"], true);
             }
 
-            // Debug.Log("Builder: Creating buildpath directory");
-            // Directory.CreateDirectory(args["buildPath"]);
+            Debug.Log("Builder: Creating buildpath directory");
+            Directory.CreateDirectory(args["buildPath"]);
 
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
@@ -80,8 +80,8 @@ public class Builder
             Debug.Log("Builder: Setting target architectures");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
 
-            Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
-            buildPlayerOptions.options = BuildOptions.AcceptExternalModificationsToPlayer;
+            // Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
+            // buildPlayerOptions.options = BuildOptions.AcceptExternalModificationsToPlayer;
 
             Debug.Log($"Builder: Double-checking for export options: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
 #endif

@@ -239,20 +239,6 @@ jobs:
       - name: Create new Project
         run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
-      # - name: Download UPM package
-      #   if: ${{ github.ref_name != 'main' }}
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: ${{ github.sha }}
-
-      # - name: Extract UPM package
-      #   if: ${{ github.ref_name != 'main' }}
-      #   run: ./test/Scripts.Integration.Test/extract-package.ps1
-
-      # - name: Add Sentry to the project
-      #   if: ${{ github.ref_name != 'main' }}
-      #   run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
-
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
         run: tar -cvzf test-project.tar.gz samples/IntegrationTest
@@ -339,7 +325,6 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Build with Sentry SDK
