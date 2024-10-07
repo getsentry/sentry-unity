@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### API Changes
+
+- The `SentrySdk.Metrics` module is deprecated and will be removed in the next major release. 
+  Sentry will reject all metrics sent after October 7, 2024.
+  Learn more: https://sentry.zendesk.com/hc/en-us/articles/26369339769883-Upcoming-API-Changes-to-Metrics  ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
+
+### Fixes
+
+- The SDK now uses the .NET SDK's `Options.FileWriteDisabled` to opt-out on any writing operations on 'unknown' platforms such as the Nintendo Switch ([1814](https://github.com/getsentry/sentry-unity/pull/1814))
+- The SDK no longer freezes the game during shutdown when targeting WebGL ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
+- The SDK no longer passes a mangled `gpu.vendorId` to the Android native layer ([#1813](https://github.com/getsentry/sentry-unity/pull/1813))
+- Access to the `StackTraceMode` was intended to be restricted due to incompatibility between IL2CPP and `StackTraceMode.Enhanced`. The access modifier has been changed to `private` to avoid pitfall and potential crashes ([#1806](https://github.com/getsentry/sentry-unity/pull/1806))
+
 ### Features
 
 - Contexts, such as `device` and `gpu` that the SDK retrieves during the game's startup is now available even earlier and irrespective whether an error was captured on the main or on a background thread ([#1802](https://github.com/getsentry/sentry-unity/pull/1802))
@@ -9,9 +22,15 @@
 
 ### Dependencies
 
-- Bump CLI from v2.34.1 to v2.36.1 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2361)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.1)
+- Bump Native SDK from v0.7.9 to v0.7.10 ([#1809](https://github.com/getsentry/sentry-unity/pull/1809))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0710)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.9...0.7.10)
+- Bump .NET SDK from v4.10.2 to v4.12.0 ([#1823](https://github.com/getsentry/sentry-unity/pull/1823))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#4120)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.10.2...4.12.0)
+- Bump CLI from v2.34.1 to v2.36.6 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796), [#1810](https://github.com/getsentry/sentry-unity/pull/1810), [#1815](https://github.com/getsentry/sentry-unity/pull/1815), [#1819](https://github.com/getsentry/sentry-unity/pull/1819), [#1820](https://github.com/getsentry/sentry-unity/pull/1820), [#1822](https://github.com/getsentry/sentry-unity/pull/1822))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2366)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.6)
 
 ## 2.1.5
 

@@ -194,8 +194,10 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public bool PerformanceAutoInstrumentationEnabled { get; set; } = false;
 
-    // This option is hidden due to incompatibility between IL2CPP and Enhanced mode.
-    private new StackTraceMode StackTraceMode { get; set; }
+    /// <summary>
+    /// This option is restricted due to incompatibility between IL2CPP and Enhanced mode.
+    /// </summary>
+    public new StackTraceMode StackTraceMode { get; private set; }
 
     // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
     internal string? _defaultUserId;
