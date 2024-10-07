@@ -58,6 +58,16 @@ public class Builder
 
         if (target == BuildTarget.Android)
         {
+            // Android does not support appending builds. We make sure the directory is clean
+            if (Directory.Exists(args["buildPath"]))
+            {
+                Debug.Log("Builder: Cleaning the buildPath");
+                Directory.Delete(args["buildPath"], true);
+            }
+
+            Debug.Log("Builder: Creating buildpath directory");
+            Directory.CreateDirectory(buildPath);
+
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
@@ -67,15 +77,6 @@ public class Builder
 #endif
 
 #if UNITY_6000_0_OR_NEWER
-            // Android does not support appending builds. We make sure the directory does not exist
-            Debug.Log("Builder: Attempting to clean the buildPath");
-
-            if (Directory.Exists(args["buildPath"]))
-            {
-                Debug.Log("Builder: Cleaning the buildPath");
-                Directory.Delete(args["buildPath"], true);
-            }
-
             Debug.Log("Builder: Setting target architectures");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
 
