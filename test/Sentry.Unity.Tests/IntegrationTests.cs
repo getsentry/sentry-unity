@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
@@ -274,6 +275,8 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogException_InTask_IsCapturedAndIsMainThreadIsFalse()
     {
+        LogAssert.Expect(LogType.Exception, new Regex("Exception: .* Test Event"));
+
         yield return SetupSceneCoroutine("1_BugFarm");
 
         var expectedAttribute = CreateAttribute("unity.is_main_thread", "false");
