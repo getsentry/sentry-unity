@@ -239,6 +239,8 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     {
         if (unityInfo?.IsKnownPlatform() == false)
         {
+            options.DisableFileWrite = true;
+
             // This is only provided on a best-effort basis for other than the explicitly supported platforms.
             if (options.BackgroundWorker is null)
             {
@@ -258,13 +260,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             {
                 options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
                 options.AutoSessionTracking = false;
-            }
-
-            // Requires file access
-            if (options.TracesSampleRate > 0.0f)
-            {
-                options.DiagnosticLogger?.LogDebug("Platform support for tracing is unknown: disabling.");
-                options.TracesSampleRate = null;
             }
         }
     }
