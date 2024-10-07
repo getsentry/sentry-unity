@@ -9,7 +9,7 @@
 
 ### Fixes
 
-- Change access modifier of `StackTraceMode` to `private` to avoid pitfall ([#1806](https://github.com/getsentry/sentry-unity/pull/1806))
+- Access to the `StackTraceMode` was intended to be restricted due to incompatibility between IL2CPP and `StackTraceMode.Enhanced`. The access modifier has been changed to `private` to avoid pitfall and potential crashes ([#1806](https://github.com/getsentry/sentry-unity/pull/1806))
 
 ### Dependencies
 
