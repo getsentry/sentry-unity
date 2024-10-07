@@ -75,6 +75,13 @@ jobs:
             temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
           key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
 
+      - name: Docker Login
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} 
+          password: ${{ secrets.GITHUB_TOKEN }} 
+
       - name: Start the Unity docker container
         # We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
         # Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
@@ -218,6 +225,13 @@ jobs:
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
+      - name: Docker Login
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} 
+          password: ${{ secrets.GITHUB_TOKEN }} 
+
       - name: Start the Unity docker container
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
@@ -283,6 +297,13 @@ jobs:
           swap-storage: true
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Docker Login
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} 
+          password: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Start the Unity docker container
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'

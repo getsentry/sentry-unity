@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 
@@ -133,6 +137,45 @@ public class ScriptableSentryUnityOptionsTests
 
         Assert.IsNull(options.CacheDirectoryPath);
         Assert.IsFalse(options.AutoSessionTracking);
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_WebExceptionFilterAdded()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        _fixture.UnityInfo = new TestUnityInfo(true);
+
+        var options = scriptableOptions.ToSentryUnityOptions(false, _fixture.UnityInfo, _fixture.Application);
+
+        var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
+        var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;
+        Assert.True(filters.OfType<UnityWebExceptionFilter>().Any());
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_UnitySocketExceptionFilterAdded()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        _fixture.UnityInfo = new TestUnityInfo(true);
+
+        var options = scriptableOptions.ToSentryUnityOptions(false, _fixture.UnityInfo, _fixture.Application);
+
+        var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
+        var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;
+        Assert.True(filters.OfType<UnitySocketExceptionFilter>().Any());
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_UnityBadGatewayExceptionFilterAdded()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        _fixture.UnityInfo = new TestUnityInfo(true);
+
+        var options = scriptableOptions.ToSentryUnityOptions(false, _fixture.UnityInfo, _fixture.Application);
+
+        var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
+        var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;
+        Assert.True(filters.OfType<UnityBadGatewayExceptionFilter>().Any());
     }
 
     public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
