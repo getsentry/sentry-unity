@@ -95,37 +95,43 @@ jobs:
       - name: Download CLI
         run: ./scripts/download-sentry-cli.ps1
 
-      - uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+      - name: Download Android SDK
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+      - name: Download Android Libraries
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
           name: Android-libraries
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+      - name: Download iOS SDK
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
           name: iOS-sdk
           path: package-dev/Plugins/iOS
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+      - name: Download macSO SDK
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
           name: macOS-sdk
           path: package-dev/Plugins/macOS
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+      - name: Download Linux SDK
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
           name: Linux-sdk
           path: package-dev/Plugins/Linux
           wait-timeout: 3600
 
-      - uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+      - name: Download Windows SDK
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
@@ -547,10 +553,12 @@ jobs:
       - name: Extract app project
         run: tar -xvzf test-app.tar.gz
 
-      - uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc # pin@v2
+      - name: Setup Android
+        uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc # pin@v2
         if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
 
-      - uses: nttld/setup-ndk@8c3b609ff4d54576ea420551943fd34b4d03b0dc # pin@v1
+      - name: Setup NDK
+        uses: nttld/setup-ndk@8c3b609ff4d54576ea420551943fd34b4d03b0dc # pin@v1
         if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
         id: setup-ndk
         with:
