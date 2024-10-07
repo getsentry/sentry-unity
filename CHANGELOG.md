@@ -13,6 +13,7 @@
 - The SDK now uses the .NET SDK's `Options.FileWriteDisabled` to opt-out on any writing operations on 'unknown' platforms such as the Nintendo Switch ([1814](https://github.com/getsentry/sentry-unity/pull/1814))
 - The SDK no longer freezes the game during shutdown when targeting WebGL ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
 - The SDK no longer passes a mangled `gpu.vendorId` to the Android native layer ([#1813](https://github.com/getsentry/sentry-unity/pull/1813))
+- Access to the `StackTraceMode` was intended to be restricted due to incompatibility between IL2CPP and `StackTraceMode.Enhanced`. The access modifier has been changed to `private` to avoid pitfall and potential crashes ([#1806](https://github.com/getsentry/sentry-unity/pull/1806))
 
 ### Features
 
