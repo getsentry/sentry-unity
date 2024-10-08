@@ -68,8 +68,10 @@ public class Builder
                 Directory.Delete(outputDir, true);
             }
 
+#if !UNITY_6000_0_OR_NEWER
             Debug.Log($"Builder: Creating output directory at '{outputDir}'");
             Directory.CreateDirectory(outputDir);
+#endif
 
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
