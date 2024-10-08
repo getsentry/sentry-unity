@@ -68,10 +68,8 @@ public class Builder
                 Directory.Delete(outputDir, true);
             }
 
-#if !UNITY_6000_0_OR_NEWER
             Debug.Log($"Builder: Creating output directory at '{outputDir}'");
             Directory.CreateDirectory(outputDir);
-#endif
 
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
@@ -84,11 +82,6 @@ public class Builder
 #if UNITY_6000_0_OR_NEWER
             Debug.Log("Builder: Setting target architectures");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
-
-            Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
-            buildPlayerOptions.options = BuildOptions.AcceptExternalModificationsToPlayer;
-
-            Debug.Log($"Builder: Double-checking for export options: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
 #endif
         }
 
@@ -144,11 +137,13 @@ public class Builder
     public static void BuildAndroidIl2CPPProject()
     {
         Debug.Log("Builder: Building Android IL2CPP Project");
-
-        Debug.Log($"Builder: Checking it again: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
         Debug.Log("Builder: Setting export settings 'exportAsGoogleAndroidProject' to 'true'");
                 
         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
+
+        Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
+        buildPlayerOptions.options = BuildOptions.AcceptExternalModificationsToPlayer;
+
         BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
     }
     public static void BuildIOSProject()
