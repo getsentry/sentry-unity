@@ -25,7 +25,7 @@ internal class SentryXcodeProject : IDisposable
     private readonly string _uploadScript = @"
 export SENTRY_PROPERTIES=sentry.properties
 echo ""Uploading debug symbols and bcsymbolmaps.""
-./{0} debug-files upload --force-foreground {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
+./{0} debug-files upload {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
 ";
 
     private readonly IDiagnosticLogger? _logger = null;
