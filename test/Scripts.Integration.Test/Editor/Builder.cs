@@ -68,6 +68,9 @@ public class Builder
                 Directory.Delete(outputDir, true);
             }
 
+            Debug.Log($"Builder: Creating output directory at '{outputDir}'");
+            Directory.CreateDirectory(outputDir);
+
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
