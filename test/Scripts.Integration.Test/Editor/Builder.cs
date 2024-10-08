@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class Builder
 {
-    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildPlayerOptions buildPlayerOptions)
+    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions)
     {
         Debug.Log("Builder: Starting to build");
 
@@ -35,9 +35,13 @@ public class Builder
 #endif
 
         Debug.Log("Builder: Updating BuildPlayerOptions");
-        buildPlayerOptions.locationPathName = args["buildPath"];
-        buildPlayerOptions.target = target;
-        buildPlayerOptions.targetGroup = group;
+        var buildPlayerOptions = new BuildPlayerOptions
+        {
+            locationPathName = args["buildPath"],
+            target = target,
+            targetGroup = group,
+            options = buildOptions
+        };
 
         Debug.Log("Builder: Disabling optimizations to reduce build time");
 #if UNITY_2021_2_OR_NEWER
@@ -113,51 +117,39 @@ public class Builder
     public static void BuildWindowsIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Windows IL2CPP Player");
-        var buildPlayerOptions = new BuildPlayerOptions { options = BuildOptions.StrictMode };
-        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, buildPlayerOptions);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
     public static void BuildMacIl2CPPPlayer()
     {
         Debug.Log("Builder: Building macOS IL2CPP Player");
-        var buildPlayerOptions = new BuildPlayerOptions { options = BuildOptions.StrictMode };
-        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, buildPlayerOptions);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
     public static void BuildLinuxIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Linux IL2CPP Player");
-        var buildPlayerOptions = new BuildPlayerOptions { options = BuildOptions.StrictMode };
-        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, buildPlayerOptions);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
     public static void BuildAndroidIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Android IL2CPP Player");
-        var buildPlayerOptions = new BuildPlayerOptions { options = BuildOptions.StrictMode };
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, buildPlayerOptions);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode);
     }
     public static void BuildAndroidIl2CPPProject()
     {
         Debug.Log("Builder: Building Android IL2CPP Project");
-        Debug.Log("Builder: Setting export settings 'exportAsGoogleAndroidProject' to 'true'");
-
         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
-
-        Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
-        var buildPlayerOptions = new BuildPlayerOptions { options = BuildOptions.AcceptExternalModificationsToPlayer };
-
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, buildPlayerOptions);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.AcceptExternalModificationsToPlayer);
     }
     public static void BuildIOSProject()
     {
         Debug.Log("Builder: Building iOS Project");
-        var buildPlayerOptions = new BuildPlayerOptions { options = BuildOptions.StrictMode };
-        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, buildPlayerOptions);
+        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode);
     }
     public static void BuildWebGLPlayer()
     {
         Debug.Log("Builder: Building WebGL Player");
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
-        var buildPlayerOptions = new BuildPlayerOptions { options = BuildOptions.StrictMode };
-        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, buildPlayerOptions);
+        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode);
     }
 
     public static Dictionary<string, string> ParseCommandLineArguments()

@@ -344,18 +344,18 @@ jobs:
         # 1. Setting the flag and restarting the editor prior to build
         # 2. Setting the flag and reloading the domain in a step prior to building
         # 3. Reloading the domain prior to building (does not work - build fails with a domain reload pending)
-      - name: Pre-Build Project for Unity 6
-        if: ${{ matrix.unity-version == '6000' && matrix.platform == 'Android' }}
-        run: |
-          $platform = '${{ matrix.platform }}'
-          if ('${{ github.ref_name }}' -ne 'main')
-          {
-            $checkSymbols = $false
-            $platform = 'Android-Export'
+      # - name: Pre-Build Project for Unity 6
+      #   if: ${{ matrix.unity-version == '6000' && matrix.platform == 'Android' }}
+      #   run: |
+      #     $platform = '${{ matrix.platform }}'
+      #     if ('${{ github.ref_name }}' -ne 'main')
+      #     {
+      #       $checkSymbols = $false
+      #       $platform = 'Android-Export'
             
-            ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols:$checkSymbols -UnityVersion "${{ matrix.unity-version }}"
-            Remove-Item -Path samples/IntegrationTest/Build -Recurse -Force -Confirm:$false
-          }
+      #       ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols:$checkSymbols -UnityVersion "${{ matrix.unity-version }}"
+      #       Remove-Item -Path samples/IntegrationTest/Build -Recurse -Force -Confirm:$false
+      #     }
             
       - name: Build Project
         run: |
