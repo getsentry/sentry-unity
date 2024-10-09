@@ -9,12 +9,14 @@ using UnityEngine;
 
 public class Builder
 {
-    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group)
+    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions)
     {
         Debug.Log("Builder: Starting to build");
 
         var args = ParseCommandLineArguments();
         ValidateArguments(args);
+
+        Debug.Log($"Builder: Starting build. Output will be '{args["buildPath"]}'.");
 
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
@@ -32,13 +34,13 @@ public class Builder
         EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
 #endif
 
-        Debug.Log("Builder: Creating BuildPlayerOptions");
+        Debug.Log("Builder: Updating BuildPlayerOptions");
         var buildPlayerOptions = new BuildPlayerOptions
         {
             locationPathName = args["buildPath"],
             target = target,
             targetGroup = group,
-            options = BuildOptions.StrictMode
+            options = buildOptions
         };
 
         Debug.Log("Builder: Disabling optimizations to reduce build time");
@@ -59,18 +61,15 @@ public class Builder
         if (target == BuildTarget.Android)
         {
             // Android does not support appending builds. We make sure the directory is clean
-            if (Directory.Exists(args["buildPath"]))
+            var outputDir = Path.GetDirectoryName(args["buildPath"]);
+            if (Directory.Exists(outputDir))
             {
                 Debug.Log("Builder: Cleaning the buildPath");
-                Directory.Delete(args["buildPath"], true);
+                Directory.Delete(outputDir, true);
             }
 
-#if !UNITY_6000_0_OR_NEWER
-            // Unity 6 does not like the build folder already being present and will error with
-            // The destination path collides with existing folder. Please delete '/sentry-unity/samples/IntegrationTest/Build/' before retrying the operation.
-            Debug.Log("Builder: Creating buildpath directory");
-            Directory.CreateDirectory(args["buildPath"]);
-#endif
+            Debug.Log($"Builder: Creating output directory at '{outputDir}'");
+            Directory.CreateDirectory(outputDir);
 
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
@@ -83,11 +82,6 @@ public class Builder
 #if UNITY_6000_0_OR_NEWER
             Debug.Log("Builder: Setting target architectures");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
-
-            Debug.Log("Builder: Overwriting BuildPlayerOptions to accept external modifications for 2022 and newer");
-            buildPlayerOptions.options = BuildOptions.AcceptExternalModificationsToPlayer;
-
-            Debug.Log($"Builder: Double-checking for export options: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
 #endif
         }
 
@@ -123,43 +117,39 @@ public class Builder
     public static void BuildWindowsIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Windows IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
     public static void BuildMacIl2CPPPlayer()
     {
         Debug.Log("Builder: Building macOS IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
     public static void BuildLinuxIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Linux IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
     public static void BuildAndroidIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Android IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode);
     }
     public static void BuildAndroidIl2CPPProject()
     {
         Debug.Log("Builder: Building Android IL2CPP Project");
-
-        Debug.Log($"Builder: Checking it again: {EditorUserBuildSettings.exportAsGoogleAndroidProject}");
-        Debug.Log("Builder: Setting export settings 'exportAsGoogleAndroidProject' to 'true'");
-                
         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.AcceptExternalModificationsToPlayer);
     }
     public static void BuildIOSProject()
     {
         Debug.Log("Builder: Building iOS Project");
-        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS);
+        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode);
     }
     public static void BuildWebGLPlayer()
     {
         Debug.Log("Builder: Building WebGL Player");
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
-        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL);
+        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode);
     }
 
     public static Dictionary<string, string> ParseCommandLineArguments()
