@@ -316,7 +316,7 @@ jobs:
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
-        if: ${{ github.ref_name == 'main' }}
+        # if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
@@ -452,7 +452,7 @@ jobs:
 
       - name: Build without Sentry SDK
         # This hasn't broken for many months, so disabling on PRs to speed up CI. And also to test a clean build with Sentry SDK included.
-        if: ${{ github.ref_name == 'main' }}
+        # if: ${{ github.ref_name == 'main' }}
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Download UPM package
