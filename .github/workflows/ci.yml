@@ -550,7 +550,7 @@ jobs:
       # We modify the exported gradle project to deal with the different build-environment
       # I.e. we're fixing the paths for SDK & NDK that have been hardcoded to point at the Unity installation 
       - name: Modify gradle project
-        if: ${{ matrix.platform == 'Android' }}
+        if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' }}
         run: |
           ./test/Scripts.Integration.Test/modify-gradle-project.ps1 `
             -AndroidSdkRoot $env:ANDROID_SDK_ROOT `
@@ -558,7 +558,7 @@ jobs:
             -UnityVersion ${{ matrix.unity-version }}
 
       - name: Setup JDK 17 for Unity 6
-        if: ${{ matrix.platform == 'Android' && matrix.unity-version == '6000' }}
+        if: ${{ matrix.platform == 'Android' && github.ref_name != 'main' && matrix.unity-version == '6000' }}
         uses: actions/setup-java@v3
         with:
           java-version: '17'
