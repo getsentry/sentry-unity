@@ -571,7 +571,7 @@ jobs:
           JAVA_HOME: ${{ env.JAVA_HOME }}
 
       - name: iOS smoke test
-        if: ${{ matrix.platform == 'iOS' && github.ref_name != 'main' }}
+        if: ${{ matrix.platform == 'iOS' }}
         run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
     
       - name: Upload Project project on failure
