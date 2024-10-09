@@ -28,9 +28,9 @@
 - Bump .NET SDK from v4.10.2 to v4.12.0 ([#1823](https://github.com/getsentry/sentry-unity/pull/1823))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#4120)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.10.2...4.12.0)
-- Bump CLI from v2.34.1 to v2.36.6 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796), [#1810](https://github.com/getsentry/sentry-unity/pull/1810), [#1815](https://github.com/getsentry/sentry-unity/pull/1815), [#1819](https://github.com/getsentry/sentry-unity/pull/1819), [#1820](https://github.com/getsentry/sentry-unity/pull/1820), [#1822](https://github.com/getsentry/sentry-unity/pull/1822))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2366)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.36.6)
+- Bump CLI from v2.34.1 to v2.37.0 ([#1788](https://github.com/getsentry/sentry-unity/pull/1788), [#1792](https://github.com/getsentry/sentry-unity/pull/1792), [#1796](https://github.com/getsentry/sentry-unity/pull/1796), [#1810](https://github.com/getsentry/sentry-unity/pull/1810), [#1815](https://github.com/getsentry/sentry-unity/pull/1815), [#1819](https://github.com/getsentry/sentry-unity/pull/1819), [#1820](https://github.com/getsentry/sentry-unity/pull/1820), [#1822](https://github.com/getsentry/sentry-unity/pull/1822), [#1829](https://github.com/getsentry/sentry-unity/pull/1829))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2370)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.34.1...2.37.0)
 
 ## 2.1.5
 
