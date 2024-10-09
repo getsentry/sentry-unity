@@ -343,6 +343,7 @@ jobs:
         # 2. Setting the flag and reloading the domain in a step prior to building
         # 3. Reloading the domain prior to building (does not work - build fails with a domain reload pending)
       - name: Pre-Build Project for Unity 6 and Android
+        continue-on-error: true
         if: ${{ matrix.unity-version == '6000' && matrix.platform == 'Android' }}
         run: |
           $platform = '${{ matrix.platform }}'
