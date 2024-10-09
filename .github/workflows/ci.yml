@@ -345,7 +345,7 @@ jobs:
       - name: Pre-Build Project for Unity 6 and Android
         if: ${{ matrix.unity-version == '6000' && matrix.platform == 'Android' }}
         run: |
-          $platform = '${{ matrix.platform }}'  
+          $platform = '${{ matrix.platform }}'
           if ('${{ github.ref_name }}' -ne 'main')
           {
             $checkSymbols = $false
