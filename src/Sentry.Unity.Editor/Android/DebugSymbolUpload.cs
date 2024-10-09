@@ -229,12 +229,7 @@ internal class DebugSymbolUpload
     internal List<string> GetSymbolUploadPaths(IApplication? application = null)
     {
         var paths = new List<string>();
-        if (IsNewerThanUnity6(application))
-        {
-            _logger.LogInfo("Unity version 6.0 or newer detected. Root for symbols upload: 'Library'.");
-            paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew));
-        }
-        else if (IsNewerThanUnity2021_2(application))
+        if (IsNewerThanUnity2021_2(application))
         {
             _logger.LogInfo("Unity version 2021.2 or newer detected. Root for symbols upload: 'Library'.");
             paths.Add(Path.Combine(_unityProjectPath, RelativeBuildOutputPathNew));
@@ -252,9 +247,6 @@ internal class DebugSymbolUpload
 
     // Starting with Unity 2021.2 the build-process caches the build output inside 'Library' instead of 'Temp'
     internal static bool IsNewerThanUnity2021_2(IApplication? application = null) => SentryUnityVersion.IsNewerOrEqualThan("2021.2", application);
-
-    // Starting Unity 6 the build process no longer caches symbols in 'Library/Bee/Android'
-    internal static bool IsNewerThanUnity6(IApplication? application = null) => SentryUnityVersion.IsNewerOrEqualThan("6000.0", application);
 
     // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
     internal static string ConvertSlashes(string path) => path.Replace(@"\", "/");
