@@ -4,6 +4,9 @@
 
 ### Dependencies
 
+- Bump .NET SDK from v4.12.0 to v4.12.1 ([#1836](https://github.com/getsentry/sentry-unity/pull/1836))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#4121)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.12.0...4.12.1)
 - Bump Java SDK from v7.14.0 to v7.15.0 ([#1837](https://github.com/getsentry/sentry-unity/pull/1837))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7150)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.14.0...7.15.0)
