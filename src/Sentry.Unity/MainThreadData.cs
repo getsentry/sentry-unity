@@ -72,9 +72,6 @@ internal static class MainThreadData
     public static bool IsMainThread()
         => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void CollectData() => CollectData(SentrySystemInfoAdapter.Instance);
-
     internal static void CollectData(ISentrySystemInfo sentrySystemInfo)
     {
         MainThreadId = sentrySystemInfo.MainThreadId;

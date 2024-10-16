@@ -11,7 +11,12 @@
     [Parameter()]
     [switch] $Crash
 )
-. $PSScriptRoot/globals.ps1
+
+if (-not $Global:NewProjectPathCache)
+{
+    . ./test/Scripts.Integration.Test/globals.ps1
+}
+
 . $PSScriptRoot/common.ps1
 
 Write-Host "Given parameters:"
