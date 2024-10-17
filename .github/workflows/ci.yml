@@ -602,21 +602,21 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
     name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
-    runs-on: macos-latest
+    runs-on: macos-13 # Pinning to get the oldest, supported version of iOS simulator
     strategy:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
-        # - `iOS 16`: 71%
-        # - `iOS 15`: 20 %
-        # - the rest: 8 %
-        # as of May 2, 2023. Therefore, let's stick to testing iOS 15 and `latest` for now.
+        # - `iOS 17`: 86 %
+        # - `iOS 16`: 11 %
+        # - the rest:  3 %
+        # as of October, 2024. Therefore, let's stick to testing iOS 16 and `latest` for now.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
-        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-        ios: ["15.4", latest] # last updated May 2023
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md
+        ios: ["16.1", latest] # last updated October 2024
 
     steps:
       - name: Checkout
