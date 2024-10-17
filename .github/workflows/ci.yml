@@ -105,20 +105,6 @@ jobs:
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           wait-timeout: 3600
 
-      - name: Download iOS SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: iOS-sdk
-          path: package-dev/Plugins/iOS
-          wait-timeout: 3600
-
-      - name: Download macSO SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: macOS-sdk
-          path: package-dev/Plugins/macOS
-          wait-timeout: 3600
-
       - name: Download Linux SDK
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
