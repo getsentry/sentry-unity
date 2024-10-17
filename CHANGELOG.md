@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The SDK no longer fails to report contexts like `device` and `gpu` ([#1850](https://github.com/getsentry/sentry-unity/pull/1850))
+
 ## 2.2.1
 
 ### Dependencies

@@ -72,11 +72,13 @@ internal static class MainThreadData
     public static bool IsMainThread()
         => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void CollectData() => CollectData(SentrySystemInfoAdapter.Instance);
+    // For testing
+    internal static ISentrySystemInfo? SentrySystemInfo { get; set; }
 
-    internal static void CollectData(ISentrySystemInfo sentrySystemInfo)
+    public static void CollectData()
     {
+        var sentrySystemInfo = SentrySystemInfo ?? SentrySystemInfoAdapter.Instance;
+
         MainThreadId = sentrySystemInfo.MainThreadId;
         ProcessorCount = sentrySystemInfo.ProcessorCount;
         OperatingSystem = sentrySystemInfo.OperatingSystem;
