@@ -176,7 +176,7 @@ jobs:
       - name: Upload test artifacts (playmode)
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (playmode)
+          name: Test results (playmode) - ${{matrix.unity-version}}
           path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
@@ -185,7 +185,7 @@ jobs:
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (editmode)
+          name: Test results (playmode) - ${{matrix.unity-version}}
           path: artifacts/test/editmode
 
   package-validation:
