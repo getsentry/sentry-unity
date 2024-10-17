@@ -633,6 +633,10 @@ jobs:
         if: ${{ matrix.ios != 'latest'}}
         run: gem install xcode-install
 
+      - name: Show avaiable simulators
+        if: ${{ matrix.ios != 'latest'}}
+        run: xcversion simulators
+
       - name: Setup ${{matrix.ios}} runtime
         if: ${{ matrix.ios != 'latest'}}
         run: xcversion simulators --install='iOS ${{matrix.ios}}'
