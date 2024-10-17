@@ -31,8 +31,8 @@ package-dev/**/TestSentryOptions.json
 package-dev/Tests/Editor/TestFiles/
 package-dev/Plugins/*/Sentry/crashpad_handler*
 
-# Download cache for native SDKs
-native-sdk-cache/
+# Download cache for Cocoa SDK
+modules/sentry-cocoa
 
 # Adding .meta to control target platforms for all of our DLLs
 !package-dev/**/Sentry*.dll.meta

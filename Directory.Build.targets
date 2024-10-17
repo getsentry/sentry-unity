@@ -12,7 +12,7 @@
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
     <!-- Cocoa -->
-    <SentryCocoaCache>$(RepoRoot)native-sdk-cache/sentry-cocoa/</SentryCocoaCache>
+    <SentryCocoaCache>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaCache>
     <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/Sentry.xcframework~/</SentryiOSArtifactsDestination>
     <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry/</SentrymacOSArtifactsDestination>
     <!-- Android -->
@@ -144,14 +144,30 @@ Expected to exist:
         And '$(MSBuildProjectName)' == 'Sentry.Unity'
         And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))" 
       BeforeTargets="BeforeBuild">
-    <Message Importance="High" Text="Building Sentry iOS SDK."></Message>
+    
+    <PropertyGroup>
+        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-cocoa.properties"))</PropertiesContent>
+        <CocoaVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'version\s*=\s*(\d+\.\d+\.\d+)').Groups[1].Value)</CocoaVersion>
+    </PropertyGroup>
+    
+    <Message Importance="High" Text="Setting up the Cocoa SDK version '$(CocoaVersion)'." />
 
-    <!-- Create cache directory and download the Cocoa SDK as pre-built .xcframework -->
-    <MakeDir Directories="$(SentryCocoaCache)" Condition="!Exists('$(SentryCocoaCache)')" />
-    <ItemGroup Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework')">
-      <Exec Command="curl -L https://github.com/getsentry/sentry-cocoa/releases/download/8.37.0/Sentry-Dynamic.xcframework.zip -o $(SentryCocoaCache)Sentry-Dynamic.xcframework.zip" />
-      <Exec Command="unzip -o $(SentryCocoaCache)Sentry.xcframework.zip -d $(SentryCocoaCache)" />
-    </ItemGroup>
+    <!-- Clean cache if version does not exist to get rid of old versions -->
+    <RemoveDir
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')"
+      Directories="$(SentryCocoaCache)" />
+    
+    <!-- Create cache directory -->
+    <MakeDir Condition="!Exists('$(SentryCocoaCache)')" Directories="$(SentryCocoaCache)" />
+
+    <!-- Download the Cocoa SDK as pre-built .xcframework -->
+    <Exec 
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')" 
+      Command="curl -L https://github.com/getsentry/sentry-cocoa/releases/download/$(CocoaVersion)/Sentry-Dynamic.xcframework.zip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip" />
+
+    <Exec 
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework')" 
+      Command="unzip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip -d $(SentryCocoaCache)" />
 
     <!-- Set up the iOS support -->
     <ItemGroup>
