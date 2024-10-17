@@ -34,16 +34,15 @@ try {
         # Override the snapshot file with the current package contents
         $snapshotContent | Out-File $snapshotFile
     }
-    $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
-    Write-Host  $result
-    if ($result.count -eq 0)
-    {
+    
+    # Compare the contents and only output differences
+    $result = Compare-Object $snapshotContent (Get-Content $snapshotFile) | Where-Object { $_.SideIndicator -ne '==' }
+    
+    if ($result.Count -eq 0) {
         Write-Host  "Package contents match snapshot."
-    }
-    else
-    {
+    } else {
         Write-Host  "Package contents do not match snapshot."
-        $result | Format-Table -AutoSize
+        $result | Format-Table -Property InputObject, SideIndicator -AutoSize
         exit 3
     }
 } finally {
@@ -56,13 +55,13 @@ if (-not(Test-Path -Path $androidLibsDir)) {
     exit 1
 }
 
-$androidLibs = Get-ChildItem -Recurse $androidLibsDir | ForEach-Object {$_.Directory.Name + "/" + $_.Name}
-$result = Compare-Object $androidLibs (Get-Content "$PSScriptRoot/android-libs.snapshot")
-if ($result.count -eq 0) {
+$androidLibs = Get-ChildItem -Recurse $androidLibsDir | ForEach-Object { $_.Directory.Name + "/" + $_.Name }
+$result = Compare-Object $androidLibs (Get-Content "$PSScriptRoot/android-libs.snapshot") | Where-Object { $_.SideIndicator -ne '==' }
+
+if ($result.Count -eq 0) {
     Write-Host  "Android native libs match snapshot."
-}
-else {
+} else {
     Write-Host  "Android native libs do not match snapshot."
-    $result | Format-Table -AutoSize
+    $result | Format-Table -Property InputObject, SideIndicator -AutoSize
     exit 3
 }
