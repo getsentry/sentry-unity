@@ -602,7 +602,7 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
     name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
-    runs-on: macos-12
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
