@@ -31,14 +31,10 @@ jobs:
         include:
           - target: Android
             host: ubuntu-latest
-          - target: iOS
-            host: macos-13
           - target: Linux
             # Build using older Linux version to preserve sdk compatibility with old GLIBC
             # See discussion in https://github.com/getsentry/sentry-unity/issues/1730 for more details
             host: ubuntu-20.04
-          - target: macOS
-            host: macos-13
           - target: Windows
             host: windows-latest
     uses: ./.github/workflows/sdk.yml
