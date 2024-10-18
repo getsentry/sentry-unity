@@ -138,10 +138,9 @@ Expected to exist:
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-sentry-cli.ps1&quot;"></Exec>
   </Target>
 
-  <!-- Downloads and sets up the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
+  <!-- Downloads and sets up the Cocoa SDK: dotnet msbuild /t:SetupCocoaSDK src/Sentry.Unity -->
   <Target Name="SetupCocoaSDK" 
-      Condition="$([MSBuild]::IsOSPlatform('OSX'))
-        And '$(MSBuildProjectName)' == 'Sentry.Unity'
+      Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
         And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))" 
       BeforeTargets="BeforeBuild">
     
