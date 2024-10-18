@@ -91,14 +91,12 @@ public class SmokeTester : MonoBehaviour
         t.Start("SMOKE");
         try
         {
+#if !UNITY_EDITOR
             var crashed = CrashedLastRun();
             t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
-
+#endif
             var currentMessage = 0;
             t.ExpectMessage(currentMessage, "'type':'session'");
-
-            var guid = Guid.NewGuid().ToString();
-            Debug.LogError($"LogError(GUID)={guid}");
 
             // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
             // because they're also repeated with standard events (in an envelope).
@@ -114,17 +112,34 @@ public class SmokeTester : MonoBehaviour
 
             t.ExpectMessage(currentMessage, "'type':'transaction");
             t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
+#if !UNITY_EDITOR
             t.ExpectMessage(currentMessage, "'op':'awake','description':'Main Camera.SmokeTester'"); // auto instrumentation
+#endif
             t.ExpectMessageNot(currentMessage, "'length':0");
+            
+            var guid = Guid.NewGuid().ToString();
+            Debug.LogError($"LogError(GUID)={guid}");
+            currentMessage++;
 
-            t.ExpectMessage(++currentMessage, "'type':'event'");
+            t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
+            // Contexts
+            t.ExpectMessage(currentMessage, "'type':'app',");
+            t.ExpectMessage(currentMessage, "'type':'device',");
+            t.ExpectMessage(currentMessage, "'type':'gpu',");
+            t.ExpectMessage(currentMessage, "'type':'os',");
+            t.ExpectMessage(currentMessage, "'type':'runtime',");
+            t.ExpectMessage(currentMessage, "'type':'unity',");
+            // User
             t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
+            // Attachment
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");
 
             SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
-            t.ExpectMessage(++currentMessage, "'type':'event'");
+            currentMessage++;
+
+            t.ExpectMessage(currentMessage, "'type':'event'");
             t.ExpectMessage(currentMessage, $"CaptureMessage(GUID)={guid}");
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");
@@ -252,10 +267,12 @@ public class SmokeTester : MonoBehaviour
             }
             else
             {
+#if !UNITY_EDITOR
                 ExitCode = code;
                 Application.Quit(code);
                 // Application.Quit doesn't actually terminate immediately so exit the context at least...
                 throw new Exception($"Quitting with exit code {code}");
+#endif
             }
         }
 
