@@ -31,11 +31,11 @@ package-dev/**/TestSentryOptions.json
 package-dev/Tests/Editor/TestFiles/
 package-dev/Plugins/*/Sentry/crashpad_handler*
 
+# Download cache for Cocoa SDK
+modules/sentry-cocoa
+
 # Adding .meta to control target platforms for all of our DLLs
 !package-dev/**/Sentry*.dll.meta
-
-# required to be marked as iOS only
-!package-dev/**/*.framework.meta
 
 # required to be excluded on all platforms because we don't want Unity to copy it during build
 !package-dev/**/SentryNativeBridge.m.meta
@@ -60,7 +60,7 @@ sentry-unity/Assets/Editor/Sentry/
 package-dev/alias-references.txt
 
 # ignore integration test files
-Samples/IntegrationTest
+Samples/IntegrationTest*
 unity.log
 
 # Ignore package release
