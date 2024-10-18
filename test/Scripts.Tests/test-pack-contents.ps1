@@ -34,17 +34,25 @@ try {
         # Override the snapshot file with the current package contents
         $snapshotContent | Out-File $snapshotFile
     }
-    
-    # Compare the contents and only output differences
-    $result = Compare-Object $snapshotContent (Get-Content $snapshotFile) | Where-Object { $_.SideIndicator -ne '==' }
-    
-    if ($result.Count -eq 0) {
-        Write-Host  "Package contents match snapshot."
-    } else {
-        Write-Host  "Package contents do not match snapshot."
-        $result | Format-Table -Property InputObject, SideIndicator -AutoSize
+    $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
+
+    if ($result) {
+        Write-Host "Package contents do not match the snapshot." -ForegroundColor Yellow
+        Write-Host "Differences found:" -ForegroundColor Yellow
+        foreach ($difference in $result) {
+            if ($difference.SideIndicator -eq "<=") {
+                Write-Host "In snapshot but not in package: $($difference.InputObject)" -ForegroundColor Cyan
+            } elseif ($difference.SideIndicator -eq "=>") {
+                Write-Host "In package but not in snapshot: $($difference.InputObject)" -ForegroundColor Red
+            }
+        }
+
         exit 3
+    } else {
+        Write-Host "Package contents match the snapshot." -ForegroundColor Green
+        exit 0
     }
+
 } finally {
     $zip.Dispose()
 }
@@ -55,13 +63,13 @@ if (-not(Test-Path -Path $androidLibsDir)) {
     exit 1
 }
 
-$androidLibs = Get-ChildItem -Recurse $androidLibsDir | ForEach-Object { $_.Directory.Name + "/" + $_.Name }
-$result = Compare-Object $androidLibs (Get-Content "$PSScriptRoot/android-libs.snapshot") | Where-Object { $_.SideIndicator -ne '==' }
-
-if ($result.Count -eq 0) {
+$androidLibs = Get-ChildItem -Recurse $androidLibsDir | ForEach-Object {$_.Directory.Name + "/" + $_.Name}
+$result = Compare-Object $androidLibs (Get-Content "$PSScriptRoot/android-libs.snapshot")
+if ($result.count -eq 0) {
     Write-Host  "Android native libs match snapshot."
-} else {
+}
+else {
     Write-Host  "Android native libs do not match snapshot."
-    $result | Format-Table -Property InputObject, SideIndicator -AutoSize
+    $result | Format-Table -AutoSize
     exit 3
 }
