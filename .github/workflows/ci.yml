@@ -635,7 +635,7 @@ jobs:
 
       - name: Set Xcode for non-latest iOS version
         if: ${{ matrix.ios != 'latest'}}
-        run: xcode-select -s "/Applications/Xcode_14.1.app/Contents/Developer"
+        run: sudo xcode-select -s "/Applications/Xcode_14.1.app/Contents/Developer"
 
       - name: Setup ${{matrix.ios}} runtime
         if: ${{ matrix.ios != 'latest'}}
