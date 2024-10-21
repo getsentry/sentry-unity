@@ -156,20 +156,18 @@ jobs:
           docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
-        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (playmode)
+          name: Test results (playmode) - ${{matrix.unity-version}}
           path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
         run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
-        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (editmode)
+          name: Test results (editmode) - ${{matrix.unity-version}}
           path: artifacts/test/editmode
 
   package-validation:
