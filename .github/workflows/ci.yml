@@ -643,7 +643,7 @@ jobs:
 
       - name: Create iOS 16.4 simulator
         if: ${{ matrix.ios != 'latest'}}
-        run: ./scripts/create-simulator.sh 14.1.1 16.1 "iPhone 14"
+        run: ./scripts/ci-create-ios-simulator.sh 14.1.1 16.1 "iPhone 14"
 
 
       - name: Setup ${{matrix.ios}} runtime
