@@ -637,6 +637,15 @@ jobs:
         if: ${{ matrix.ios != 'latest'}}
         run: ./scripts/ci-select-xcode.sh 14.1
 
+      - name: What's on the menu
+        if: ${{ matrix.ios != 'latest'}}
+        run: xcrun simctl list devicetypes
+
+      - name: Create iOS 16.4 simulator
+        if: ${{ matrix.ios != 'latest'}}
+        run: ./scripts/create-simulator.sh 14.1.1 16.1 "iPhone 14"
+
+
       - name: Setup ${{matrix.ios}} runtime
         if: ${{ matrix.ios != 'latest'}}
         run: xcversion simulators --install='iOS ${{matrix.ios}}'
