@@ -177,8 +177,8 @@ Expected to exist:
     <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to set up the iOS SDK." />
 
     <!-- Set up the macOS support -->
-    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_x86_64/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
-    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
+    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
+    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
     <Error Condition="(!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM'))" Text="Failed to set up the macOS SDK." />
   </Target>
 
