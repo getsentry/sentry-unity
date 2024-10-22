@@ -1,7 +1,7 @@
 #!/bin/bash
 # Workaround with a symlink pointed out in: https://github.com/actions/virtual-environments/issues/551#issuecomment-637344435
 
-set -euo pipefail
+set -euox pipefail
 
 XCODE_VERSION="${1}"
 SIM_RUNTIME="${2}"
