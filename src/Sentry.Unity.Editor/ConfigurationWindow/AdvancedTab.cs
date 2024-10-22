@@ -200,7 +200,20 @@ internal static class AdvancedTab
                 }
                 else if (cliOptions is not null && !cliOptions.IsValid(null, EditorUserBuildSettings.development))
                 {
-                    EditorGUILayout.HelpBox("The IL2CPP line number support relies on the Debug Symbol Upload to be properly set up.", MessageType.Error);
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                    var errorIcon = EditorGUIUtility.IconContent("console.erroricon").image;
+                    var content = new GUIContent("The IL2CPP line number support relies on the Debug Symbol Upload to be enabled and configured." +
+                                                 "\nAdditionally, this requires an Auth Token, an Org-Slug and the Project Name." +
+                                                 "\nLearn more about how our IL2CPP support works in our docs.", errorIcon);
+                    EditorGUILayout.LabelField(content, EditorStyles.wordWrappedLabel);
+
+                    if (GUILayout.Button("Open Documentation", EditorStyles.linkLabel))
+                    {
+                        Application.OpenURL("https://docs.sentry.io/platforms/unity/configuration/il2cpp/");
+                    }
+
+                    EditorGUILayout.EndVertical();
                 }
             }
         }
