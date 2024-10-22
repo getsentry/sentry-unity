@@ -633,27 +633,13 @@ jobs:
         if: ${{ matrix.ios != 'latest'}}
         run: gem install xcode-install
 
-      - name: Set Xcode for non-latest iOS version
+      - name: Set Xcode for iOS version ${{matrix.ios}}
         if: ${{ matrix.ios != 'latest'}}
         run: ./scripts/ci-select-xcode.sh 14.1
 
-      - name: What's on the menu
+      - name: Create iOS ${{matrix.ios}} simulator
         if: ${{ matrix.ios != 'latest'}}
-        run: xcrun simctl list devicetypes
-
-      - name: Create iOS 16.4 simulator
-        if: ${{ matrix.ios != 'latest'}}
-        run: ./scripts/ci-create-ios-simulator.sh 14.1.1 16.1 "iPhone 14"
-
-
-      - name: Setup ${{matrix.ios}} runtime
-        if: ${{ matrix.ios != 'latest'}}
-        run: xcversion simulators --install='iOS ${{matrix.ios}}'
-
-      - name: Setup ${{matrix.ios}} Simulator
-        if: ${{ matrix.ios != 'latest' }}
-        # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
-        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios }}"
+        run: ./scripts/ci-create-ios-simulator.sh 14.1 ${{matrix.ios}} "iPhone 14"
 
       - name: Smoke test
         id: smoke-test-ios
