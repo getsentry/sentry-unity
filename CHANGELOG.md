@@ -6,6 +6,12 @@
 
 - The SDK no longer fails to report contexts like `device` and `gpu` ([#1850](https://github.com/getsentry/sentry-unity/pull/1850))
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.37.0 to v8.38.0 ([#1857](https://github.com/getsentry/sentry-unity/pull/1857))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8380)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.37.0...8.38.0)
+
 ## 2.2.1
 
 ### Dependencies
