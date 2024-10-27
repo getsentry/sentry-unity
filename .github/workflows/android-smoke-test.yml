@@ -19,7 +19,7 @@ on:
 jobs:
   run:
     name: try-${{ inputs.try }}
-    runs-on: macos-latest
+    runs-on: macos-13
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
