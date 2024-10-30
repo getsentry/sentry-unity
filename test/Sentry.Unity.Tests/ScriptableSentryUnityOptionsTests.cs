@@ -178,6 +178,42 @@ public class ScriptableSentryUnityOptionsTests
         Assert.True(filters.OfType<UnityBadGatewayExceptionFilter>().Any());
     }
 
+    [Test]
+    public void HandlePlatformRestrictedOptions_UnknownPlatform_SetsRestrictedOptions()
+    {
+        _fixture.UnityInfo = new TestUnityInfo(false);
+
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.EnableOfflineCaching = true;
+
+        var options = new SentryUnityOptions
+        {
+            DisableFileWrite = false,
+            CacheDirectoryPath = "some/path",
+            AutoSessionTracking = true
+        };
+
+        scriptableOptions.HandlePlatformRestrictedOptions(options, _fixture.UnityInfo, _fixture.Application);
+
+        Assert.IsTrue(options.DisableFileWrite);
+        Assert.IsNull(options.CacheDirectoryPath);
+        Assert.IsFalse(options.AutoSessionTracking);
+        Assert.IsTrue(options.BackgroundWorker is WebBackgroundWorker);
+    }
+
+    [Test]
+    public void HandlePlatformRestrictedOptions_KnownPlatform_SetsRestrictedOptions()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.EnableOfflineCaching = true;
+
+        var options = new SentryUnityOptions();
+
+        scriptableOptions.HandlePlatformRestrictedOptions(options, _fixture.UnityInfo, _fixture.Application);
+
+        Assert.AreEqual(options.CacheDirectoryPath, _fixture.Application.PersistentDataPath);
+    }
+
     public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
     {
         Assert.AreEqual(expected.Enabled, actual.Enabled);

@@ -206,13 +206,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         options.SetupLogging();
 
-        // Bail early if we're building the player.
-        if (isBuilding)
-        {
-            return options;
-        }
-
-        if (RuntimeOptionsConfiguration != null)
+        if (RuntimeOptionsConfiguration != null && !isBuilding)
         {
             // This has to happen in between options object creation and updating the options based on programmatic changes
             RuntimeOptionsConfiguration.Configure(options);
@@ -223,7 +217,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             options.AddIl2CppExceptionProcessor(unityInfo);
         }
 
-        HandlePlatformRestrictedOptions(options, application, unityInfo);
+        HandlePlatformRestrictedOptions(options, unityInfo, application);
         HandleExceptionFilter(options);
 
         if (!AnrDetectionEnabled)
@@ -234,7 +228,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         return options;
     }
 
-    internal virtual void HandlePlatformRestrictedOptions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
+    internal void HandlePlatformRestrictedOptions(SentryUnityOptions options, ISentryUnityInfo? unityInfo, IApplication application)
     {
         if (unityInfo?.IsKnownPlatform() == false)
         {
