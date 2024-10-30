@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fixed an issue where the SDK would write the `SampleRate` as an `int` instead of a `float` to the Android Manifest, causing issues during the Android SDK's initialization ([#1872](https://github.com/getsentry/sentry-unity/pull/1872))
+
 ## 2.2.2
 
 ### Fixes
