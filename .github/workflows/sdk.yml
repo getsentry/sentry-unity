@@ -38,17 +38,17 @@ jobs:
       - run: cp -r package-dev/Plugins/${{ inputs.target }} sdk-static || echo "never mind, no files checked in..."
         shell: bash
 
-      - name: Restore from cache
-        uses: actions/cache@v3
-        id: cache
-        with:
-          # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
-          # Output changes only depending on the git sha of the submodules
-          # hash of package/package.json for cache busting on release builds (version bump)
-          path: |
-            package-dev/Plugins
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
+      # - name: Restore from cache
+      #   uses: actions/cache@v3
+      #   id: cache
+      #   with:
+      #     # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
+      #     # Output changes only depending on the git sha of the submodules
+      #     # hash of package/package.json for cache busting on release builds (version bump)
+      #     path: |
+      #       package-dev/Plugins
+      #       modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
+      #     key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
       - name: Installing Linux Dependencies
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
