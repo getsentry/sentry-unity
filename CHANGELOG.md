@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The SDK no longer calls into `Application.persistentDataPath` on unknown platforms. This prevents crashes during startup on platforms with restricted disk access like the Nintendo Switch ([#1870](https://github.com/getsentry/sentry-unity/pull/1870))
+
 ## 2.2.2
 
 ### Fixes
