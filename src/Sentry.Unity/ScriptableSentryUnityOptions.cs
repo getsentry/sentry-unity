@@ -160,7 +160,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             SendDefaultPii = SendDefaultPii,
             IsEnvironmentUser = IsEnvironmentUser,
             MaxCacheItems = MaxCacheItems,
-            CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null,
             InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
             SampleRate = SampleRate == 1.0f ? null : SampleRate, // To skip the random check for dropping events
             ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
@@ -224,7 +223,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             options.AddIl2CppExceptionProcessor(unityInfo);
         }
 
-        HandlePlatformRestrictions(options, application, unityInfo);
+        HandlePlatformRestrictedOptions(options, application, unityInfo);
         HandleExceptionFilter(options);
 
         if (!AnrDetectionEnabled)
@@ -235,7 +234,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         return options;
     }
 
-    private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
+    internal virtual void HandlePlatformRestrictedOptions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
     {
         if (unityInfo?.IsKnownPlatform() == false)
         {
@@ -248,7 +247,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
             }
 
-            // Disable offline caching regardless whether is was enabled or not.
+            // Disable offline caching regardless whether it was enabled or not.
             options.CacheDirectoryPath = null;
             if (EnableOfflineCaching)
             {
@@ -261,7 +260,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
                 options.AutoSessionTracking = false;
             }
+
+            return;
         }
+
+        // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
+        // implicitly creates a directory and leads to crashes i.e. on the Switch.
+        options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
     }
 
     private void HandleExceptionFilter(SentryUnityOptions options)
