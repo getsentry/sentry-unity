@@ -223,17 +223,18 @@ public class AndroidManifestTests
     }
 
     [Test]
-    public void ModifyManifest_SampleRate_SetIfNotNull()
+    [TestCase(0.45f, "0.45")]
+    [TestCase(1, "1.00")]
+    public void ModifyManifest_SampleRate_SetIfNotNull(float sampleRate, string expectedSampleRate)
     {
-        const float expected = 0.6f;
-        _fixture.SentryUnityOptions!.SampleRate = expected;
+        _fixture.SentryUnityOptions!.SampleRate = sampleRate;
         var sut = _fixture.GetSut();
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, $"Setting SampleRate: {expected}");
+        _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, $"Setting SampleRate: {expectedSampleRate}");
 
         Assert.True(manifest.Contains(
-                $"<meta-data android:name=\"io.sentry.sample-rate\" android:value=\"{expected}\" />"),
+                $"<meta-data android:name=\"io.sentry.sample-rate\" android:value=\"{expectedSampleRate}\" />"),
             $"Expected 'io.sentry.sample-rate' in Manifest:\n{manifest}");
     }
 

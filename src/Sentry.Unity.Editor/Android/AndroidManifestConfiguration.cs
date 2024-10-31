@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -157,7 +158,8 @@ public class AndroidManifestConfiguration
 
         if (_options.SampleRate.HasValue)
         {
-            _logger.LogDebug("Setting SampleRate: {0}", _options.SampleRate);
+            // To keep the logs in line with what the SDK writes to the AndroidManifest we're formatting here too
+            _logger.LogDebug("Setting SampleRate: {0}", ((float)_options.SampleRate).ToString("F", CultureInfo.InvariantCulture));
             androidManifest.SetSampleRate(_options.SampleRate.Value);
         }
 
@@ -420,7 +422,8 @@ internal class AndroidManifest : AndroidXmlDocument
     internal void SetDsn(string dsn) => SetMetaData($"{SentryPrefix}.dsn", dsn);
 
     internal void SetSampleRate(float sampleRate) =>
-        SetMetaData($"{SentryPrefix}.sample-rate", sampleRate.ToString());
+        // Keeping the sample-rate as float: https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
+        SetMetaData($"{SentryPrefix}.sample-rate", sampleRate.ToString("F", CultureInfo.InvariantCulture));
 
     internal void SetRelease(string release) => SetMetaData($"{SentryPrefix}.release", release);
 

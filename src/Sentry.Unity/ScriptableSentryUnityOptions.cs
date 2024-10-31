@@ -160,7 +160,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             SendDefaultPii = SendDefaultPii,
             IsEnvironmentUser = IsEnvironmentUser,
             MaxCacheItems = MaxCacheItems,
-            CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null,
             InitCacheFlushTimeout = TimeSpan.FromMilliseconds(InitCacheFlushTimeout),
             SampleRate = SampleRate == 1.0f ? null : SampleRate, // To skip the random check for dropping events
             ShutdownTimeout = TimeSpan.FromMilliseconds(ShutdownTimeout),
@@ -207,13 +206,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         options.SetupLogging();
 
-        // Bail early if we're building the player.
-        if (isBuilding)
-        {
-            return options;
-        }
-
-        if (RuntimeOptionsConfiguration != null)
+        if (RuntimeOptionsConfiguration != null && !isBuilding)
         {
             // This has to happen in between options object creation and updating the options based on programmatic changes
             RuntimeOptionsConfiguration.Configure(options);
@@ -224,7 +217,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             options.AddIl2CppExceptionProcessor(unityInfo);
         }
 
-        HandlePlatformRestrictions(options, application, unityInfo);
+        HandlePlatformRestrictedOptions(options, unityInfo, application);
         HandleExceptionFilter(options);
 
         if (!AnrDetectionEnabled)
@@ -235,7 +228,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         return options;
     }
 
-    private void HandlePlatformRestrictions(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo)
+    internal void HandlePlatformRestrictedOptions(SentryUnityOptions options, ISentryUnityInfo? unityInfo, IApplication application)
     {
         if (unityInfo?.IsKnownPlatform() == false)
         {
@@ -248,7 +241,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
             }
 
-            // Disable offline caching regardless whether is was enabled or not.
+            // Disable offline caching regardless whether it was enabled or not.
             options.CacheDirectoryPath = null;
             if (EnableOfflineCaching)
             {
@@ -261,7 +254,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
                 options.AutoSessionTracking = false;
             }
+
+            return;
         }
+
+        // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
+        // implicitly creates a directory and leads to crashes i.e. on the Switch.
+        options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
     }
 
     private void HandleExceptionFilter(SentryUnityOptions options)
