@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now also supports capturing crashes via the WER handler on Windows ([#1873](https://github.com/getsentry/sentry-unity/pull/1873))
+
 ### Dependencies
 
 - Bump Java SDK from v7.15.0 to v7.16.0 ([#1862](https://github.com/getsentry/sentry-unity/pull/1862))
