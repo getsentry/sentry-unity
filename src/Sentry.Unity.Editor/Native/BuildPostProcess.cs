@@ -75,29 +75,32 @@ public static class BuildPostProcess
     private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName)
     {
         string crashpadPath;
-        if (target is BuildTarget.StandaloneWindows64)
+        string werHandlerPath;
+
+        switch (target)
         {
-            crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
-        }
-        else if (target is BuildTarget.StandaloneLinux64)
-        {
-            // No standalone crash handler for Linux - uses built-in breakpad.
-            return;
-        }
-        else if (target is BuildTarget.StandaloneOSX)
-        {
-            // No standalone crash handler for macOS - uses built-in handler in sentry-cocoa.
-            return;
-        }
-        else
-        {
-            throw new ArgumentException($"Unsupported build target: {target}");
+            case BuildTarget.StandaloneWindows64:
+                crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
+                werHandlerPath = Path.Combine("Windows", "Sentry", "wer_handler.dll");
+                break;
+            case BuildTarget.StandaloneLinux64:
+            case BuildTarget.StandaloneOSX:
+                // No standalone crash handler for Linux/macOS - uses built-in handlers.
+                return;
+            default:
+                throw new ArgumentException($"Unsupported build target: {target}");
         }
 
-        crashpadPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", crashpadPath));
-        var targetPath = Path.Combine(buildOutputDir, Path.GetFileName(crashpadPath));
-        logger.LogInfo("Copying the native crash handler '{0}' to {1}", Path.GetFileName(crashpadPath), targetPath);
-        File.Copy(crashpadPath, targetPath, true);
+        CopyHandler(logger, buildOutputDir, crashpadPath);
+        CopyHandler(logger, buildOutputDir, werHandlerPath);
+    }
+
+    private static void CopyHandler(IDiagnosticLogger logger, string buildOutputDir, string handlerPath)
+    {
+        var fullHandlerPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", handlerPath));
+        var targetHandlerPath = Path.Combine(buildOutputDir, Path.GetFileName(fullHandlerPath));
+        logger.LogInfo("Copying handler '{0}' to {1}", Path.GetFileName(fullHandlerPath), targetHandlerPath);
+        File.Copy(fullHandlerPath, targetHandlerPath, true);
     }
 
     private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
