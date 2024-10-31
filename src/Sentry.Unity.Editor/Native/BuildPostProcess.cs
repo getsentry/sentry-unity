@@ -74,14 +74,11 @@ public static class BuildPostProcess
 
     private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName)
     {
-        string crashpadPath;
-        string werHandlerPath;
-
         switch (target)
         {
             case BuildTarget.StandaloneWindows64:
-                crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
-                werHandlerPath = Path.Combine("Windows", "Sentry", "crashpad_wer.dll");
+                CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_handler.exe"));
+                CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_wer.dll"));
                 break;
             case BuildTarget.StandaloneLinux64:
             case BuildTarget.StandaloneOSX:
@@ -90,9 +87,6 @@ public static class BuildPostProcess
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
         }
-
-        CopyHandler(logger, buildOutputDir, crashpadPath);
-        CopyHandler(logger, buildOutputDir, werHandlerPath);
     }
 
     private static void CopyHandler(IDiagnosticLogger logger, string buildOutputDir, string handlerPath)
