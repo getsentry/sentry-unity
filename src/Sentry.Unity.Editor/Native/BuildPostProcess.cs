@@ -81,7 +81,7 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows64:
                 crashpadPath = Path.Combine("Windows", "Sentry", "crashpad_handler.exe");
-                werHandlerPath = Path.Combine("Windows", "Sentry", "wer_handler.dll");
+                werHandlerPath = Path.Combine("Windows", "Sentry", "crashpad_wer.dll");
                 break;
             case BuildTarget.StandaloneLinux64:
             case BuildTarget.StandaloneOSX:
