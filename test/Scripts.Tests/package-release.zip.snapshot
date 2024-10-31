@@ -1291,6 +1291,8 @@ Plugins/Android/Sentry~/sentry.jar
 Plugins/Windows/Sentry.meta
 Plugins/Windows/Sentry/crashpad_handler.exe
 Plugins/Windows/Sentry/crashpad_handler.exe.meta
+Plugins/Windows/Sentry/crashpad_wer.dll
+Plugins/Windows/Sentry/crashpad_wer.dll.meta
 Plugins/Windows/Sentry/sentry.dll
 Plugins/Windows/Sentry/sentry.dll.meta
 Plugins/Windows/Sentry/sentry.pdb

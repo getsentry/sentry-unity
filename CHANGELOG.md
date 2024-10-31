@@ -7,6 +7,10 @@
 - Fixed an issue where the SDK would write the `SampleRate` as an `int` instead of a `float` to the Android Manifest, causing issues during the Android SDK's initialization ([#1872](https://github.com/getsentry/sentry-unity/pull/1872))
 - The SDK no longer calls into `Application.persistentDataPath` on unknown platforms. This prevents crashes during startup on platforms with restricted disk access like the Nintendo Switch ([#1870](https://github.com/getsentry/sentry-unity/pull/1870))
 
+### Features
+
+- The SDK now also supports capturing native crashes via the WER handler on Windows ([#1873](https://github.com/getsentry/sentry-unity/pull/1873))
+
 ### Dependencies
 
 - Bump Java SDK from v7.15.0 to v7.16.0 ([#1862](https://github.com/getsentry/sentry-unity/pull/1862))
