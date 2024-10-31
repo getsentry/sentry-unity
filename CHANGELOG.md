@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fixed an issue where the SDK would write the `SampleRate` as an `int` instead of a `float` to the Android Manifest, causing issues during the Android SDK's initialization ([#1872](https://github.com/getsentry/sentry-unity/pull/1872))
+- The SDK no longer calls into `Application.persistentDataPath` on unknown platforms. This prevents crashes during startup on platforms with restricted disk access like the Nintendo Switch ([#1870](https://github.com/getsentry/sentry-unity/pull/1870))
 
 ### Dependencies
 
@@ -17,9 +18,9 @@
 - Bump Cocoa SDK from v8.38.0 to v8.39.0 ([#1868](https://github.com/getsentry/sentry-unity/pull/1868))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8390)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.38.0...8.39.0)
-- Bump CLI from v2.37.0 to v2.38.0 ([#1860](https://github.com/getsentry/sentry-unity/pull/1860))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2380)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.37.0...2.38.0)
+- Bump CLI from v2.37.0 to v2.38.1 ([#1860](https://github.com/getsentry/sentry-unity/pull/1860), [#1874](https://github.com/getsentry/sentry-unity/pull/1874))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2381)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.37.0...2.38.1)
 
 ## 2.2.2
 
