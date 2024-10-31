@@ -6,7 +6,7 @@
 
 - Fixed an issue where the SDK would write the `SampleRate` as an `int` instead of a `float` to the Android Manifest, causing issues during the Android SDK's initialization ([#1872](https://github.com/getsentry/sentry-unity/pull/1872))
 - The SDK no longer calls into `Application.persistentDataPath` on unknown platforms. This prevents crashes during startup on platforms with restricted disk access like the Nintendo Switch ([#1870](https://github.com/getsentry/sentry-unity/pull/1870))
-- Link sentry-native DLL against static Windows CRT ([#1875](https://github.com/getsentry/sentry-unity/pull/1875))
+- `sentry-native` DLL is not statically linked against Windows CRT. This allows the SDK to provide native support on some Windows systems that do not have CRT installed locally ([#1875](https://github.com/getsentry/sentry-unity/pull/1875))
 
 ### Dependencies
 
