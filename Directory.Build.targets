@@ -139,33 +139,33 @@ Expected to exist:
   </Target>
 
   <!-- Downloads and sets up the Cocoa SDK: dotnet msbuild /t:SetupCocoaSDK src/Sentry.Unity -->
-  <Target Name="SetupCocoaSDK" 
+  <Target Name="SetupCocoaSDK"
       Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-        And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))" 
+        And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
       BeforeTargets="BeforeBuild">
-    
+
     <PropertyGroup>
         <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-cocoa.properties"))</PropertiesContent>
         <CocoaVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'version\s*=\s*(\d+\.\d+\.\d+)').Groups[1].Value)</CocoaVersion>
     </PropertyGroup>
-    
+
     <Message Importance="High" Text="Setting up the Cocoa SDK version '$(CocoaVersion)'." />
 
     <!-- Clean cache if version does not exist to get rid of old versions -->
     <RemoveDir
       Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')"
       Directories="$(SentryCocoaCache)" />
-    
+
     <!-- Create cache directory -->
     <MakeDir Condition="!Exists('$(SentryCocoaCache)')" Directories="$(SentryCocoaCache)" />
 
     <!-- Download the Cocoa SDK as pre-built .xcframework -->
-    <Exec 
-      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')" 
+    <Exec
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')"
       Command="curl -L https://github.com/getsentry/sentry-cocoa/releases/download/$(CocoaVersion)/Sentry-Dynamic.xcframework.zip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip" />
 
-    <Exec 
-      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework')" 
+    <Exec
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework')"
       Command="unzip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip -d $(SentryCocoaCache)" />
 
     <!-- Set up the iOS support -->
@@ -209,8 +209,8 @@ Expected to exist:
 
     <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -S ."></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -D SENTRY_BUILD_RUNTIMESTATIC=ON -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel "></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
 
     <ItemGroup>
