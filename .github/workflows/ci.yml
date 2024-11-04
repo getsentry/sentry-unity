@@ -618,8 +618,7 @@ jobs:
         run: ./scripts/ci-select-xcode.sh 14.1
 
       - name: Create iOS ${{matrix.ios}} simulator
-        if: ${{ matrix.ios != 'latest'}}
-        run: ./scripts/ci-create-ios-simulator.sh 14.1 ${{matrix.ios}} "iPhone 14"
+        run: xcversion simulators --install='iOS ${{matrix.ios}}'
 
       - name: List installed runtimes
         run: xcrun simctl list runtimes
