@@ -620,8 +620,11 @@ jobs:
       - name: Setup ${{matrix.ios}} Simulator
         if: ${{ matrix.ios != 'latest' }}
         # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
-        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios }}"
+        run: xcrun simctl create InitialSimulator "iPhone 14" "iOS${{ matrix.ios }}"
 
+      - name: List installed runtimes
+        run: xcrun simctl list runtimes
+      
       - name: Smoke test
         id: smoke-test-ios
         timeout-minutes: 10
