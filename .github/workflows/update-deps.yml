@@ -77,7 +77,7 @@ jobs:
       - run: git --no-pager diff
 
       - name: Create PR
-        uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
+        uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # pin#v7.0.5
         with:
           branch: chore/unity-${{ steps.version-select.outputs.version }}
           commit-message: "chore: update to Unity ${{ steps.version-select.outputs.version }}"
