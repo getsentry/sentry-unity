@@ -621,6 +621,9 @@ jobs:
         if: ${{ matrix.ios != 'latest'}}
         run: ./scripts/ci-create-ios-simulator.sh 14.1 ${{matrix.ios}} "iPhone 14"
 
+      - name: List installed runtimes
+        run: xcrun simctl list runtimes
+
       - name: Smoke test
         id: smoke-test-ios
         timeout-minutes: 10
