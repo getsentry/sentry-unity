@@ -53,9 +53,9 @@ jobs:
           $ProgressPreference = 'SilentlyContinue'
           $json = Invoke-WebRequest -UseBasicParsing 'https://services.api.unity.com/unity/editor/release/v1/releases?stream=LTS&limit=1&offset=0&platform=WINDOWS&version=${{ matrix.unity-prefix }}'
           $latest = ($json.Content | ConvertFrom-Json).results[0]
+          echo "Latest version: $latest"
           "version=$($latest.version)" >> $env:GITHUB_OUTPUT
           "changeset=$($latest.shortRevision)" >> $env:GITHUB_OUTPUT
-          echo "Latest version: $version ($changeset)"
 
       - uses: actions/checkout@v3
         with:
