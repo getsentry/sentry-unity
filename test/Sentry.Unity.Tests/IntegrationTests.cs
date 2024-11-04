@@ -281,7 +281,7 @@ public sealed class IntegrationTests
         if (TestEnvironment.IsGitHubActions)
         {
             Debug.Log("YES");
-            Assert.Ignore("Flaky in CI");
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness
         }
 
         Debug.Log("NO");
