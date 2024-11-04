@@ -3,8 +3,8 @@ name: Update Dependencies
 on:
   # Run every day on multiple occasions, with each job running at a different time to limit license-acquisition issues.
   schedule:
-    - cron: "0 2 * * *"
-    - cron: "0 3 * * *"
+    - cron: '0 2 * * *'
+    - cron: '0 3 * * *'
   # Allow a manual trigger to be able to run the update when there are new dependencies or after a PR merge to resolve CHANGELOG conflicts.
   workflow_dispatch:
 
@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-prefix: ["2019", "2020", "2021", "2022", "6000"]
+        unity-prefix: ['2019', '2020', '2021', '2022', '6000']
     steps:
       - name: Find the latest Unity version
         id: version-select
@@ -80,8 +80,8 @@ jobs:
         uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # pin#v7.0.5
         with:
           branch: chore/unity-${{ steps.version-select.outputs.version }}
-          commit-message: "chore: update to Unity ${{ steps.version-select.outputs.version }}"
-          title: "Update to Unity ${{ steps.version-select.outputs.version }}"
+          commit-message: 'chore: update to Unity ${{ steps.version-select.outputs.version }}'
+          title: 'Update to Unity ${{ steps.version-select.outputs.version }}'
           base: main
           body: |
             #skip-changelog
