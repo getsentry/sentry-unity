@@ -12,7 +12,7 @@
     <UnityTestEditModeResultFilePath>../../artifacts/test/editmode/results.xml</UnityTestEditModeResultFilePath>
     <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
     <!-- Cocoa -->
-    <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
+    <SentryCocoaCache>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaCache>
     <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/Sentry.xcframework~/</SentryiOSArtifactsDestination>
     <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry/</SentrymacOSArtifactsDestination>
     <!-- Android -->
@@ -108,21 +108,17 @@ Expected to exist:
     <RemoveDir Directories="$(PlayerBuildPath)" />
   </Target>
 
-  <Target Name="CleaniOSSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <RemoveDir Directories="$(SentryCocoaRoot)Carthage" ContinueOnError="true" />
+  <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <RemoveDir Directories="$(SentryCocoaCache)" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryiOSArtifactsDestination)" ContinueOnError="true" />
+    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib" ContinueOnError="true" />
+    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanAndroidSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <!-- The jar file is version appended and we copy by glob so to avoid duplicates: -->
     <RemoveDir Directories="$(SentryAndroidRoot)sentry/build/libs/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
-  </Target>
-
-  <Target Name="CleanmacOSSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <RemoveDir Directories="$(SentryCocoaRoot)Carthage/Build/Mac" ContinueOnError="true" />
-    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib" ContinueOnError="true" />
-    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanLinuxSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -142,43 +138,48 @@ Expected to exist:
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-sentry-cli.ps1&quot;"></Exec>
   </Target>
 
-  <!-- Build the iOS SDK: dotnet msbuild /t:BuildiOSSDK src/Sentry.Unity -->
-  <Target Name="BuildiOSSDK" Condition="$([MSBuild]::IsOSPlatform('OSX'))
-          And '$(MSBuildProjectName)' == 'Sentry.Unity'
-          And (!Exists('$(SentryiOSArtifactsDestination)'))" BeforeTargets="BeforeBuild">
-    <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
-    <Message Importance="High" Text="Building Sentry iOS SDK."></Message>
+  <!-- Downloads and sets up the Cocoa SDK: dotnet msbuild /t:SetupCocoaSDK src/Sentry.Unity -->
+  <Target Name="SetupCocoaSDK"
+      Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+        And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
+      BeforeTargets="BeforeBuild">
 
-    <!--    Workaround to enable building the Cocoa SDK with Bitcode enabled -->
-    <Message Importance="High" Text="Creating xcconfig file to enable Bitcode." />
-    <WriteLinesToFile File="$(SentryCocoaRoot)unity.xcconfig" Lines="ENABLE_BITCODE = YES" Overwrite="true" />
+    <PropertyGroup>
+        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-cocoa.properties"))</PropertiesContent>
+        <CocoaVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'version\s*=\s*(\d+\.\d+\.\d+)').Groups[1].Value)</CocoaVersion>
+    </PropertyGroup>
 
-    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --use-xcframeworks --no-skip-current --platform iOS --log-path $(SentryCocoaRoot)build.log" EnvironmentVariables="XCODE_XCCONFIG_FILE=unity.xcconfig" />
+    <Message Importance="High" Text="Setting up the Cocoa SDK version '$(CocoaVersion)'." />
 
-    <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
+    <!-- Clean cache if version does not exist to get rid of old versions -->
+    <RemoveDir
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')"
+      Directories="$(SentryCocoaCache)" />
+
+    <!-- Create cache directory -->
+    <MakeDir Condition="!Exists('$(SentryCocoaCache)')" Directories="$(SentryCocoaCache)" />
+
+    <!-- Download the Cocoa SDK as pre-built .xcframework -->
+    <Exec
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')"
+      Command="curl -L https://github.com/getsentry/sentry-cocoa/releases/download/$(CocoaVersion)/Sentry-Dynamic.xcframework.zip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip" />
+
+    <Exec
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework')"
+      Command="unzip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip -d $(SentryCocoaCache)" />
+
+    <!-- Set up the iOS support -->
     <ItemGroup>
-      <iOSDeviceBuildPath Include="$(SentryCocoaRoot)Carthage/Build/Sentry.xcframework/**/*" />
+      <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
+      <xcframeworkdPath Include="$(SentryCocoaCache)/Sentry-Dynamic.xcframework/**/*" />
     </ItemGroup>
-    <Copy SourceFiles="@(iOSDeviceBuildPath)" DestinationFiles="@(iOSDeviceBuildPath->'$(SentryiOSArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')">
-    </Copy>
+    <Copy SourceFiles="@(xcframeworkdPath)" DestinationFiles="@(xcframeworkdPath->'$(SentryiOSArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to set up the iOS SDK." />
 
-    <Message Importance="High" Text="Deleting xcconfig file." />
-    <Delete Files="$(SentryCocoaRoot)unity.xcconfig" />
-
-    <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to build the iOS SDK." />
-  </Target>
-
-  <!-- Build the macOS SDK: dotnet msbuild /t:BuildmacOSSDK src/Sentry.Unity -->
-  <Target Name="BuildmacOSSDK" BeforeTargets="BeforeBuild" Condition="$([MSBuild]::IsOSPlatform('OSX'))
-          And '$(MSBuildProjectName)' == 'Sentry.Unity'
-          And (!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM'))">
-    <Error Condition="!Exists('$(SentryCocoaRoot)')" Text="Couldn't find the Cocoa root at $(SentryCocoaRoot)."></Error>
-    <Message Importance="High" Text="Building Sentry macOS SDK."></Message>
-
-    <Exec WorkingDirectory="$(SentryCocoaRoot)" Command="carthage build --no-skip-current --platform macOS --log-path $(SentryCocoaRoot)build.log" />
-
-    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
-    <Copy SourceFiles="$(SentryCocoaRoot)Carthage/Build/Mac/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
+    <!-- Set up the macOS support -->
+    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
+    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
+    <Error Condition="(!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM'))" Text="Failed to set up the macOS SDK." />
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
@@ -208,12 +209,13 @@ Expected to exist:
 
     <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -S ."></Exec>
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel"></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -D SENTRY_BUILD_RUNTIMESTATIC=ON -S ."></Exec>
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel "></Exec>
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel"></Exec>
 
     <ItemGroup>
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/RelWithDebInfo/crashpad_wer.dll" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.dll" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.pdb" />
     </ItemGroup>
@@ -512,8 +514,6 @@ void PrintFailedTests(XElement element)
 
     <ItemGroup>
       <SDK Include="Windows"/>
-      <SDK Include="iOS"/>
-      <SDK Include="macOS"/>
       <SDK Include="Android"/>
       <SDK Include="Linux"/>
     </ItemGroup>

@@ -31,14 +31,10 @@ jobs:
         include:
           - target: Android
             host: ubuntu-latest
-          - target: iOS
-            host: macos-13
           - target: Linux
             # Build using older Linux version to preserve sdk compatibility with old GLIBC
             # See discussion in https://github.com/getsentry/sentry-unity/issues/1730 for more details
             host: ubuntu-20.04
-          - target: macOS
-            host: macos-13
           - target: Windows
             host: windows-latest
     uses: ./.github/workflows/sdk.yml
@@ -109,20 +105,6 @@ jobs:
           path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           wait-timeout: 3600
 
-      - name: Download iOS SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: iOS-sdk
-          path: package-dev/Plugins/iOS
-          wait-timeout: 3600
-
-      - name: Download macSO SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: macOS-sdk
-          path: package-dev/Plugins/macOS
-          wait-timeout: 3600
-
       - name: Download Linux SDK
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
@@ -174,20 +156,18 @@ jobs:
           docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Upload test artifacts (playmode)
-        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (playmode)
+          name: Test results (playmode) - ${{matrix.unity-version}}
           path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
         run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
-        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (editmode)
+          name: Test results (editmode) - ${{matrix.unity-version}}
           path: artifacts/test/editmode
 
   package-validation:

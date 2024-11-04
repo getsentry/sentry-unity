@@ -35,17 +35,24 @@ try {
         $snapshotContent | Out-File $snapshotFile
     }
     $result = Compare-Object $snapshotContent (Get-Content $snapshotFile)
-    Write-Host  $result
-    if ($result.count -eq 0)
-    {
-        Write-Host  "Package contents match snapshot."
-    }
-    else
-    {
-        Write-Host  "Package contents do not match snapshot."
-        $result | Format-Table -AutoSize
+
+    if ($result) {
+        Write-Host "Package contents do not match the snapshot." -ForegroundColor Yellow
+        Write-Host "Differences found:" -ForegroundColor Yellow
+        foreach ($difference in $result) {
+            if ($difference.SideIndicator -eq "<=") {
+                Write-Host "In snapshot but not in package: $($difference.InputObject)" -ForegroundColor Cyan
+            } elseif ($difference.SideIndicator -eq "=>") {
+                Write-Host "In package but not in snapshot: $($difference.InputObject)" -ForegroundColor Red
+            }
+        }
+
         exit 3
+    } else {
+        Write-Host "Package contents match the snapshot." -ForegroundColor Green
+        exit 0
     }
+
 } finally {
     $zip.Dispose()
 }
