@@ -277,7 +277,7 @@ public sealed class IntegrationTests
     public IEnumerator DebugLogException_InTask_IsCapturedAndIsMainThreadIsFalse()
     {
         Debug.Log("HUEHUEHUEHUE");
-        
+
         if (TestEnvironment.IsGitHubActions)
         {
             Debug.Log("YES");
