@@ -276,10 +276,15 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogException_InTask_IsCapturedAndIsMainThreadIsFalse()
     {
+        Debug.Log("HUEHUEHUEHUE");
+        
         if (TestEnvironment.IsGitHubActions)
         {
+            Debug.Log("YES");
             Assert.Ignore("Flaky in CI");
         }
+
+        Debug.Log("NO");
 
         yield return SetupSceneCoroutine("1_BugFarm");
 
