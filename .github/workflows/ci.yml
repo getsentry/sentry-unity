@@ -617,6 +617,11 @@ jobs:
         if: ${{ matrix.ios != 'latest'}}
         run: ./scripts/ci-select-xcode.sh 14.1
 
+      - name: Check Selected Xcode Version
+        run: |
+          echo "Current Xcode path: ${DEVELOPER_DIR:-$(xcode-select -p)}"
+          xcodebuild -version
+      
       - name: Create iOS ${{matrix.ios}} simulator
         run: xcversion simulators --install='iOS ${{matrix.ios}}'
 
