@@ -3,8 +3,8 @@ name: Update Dependencies
 on:
   # Run every day on multiple occasions, with each job running at a different time to limit license-acquisition issues.
   schedule:
-    - cron: '0 2 * * *'
-    - cron: '0 3 * * *'
+    - cron: "0 2 * * *"
+    - cron: "0 3 * * *"
   # Allow a manual trigger to be able to run the update when there are new dependencies or after a PR merge to resolve CHANGELOG conflicts.
   workflow_dispatch:
 
@@ -43,15 +43,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-prefix: ['2019.', '2020.', '2021.', '2022.', '6000.']
+        unity-prefix: ["2019", "2020", "2021", "2022", "6000"]
     steps:
       - name: Find the latest Unity version
         id: version-select
         run: |
-          $page = Invoke-WebRequest -UseBasicParsing -Uri 'https://unity.com/releases/editor/archive'
-          $latest = $page.RawContent | Select-String -Pattern '\"unityhub://(${{ matrix.unity-prefix }}[a-z0-9.-]+)/([a-z0-9]+)\\'
-          "version=$($latest.Matches.Groups[1].value)" >> $env:GITHUB_OUTPUT
-          "changeset=$($latest.Matches.Groups[2].value)" >> $env:GITHUB_OUTPUT
+          $ProgressPreference = 'SilentlyContinue'
+          $json = Invoke-WebRequest -UseBasicParsing 'https://services.api.unity.com/unity/editor/release/v1/releases?stream=LTS&limit=1&offset=0&platform=WINDOWS&version=${{ matrix.unity-prefix }}'
+          $latest = ($json.Content | ConvertFrom-Json).results[0]
+          "version=$($latest.version)" >> $env:GITHUB_OUTPUT
+          "changeset=$($latest.shortRevision)" >> $env:GITHUB_OUTPUT
           echo "Latest version: $version ($changeset)"
 
       - uses: actions/checkout@v3
@@ -59,7 +60,7 @@ jobs:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Update sample ProjectVersion.txt
-        if: ${{ matrix.unity-prefix == '2019.' }}
+        if: ${{ matrix.unity-prefix == '2019' }}
         run: |
           "m_EditorVersion: ${{ steps.version-select.outputs.version }}`nm_EditorVersionWithRevision: ${{ steps.version-select.outputs.version }} (${{ steps.version-select.outputs.changeset }})" `
             | Out-File "samples\unity-of-bugs\ProjectSettings\ProjectVersion.txt"
@@ -67,7 +68,7 @@ jobs:
       - name: Update ci-env.ps1
         run: |
           $file = "scripts/ci-env.ps1"
-          $regexVersion = '${{ matrix.unity-prefix }}'.Replace(".", "\.") + "[0-9.a-z]+"
+          $regexVersion = '${{ matrix.unity-prefix }}' + "[0-9.a-z]+"
           echo "Regex: $regexVersion"
           (Get-Content $file) -replace $regexVersion, '${{ steps.version-select.outputs.version }}' | Out-File $file
 
@@ -77,8 +78,8 @@ jobs:
         uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
         with:
           branch: chore/unity-${{ steps.version-select.outputs.version }}
-          commit-message: 'chore: update to Unity ${{ steps.version-select.outputs.version }}'
-          title: 'Update to Unity ${{ steps.version-select.outputs.version }}'
+          commit-message: "chore: update to Unity ${{ steps.version-select.outputs.version }}"
+          title: "Update to Unity ${{ steps.version-select.outputs.version }}"
           base: main
           body: |
             #skip-changelog
