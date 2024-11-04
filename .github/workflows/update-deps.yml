@@ -11,7 +11,8 @@ on:
 jobs:
   deps:
     name: ${{ matrix.name }}
-    if: github.event.schedule == '0 2 * * *'
+    # Note: we're using the negative check here so this runs also for workflow_dispatch.
+    if: github.event.schedule != '0 2 * * *'
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +36,8 @@ jobs:
 
   unity:
     name: Unity ${{ matrix.unity-prefix }} PR
-    if: github.event.schedule == '0 3 * * *'
+    # Note: we're using the negative check here so this runs also for workflow_dispatch.
+    if: github.event.schedule != '0 3 * * *'
     runs-on: ubuntu-latest
     defaults:
       run:
