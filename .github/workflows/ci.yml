@@ -601,11 +601,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Download app artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: testapp-iOS-compiled-${{ matrix.unity-version }}
-          path: samples/IntegrationTest/Build
+      # - name: Download app artifact
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: testapp-iOS-compiled-${{ matrix.unity-version }}
+      #     path: samples/IntegrationTest/Build
 
       - name: Setup xcode-install
         # Github Virtual machine already sets the runtime and simulator for the latest release.
