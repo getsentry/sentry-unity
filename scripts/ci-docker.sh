@@ -36,6 +36,7 @@ docker run -td --name $container \
     -v /usr/share/dotnet:/usr/share/dotnet \
     -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
     -e UNITY_VERSION=$unityVersion \
+    -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
     --workdir /sentry-unity $image
 
 $suexec $container groupadd -g $gid $user

@@ -278,7 +278,7 @@ public sealed class IntegrationTests
     {
         if (TestEnvironment.IsGitHubActions)
         {
-            Assert.Ignore("Flaky in CI");
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness
         }
 
         yield return SetupSceneCoroutine("1_BugFarm");
