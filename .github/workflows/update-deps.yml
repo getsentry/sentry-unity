@@ -11,7 +11,8 @@ on:
 jobs:
   deps:
     name: ${{ matrix.name }}
-    if: github.event.schedule == '0 2 * * *'
+    # Note: we're using the negative check here so this runs also for workflow_dispatch.
+    if: github.event.schedule != '0 2 * * *'
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +36,8 @@ jobs:
 
   unity:
     name: Unity ${{ matrix.unity-prefix }} PR
-    if: github.event.schedule == '0 3 * * *'
+    # Note: we're using the negative check here so this runs also for workflow_dispatch.
+    if: github.event.schedule != '0 3 * * *'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,23 +45,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-prefix: ['2019.', '2020.', '2021.', '2022.', '6000.']
+        unity-prefix: ['2019', '2020', '2021', '2022', '6000']
     steps:
       - name: Find the latest Unity version
         id: version-select
         run: |
-          $page = Invoke-WebRequest -UseBasicParsing -Uri 'https://unity.com/releases/editor/archive'
-          $latest = $page.RawContent | Select-String -Pattern '\"unityhub://(${{ matrix.unity-prefix }}[a-z0-9.-]+)/([a-z0-9]+)\\'
-          "version=$($latest.Matches.Groups[1].value)" >> $env:GITHUB_OUTPUT
-          "changeset=$($latest.Matches.Groups[2].value)" >> $env:GITHUB_OUTPUT
-          echo "Latest version: $version ($changeset)"
+          $ProgressPreference = 'SilentlyContinue'
+          $json = Invoke-WebRequest -UseBasicParsing 'https://services.api.unity.com/unity/editor/release/v1/releases?stream=LTS&limit=1&offset=0&platform=WINDOWS&version=${{ matrix.unity-prefix }}'
+          $latest = ($json.Content | ConvertFrom-Json).results[0]
+          echo "Latest version: $latest"
+          "version=$($latest.version)" >> $env:GITHUB_OUTPUT
+          "changeset=$($latest.shortRevision)" >> $env:GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
         with:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Update sample ProjectVersion.txt
-        if: ${{ matrix.unity-prefix == '2019.' }}
+        if: ${{ matrix.unity-prefix == '2019' }}
         run: |
           "m_EditorVersion: ${{ steps.version-select.outputs.version }}`nm_EditorVersionWithRevision: ${{ steps.version-select.outputs.version }} (${{ steps.version-select.outputs.changeset }})" `
             | Out-File "samples\unity-of-bugs\ProjectSettings\ProjectVersion.txt"
@@ -67,14 +70,14 @@ jobs:
       - name: Update ci-env.ps1
         run: |
           $file = "scripts/ci-env.ps1"
-          $regexVersion = '${{ matrix.unity-prefix }}'.Replace(".", "\.") + "[0-9.a-z]+"
+          $regexVersion = '${{ matrix.unity-prefix }}' + "[0-9.a-z]+"
           echo "Regex: $regexVersion"
           (Get-Content $file) -replace $regexVersion, '${{ steps.version-select.outputs.version }}' | Out-File $file
 
       - run: git --no-pager diff
 
       - name: Create PR
-        uses: peter-evans/create-pull-request@f22a7da129c901513876a2380e2dae9f8e145330
+        uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # pin#v7.0.5
         with:
           branch: chore/unity-${{ steps.version-select.outputs.version }}
           commit-message: 'chore: update to Unity ${{ steps.version-select.outputs.version }}'
