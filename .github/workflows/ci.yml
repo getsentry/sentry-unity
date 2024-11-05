@@ -623,8 +623,8 @@ jobs:
           echo "Current Xcode path: ${DEVELOPER_DIR:-$(xcode-select -p)}"
           xcodebuild -version
       
-      - name: Create iOS ${{matrix.ios}} simulator
-        run: xcversion simulators --install='iOS ${{matrix.ios}}'
+      # - name: Create iOS ${{matrix.ios}} simulator
+      #   run: xcversion simulators --install='iOS ${{matrix.ios}}'
 
       - name: List installed runtimes
         run: xcrun simctl list runtimes
