@@ -580,7 +580,6 @@ jobs:
 
   ios-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [mobile-smoke-test-compile]
     name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
     runs-on: macos-13 # Pinning to get the oldest, supported version of iOS simulator
     strategy:
@@ -615,7 +614,9 @@ jobs:
 
       - name: Set Xcode for iOS version ${{matrix.ios}}
         if: ${{ matrix.ios != 'latest'}}
-        run: ./scripts/ci-select-xcode.sh 14.1
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # ping v1.6
+        with:
+          xcode-version: '14.1'
 
       - name: Check Selected Xcode Version
         run: |
