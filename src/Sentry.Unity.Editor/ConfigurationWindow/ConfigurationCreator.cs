@@ -13,7 +13,7 @@ internal static class OptionsConfigurationItem
 
     public static T? Display<T>(T? value, string fieldName, string scriptName, string toolTip) where T : ScriptableObject
     {
-        GUILayout.BeginHorizontal();
+        EditorGUILayout.BeginHorizontal();
         var result = EditorGUILayout.ObjectField(
             new GUIContent(fieldName, toolTip),
             value,
@@ -27,6 +27,10 @@ internal static class OptionsConfigurationItem
             {
                 CreateDeprecatedConfigurationScript<T>(fieldName, scriptName);
             }
+            else if (t == typeof(SentryOptionsConfiguration))
+            {
+                CreateConfigurationScript(fieldName, SentryOptionsConfiguration.Template, scriptName);
+            }
             else if (t == typeof(SentryCliOptionsConfiguration))
             {
                 CreateConfigurationScript(fieldName, SentryCliOptionsConfiguration.Template, scriptName);
@@ -36,7 +40,7 @@ internal static class OptionsConfigurationItem
                 throw new Exception("Attempting to create a new instance of unsupported type " + typeof(T).FullName);
             }
         }
-        GUILayout.EndHorizontal();
+        EditorGUILayout.EndHorizontal();
         return result;
     }
 
@@ -176,6 +180,9 @@ internal static class OptionsConfigurationItem
                 break;
             case SentryBuildTimeOptionsConfiguration buildTimeConfiguration:
                 options.BuildTimeOptionsConfiguration ??= buildTimeConfiguration; // Don't overwrite if already set
+                break;
+            case SentryOptionsConfiguration configuration:
+                options.OptionsConfiguration ??= configuration; // Don't overwrite if already set
                 break;
             case SentryCliOptionsConfiguration cliConfiguration:
                 cliOptions.CliOptionsConfiguration ??= cliConfiguration; // Don't overwrite if already set

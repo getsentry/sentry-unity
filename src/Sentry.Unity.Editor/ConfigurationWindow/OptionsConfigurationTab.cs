@@ -1,5 +1,3 @@
-using System.IO;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,7 +9,13 @@ internal static class OptionsConfigurationTab
     {
         GUILayout.Label("Scriptable Options Configuration", EditorStyles.boldLabel);
 
+        EditorGUILayout.HelpBox("Clicking the 'New' button will prompt you with selecting a location for " +
+                                "your custom 'SentryConfiguration' script and automatically " +
+                                "create a new asset instance.", MessageType.Info);
+
         EditorGUILayout.Space();
+
+        EditorGUILayout.BeginVertical("box");
 
         EditorGUILayout.HelpBox(
             "The scriptable options configuration allows you to programmatically modify Sentry options." +
@@ -27,26 +31,43 @@ internal static class OptionsConfigurationTab
             "managed layer does (such as Android, iOS, macOS).",
             MessageType.Info);
 
-        EditorGUILayout.HelpBox("Clicking the 'New' button will prompt you with selecting a location for " +
-                                "your custom 'SentryConfiguration' script and automatically " +
-                                "create a new asset instance.", MessageType.Info);
-
         EditorGUILayout.Space();
+
+        EditorGUILayout.HelpBox("Deprecated and will be removed in a future version.\nPlease use the 'Option Config Script' below instead.", MessageType.Warning);
 
         options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
             options.RuntimeOptionsConfiguration,
-            "Runtime Configuration Script",
+            "Runtime Config Script",
             "SentryRuntimeConfiguration",
-            "A scriptable object that inherits from 'ScriptableOptionsConfiguration' " +
+            "DEPRECATED: A scriptable object that inherits from 'ScriptableOptionsConfiguration' " +
             "and allows you to programmatically modify Sentry options."
         );
 
         options.BuildTimeOptionsConfiguration = OptionsConfigurationItem.Display(
             options.BuildTimeOptionsConfiguration,
-            "Build Time Configuration Script",
+            "Build Time Config Script",
             "SentryBuildTimeConfiguration",
-            "A scriptable object that inherits from 'ScriptableOptionsConfiguration' " +
+            "DEPRECATED: A scriptable object that inherits from 'ScriptableOptionsConfiguration' " +
             "and allows you to programmatically modify Sentry options."
         );
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.BeginVertical("box");
+
+        EditorGUILayout.HelpBox("The 'Option Config Script' allows you to programmatically configure and " +
+                                "modify the options used by the Sentry SDK.", MessageType.Info);
+
+        options.OptionsConfiguration = OptionsConfigurationItem.Display(
+            options.OptionsConfiguration,
+            "Option Config Script",
+            "SentryOptionConfiguration",
+            "A scriptable object that inherits from 'SentryOptionsConfiguration' " +
+            "and allows you to programmatically modify Sentry options."
+        );
+
+        EditorGUILayout.EndVertical();
     }
 }
