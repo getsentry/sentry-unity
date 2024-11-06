@@ -135,32 +135,37 @@ public class AndroidManifestConfiguration
         _logger.LogDebug("Setting DSN: {0}", _options!.Dsn);
         androidManifest.SetDsn(_options.Dsn!);
 
-        if (_options.Debug)
+        var debug = _options.Native.Debug ?? _options.Debug;
+        if (debug)
         {
-            _logger.LogDebug("Setting Debug: {0}", _options.Debug);
-            androidManifest.SetDebug(_options.Debug);
+            _logger.LogDebug("Setting Debug: {0}", debug);
+            androidManifest.SetDebug(debug);
         }
 
-        if (_options.Release is not null)
+        var release = _options.Native.Release ?? _options.Release;
+        if (release is not null)
         {
-            _logger.LogDebug("Setting Release: {0}", _options.Release);
-            androidManifest.SetRelease(_options.Release);
+            _logger.LogDebug("Setting Release: {0}", release);
+            androidManifest.SetRelease(release);
         }
 
-        if (_options.Environment is not null)
+        var environment = _options.Native.Environment ?? _options.Environment;
+        if (environment is not null)
         {
-            _logger.LogDebug("Setting Environment: {0}", _options.Environment);
-            androidManifest.SetEnvironment(_options.Environment);
+            _logger.LogDebug("Setting Environment: {0}", environment);
+            androidManifest.SetEnvironment(environment);
         }
 
-        _logger.LogDebug("Setting DiagnosticLevel: {0}", _options.DiagnosticLevel);
-        androidManifest.SetLevel(_options.DiagnosticLevel);
+        var diagnosticLevel = _options.Native.DiagnosticLevel ?? _options.DiagnosticLevel;
+        _logger.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
+        androidManifest.SetLevel(diagnosticLevel);
 
-        if (_options.SampleRate.HasValue)
+        var sampleRate  = _options.Native.SampleRate ?? _options.SampleRate;
+        if (sampleRate.HasValue)
         {
             // To keep the logs in line with what the SDK writes to the AndroidManifest we're formatting here too
-            _logger.LogDebug("Setting SampleRate: {0}", ((float)_options.SampleRate).ToString("F", CultureInfo.InvariantCulture));
-            androidManifest.SetSampleRate(_options.SampleRate.Value);
+            _logger.LogDebug("Setting SampleRate: {0}", ((float)sampleRate).ToString("F", CultureInfo.InvariantCulture));
+            androidManifest.SetSampleRate(sampleRate.Value);
         }
 
         // TODO: Missing on AndroidManifest

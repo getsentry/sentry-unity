@@ -24,19 +24,19 @@ static SentryOptions* getSentryOptions()
     [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
 
     NSDictionary* optionsDictionary = @{{
-        @""dsn"" : @""{options.Dsn}"",
-        @""debug"" : @{ToObjCString(options.Debug)},
-        @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.DiagnosticLevel)}"",
-        @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
-        @""maxCacheItems"": @{options.MaxCacheItems},
+        @""dsn"" : @""{options.Native.Dsn ?? options.Dsn}"",
+        @""debug"" : @{ToObjCString(options.Native.Debug ?? options.Debug)},
+        @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.Native.DiagnosticLevel ?? options.DiagnosticLevel)}"",
+        @""maxBreadcrumbs"": @{options.Native.MaxBreadcrumb ?? options.MaxBreadcrumbs},
+        @""maxCacheItems"": @{options.Native.MaxCacheItem ?? options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @NO,
         @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
         @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
-        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
-        @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
-        @""release"" : @""{options.Release}"",
-        @""environment"" : @""{options.Environment}"",
+        @""sendDefaultPii"" : @{ToObjCString(options.Native.SendDefaultPii ?? options.SendDefaultPii)},
+        @""attachScreenshot"" : @{ToObjCString(options.Native.AttachScreenshot ?? options.AttachScreenshot)},
+        @""release"" : @""{options.Native.Release ?? options.Release}"",
+        @""environment"" : @""{options.Native.Environment ?? options.Environment}"",
         @""enableNetworkBreadcrumbs"" : @NO
     }};
 

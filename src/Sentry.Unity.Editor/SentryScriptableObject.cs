@@ -39,10 +39,16 @@ internal static class SentryScriptableObject
             options = scriptableOptions.ToSentryUnityOptions(isBuilding: true, unityInfo: null);
             // Must be non-nullable in the interface otherwise Unity script compilation fails...
             cliOptions ??= ScriptableObject.CreateInstance<SentryCliOptions>();
-            var setupScript = scriptableOptions.BuildTimeOptionsConfiguration;
-            if (setupScript != null)
+            var deprecatedConfiguration = scriptableOptions.BuildTimeOptionsConfiguration;
+            if (deprecatedConfiguration != null)
             {
-                setupScript.Configure(options, cliOptions);
+                deprecatedConfiguration.Configure(options, cliOptions);
+            }
+
+            var optionsConfiguration = scriptableOptions.OptionsConfiguration;
+            if (optionsConfiguration != null)
+            {
+                optionsConfiguration.Configure(options);
             }
         }
 

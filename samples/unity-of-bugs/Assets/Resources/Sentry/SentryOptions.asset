@@ -52,11 +52,16 @@ MonoBehaviour:
   <MaxQueueItems>k__BackingField: 30
   <AnrDetectionEnabled>k__BackingField: 1
   <AnrTimeout>k__BackingField: 5000
+  <CaptureFailedRequests>k__BackingField: 1
+  <FailedRequestStatusCodes>k__BackingField: f401000057020000
   <FilterBadGatewayExceptions>k__BackingField: 1
   <FilterWebExceptions>k__BackingField: 1
   <FilterSocketExceptions>k__BackingField: 1
   <IosNativeSupportEnabled>k__BackingField: 1
   <AndroidNativeSupportEnabled>k__BackingField: 1
+  <NdkIntegrationEnabled>k__BackingField: 1
+  <NdkScopeSyncEnabled>k__BackingField: 1
+  <PostGenerateGradleProjectCallbackOrder>k__BackingField: 1
   <WindowsNativeSupportEnabled>k__BackingField: 1
   <MacosNativeSupportEnabled>k__BackingField: 1
   <LinuxNativeSupportEnabled>k__BackingField: 1
@@ -64,6 +69,8 @@ MonoBehaviour:
   <RuntimeOptionsConfiguration>k__BackingField: {fileID: 11400000, guid: f9a47e8442a604414a84d5ad6da6aa43,
     type: 2}
   <BuildTimeOptionsConfiguration>k__BackingField: {fileID: 11400000, guid: 1c61999bd2a61408393cfe218d42287e,
+    type: 2}
+  <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: a25a5a0961ec2473dafd8d49df35a927,
     type: 2}
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0

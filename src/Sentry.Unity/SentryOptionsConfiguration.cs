@@ -16,7 +16,6 @@ public abstract class SentryOptionsConfiguration : ScriptableObject
                 // Here you can programmatically modify the Sentry option properties used for the SDK's initialization
             }
         }
-
         """;
 
     /// <summary>
