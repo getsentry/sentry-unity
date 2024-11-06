@@ -26,6 +26,10 @@ Sentry has extensive documentation for this SDK.
 
 Check the Sentry [Unity documentation for more details](https://docs.sentry.io/platforms/unity/).
 
+Blog posts: 
+* [How to get started with Sentry's Unity SDK](https://blog.sentry.io/how-to-get-started-with-sentrys-unity-sdk-part-1/)
+* [Enabling Out-of-the-Box Performance Insights in Unity Games with the Sentry SDK](https://sentry.engineering/blog/enabling-out-of-the-box-performance-insights-in-the-unity-sdk)
+
 
 ## Setup Sentry SDK with Unity
 
