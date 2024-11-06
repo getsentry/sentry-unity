@@ -135,32 +135,32 @@ public class AndroidManifestConfiguration
         _logger.LogDebug("Setting DSN: {0}", _options!.Dsn);
         androidManifest.SetDsn(_options.Dsn!);
 
-        var debug = _options.Native.Debug ?? _options.Debug;
+        var debug = _options.NativeOverrides.Debug ?? _options.Debug;
         if (debug)
         {
             _logger.LogDebug("Setting Debug: {0}", debug);
             androidManifest.SetDebug(debug);
         }
 
-        var release = _options.Native.Release ?? _options.Release;
+        var release = _options.NativeOverrides.Release ?? _options.Release;
         if (release is not null)
         {
             _logger.LogDebug("Setting Release: {0}", release);
             androidManifest.SetRelease(release);
         }
 
-        var environment = _options.Native.Environment ?? _options.Environment;
+        var environment = _options.NativeOverrides.Environment ?? _options.Environment;
         if (environment is not null)
         {
             _logger.LogDebug("Setting Environment: {0}", environment);
             androidManifest.SetEnvironment(environment);
         }
 
-        var diagnosticLevel = _options.Native.DiagnosticLevel ?? _options.DiagnosticLevel;
+        var diagnosticLevel = _options.NativeOverrides.DiagnosticLevel ?? _options.DiagnosticLevel;
         _logger.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
         androidManifest.SetLevel(diagnosticLevel);
 
-        var sampleRate  = _options.Native.SampleRate ?? _options.SampleRate;
+        var sampleRate  = _options.NativeOverrides.SampleRate ?? _options.SampleRate;
         if (sampleRate.HasValue)
         {
             // To keep the logs in line with what the SDK writes to the AndroidManifest we're formatting here too

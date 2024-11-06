@@ -9,6 +9,7 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
 
         options.Environment = "dev";
 
-        options.Native.Environment = "native_dev";
+        options.NativeOverrides.Environment = "native_dev";
+        options.NativeOverrides.SampleRate = 0.1f;
     }
 }

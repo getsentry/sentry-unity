@@ -5,7 +5,7 @@ public partial class SentryUnityOptions
     /// <summary>
     /// Exposes native options.
     /// </summary>
-    public NativeOptions Native { get; } = new();
+    public NativeOptions NativeOverrides { get; } = new();
 
     public class NativeOptions
     {

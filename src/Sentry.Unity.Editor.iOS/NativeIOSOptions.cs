@@ -24,19 +24,19 @@ static SentryOptions* getSentryOptions()
     [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
 
     NSDictionary* optionsDictionary = @{{
-        @""dsn"" : @""{options.Native.Dsn ?? options.Dsn}"",
-        @""debug"" : @{ToObjCString(options.Native.Debug ?? options.Debug)},
-        @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.Native.DiagnosticLevel ?? options.DiagnosticLevel)}"",
-        @""maxBreadcrumbs"": @{options.Native.MaxBreadcrumb ?? options.MaxBreadcrumbs},
-        @""maxCacheItems"": @{options.Native.MaxCacheItem ?? options.MaxCacheItems},
+        @""dsn"" : @""{options.NativeOverrides.Dsn ?? options.Dsn}"",
+        @""debug"" : @{ToObjCString(options.NativeOverrides.Debug ?? options.Debug)},
+        @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.NativeOverrides.DiagnosticLevel ?? options.DiagnosticLevel)}"",
+        @""maxBreadcrumbs"": @{options.NativeOverrides.MaxBreadcrumb ?? options.MaxBreadcrumbs},
+        @""maxCacheItems"": @{options.NativeOverrides.MaxCacheItem ?? options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @NO,
         @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
         @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
-        @""sendDefaultPii"" : @{ToObjCString(options.Native.SendDefaultPii ?? options.SendDefaultPii)},
-        @""attachScreenshot"" : @{ToObjCString(options.Native.AttachScreenshot ?? options.AttachScreenshot)},
-        @""release"" : @""{options.Native.Release ?? options.Release}"",
-        @""environment"" : @""{options.Native.Environment ?? options.Environment}"",
+        @""sendDefaultPii"" : @{ToObjCString(options.NativeOverrides.SendDefaultPii ?? options.SendDefaultPii)},
+        @""attachScreenshot"" : @{ToObjCString(options.NativeOverrides.AttachScreenshot ?? options.AttachScreenshot)},
+        @""release"" : @""{options.NativeOverrides.Release ?? options.Release}"",
+        @""environment"" : @""{options.NativeOverrides.Environment ?? options.Environment}"",
         @""enableNetworkBreadcrumbs"" : @NO
     }};
 
