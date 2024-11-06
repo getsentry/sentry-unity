@@ -47,5 +47,15 @@ internal static class DebugSymbolsTab
                 cliOptions.UploadSymbols && string.IsNullOrWhiteSpace(cliOptions.Project) ? SentryWindow.ErrorIcon : null,
                 "The project name in Sentry"),
             cliOptions.Project);
+
+        EditorGUILayout.Space();
+
+        cliOptions.CliOptionsConfiguration = OptionsConfigurationItem.Display(
+            cliOptions.CliOptionsConfiguration,
+            "Sentry CLI Config Script",
+            "SentryCliConfiguration",
+            "A scriptable object that inherits from 'SentryCliOptionsConfiguration'." +
+            "It allows you to programmatically modify the options used during debug symbols upload."
+        );
     }
 }

@@ -10,51 +10,53 @@ internal static class NativeOptions
     internal static string Generate(SentryUnityOptions options)
     {
         var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
-        var nativeOptions = $@"#import <Foundation/Foundation.h>
-#import <Sentry/SentryOptions+HybridSDKs.h>
-#import <Sentry/PrivateSentrySDKOnly.h>
+        var nativeOptions = $$"""
+                              #import <Foundation/Foundation.h>
+                              #import <Sentry/SentryOptions+HybridSDKs.h>
+                              #import <Sentry/PrivateSentrySDKOnly.h>
 
-// IMPORTANT: Changes to this file will be lost!
-// This file is generated during the Xcode project creation.
+                              // IMPORTANT: Changes to this file will be lost!
+                              // This file is generated during the Xcode project creation.
 
-// To learn more please take a look at our docs at: https://docs.sentry.io/platforms/unity/native-support/
+                              // To learn more please take a look at our docs at: https://docs.sentry.io/platforms/unity/native-support/
 
-static SentryOptions* getSentryOptions()
-{{
-    [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
+                              static SentryOptions* getSentryOptions()
+                              {
+                                  [PrivateSentrySDKOnly setSdkName:@"sentry.cocoa.unity"];
 
-    NSDictionary* optionsDictionary = @{{
-        @""dsn"" : @""{options.Dsn}"",
-        @""debug"" : @{ToObjCString(options.Debug)},
-        @""diagnosticLevel"" : @""{ToNativeDiagnosticLevel(options.DiagnosticLevel)}"",
-        @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
-        @""maxCacheItems"": @{options.MaxCacheItems},
-        @""enableAutoSessionTracking"": @NO,
-        @""enableAppHangTracking"": @NO,
-        @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
-        @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
-        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
-        @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
-        @""release"" : @""{options.Release}"",
-        @""environment"" : @""{options.Environment}"",
-        @""enableNetworkBreadcrumbs"" : @NO
-    }};
+                                  NSDictionary* optionsDictionary = @{
+                                      @"dsn" : @"{{options.Dsn}}",
+                                      @"debug" : @{{ToObjCString(options.Debug)}},
+                                      @"diagnosticLevel" : @"{{ToNativeDiagnosticLevel(options.DiagnosticLevel)}}",
+                                      @"maxBreadcrumbs": @{{options.MaxBreadcrumbs}},
+                                      @"maxCacheItems": @{{options.MaxCacheItems}},
+                                      @"enableAutoSessionTracking": @NO,
+                                      @"enableAppHangTracking": @NO,
+                                      @"enableCaptureFailedRequests": @{{ToObjCString(options.CaptureFailedRequests)}},
+                                      @"failedRequestStatusCodes" : @[{{failedRequestStatusCodesArray}}],
+                                      @"sendDefaultPii" : @{{ToObjCString(options.SendDefaultPii)}},
+                                      @"attachScreenshot" : @{{ToObjCString(options.AttachScreenshot)}},
+                                      @"release" : @"{{options.Release}}",
+                                      @"environment" : @"{{options.Environment}}",
+                                      @"enableNetworkBreadcrumbs" : @NO
+                                  };
 
-    NSError *error = nil;
-    SentryOptions* options = [[SentryOptions alloc] initWithDict:optionsDictionary didFailWithError:&error];
-    if (error != nil)
-    {{
-        NSLog(@""%@"",[error localizedDescription]);
-        return nil;
-    }}
+                                  NSError *error = nil;
+                                  SentryOptions* options = [[SentryOptions alloc] initWithDict:optionsDictionary didFailWithError:&error];
+                                  if (error != nil)
+                                  {
+                                      NSLog(@"%@",[error localizedDescription]);
+                                      return nil;
+                                  }
 
-    {(options.FilterBadGatewayExceptions ? @"options.beforeSend = ^SentryEvent * _Nullable(SentryEvent * _Nonnull event) {
+                                  {{(options.FilterBadGatewayExceptions ? @"options.beforeSend = ^SentryEvent * _Nullable(SentryEvent * _Nonnull event) {
         if ([event.request.url containsString:@""operate-sdk-telemetry.unity3d.com""]) return nil;
         return event;
-    };" : "")}
+    };" : "")}}
 
-    return options;
-}}";
+                                  return options;
+                              }
+                              """;
 
         return nativeOptions;
     }
