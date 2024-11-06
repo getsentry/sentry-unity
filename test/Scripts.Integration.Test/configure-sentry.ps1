@@ -16,8 +16,9 @@ $UnityPath = FormatUnityPath $UnityPath
 $unityArgs = @( `
         "-quit", "-batchmode", "-nographics", "-disable-assembly-updater", "-projectPath ", $(GetNewProjectPath), `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
-        "-buildTimeOptionsScript", "BuildTimeOptions", `
-        "-runtimeOptionsScript", "RuntimeOptions", `
+        "-deprecatedBuildTimeOptionsScript", "BuildTimeOptions", `
+        "-deprecatedRuntimeOptionsScript", "RuntimeOptions", `
+        "-optionsScript", "OptionsConfig", `
         "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
 
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs

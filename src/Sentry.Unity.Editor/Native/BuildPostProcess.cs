@@ -66,9 +66,9 @@ public static class BuildPostProcess
 
     private static bool IsEnabledForPlatform(BuildTarget target, SentryUnityOptions options) => target switch
     {
-        BuildTarget.StandaloneWindows64 => options.Native.WindowsNativeSupportEnabled,
-        BuildTarget.StandaloneOSX => options.Native.MacosNativeSupportEnabled,
-        BuildTarget.StandaloneLinux64 => options.Native.LinuxNativeSupportEnabled,
+        BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
+        BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
+        BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
         _ => false,
     };
 

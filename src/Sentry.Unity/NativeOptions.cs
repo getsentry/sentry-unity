@@ -26,39 +26,5 @@ public partial class SentryUnityOptions
         // public bool EnableNetworkBreadcrumbs { get; set; }
         // public string EnableAutoSessionTracking { get; set; }
         // public string EnableAppHangTracking { get; set; }
-
-        public AndroidOptions AndroidOptions { get; set; } = new();
-
-        /// <summary>
-        /// Whether the SDK should add native support for iOS
-        /// </summary>
-        public bool IosNativeSupportEnabled { get; set; } = true;
-
-        /// <summary>
-        /// Whether the SDK should add native support for Android
-        /// </summary>
-        public bool AndroidNativeSupportEnabled { get; set; } = true;
-
-        /// <summary>
-        /// Whether the SDK should add native support for Windows
-        /// </summary>
-        public bool WindowsNativeSupportEnabled { get; set; } = true;
-
-        /// <summary>
-        /// Whether the SDK should add native support for MacOS
-        /// </summary>
-        public bool MacosNativeSupportEnabled { get; set; } = true;
-
-        /// <summary>
-        /// Whether the SDK should add native support for Linux
-        /// </summary>
-        public bool LinuxNativeSupportEnabled { get; set; } = true;
-    }
-
-    public class AndroidOptions
-    {
-        public bool NdkIntegrationEnabled { get; set; }
-        public bool NdkScopeSyncEnabled { get; set; }
-
     }
 }

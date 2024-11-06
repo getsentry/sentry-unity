@@ -52,7 +52,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAndroidSupportDisabled_ObserverIsNull()
     {
-        var options = new SentryUnityOptions { Native = { AndroidNativeSupportEnabled = false } };
+        var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
         SentryNativeAndroid.Configure(options, _sentryUnityInfo);
         Assert.Null(options.ScopeObserver);
     }
@@ -68,7 +68,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAndroidSupportDisabled_DisabledScopeSync()
     {
-        var options = new SentryUnityOptions { Native = { AndroidNativeSupportEnabled = false } };
+        var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
         SentryNativeAndroid.Configure(options, _sentryUnityInfo);
         Assert.False(options.EnableScopeSync);
     }
@@ -89,7 +89,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAndroidSupportDisabled_DoesNotReInitializeNativeBackend()
     {
-        var options = new SentryUnityOptions { Native = { AndroidNativeSupportEnabled = false } };
+        var options = new SentryUnityOptions { AndroidNativeSupportEnabled = false };
         SentryNativeAndroid.Configure(options, _sentryUnityInfo);
         Assert.False(_reinstallCalled);
     }

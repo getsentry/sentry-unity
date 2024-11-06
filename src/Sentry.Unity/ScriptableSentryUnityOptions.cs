@@ -172,17 +172,16 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
             CaptureFailedRequests = CaptureFailedRequests,
             FilterBadGatewayExceptions = FilterBadGatewayExceptions,
+            IosNativeSupportEnabled = IosNativeSupportEnabled,
+            AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
+            NdkIntegrationEnabled = NdkIntegrationEnabled,
+            NdkScopeSyncEnabled = NdkScopeSyncEnabled,
+            WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
+            MacosNativeSupportEnabled = MacosNativeSupportEnabled,
+            LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
             Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
         };
-
-        options.Native.IosNativeSupportEnabled = IosNativeSupportEnabled;
-        options.Native.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
-        options.Native.MacosNativeSupportEnabled = MacosNativeSupportEnabled;
-        options.Native.LinuxNativeSupportEnabled = LinuxNativeSupportEnabled;
-        options.Native.AndroidNativeSupportEnabled = AndroidNativeSupportEnabled;
-        options.Native.AndroidOptions.NdkIntegrationEnabled = NdkIntegrationEnabled;
-        options.Native.AndroidOptions.NdkScopeSyncEnabled = NdkIntegrationEnabled;
 
         if (!string.IsNullOrWhiteSpace(ReleaseOverride))
         {
@@ -209,11 +208,14 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         options.SetupLogging();
 
+        // TODO: Deprecated and to be removed in the next major
         if (RuntimeOptionsConfiguration != null && !isBuilding)
         {
             // This has to happen in between options object creation and updating the options based on programmatic changes
             RuntimeOptionsConfiguration.Configure(options);
         }
+
+        OptionsConfiguration?.Configure(options);
 
         if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
         {

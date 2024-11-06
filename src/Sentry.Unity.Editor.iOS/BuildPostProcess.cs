@@ -33,7 +33,7 @@ public static class BuildPostProcess
             return false;
         }
 
-        if (!options.Native.IosNativeSupportEnabled)
+        if (!options.IosNativeSupportEnabled)
         {
             logger.LogInfo("The iOS native support has been disabled through the options.");
             return false;
