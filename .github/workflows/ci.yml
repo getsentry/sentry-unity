@@ -582,21 +582,21 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
     name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
-    runs-on: macos-12
+    runs-on: macos-13 # Pinning to get the oldest, supported version of iOS simulator
     strategy:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
-        # - `iOS 16`: 71%
-        # - `iOS 15`: 20 %
-        # - the rest: 8 %
-        # as of May 2, 2023. Therefore, let's stick to testing iOS 15 and `latest` for now.
+        # - `iOS 17`: 86 %
+        # - `iOS 16`: 11 %
+        # - the rest:  3 %
+        # as of October, 2024. Therefore, let's stick to testing iOS 16 and `latest` for now.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
-        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-        ios: ["15.4", latest] # last updated May 2023
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md
+        ios: ["16.1", latest] # last updated October 2024
 
     steps:
       - name: Checkout
@@ -608,19 +608,11 @@ jobs:
           name: testapp-iOS-compiled-${{ matrix.unity-version }}
           path: samples/IntegrationTest/Build
 
-      - name: Setup xcode-install
-        # Github Virtual machine already sets the runtime and simulator for the latest release.
+      - name: Set Xcode for iOS version ${{matrix.ios}}
         if: ${{ matrix.ios != 'latest'}}
-        run: gem install xcode-install
-
-      - name: Setup ${{matrix.ios}} runtime
-        if: ${{ matrix.ios != 'latest'}}
-        run: xcversion simulators --install='iOS ${{matrix.ios}}'
-
-      - name: Setup ${{matrix.ios}} Simulator
-        if: ${{ matrix.ios != 'latest' }}
-        # We need to setup an simulator in order to xCode to populate the simulators for the given runtime.
-        run: xcrun simctl create InitialSimulator "iPhone 8" "iOS${{ matrix.ios }}"
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # pin@v1.6
+        with:
+          xcode-version: '14.1' # to run iOS 16.1 we need Xcode 14.1
 
       - name: Smoke test
         id: smoke-test-ios

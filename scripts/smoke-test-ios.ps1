@@ -84,8 +84,13 @@ function Test
 {
     Write-Host "Retrieving list of available simulators" -ForegroundColor Green
     $deviceListRaw = xcrun simctl list devices
+    Write-Host "Available simulators:" -ForegroundColor Green
+    $deviceListRaw | Write-Host
+
     [AppleDevice[]]$deviceList = @()
 
+    Write-Host "Picking simulator based on selected runtime" -ForegroundColor Green
+    
     # Find the index of the selected runtime
     $runtimeIndex = ($deviceListRaw | Select-String "-- $SelectedRuntime --").LineNumber
     If ($null -eq $runtimeIndex)
