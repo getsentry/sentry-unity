@@ -160,7 +160,7 @@ public class AndroidManifestConfiguration
         _logger.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
         androidManifest.SetLevel(diagnosticLevel);
 
-        var sampleRate  = _options.Native.SampleRate ?? _options.SampleRate;
+        var sampleRate = _options.Native.SampleRate ?? _options.SampleRate;
         if (sampleRate.HasValue)
         {
             // To keep the logs in line with what the SDK writes to the AndroidManifest we're formatting here too
