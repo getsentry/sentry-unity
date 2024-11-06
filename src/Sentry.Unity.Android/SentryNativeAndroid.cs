@@ -20,7 +20,7 @@ public static class SentryNativeAndroid
     {
         options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Android SDK");
 
-        if (!options.AndroidNativeSupportEnabled)
+        if (!options.Native.AndroidNativeSupportEnabled)
         {
             options.DiagnosticLogger?.LogDebug("Native support is disabled for Android");
             return;

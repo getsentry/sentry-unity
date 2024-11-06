@@ -21,7 +21,7 @@ public class SentryNativeCocoaTests
     public void Configure_NativeSupportDisabled_iOS()
     {
         var unityInfo = new TestUnityInfo(true, false, false) { IL2CPP = false };
-        var options = new SentryUnityOptions { IosNativeSupportEnabled = false };
+        var options = new SentryUnityOptions { Native = { IosNativeSupportEnabled = false } };
         SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.IPhonePlayer);
         Assert.Null(options.ScopeObserver);
         Assert.Null(options.CrashedLastRun);
@@ -43,7 +43,7 @@ public class SentryNativeCocoaTests
     public void Configure_NativeSupportDisabled_macOS()
     {
         var unityInfo = new TestUnityInfo(true, false, false) { IL2CPP = false };
-        var options = new SentryUnityOptions { MacosNativeSupportEnabled = false };
+        var options = new SentryUnityOptions { Native = { IosNativeSupportEnabled = false } };
         SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.OSXPlayer);
         Assert.Null(options.ScopeObserver);
         Assert.Null(options.CrashedLastRun);

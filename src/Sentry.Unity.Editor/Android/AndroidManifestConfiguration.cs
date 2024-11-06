@@ -74,7 +74,7 @@ public class AndroidManifestConfiguration
     {
         if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
         {
-            if (_options is { AndroidNativeSupportEnabled: true })
+            if (_options?.Native.AndroidNativeSupportEnabled is true)
             {
                 _logger.LogWarning("Android native support requires IL2CPP scripting backend and is currently unsupported on Mono.");
             }
@@ -114,7 +114,7 @@ public class AndroidManifestConfiguration
             _logger.LogDebug("Android native support disabled.");
             enableNativeSupport = false;
         }
-        else if (!_options.AndroidNativeSupportEnabled)
+        else if (_options?.Native.AndroidNativeSupportEnabled is false)
         {
             _logger.LogDebug("Android native support disabled through the options.");
             enableNativeSupport = false;
@@ -177,8 +177,8 @@ public class AndroidManifestConfiguration
         androidManifest.SetAttachScreenshot(false);
 
         // Disabling the native in favor of the C# layer for now
-        androidManifest.SetNdkEnabled(_options.NdkIntegrationEnabled);
-        androidManifest.SetNdkScopeSync(_options.NdkScopeSyncEnabled);
+        androidManifest.SetNdkEnabled(_options.Native.AndroidOptions.NdkIntegrationEnabled);
+        androidManifest.SetNdkScopeSync(_options.Native.AndroidOptions.NdkScopeSyncEnabled);
         androidManifest.SetAutoSessionTracking(false);
         androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
         androidManifest.SetAnr(false);
@@ -194,7 +194,7 @@ public class AndroidManifestConfiguration
         var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
         var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
 
-        if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
+        if (_options?.Native.AndroidNativeSupportEnabled is true)
         {
             if (!Directory.Exists(androidSdkPath))
             {
@@ -228,7 +228,7 @@ public class AndroidManifestConfiguration
     internal void AddAndroidSdkDependencies(string gradleProjectPath)
     {
         var tool = new GradleSetup(_logger, gradleProjectPath);
-        var nativeSupportEnabled = _options is { Enabled: true, AndroidNativeSupportEnabled: true };
+        var nativeSupportEnabled = _options?.Native.AndroidNativeSupportEnabled is true;
 
         try
         {
@@ -255,7 +255,7 @@ public class AndroidManifestConfiguration
 
         var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, isExporting, AndroidUtils.ShouldUploadMapping());
 
-        if (_options is not { Enabled: true, AndroidNativeSupportEnabled: true })
+        if (_options?.Enabled is not true || _options.Native.AndroidNativeSupportEnabled is false)
         {
             disableSymbolsUpload = true;
         }
@@ -308,7 +308,7 @@ public class AndroidManifestConfiguration
     private void SetupProguard(string gradleProjectPath)
     {
         var tool = new ProguardSetup(_logger, gradleProjectPath);
-        var nativeSupportEnabled = _options is { Enabled: true, AndroidNativeSupportEnabled: true };
+        var nativeSupportEnabled = _options?.Enabled is not true || _options.Native.AndroidNativeSupportEnabled is false;
 
         try
         {

@@ -128,7 +128,7 @@ public class BuildPostProcessorTests
         var options = new SentryUnityOptions
         {
             Dsn = "test_dsn",
-            IosNativeSupportEnabled = false
+            Native = { IosNativeSupportEnabled = false}
         };
         var testLogger = new TestLogger();
 
@@ -149,7 +149,7 @@ public class BuildPostProcessorTests
         var options = new SentryUnityOptions
         {
             Dsn = "test_dsn",
-            IosNativeSupportEnabled = false
+            Native = { IosNativeSupportEnabled = false}
         };
         var testLogger = new TestLogger();
 

@@ -106,6 +106,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
     [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
     [field: SerializeField] public SentryBuildTimeOptionsConfiguration? BuildTimeOptionsConfiguration { get; set; }
+    [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
     [field: SerializeField] public bool Debug { get; set; } = true;
     [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
@@ -171,15 +172,17 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
             CaptureFailedRequests = CaptureFailedRequests,
             FilterBadGatewayExceptions = FilterBadGatewayExceptions,
-            IosNativeSupportEnabled = IosNativeSupportEnabled,
-            AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
-            NdkIntegrationEnabled = NdkIntegrationEnabled,
-            WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
-            MacosNativeSupportEnabled = MacosNativeSupportEnabled,
-            LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
             Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
         };
+
+        options.Native.IosNativeSupportEnabled = IosNativeSupportEnabled;
+        options.Native.WindowsNativeSupportEnabled = WindowsNativeSupportEnabled;
+        options.Native.MacosNativeSupportEnabled = MacosNativeSupportEnabled;
+        options.Native.LinuxNativeSupportEnabled = LinuxNativeSupportEnabled;
+        options.Native.AndroidNativeSupportEnabled = AndroidNativeSupportEnabled;
+        options.Native.AndroidOptions.NdkIntegrationEnabled = NdkIntegrationEnabled;
+        options.Native.AndroidOptions.NdkScopeSyncEnabled = NdkIntegrationEnabled;
 
         if (!string.IsNullOrWhiteSpace(ReleaseOverride))
         {

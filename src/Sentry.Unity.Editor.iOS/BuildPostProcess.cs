@@ -33,7 +33,7 @@ public static class BuildPostProcess
             return false;
         }
 
-        if (!options.IosNativeSupportEnabled)
+        if (!options.Native.IosNativeSupportEnabled)
         {
             logger.LogInfo("The iOS native support has been disabled through the options.");
             return false;
@@ -115,7 +115,7 @@ public static class BuildPostProcess
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
             sentryXcodeProject.AddSentryFramework();
             sentryXcodeProject.AddSentryNativeBridge();
-            sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
+            sentryXcodeProject.AddNativeOptions(options, NativeIOSOptions.CreateFile);
             sentryXcodeProject.AddSentryToMain(options);
 
             if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))

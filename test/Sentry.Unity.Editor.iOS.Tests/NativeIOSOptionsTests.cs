@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS.Tests;
 
-public class NativeOptionsTests
+public class NativeIOSOptionsTests
 {
     [Test]
     public void GenerateOptions_NewSentryOptions_Compiles()
@@ -16,7 +16,7 @@ public class NativeOptionsTests
         }
 
         const string testOptionsFileName = "testOptions.m";
-        var nativeOptionsString = NativeOptions.Generate(new SentryUnityOptions());
+        var nativeOptionsString = NativeIOSOptions.Generate(new SentryUnityOptions());
         File.WriteAllText(testOptionsFileName, nativeOptionsString);
 
         var process = Process.Start("clang", $"-fsyntax-only {testOptionsFileName}");
@@ -36,7 +36,7 @@ public class NativeOptionsTests
         }
 
         const string testOptionsFileName = "testOptions.m";
-        var nativeOptionsString = NativeOptions.Generate(new SentryUnityOptions());
+        var nativeOptionsString = NativeIOSOptions.Generate(new SentryUnityOptions());
         nativeOptionsString += "AppendedTextToFailCompilation";
 
         File.WriteAllText(testOptionsFileName, nativeOptionsString);
@@ -54,7 +54,7 @@ public class NativeOptionsTests
     {
         const string testOptionsFileName = "testOptions.m";
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
+        NativeIOSOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
 
         Assert.IsTrue(File.Exists(testOptionsFileName));
 
@@ -66,7 +66,7 @@ public class NativeOptionsTests
     {
         const string testOptionsFileName = "testOptions.m";
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
+        NativeIOSOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
 
         Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
 
@@ -92,7 +92,7 @@ public class NativeOptionsTests
     {
         const string testOptionsFileName = "testOptions.m";
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = true });
+        NativeIOSOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = true });
 
         Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
 
@@ -107,7 +107,7 @@ public class NativeOptionsTests
     {
         const string testOptionsFileName = "testOptions.m";
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = false });
+        NativeIOSOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = false });
 
         Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
 

@@ -27,7 +27,7 @@ public class AndroidManifestTests
             {
                 Enabled = true,
                 Dsn = "https://k@h/p",
-                AndroidNativeSupportEnabled = true,
+                Native = { AndroidNativeSupportEnabled = true },
                 Debug = true
             };
             SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, UnityTestLogger);
@@ -113,7 +113,7 @@ public class AndroidManifestTests
     [Test]
     public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDoesNotAddSentry()
     {
-        _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+        _fixture.SentryUnityOptions!.Native.AndroidNativeSupportEnabled = false;
         var sut = _fixture.GetSut();
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
@@ -385,7 +385,7 @@ public class AndroidManifestTests
         var androidSdk = Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar");
         File.Create(androidSdk);
 
-        _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+        _fixture.SentryUnityOptions!.Native.AndroidNativeSupportEnabled = false;
         var sut = _fixture.GetSut();
 
         sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);

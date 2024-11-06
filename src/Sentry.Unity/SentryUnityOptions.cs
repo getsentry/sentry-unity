@@ -15,7 +15,7 @@ namespace Sentry.Unity;
 /// <remarks>
 /// Options to configure Unity while extending the Sentry .NET SDK functionality.
 /// </remarks>
-public sealed class SentryUnityOptions : SentryOptions
+public sealed partial class SentryUnityOptions : SentryOptions
 {
     /// <summary>
     /// UPM name of Sentry Unity SDK (package.json)
@@ -143,41 +143,6 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Whether the SDK should automatically filter `Bad Gateway Exceptions` caused by Unity.
     /// </summary>
     public bool FilterBadGatewayExceptions { get; set; } = true;
-
-    /// <summary>
-    /// Whether the SDK should add native support for iOS
-    /// </summary>
-    public bool IosNativeSupportEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Whether the SDK should add native support for Android
-    /// </summary>
-    public bool AndroidNativeSupportEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Whether the SDK should add the NDK integration for Android
-    /// </summary>
-    public bool NdkIntegrationEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Whether the SDK should sync the scope to the NDK layer for Android
-    /// </summary>
-    public bool NdkScopeSyncEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Whether the SDK should add native support for Windows
-    /// </summary>
-    public bool WindowsNativeSupportEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Whether the SDK should add native support for MacOS
-    /// </summary>
-    public bool MacosNativeSupportEnabled { get; set; } = true;
-
-    /// <summary>
-    /// Whether the SDK should add native support for Linux
-    /// </summary>
-    public bool LinuxNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
     /// Whether the SDK should add IL2CPP line number support
