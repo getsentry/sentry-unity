@@ -115,7 +115,7 @@ public static class BuildPostProcess
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
             sentryXcodeProject.AddSentryFramework();
             sentryXcodeProject.AddSentryNativeBridge();
-            sentryXcodeProject.AddNativeOptions(options, NativeIOSOptions.CreateFile);
+            sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
             sentryXcodeProject.AddSentryToMain(options);
 
             if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))

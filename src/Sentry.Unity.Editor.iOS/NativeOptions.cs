@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Sentry.Unity.Editor.iOS;
 
-internal static class NativeIOSOptions
+internal static class NativeOptions
 {
     public static void CreateFile(string path, SentryUnityOptions options) => File.WriteAllText(path, Generate(options));
 
