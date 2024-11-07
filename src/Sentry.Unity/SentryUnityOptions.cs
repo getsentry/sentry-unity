@@ -15,7 +15,7 @@ namespace Sentry.Unity;
 /// <remarks>
 /// Options to configure Unity while extending the Sentry .NET SDK functionality.
 /// </remarks>
-public sealed partial class SentryUnityOptions : SentryOptions
+public sealed class SentryUnityOptions : SentryOptions
 {
     /// <summary>
     /// UPM name of Sentry Unity SDK (package.json)
