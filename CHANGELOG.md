@@ -16,6 +16,9 @@
 - Bump Cocoa SDK from v8.39.0 to v8.40.1 ([#1893](https://github.com/getsentry/sentry-unity/pull/1893))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8401)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.39.0...8.40.1)
+- Bump Cocoa SDK from v8.39.0 to v8.40.0 ([#1890](https://github.com/getsentry/sentry-unity/pull/1890))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8400)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.39.0...8.40.0)
 
 ## 2.3.0
 
