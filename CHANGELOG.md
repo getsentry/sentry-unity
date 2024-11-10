@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Suppress EntryPointNotFoundException if sentry-native is not available at runtime. It'll continue to capture C# errors at least, but no native crashes. ([#1895](https://github.com/getsentry/sentry-unity/pull/1895))
+
 ### Dependencies
 
 - Bump .NET SDK from v4.12.1 to v4.13.0 ([#1879](https://github.com/getsentry/sentry-unity/pull/1879), [#1885](https://github.com/getsentry/sentry-unity/pull/1885))
