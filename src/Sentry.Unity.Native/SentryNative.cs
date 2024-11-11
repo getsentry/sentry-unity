@@ -100,7 +100,7 @@ public static class SentryNative
             // to capture the crash.
             ReinstallBackendFunction?.Invoke();
         }
-        catch (EntryPointNotFoundException e)
+        catch (Exception e)
         {
             SentrySdk.CaptureException(new Exception("The SDK failed to reinstall the backend and won't capture native errors.", e));
         }
