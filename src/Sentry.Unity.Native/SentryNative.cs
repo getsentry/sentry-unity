@@ -14,7 +14,7 @@ public static class SentryNative
 {
     private static readonly Dictionary<string, bool> PerDirectoryCrashInfo = new();
 
-    private static Action? ReinstallBackendFunction;
+    private static bool ShouldReinstallBackend;
 
     /// <summary>
     /// Configures the native SDK.
@@ -84,23 +84,28 @@ public static class SentryNative
         }
         options.CrashedLastRun = () => crashedLastRun;
 
-        // The backend will only be reinstalled if the native SDK has been initialized successfully.
-        // We're handing this off to be called in `BeforeSceneLoad` instead of `SubsystemRegistration` as it's too soon
-        // and the SignalHandler would still get overwritten.
-        ReinstallBackendFunction = SentryNativeBridge.ReinstallBackend;
+        ShouldReinstallBackend = true;
     }
 
+    // We're calling this in `BeforeSceneLoad` instead of `SubsystemRegistration` as it's too soon and the
+    // SignalHandler would still get overwritten.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    public static void ReinstallBackend()
+    private static void ReinstallBackend()
     {
+        // The backend should only be reinstalled if the native SDK has been initialized successfully.
+        if (!ShouldReinstallBackend)
+        {
+            return;
+        }
+
         try
         {
             // At this point Unity has taken the signal handler and will not invoke our handler. So we register our
             // backend once more to make sure user-defined data is available in the crash report and the SDK is able
             // to capture the crash.
-            ReinstallBackendFunction?.Invoke();
+            SentryNativeBridge.ReinstallBackend();
         }
-        catch (Exception e)
+        catch (EntryPointNotFoundException e)
         {
             SentrySdk.CaptureException(new Exception("The SDK failed to reinstall the backend and won't capture native errors.", e));
         }
