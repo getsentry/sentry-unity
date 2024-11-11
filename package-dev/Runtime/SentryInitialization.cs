@@ -118,25 +118,6 @@ namespace Sentry.Unity
 #endif
             }
         }
-
-#if SENTRY_NATIVE
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        public static void ReinstallBackend()
-        {
-            try
-            {
-                // At this point Unity has taken the signal handler and will not invoke our handler. So we register our
-                // backend once more to make sure user-defined data is available in the crash report and the SDK is able
-                // to capture the crash.
-                SentryNative.ReinstallBackend();
-            }
-            catch (EntryPointNotFoundException e)
-            {
-                // See: https://github.com/getsentry/sentry-unity/issues/1864
-                // TODO: if option.Debug: true, debug log this
-            }
-        }
-#endif
     }
 
     public class SentryUnityInfo : ISentryUnityInfo
