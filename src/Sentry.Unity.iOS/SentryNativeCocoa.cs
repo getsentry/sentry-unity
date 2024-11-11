@@ -53,7 +53,7 @@ public static class SentryNativeCocoa
             return crashedLastRun;
         };
 
-        options.NativeSupportCloseCallback += () => Close(options.DiagnosticLogger);
+        options.NativeSupportCloseCallback += () => Close(options, sentryUnityInfo, platform);
         if (sentryUnityInfo.IL2CPP)
         {
             options.DefaultUserId = SentryCocoaBridgeProxy.GetInstallationId();
@@ -81,9 +81,17 @@ public static class SentryNativeCocoa
     /// <summary>
     /// Closes the native Cocoa support.
     /// </summary>
-    public static void Close(IDiagnosticLogger? logger = null)
+    public static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo) =>
+        Close(options, sentryUnityInfo, ApplicationAdapter.Instance.Platform);
+
+    internal static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
     {
-        logger?.LogDebug("Closing the sentry-cocoa SDK");
+        if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
+        {
+            return;
+        }
+
+        options.DiagnosticLogger?.LogDebug("Closing the sentry-cocoa SDK");
         SentryCocoaBridgeProxy.Close();
     }
 }
