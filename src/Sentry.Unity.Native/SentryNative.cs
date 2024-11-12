@@ -14,7 +14,7 @@ public static class SentryNative
 {
     private static readonly Dictionary<string, bool> PerDirectoryCrashInfo = new();
 
-    private static bool ShouldReinstallBackend;
+    private static bool _shouldReinstallBackend;
 
     /// <summary>
     /// Configures the native SDK.
@@ -84,7 +84,7 @@ public static class SentryNative
         }
         options.CrashedLastRun = () => crashedLastRun;
 
-        ShouldReinstallBackend = true;
+        _shouldReinstallBackend = true;
     }
 
     // We're calling this in `BeforeSceneLoad` instead of `SubsystemRegistration` as it's too soon and the
@@ -93,7 +93,7 @@ public static class SentryNative
     private static void ReinstallBackend()
     {
         // The backend should only be reinstalled if the native SDK has been initialized successfully.
-        if (!ShouldReinstallBackend)
+        if (!_shouldReinstallBackend)
         {
             return;
         }
