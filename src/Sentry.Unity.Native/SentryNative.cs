@@ -15,7 +15,7 @@ public static class SentryNative
     private static readonly Dictionary<string, bool> PerDirectoryCrashInfo = new();
 
     private static bool ShouldReinstallBackend;
-    private static IDiagnosticLogger? _logger;
+    private static IDiagnosticLogger? Logger;
 
     /// <summary>
     /// Configures the native SDK.
@@ -24,13 +24,13 @@ public static class SentryNative
     /// <param name="sentryUnityInfo">Infos about the current Unity environment</param>
     public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
     {
-        _logger = options.DiagnosticLogger;
+        Logger = options.DiagnosticLogger;
 
-        _logger?.LogInfo("Attempting to configure native support via the Native SDK");
+        Logger?.LogInfo("Attempting to configure native support via the Native SDK");
 
         if (!sentryUnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
         {
-            _logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
+            Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
             return;
         }
 
@@ -38,21 +38,21 @@ public static class SentryNative
         {
             if (!SentryNativeBridge.Init(options, sentryUnityInfo))
             {
-                _logger?
+                Logger?
                     .LogWarning("Sentry native initialization failed - native crashes are not captured.");
                 return;
             }
         }
         catch (Exception e)
         {
-            _logger?
+            Logger?
                 .LogError(e, "Sentry native initialization failed - native crashes are not captured.");
             return;
         }
 
         ApplicationAdapter.Instance.Quitting += () =>
         {
-            _logger?.LogDebug("Closing the sentry-native SDK");
+            Logger?.LogDebug("Closing the sentry-native SDK");
             SentryNativeBridge.Close();
         };
         options.ScopeObserver = new NativeScopeObserver(options);
@@ -81,7 +81,7 @@ public static class SentryNative
                 crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
                 PerDirectoryCrashInfo.Add(cacheDirectory, crashedLastRun);
 
-                _logger?
+                Logger?
                     .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
             }
         }
@@ -98,7 +98,7 @@ public static class SentryNative
         // The backend should only be reinstalled if the native SDK has been initialized successfully.
         if (!ShouldReinstallBackend)
         {
-            _logger?.LogDebug("Skipping reinstalling the native backend as the initialization seems to have failed.");
+            Logger?.LogDebug("Skipping reinstalling the native backend as the initialization seems to have failed.");
             return;
         }
 
@@ -111,7 +111,7 @@ public static class SentryNative
         }
         catch (EntryPointNotFoundException e)
         {
-            _logger?.LogError(e, "The SDK failed to reinstall the backend - native crashes are not captured.");
+            Logger?.LogError(e, "The SDK failed to reinstall the backend - native crashes are not captured.");
         }
     }
 }
