@@ -88,6 +88,7 @@ public static class SentryNativeCocoa
     {
         if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
         {
+            options.DiagnosticLogger?.LogDebug("Native Support is not enable. Skipping closing the native SDK");
             return;
         }
 

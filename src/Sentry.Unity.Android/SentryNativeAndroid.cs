@@ -110,6 +110,7 @@ public static class SentryNativeAndroid
     {
         if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform) || !SentryJava.IsSentryJavaPresent())
         {
+            options.DiagnosticLogger?.LogDebug("Native Support is not enable. Skipping closing the native SDK");
             return;
         }
 
