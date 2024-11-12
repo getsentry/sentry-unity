@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer closes the underlying native SDK during the games shutdown if native support has not been enabled. This enables the SDK to support and capture errors in case of building the game as a library. ([#1897](https://github.com/getsentry/sentry-unity/pull/1897))
+
 ### Dependencies
 
 - Bump .NET SDK from v4.12.1 to v4.13.0 ([#1879](https://github.com/getsentry/sentry-unity/pull/1879), [#1885](https://github.com/getsentry/sentry-unity/pull/1885))
