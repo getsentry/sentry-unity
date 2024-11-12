@@ -60,7 +60,6 @@ namespace Sentry.Unity
             if (options != null && options.ShouldInitializeSdk())
             {
                 SentryIntegrations.Configure(options);
-                Exception nativeInitException = null;
 
                 try
                 {
@@ -76,20 +75,16 @@ namespace Sentry.Unity
                 }
                 catch (DllNotFoundException e)
                 {
-                    nativeInitException = new Exception(
+                    options.DiagnosticLogger?.LogError(
                         "Sentry native-error capture configuration failed to load a native library. This usually " +
                         "means the library is missing from the application bundle or the installation directory.", e);
                 }
                 catch (Exception e)
                 {
-                    nativeInitException = new Exception("Sentry native error capture configuration failed.", e);
+                    options.DiagnosticLogger?.LogError("Sentry native error capture configuration failed.", e);
                 }
 
                 SentryUnity.Init(options);
-                if (nativeInitException != null)
-                {
-                    SentrySdk.CaptureException(nativeInitException);
-                }
 
 #if !SENTRY_WEBGL
                 if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
