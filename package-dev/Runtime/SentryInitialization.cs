@@ -60,7 +60,6 @@ namespace Sentry.Unity
             if (options != null && options.ShouldInitializeSdk())
             {
                 SentryIntegrations.Configure(options);
-                Exception nativeInitException = null;
 
                 try
                 {
@@ -76,20 +75,16 @@ namespace Sentry.Unity
                 }
                 catch (DllNotFoundException e)
                 {
-                    nativeInitException = new Exception(
+                    options.DiagnosticLogger?.LogError(
                         "Sentry native-error capture configuration failed to load a native library. This usually " +
                         "means the library is missing from the application bundle or the installation directory.", e);
                 }
                 catch (Exception e)
                 {
-                    nativeInitException = new Exception("Sentry native error capture configuration failed.", e);
+                    options.DiagnosticLogger?.LogError("Sentry native error capture configuration failed.", e);
                 }
 
                 SentryUnity.Init(options);
-                if (nativeInitException != null)
-                {
-                    SentrySdk.CaptureException(nativeInitException);
-                }
 
 #if !SENTRY_WEBGL
                 if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
@@ -118,17 +113,6 @@ namespace Sentry.Unity
 #endif
             }
         }
-
-#if SENTRY_NATIVE
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        public static void ReinstallBackend()
-        {
-            // At this point Unity has taken the signal handler and will not invoke our handler. So we register our
-            // backend once more to make sure user-defined data is available in the crash report and the SDK is able
-            // to capture the crash.
-            SentryNative.ReinstallBackend();
-        }
-#endif
     }
 
     public class SentryUnityInfo : ISentryUnityInfo
