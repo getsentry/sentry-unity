@@ -4,7 +4,8 @@
 
 ### Fixes
 
-- Suppress EntryPointNotFoundException if sentry-native is not available at runtime. It'll continue to capture C# errors at least, but no native crashes. ([#1898](https://github.com/getsentry/sentry-unity/pull/1898))
+- The SDK no longer sends events when it fails to initialize the native SDK on Windows and Linux and logs those instead. It also suppresses `EntryPointNotFoundException` if sentry-native is not available at runtime. Native crashes won't get capture but it'll continue to capture C# errors. ([#1898](https://github.com/getsentry/sentry-unity/pull/1898))
+- The SDK no longer closes the underlying native SDK during the games shutdown if native support has not been enabled. This allows the SDK to support and capture errors in case of building the game as a library on a mobile (Android or iOS) game. ([#1897](https://github.com/getsentry/sentry-unity/pull/1897))
 
 ### Dependencies
 
@@ -17,9 +18,12 @@
 - Bump Native SDK from v0.7.11 to v0.7.12 ([#1886](https://github.com/getsentry/sentry-unity/pull/1886))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0712)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.11...0.7.12)
-- Bump Cocoa SDK from v8.39.0 to v8.40.0 ([#1890](https://github.com/getsentry/sentry-unity/pull/1890))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8400)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.39.0...8.40.0)
+- Bump Cocoa SDK from v8.39.0 to v8.40.1 ([#1890](https://github.com/getsentry/sentry-unity/pull/1890), [#1893](https://github.com/getsentry/sentry-unity/pull/1893))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8401)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.39.0...8.40.1)
+- Bump Java SDK from v7.16.0 to v7.17.0 ([#1899](https://github.com/getsentry/sentry-unity/pull/1899))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7170)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.16.0...7.17.0)
 
 ## 2.3.0
 
