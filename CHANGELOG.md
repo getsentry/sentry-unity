@@ -4,7 +4,7 @@
 
 ### Features
 
-- The SDK now provides a dedicated sentry-cli scriptable config, available on the `Debug Symbols` tab. This allows for programmatic configuration of the used cli-options during build. ([#1888](https://github.com/getsentry/sentry-unity/pull/1888))
+- The SDK now provides a dedicated sentry-cli scriptable config, available on the `Debug Symbols` tab. This allows for programmatic configuration of the used cli-options during build. ([#1887](https://github.com/getsentry/sentry-unity/pull/1887))
 
 ### Fixes
 
