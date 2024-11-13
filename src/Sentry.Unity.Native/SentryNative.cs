@@ -111,7 +111,7 @@ public static class SentryNative
         }
         catch (EntryPointNotFoundException e)
         {
-            Logger?.LogError(e, "The SDK failed to reinstall the backend - native crashes are not captured.");
+            Logger?.LogError(e, "Native dependency not found. Did you delete sentry.dll or move files around?");
         }
     }
 }
