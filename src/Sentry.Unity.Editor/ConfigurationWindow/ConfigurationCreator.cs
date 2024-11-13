@@ -14,12 +14,14 @@ internal static class OptionsConfigurationItem
     public static T? Display<T>(T? value, string fieldName, string scriptName, string toolTip) where T : ScriptableObject
     {
         EditorGUILayout.BeginHorizontal();
+
         var result = EditorGUILayout.ObjectField(
             new GUIContent(fieldName, toolTip),
             value,
             typeof(T),
             false
         ) as T;
+
         if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
         {
             var t = typeof(T);
@@ -40,7 +42,9 @@ internal static class OptionsConfigurationItem
                 throw new Exception("Attempting to create a new instance of unsupported type " + typeof(T).FullName);
             }
         }
+
         EditorGUILayout.EndHorizontal();
+
         return result;
     }
 
