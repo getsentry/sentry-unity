@@ -18,7 +18,8 @@ $unityArgs = @( `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
         "-deprecatedBuildTimeOptionsScript", "BuildTimeOptions", `
         "-deprecatedRuntimeOptionsScript", "RuntimeOptions", `
-        "-optionsScript", "OptionsConfig", `
+        "-optionsScript", "OptionsConfiguration", `
+        "-cliOptionsScript", "CliConfiguration", `
         "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
 
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
