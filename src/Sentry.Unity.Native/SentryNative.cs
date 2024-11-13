@@ -100,7 +100,9 @@ public static class SentryNative
         {
             Logger?.LogWarning("Skipping reinstalling the native backend.");
             return;
-        } else {
+        }
+        else
+        {
             Logger?.LogDebug("Reinstalling the native backend to make sure we capture native crashes.");
         }
 
