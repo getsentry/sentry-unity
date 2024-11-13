@@ -98,7 +98,7 @@ public static class SentryNative
         // The backend should only be reinstalled if the native SDK has been initialized successfully.
         if (!ShouldReinstallBackend)
         {
-            Logger?.LogDebug("Skipping reinstalling the native backend as the initialization seems to have failed.");
+            Logger?.LogWarning("Skipping reinstalling the native backend.");
             return;
         }
 
