@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now provides a dedicated sentry-cli scriptable config, available on the `Debug Symbols` tab. This allows for programmatic configuration of the used cli-options during build. ([#1887](https://github.com/getsentry/sentry-unity/pull/1887))
+
 ### Dependencies
 
 - Bump .NET SDK from v4.12.1 to v4.13.0 ([#1879](https://github.com/getsentry/sentry-unity/pull/1879), [#1885](https://github.com/getsentry/sentry-unity/pull/1885))
