@@ -1,5 +1,7 @@
 using System;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
+using UnityEngine;
 using UnityEngine.Analytics;
 
 namespace Sentry.Unity.Android;
@@ -74,7 +76,7 @@ public static class SentryNativeAndroid
                 e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
         }
 
-        options.NativeSupportCloseCallback = () => Close(options.DiagnosticLogger);
+        options.NativeSupportCloseCallback = () => Close(options, sentryUnityInfo);
 
         options.DefaultUserId = SentryJava.GetInstallationId(JniExecutor);
         if (string.IsNullOrEmpty(options.DefaultUserId))
@@ -101,15 +103,19 @@ public static class SentryNativeAndroid
     /// <summary>
     /// Closes the native Android support.
     /// </summary>
-    public static void Close(IDiagnosticLogger? logger = null)
+    public static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo) =>
+        Close(options, sentryUnityInfo, ApplicationAdapter.Instance.Platform);
+
+    internal static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
     {
-        if (!SentryJava.IsSentryJavaPresent())
+        if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform) || !SentryJava.IsSentryJavaPresent())
         {
+            options.DiagnosticLogger?.LogDebug("Native Support is not enable. Skipping closing the native SDK");
             return;
         }
 
         // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
-        logger?.LogDebug("Closing the sentry-java SDK");
+        options.DiagnosticLogger?.LogDebug("Closing the sentry-java SDK");
 
         // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
         // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
