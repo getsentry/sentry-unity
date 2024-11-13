@@ -17,23 +17,10 @@ internal static class OptionsConfigurationTab
 
         EditorGUILayout.BeginVertical("box");
 
-        EditorGUILayout.HelpBox(
-            "The scriptable options configuration allows you to programmatically modify Sentry options." +
-            "\n" +
-            "\n" +
-            "You can use the 'Runtime Configuration Script' to modify options just before Sentry SDK gets " +
-            "initialized. This allows you to access options and functionality otherwise unavailable from the " +
-            "Editor UI, e.g. set a custom BeforeSend callback." +
-            "\n" +
-            "\n" +
-            "Use the 'Build Time Configuration Script' in case you need to change build-time behavior, " +
-            "e.g. specify custom Sentry-CLI options or change settings for native SDKs that start before the " +
-            "managed layer does (such as Android, iOS, macOS).",
-            MessageType.Info);
-
-        EditorGUILayout.Space();
-
-        EditorGUILayout.HelpBox("Deprecated and will be removed in a future version.\nPlease use the 'Option Config Script' below instead.", MessageType.Warning);
+        EditorGUILayout.HelpBox("The Runtime/BuildTime scriptable objects have been deprecated and will be removed in a future version." +
+                                "\nPlease use the 'Option Config Script' below." +
+                                "\nInstead of implementing your configuration in two places you can control the options via precompile directives.",
+            MessageType.Warning);
 
         options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
             options.RuntimeOptionsConfiguration,
