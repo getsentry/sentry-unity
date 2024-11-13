@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now provides a dedicated sentry-cli scriptable config, available on the `Debug Symbols` tab. This allows for programmatic configuration of the used cli-options during build. ([#1887](https://github.com/getsentry/sentry-unity/pull/1887))
+
 ### Fixes
 
 - The SDK no longer sends events when it fails to initialize the native SDK on Windows and Linux and logs those instead. It also suppresses `EntryPointNotFoundException` if sentry-native is not available at runtime. Native crashes won't get capture but it'll continue to capture C# errors. ([#1898](https://github.com/getsentry/sentry-unity/pull/1898))
