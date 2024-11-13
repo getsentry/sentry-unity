@@ -38,15 +38,13 @@ public static class SentryNative
         {
             if (!SentryNativeBridge.Init(options, sentryUnityInfo))
             {
-                Logger?
-                    .LogWarning("Sentry native initialization failed - native crashes are not captured.");
+                Logger?.LogWarning("Sentry native initialization failed - native crashes are not captured.");
                 return;
             }
         }
         catch (Exception e)
         {
-            Logger?
-                .LogError(e, "Sentry native initialization failed - native crashes are not captured.");
+            Logger?.LogError("Sentry native initialization failed - native crashes are not captured.", e);
             return;
         }
 
@@ -101,10 +99,8 @@ public static class SentryNative
             Logger?.LogWarning("Skipping reinstalling the native backend.");
             return;
         }
-        else
-        {
-            Logger?.LogDebug("Reinstalling the native backend to make sure we capture native crashes.");
-        }
+
+        Logger?.LogDebug("Reinstalling the native backend to make sure we capture native crashes.");
 
         try
         {
@@ -115,7 +111,7 @@ public static class SentryNative
         }
         catch (EntryPointNotFoundException e)
         {
-            Logger?.LogError(e, "Native dependency not found. Did you delete sentry.dll or move files around?");
+            Logger?.LogError("Native dependency not found. Did you delete sentry.dll or move files around?", e);
         }
     }
 }
