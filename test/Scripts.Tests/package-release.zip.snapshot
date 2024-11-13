@@ -1380,6 +1380,8 @@ Samples~/unity-of-bugs/Scripts/RuntimeConfiguration.cs
 Samples~/unity-of-bugs/Scripts/RuntimeConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs.meta
+Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs
+Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/AndroidButtons.cs
