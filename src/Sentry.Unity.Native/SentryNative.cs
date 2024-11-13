@@ -2,6 +2,7 @@ using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Analytics;
 
 namespace Sentry.Unity.Native;
@@ -13,6 +14,9 @@ public static class SentryNative
 {
     private static readonly Dictionary<string, bool> PerDirectoryCrashInfo = new();
 
+    private static bool ShouldReinstallBackend;
+    private static IDiagnosticLogger? Logger;
+
     /// <summary>
     /// Configures the native SDK.
     /// </summary>
@@ -20,11 +24,13 @@ public static class SentryNative
     /// <param name="sentryUnityInfo">Infos about the current Unity environment</param>
     public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
     {
-        options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Native SDK");
+        Logger = options.DiagnosticLogger;
+
+        Logger?.LogInfo("Attempting to configure native support via the Native SDK");
 
         if (!sentryUnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
         {
-            options.DiagnosticLogger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
+            Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
             return;
         }
 
@@ -32,21 +38,19 @@ public static class SentryNative
         {
             if (!SentryNativeBridge.Init(options, sentryUnityInfo))
             {
-                options.DiagnosticLogger?
-                    .LogWarning("Sentry native initialization failed - native crashes are not captured.");
+                Logger?.LogWarning("Sentry native initialization failed - native crashes are not captured.");
                 return;
             }
         }
         catch (Exception e)
         {
-            options.DiagnosticLogger?
-                .LogError(e, "Sentry native initialization failed - native crashes are not captured.");
+            Logger?.LogError("Sentry native initialization failed - native crashes are not captured.", e);
             return;
         }
 
         ApplicationAdapter.Instance.Quitting += () =>
         {
-            options.DiagnosticLogger?.LogDebug("Closing the sentry-native SDK");
+            Logger?.LogDebug("Closing the sentry-native SDK");
             SentryNativeBridge.Close();
         };
         options.ScopeObserver = new NativeScopeObserver(options);
@@ -75,12 +79,39 @@ public static class SentryNative
                 crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
                 PerDirectoryCrashInfo.Add(cacheDirectory, crashedLastRun);
 
-                options.DiagnosticLogger?
+                Logger?
                     .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
             }
         }
         options.CrashedLastRun = () => crashedLastRun;
+
+        ShouldReinstallBackend = true;
     }
 
-    public static void ReinstallBackend() => SentryNativeBridge.ReinstallBackend();
+    // We're calling this in `BeforeSceneLoad` instead of `SubsystemRegistration` as it's too soon and the
+    // SignalHandler would still get overwritten.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void ReinstallBackend()
+    {
+        // The backend should only be reinstalled if the native SDK has been initialized successfully.
+        if (!ShouldReinstallBackend)
+        {
+            Logger?.LogWarning("Skipping reinstalling the native backend.");
+            return;
+        }
+
+        Logger?.LogDebug("Reinstalling the native backend to make sure we capture native crashes.");
+
+        try
+        {
+            // At this point Unity has taken the signal handler and will not invoke our handler. So we register our
+            // backend once more to make sure user-defined data is available in the crash report and the SDK is able
+            // to capture the crash.
+            SentryNativeBridge.ReinstallBackend();
+        }
+        catch (EntryPointNotFoundException e)
+        {
+            Logger?.LogError("Native dependency not found. Did you delete sentry.dll or move files around?", e);
+        }
+    }
 }
