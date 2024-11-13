@@ -1,17 +1,12 @@
 using Sentry;
 using Sentry.Unity;
-using Sentry.Unity.Editor;
 using UnityEngine;
-using UnityEditor;
 
 public class OptionsConfiguration : SentryOptionsConfiguration
 {
     public override void Configure(SentryUnityOptions options)
     {
         Debug.Log("Sentry: OptionsConfig::Configure() called");
-
-        // Assert the deprecated options have been set and are getting overwritten
-        Assert.AreEqual("Old configure got called", options.Dsn);
 
         options.Dsn = "http://publickey@"
 #if UNITY_ANDROID

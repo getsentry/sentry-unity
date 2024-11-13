@@ -208,14 +208,14 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         options.SetupLogging();
 
+        OptionsConfiguration?.Configure(options);
+
         // TODO: Deprecated and to be removed in the next major
         if (RuntimeOptionsConfiguration != null && !isBuilding)
         {
             // This has to happen in between options object creation and updating the options based on programmatic changes
             RuntimeOptionsConfiguration.Configure(options);
         }
-
-        OptionsConfiguration?.Configure(options);
 
         if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
         {
