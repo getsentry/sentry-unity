@@ -112,9 +112,9 @@ namespace Sentry.Unity
             {
                 // Closing down the native layer that are set up during build and self-initialize
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Close(options.DiagnosticLogger);
+                SentryNativeCocoa.Close(options, sentryUnityInfo);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Close(options.DiagnosticLogger);
+                SentryNativeAndroid.Close(options, sentryUnityInfo);
 #endif
             }
         }
