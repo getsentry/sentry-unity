@@ -14,7 +14,7 @@ internal static class OptionsConfigurationItem
     public static T? Display<T>(T? value, string fieldName, string scriptName, string toolTip) where T : ScriptableObject
     {
         EditorGUILayout.BeginHorizontal();
-      
+
         var result = EditorGUILayout.ObjectField(
             new GUIContent(fieldName, toolTip),
             value,
