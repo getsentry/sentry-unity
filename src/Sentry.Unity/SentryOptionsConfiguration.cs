@@ -15,17 +15,19 @@ public abstract class SentryOptionsConfiguration : ScriptableObject
             {
                 // Here you can programmatically modify the Sentry option properties used for the SDK's initialization
 
-        #if UNITY_ANDROID || UNITY_IOS
-                // Important!
-                // On Android and iOS, ALL options configured here will be "baked" into the exported project during
-                // build time. Any runtime changes to these options will not take effect.
+        #if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX
+                // NOTE!
+                // On Android, iOS, and macOS, ALL options configured here will be "baked" into the exported project
+                // during the build process.
+                // Changes to the options at runtime will not affect the native SDKs (Java, C/C++, Objective-C)
+                // and only apply to the C# layer.
 
                 // Examples:
 
-                // Works as expected and will disable all debug logging of the native SDKs
-                // options.Debug = false;
+                // Works as expected and will enable all debug logging
+                // options.Debug = true;
 
-                // Will NOT work as expected as this will need to get validated at runtime
+                // Will NOT work as expected as this will get validated at runtime.
                 // options.Debug = SystemInfo.deviceName.Contains("Pixel");
         #endif
             }
