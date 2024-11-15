@@ -54,5 +54,7 @@ internal static class OptionsConfigurationTab
             "A scriptable object that inherits from 'SentryOptionsConfiguration' " +
             "and allows you to programmatically modify Sentry options."
         );
+
+        EditorGUILayout.EndVertical();
     }
 }
