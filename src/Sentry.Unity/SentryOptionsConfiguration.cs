@@ -57,7 +57,7 @@ public abstract class SentryOptionsConfiguration : ScriptableObject
                 *               ▼
                 *  ┌──────────────────────────┐
                 *  │         Native SDK       │
-                *  │    Android/iOS/macOS)    │
+                *  │    (Android/iOS/macOS)   │
                 *  └──────────────────────────┘
                 */
 
