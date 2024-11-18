@@ -23,6 +23,8 @@ public sealed class SentryCliOptions : ScriptableObject
     [field: SerializeField] public string? Project { get; set; }
     [field: SerializeField] public bool IgnoreCliErrors { get; set; } = false;
 
+    [field: SerializeField] public SentryCliOptionsConfiguration? CliOptionsConfiguration { get; set; }
+
     internal static string GetConfigPath(string? notDefaultConfigName = null)
         => $"Assets/Plugins/Sentry/{notDefaultConfigName ?? ConfigName}.asset";
 

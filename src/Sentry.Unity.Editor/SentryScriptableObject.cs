@@ -46,6 +46,10 @@ internal static class SentryScriptableObject
             }
         }
 
+        // TODO: Move this into `Load` once we remove Runtime- and BuildTimeConfig
+        // We're calling `Configure` here and not in `Load` so the new Config does not overwrite the BuildTimeConfig
+        cliOptions?.CliOptionsConfiguration?.Configure(cliOptions);
+
         return (options, cliOptions);
     }
 }
