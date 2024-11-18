@@ -25,11 +25,7 @@ internal static class OptionsConfigurationItem
         if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
         {
             var t = typeof(T);
-            if (t == typeof(SentryRuntimeOptionsConfiguration) || t == typeof(SentryBuildTimeOptionsConfiguration))
-            {
-                CreateDeprecatedConfigurationScript<T>(fieldName, scriptName);
-            }
-            else if (t == typeof(SentryOptionsConfiguration))
+            if (t == typeof(SentryOptionsConfiguration))
             {
                 CreateConfigurationScript(fieldName, SentryOptionsConfiguration.Template, scriptName);
             }
