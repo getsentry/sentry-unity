@@ -44,7 +44,7 @@ public static class SentryNative
         }
         catch (Exception e)
         {
-            Logger?.LogError("Sentry native initialization failed - native crashes are not captured.", e);
+            Logger?.LogError(e, "Sentry native initialization failed - native crashes are not captured.");
             return;
         }
 
@@ -111,7 +111,7 @@ public static class SentryNative
         }
         catch (EntryPointNotFoundException e)
         {
-            Logger?.LogError("Native dependency not found. Did you delete sentry.dll or move files around?", e);
+            Logger?.LogError(e, "Native dependency not found. Did you delete sentry.dll or move files around?");
         }
     }
 }

@@ -44,7 +44,6 @@ internal static class OptionsConfigurationItem
         }
 
         EditorGUILayout.EndHorizontal();
-
         return result;
     }
 
