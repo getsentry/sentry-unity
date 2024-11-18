@@ -9,9 +9,6 @@ public class CliConfiguration : SentryCliOptionsConfiguration
     {
         Debug.Log("Sentry: CliConfiguration::Configure() called");
 
-        // Assert the deprecated options have been set and are getting overwritten
-        // Assert.AreEqual("Old configure got called", cliOptions.Auth);
-
         cliOptions.UploadSymbols = !string.IsNullOrEmpty(cliOptions.UrlOverride);
         cliOptions.UploadSources = cliOptions.UploadSymbols;
         cliOptions.Organization = "sentry-sdks";
