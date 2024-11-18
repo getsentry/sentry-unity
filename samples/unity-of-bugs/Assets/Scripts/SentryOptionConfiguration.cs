@@ -8,7 +8,7 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
     {
         // Here you can programmatically modify the Sentry option properties used for the SDK's initialization
 
-#if UNITY_ANDROID || UNITY_IOS
+#if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX
         // Important!
         // Android and iOS options are getting validated and set at build time. Changes to them while the game
         // On Android and iOS, ALL options configured here will be "baked" into the exported project during
