@@ -75,13 +75,13 @@ namespace Sentry.Unity
                 }
                 catch (DllNotFoundException e)
                 {
-                    options.DiagnosticLogger?.LogError(
+                    options.DiagnosticLogger?.LogError(e,
                         "Sentry native-error capture configuration failed to load a native library. This usually " +
-                        "means the library is missing from the application bundle or the installation directory.", e);
+                        "means the library is missing from the application bundle or the installation directory.");
                 }
                 catch (Exception e)
                 {
-                    options.DiagnosticLogger?.LogError("Sentry native error capture configuration failed.", e);
+                    options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
                 }
 
                 SentryUnity.Init(options);
