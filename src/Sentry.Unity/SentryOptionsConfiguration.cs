@@ -22,13 +22,53 @@ public abstract class SentryOptionsConfiguration : ScriptableObject
                 // Changes to the options at runtime will not affect the native SDKs (Java, C/C++, Objective-C)
                 // and only apply to the C# layer.
 
-                // Examples:
+                /*
+                * Sentry Unity SDK - Hybrid Architecture
+                * ======================================
+                *
+                *          Build Time                          Runtime
+                *  ┌─────────────────────────┐        ┌─────────────────────────┐
+                *  │      Unity Editor       │        │       Game Startup      │
+                *  └──────────┬──────────────┘        └───────────┬─────────────┘
+                *             │                                   │
+                *             ▼                                   ▼
+                *  ┌────────────────────────────────────────────────────────────┐
+                *  │                    Options Configuration                   │
+                *  │                       (This Method)                        │ 
+                *  └─────────────────────────────┬──────────────────────────────┘ 
+                *                                │
+                *                                │
+                *               ┌───────────────────────────────────┐
+                *               │      Options used for Init        │
+                *               │                                   │
+                *               ▼                                   ▼
+                *  ┌──────────────────────────┐         ┌──────────────────────┐
+                *  │        Native SDK        │         │     Unity C# SDK     │
+                *  │    Android/iOS/macOS)    │         │    Initialization    │
+                *  │  ┌────────────────────┐  │         └──────────────────────┘
+                *  │  │ Options "Baked in" │  │
+                *  │  └────────────────────┘  │
+                *  │  The configure call made │
+                *  │  for this part ran on    │
+                *  │  your build-machine      │
+                *  └──────────────────────────┘
+                *               │
+                *               │
+                *               ▼
+                *  ┌──────────────────────────┐
+                *  │         Native SDK       │
+                *  │    Android/iOS/macOS)    │
+                *  └──────────────────────────┘
+                */
 
                 // Works as expected and will enable all debug logging
                 // options.Debug = true;
 
-                // Will NOT work as expected as this will get validated at runtime.
-                // options.Debug = SystemInfo.deviceName.Contains("Pixel");
+                // Will NOT work as expected. 
+                // This will run twice.
+                //    1. Once during the build, being baked into the native SDKs
+                //    2. And a second time every time when the game starts
+                // options.Release = ComputeVersion();                
         #endif
             }
         }
