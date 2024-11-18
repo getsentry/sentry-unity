@@ -17,10 +17,14 @@ internal static class OptionsConfigurationTab
 
         EditorGUILayout.BeginVertical("box");
 
-        EditorGUILayout.HelpBox("The Runtime/BuildTime scriptable objects have been deprecated and will be removed in a future version." +
-                                "\nPlease use the 'Option Config Script' below." +
-                                "\nInstead of implementing your configuration in two places you can control the options via precompile directives.",
-            MessageType.Warning);
+        if (options.RuntimeOptionsConfiguration != null || options.BuildTimeOptionsConfiguration != null)
+        {
+            EditorGUILayout.HelpBox(
+                "The Runtime/BuildTime scriptable objects have been deprecated and will be removed in a future version." +
+                "\nPlease use the 'Option Config Script' below." +
+                "\nInstead of implementing your configuration in two places you can control the options via precompile directives.",
+                MessageType.Warning);
+        }
 
         options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
             options.RuntimeOptionsConfiguration,
