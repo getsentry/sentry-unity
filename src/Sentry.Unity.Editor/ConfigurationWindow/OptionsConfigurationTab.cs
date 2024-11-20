@@ -14,7 +14,7 @@ internal static class OptionsConfigurationTab
                                 "create a new asset instance.", MessageType.Info);
 
         EditorGUILayout.Space();
-    
+
         if (options.RuntimeOptionsConfiguration != null || options.BuildTimeOptionsConfiguration != null)
         {
             EditorGUILayout.BeginVertical("box");
@@ -25,7 +25,7 @@ internal static class OptionsConfigurationTab
                 "\nInstead of implementing your configuration in two places you can control the options via precompile directives.",
                 MessageType.Warning);
 
-            if(options.RuntimeOptionsConfiguration != null)
+            if (options.RuntimeOptionsConfiguration != null)
             {
                 options.RuntimeOptionsConfiguration = OptionsConfigurationItem.Display(
                     options.RuntimeOptionsConfiguration,
@@ -35,7 +35,7 @@ internal static class OptionsConfigurationTab
                     "and allows you to programmatically modify Sentry options.");
             }
 
-            if(options.BuildTimeOptionsConfiguration != null)
+            if (options.BuildTimeOptionsConfiguration != null)
             {
                 options.BuildTimeOptionsConfiguration = OptionsConfigurationItem.Display(
                     options.BuildTimeOptionsConfiguration,
@@ -49,7 +49,7 @@ internal static class OptionsConfigurationTab
 
             EditorGUILayout.Space();
         }
-        
+
         EditorGUILayout.BeginVertical("box");
 
         EditorGUILayout.HelpBox("The 'Option Config Script' allows you to programmatically configure and " +
