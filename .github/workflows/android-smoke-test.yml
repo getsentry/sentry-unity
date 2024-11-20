@@ -104,9 +104,7 @@ jobs:
           api-level: ${{ steps.config.outputs.api-level }}
           target: ${{ steps.config.outputs.target }}
           force-avd-creation: false
-          arch: x86_64
-          disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
-          emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest -WarnIfFlaky
 
