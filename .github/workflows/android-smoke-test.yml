@@ -92,10 +92,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          ram-size: 2048M
           arch: x86_64
-          cores: 3
-          disk-size: 4096M
           script: echo "Generated AVD snapshot for caching."
 
       - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test
@@ -107,10 +104,7 @@ jobs:
           api-level: ${{ steps.config.outputs.api-level }}
           target: ${{ steps.config.outputs.target }}
           force-avd-creation: false
-          ram-size: 2048M
           arch: x86_64
-          cores: 3
-          emulator-boot-timeout: 1800
           disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
           emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
