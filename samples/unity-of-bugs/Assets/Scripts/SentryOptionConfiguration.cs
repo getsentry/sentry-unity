@@ -8,9 +8,9 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
     {
         // Here you can programmatically modify the Sentry option properties used for the SDK's initialization
 
-#if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX
+#if UNITY_ANDROID || UNITY_IOS
         // NOTE!
-        // On Android, iOS, and macOS, ALL options configured here will be "baked" into the exported project
+        // On Android and iOS, ALL options configured here will be "baked" into the exported project
         // during the build process.
         // Changes to the options at runtime will not affect the native SDKs (Java, C/C++, Objective-C)
         // and only apply to the C# layer.
@@ -30,14 +30,12 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
         *  │                       (This Method)                        │
         *  └─────────────────────────────┬──────────────────────────────┘
         *                                │
-        *                                │
         *               ┌───────────────────────────────────┐
         *               │      Options used for Init        │
-        *               │                                   │
         *               ▼                                   ▼
         *  ┌──────────────────────────┐         ┌──────────────────────┐
         *  │        Native SDK        │         │     Unity C# SDK     │
-        *  │    Android/iOS/macOS)    │         │    Initialization    │
+        *  │       Android & iOS      │         │    Initialization    │
         *  │  ┌────────────────────┐  │         └──────────────────────┘
         *  │  │ Options "Baked in" │  │
         *  │  └────────────────────┘  │
@@ -46,11 +44,10 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
         *  │  your build-machine      │
         *  └──────────────────────────┘
         *               │
-        *               │
         *               ▼
         *  ┌──────────────────────────┐
-        *  │         Native SDK       │
-        *  │     Android/iOS/macOS    │
+        *  │        Native SDK        │
+        *  │       Android & iOS      │
         *  └──────────────────────────┘
         */
 

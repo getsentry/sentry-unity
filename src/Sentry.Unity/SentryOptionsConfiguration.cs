@@ -36,10 +36,8 @@ public abstract class SentryOptionsConfiguration : ScriptableObject
                 *  │                       (This Method)                        │
                 *  └─────────────────────────────┬──────────────────────────────┘
                 *                                │
-                *                                │
                 *               ┌───────────────────────────────────┐
                 *               │      Options used for Init        │
-                *               │                                   │
                 *               ▼                                   ▼
                 *  ┌──────────────────────────┐         ┌──────────────────────┐
                 *  │        Native SDK        │         │     Unity C# SDK     │
@@ -51,7 +49,6 @@ public abstract class SentryOptionsConfiguration : ScriptableObject
                 *  │  for this part ran on    │
                 *  │  your build-machine      │
                 *  └──────────────────────────┘
-                *               │
                 *               │
                 *               ▼
                 *  ┌──────────────────────────┐
