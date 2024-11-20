@@ -52,11 +52,16 @@ MonoBehaviour:
   <MaxQueueItems>k__BackingField: 30
   <AnrDetectionEnabled>k__BackingField: 1
   <AnrTimeout>k__BackingField: 5000
+  <CaptureFailedRequests>k__BackingField: 1
+  <FailedRequestStatusCodes>k__BackingField: f401000057020000
   <FilterBadGatewayExceptions>k__BackingField: 1
   <FilterWebExceptions>k__BackingField: 1
   <FilterSocketExceptions>k__BackingField: 1
   <IosNativeSupportEnabled>k__BackingField: 1
   <AndroidNativeSupportEnabled>k__BackingField: 1
+  <NdkIntegrationEnabled>k__BackingField: 1
+  <NdkScopeSyncEnabled>k__BackingField: 1
+  <PostGenerateGradleProjectCallbackOrder>k__BackingField: 1
   <WindowsNativeSupportEnabled>k__BackingField: 1
   <MacosNativeSupportEnabled>k__BackingField: 1
   <LinuxNativeSupportEnabled>k__BackingField: 1
