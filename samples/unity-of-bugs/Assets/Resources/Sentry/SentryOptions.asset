@@ -68,7 +68,7 @@ MonoBehaviour:
   <Il2CppLineNumberSupportEnabled>k__BackingField: 1
   <RuntimeOptionsConfiguration>k__BackingField: {fileID: 0}
   <BuildTimeOptionsConfiguration>k__BackingField: {fileID: 0}
-  <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: a25a5a0961ec2473dafd8d49df35a927,
+  <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: cea63afb7c75f429799422326f926abe,
     type: 2}
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 1
