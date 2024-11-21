@@ -80,11 +80,9 @@ jobs:
           distribution: 'adopt'
 
       - name: Setup Android SDK
-        if: steps.avd-cache.outputs.cache-hit == '2'
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
 
       - name: Gradle cache
-        if: steps.avd-cache.outputs.cache-hit == '2'
         uses: gradle/actions/setup-gradle@d0a116fff52a680bc1541b7c4c87ca37d30abf00
         
       - name: AVD cache
@@ -109,8 +107,8 @@ jobs:
           script: |
             adb wait-for-device
             adb shell input keyevent 82
-            ./gradlew connectedAndroidTest --continue
             adb devices -l
+            ./gradlew connectedAndroidTest --continue
             echo "Generated AVD snapshot for caching."
 
       - name: Android API ${{ steps.config.outputs.label }} Smoke test
