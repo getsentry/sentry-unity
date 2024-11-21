@@ -108,7 +108,7 @@ jobs:
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            ./gradlew connectedAndroidTest --continue
+            gradle connectedAndroidTest --continue
             echo "Generated AVD snapshot for caching."
 
       - name: Android API ${{ steps.config.outputs.label }} Smoke test
