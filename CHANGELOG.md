@@ -5,6 +5,7 @@
 ### API Changes
 
 - The Runtime- and BuildTime-Configuration have been merged into a single `OptionsConfiguration` script. This allows for programmatic configuration of the SDK in one place using precompile directives. Note, that the current limitation of options for Android and iOS being baked into the project at build time still remains. ([#1888](https://github.com/getsentry/sentry-unity/pull/1888))
+This is part of a larger effort to simplify the configuration of the native SDKs and enable users to modify their options at runtime. For more information see https://github.com/getsentry/sentry-unity/issues/1907
 
 ### Features
 
