@@ -9,6 +9,8 @@ on:
         type: string
 
 jobs:
+  # needs.try-*.outputs.status == 'failed' => Smoke test failed, no need to retry.
+  # needs.try-*.result == 'failure'        => CI Setup failed.
   try-1:
     uses: ./.github/workflows/android-smoke-test.yml
     with:
@@ -16,20 +18,57 @@ jobs:
       api-level: ${{ inputs.api-level }}
       try: 1
 
-  try-2:
+  try-1-check-failed:
+    runs-on: ubuntu-latest
     needs: [try-1]
-    if: ${{ needs.try-1.result == 'failure' }}
+    if: ${{ needs.try-1.outputs.status != 'success' }}
+    steps:
+      - name: Check failed
+        run: |
+          if [[ "${{ needs.try-1.outputs.status }}" == "failed" ]]; then
+            echo "Smoke test failed."
+            exit 1
+          fi
+
+  try-2:
+    needs: [try-1-check-failed]
     uses: ./.github/workflows/android-smoke-test.yml
     with:
       unity-version: ${{ inputs.unity-version }}
       api-level: ${{ inputs.api-level }}
-      try: 2
+      try: 2      
+
+  try-2-check-failed:
+    runs-on: ubuntu-latest
+    needs: [try-2]
+    if: ${{ needs.try-2.outputs.status != 'success' }}
+    steps:
+      - name: Check failed
+        run: |
+          if [[ "${{ needs.try-2.outputs.status }}" == "failed" ]]; then
+            echo "Smoke test failed."
+            exit 1
+          fi
 
   try-3:
-    needs: [try-2]
-    if: ${{ needs.try-2.result == 'failure' }}
+    needs: [try-2-check-failed]
     uses: ./.github/workflows/android-smoke-test.yml
     with:
       unity-version: ${{ inputs.unity-version }}
       api-level: ${{ inputs.api-level }}
       try: 3
+
+  try-3-check-status:
+    runs-on: ubuntu-latest
+    needs: [try-3]
+    steps:
+      - name: Check final result
+        run: |
+          if [[ "${{ needs.try-3.outputs.status }}" == "flaky" || "${{ needs.try-3.outputs.status }}" == "crashed" ]]; then
+            echo "Job status is flaky or crashed. Exiting with code 78."
+            exit 78
+          fi
+          if [[ "${{ needs.try-2.outputs.status }}" == "failed" ]]; then
+            echo "Smoke test failed."
+            exit 1
+          fi

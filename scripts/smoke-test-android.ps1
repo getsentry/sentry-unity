@@ -61,7 +61,7 @@ else
     $ApkFileName = "IL2CPP_Player.apk"
     $ProcessName = "io.sentry.samples.unityofbugs"
 }
-$TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
+$TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
 
 $_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$BuildDir/../test-artifacts/") `
     + $(Get-Date -Format "HHmmss")
@@ -77,7 +77,13 @@ function ArtifactsPath
 if (Test-Path env:CI)
 {
     # Take Screenshot of VM to verify emulator start
-    screencapture "$(ArtifactsPath)/host-screenshot.jpg"
+    if ($IsMacOS)
+    {
+        screencapture "$(ArtifactsPath)/host-screenshot.jpg"
+    }
+    else {
+        Write-Warning "Screenshot functionality is not implemented for this platform."
+    }
 }
 
 function TakeScreenshot([string] $deviceId)
@@ -348,7 +354,13 @@ foreach ($device in $DeviceList)
             adb -s $device logcat -c
         }
 
-        adb -s $device shell am start -n $TestActivityName -e test $Name
+        Write-Host "Starting app $TestActivityName"
+        $output = & adb -s $device shell am start -n $TestActivityName -e test $Name 2>&1
+        if ($output -match "Error type 3" -or $output -match "Activity class \{$TestActivityName\} does not exist.") {
+            ExitNow "failed" "Activity does not exist"            
+        } else {
+            Write-Host "Activity started successfully."
+        }
         #despite calling start, the app might not be started yet.
 
         $timedOut = $true
