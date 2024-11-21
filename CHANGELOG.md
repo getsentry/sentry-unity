@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+### API Changes
+
+- The Runtime- and BuildTime-Configuration have been merged into a single `OptionsConfiguration` script. This allows for programmatic configuration of the SDK in one place using precompile directives. Note, that the current limitation of options for Android and iOS being baked into the project at build time still remains. ([#1888](https://github.com/getsentry/sentry-unity/pull/1888))
+
 ### Features
 
-- The SDK now has a singular `OptionsConfiguration` script that will be used both at runtime and build time. This allows you to programmatically configure the SDK in one place using precompile directives. Note, that the current limitation of options for Android and iOS being baked into the project at build time still remains. ([#1888](https://github.com/getsentry/sentry-unity/pull/1888))
 - The SDK now provides a dedicated sentry-cli scriptable config, available on the `Debug Symbols` tab. This allows for programmatic configuration of the used cli-options during build. ([#1887](https://github.com/getsentry/sentry-unity/pull/1887))
 
 ### Fixes
