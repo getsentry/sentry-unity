@@ -72,7 +72,7 @@ jobs:
           "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
           "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
       
-            - name: create Android Emulator Image
+      - name: create Android Emulator Image
         uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v233.0
         with:
           api-level: ${{ steps.config.outputs.api-level }}
