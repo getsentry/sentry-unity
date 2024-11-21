@@ -1373,15 +1373,13 @@ Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs
 Samples~/unity-of-bugs/Scripts/AdditionalButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs.meta
-Samples~/unity-of-bugs/Scripts/BuildTimeConfiguration.cs
-Samples~/unity-of-bugs/Scripts/BuildTimeConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport.meta
-Samples~/unity-of-bugs/Scripts/RuntimeConfiguration.cs
-Samples~/unity-of-bugs/Scripts/RuntimeConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs
 Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs.meta
+Samples~/unity-of-bugs/Scripts/SentryOptionConfiguration.cs
+Samples~/unity-of-bugs/Scripts/SentryOptionConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/AndroidButtons.cs

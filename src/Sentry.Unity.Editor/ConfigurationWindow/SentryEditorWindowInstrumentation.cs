@@ -33,13 +33,19 @@ public static class SentryEditorWindowInstrumentation
         Debug.LogFormat("{0}: Found SentryOptions", functionName);
 
         var value = "";
-        if (args.TryGetValue("runtimeOptionsScript", out value))
+        if (args.TryGetValue("deprecatedRuntimeOptionsScript", out value))
         {
             Debug.LogFormat("{0}: Configuring Runtime Options Script to {1}", functionName, value);
             OptionsConfigurationItem.SetScript(value);
         }
 
-        if (args.TryGetValue("buildTimeOptionsScript", out value))
+        if (args.TryGetValue("deprecatedBuildTimeOptionsScript", out value))
+        {
+            Debug.LogFormat("{0}: Configuring Build Time Options Script to {1}", functionName, value);
+            OptionsConfigurationItem.SetScript(value);
+        }
+
+        if (args.TryGetValue("optionsScript", out value))
         {
             Debug.LogFormat("{0}: Configuring Build Time Options Script to {1}", functionName, value);
             OptionsConfigurationItem.SetScript(value);
@@ -49,6 +55,12 @@ public static class SentryEditorWindowInstrumentation
         {
             Debug.LogFormat("{0}: Configuring symbol-upload UrlOverride to {1}", functionName, value);
             cliOptions.UrlOverride = value;
+        }
+
+        if (args.TryGetValue("cliOptionsScript", out value))
+        {
+            Debug.LogFormat("{0}: Configuring CliOptions Script to {1}", functionName, value);
+            OptionsConfigurationItem.SetScript(value);
         }
 
         optionsWindow.Close();

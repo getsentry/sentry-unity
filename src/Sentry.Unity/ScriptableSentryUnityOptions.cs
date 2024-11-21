@@ -106,6 +106,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
     [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
     [field: SerializeField] public SentryBuildTimeOptionsConfiguration? BuildTimeOptionsConfiguration { get; set; }
+    [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
     [field: SerializeField] public bool Debug { get; set; } = true;
     [field: SerializeField] public bool DebugOnlyInEditor { get; set; } = true;
@@ -174,6 +175,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             IosNativeSupportEnabled = IosNativeSupportEnabled,
             AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
             NdkIntegrationEnabled = NdkIntegrationEnabled,
+            NdkScopeSyncEnabled = NdkScopeSyncEnabled,
             WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
             MacosNativeSupportEnabled = MacosNativeSupportEnabled,
             LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
@@ -206,6 +208,9 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         options.SetupLogging();
 
+        OptionsConfiguration?.Configure(options);
+
+        // TODO: Deprecated and to be removed in the next major
         if (RuntimeOptionsConfiguration != null && !isBuilding)
         {
             // This has to happen in between options object creation and updating the options based on programmatic changes

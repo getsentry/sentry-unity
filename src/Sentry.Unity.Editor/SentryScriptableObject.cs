@@ -37,12 +37,17 @@ internal static class SentryScriptableObject
         if (scriptableOptions is not null)
         {
             options = scriptableOptions.ToSentryUnityOptions(isBuilding: true, unityInfo: null);
+
+            // TODO: Move this into `Load` once we remove Runtime- and BuildTimeConfig
+            // We're calling `Configure` here and not in `Load` so the new Config does not overwrite the BuildTimeConfig
+            cliOptions?.CliOptionsConfiguration?.Configure(cliOptions);
             // Must be non-nullable in the interface otherwise Unity script compilation fails...
             cliOptions ??= ScriptableObject.CreateInstance<SentryCliOptions>();
-            var setupScript = scriptableOptions.BuildTimeOptionsConfiguration;
-            if (setupScript != null)
+
+            var deprecatedConfiguration = scriptableOptions.BuildTimeOptionsConfiguration;
+            if (deprecatedConfiguration != null)
             {
-                setupScript.Configure(options, cliOptions);
+                deprecatedConfiguration.Configure(options, cliOptions);
             }
         }
 
