@@ -20,6 +20,10 @@ public class SentryCliOptionsEditor : UnityEditor.Editor
         EditorGUILayout.TextField("Org-Slug", cliOptions.Organization);
         EditorGUILayout.TextField("Project Name", cliOptions.Project);
 
+        EditorGUILayout.LabelField("Options Configuration", EditorStyles.boldLabel);
+        EditorGUILayout.ObjectField("Runtime Configuration", cliOptions.CliOptionsConfiguration,
+            typeof(SentryCliOptionsConfiguration), false);
+
         EditorGUI.EndDisabledGroup();
     }
 }
