@@ -21,7 +21,8 @@ package-dev/**/*.dll
 package-dev/**/*.exe
 package-dev/**/*.meta
 package-dev/**/*.framework
-package-dev/**/*.xcframework~
+package-dev/**/*.xcframework
+!package-dev/**/*.xcframework.meta
 package-dev/**/*.pdb
 package-dev/**/*.xml
 package-dev/**/*.dylib
