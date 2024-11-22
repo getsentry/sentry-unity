@@ -48,8 +48,6 @@ internal static class OptionsConfigurationItem
         return result;
     }
 
-    private static string SentryAssetPath(string scriptName) => $"Assets/Resources/Sentry/{scriptName}.asset";
-
     private static void CreateConfigurationScript(string fieldName, string template, string scriptName)
     {
         const string directory = "Assets/Scripts";
@@ -103,24 +101,23 @@ internal static class OptionsConfigurationItem
     internal static void SetScript(string scriptNameWithoutExtension)
     {
         var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
-        AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
-        AssetDatabase.Refresh();
-
-        var options = EditorWindow.GetWindow<SentryWindow>().Options;
-        var cliOptions = EditorWindow.GetWindow<SentryWindow>().CliOptions;
 
         switch (optionsConfigurationObject)
         {
-            case SentryRuntimeOptionsConfiguration runtimeConfiguration:
-                options.RuntimeOptionsConfiguration ??= runtimeConfiguration; // Don't overwrite if already set
-                break;
-            case SentryBuildTimeOptionsConfiguration buildTimeConfiguration:
-                options.BuildTimeOptionsConfiguration ??= buildTimeConfiguration; // Don't overwrite if already set
-                break;
             case SentryOptionsConfiguration configuration:
+                AssetDatabase.CreateAsset(optionsConfigurationObject,
+                    SentryOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
+                AssetDatabase.Refresh();
+
+                var options = EditorWindow.GetWindow<SentryWindow>().Options;
                 options.OptionsConfiguration ??= configuration; // Don't overwrite if already set
                 break;
             case SentryCliOptionsConfiguration cliConfiguration:
+                AssetDatabase.CreateAsset(optionsConfigurationObject,
+                    SentryCliOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
+                AssetDatabase.Refresh();
+
+                var cliOptions = EditorWindow.GetWindow<SentryWindow>().CliOptions;
                 cliOptions.CliOptionsConfiguration ??= cliConfiguration; // Don't overwrite if already set
                 break;
         }
