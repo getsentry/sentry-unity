@@ -39,7 +39,7 @@ MonoBehaviour:
   <Organization>k__BackingField: sentry-sdks
   <Project>k__BackingField: sentry-unity
   <IgnoreCliErrors>k__BackingField: 0
-  <CliOptionsConfiguration>k__BackingField: {fileID: 11400000, guid: d57b7f2fd263a40d6945e08d5708dc2a,
+  <CliOptionsConfiguration>k__BackingField: {fileID: 11400000, guid: 8c8107e4a8950413eb741aa6d47c3b73,
     type: 2}
 "@
 
