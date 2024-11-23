@@ -72,6 +72,14 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
     {
         var components = new List<Component>();
         transform.GetComponents(components);
+        var extras = new List<string>(components.Count);
+        foreach (var component in components)
+        {
+            if (component?.GetType().Name is { } componentName)
+            {
+                extras.Add(componentName);
+            }
+        }
         var node = new UnityViewHierarchyNode(transform.name)
         {
             Tag = transform.tag,
@@ -79,7 +87,7 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
             Rotation = transform.rotation.eulerAngles.ToString(),
             Scale = transform.localScale.ToString(),
             Active = transform.gameObject.activeSelf,
-            Extras = components.Select(e => e.GetType().ToString()).ToList()
+            Extras = extras,
         };
 
         parentNode.Children.Add(node);
