@@ -17,7 +17,7 @@
     <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry/</SentrymacOSArtifactsDestination>
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
-    <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)Android/Sentry~/</SentryAndroidArtifactsDestination>
+    <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)Android/Sentry/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/</SentryLinuxArtifactsDestination>
