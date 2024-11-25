@@ -13,6 +13,7 @@ This is part of a larger effort to simplify the configuration of the native SDKs
 
 ### Fixes
 
+- Fix potential NullReferenceException when trying to attach a view hierarchy to an event  ([#1919](https://github.com/getsentry/sentry-unity/pull/1919))
 - The SDK no longer sends events when it fails to initialize the native SDK on Windows and Linux and logs those instead. It also suppresses `EntryPointNotFoundException` if sentry-native is not available at runtime. Native crashes won't get capture but it'll continue to capture C# errors. ([#1898](https://github.com/getsentry/sentry-unity/pull/1898))
 - The SDK no longer closes the underlying native SDK during the games shutdown if native support has not been enabled. This allows the SDK to support and capture errors in case of building the game as a library on a mobile (Android or iOS) game. ([#1897](https://github.com/getsentry/sentry-unity/pull/1897))
 
