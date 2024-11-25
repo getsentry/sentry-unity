@@ -85,39 +85,22 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
         _logger?.LogInfo("Adding the build properties and flags.");
         AddBuildProperties();
 
-        var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
-
-        var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new[] { typeof(string) });
-        if (hasFileMethod != null)
-        {
-            var hasAddedFramework = (bool)hasFileMethod.Invoke(_project, new object[] { relativeFrameworkPath });
-            if (hasAddedFramework)
-            {
-                _logger?.LogDebug("Skipping. The Sentry framework has already been added to the project.");
-                return;
-            }
-        }
-
-        _logger?.LogInfo("Adding the Sentry framework.");
-
-        var frameworkGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
-            .Invoke(_project, new object[] { relativeFrameworkPath, relativeFrameworkPath, 1 }); // 1 is PBXSourceTree.Source
-
-        // Embedding the framework because it's dynamic and needed at runtime
-        _pbxProjectExtensionsType.GetMethod("AddFileToEmbedFrameworks", BindingFlags.Public | BindingFlags.Static)
-            .Invoke(null, new object?[] { _project, _mainTargetGuid, frameworkGuid, null });
+        _logger?.LogInfo("Linking the Sentry framework with the main build target.");
 
         // Getting the Link With Binary phase
         var getBuildPhaseMethod = _pbxProjectType.GetMethod("GetFrameworksBuildPhaseByTarget", new[] { typeof(string) });
         var mainBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _mainTargetGuid });
-        var unityFrameworkBuildPhaseGuid = (string)getBuildPhaseMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid });
+
+        // Getting the framework GUID to link it with binary
+        var relativeFrameworkPath = Path.Combine("Frameworks", SentryPackageInfo.GetName(), "Plugins", "iOS", FrameworkName);
+        var frameworkGuid = (string)_pbxProjectType.GetMethod("FindFileGuidByProjectPath", BindingFlags.Public | BindingFlags.Instance)
+            .Invoke(_project, new object[] { relativeFrameworkPath });
 
         // Linking With Binary
         var addFileToBuildSectionMethod = _pbxProjectType.GetMethod("AddFileToBuildSection", new[] { typeof(string), typeof(string), typeof(string) });
         addFileToBuildSectionMethod.Invoke(_project, new object[] { _mainTargetGuid, mainBuildPhaseGuid, frameworkGuid });
-        addFileToBuildSectionMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, unityFrameworkBuildPhaseGuid, frameworkGuid });
 
-        _logger?.LogDebug("Successfully added the Sentry framework.");
+        _logger?.LogDebug("Successfully linked the Sentry framework.");
     }
 
     private void AddBuildProperties()
@@ -131,20 +114,6 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
 
         _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
             .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
-    }
-
-    public void AddSentryNativeBridge()
-    {
-        _logger?.LogInfo("Adding the Sentry Native Bridge.");
-
-        var relativeBridgePath = Path.Combine("Libraries", SentryPackageInfo.GetName(), BridgeName);
-        var bridgeGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
-            .Invoke(_project, new object[] { relativeBridgePath, relativeBridgePath, 1 }); // 1 is PBXSourceTree.Source
-
-        _pbxProjectType.GetMethod("AddFileToBuild", BindingFlags.Public | BindingFlags.Instance)
-            .Invoke(_project, new[] { _unityFrameworkTargetGuid, bridgeGuid });
-
-        _logger?.LogDebug("Successfully added the Sentry Native Bridge.");
     }
 
     // Used for testing

@@ -21,6 +21,12 @@ internal static class SentryCocoaBridgeProxy
             return false;
         }
 
+        if (SentryNativeBridgeIsEnabled() == 1)
+        {
+            options.DiagnosticLogger?.LogDebug("The native SDK has already been initialized.");
+            return false;
+        }
+
         var cOptions = OptionsNew();
 
         // Note: DSN is not null because options.IsValid() must have returned true for this to be called.
@@ -65,6 +71,9 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeLoadLibrary")]
     private static extern int LoadLibrary();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeIsEnabled")]
+    private static extern int SentryNativeBridgeIsEnabled();
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsNew")]
     private static extern IntPtr OptionsNew();
