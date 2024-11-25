@@ -13,6 +13,7 @@ This is part of a larger effort to simplify the configuration of the native SDKs
 
 ### Fixes
 
+- Fix potential NullReferenceException when trying to attach a view hierarchy to an event  ([#1919](https://github.com/getsentry/sentry-unity/pull/1919))
 - The SDK no longer sends events when it fails to initialize the native SDK on Windows and Linux and logs those instead. It also suppresses `EntryPointNotFoundException` if sentry-native is not available at runtime. Native crashes won't get capture but it'll continue to capture C# errors. ([#1898](https://github.com/getsentry/sentry-unity/pull/1898))
 - The SDK no longer closes the underlying native SDK during the games shutdown if native support has not been enabled. This allows the SDK to support and capture errors in case of building the game as a library on a mobile (Android or iOS) game. ([#1897](https://github.com/getsentry/sentry-unity/pull/1897))
 
@@ -21,9 +22,9 @@ This is part of a larger effort to simplify the configuration of the native SDKs
 - Bump .NET SDK from v4.12.1 to v4.13.0 ([#1879](https://github.com/getsentry/sentry-unity/pull/1879), [#1885](https://github.com/getsentry/sentry-unity/pull/1885))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#4130)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.12.1...4.13.0)
-- Bump CLI from v2.38.1 to v2.38.2 ([#1883](https://github.com/getsentry/sentry-unity/pull/1883))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2382)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.38.1...2.38.2)
+- Bump CLI from v2.38.1 to v2.39.0 ([#1883](https://github.com/getsentry/sentry-unity/pull/1883), [#1917](https://github.com/getsentry/sentry-unity/pull/1917))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2390)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.38.1...2.39.0)
 - Bump Native SDK from v0.7.11 to v0.7.15 ([#1886](https://github.com/getsentry/sentry-unity/pull/1886), [#1906](https://github.com/getsentry/sentry-unity/pull/1906), [#1910](https://github.com/getsentry/sentry-unity/pull/1910), [#1913](https://github.com/getsentry/sentry-unity/pull/1913))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0715)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.11...0.7.15)

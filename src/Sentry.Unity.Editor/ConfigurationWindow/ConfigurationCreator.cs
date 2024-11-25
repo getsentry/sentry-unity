@@ -103,8 +103,6 @@ internal static class OptionsConfigurationItem
     internal static void SetScript(string scriptNameWithoutExtension)
     {
         var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
-        AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
-        AssetDatabase.Refresh();
 
         var options = EditorWindow.GetWindow<SentryWindow>().Options;
         var cliOptions = EditorWindow.GetWindow<SentryWindow>().CliOptions;
@@ -112,15 +110,23 @@ internal static class OptionsConfigurationItem
         switch (optionsConfigurationObject)
         {
             case SentryRuntimeOptionsConfiguration runtimeConfiguration:
+                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
+                AssetDatabase.Refresh();
                 options.RuntimeOptionsConfiguration ??= runtimeConfiguration; // Don't overwrite if already set
                 break;
             case SentryBuildTimeOptionsConfiguration buildTimeConfiguration:
+                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
+                AssetDatabase.Refresh();
                 options.BuildTimeOptionsConfiguration ??= buildTimeConfiguration; // Don't overwrite if already set
                 break;
             case SentryOptionsConfiguration configuration:
+                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
+                AssetDatabase.Refresh();
                 options.OptionsConfiguration ??= configuration; // Don't overwrite if already set
                 break;
             case SentryCliOptionsConfiguration cliConfiguration:
+                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryCliOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
+                AssetDatabase.Refresh();
                 cliOptions.CliOptionsConfiguration ??= cliConfiguration; // Don't overwrite if already set
                 break;
         }

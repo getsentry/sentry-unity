@@ -4,6 +4,7 @@ namespace Sentry.Unity;
 
 public abstract class SentryOptionsConfiguration : ScriptableObject
 {
+    public static string GetAssetPath(string scriptName) => $"Assets/Resources/Sentry/{scriptName}.asset";
     public static readonly string Template =
         """
         using Sentry.Unity;
