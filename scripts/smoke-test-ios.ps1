@@ -146,7 +146,7 @@ function Test
             try
             {
                 Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
-                $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
+                $consoleOut = xcrun simctl launch --console $($device.UUID) $AppName "--test" $Name
 
                 if ("$SuccessString" -eq "")
                 {
