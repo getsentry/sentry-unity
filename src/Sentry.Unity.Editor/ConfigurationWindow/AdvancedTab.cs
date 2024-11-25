@@ -138,6 +138,20 @@ internal static class AdvancedTab
                                                      "errors written in languages such as Objective-C, Swift, C and C++."),
                 options.IosNativeSupportEnabled);
 
+            EditorGUI.indentLevel++;
+            EditorGUI.BeginDisabledGroup(!options.AndroidNativeSupportEnabled);
+
+            EditorGUILayout.HelpBox(
+                "I KNOW WHAT I'M DOING! - FAT WARNING LABEL HERE TO INFORM ABOUT LIMITATIONS.",
+                MessageType.Error);
+            options.IosInitializeNativeFirst = EditorGUILayout.Toggle(
+                new GUIContent("Init Native First", "Whether The native SDK should be initialized BEFORE" +
+                                                  "the Unity game even starts."),
+                options.IosInitializeNativeFirst);
+
+            EditorGUI.EndDisabledGroup();
+            EditorGUI.indentLevel--;
+
             options.AndroidNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("Android Native Support", "Whether to enable Native Android support to " +
                                                          "capture errors written in languages such as Java, Kotlin, C and C++."),

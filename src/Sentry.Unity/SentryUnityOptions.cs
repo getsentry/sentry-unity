@@ -150,6 +150,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should initialize the native SDK before the Unity game
+    /// </summary>
+    public bool IosInitializeNativeFirst { get; set; } = false;
+
+    /// <summary>
     /// Whether the SDK should add native support for Android
     /// </summary>
     public bool AndroidNativeSupportEnabled { get; set; } = true;
