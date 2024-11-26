@@ -51,6 +51,8 @@ public static class BuildPostProcess
         {
             logger.LogWarning("iOS native support disabled because Sentry has not been configured. " +
                               "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
+
+            SetupNoOpBridge(logger, pathToProject);
             return;
         }
 
@@ -68,10 +70,30 @@ public static class BuildPostProcess
                 }
             }
 
+            SetupNoOpBridge(logger, pathToProject);
             return;
         }
 
         SetupSentry(options, cliOptions, logger, pathToProject);
+    }
+
+    internal static void SetupNoOpBridge(IDiagnosticLogger logger, string pathToProject)
+    {
+        try
+        {
+            logger.LogDebug("Copying the NoOp bride to the output project.");
+
+            // The Unity SDK expects the bridge to be there. The Xcode build will break during linking otherwise.
+            var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.NoOpBridgeName));
+            CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
+
+            using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject);
+            sentryXcodeProject.AddSentryNativeBridge();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to add the Sentry NoOp bridge to the output project.");
+        }
     }
 
     internal static void SetupSentry(SentryUnityOptions options,
@@ -79,25 +101,22 @@ public static class BuildPostProcess
         IDiagnosticLogger logger,
         string pathToProject)
     {
-        logger.LogInfo("Attempting to setup Sentry in the Xcode project.");
+        logger.LogInfo("Attempting to add Sentry to the Xcode project.");
 
         try
         {
+            // The Sentry.xcframework ends in '~' to hide it from Unity. Otherwise, Unity tries to export it with the XCode build.
+            var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
+            CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
+
+            var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.BridgeName));
+            CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
+
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
-
-            if (options.IosInitializeNativeFirst)
-            {
-                logger.LogInfo("Setting up the Cocoa SDK to initialize before the game starts.");
-
-                // We have to add the Sentry Framework manually to the Main Build. Unity does not do that for us.
-                // The SDK is not available to the native-options and the init call in `main.mm` otherwise.
-                sentryXcodeProject.AddSentryFramework();
-
-                sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
-                sentryXcodeProject.AddSentryToMain(options);
-
-                logger.LogInfo("Setup of Cocoa SDK to auto-initialize before the game starts finished.");
-            }
+            sentryXcodeProject.AddSentryFramework();
+            sentryXcodeProject.AddSentryNativeBridge();
+            sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
+            sentryXcodeProject.AddSentryToMain(options);
 
             if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
             {
