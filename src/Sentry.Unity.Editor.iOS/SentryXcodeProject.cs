@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -132,7 +133,7 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
         _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
             .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
     }
-
+    
     public void AddSentryNativeBridge()
     {
         _logger?.LogInfo("Adding the Sentry Native Bridge.");
