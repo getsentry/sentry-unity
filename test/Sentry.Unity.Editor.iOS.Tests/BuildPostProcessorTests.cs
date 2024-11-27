@@ -78,7 +78,7 @@ public class BuildPostProcessorTests
     [Test]
     public void AddSentryToXcodeProject_InitializeNativeFirstEnabled_SetsUpSdkAndInitialize()
     {
-        var options = new SentryUnityOptions { IosNativeSupportEnabled = true, IosInitializeNativeFirst = true};
+        var options = new SentryUnityOptions { IosNativeSupportEnabled = true, IosInitializeNativeFirst = true };
         var testLogger = new TestLogger();
 
         BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
