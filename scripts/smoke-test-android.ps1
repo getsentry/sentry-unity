@@ -61,7 +61,8 @@ else
     $ApkFileName = "IL2CPP_Player.apk"
     $ProcessName = "io.sentry.samples.unityofbugs"
 }
-$TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
+$TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
+$FallBackTestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
 
 $_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$BuildDir/../test-artifacts/") `
     + $(Get-Date -Format "HHmmss")
@@ -357,7 +358,16 @@ foreach ($device in $DeviceList)
         Write-Host "Starting app $TestActivityName"
         $output = & adb -s $device shell am start -n $TestActivityName -e test $Name 2>&1
         if ($output -match "Error type 3" -or $output -match "Activity class \{$TestActivityName\} does not exist.") {
-            ExitNow "failed" "Activity does not exist"            
+            Write-Host "Trying fallback activity $FallBackTestActivityName"
+            $output = & adb -s $device shell am start -n $FallBackTestActivityName -e test $Name 2>&1
+            if ($output -match "Error type 3" -or $output -match "Activity class \{$FallBackTestActivityName\} does not exist.") {
+                ExitNow "failed" "Activity does not exist"            
+                exit 1  # Exit with an error code
+            }
+            else
+            {
+                Write-Host "Activity started successfully."
+            }
         } else {
             Write-Host "Activity started successfully."
         }
