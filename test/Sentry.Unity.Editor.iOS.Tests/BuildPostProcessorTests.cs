@@ -79,6 +79,18 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void SetupNoOpBridge_CopiesNoOpBridgeToOutput()
+    {
+        BuildPostProcess.SetupNoOpBridge(new TestLogger(), _outputProjectPath);
+
+        var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
+            SentryXcodeProject.BridgeName);
+
+        Assert.IsTrue(File.Exists(noOpBridgePath));
+        StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
+    }
+
+    [Test]
     public void SetupSentry_CopiesFrameworkAndBridge()
     {
         var options = new SentryUnityOptions();
