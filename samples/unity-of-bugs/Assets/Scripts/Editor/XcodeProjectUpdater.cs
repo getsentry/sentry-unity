@@ -1,3 +1,4 @@
+#if UNITY_IOS && !UNITY_2021_1_OR_NEWER
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
@@ -38,3 +39,4 @@ namespace Editor
         }
     }
 }
+#endif
