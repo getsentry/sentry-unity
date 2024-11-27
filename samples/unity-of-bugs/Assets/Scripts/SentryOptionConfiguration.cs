@@ -83,6 +83,8 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             return sentryEvent;
         });
 
+        options.IosInitializeNativeFirst = false;
+
         Debug.Log("OptionConfigure finished.");
     }
 }
