@@ -6,7 +6,6 @@ $exclude = @(
     "package.json",
     "Tests",
     "Tests.meta",
-    "XcodeProjectUpdater*",
     "*.asmdef",
     "*.asmdef.meta",
     "SentryOptions.json*",
@@ -24,7 +23,6 @@ Copy-Item "LICENSE.md" -Destination "package-release/LICENSE.md"
 
 # Copy samples
 Copy-Item "samples/unity-of-bugs/Assets/Scenes*" -Destination "package-release/Samples~/unity-of-bugs/" -Recurse
-Copy-Item "samples/unity-of-bugs/Assets/Editor*" -Destination "package-release/Samples~/unity-of-bugs/" -Recurse
 Copy-Item "samples/unity-of-bugs/Assets/Scripts*" -Destination "package-release/Samples~/unity-of-bugs/" -Recurse
 
 # Create zip
