@@ -36,7 +36,7 @@ jobs:
     with:
       unity-version: ${{ inputs.unity-version }}
       api-level: ${{ inputs.api-level }}
-      try: 2      
+      try: 2
 
   try-2-check-failed:
     runs-on: ubuntu-latest
