@@ -87,8 +87,11 @@ public static class BuildPostProcess
 
         try
         {
-            // The Sentry.xcframework ends in '~' to hide it from Unity. Otherwise, Unity tries to export it with the XCode build.
-            // We cannot let Unity copy this over for us since this feature was introduces in Unity 2021
+            // The Sentry.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the XCode build.
+            // Ideally, we would let Unity copy this over but:
+            // - Detection of `.xcframework` as datatype and non-folder happened in Unity 2021
+            // - Without a `.meta` file we cannot opt-in embedding the framework
+            // - Even if Unity copies it, the framework still requires to be 'linked with binary' for it to work
             var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
             CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
 
