@@ -6,6 +6,8 @@ $exclude = @(
     "package.json",
     "Tests",
     "Tests.meta",
+    "Editor",
+    "Editor.meta",
     "*.asmdef",
     "*.asmdef.meta",
     "SentryOptions.json*",
