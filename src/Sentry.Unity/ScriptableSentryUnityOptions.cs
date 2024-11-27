@@ -94,7 +94,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool FilterSocketExceptions { get; set; } = true;
 
     [field: SerializeField] public bool IosNativeSupportEnabled { get; set; } = true;
-    [field: SerializeField] public bool IosInitializeNativeFirst { get; set; } = false;
     [field: SerializeField] public bool AndroidNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool NdkIntegrationEnabled { get; set; } = true;
     [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;
@@ -174,7 +173,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             CaptureFailedRequests = CaptureFailedRequests,
             FilterBadGatewayExceptions = FilterBadGatewayExceptions,
             IosNativeSupportEnabled = IosNativeSupportEnabled,
-            IosInitializeNativeFirst = IosInitializeNativeFirst,
             AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
             NdkIntegrationEnabled = NdkIntegrationEnabled,
             NdkScopeSyncEnabled = NdkScopeSyncEnabled,

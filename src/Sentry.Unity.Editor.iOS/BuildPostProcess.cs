@@ -106,6 +106,7 @@ public static class BuildPostProcess
         try
         {
             // The Sentry.xcframework ends in '~' to hide it from Unity. Otherwise, Unity tries to export it with the XCode build.
+            // We cannot let Unity copy this over for us since this feature was introduces in Unity 2021
             var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
             CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
 
@@ -115,8 +116,12 @@ public static class BuildPostProcess
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
             sentryXcodeProject.AddSentryFramework();
             sentryXcodeProject.AddSentryNativeBridge();
-            sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
-            sentryXcodeProject.AddSentryToMain(options);
+
+            if (options.IosInitializeNativeFirst)
+            {
+                sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
+                sentryXcodeProject.AddSentryToMain(options);
+            }
 
             if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
             {
