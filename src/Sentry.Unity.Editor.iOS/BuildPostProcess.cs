@@ -25,23 +25,6 @@ public static class BuildPostProcess
         AddSentryToXcodeProject(options, cliOptions, logger, pathToProject);
     }
 
-    internal static bool IsNativeSupportEnabled(SentryUnityOptions options, IDiagnosticLogger logger)
-    {
-        if (!options.IsValid())
-        {
-            logger.LogWarning("Sentry SDK has been disabled. There will be no iOS native support.");
-            return false;
-        }
-
-        if (!options.IosNativeSupportEnabled)
-        {
-            logger.LogInfo("The iOS native support has been disabled through the options.");
-            return false;
-        }
-
-        return true;
-    }
-
     internal static void AddSentryToXcodeProject(SentryUnityOptions? options,
         SentryCliOptions? cliOptions,
         IDiagnosticLogger logger,
