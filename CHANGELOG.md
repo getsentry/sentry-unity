@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### API Changes
+
+- The native layer on iOS no longer self-initializes before the Unity game starts. Instead, it accepts the options at the end of the configure call. To restore the old behavior, users can opt-in to initializing native first via `IosInitializeNativeFirst`. Note that using this option comes with the limitation of baking the options into the generated Xcode project at build-time. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915))
+
+
 ## 2.4.0
 
 ### API Changes
