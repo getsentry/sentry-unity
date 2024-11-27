@@ -56,7 +56,11 @@ public static class BuildPostProcess
             return;
         }
 
-        if (!IsNativeSupportEnabled(options, logger))
+        SetupSentry(options, cliOptions, logger, pathToProject);
+
+        // We want to avoid users getting stuck on a cached built output.
+        // This can happen if the user appends builds and toggles the `IosInitializeNativeFirst` from `true` to `false`
+        if (!options.IosInitializeNativeFirst)
         {
             var mainPath = Path.Combine(pathToProject, SentryXcodeProject.MainPath);
             if (File.Exists(mainPath))
@@ -69,12 +73,7 @@ public static class BuildPostProcess
                         "during a previous build. Select 'Replace' when exporting the project to create a clean project.");
                 }
             }
-
-            SetupNoOpBridge(logger, pathToProject);
-            return;
         }
-
-        SetupSentry(options, cliOptions, logger, pathToProject);
     }
 
     internal static void SetupNoOpBridge(IDiagnosticLogger logger, string pathToProject)

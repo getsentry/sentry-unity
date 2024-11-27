@@ -22,19 +22,18 @@ public static class SentryNativeCocoa
     {
         options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Cocoa SDK");
 
-        // if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
-        // {
-        //     options.DiagnosticLogger?.LogDebug("Native support is disabled for: '{0}'", platform);
-        //     return;
-        // }
-
         if (platform == RuntimePlatform.IPhonePlayer)
         {
-            if (!SentryCocoaBridgeProxy.Init(options))
+            if (SentryCocoaBridgeProxy.IsEnabled())
+            {
+                options.DiagnosticLogger?.LogDebug("The native SDK is already initialized");
+            }
+            else if (!SentryCocoaBridgeProxy.Init(options))
             {
                 options.DiagnosticLogger?.LogWarning("Failed to initialize the native SDK");
                 return;
             }
+
             options.ScopeObserver = new NativeScopeObserver("iOS", options);
         }
         else

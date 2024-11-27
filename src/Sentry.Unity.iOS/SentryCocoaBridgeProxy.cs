@@ -13,17 +13,12 @@ namespace Sentry.Unity.iOS;
 /// <see href="https://github.com/getsentry/sentry-cocoa"/>
 internal static class SentryCocoaBridgeProxy
 {
-    // Note: used on macOS only
+    public static bool IsEnabled() => SentryNativeBridgeIsEnabled() == 1;
+
     public static bool Init(SentryUnityOptions options)
     {
         if (LoadLibrary() != 1)
         {
-            return false;
-        }
-
-        if (SentryNativeBridgeIsEnabled() == 1)
-        {
-            options.DiagnosticLogger?.LogDebug("The native SDK has already been initialized.");
             return false;
         }
 
