@@ -6,6 +6,7 @@ $exclude = @(
     "package.json",
     "Tests",
     "Tests.meta",
+    "XcodeProjectUpdater*",
     "*.asmdef",
     "*.asmdef.meta",
     "SentryOptions.json*",
