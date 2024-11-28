@@ -1,11 +1,12 @@
 using System;
+using Sentry.Extensibility;
 using UnityEngine;
 
 namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
-    public void Init(IJniExecutor jniExecutor, string dsn);
+    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
@@ -41,17 +42,53 @@ internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-    public void Init(IJniExecutor jniExecutor, string dsn)
+        public void Init(IJniExecutor jniExecutor, SentryUnityOptions options)
     {
         jniExecutor.Run(() =>
         {
-            using var sentry = GetSentryJava();
-            using var options = new AndroidJavaObject("io.sentry.SentryOptions");
-            options.Set("dsn", dsn);
-            
-            // Initialize the SDK with the options
-            sentry.CallStatic("init", options);
+            using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
+            using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
+                .GetStatic<AndroidJavaObject>("currentActivity");
+
+            sentry.CallStatic("init", context, new OptionsConfiguration(androidOptions =>
+            {
+                androidOptions.Call("setDsn", options.Dsn);
+                androidOptions.Call("setDebug", options.Debug);
+                androidOptions.Call("setRelease", options.Release);
+                androidOptions.Call("setEnvironment", options.Environment);
+            }, options.DiagnosticLogger));
         });
+    }
+
+    // Update the callback class to match the Java interface name
+    internal class OptionsConfiguration : AndroidJavaProxy
+    {
+        private readonly Action<AndroidJavaObject> _callback;
+        private readonly IDiagnosticLogger? _logger;
+
+        public OptionsConfiguration(Action<AndroidJavaObject> callback, IDiagnosticLogger? logger)
+            : base("io.sentry.Sentry$OptionsConfiguration")
+        {
+            _callback = callback;
+            _logger = logger;
+        }
+
+        public override AndroidJavaObject? Invoke(string methodName, AndroidJavaObject[] args)
+        {
+            try
+            {
+                if (methodName != "configure" || args.Length != 1)
+                {
+                    throw new Exception($"Invalid invocation: {methodName}({args.Length} args)");
+                }
+                _callback(args[0]);
+            }
+            catch (Exception e)
+            {
+                _logger?.LogError(e, "Error in SentryJava.OptionsConfiguration: {0}");
+            }
+            return null;
+        }
     }
 
     public string? GetInstallationId(IJniExecutor jniExecutor)

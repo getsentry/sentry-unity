@@ -155,6 +155,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AndroidNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should add native support for Android
+    /// </summary>
+    public bool AndroidInitNativeFirst { get; set; } = false;
+
+    /// <summary>
     /// Whether the SDK should add the NDK integration for Android
     /// </summary>
     public bool NdkIntegrationEnabled { get; set; } = true;

@@ -72,6 +72,13 @@ public class AndroidManifestConfiguration
 
     public void OnPostGenerateGradleAndroidProject(string basePath)
     {
+        if (_options is null)
+        {
+            _logger.LogWarning("Android native support disabled because Sentry has not been configured. " +
+                              "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
+            return;
+        }
+
         if (_scriptingImplementation != ScriptingImplementation.IL2CPP)
         {
             if (_options is { AndroidNativeSupportEnabled: true })
@@ -129,6 +136,15 @@ public class AndroidManifestConfiguration
         }
 
         androidManifest.AddDisclaimerComment();
+
+        if (_options?.AndroidInitNativeFirst is false)
+        {
+            _logger.LogDebug("The Android SDK will be initialized at runtime.");
+            androidManifest.SetAutoInit(false);
+            _ = androidManifest.Save();
+
+            return;
+        }
 
         _logger.LogDebug("Configuring Sentry options on AndroidManifest: {0}", basePath);
         androidManifest.SetSDK("sentry.java.android.unity");
@@ -418,6 +434,9 @@ internal class AndroidManifest : AndroidXmlDocument
 
     public void AddDisclaimerComment() =>
         _applicationElement.AppendChild(_applicationElement.OwnerDocument.CreateComment(Disclaimer));
+
+    internal void SetAutoInit(bool enableAutoInit)
+        => SetMetaData($"{SentryPrefix}.auto-init", enableAutoInit.ToString());
 
     internal void SetDsn(string dsn) => SetMetaData($"{SentryPrefix}.dsn", dsn);
 
