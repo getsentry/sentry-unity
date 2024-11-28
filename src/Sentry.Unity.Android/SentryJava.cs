@@ -5,6 +5,7 @@ namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
+    public void Init(IJniExecutor jniExecutor, string dsn);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
@@ -39,6 +40,19 @@ internal interface ISentryJava
 internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+
+    public void Init(IJniExecutor jniExecutor, string dsn)
+    {
+        jniExecutor.Run(() =>
+        {
+            using var sentry = GetSentryJava();
+            using var options = new AndroidJavaObject("io.sentry.SentryOptions");
+            options.Set("dsn", dsn);
+            
+            // Initialize the SDK with the options
+            sentry.CallStatic("init", options);
+        });
+    }
 
     public string? GetInstallationId(IJniExecutor jniExecutor)
     {

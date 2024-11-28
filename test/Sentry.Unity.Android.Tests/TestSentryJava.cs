@@ -5,6 +5,11 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
+    public void Init(IJniExecutor jniExecutor, string dsn)
+    {
+        throw new System.NotImplementedException();
+    }
+
     public string? GetInstallationId(IJniExecutor jniExecutor) => InstallationId;
 
     public bool? CrashedLastRun(IJniExecutor jniExecutor) => IsCrashedLastRun;
