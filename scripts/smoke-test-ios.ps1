@@ -121,16 +121,8 @@ function Test
     Write-Host "::endgroup::"
 
     $devicesRan = 0
-    $skipFirst = $true
     ForEach ($device in $deviceList)
     {
-        # Skip the first device to see if it's a flaky one
-        If ($skipFirst)
-        {
-            $skipFirst = $false
-            continue
-        }
-
         If ($devicesRan -ge $DevicesToRun)
         {
             # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
