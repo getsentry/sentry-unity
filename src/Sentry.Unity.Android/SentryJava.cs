@@ -42,7 +42,7 @@ internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-        public void Init(IJniExecutor jniExecutor, SentryUnityOptions options)
+    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options)
     {
         jniExecutor.Run(() =>
         {
