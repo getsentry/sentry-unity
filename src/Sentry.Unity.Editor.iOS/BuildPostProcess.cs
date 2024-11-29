@@ -43,7 +43,7 @@ public static class BuildPostProcess
 
         // We want to avoid users getting stuck on a cached built output.
         // This can happen if the user appends builds and toggles the `IosInitializeNativeFirst` from `true` to `false`
-        if (!options.IosInitializeNativeFirst)
+        if (!options.IosStandaloneInit)
         {
             var mainPath = Path.Combine(pathToProject, SentryXcodeProject.MainPath);
             if (File.Exists(mainPath))
@@ -102,7 +102,7 @@ public static class BuildPostProcess
             sentryXcodeProject.AddSentryFramework();
             sentryXcodeProject.AddSentryNativeBridge();
 
-            if (options.IosInitializeNativeFirst)
+            if (options.IosStandaloneInit)
             {
                 sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
                 sentryXcodeProject.AddSentryToMain(options);

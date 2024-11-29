@@ -150,9 +150,10 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether the SDK should initialize the native SDK before the Unity game
+    /// Whether the SDK should initialize the native SDK before the Unity game. This bakes the options at build-time into
+    /// the generated Xcode project
     /// </summary>
-    public bool IosInitializeNativeFirst { get; set; } = false;
+    public bool IosStandaloneInit { get; set; } = false;
 
     /// <summary>
     /// Whether the SDK should add native support for Android
