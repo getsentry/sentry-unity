@@ -616,7 +616,7 @@ jobs:
 
       - name: Smoke test
         id: smoke-test-ios
-        timeout-minutes: 30
+        timeout-minutes: 10
         run: |
           $runtime = "${{ matrix.ios }}"
           If ($runtime -ne "latest")
