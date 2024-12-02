@@ -83,6 +83,8 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             return sentryEvent;
         });
 
+        options.IosNativeInitializationType = NativeInitializationType.BuildTime;
+
         Debug.Log("OptionConfigure finished.");
     }
 }

@@ -11,10 +11,10 @@ public class SentryNativeCocoaTests
     {
         var unityInfo = new TestUnityInfo { IL2CPP = false };
         var options = new SentryUnityOptions();
-        SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.IPhonePlayer);
-        Assert.IsAssignableFrom<NativeScopeObserver>(options.ScopeObserver);
-        Assert.IsNotNull(options.CrashedLastRun);
-        Assert.True(options.EnableScopeSync);
+        // Note: can't test iOS - throws because it tries to call SentryCocoaBridgeProxy.Init()
+        // but the bridge isn't loaded now...
+        Assert.Throws<EntryPointNotFoundException>(() =>
+            SentryNativeCocoa.Configure(options, unityInfo, RuntimePlatform.IPhonePlayer));
     }
 
     [Test]

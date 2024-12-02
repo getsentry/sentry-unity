@@ -49,6 +49,8 @@ int SentryNativeBridgeLoadLibrary()
     return loadStatus;
 }
 
+int SentryNativeBridgeIsEnabled() { return [SentrySDK isEnabled] ? 1 : 0; }
+
 const void *SentryNativeBridgeOptionsNew()
 {
     NSMutableDictionary *dictOptions = [[NSMutableDictionary alloc] init];

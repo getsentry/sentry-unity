@@ -57,55 +57,71 @@ public class BuildPostProcessorTests
     }
 
     [Test]
-    public void AddSentryToXcodeProject_SdkDisabled_LogsAndCopiesNoOpBridge()
+    public void AddSentryToXcodeProject_NativeSupportDisabled_CopiesNoopBridgeAndNothingElse()
     {
-        var options = new SentryUnityOptions { Enabled = false };
+        var options = new SentryUnityOptions { IosNativeSupportEnabled = false, IosNativeInitializationType = NativeInitializationType.Runtime };
         var testLogger = new TestLogger();
 
         BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
 
-        Assert.IsFalse(testLogger.Logs.Any(log =>
-            log.logLevel == SentryLevel.Info &&
-            log.message.Contains("Attempting to add Sentry to the Xcode project."))); // Sanity check
         Assert.IsTrue(testLogger.Logs.Any(log =>
-            log.logLevel == SentryLevel.Warning &&
-            log.message.Contains("Sentry SDK has been disabled. There will be no iOS native support.")));
+            log.logLevel == SentryLevel.Info &&
+            log.message.Contains("iOS native support has been disabled through the options."))); // Sanity check
 
-        var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
-            SentryXcodeProject.BridgeName);
-
-        Assert.IsTrue(File.Exists(noOpBridgePath));
-        StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
-    }
-
-    [Test]
-    public void SetupNoOpBridge_CopiesNoOpBridgeToOutput()
-    {
-        BuildPostProcess.SetupNoOpBridge(new TestLogger(), _outputProjectPath);
-
-        var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
-            SentryXcodeProject.BridgeName);
+        var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
+        var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
 
         Assert.IsTrue(File.Exists(noOpBridgePath));
         StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
+        Assert.IsFalse(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must not contain Sentry
     }
 
     [Test]
-    public void SetupSentry_CopiesFrameworkAndBridge()
+    public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeRuntime_SetsUpSdkButDoesNotInitialize()
     {
-        var options = new SentryUnityOptions();
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.Runtime
+        };
         var testLogger = new TestLogger();
 
-        BuildPostProcess.SetupSentry(options, null, testLogger, _outputProjectPath);
+        BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
 
-        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
-            SentryXcodeProject.BridgeName);
-        var frameworkPath = Path.Combine(_outputProjectPath, "Frameworks", SentryXcodeProject.FrameworkName);
+        Assert.IsTrue(testLogger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Info &&
+            log.message.Contains("Attempting to add Sentry to the Xcode project."))); // Sanity check
+
+        var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
 
         Assert.IsTrue(File.Exists(bridgePath));
-        Assert.IsTrue(Directory.Exists(frameworkPath));
+        Assert.IsFalse(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must not contain Sentry
+    }
 
-        StringAssert.Contains("[SentrySDK", File.ReadAllText(bridgePath)); // Sanity check
+    [Test]
+    public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeBuildTime_SetsUpSdkAndAddsAutoInitialize()
+    {
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.BuildTime
+        };
+        var testLogger = new TestLogger();
+
+        BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
+
+        Assert.IsTrue(testLogger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Info &&
+            log.message.Contains("Attempting to add Sentry to the Xcode project."))); // Sanity check
+
+        var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
+
+        Assert.IsTrue(File.Exists(bridgePath));
+        Assert.IsTrue(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must contain Sentry
     }
 
     [Test]
@@ -141,7 +157,37 @@ public class BuildPostProcessorTests
     }
 
     [Test]
-    public void AddSentryToXcodeProject_NativeSupportDisabledButMainAlreadyModified_ThrowsBuildFailedException()
+    public void SetupNoOpBridge_CopiesNoOpBridgeToOutput()
+    {
+        BuildPostProcess.SetupNoOpBridge(new TestLogger(), _outputProjectPath);
+
+        var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
+            SentryXcodeProject.BridgeName);
+
+        Assert.IsTrue(File.Exists(noOpBridgePath));
+        StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
+    }
+
+    [Test]
+    public void SetupSentry_CopiesFrameworkAndBridge()
+    {
+        var options = new SentryUnityOptions();
+        var testLogger = new TestLogger();
+
+        BuildPostProcess.SetupSentry(options, null, testLogger, _outputProjectPath);
+
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
+            SentryXcodeProject.BridgeName);
+        var frameworkPath = Path.Combine(_outputProjectPath, "Frameworks", SentryXcodeProject.FrameworkName);
+
+        Assert.IsTrue(File.Exists(bridgePath));
+        Assert.IsTrue(Directory.Exists(frameworkPath));
+
+        StringAssert.Contains("[SentrySDK", File.ReadAllText(bridgePath)); // Sanity check
+    }
+
+    [Test]
+    public void AddSentryToXcodeProject_AppendBuildsAndToggleNativeSupport_ThrowsBuildFailedException()
     {
         var file = new FileInfo(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
         file.Directory?.Create();
