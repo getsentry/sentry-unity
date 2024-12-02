@@ -25,6 +25,23 @@ public static class BuildPostProcess
         AddSentryToXcodeProject(options, cliOptions, logger, pathToProject);
     }
 
+    internal static bool IsNativeSupportEnabled(SentryUnityOptions options, IDiagnosticLogger logger)
+    {
+        if (!options.IsValid())
+        {
+            logger.LogWarning("Sentry SDK has been disabled. There will be no iOS native support.");
+            return false;
+        }
+
+        if (!options.IosNativeSupportEnabled)
+        {
+            logger.LogInfo("The iOS native support has been disabled through the options.");
+            return false;
+        }
+
+        return true;
+    }
+
     internal static void AddSentryToXcodeProject(SentryUnityOptions? options,
         SentryCliOptions? cliOptions,
         IDiagnosticLogger logger,
@@ -35,15 +52,17 @@ public static class BuildPostProcess
             logger.LogWarning("iOS native support disabled because Sentry has not been configured. " +
                               "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
 
+            // Even with native support disabled the P/Invoke declarations from `SentryCocoaBridgeProxy` must exist.
             SetupNoOpBridge(logger, pathToProject);
             return;
         }
 
-        if (options.IosNativeSupportEnabled is false)
+        if (!IsNativeSupportEnabled(options, logger))
         {
             logger.LogInfo("iOS native support has been disabled through the options. " +
                            "Native support will not be available at runtime.");
 
+            // Even with native support disabled the P/Invoke declarations from `SentryCocoaBridgeProxy` must exist.
             SetupNoOpBridge(logger, pathToProject);
             return;
         }
@@ -74,7 +93,6 @@ public static class BuildPostProcess
         {
             logger.LogDebug("Copying the NoOp bride to the output project.");
 
-            // The Unity SDK expects the bridge to be there. The Xcode build will break during linking otherwise.
             var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.NoOpBridgeName));
             CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
 
