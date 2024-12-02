@@ -153,7 +153,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Whether the SDK should initialize the native SDK before the Unity game. This bakes the options at build-time into
     /// the generated Xcode project
     /// </summary>
-    public bool IosNativeStandaloneInit { get; set; } = false;
+    public NativeInitializationType IosNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
     /// <summary>
     /// Whether the SDK should add native support for Android
@@ -361,4 +361,18 @@ public enum ScreenshotQuality
     /// Low quality
     /// </summary>
     Low
+}
+
+public enum NativeInitializationType
+{
+    /// <summary>
+    /// The native SDK will be initialized at runtime through the C# layer. Options that you set programmatically
+    /// will apply to the native SDK as well.
+    /// </summary>
+    Runtime,
+    /// <summary>
+    /// The SDK will bake the options available at build time. The native SDK will auto-initialize outside the of the
+    /// game. Options that you modify programmatically will not apply to the native SDK.
+    /// </summary>
+    BuildTime,
 }

@@ -57,9 +57,29 @@ public class BuildPostProcessorTests
     }
 
     [Test]
-    public void AddSentryToXcodeProject_NativeSupportDisabled_SetsUpSdkButDoesNotInitialize()
+    public void AddSentryToXcodeProject_NativeSupportDisabled_CopiesNoopBridgeAndNothingElse()
     {
-        var options = new SentryUnityOptions { IosNativeSupportEnabled = false, IosNativeStandaloneInit = false };
+        var options = new SentryUnityOptions { IosNativeSupportEnabled = false, IosNativeInitializationType = NativeInitializationType.Runtime };
+        var testLogger = new TestLogger();
+
+        BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
+
+        Assert.IsTrue(testLogger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Info &&
+            log.message.Contains("Attempting to add Sentry to the Xcode project."))); // Sanity check
+
+        var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
+        var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
+
+        Assert.IsTrue(File.Exists(noOpBridgePath));
+        StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
+        Assert.IsFalse(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must not contain Sentry
+    }
+
+    [Test]
+    public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeRuntime_SetsUpSdkButDoesNotInitialize()
+    {
+        var options = new SentryUnityOptions { IosNativeSupportEnabled = true, IosNativeInitializationType = NativeInitializationType.Runtime };
         var testLogger = new TestLogger();
 
         BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
@@ -76,9 +96,9 @@ public class BuildPostProcessorTests
     }
 
     [Test]
-    public void AddSentryToXcodeProject_InitializeNativeFirstEnabled_SetsUpSdkAndInitialize()
+    public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeBuildTime_SetsUpSdkAndAddsAutoInitialize()
     {
-        var options = new SentryUnityOptions { IosNativeSupportEnabled = true, IosNativeStandaloneInit = true };
+        var options = new SentryUnityOptions { IosNativeSupportEnabled = true, IosNativeInitializationType = NativeInitializationType.BuildTime };
         var testLogger = new TestLogger();
 
         BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
