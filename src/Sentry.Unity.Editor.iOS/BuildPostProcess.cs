@@ -57,20 +57,23 @@ public static class BuildPostProcess
             return;
         }
 
-        if (!IsNativeSupportEnabled(options, logger))
+        if (IsNativeSupportEnabled(options, logger))
+        {
+            SetupSentry(options, cliOptions, logger, pathToProject);
+        }
+        else
         {
             logger.LogInfo("iOS native support has been disabled through the options. " +
                            "Native support will not be available at runtime.");
 
             // Even with native support disabled the P/Invoke declarations from `SentryCocoaBridgeProxy` must exist.
             SetupNoOpBridge(logger, pathToProject);
-            return;
         }
 
-        SetupSentry(options, cliOptions, logger, pathToProject);
-
         // We want to avoid users getting stuck on a cached built output.
-        // This can happen if the user appends builds and toggles the `IosNativeInitializationType` from `Standalone` to `Runtime`
+        // This can happen if the user appends builds
+        //   - and toggles the `IosNativeSupportEnabled` from `true` to `false`
+        //   - and toggles the `IosNativeInitializationType` from `Standalone` to `Runtime`
         if (options.IosNativeInitializationType is NativeInitializationType.Runtime)
         {
             var mainPath = Path.Combine(pathToProject, SentryXcodeProject.MainPath);

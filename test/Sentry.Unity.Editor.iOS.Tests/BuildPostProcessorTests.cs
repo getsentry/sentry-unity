@@ -66,7 +66,7 @@ public class BuildPostProcessorTests
 
         Assert.IsTrue(testLogger.Logs.Any(log =>
             log.logLevel == SentryLevel.Info &&
-            log.message.Contains("Attempting to add Sentry to the Xcode project."))); // Sanity check
+            log.message.Contains("iOS native support has been disabled through the options."))); // Sanity check
 
         var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
         var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
@@ -79,7 +79,12 @@ public class BuildPostProcessorTests
     [Test]
     public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeRuntime_SetsUpSdkButDoesNotInitialize()
     {
-        var options = new SentryUnityOptions { IosNativeSupportEnabled = true, IosNativeInitializationType = NativeInitializationType.Runtime };
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.Runtime
+        };
         var testLogger = new TestLogger();
 
         BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
@@ -98,7 +103,12 @@ public class BuildPostProcessorTests
     [Test]
     public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeBuildTime_SetsUpSdkAndAddsAutoInitialize()
     {
-        var options = new SentryUnityOptions { IosNativeSupportEnabled = true, IosNativeInitializationType = NativeInitializationType.BuildTime };
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.BuildTime
+        };
         var testLogger = new TestLogger();
 
         BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
@@ -177,7 +187,7 @@ public class BuildPostProcessorTests
     }
 
     [Test]
-    public void AddSentryToXcodeProject_NativeSupportDisabledButMainAlreadyModified_ThrowsBuildFailedException()
+    public void AddSentryToXcodeProject_AppendBuildsAndToggleNativeSupport_ThrowsBuildFailedException()
     {
         var file = new FileInfo(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
         file.Directory?.Create();
