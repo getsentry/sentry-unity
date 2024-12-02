@@ -161,9 +161,10 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AndroidNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether the SDK should add native support for Android
+    /// Whether the SDK should initialize the native SDK before the Unity game. This bakes the options at build-time into
+    /// the generated Gradle project
     /// </summary>
-    public bool AndroidInitNativeFirst { get; set; } = false;
+    public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
     /// <summary>
     /// Whether the SDK should add the NDK integration for Android

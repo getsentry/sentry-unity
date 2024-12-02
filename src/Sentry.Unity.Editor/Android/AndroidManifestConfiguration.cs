@@ -137,16 +137,18 @@ public class AndroidManifestConfiguration
 
         androidManifest.AddDisclaimerComment();
 
-        if (_options?.AndroidInitNativeFirst is false)
+        if (_options?.AndroidNativeInitializationType is NativeInitializationType.Runtime)
         {
-            _logger.LogDebug("The Android SDK will be initialized at runtime.");
+            _logger.LogDebug("Setting 'auto-init' to 'false'. The Android SDK will be initialized at runtime.");
             androidManifest.SetAutoInit(false);
             _ = androidManifest.Save();
 
             return;
         }
 
-        _logger.LogDebug("Configuring Sentry options on AndroidManifest: {0}", basePath);
+        _logger.LogInfo("Adding Sentry options to the AndroidManifest.");
+        _logger.LogDebug("Modifying AndroidManifest: {0}", basePath);
+
         androidManifest.SetSDK("sentry.java.android.unity");
         _logger.LogDebug("Setting DSN: {0}", _options!.Dsn);
         androidManifest.SetDsn(_options.Dsn!);
