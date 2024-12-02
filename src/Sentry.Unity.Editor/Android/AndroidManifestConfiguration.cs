@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Sentry.Extensibility;
+using Sentry.Unity.Android;
 using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEditor;
 using UnityEditor.Android;
@@ -474,17 +475,7 @@ internal class AndroidManifest : AndroidXmlDocument
 
     internal void SetDebug(bool debug) => SetMetaData($"{SentryPrefix}.debug", debug ? "true" : "false");
 
-    // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
-    internal void SetLevel(SentryLevel level) =>
-        SetMetaData($"{SentryPrefix}.debug.level", level switch
-        {
-            SentryLevel.Debug => "debug",
-            SentryLevel.Error => "error",
-            SentryLevel.Fatal => "fatal",
-            SentryLevel.Info => "info",
-            SentryLevel.Warning => "warning",
-            _ => "debug"
-        });
+    internal void SetLevel(SentryLevel level) => SetMetaData($"{SentryPrefix}.debug.level", SentryJava.GetLevelString(level));
 
     private void SetMetaData(string key, string value)
     {

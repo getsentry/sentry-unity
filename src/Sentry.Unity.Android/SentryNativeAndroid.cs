@@ -39,7 +39,14 @@ public static class SentryNativeAndroid
 
         JniExecutor ??= new JniExecutor();
 
-        SentryJava.Init(JniExecutor, options);
+        if (SentryJava.IsEnabled(JniExecutor) is false)
+        {
+            if (SentryJava.Init(JniExecutor, options) is not true)
+            {
+                options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support.");
+                return;
+            }
+        }
 
         options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
         options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);

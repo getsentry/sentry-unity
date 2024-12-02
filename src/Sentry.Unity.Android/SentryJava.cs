@@ -6,7 +6,8 @@ namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
-    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options);
+    public bool? IsEnabled(IJniExecutor jniExecutor);
+    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
@@ -42,7 +43,17 @@ internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-        public void Init(IJniExecutor jniExecutor, SentryUnityOptions options)
+    public bool? IsEnabled(IJniExecutor jniExecutor)
+    {
+        return jniExecutor.Run(() =>
+        {
+            using var sentry = GetSentryJava();
+            using var jo = sentry.CallStatic<AndroidJavaObject>("IsEnabled");
+            return jo?.Call<bool>("booleanValue");
+        });
+    }
+
+    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options)
     {
         jniExecutor.Run(() =>
         {
@@ -56,8 +67,27 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setDebug", options.Debug);
                 androidOptions.Call("setRelease", options.Release);
                 androidOptions.Call("setEnvironment", options.Environment);
+                androidOptions.Call("setDiagnosticLevel", GetLevelString(options.DiagnosticLevel));
+                if (options.SampleRate.HasValue)
+                {
+                    androidOptions.Call("setSampleRate", options.SampleRate.Value);
+                }
+
+                androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
+                androidOptions.Call("setMaxCacheItems", options.MaxCacheItems);
+                androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
+                // Note: doesn't work - produces a blank (white) screenshot
+                androidOptions.Call("setAttachScreenshot", false);
+                androidOptions.Call("setNdkIntegrationEnabled", options.NdkIntegrationEnabled);
+                androidOptions.Call("setNdkScopeSyncEnabled", options.NdkScopeSyncEnabled);
+                androidOptions.Call("setEnableAutoSessionTracking", false);
+                androidOptions.Call("setEnableAutoAppLifecycleBreadcrumbs", false);
+                androidOptions.Call("setEnableAnr", false);
+                androidOptions.Call("setEnablePersistentScopeObserver", false);
             }, options.DiagnosticLogger));
         });
+
+        return IsEnabled(jniExecutor);
     }
 
     // Update the callback class to match the Java interface name
@@ -216,6 +246,17 @@ internal class SentryJava : ISentryJava
             return null;
         }
     }
+
+    // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
+    internal static string GetLevelString(SentryLevel level) => level switch
+    {
+        SentryLevel.Debug => "debug",
+        SentryLevel.Error => "error",
+        SentryLevel.Fatal => "fatal",
+        SentryLevel.Info => "info",
+        SentryLevel.Warning => "warning",
+        _ => "debug"
+    };
 }
 
 internal static class AndroidJavaObjectExtension

@@ -5,7 +5,12 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options)
+    public bool? IsEnabled(IJniExecutor jniExecutor)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options)
     {
         throw new System.NotImplementedException();
     }
