@@ -39,8 +39,10 @@ public static class SentryNativeAndroid
 
         JniExecutor ??= new JniExecutor();
 
+        options.DiagnosticLogger?.LogDebug("Checking whether the Android Native Support is enabled.");
         if (SentryJava.IsEnabled(JniExecutor) is false)
         {
+            options.DiagnosticLogger?.LogInfo("Initializing the native SDK.");
             if (SentryJava.Init(JniExecutor, options) is not true)
             {
                 options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support.");

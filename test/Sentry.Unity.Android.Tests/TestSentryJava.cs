@@ -5,7 +5,7 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public bool? IsEnabled(IJniExecutor jniExecutor)
+    public bool IsEnabled(IJniExecutor jniExecutor)
     {
         throw new System.NotImplementedException();
     }

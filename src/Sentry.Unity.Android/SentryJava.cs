@@ -6,7 +6,7 @@ namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
-    public bool? IsEnabled(IJniExecutor jniExecutor);
+    public bool IsEnabled(IJniExecutor jniExecutor);
     public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
@@ -43,13 +43,12 @@ internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-    public bool? IsEnabled(IJniExecutor jniExecutor)
+    public bool IsEnabled(IJniExecutor jniExecutor)
     {
         return jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
-            using var jo = sentry.CallStatic<AndroidJavaObject>("IsEnabled");
-            return jo?.Call<bool>("booleanValue");
+            return sentry.CallStatic<bool>("isEnabled");
         });
     }
 
