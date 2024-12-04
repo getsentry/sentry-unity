@@ -99,7 +99,7 @@ public static class SentryNativeAndroid
             // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
             // It's a randomly generated GUID that gets created immediately after installation helping
             // to identify the same instance of the game
-            // options.DefaultUserId = AnalyticsSessionInfo.userId;
+            options.DefaultUserId = AnalyticsSessionInfo.userId;
             if (options.DefaultUserId is not null)
             {
                 options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
