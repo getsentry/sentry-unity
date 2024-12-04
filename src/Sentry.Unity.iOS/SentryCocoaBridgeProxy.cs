@@ -13,7 +13,8 @@ namespace Sentry.Unity.iOS;
 /// <see href="https://github.com/getsentry/sentry-cocoa"/>
 internal static class SentryCocoaBridgeProxy
 {
-    // Note: used on macOS only
+    public static bool IsEnabled() => SentryNativeBridgeIsEnabled() == 1;
+
     public static bool Init(SentryUnityOptions options)
     {
         if (LoadLibrary() != 1)
@@ -65,6 +66,9 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeLoadLibrary")]
     private static extern int LoadLibrary();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeIsEnabled")]
+    private static extern int SentryNativeBridgeIsEnabled();
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsNew")]
     private static extern IntPtr OptionsNew();

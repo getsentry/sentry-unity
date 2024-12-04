@@ -30,6 +30,16 @@ public static class SentryNativeCocoa
 
         if (platform == RuntimePlatform.IPhonePlayer)
         {
+            if (SentryCocoaBridgeProxy.IsEnabled())
+            {
+                options.DiagnosticLogger?.LogDebug("The native SDK is already initialized");
+            }
+            else if (!SentryCocoaBridgeProxy.Init(options))
+            {
+                options.DiagnosticLogger?.LogWarning("Failed to initialize the native SDK");
+                return;
+            }
+
             options.ScopeObserver = new NativeScopeObserver("iOS", options);
         }
         else
@@ -76,6 +86,8 @@ public static class SentryNativeCocoa
                 }
             }
         }
+
+        options.DiagnosticLogger?.LogInfo("Successfully initialized the native SDK");
     }
 
     /// <summary>

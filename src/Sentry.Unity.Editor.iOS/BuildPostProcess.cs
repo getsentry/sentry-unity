@@ -52,11 +52,29 @@ public static class BuildPostProcess
             logger.LogWarning("iOS native support disabled because Sentry has not been configured. " +
                               "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
 
+            // Even with native support disabled the P/Invoke declarations from `SentryCocoaBridgeProxy` must exist.
             SetupNoOpBridge(logger, pathToProject);
             return;
         }
 
-        if (!IsNativeSupportEnabled(options, logger))
+        if (IsNativeSupportEnabled(options, logger))
+        {
+            SetupSentry(options, cliOptions, logger, pathToProject);
+        }
+        else
+        {
+            logger.LogInfo("iOS native support has been disabled through the options. " +
+                           "Native support will not be available at runtime.");
+
+            // Even with native support disabled the P/Invoke declarations from `SentryCocoaBridgeProxy` must exist.
+            SetupNoOpBridge(logger, pathToProject);
+        }
+
+        // We want to avoid users getting stuck on a cached built output.
+        // This can happen if the user appends builds
+        //   - and toggles the `IosNativeSupportEnabled` from `true` to `false`
+        //   - and toggles the `IosNativeInitializationType` from `Standalone` to `Runtime`
+        if (options.IosNativeInitializationType is NativeInitializationType.Runtime)
         {
             var mainPath = Path.Combine(pathToProject, SentryXcodeProject.MainPath);
             if (File.Exists(mainPath))
@@ -69,12 +87,7 @@ public static class BuildPostProcess
                         "during a previous build. Select 'Replace' when exporting the project to create a clean project.");
                 }
             }
-
-            SetupNoOpBridge(logger, pathToProject);
-            return;
         }
-
-        SetupSentry(options, cliOptions, logger, pathToProject);
     }
 
     internal static void SetupNoOpBridge(IDiagnosticLogger logger, string pathToProject)
@@ -83,7 +96,6 @@ public static class BuildPostProcess
         {
             logger.LogDebug("Copying the NoOp bride to the output project.");
 
-            // The Unity SDK expects the bridge to be there. The Xcode build will break during linking otherwise.
             var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.NoOpBridgeName));
             CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
 
@@ -105,7 +117,11 @@ public static class BuildPostProcess
 
         try
         {
-            // The Sentry.xcframework ends in '~' to hide it from Unity. Otherwise, Unity tries to export it with the XCode build.
+            // The Sentry.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the XCode build.
+            // Ideally, we would let Unity copy this over but:
+            // - Detection of `.xcframework` as datatype and non-folder happened in Unity 2021
+            // - Without a `.meta` file we cannot opt-in embedding the framework
+            // - Even if Unity copies it, the framework still requires to be 'linked with binary' for it to work
             var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
             CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
 
@@ -115,8 +131,12 @@ public static class BuildPostProcess
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
             sentryXcodeProject.AddSentryFramework();
             sentryXcodeProject.AddSentryNativeBridge();
-            sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
-            sentryXcodeProject.AddSentryToMain(options);
+
+            if (options.IosNativeInitializationType is NativeInitializationType.BuildTime)
+            {
+                sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
+                sentryXcodeProject.AddSentryToMain(options);
+            }
 
             if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
             {
