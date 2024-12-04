@@ -98,12 +98,11 @@ internal class JniExecutor : IJniExecutor
 
             try
             {
-                // if (!_taskCompletionSource.Task.Wait(TimeoutMs))
-                // {
-                //     throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
-                // }
-                // return (TResult?)_taskCompletionSource.Task.Result;
-                return (TResult?)_taskCompletionSource.Task.GetAwaiter().GetResult();
+                if (!_taskCompletionSource.Task.Wait(TimeoutMs))
+                {
+                    throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
+                }
+                return (TResult?)_taskCompletionSource.Task.Result;
             }
             catch (Exception e)
             {
@@ -127,11 +126,10 @@ internal class JniExecutor : IJniExecutor
 
             try
             {
-                // if (!_taskCompletionSource.Task.Wait(TimeoutMs))
-                // {
-                //     throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
-                // }
-                _taskCompletionSource.Task.Wait();
+                if (!_taskCompletionSource.Task.Wait(TimeoutMs))
+                {
+                    throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
+                }
             }
             catch (Exception e)
             {
