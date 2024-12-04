@@ -37,7 +37,7 @@ public static class SentryNativeAndroid
             return;
         }
 
-        JniExecutor ??= new JniExecutor();
+        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
 
         options.DiagnosticLogger?.LogDebug("Checking whether the Android Native Support is enabled.");
         if (SentryJava.IsEnabled(JniExecutor) is false)
@@ -100,15 +100,17 @@ public static class SentryNativeAndroid
             // It's a randomly generated GUID that gets created immediately after installation helping
             // to identify the same instance of the game
             // options.DefaultUserId = AnalyticsSessionInfo.userId;
-            // if (options.DefaultUserId is not null)
-            // {
-            //     options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
-            // }
-            // else
-            // {
-            //     options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
-            // }
+            if (options.DefaultUserId is not null)
+            {
+                options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
+            }
+            else
+            {
+                options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
+            }
         }
+
+        options.DiagnosticLogger?.LogInfo("Successfully configured native support via the Android SDK");
     }
 
     /// <summary>
@@ -130,7 +132,7 @@ public static class SentryNativeAndroid
 
         // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
         // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
-        JniExecutor ??= new JniExecutor();
+        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
         SentryJava?.Close(JniExecutor);
         JniExecutor.Dispose();
     }

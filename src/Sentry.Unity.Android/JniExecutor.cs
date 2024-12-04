@@ -1,22 +1,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sentry.Extensibility;
 using UnityEngine;
 
 namespace Sentry.Unity.Android;
 
 internal class JniExecutor : IJniExecutor
 {
+    private const int TimeoutMs = 16;
+
     private readonly CancellationTokenSource _shutdownSource;
     private readonly AutoResetEvent _taskEvent;
+    private readonly IDiagnosticLogger? _logger;
+
     private Delegate _currentTask = null!; // The current task will always be set together with the task event
 
     private TaskCompletionSource<object?>? _taskCompletionSource;
 
     private readonly object _lock = new object();
 
-    public JniExecutor()
+    public JniExecutor(IDiagnosticLogger? logger)
     {
+        _logger = logger;
         _taskEvent = new AutoResetEvent(false);
         _shutdownSource = new CancellationTokenSource();
 
@@ -74,7 +80,8 @@ internal class JniExecutor : IJniExecutor
             }
             catch (Exception e)
             {
-                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+                _logger?.LogError(e, "Error during JNI execution.");
+                _taskCompletionSource?.SetException(e);
             }
         }
 
@@ -91,14 +98,22 @@ internal class JniExecutor : IJniExecutor
 
             try
             {
+                // if (!_taskCompletionSource.Task.Wait(TimeoutMs))
+                // {
+                //     throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
+                // }
+                // return (TResult?)_taskCompletionSource.Task.Result;
                 return (TResult?)_taskCompletionSource.Task.GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+                _logger?.LogError(e, "Error during JNI execution.");
+                return default;
             }
-
-            return default;
+            finally
+            {
+                _currentTask = null!;
+            }
         }
     }
 
@@ -112,11 +127,19 @@ internal class JniExecutor : IJniExecutor
 
             try
             {
+                // if (!_taskCompletionSource.Task.Wait(TimeoutMs))
+                // {
+                //     throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
+                // }
                 _taskCompletionSource.Task.Wait();
             }
             catch (Exception e)
             {
-                Debug.unityLogger.Log(LogType.Exception, UnityLogger.LogTag, $"Error during JNI execution: {e}");
+                _logger?.LogError(e, "Error during JNI execution.");
+            }
+            finally
+            {
+                _currentTask = null!;
             }
         }
     }
