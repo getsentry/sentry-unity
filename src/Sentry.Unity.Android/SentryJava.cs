@@ -66,23 +66,30 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setDebug", options.Debug);
                 androidOptions.Call("setRelease", options.Release);
                 androidOptions.Call("setEnvironment", options.Environment);
-                androidOptions.Call("setDiagnosticLevel", GetLevelString(options.DiagnosticLevel));
-                if (options.SampleRate.HasValue)
-                {
-                    androidOptions.Call("setSampleRate", options.SampleRate.Value);
-                }
+
+                var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
+                var levelString = GetLevelString(options.DiagnosticLevel);
+                var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
+                androidOptions.Call("setDiagnosticLevel", sentryLevel);
+
+                // if (options.SampleRate.HasValue)
+                // {
+                //     androidOptions.SetIfNotNull("setSampleRate", options.SampleRate.Value);
+                // }
 
                 androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
                 androidOptions.Call("setMaxCacheItems", options.MaxCacheItems);
-                androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
+
+                // Causes `FormatException`. Works with `new object[] { false }`
+                // androidOptions.SetIfNotNull("setSendDefaultPii", options.SendDefaultPii);
                 // Note: doesn't work - produces a blank (white) screenshot
-                androidOptions.Call("setAttachScreenshot", false);
-                androidOptions.Call("setNdkIntegrationEnabled", options.NdkIntegrationEnabled);
-                androidOptions.Call("setNdkScopeSyncEnabled", options.NdkScopeSyncEnabled);
-                androidOptions.Call("setEnableAutoSessionTracking", false);
-                androidOptions.Call("setEnableAutoAppLifecycleBreadcrumbs", false);
-                androidOptions.Call("setEnableAnr", false);
-                androidOptions.Call("setEnablePersistentScopeObserver", false);
+                // androidOptions.SetIfNotNull("setAttachScreenshot", false);
+                // androidOptions.SetIfNotNull("setNdkIntegrationEnabled", options.NdkIntegrationEnabled);
+                // androidOptions.SetIfNotNull("setNdkScopeSyncEnabled", options.NdkScopeSyncEnabled);
+                // androidOptions.SetIfNotNull("setEnableAutoSessionTracking", false);
+                // androidOptions.SetIfNotNull("setEnableAutoAppLifecycleBreadcrumbs", false);
+                // androidOptions.SetIfNotNull("setEnableAnr", false);
+                // androidOptions.SetIfNotNull("setEnablePersistentScopeObserver", false);
             }, options.DiagnosticLogger));
         });
 
@@ -249,12 +256,12 @@ internal class SentryJava : ISentryJava
     // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
     internal static string GetLevelString(SentryLevel level) => level switch
     {
-        SentryLevel.Debug => "debug",
-        SentryLevel.Error => "error",
-        SentryLevel.Fatal => "fatal",
-        SentryLevel.Info => "info",
-        SentryLevel.Warning => "warning",
-        _ => "debug"
+        SentryLevel.Debug => "DEBUG",
+        SentryLevel.Error => "ERROR",
+        SentryLevel.Fatal => "FATAL",
+        SentryLevel.Info => "INFO",
+        SentryLevel.Warning => "WARNING",
+        _ => "DEBUG"
     };
 }
 
@@ -277,6 +284,8 @@ internal static class AndroidJavaObjectExtension
     }
     public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, int? value) =>
         SetIfNotNull(javaObject, property, value, "java.lang.Integer");
+    public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool value) =>
+        SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
     public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool? value) =>
         SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
 }
