@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading;
 using NUnit.Framework;
+using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Android.Tests;
 
@@ -104,5 +106,17 @@ public class SentryNativeAndroidTests
 
         SentryNativeAndroid.Configure(options, _sentryUnityInfo);
         Assert.False(string.IsNullOrEmpty(options.DefaultUserId));
+    }
+
+    [Test]
+    public void Configure_DefaultConfigurationSentryJavaNotPresent_LogsErrorAndReturns()
+    {
+        var logger = new TestLogger();
+        var options = new SentryUnityOptions { DiagnosticLogger = logger };
+        SentryNativeAndroid.Configure(options, _sentryUnityInfo);
+
+        Assert.IsTrue(logger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Error &&
+            log.message.Contains("Sentry Java SDK is missing.")));
     }
 }

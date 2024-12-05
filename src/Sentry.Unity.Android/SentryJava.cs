@@ -7,7 +7,7 @@ namespace Sentry.Unity.Android;
 internal interface ISentryJava
 {
     public bool IsEnabled(IJniExecutor jniExecutor);
-    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options);
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
@@ -52,57 +52,55 @@ internal class SentryJava : ISentryJava
         });
     }
 
-    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options)
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options)
     {
         jniExecutor.Run(() =>
         {
-            using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
-            using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
-                .GetStatic<AndroidJavaObject>("currentActivity");
-
-            sentry.CallStatic("init", context, new OptionsConfiguration(androidOptions =>
-            {
-                androidOptions.Call("setDsn", options.Dsn);
-                androidOptions.Call("setDebug", options.Debug);
-                androidOptions.Call("setRelease", options.Release);
-                androidOptions.Call("setEnvironment", options.Environment);
-
-                var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
-                var levelString = GetLevelString(options.DiagnosticLevel);
-                var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
-                androidOptions.Call("setDiagnosticLevel", sentryLevel);
-
-                // if (options.SampleRate.HasValue)
-                // {
-                //     androidOptions.SetIfNotNull("setSampleRate", options.SampleRate.Value);
-                // }
-
-                androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
-                androidOptions.Call("setMaxCacheItems", options.MaxCacheItems);
-
-                // Causes `FormatException`. Works with `new object[] { false }`
-                // androidOptions.SetIfNotNull("setSendDefaultPii", options.SendDefaultPii);
-                // Note: doesn't work - produces a blank (white) screenshot
-                // androidOptions.SetIfNotNull("setAttachScreenshot", false);
-                // androidOptions.SetIfNotNull("setNdkIntegrationEnabled", options.NdkIntegrationEnabled);
-                // androidOptions.SetIfNotNull("setNdkScopeSyncEnabled", options.NdkScopeSyncEnabled);
-                // androidOptions.SetIfNotNull("setEnableAutoSessionTracking", false);
-                // androidOptions.SetIfNotNull("setEnableAutoAppLifecycleBreadcrumbs", false);
-                // androidOptions.SetIfNotNull("setEnableAnr", false);
-                // androidOptions.SetIfNotNull("setEnablePersistentScopeObserver", false);
-            }, options.DiagnosticLogger));
+            throw new Exception();
+            // using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
+            // using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
+            //     .GetStatic<AndroidJavaObject>("currentActivity");
+            //
+            // sentry.CallStatic("init", context, new AndroidOptionsConfiguration(androidOptions =>
+            // {
+            //     androidOptions.Call("setDsn", options.Dsn);
+            //     androidOptions.Call("setDebug", options.Debug);
+            //     androidOptions.Call("setRelease", options.Release);
+            //     androidOptions.Call("setEnvironment", options.Environment);
+            //
+            //     var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
+            //     var levelString = GetLevelString(options.DiagnosticLevel);
+            //     var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
+            //     androidOptions.Call("setDiagnosticLevel", sentryLevel);
+            //
+            //     if (options.SampleRate.HasValue)
+            //     {
+            //         androidOptions.SetIfNotNull("setSampleRate", options.SampleRate.Value);
+            //     }
+            //
+            //     androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
+            //     androidOptions.Call("setMaxCacheItems", options.MaxCacheItems);
+            //     androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
+            //     // Note: doesn't work - produces a blank (white) screenshot
+            //     androidOptions.Call("setAttachScreenshot", false);
+            //     androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled);
+            //     androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
+            //     androidOptions.Call("setEnableAutoSessionTracking", false);
+            //     androidOptions.Call("setEnableActivityLifecycleBreadcrumbs", false);
+            //     androidOptions.Call("setAnrEnabled", false);
+            //     androidOptions.Call("setEnableScopePersistence", false);
+            // }, options.DiagnosticLogger));
         });
 
         return IsEnabled(jniExecutor);
     }
 
-    // Update the callback class to match the Java interface name
-    internal class OptionsConfiguration : AndroidJavaProxy
+    internal class AndroidOptionsConfiguration : AndroidJavaProxy
     {
         private readonly Action<AndroidJavaObject> _callback;
         private readonly IDiagnosticLogger? _logger;
 
-        public OptionsConfiguration(Action<AndroidJavaObject> callback, IDiagnosticLogger? logger)
+        public AndroidOptionsConfiguration(Action<AndroidJavaObject> callback, IDiagnosticLogger? logger)
             : base("io.sentry.Sentry$OptionsConfiguration")
         {
             _callback = callback;
@@ -117,11 +115,12 @@ internal class SentryJava : ISentryJava
                 {
                     throw new Exception($"Invalid invocation: {methodName}({args.Length} args)");
                 }
+
                 _callback(args[0]);
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Error in SentryJava.OptionsConfiguration: {0}");
+                _logger?.LogError(e, "Error in SentryJava.OptionsConfiguration.");
             }
             return null;
         }

@@ -222,11 +222,11 @@ public class AndroidManifestTests
     // modules/sentry-java/sentry/src/main/java/io/sentry/SentryLevel.java
     private static readonly SentryJavaLevel[] SentryJavaLevels =
     {
-        new () { SentryLevel = SentryLevel.Debug, JavaLevel = "debug" },
-        new () { SentryLevel = SentryLevel.Error, JavaLevel = "error" },
-        new () { SentryLevel = SentryLevel.Fatal, JavaLevel = "fatal" },
-        new () { SentryLevel = SentryLevel.Info, JavaLevel = "info" },
-        new () { SentryLevel = SentryLevel.Warning, JavaLevel = "warning" }
+        new () { SentryLevel = SentryLevel.Debug, JavaLevel = "DEBUG" },
+        new () { SentryLevel = SentryLevel.Error, JavaLevel = "ERROR" },
+        new () { SentryLevel = SentryLevel.Fatal, JavaLevel = "FATAL" },
+        new () { SentryLevel = SentryLevel.Info, JavaLevel = "INFO" },
+        new () { SentryLevel = SentryLevel.Warning, JavaLevel = "WARNING" }
     };
 
     [Test]
