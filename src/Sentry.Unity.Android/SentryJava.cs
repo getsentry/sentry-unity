@@ -60,7 +60,7 @@ internal class SentryJava : ISentryJava
             using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
                 .GetStatic<AndroidJavaObject>("currentActivity");
 
-            sentry.CallStatic("init", context, new OptionsConfiguration(androidOptions =>
+            sentry.CallStatic("init", context, new AndroidOptionsConfiguration(androidOptions =>
             {
                 androidOptions.Call("setDsn", options.Dsn);
                 androidOptions.Call("setDebug", options.Debug);
@@ -72,37 +72,34 @@ internal class SentryJava : ISentryJava
                 var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
                 androidOptions.Call("setDiagnosticLevel", sentryLevel);
 
-                // if (options.SampleRate.HasValue)
-                // {
-                //     androidOptions.SetIfNotNull("setSampleRate", options.SampleRate.Value);
-                // }
+                if (options.SampleRate.HasValue)
+                {
+                    androidOptions.SetIfNotNull("setSampleRate", options.SampleRate.Value);
+                }
 
                 androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
                 androidOptions.Call("setMaxCacheItems", options.MaxCacheItems);
-
-                // Causes `FormatException`. Works with `new object[] { false }`
-                // androidOptions.SetIfNotNull("setSendDefaultPii", options.SendDefaultPii);
+                androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
                 // Note: doesn't work - produces a blank (white) screenshot
-                // androidOptions.SetIfNotNull("setAttachScreenshot", false);
-                // androidOptions.SetIfNotNull("setNdkIntegrationEnabled", options.NdkIntegrationEnabled);
-                // androidOptions.SetIfNotNull("setNdkScopeSyncEnabled", options.NdkScopeSyncEnabled);
-                // androidOptions.SetIfNotNull("setEnableAutoSessionTracking", false);
-                // androidOptions.SetIfNotNull("setEnableAutoAppLifecycleBreadcrumbs", false);
-                // androidOptions.SetIfNotNull("setEnableAnr", false);
-                // androidOptions.SetIfNotNull("setEnablePersistentScopeObserver", false);
+                androidOptions.Call("setAttachScreenshot", false);
+                androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled );
+                androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
+                androidOptions.Call("setEnableAutoSessionTracking", false);
+                androidOptions.Call("setEnableActivityLifecycleBreadcrumbs", false);
+                androidOptions.Call("setAnrEnabled", false);
+                androidOptions.Call("setEnableScopePersistence", false);
             }, options.DiagnosticLogger));
         });
 
         return IsEnabled(jniExecutor);
     }
 
-    // Update the callback class to match the Java interface name
-    internal class OptionsConfiguration : AndroidJavaProxy
+    internal class AndroidOptionsConfiguration : AndroidJavaProxy
     {
         private readonly Action<AndroidJavaObject> _callback;
         private readonly IDiagnosticLogger? _logger;
 
-        public OptionsConfiguration(Action<AndroidJavaObject> callback, IDiagnosticLogger? logger)
+        public AndroidOptionsConfiguration(Action<AndroidJavaObject> callback, IDiagnosticLogger? logger)
             : base("io.sentry.Sentry$OptionsConfiguration")
         {
             _callback = callback;
@@ -117,11 +114,12 @@ internal class SentryJava : ISentryJava
                 {
                     throw new Exception($"Invalid invocation: {methodName}({args.Length} args)");
                 }
+
                 _callback(args[0]);
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Error in SentryJava.OptionsConfiguration: {0}");
+                _logger?.LogError(e, "Error in SentryJava.OptionsConfiguration.");
             }
             return null;
         }
