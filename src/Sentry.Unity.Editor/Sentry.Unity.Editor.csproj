@@ -8,9 +8,9 @@
   <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" IncludeAssets="compile" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" IncludeAssets="compile" />
+    <ProjectReference Include="../Sentry.Unity.Android/Sentry.Unity.Android.csproj" Private="false" IncludeAssets="compile" />
     <PackageReference Include="Mono.Cecil" Version="0.11.4" Private="false" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="7.0.0" Private="false" />
-    <ProjectReference Include="..\Sentry.Unity.Android\Sentry.Unity.Android.csproj" />
   </ItemGroup>
 
   <ItemGroup>
