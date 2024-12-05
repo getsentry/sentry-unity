@@ -8,6 +8,7 @@
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
+    <ProjectReference Include="../Sentry.Unity.Android/Sentry.Unity.Android.csproj" Private="false" />
   </ItemGroup>
 
   <!-- Add reference once we figure out where the DLL is (find Unity version and install location) -->
