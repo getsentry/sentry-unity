@@ -9,7 +9,7 @@ internal class TestSentryJava : ISentryJava
 
     public bool IsEnabled(IJniExecutor jniExecutor) => Enabled;
 
-    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options) => InitSuccessful;
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options) => InitSuccessful;
 
     public string? GetInstallationId(IJniExecutor jniExecutor) => InstallationId;
 

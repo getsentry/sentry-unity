@@ -39,15 +39,14 @@ public static class SentryNativeAndroid
 
         JniExecutor ??= new JniExecutor();
 
-        options.DiagnosticLogger?.LogDebug("Checking whether the Android Native Support is enabled.");
-        if (SentryJava.IsEnabled(JniExecutor) is false)
+        if (SentryJava.IsEnabled(JniExecutor))
         {
-            options.DiagnosticLogger?.LogInfo("Initializing the native SDK.");
-            if (SentryJava.Init(JniExecutor, options) is not true)
-            {
-                options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support.");
-                return;
-            }
+            options.DiagnosticLogger?.LogDebug("The native SDK is already initialized");
+        }
+        else if (!SentryJava.Init(JniExecutor, options))
+        {
+            options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support");
+            return;
         }
 
         options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
@@ -109,6 +108,8 @@ public static class SentryNativeAndroid
                 options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
             }
         }
+
+        options.DiagnosticLogger?.LogInfo("Successfully configured the native SDK");
     }
 
     /// <summary>
