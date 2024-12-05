@@ -82,7 +82,7 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
                 // Note: doesn't work - produces a blank (white) screenshot
                 androidOptions.Call("setAttachScreenshot", false);
-                androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled );
+                androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled);
                 androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
                 androidOptions.Call("setEnableAutoSessionTracking", false);
                 androidOptions.Call("setEnableActivityLifecycleBreadcrumbs", false);
