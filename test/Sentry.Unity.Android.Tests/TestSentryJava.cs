@@ -2,18 +2,14 @@ namespace Sentry.Unity.Android.Tests;
 
 internal class TestSentryJava : ISentryJava
 {
+    public bool Enabled { get; set; } = true;
+    public bool InitSuccessful { get; set; } = true;
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public bool IsEnabled(IJniExecutor jniExecutor)
-    {
-        throw new System.NotImplementedException();
-    }
+    public bool IsEnabled(IJniExecutor jniExecutor) => Enabled;
 
-    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options)
-    {
-        throw new System.NotImplementedException();
-    }
+    public bool? Init(IJniExecutor jniExecutor, SentryUnityOptions options) => InitSuccessful;
 
     public string? GetInstallationId(IJniExecutor jniExecutor) => InstallationId;
 
