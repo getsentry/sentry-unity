@@ -31,13 +31,13 @@ public class SentryNativeAndroidTests
         SentryNativeAndroid.JniExecutor = new TestJniExecutor();
         _testSentryJava = new TestSentryJava();
         SentryNativeAndroid.SentryJava = _testSentryJava;
-        
+
         _logger = new TestLogger();
-        _options = new SentryUnityOptions 
-        { 
-            Debug = true, 
-            DiagnosticLevel = SentryLevel.Debug, 
-            DiagnosticLogger = _logger 
+        _options = new SentryUnityOptions
+        {
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger
         };
     }
 
