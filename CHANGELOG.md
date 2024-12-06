@@ -4,8 +4,9 @@
 
 ### API Changes
 
-- The native layer on iOS no longer self-initializes before the Unity game starts. Instead, it accepts the options at the end of the configure call. To restore the old behavior, users can opt-in to initializing native first via `IosInitializeNativeFirst`. Note that using this option comes with the limitation of baking the options into the generated Xcode project at build-time. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915))
-
+- The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts. Previously, the SDK would use the options at build-time and bake them into the native layer. Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs. This allows users to modify the native SDK's options at runtime programmatically.
+The initialization behaviour is controlled by `IosNativeInitializationType` and `AndroidNativeInitializationType` options. These can be set from `Runtime` (default) to `BuildTime` to restore the previous flow and bake the options into the native projects. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915), [#1924](https://github.com/getsentry/sentry-unity/pull/1924))
+ 
 ### Dependencies
 
 - Bump CLI from v2.39.0 to v2.39.1 ([#1922](https://github.com/getsentry/sentry-unity/pull/1922))

@@ -28,6 +28,8 @@ public class AndroidManifestTests
                 Enabled = true,
                 Dsn = "https://k@h/p",
                 AndroidNativeSupportEnabled = true,
+                // Setting to `BuildTime` and not (default)`Runtime` as most testcases deal with the manipulation of the AndroidManifest
+                AndroidNativeInitializationType = NativeInitializationType.BuildTime,
                 Debug = true
             };
             SentryUnityOptions.DiagnosticLogger = new UnityLogger(SentryUnityOptions, UnityTestLogger);
@@ -121,6 +123,30 @@ public class AndroidManifestTests
 
         Debug.Log($"Manifest:\n{manifest}");
         Assert.False(manifest.Contains("io.sentry.dsn"));
+    }
+
+    [Test]
+    public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabled_InitTypeRuntime_AddsSentryAndAutoInitIsFalse()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.Runtime;
+        var sut = _fixture.GetSut();
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Setting 'auto-init' to 'false'. The Android SDK will be initialized at runtime.");  // Sanity Check
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.auto-init\" android:value=\"False\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabled_InitTypeBuildTime_AddsSentryAndAutoInits()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.BuildTime;
+        var sut = _fixture.GetSut();
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Info, "Adding Sentry options to the AndroidManifest."); // Sanity Check
+
+        StringAssert.Contains($"<meta-data android:name=\"io.sentry.dsn\" android:value=\"{_fixture.SentryUnityOptions.Dsn}\" />", manifest);
     }
 
     [Test]

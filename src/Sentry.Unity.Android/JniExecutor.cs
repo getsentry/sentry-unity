@@ -50,20 +50,26 @@ internal class JniExecutor : IJniExecutor
                             _taskCompletionSource?.SetResult(null);
                             break;
                         }
-                    case Func<bool?> func1:
+                    case Func<bool> func1:
                         {
                             var result = func1.Invoke();
                             _taskCompletionSource?.SetResult(result);
                             break;
                         }
-                    case Func<string?> func2:
+                    case Func<bool?> func2:
                         {
                             var result = func2.Invoke();
                             _taskCompletionSource?.SetResult(result);
                             break;
                         }
+                    case Func<string?> func3:
+                        {
+                            var result = func3.Invoke();
+                            _taskCompletionSource?.SetResult(result);
+                            break;
+                        }
                     default:
-                        throw new ArgumentException("Invalid type for _currentTask.");
+                        throw new NotImplementedException($"Task type '{_currentTask?.GetType()}' with value '{_currentTask}' is not implemented in the JniExecutor.");
                 }
             }
             catch (Exception e)
