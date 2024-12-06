@@ -37,7 +37,7 @@ public static class SentryNativeAndroid
             return;
         }
 
-        JniExecutor ??= new JniExecutor();
+        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
 
         if (SentryJava.IsEnabled(JniExecutor))
         {
@@ -131,7 +131,7 @@ public static class SentryNativeAndroid
 
         // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
         // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
-        JniExecutor ??= new JniExecutor();
+        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
         SentryJava?.Close(JniExecutor);
         JniExecutor.Dispose();
     }
