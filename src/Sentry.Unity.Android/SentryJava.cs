@@ -80,10 +80,15 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
                 androidOptions.Call("setMaxCacheItems", options.MaxCacheItems);
                 androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
-                // Note: doesn't work - produces a blank (white) screenshot
-                androidOptions.Call("setAttachScreenshot", false);
                 androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled);
                 androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
+
+                // Options that are not to be set by the user
+                // We're disabling some integrations as to not duplicate event or because the SDK relies on the .NET SDK
+                // implementation of certain feature - i.e. Session Tracking
+
+                // Note: doesn't work - produces a blank (white) screenshot
+                androidOptions.Call("setAttachScreenshot", false);
                 androidOptions.Call("setEnableAutoSessionTracking", false);
                 androidOptions.Call("setEnableActivityLifecycleBreadcrumbs", false);
                 androidOptions.Call("setAnrEnabled", false);
