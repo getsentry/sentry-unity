@@ -108,7 +108,7 @@ public static class SentryNativeAndroid
                 options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
             }
         }
-        
+
         options.DiagnosticLogger?.LogInfo("Successfully configured the native SDK");
     }
 
