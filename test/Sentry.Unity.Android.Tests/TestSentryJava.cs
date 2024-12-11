@@ -4,6 +4,7 @@ internal class TestSentryJava : ISentryJava
 {
     public bool Enabled { get; set; } = true;
     public bool InitSuccessful { get; set; } = true;
+    public bool SentryPresent { get; set; } = true;
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
@@ -36,5 +37,5 @@ internal class TestSentryJava : ISentryJava
         string? GpuGraphicsShaderLevel)
     { }
 
-    public bool IsSentryJavaPresent() => true;
+    public bool IsSentryJavaPresent() => SentryPresent;
 }
