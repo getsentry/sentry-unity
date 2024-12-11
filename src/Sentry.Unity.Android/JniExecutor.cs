@@ -93,16 +93,14 @@ internal class JniExecutor : IJniExecutor
     {
         lock (_lock)
         {
+            using var timeoutCts = new CancellationTokenSource(Timeout);
             _taskCompletionSource = new TaskCompletionSource<object?>();
             _currentTask = jniOperation;
             _taskEvent.Set();
 
             try
             {
-                if (!_taskCompletionSource.Task.Wait(Timeout))
-                {
-                    throw new TimeoutException($"JNI operation timed out after {Timeout.Milliseconds}ms");
-                }
+                _taskCompletionSource.Task.Wait(timeoutCts.Token);
                 return (TResult?)_taskCompletionSource.Task.Result;
             }
             catch (Exception e)
@@ -121,16 +119,14 @@ internal class JniExecutor : IJniExecutor
     {
         lock (_lock)
         {
+            using var timeoutCts = new CancellationTokenSource(Timeout);
             _taskCompletionSource = new TaskCompletionSource<object?>();
             _currentTask = jniOperation;
             _taskEvent.Set();
 
             try
             {
-                if (!_taskCompletionSource.Task.Wait(Timeout))
-                {
-                    throw new TimeoutException($"JNI operation timed out after {Timeout.Milliseconds}ms");
-                }
+                _taskCompletionSource.Task.Wait(timeoutCts.Token);
             }
             catch (Exception e)
             {
