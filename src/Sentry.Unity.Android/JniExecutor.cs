@@ -8,7 +8,8 @@ namespace Sentry.Unity.Android;
 
 internal class JniExecutor : IJniExecutor
 {
-    private const int TimeoutMs = 16;
+    // We're capping out at 16ms - 1 frame at 60 frames per second
+    private static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(16);
 
     private readonly CancellationTokenSource _shutdownSource;
     private readonly AutoResetEvent _taskEvent;
@@ -98,9 +99,9 @@ internal class JniExecutor : IJniExecutor
 
             try
             {
-                if (!_taskCompletionSource.Task.Wait(TimeoutMs))
+                if (!_taskCompletionSource.Task.Wait(Timeout))
                 {
-                    throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
+                    throw new TimeoutException($"JNI operation timed out after {Timeout.Milliseconds}ms");
                 }
                 return (TResult?)_taskCompletionSource.Task.Result;
             }
@@ -126,9 +127,9 @@ internal class JniExecutor : IJniExecutor
 
             try
             {
-                if (!_taskCompletionSource.Task.Wait(TimeoutMs))
+                if (!_taskCompletionSource.Task.Wait(Timeout))
                 {
-                    throw new TimeoutException($"JNI operation timed out after {TimeoutMs}ms");
+                    throw new TimeoutException($"JNI operation timed out after {Timeout.Milliseconds}ms");
                 }
             }
             catch (Exception e)
