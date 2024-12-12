@@ -96,7 +96,7 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setAnrEnabled", false);
                 androidOptions.Call("setEnableScopePersistence", false);
             }, options.DiagnosticLogger));
-        });
+        }, timeout);
 
         return IsEnabled(jniExecutor);
     }
