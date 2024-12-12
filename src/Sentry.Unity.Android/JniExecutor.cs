@@ -9,7 +9,7 @@ namespace Sentry.Unity.Android;
 internal class JniExecutor : IJniExecutor
 {
     // We're capping out at 16ms - 1 frame at 60 frames per second
-    private static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(16);
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(16);
 
     private readonly CancellationTokenSource _shutdownSource;
     private readonly AutoResetEvent _taskEvent;
@@ -89,11 +89,12 @@ internal class JniExecutor : IJniExecutor
         AndroidJNI.DetachCurrentThread();
     }
 
-    public TResult? Run<TResult>(Func<TResult?> jniOperation)
+    public TResult? Run<TResult>(Func<TResult?> jniOperation, TimeSpan? timeout = null)
     {
         lock (_lock)
         {
-            using var timeoutCts = new CancellationTokenSource(Timeout);
+            timeout ??= DefaultTimeout;
+            using var timeoutCts = new CancellationTokenSource(timeout.Value);
             _taskCompletionSource = new TaskCompletionSource<object?>();
             _currentTask = jniOperation;
             _taskEvent.Set();
@@ -102,6 +103,11 @@ internal class JniExecutor : IJniExecutor
             {
                 _taskCompletionSource.Task.Wait(timeoutCts.Token);
                 return (TResult?)_taskCompletionSource.Task.Result;
+            }
+            catch (OperationCanceledException)
+            {
+                _logger?.LogError("JNI execution timed out.");
+                return default;
             }
             catch (Exception e)
             {
@@ -115,11 +121,12 @@ internal class JniExecutor : IJniExecutor
         }
     }
 
-    public void Run(Action jniOperation)
+    public void Run(Action jniOperation, TimeSpan? timeout = null)
     {
         lock (_lock)
         {
-            using var timeoutCts = new CancellationTokenSource(Timeout);
+            timeout ??= DefaultTimeout;
+            using var timeoutCts = new CancellationTokenSource(timeout.Value);
             _taskCompletionSource = new TaskCompletionSource<object?>();
             _currentTask = jniOperation;
             _taskEvent.Set();
@@ -127,6 +134,10 @@ internal class JniExecutor : IJniExecutor
             try
             {
                 _taskCompletionSource.Task.Wait(timeoutCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger?.LogError("JNI execution timed out.");
             }
             catch (Exception e)
             {

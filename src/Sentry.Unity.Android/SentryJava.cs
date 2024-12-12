@@ -1,13 +1,15 @@
 using System;
+using System.Diagnostics;
 using Sentry.Extensibility;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
     public bool IsEnabled(IJniExecutor jniExecutor);
-    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options);
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
@@ -52,7 +54,7 @@ internal class SentryJava : ISentryJava
         });
     }
 
-    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options)
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout)
     {
         jniExecutor.Run(() =>
         {
