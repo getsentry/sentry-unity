@@ -37,7 +37,17 @@ public static class SentryNativeAndroid
             return;
         }
 
-        JniExecutor ??= new JniExecutor();
+        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
+
+        if (SentryJava.IsEnabled(JniExecutor))
+        {
+            options.DiagnosticLogger?.LogDebug("The native SDK is already initialized");
+        }
+        else if (!SentryJava.Init(JniExecutor, options))
+        {
+            options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support");
+            return;
+        }
 
         options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
         options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);
@@ -98,6 +108,8 @@ public static class SentryNativeAndroid
                 options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
             }
         }
+
+        options.DiagnosticLogger?.LogInfo("Successfully configured the native SDK");
     }
 
     /// <summary>
@@ -119,7 +131,7 @@ public static class SentryNativeAndroid
 
         // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
         // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
-        JniExecutor ??= new JniExecutor();
+        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
         SentryJava?.Close(JniExecutor);
         JniExecutor.Dispose();
     }

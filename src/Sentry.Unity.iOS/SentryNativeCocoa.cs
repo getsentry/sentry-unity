@@ -87,7 +87,7 @@ public static class SentryNativeCocoa
             }
         }
 
-        options.DiagnosticLogger?.LogInfo("Successfully initialized the native SDK");
+        options.DiagnosticLogger?.LogInfo("Successfully configured the native SDK");
     }
 
     /// <summary>
