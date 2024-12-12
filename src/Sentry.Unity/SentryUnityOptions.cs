@@ -156,7 +156,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     /// <remarks>
     /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
-    /// Gradle project during the build process. This means that the options cannot be changed at runtime, as they are
+    /// Xcode project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
     /// </remarks>
     public NativeInitializationType IosNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
