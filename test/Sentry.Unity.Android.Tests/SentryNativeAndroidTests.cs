@@ -13,7 +13,7 @@ public class SentryNativeAndroidTests
     private Action _fakeReinstallSentryNativeBackendStrategy;
     private TestUnityInfo _sentryUnityInfo = null!;
     private TestSentryJava _testSentryJava = null!;
-    private TestLogger _logger = null!;
+    private TestLogger _logger = new();
     private SentryUnityOptions _options = null!;
 
     public SentryNativeAndroidTests()
@@ -28,9 +28,7 @@ public class SentryNativeAndroidTests
         _reinstallCalled = false;
         _sentryUnityInfo = new TestUnityInfo { IL2CPP = false };
 
-        _logger = new TestLogger();
-
-        SentryNativeAndroid.JniExecutor = new JniExecutor(_logger);
+        SentryNativeAndroid.JniExecutor ??= new JniExecutor(_logger);
         _testSentryJava = new TestSentryJava();
         SentryNativeAndroid.SentryJava = _testSentryJava;
 
@@ -43,10 +41,12 @@ public class SentryNativeAndroidTests
     }
 
     [TearDown]
-    public void TearDown() =>
+    public void TearDown()
+    {
         _fakeReinstallSentryNativeBackendStrategy =
             Interlocked.Exchange(ref SentryNative.ReinstallSentryNativeBackendStrategy!,
                 _originalReinstallSentryNativeBackendStrategy)!;
+    }
 
     [Test]
     public void Configure_DefaultConfiguration_SetsScopeObserver()
