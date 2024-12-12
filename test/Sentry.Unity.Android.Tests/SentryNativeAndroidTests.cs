@@ -13,7 +13,7 @@ public class SentryNativeAndroidTests
     private Action _fakeReinstallSentryNativeBackendStrategy;
     private TestUnityInfo _sentryUnityInfo = null!;
     private TestSentryJava _testSentryJava = null!;
-    private TestLogger _logger = null!;
+    private readonly TestLogger _logger = new();
     private SentryUnityOptions _options = null!;
 
     public SentryNativeAndroidTests()
@@ -28,11 +28,10 @@ public class SentryNativeAndroidTests
         _reinstallCalled = false;
         _sentryUnityInfo = new TestUnityInfo { IL2CPP = false };
 
-        SentryNativeAndroid.JniExecutor = new TestJniExecutor();
+        SentryNativeAndroid.JniExecutor ??= new JniExecutor(_logger);
         _testSentryJava = new TestSentryJava();
         SentryNativeAndroid.SentryJava = _testSentryJava;
 
-        _logger = new TestLogger();
         _options = new SentryUnityOptions
         {
             Debug = true,
