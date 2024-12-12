@@ -124,7 +124,7 @@ internal class SentryJava : ISentryJava
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Error in SentryJava.OptionsConfiguration.");
+                _logger?.LogError(e, "Error invoking {0} ’.", methodName);
             }
             return null;
         }

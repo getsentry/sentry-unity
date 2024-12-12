@@ -137,7 +137,7 @@ public class SentryNativeAndroidTests
 
         Assert.IsTrue(_logger.Logs.Any(log =>
             log.logLevel == SentryLevel.Debug &&
-            log.message.Contains("The native SDK is already initialized")));
+            log.message.Contains("The Android SDK is already initialized")));
 
         Assert.NotNull(_options.ScopeObserver);
     }

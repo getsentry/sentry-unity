@@ -41,7 +41,7 @@ public static class SentryNativeAndroid
 
         if (SentryJava.IsEnabled(JniExecutor))
         {
-            options.DiagnosticLogger?.LogDebug("The native SDK is already initialized");
+            options.DiagnosticLogger?.LogDebug("The Android SDK is already initialized");
         }
         else if (!SentryJava.Init(JniExecutor, options))
         {
@@ -109,7 +109,7 @@ public static class SentryNativeAndroid
             }
         }
 
-        options.DiagnosticLogger?.LogInfo("Successfully configured the native SDK");
+        options.DiagnosticLogger?.LogInfo("Successfully configured the Android SDK");
     }
 
     /// <summary>
