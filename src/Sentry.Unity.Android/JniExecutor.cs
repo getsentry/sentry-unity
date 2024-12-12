@@ -21,13 +21,17 @@ internal class JniExecutor : IJniExecutor
 
     private readonly object _lock = new object();
 
+    private bool _isDisposed;
+    private Thread? _workerThread;
+
     public JniExecutor(IDiagnosticLogger? logger)
     {
         _logger = logger;
         _taskEvent = new AutoResetEvent(false);
         _shutdownSource = new CancellationTokenSource();
 
-        new Thread(DoWork) { IsBackground = true, Name = "SentryJniExecutorThread" }.Start();
+        _workerThread = new Thread(DoWork) { IsBackground = true, Name = "SentryJniExecutorThread" };
+        _workerThread.Start();
     }
 
     private void DoWork()
@@ -36,7 +40,7 @@ internal class JniExecutor : IJniExecutor
 
         var waitHandles = new[] { _taskEvent, _shutdownSource.Token.WaitHandle };
 
-        while (true)
+        while (!_isDisposed)
         {
             var index = WaitHandle.WaitAny(waitHandles);
             if (index > 0)
@@ -152,7 +156,15 @@ internal class JniExecutor : IJniExecutor
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+
         _shutdownSource.Cancel();
+        _workerThread?.Join(100);
         _taskEvent.Dispose();
     }
 }
