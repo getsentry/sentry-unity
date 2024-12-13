@@ -164,7 +164,19 @@ internal class JniExecutor : IJniExecutor
         _isDisposed = true;
 
         _shutdownSource.Cancel();
-        _workerThread?.Join(100);
+        try
+        {
+            _workerThread?.Join(100);
+        }
+        catch (ThreadStateException)
+        {
+            _logger?.LogError("JNI Executor Worker thread was never started during disposal");
+        }
+        catch (ThreadInterruptedException)
+        {
+            _logger?.LogError("JNI Executor Worker thread was interrupted during disposal");
+        }
+
         _taskEvent.Dispose();
     }
 }
