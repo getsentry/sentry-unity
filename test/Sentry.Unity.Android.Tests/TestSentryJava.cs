@@ -1,9 +1,18 @@
+using System;
+
 namespace Sentry.Unity.Android.Tests;
 
 internal class TestSentryJava : ISentryJava
 {
+    public bool Enabled { get; set; } = true;
+    public bool InitSuccessful { get; set; } = true;
+    public bool SentryPresent { get; set; } = true;
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
+
+    public bool IsEnabled(IJniExecutor jniExecutor) => Enabled;
+
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout) => InitSuccessful;
 
     public string? GetInstallationId(IJniExecutor jniExecutor) => InstallationId;
 
@@ -30,5 +39,5 @@ internal class TestSentryJava : ISentryJava
         string? GpuGraphicsShaderLevel)
     { }
 
-    public bool IsSentryJavaPresent() => true;
+    public bool IsSentryJavaPresent() => SentryPresent;
 }
