@@ -12,14 +12,14 @@ on:
         type: number
     # Map the workflow outputs to job outputs
     outputs:
-      outcome:
-        description:
-        value: ${{ jobs.run.outputs.outcome }}
+      status:
+        description: "Smoke test status"
+        value: ${{ jobs.run.outputs.status }}
 
 jobs:
   run:
     name: try-${{ inputs.try }}
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -28,11 +28,11 @@ jobs:
         shell: pwsh
     # Map the job outputs to step outputs
     outputs:
-      outcome: ${{ steps.smoke-test.outcome }}
+      status: ${{ steps.smoke-test.outputs.status }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
+      
       - name: Download test app artifact
         uses: actions/download-artifact@v4
         with:
@@ -64,9 +64,44 @@ jobs:
           "target=$target" >> $env:GITHUB_OUTPUT
           "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
           "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
+      
+      - name: Create Android Emulator Image
+        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v233.0
+        with:
+          api-level: ${{ steps.config.outputs.api-level }}
+          target: ${{ steps.config.outputs.target }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          arch: x86_64
+          script: |
+            adb wait-for-device
+            adb shell input keyevent 82
+            adb devices -l
+            echo "Generated AVD snapshot for caching."
 
-      - name: Android API ${{ steps.config.outputs.label }} emulator setup + Smoke test
-        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.28.0
+      # We have to explicitly wait for the emulator to close. It gets reused  in the next step.
+      - name: Wait for Emulator to Close
+        env:
+          EMULATOR_NAME: emulator-5554
+        run: |
+          Write-Output "Waiting for emulator $env:EMULATOR_NAME to close..."
+          $shutdownTimeout = 60 # seconds
+          while ((Get-Date) - $startTime -lt (New-TimeSpan -Seconds $shutdownTimeout))
+          {
+              $devices = adb devices | Select-String -Pattern $env:EMULATOR_NAME
+              if (-not $devices)
+              {
+                  Write-Output "Emulator $env:EMULATOR_NAME is offline."
+                  break
+              }
+
+              Write-Output "Emulator $env:EMULATOR_NAME is still running. Retrying in 5 seconds...
+              Start-Sleep -Seconds 5
+          }
+
+      - name: Android API ${{ steps.config.outputs.label }} Smoke test
+        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v233.0
         id: smoke-test
         timeout-minutes: 40
         continue-on-error: true
@@ -74,12 +109,7 @@ jobs:
           api-level: ${{ steps.config.outputs.api-level }}
           target: ${{ steps.config.outputs.target }}
           force-avd-creation: false
-          ram-size: 2048M
-          arch: x86_64
-          cores: 3
-          emulator-boot-timeout: 1800
-          disk-size: 4096M # Some runs have out of storage error when installing the smoke test.
-          emulator-options: -no-snapshot-save -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -accel on
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest -WarnIfFlaky
 
