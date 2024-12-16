@@ -84,20 +84,29 @@ jobs:
       - name: Wait for Emulator to Close
         env:
           EMULATOR_NAME: emulator-5554
+          POLL_INTERVAL_SECONDS: 5
         run: |
           Write-Output "Waiting for emulator $env:EMULATOR_NAME to close..."
-          $shutdownTimeout = 60 # seconds
-          while ((Get-Date) - $startTime -lt (New-TimeSpan -Seconds $shutdownTimeout))
-          {
-              $devices = adb devices | Select-String -Pattern $env:EMULATOR_NAME
-              if (-not $devices)
-              {
-                  Write-Output "Emulator $env:EMULATOR_NAME is offline."
-                  break
+          
+          $startTime = [System.DateTime]::Now
+          $timeoutSeconds = 60
+          
+          while ($true) {
+              $elapsedSeconds = ([System.DateTime]::Now - $startTime).TotalSeconds
+              if ($elapsedSeconds -gt $timeoutSeconds) {
+                  Write-Error "Timeout: Emulator $env:EMULATOR_NAME did not go offline after $env:TIMEOUT_MINUTES minutes."
+                  exit 1
               }
-
-              Write-Output "Emulator $env:EMULATOR_NAME is still running. Retrying in 5 seconds..."
-              Start-Sleep -Seconds 5
+              
+              $devices = adb devices | Select-String -Pattern $env:EMULATOR_NAME
+              if (-not $devices) {
+                  Write-Output "Emulator $env:EMULATOR_NAME is offline."
+                  exit 0
+              }
+              
+              $remainingSeconds = [math]::Round($timeoutSeconds - $elapsedSeconds, 0)
+              Write-Output "Emulator $env:EMULATOR_NAME is still running. Waiting... ($remainingSeconds seconds remaining)"
+              Start-Sleep -Seconds $env:POLL_INTERVAL_SECONDS
           }
 
       - name: Android API ${{ steps.config.outputs.label }} Smoke test
