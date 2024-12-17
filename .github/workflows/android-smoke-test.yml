@@ -39,6 +39,7 @@ jobs:
           name: testapp-Android-compiled-${{ inputs.unity-version }}
           path: samples/IntegrationTest/Build
 
+      # See https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -71,62 +72,22 @@ jobs:
           "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
           "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
       
-      - name: Create Android Emulator Image
+      - name: Run Android Smoke Tests
         uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v233.0
+        id: smoke-test
+        timeout-minutes: 40
         with:
           api-level: ${{ steps.config.outputs.api-level }}
           target: ${{ steps.config.outputs.target }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
+          disable-animations: true
           arch: x86_64
           script: |
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            echo "Generated AVD snapshot for caching."
-
-      # We have to explicitly wait for the emulator to close. It gets reused  in the next step.
-      - name: Wait for Emulator to Close
-        env:
-          EMULATOR_NAME: emulator-5554
-          POLL_INTERVAL_SECONDS: 5
-        run: |
-          Write-Output "Waiting for emulator $env:EMULATOR_NAME to close..."
-          
-          $startTime = [System.DateTime]::Now
-          $timeoutSeconds = 60
-          
-          while ($true) {
-              $elapsedSeconds = ([System.DateTime]::Now - $startTime).TotalSeconds
-              if ($elapsedSeconds -gt $timeoutSeconds) {
-                  Write-Error "Timeout: Emulator $env:EMULATOR_NAME did not go offline after $env:TIMEOUT_MINUTES minutes."
-                  exit 1
-              }
-              
-              $devices = adb devices | Select-String -Pattern $env:EMULATOR_NAME
-              if (-not $devices) {
-                  Write-Output "Emulator $env:EMULATOR_NAME is offline."
-                  exit 0
-              }
-              
-              $remainingSeconds = [math]::Round($timeoutSeconds - $elapsedSeconds, 0)
-              Write-Output "Emulator $env:EMULATOR_NAME is still running. Waiting... ($remainingSeconds seconds remaining)"
-              Start-Sleep -Seconds $env:POLL_INTERVAL_SECONDS
-          }
-
-      - name: Android API ${{ steps.config.outputs.label }} Smoke test
-        uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v233.0
-        id: smoke-test
-        timeout-minutes: 40
-        continue-on-error: true
-        with:
-          api-level: ${{ steps.config.outputs.api-level }}
-          target: ${{ steps.config.outputs.target }}
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest -WarnIfFlaky
+            pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest -WarnIfFlaky
 
       - name: Upload artifacts on failure
         if: ${{ failure() }}
