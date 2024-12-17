@@ -373,13 +373,10 @@ catch
     Write-Warning "Caught exception: $_"
     Write-Host $_.ScriptStackTrace
     OnError $device $deviceApi
-    return 1
+    exit 1
 }
 
 $failed = $false
-
-# TODO: Remove this. Let's see if the run fails with this set to false.
-$results.smoketestPassed = $false
 
 if (-not $results.smoketestPassed) 
 {
@@ -407,8 +404,8 @@ if (-not $results.hasCrashTestPassed)
 
 if ($failed)
 {
-    return 1
+    exit 1
 }
 
 Write-Host "All tests passed" -ForegroundColor Green
-return 0
+exit 0
