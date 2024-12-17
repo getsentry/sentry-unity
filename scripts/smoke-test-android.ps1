@@ -378,6 +378,9 @@ catch
 
 $failed = $false
 
+# TODO: Remove this. Let's see if the run fails with this set to false.
+$results.smoketestPassed = $false
+
 if (-not $results.smoketestPassed) 
 {
     Write-Error "Smoke test failed"
