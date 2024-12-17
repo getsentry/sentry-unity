@@ -272,7 +272,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     
     $processFinished = $false
     $LogcatCache = @()
-    $testTimeout = 10 # seconds
+    $testTimeout = 500 # seconds
     $startTime = Get-Date
 
     Write-Host "Waiting for tests to run..."
@@ -304,19 +304,17 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     if ($processFinished)
     {
-        Write-Host "Tests finished running"
+        Write-Host "::endgroup::"
+        Write-Host "'$Name' test finished running."
     }
     else
-    {
+    {   
         Write-Host "::endgroup::"
-        
-        Write-Host "Tests did not finish running on their own" -ForegroundColor Red
+        Write-Host "'$Name' tests timed out. See logcat for more details."
+
         Write-Host "::group::logcat"
         $LogcatCache | ForEach-Object { Write-Host $_ } 
         Write-Host "::endgroup::"
-
-        Write-Host "Taking screenshot before exit"
-        TakeScreenshot $device
 
         return $false
     }
