@@ -76,10 +76,6 @@ jobs:
           arch: x86_64
           script: |
             adb wait-for-device
-            # Wait for device to fully boot
-            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
-            # Additional small delay to ensure all services are ready
-            sleep 5
             adb shell input keyevent 82
             adb devices -l
             echo "Generated AVD snapshot for caching."
