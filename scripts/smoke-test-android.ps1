@@ -337,7 +337,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     if ($processFinished)
     {
-        Write-Host "'$Name' test finished running in $((Get-Date) - $runTime | ForEach-Object { '{0:mm}m {0:ss}s' -f $_ })"
+        Write-Host "'$Name' test finished running."
     }
     else
     {   
