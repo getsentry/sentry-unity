@@ -132,7 +132,8 @@ function PidOf([string] $deviceId, [string] $processName)
     $startTime = Get-Date
     $timeout = New-TimeSpan -Seconds 60
     
-    while ((Get-Date) - $startTime -lt $timeout) {
+    while ((Get-Date) - $startTime -lt $timeout)
+    {
         if ($deviceApi -eq "21")
         {
             # `pidof` doesn't exist - take second column from the `ps` output for the given process instead.
@@ -143,7 +144,8 @@ function PidOf([string] $deviceId, [string] $processName)
             $processId = adb -s $deviceId shell pidof $processName
         }
 
-        if (-not [string]::IsNullOrWhiteSpace($processId)) {
+        if (-not [string]::IsNullOrWhiteSpace($processId))
+        {
             return $processId
         }
 
@@ -184,7 +186,7 @@ $DeviceCount = $DeviceList.Count
 If ($DeviceCount -eq 0)
 {
     Write-Error "It seems like no devices were found $RawAdbDeviceList"
-    return 1
+    exit 1
 }
 Else
 {
@@ -195,7 +197,7 @@ Else
 If (-not (Test-Path -Path "$BuildDir/$ApkFileName" ))
 {
     Write-Error "Expected APK on $BuildDir/$ApkFileName but it was not found."
-    return 1
+    exit 1
 }
 
 
@@ -283,23 +285,27 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     Write-Host "Activity started successfully"
 
     $appPID = PidOf $device $ProcessName
-    Write-Host "Test process '$ProcessName' running with PID: $appPID"
-    
-    $processFinished = $false
-    $LogcatCache = @()
-    $testTimeout = 500 # seconds
-    $startTime = Get-Date
+    if ($null -eq $appPID)
+    {
+        Write-Host "::endgroup::"
+        Write-Error "Could not find PID for process '$ProcessName'"
+        exit 1
+    }
 
+    Write-Host "Test process '$ProcessName' running with PID: $appPID"
     Write-Host "Waiting for tests to run..."
     
+    $processFinished = $false
+    $startTime = Get-Date
+    $timeout = New-TimeSpan -Seconds 500
+
      # Wait for the tests to run and the game process to complete
-     while ((Get-Date) - $startTime -lt (New-TimeSpan -Seconds $testTimeout))
-     {
+    while ((Get-Date) - $startTime -lt $timeout)
+    {
         $newLogs = adb -s $device logcat -d --pid=$appPID
         if ($newLogs)
         {
             adb -s $device logcat -c
-            $LogcatCache += $newLogs
 
             # Dunp logs on console line by line
             # $newLogs | ForEach-Object { Write-Host $_ } 
@@ -327,16 +333,12 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     {   
         Write-Host "::endgroup::"
         Write-Host "'$Name' tests timed out. See logcat for more details."
-
-        Write-Host "::group::logcat"
-        $LogcatCache | ForEach-Object { Write-Host $_ } 
-        Write-Host "::endgroup::"
-
-        return $false
     }
 
-    $lineWithSuccess = $LogcatCache | Select-String $SuccessString
-    $lineWithFailure = $LogcatCache | Select-String $FailureString
+    $logs = LogCat $device $appPID
+
+    $lineWithSuccess = $logs | Select-String $SuccessString
+    $lineWithFailure = $logs | Select-String $FailureString
 
     if ($null -ne $lineWithSuccess)
     {
@@ -348,7 +350,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         Write-Host "'$Name' test failed. See logcat for more details." -ForegroundColor Red
 
         Write-Host "::group::logcat"
-        $LogcatCache | ForEach-Object { Write-Host $_ } 
+        $logs | ForEach-Object { Write-Host $_ } 
         Write-Host "::endgroup::"
 
         return $false
@@ -356,7 +358,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     
     Write-Host "'$Name' test execution failed. See logcat for more details." -ForegroundColor Red
     Write-Host "::group::logcat"
-    $LogcatCache | ForEach-Object { Write-Host $_ } 
+    $logs | ForEach-Object { Write-Host $_ } 
     Write-Host "::endgroup::"
 
     return $false
