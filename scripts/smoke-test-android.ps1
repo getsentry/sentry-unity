@@ -308,15 +308,18 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         if ($newLogs)
         {
             $currentLogs = @($newLogs)  # Force array creation even for single line
-            $newLines = $currentLogs[$lastLogCount..($currentLogs.Count-1)]
-            $lastLogCount = $currentLogs.Count
-            
-            if ($newLines)
+            if ($currentLogs.Count -gt $lastLogCount)
             {
-                $logCache += $newLines
+                $newLines = $currentLogs[$lastLogCount..($currentLogs.Count-1)]
+                $lastLogCount = $currentLogs.Count
                 
-                # Uncomment to dump logs on console line by line
-                # $newLines | ForEach-Object { Write-Host $_ }
+                if ($newLines)
+                {
+                    $logCache += $newLines
+
+                    # Uncomment to dump logs on console line by line
+                    # $newLines | ForEach-Object { Write-Host $_ }
+                }
             }
         }
 
