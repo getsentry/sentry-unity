@@ -299,6 +299,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     $logCache = @()
     $startTime = Get-Date
     $timeout = New-TimeSpan -Seconds 500
+    $lastLogCount = 0
 
     # Wait for the tests to run and the game process to complete
     while ((Get-Date) - $startTime -lt $timeout)
