@@ -290,8 +290,9 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
             # $newLogs | ForEach-Object { Write-Host $_ } 
         }
 
-        # Unity logs the process quitting or we're running the crash test and actually crash the app.
-        if (($newLogs | Select-String "Quitting process") -or ($newLogs | Select-String "terminating with uncaught exception of type char const*"))
+        # The SmokeTester logs "SmokeTester is quitting." in OnApplicationQuit() to reliably inform when tests finish running.
+        # For crash tests, we expect to see a native crash log "terminating with uncaught exception of type char const*".
+        if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "terminating with uncaught exception of type char const*"))
         {
             Write-Host "Process finished marker detected. Finish waiting for tests to run."
             $processFinished = $true

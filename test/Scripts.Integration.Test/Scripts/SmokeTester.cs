@@ -52,6 +52,12 @@ public class SmokeTester : MonoBehaviour
         }
     }
 
+    private void OnApplicationQuit()
+    {
+        // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
+        Debug.Log("SmokeTester is quitting.");
+    }
+
 #if UNITY_IOS && !UNITY_EDITOR
     // .NET `Environment.GetCommandLineArgs()` doesn't seem to work on iOS so we get the test arg in Objective-C
     [DllImport("__Internal", EntryPoint="getTestArgObjectiveC")]
