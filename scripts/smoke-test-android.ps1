@@ -321,9 +321,8 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         }
 
         Start-Sleep -Seconds 1
-     }
+    }
     
-
     if ($processFinished)
     {
         Write-Host "'$Name' test finished running."
@@ -336,6 +335,10 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     }
 
     $logs = LogCat $device $appPID
+    
+    Write-Host "::group::logcat"
+    $logs | ForEach-Object { Write-Host $_ } 
+    Write-Host "::endgroup::"
 
     $lineWithSuccess = $logs | Select-String $SuccessString
     $lineWithFailure = $logs | Select-String $FailureString
@@ -348,19 +351,10 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     elseif ($null -ne $lineWithFailure)
     {
         Write-Host "'$Name' test failed. See logcat for more details." -ForegroundColor Red
-
-        Write-Host "::group::logcat"
-        $logs | ForEach-Object { Write-Host $_ } 
-        Write-Host "::endgroup::"
-
         return $false
     }
     
     Write-Host "'$Name' test execution failed. See logcat for more details." -ForegroundColor Red
-    Write-Host "::group::logcat"
-    $logs | ForEach-Object { Write-Host $_ } 
-    Write-Host "::endgroup::"
-
     return $false
 }
 
