@@ -304,7 +304,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     {
         Write-Host "::endgroup::"
         Write-Error "Could not find PID for process '$ProcessName'"
-        exit 1
+        return $false
     }
 
     Write-Host "Retrieved ID for '$ProcessName': $appPID"
