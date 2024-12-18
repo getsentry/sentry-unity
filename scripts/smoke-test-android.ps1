@@ -300,17 +300,23 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     $startTime = Get-Date
     $timeout = New-TimeSpan -Seconds 500
 
-     # Wait for the tests to run and the game process to complete
+    # Wait for the tests to run and the game process to complete
     while ((Get-Date) - $startTime -lt $timeout)
     {
         $newLogs = adb -s $device logcat -d --pid=$appPID
         if ($newLogs)
         {
-            adb -s $device logcat -c
-            $logCache += $newLogs
-
-            # Dunp logs on console line by line
-            # $newLogs | ForEach-Object { Write-Host $_ } 
+            $currentLogs = @($newLogs)  # Force array creation even for single line
+            $newLines = $currentLogs[$lastLogCount..($currentLogs.Count-1)]
+            $lastLogCount = $currentLogs.Count
+            
+            if ($newLines)
+            {
+                $logCache += $newLines
+                
+                # Uncomment to dump logs on console line by line
+                # $newLines | ForEach-Object { Write-Host $_ }
+            }
         }
 
         # The SmokeTester logs "SmokeTester is quitting." in OnApplicationQuit() to reliably inform when tests finish running.
@@ -324,6 +330,10 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
         Start-Sleep -Seconds 1
     }
+
+    Write-Host "::group::logcat"
+    $logCache | ForEach-Object { Write-Host $_ } 
+    Write-Host "::endgroup::"
     
     if ($processFinished)
     {
@@ -335,10 +345,6 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         Write-Host "::endgroup::"
         Write-Host "'$Name' tests timed out. See logcat for more details."
     }
-    
-    Write-Host "::group::logcat"
-    $logCache | ForEach-Object { Write-Host $_ } 
-    Write-Host "::endgroup::"
 
     $lineWithSuccess = $logCache | Select-String $SuccessString
     $lineWithFailure = $logCache | Select-String $FailureString
@@ -354,7 +360,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         return $false
     }
     
-    Write-Host "'$Name' test execution failed. See logcat for more details." -ForegroundColor Red
+    Write-Host "'$Name' test execution failed." -ForegroundColor Red
     return $false
 }
 
