@@ -161,6 +161,8 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");
 
+            Debug.Log("SMOKE TEST: Finished checking messages.");
+
             t.Pass();
         }
         catch (Exception ex)
