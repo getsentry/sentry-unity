@@ -472,17 +472,6 @@ jobs:
       matrix:
         api-level: [27, 31, 34] # last updated Dezember 2024
         unity-version: ["2019", "2022", "6000"]
-        include:
-          # API 21 is barely used but let's check it as the minimum supported version for now.
-          - api-level: 21
-            unity-version: "2019"
-        exclude:
-          # Seems like there's an error in Unity with Android API 30 - disabling.
-          # https://github.com/getsentry/sentry-unity/issues/719#issuecomment-1129129952
-          - api-level: 30
-            unity-version: "2021"
-          - api-level: 30
-            unity-version: "2022"
 
   mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
