@@ -22,6 +22,9 @@ The initialization behaviour is controlled by `IosNativeInitializationType` and 
 - Bump Native SDK from v0.7.15 to v0.7.16 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0716)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.16)
+- Bump Cocoa SDK from v8.41.0 to v8.42.0 ([#1937](https://github.com/getsentry/sentry-unity/pull/1937))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8420)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.41.0...8.42.0)
 
 ## 2.4.0
 
