@@ -251,6 +251,8 @@ else
 
 function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString)
 {
+    $runTime = Get-Date
+
     Write-Host "::group::Test: '$name'"
 
     Write-Host "Clearing logcat from '$device'"
@@ -282,7 +284,8 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         }
     } 
     
-    Write-Host "Activity started successfully"
+    Write-Host "Activity started successfully in $((Get-Date) - $runTime | ForEach-Object { '{0:mm}m {0:ss}s' -f $_ })"
+    $runTime = Get-Date
 
     $appPID = PidOf $device $ProcessName
     if ($null -eq $appPID)
@@ -292,7 +295,9 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         exit 1
     }
 
-    Write-Host "Test process '$ProcessName' running with PID: $appPID"
+    Write-Host "Retrieved PID for '$ProcessName' running with PID: $appPID in $((Get-Date) - $runTime | ForEach-Object { '{0:mm}m {0:ss}s' -f $_ })"
+    $runTime = Get-Date
+
     Write-Host "Waiting for tests to run..."
     
     $processFinished = $false
@@ -335,13 +340,10 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         Start-Sleep -Seconds 1
     }
 
-    Write-Host "::group::logcat"
-    $logCache | ForEach-Object { Write-Host $_ } 
-    Write-Host "::endgroup::"
     
     if ($processFinished)
     {
-        Write-Host "'$Name' test finished running."
+        Write-Host "'$Name' test finished running in $((Get-Date) - $runTime | ForEach-Object { '{0:mm}m {0:ss}s' -f $_ })"
         Write-Host "::endgroup::"
     }
     else
@@ -349,6 +351,10 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         Write-Host "::endgroup::"
         Write-Host "'$Name' tests timed out. See logcat for more details."
     }
+
+    Write-Host "::group::logcat"
+    $logCache | ForEach-Object { Write-Host $_ } 
+    Write-Host "::endgroup::"
 
     $lineWithSuccess = $logCache | Select-String $SuccessString
     $lineWithFailure = $logCache | Select-String $FailureString
