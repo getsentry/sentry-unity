@@ -77,18 +77,6 @@ function ArtifactsPath
     $_ArtifactsPath.Replace('\', '/')
 }
 
-if (Test-Path env:CI)
-{
-    # Take Screenshot of VM to verify emulator start
-    if ($IsMacOS)
-    {
-        screencapture "$(ArtifactsPath)/host-screenshot.jpg"
-    }
-    else {
-        Write-Warning "Screenshot functionality is not implemented for this platform."
-    }
-}
-
 function TakeScreenshot([string] $deviceId)
 {
     $file = "/data/local/tmp/screen$(Get-Date -Format "HHmmss").png"
@@ -153,7 +141,7 @@ function PidOf([string] $deviceId, [string] $processName)
         Start-Sleep -Seconds 2
     }
 
-    Write-Warning "Could not find PID for process '$processName' after 60 seconds"
+    Write-Host "Could not find PID for process '$processName' after 60 seconds" -ForegroundColor Red
     return $null
 }
 
@@ -292,7 +280,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         # Check if the fallback activity failed to start
         if ($output -match "Error type 3" -or $output -match "Activity class \{$activityName\} does not exist.")
         {
-            Write-Error "Activity does not exist"
+            Write-Host "Activity does not exist"
             return $false
         }
     } 
@@ -303,7 +291,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     if ($null -eq $appPID)
     {
         Write-Host "::endgroup::"
-        Write-Host "Could not find PID for process '$ProcessName'" -ForegroundColor Red
+        Write-Host "Retrieving process ID failed. Skipping test." -ForegroundColor Red
         return $false
     }
 
@@ -422,7 +410,7 @@ try
 }
 catch
 {
-    Write-Warning "Caught exception: $_"
+    Write-Host "Caught exception: $_"
     Write-Host $_.ScriptStackTrace
     OnError $device $deviceApi
     return $false
@@ -432,25 +420,25 @@ $failed = $false
 
 if (-not $results.smoketestPassed) 
 {
-    Write-Error "Smoke test failed"
+    Write-Host "Smoke test failed"
     $failed = $true
 }
 
 if (-not $results.hasntCrashedTestPassed)
 {
-    Write-Error "HasntCrashed test failed" 
+    Write-Host "HasntCrashed test failed" 
     $failed = $true
 }
 
 if (-not $results.crashTestPassed)
 {
-    Write-Error "Crash test failed"
+    Write-Host "Crash test failed"
     $failed = $true
 }
 
 if (-not $results.hasCrashTestPassed)
 {
-    Write-Error "HasCrashed test failed"
+    Write-Host "HasCrashed test failed"
     $failed = $true
 }
 
