@@ -296,6 +296,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     Write-Host "Waiting for tests to run..."
     
     $processFinished = $false
+    $logCache = @()
     $startTime = Get-Date
     $timeout = New-TimeSpan -Seconds 500
 
@@ -306,6 +307,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         if ($newLogs)
         {
             adb -s $device logcat -c
+            $logCache += $newLogs
 
             # Dunp logs on console line by line
             # $newLogs | ForEach-Object { Write-Host $_ } 
@@ -333,15 +335,13 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         Write-Host "::endgroup::"
         Write-Host "'$Name' tests timed out. See logcat for more details."
     }
-
-    $logs = LogCat $device $appPID
     
     Write-Host "::group::logcat"
-    $logs | ForEach-Object { Write-Host $_ } 
+    $logCache | ForEach-Object { Write-Host $_ } 
     Write-Host "::endgroup::"
 
-    $lineWithSuccess = $logs | Select-String $SuccessString
-    $lineWithFailure = $logs | Select-String $FailureString
+    $lineWithSuccess = $logCache | Select-String $SuccessString
+    $lineWithFailure = $logCache | Select-String $FailureString
 
     if ($null -ne $lineWithSuccess)
     {
