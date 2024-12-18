@@ -20,6 +20,11 @@ public class SmokeTester : MonoBehaviour
     private void Awake()
     {
         Debug.Log("SmokeTester, awake!");
+        Application.quitting += () =>
+        {
+            // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
+            Debug.Log("SmokeTester is quitting.");
+        };
     }
 
     public void Start()
@@ -50,12 +55,6 @@ public class SmokeTester : MonoBehaviour
             Debug.Log($"Unknown command line argument: {arg}");
             Application.Quit(-1);
         }
-    }
-
-    private void OnApplicationQuit()
-    {
-        // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
-        Debug.Log("SmokeTester is quitting.");
     }
 
 #if UNITY_IOS && !UNITY_EDITOR
