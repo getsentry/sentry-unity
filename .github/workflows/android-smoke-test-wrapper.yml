@@ -9,27 +9,45 @@ on:
         type: string
 
 jobs:
-  smoke-test:
-    strategy:
-      matrix:
-        attempt: [1, 2, 3]
-      max-parallel: 1
-      fail-fast: false
+  try-1:
     uses: ./.github/workflows/android-smoke-test.yml
     with:
       unity-version: ${{ inputs.unity-version }}
       api-level: ${{ inputs.api-level }}
-      try: ${{ matrix.attempt }}
-    if: ${{ always() && (matrix.attempt == 1 || failure()) }}
+      try: 1
+
+  try-2:
+    needs: [try-1]
+    if: always() && needs.try-1.result == 'failure'
+    uses: ./.github/workflows/android-smoke-test.yml
+    with:
+      unity-version: ${{ inputs.unity-version }}
+      api-level: ${{ inputs.api-level }}
+      try: 2
+
+  try-3:
+    needs: [try-2]
+    if: always() && needs.try-2.result == 'failure'
+    uses: ./.github/workflows/android-smoke-test.yml
+    with:
+      unity-version: ${{ inputs.unity-version }}
+      api-level: ${{ inputs.api-level }}
+      try: 3
 
   final-status:
-    needs: [smoke-test]
+    needs: [try-1, try-2, try-3]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          if [[ "${{ needs.smoke-test.result }}" == "success" ]]; then
-            exit 0
-          else
-            exit 1
-          fi
+      - name: Check final status
+        if: |
+          needs.try-1.result == 'success' ||
+          needs.try-2.result == 'success' ||
+          needs.try-3.result == 'success'
+        run: exit 0
+      - name: Force failure if all attempts failed
+        if: |
+          needs.try-1.result != 'success' &&
+          needs.try-2.result != 'success' &&
+          needs.try-3.result != 'success'
+        run: exit 1
