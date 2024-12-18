@@ -303,7 +303,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     if ($null -eq $appPID)
     {
         Write-Host "::endgroup::"
-        Write-Error "Could not find PID for process '$ProcessName'"
+        Write-Host "Could not find PID for process '$ProcessName'" -ForegroundColor Red
         return $false
     }
 
@@ -425,7 +425,7 @@ catch
     Write-Warning "Caught exception: $_"
     Write-Host $_.ScriptStackTrace
     OnError $device $deviceApi
-    exit 1
+    return $false
 }
 
 $failed = $false
