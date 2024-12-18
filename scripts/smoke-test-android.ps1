@@ -305,8 +305,8 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     if ($processFinished)
     {
-        Write-Host "::endgroup::"
         Write-Host "'$Name' test finished running."
+        Write-Host "::endgroup::"
     }
     else
     {   
@@ -325,13 +325,11 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     if ($null -ne $lineWithSuccess)
     {
-        Write-Host "::endgroup::"
         Write-Host "'$Name' test passed." -ForegroundColor Green
         return $true
     }
     elseif ($null -ne $lineWithFailure)
     {
-        Write-Host "::endgroup::"
         Write-Host "'$Name' test failed. See logcat for more details." -ForegroundColor Red
 
         Write-Host "::group::logcat"
