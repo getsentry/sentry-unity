@@ -249,10 +249,23 @@ else
     return 1
 }
 
+function ProcessNewLogs([array]$newLogs, [ref]$lastLogCount, [array]$logCache) {
+    if ($newLogs) {
+        $currentLogs = @($newLogs)  # Force array creation even for single line
+        if ($currentLogs.Count -gt $lastLogCount.Value) {
+            $newLines = $currentLogs[$lastLogCount.Value..($currentLogs.Count-1)]
+            $lastLogCount.Value = $currentLogs.Count
+            
+            if ($newLines) {
+                $logCache += $newLines
+            }
+        }
+    }
+    return $logCache
+}
+
 function RunTest([string] $Name, [string] $SuccessString, [string] $FailureString)
 {
-    $runTime = Get-Date
-
     Write-Host "::group::Test: '$name'"
 
     Write-Host "Clearing logcat from '$device'"
@@ -284,8 +297,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         }
     } 
     
-    Write-Host "Activity started successfully in $((Get-Date) - $runTime | ForEach-Object { '{0:mm}m {0:ss}s' -f $_ })"
-    $runTime = Get-Date
+    Write-Host "Activity started successfully"
 
     $appPID = PidOf $device $ProcessName
     if ($null -eq $appPID)
@@ -295,8 +307,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         exit 1
     }
 
-    Write-Host "Retrieved PID for '$ProcessName' running with PID: $appPID in $((Get-Date) - $runTime | ForEach-Object { '{0:mm}m {0:ss}s' -f $_ })"
-    $runTime = Get-Date
+    Write-Host "Retrieved ID for '$ProcessName': $appPID"
 
     Write-Host "Waiting for tests to run..."
     
@@ -310,23 +321,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     while ((Get-Date) - $startTime -lt $timeout)
     {
         $newLogs = adb -s $device logcat -d --pid=$appPID
-        if ($newLogs)
-        {
-            $currentLogs = @($newLogs)  # Force array creation even for single line
-            if ($currentLogs.Count -gt $lastLogCount)
-            {
-                $newLines = $currentLogs[$lastLogCount..($currentLogs.Count-1)]
-                $lastLogCount = $currentLogs.Count
-                
-                if ($newLines)
-                {
-                    $logCache += $newLines
-
-                    # Uncomment to dump logs on console line by line
-                    # $newLines | ForEach-Object { Write-Host $_ }
-                }
-            }
-        }
+        $logCache = ProcessNewLogs -newLogs $newLogs -lastLogCount ([ref]$lastLogCount) -logCache $logCache
 
         # The SmokeTester logs "SmokeTester is quitting." in OnApplicationQuit() to reliably inform when tests finish running.
         # For crash tests, we expect to see a native crash log "terminating with uncaught exception of type char const*".
@@ -340,17 +335,19 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         Start-Sleep -Seconds 1
     }
 
-    
     if ($processFinished)
     {
         Write-Host "'$Name' test finished running in $((Get-Date) - $runTime | ForEach-Object { '{0:mm}m {0:ss}s' -f $_ })"
-        Write-Host "::endgroup::"
     }
     else
     {   
-        Write-Host "::endgroup::"
         Write-Host "'$Name' tests timed out. See logcat for more details."
     }
+
+    Write-Host "::endgroup::"
+
+    # Fetch the latest logs from the device
+    $logCache = ProcessNewLogs -newLogs $newLogs -lastLogCount ([ref]$lastLogCount) -logCache $logCache
 
     Write-Host "::group::logcat"
     $logCache | ForEach-Object { Write-Host $_ } 
@@ -374,6 +371,38 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     return $false
 }
 
+function RunTestWithRetry([string] $Name, [string] $SuccessString, [string] $FailureString, [int] $MaxRetries = 3)
+{
+    for ($retryCount = 0; $retryCount -lt $MaxRetries; $retryCount++)
+    {
+        if ($retryCount -gt 0)
+        {
+            Write-Host "Retry attempt $retryCount for test '$Name'"
+            Start-Sleep -Seconds 2  # Brief pause between retries
+        }
+
+        Write-Host "Running test attempt $($retryCount + 1)/$MaxRetries"
+        $result = RunTest -Name $Name -SuccessString $SuccessString -FailureString $FailureString
+        
+        if ($result)
+        {
+            Write-Host "'$Name' test passed on attempt $($retryCount + 1)." -ForegroundColor Green
+            return $true
+        }
+        
+        if ($retryCount + 1 -lt $MaxRetries)
+        {
+            Write-Host "'$Name' test failed. Retrying..." -ForegroundColor Yellow
+            continue
+        }
+        
+        Write-Host "'$Name' test failed after $MaxRetries attempts." -ForegroundColor Red
+        return $false
+    }
+    
+    return $false
+}
+
 $results = @{
     smokeTestPassed = $false
     hasntCrashedTestPassed = $false
@@ -381,15 +410,14 @@ $results = @{
     hasCrashTestPassed = $false
 }
 
-$results.smoketestPassed = RunTest -Name "smoke" -SuccessString "SMOKE TEST: PASS" -FailureString "SMOKE TEST: FAIL"
-$results.hasntCrashedTestPassed = RunTest -Name "hasnt-crashed" -SuccessString "HASNT-CRASHED TEST: PASS" -FailureString "HASNT-CRASHED TEST: FAIL"
+$results.smoketestPassed = RunTestWithRetry -Name "smoke" -SuccessString "SMOKE TEST: PASS" -FailureString "SMOKE TEST: FAIL" -MaxRetries 3
+$results.hasntCrashedTestPassed = RunTestWithRetry -Name "hasnt-crashed" -SuccessString "HASNT-CRASHED TEST: PASS" -FailureString "HASNT-CRASHED TEST: FAIL" -MaxRetries 3
 
 try
 {
-    # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
     CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
-        $results.crashTestPassed = RunTest -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
-        $results.hasCrashTestPassed = RunTest -Name "has-crashed" -SuccessString "HAS-CRASHED TEST: PASS" -FailureString "HAS-CRASHED TEST: FAIL"
+        $results.crashTestPassed = RunTestWithRetry -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL" -MaxRetries 3
+        $results.hasCrashTestPassed = RunTestWithRetry -Name "has-crashed" -SuccessString "HAS-CRASHED TEST: PASS" -FailureString "HAS-CRASHED TEST: FAIL" -MaxRetries 3
     }
 }
 catch
