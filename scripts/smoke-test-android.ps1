@@ -261,14 +261,34 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     $activityName = $TestActivityName
 
-    Write-Host "Starting app '$activityName'"
+    Write-Host "Setting configuration"
 
     # Mark the full-screen notification as acknowledged
     adb -s $device shell "settings put secure immersive_mode_confirmations confirmed"
     adb -s $device shell "input keyevent KEYCODE_HOME"
 
-    $output = & adb -s $device shell am start -n $activityName -e test $Name -W 2>&1
+    Write-Host "Starting app '$activityName'"
+
+    # Start the adb command as a background job with a 30-second timeout
+    $job = Start-Job -ScriptBlock {
+        param($device, $activityName, $Name)
+        & adb -s $device shell am start -n $activityName -e test $Name -W 2>&1
+    } -ArgumentList $device, $activityName, $Name
+
+    # Wait for the job to complete or timeout after 30 seconds
+    $completed = Wait-Job $job -Timeout 60
+    if ($null -eq $completed) {
+        Stop-Job $job
+        Remove-Job $job -Force
+        Write-Host "Activity start timed out after 60 seconds"
+        return $false
+    }
+
+    $output = Receive-Job $job
+    Remove-Job $job
     
+    Write-Host "Checking if activity started"
+
     # Check if the activity failed to start
     if ($output -match "Error type 3" -or $output -match "Activity class \{$activityName\} does not exist.")
     {
@@ -283,7 +303,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
             Write-Host "Activity does not exist"
             return $false
         }
-    } 
+    }
     
     Write-Host "Activity started successfully"
 
