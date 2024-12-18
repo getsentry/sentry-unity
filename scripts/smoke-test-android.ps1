@@ -129,15 +129,30 @@ function LogCat([string] $deviceId, [string] $appPID)
 
 function PidOf([string] $deviceId, [string] $processName)
 {
-    if ($deviceApi -eq "21")
-    {
-        # `pidof` doesn't exist - take second column from the `ps` output for the given process instead.
-        (adb -s $deviceId shell "ps | grep '$processName'") -Split " +" | Select-Object -Skip 1 -First 1
+    $startTime = Get-Date
+    $timeout = New-TimeSpan -Seconds 60
+    
+    while ((Get-Date) - $startTime -lt $timeout) {
+        if ($deviceApi -eq "21")
+        {
+            # `pidof` doesn't exist - take second column from the `ps` output for the given process instead.
+            $processId = (adb -s $deviceId shell "ps | grep '$processName'") -Split " +" | Select-Object -Skip 1 -First 1
+        }
+        else
+        {
+            $processId = adb -s $deviceId shell pidof $processName
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($processId)) {
+            return $processId
+        }
+
+        Write-Host "Process '$processName' not found, retrying in 2 seconds..."
+        Start-Sleep -Seconds 2
     }
-    else
-    {
-        adb -s $deviceId shell pidof $processName
-    }
+
+    Write-Warning "Could not find PID for process '$processName' after 60 seconds"
+    return $null
 }
 
 function OnError([string] $deviceId, [string] $deviceApi, [string] $appPID)
