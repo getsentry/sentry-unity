@@ -249,6 +249,7 @@ jobs:
         include:
           - platform: iOS
             check_symbols: false
+            build_platform: iOS
           - platform: Android
             condition: ${{ github.ref_name != 'main' }}
             check_symbols: false
