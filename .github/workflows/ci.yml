@@ -248,22 +248,22 @@ jobs:
         platform: ["Android", "WebGL", "Linux", "iOS"]
         include:
           - platform: iOS
-            check_symbols: false
+            check_symbols: 0
             build_platform: iOS
           - platform: Android
             condition: ${{ github.ref_name != 'main' }}
-            check_symbols: false
+            check_symbols: 0
             build_platform: Android-Export
           - platform: Android
             condition: ${{ github.ref_name == 'main' }}
-            check_symbols: true
+            check_symbols: 1
             build_platform: Android
           - platform: WebGL
-            check_symbols: true
+            check_symbols: 1
             build_platform: WebGL
           - platform: Linux
             image-suffix: "-il2cpp"
-            check_symbols: true
+            check_symbols: 1
             build_platform: Linux            
     env:
       UNITY_PATH: docker exec unity unity-editor
@@ -333,7 +333,7 @@ jobs:
           ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols
             
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
