@@ -247,8 +247,23 @@ jobs:
         unity-version: ["2019", "2022", "6000"]
         platform: ["Android", "WebGL", "Linux", "iOS"]
         include:
+          - platform: iOS
+            check_symbols: false
+          - platform: Android
+            condition: ${{ github.ref_name != 'main' }}
+            check_symbols: false
+            build_platform: Android-Export
+          - platform: Android
+            condition: ${{ github.ref_name == 'main' }}
+            check_symbols: true
+            build_platform: Android
+          - platform: WebGL
+            check_symbols: true
+            build_platform: WebGL
           - platform: Linux
             image-suffix: "-il2cpp"
+            check_symbols: true
+            build_platform: Linux            
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
@@ -315,48 +330,9 @@ jobs:
           $platform = if ($isAndroid -and $isNotMainBranch) { 'Android-Export' } else { '${{ matrix.platform }}' }
 
           ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols
-      
-      # Dear lord, I don't know why we have to do this: If we do not "pre-build" the project then `exportAsGoogleAndroidProject` will stay `false` in `IPostGenerateGradleAndroidProject`
-      # and breaking all further steps in CI 
-      # Things I tried:
-        # 1. Setting the flag and restarting the editor prior to build
-        # 2. Setting the flag and reloading the domain in a step prior to building
-        # 3. Reloading the domain prior to building (does not work - build fails with a domain reload pending)
-      - name: Pre-Build Project for Unity 6 and Android
-        continue-on-error: true
-        if: ${{ matrix.unity-version == '6000' && matrix.platform == 'Android' }}
-        run: |
-          $platform = '${{ matrix.platform }}'
-          if ('${{ github.ref_name }}' -ne 'main')
-          {
-            $checkSymbols = $false
-            $platform = 'Android-Export'
-          }
-          else
-          {
-            $checkSymbols = $false
-          }
-          
-          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols:$checkSymbols -UnityVersion "${{ matrix.unity-version }}"
-          Remove-Item -Path samples/IntegrationTest/Build -Recurse -Force -Confirm:$false
             
       - name: Build Project
-        run: |
-          $platform = '${{ matrix.platform }}'
-          if ($platform -eq 'iOS')
-          {
-            $checkSymbols = $false
-          }
-          elseif (($platform -eq 'Android') -and ('${{ github.ref_name }}' -ne 'main'))
-          {
-            $checkSymbols = $false
-            $platform = 'Android-Export'
-          }
-          else
-          {
-            $checkSymbols = $true
-          }
-          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols:$checkSymbols -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
