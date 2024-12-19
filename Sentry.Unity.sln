@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.Android.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Unity.Native", "src\Sentry.Unity.Native\Sentry.Unity.Native.csproj", "{F291F324-D17C-4732-9E54-099D326B0929}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sentry.Analyzers", "src\sentry-dotnet\src\Sentry.Analyzers\Sentry.Analyzers.csproj", "{C1798B72-5382-4C13-96F0-EAFDA28428F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -199,6 +201,18 @@ Global
 		{F291F324-D17C-4732-9E54-099D326B0929}.Release|x64.Build.0 = Release|Any CPU
 		{F291F324-D17C-4732-9E54-099D326B0929}.Release|x86.ActiveCfg = Release|Any CPU
 		{F291F324-D17C-4732-9E54-099D326B0929}.Release|x86.Build.0 = Release|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Debug|x86.Build.0 = Debug|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Release|x64.Build.0 = Release|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Release|x86.ActiveCfg = Release|Any CPU
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -219,5 +233,6 @@ Global
 		{35A9BDB0-253E-4753-9D47-99CE6AAA4F07} = {36979A3D-4741-4D8A-82BF-4010474388E1}
 		{DC954ED7-3DFA-4197-B511-202CB70AA816} = {6A85CE0A-6FE4-4190-ABEE-7E8BCFF9AF4D}
 		{F291F324-D17C-4732-9E54-099D326B0929} = {36979A3D-4741-4D8A-82BF-4010474388E1}
+		{C1798B72-5382-4C13-96F0-EAFDA28428F0} = {36979A3D-4741-4D8A-82BF-4010474388E1}
 	EndGlobalSection
 EndGlobal
