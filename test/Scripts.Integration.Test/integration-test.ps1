@@ -56,7 +56,8 @@ If ($Clean)
     }
 }
 
-If (-not(Test-Path -Path $PackageReleaseOutput) -Or $Repack)
+# Repackaging the SDK
+If ($Repack -Or -not(Test-Path -Path $PackageReleaseOutput))
 {
     dotnet build
     Write-Host "Creating Package"
