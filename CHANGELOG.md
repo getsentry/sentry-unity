@@ -19,9 +19,9 @@ The initialization behaviour is controlled by `IosNativeInitializationType` and 
 - Bump Java SDK from v7.18.0 to v7.19.0 ([#1926](https://github.com/getsentry/sentry-unity/pull/1926), [#1934](https://github.com/getsentry/sentry-unity/pull/1934))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7190)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.18.0...7.19.0)
-- Bump Native SDK from v0.7.15 to v0.7.16 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0716)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.16)
+- Bump Native SDK from v0.7.15 to v0.7.17 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928), [#1939](https://github.com/getsentry/sentry-unity/pull/1939))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0717)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.17)
 
 ## 2.4.0
 
