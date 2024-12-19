@@ -332,7 +332,7 @@ jobs:
           ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols
             
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
