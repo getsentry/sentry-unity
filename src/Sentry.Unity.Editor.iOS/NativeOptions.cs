@@ -37,7 +37,14 @@ static SentryOptions* getSentryOptions()
         @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}"",
-        @""enableNetworkBreadcrumbs"" : @NO
+        @""enableNetworkBreadcrumbs"" : @NO,
+        // TODO temp code, implement this properly
+        @""experimental"" : @{{
+            @""sessionReplay"" : @{{
+                @""sessionSampleRate"" : @1.0,
+                @""errorSampleRate"" : @1.0
+            }}
+        }}
     }};
 
     NSError *error = nil;
