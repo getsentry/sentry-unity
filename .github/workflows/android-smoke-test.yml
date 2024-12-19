@@ -7,9 +7,6 @@ on:
       api-level:
         required: true
         type: string
-      try:
-        required: true
-        type: number
     # Map the workflow outputs to job outputs
     outputs:
       status:
@@ -18,7 +15,7 @@ on:
 
 jobs:
   run:
-    name: try-${{ inputs.try }}
+    name: Android Smoke Test
     runs-on: ubuntu-latest
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/

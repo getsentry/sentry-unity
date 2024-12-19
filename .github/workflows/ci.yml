@@ -463,7 +463,7 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
     name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} Run Smoke Test
-    uses: ./.github/workflows/android-smoke-test-wrapper.yml
+    uses: ./.github/workflows/android-smoke-test.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       api-level: ${{ matrix.api-level }}
