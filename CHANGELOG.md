@@ -22,6 +22,9 @@ The initialization behaviour is controlled by `IosNativeInitializationType` and 
 - Bump Native SDK from v0.7.15 to v0.7.16 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0716)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.16)
+- Bump .NET SDK from v4.13.0 to v5.0.0 ([#1940](https://github.com/getsentry/sentry-unity/pull/1940))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#500)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.0.0)
 
 ## 2.4.0
 
