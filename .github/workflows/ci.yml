@@ -338,7 +338,7 @@ jobs:
         run: |
           # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
           rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app.tar.gz samples/IntegrationTest/Build
+          tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
 
       # Upload runtime initialization build
       - name: Upload test app
