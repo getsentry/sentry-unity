@@ -469,6 +469,7 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
       api-level: ${{ matrix.api-level }}
+      init-type: ${{ matrix.init-type }}
     strategy:
       fail-fast: false
       matrix:

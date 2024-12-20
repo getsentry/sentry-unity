@@ -7,6 +7,9 @@ on:
       api-level:
         required: true
         type: string
+      init-type:
+        required: true
+        type: string
     # Map the workflow outputs to job outputs
     outputs:
       status:
@@ -15,12 +18,8 @@ on:
 
 jobs:
   run:
-    name: Android Smoke Test ${{ matrix.init-type }}
+    name: Android Smoke Test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        init-type: ["runtime", "buildtime"]
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -37,7 +36,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v4
         with:
-          name: testapp-Android-compiled-${{ inputs.unity-version }}-${{ matrix.init-type }}
+          name: testapp-Android-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
           path: samples/IntegrationTest/Build
 
       # See https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
