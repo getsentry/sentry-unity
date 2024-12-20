@@ -552,7 +552,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}-but-compiled
+          name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}-${{ matrix.init-type }}-but-compiled
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
@@ -600,7 +600,7 @@ jobs:
       - name: Download app artifact
         uses: actions/download-artifact@v4
         with:
-          name: testapp-iOS-compiled-${{ matrix.unity-version }}
+          name: testapp-iOS-compiled-${{ matrix.unity-version }}-${{ matrix.init-type }}
           path: samples/IntegrationTest/Build
 
       - name: Set Xcode for iOS version ${{matrix.ios}}
