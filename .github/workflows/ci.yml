@@ -352,7 +352,7 @@ jobs:
       - name: Configure Sentry for mobile platforms (build-time initialization)
         if: ${{ matrix.platform == 'iOS' || matrix.platform == 'Android' }}
         run: |
-          $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionConfiguration.cs"
+          $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
           $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
           $content = $content -replace 'IosNativeInitializationType = NativeInitializationType.Runtime', 'IosNativeInitializationType = NativeInitializationType.BuildTime'
