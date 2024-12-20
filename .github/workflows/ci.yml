@@ -44,7 +44,7 @@ jobs:
 
   build:
     name: Build - ${{ matrix.unity-version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4-cores
     strategy:
       fail-fast: false
       matrix:
@@ -247,7 +247,7 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     name: ${{ matrix.unity-version }} ${{ matrix.platform }} Build Smoke Test
     needs: [smoke-test-create]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4-cores
     strategy:
       fail-fast: false
       matrix:
