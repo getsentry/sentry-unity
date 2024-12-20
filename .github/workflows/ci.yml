@@ -368,9 +368,9 @@ jobs:
         shell: bash
         run: |
           rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app-early.tar.gz samples/IntegrationTest/Build
+          tar -cvzf test-app-buildtime.tar.gz samples/IntegrationTest/Build
 
-      # Upload early initialization build
+      # Upload build-time initialization build
       - name: Upload test app (build-time initialization)
         uses: actions/upload-artifact@v4
         with:
