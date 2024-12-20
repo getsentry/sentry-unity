@@ -16,7 +16,6 @@ internal sealed class TestHub : IHub
     public TestHub(bool isEnabled = true)
     {
         IsEnabled = isEnabled;
-        Metrics = null!; // TODO: Don't do it like that
     }
     public bool IsEnabled { get; }
 
@@ -100,7 +99,6 @@ internal sealed class TestHub : IHub
     }
 
     public SentryId LastEventId { get; }
-    public IMetricAggregator Metrics { get; }
 
     public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
     {

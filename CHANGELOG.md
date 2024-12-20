@@ -13,6 +13,9 @@ The initialization behaviour is controlled by `IosNativeInitializationType` and 
 
 ### Dependencies
 
+- Bump .NET SDK from v4.13.0 to v5.0.0 ([#1940](https://github.com/getsentry/sentry-unity/pull/1940))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#500)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.0.0)
 - Bump CLI from v2.39.0 to v2.39.1 ([#1922](https://github.com/getsentry/sentry-unity/pull/1922))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2391)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.0...2.39.1)
