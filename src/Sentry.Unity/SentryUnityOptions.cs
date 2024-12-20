@@ -150,15 +150,33 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether the SDK should initialize the native SDK before the Unity game. This bakes the options at build-time into
-    /// the generated Xcode project
+    /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
+    /// the generated Xcode project. Modifying the options at runtime will not affect the options used to initialize
+    /// the native SDK.
     /// </summary>
+    /// <remarks>
+    /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
+    /// Xcode project during the build process. This means that the options cannot be changed at runtime, as they are
+    /// embedded into the project itself.
+    /// </remarks>
     public NativeInitializationType IosNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
     /// <summary>
     /// Whether the SDK should add native support for Android
     /// </summary>
     public bool AndroidNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
+    /// the generated Gradle project. Modifying the options at runtime will not affect the options used to initialize
+    /// the native SDK.
+    /// </summary>
+    /// <remarks>
+    /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
+    /// Gradle project during the build process. This means that the options cannot be changed at runtime, as they are
+    /// embedded into the project itself.
+    /// </remarks>
+    public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
     /// <summary>
     /// Whether the SDK should add the NDK integration for Android

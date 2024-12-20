@@ -1,10 +1,15 @@
 using System;
+using System.Diagnostics;
+using Sentry.Extensibility;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
+    public bool IsEnabled(IJniExecutor jniExecutor);
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
@@ -39,6 +44,93 @@ internal interface ISentryJava
 internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+
+    public bool IsEnabled(IJniExecutor jniExecutor)
+    {
+        return jniExecutor.Run(() =>
+        {
+            using var sentry = GetSentryJava();
+            return sentry.CallStatic<bool>("isEnabled");
+        });
+    }
+
+    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout)
+    {
+        jniExecutor.Run(() =>
+        {
+            using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
+            using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
+                .GetStatic<AndroidJavaObject>("currentActivity");
+
+            sentry.CallStatic("init", context, new AndroidOptionsConfiguration(androidOptions =>
+            {
+                androidOptions.Call("setDsn", options.Dsn);
+                androidOptions.Call("setDebug", options.Debug);
+                androidOptions.Call("setRelease", options.Release);
+                androidOptions.Call("setEnvironment", options.Environment);
+
+                var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
+                var levelString = GetLevelString(options.DiagnosticLevel);
+                var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
+                androidOptions.Call("setDiagnosticLevel", sentryLevel);
+
+                if (options.SampleRate.HasValue)
+                {
+                    androidOptions.SetIfNotNull("setSampleRate", options.SampleRate.Value);
+                }
+
+                androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
+                androidOptions.Call("setMaxCacheItems", options.MaxCacheItems);
+                androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
+                androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled);
+                androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
+
+                // Options that are not to be set by the user
+                // We're disabling some integrations as to not duplicate event or because the SDK relies on the .NET SDK
+                // implementation of certain feature - i.e. Session Tracking
+
+                // Note: doesn't work - produces a blank (white) screenshot
+                androidOptions.Call("setAttachScreenshot", false);
+                androidOptions.Call("setEnableAutoSessionTracking", false);
+                androidOptions.Call("setEnableActivityLifecycleBreadcrumbs", false);
+                androidOptions.Call("setAnrEnabled", false);
+                androidOptions.Call("setEnableScopePersistence", false);
+            }, options.DiagnosticLogger));
+        }, timeout);
+
+        return IsEnabled(jniExecutor);
+    }
+
+    internal class AndroidOptionsConfiguration : AndroidJavaProxy
+    {
+        private readonly Action<AndroidJavaObject> _callback;
+        private readonly IDiagnosticLogger? _logger;
+
+        public AndroidOptionsConfiguration(Action<AndroidJavaObject> callback, IDiagnosticLogger? logger)
+            : base("io.sentry.Sentry$OptionsConfiguration")
+        {
+            _callback = callback;
+            _logger = logger;
+        }
+
+        public override AndroidJavaObject? Invoke(string methodName, AndroidJavaObject[] args)
+        {
+            try
+            {
+                if (methodName != "configure" || args.Length != 1)
+                {
+                    throw new Exception($"Invalid invocation: {methodName}({args.Length} args)");
+                }
+
+                _callback(args[0]);
+            }
+            catch (Exception e)
+            {
+                _logger?.LogError(e, "Error invoking {0} ’.", methodName);
+            }
+            return null;
+        }
+    }
 
     public string? GetInstallationId(IJniExecutor jniExecutor)
     {
@@ -165,6 +257,17 @@ internal class SentryJava : ISentryJava
             return null;
         }
     }
+
+    // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
+    internal static string GetLevelString(SentryLevel level) => level switch
+    {
+        SentryLevel.Debug => "DEBUG",
+        SentryLevel.Error => "ERROR",
+        SentryLevel.Fatal => "FATAL",
+        SentryLevel.Info => "INFO",
+        SentryLevel.Warning => "WARNING",
+        _ => "DEBUG"
+    };
 }
 
 internal static class AndroidJavaObjectExtension
@@ -186,6 +289,8 @@ internal static class AndroidJavaObjectExtension
     }
     public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, int? value) =>
         SetIfNotNull(javaObject, property, value, "java.lang.Integer");
+    public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool value) =>
+        SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
     public static void SetIfNotNull(this AndroidJavaObject javaObject, string property, bool? value) =>
         SetIfNotNull(javaObject, property, value, "java.lang.Boolean");
 }

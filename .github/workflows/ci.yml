@@ -84,6 +84,13 @@ jobs:
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
 
+      - name: Install .NET SDK
+        if: runner.os != 'Windows'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.100
+        
       # Required by sentry-dotnet since 3.19.0
       - name: Install Android dotnet workflow
         run: dotnet workload install android --temp-dir "${{ runner.temp }}"
