@@ -355,7 +355,8 @@ jobs:
         run: |
           $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
-          $content = $content -replace 'NativeInitType = InitType.Runtime', 'NativeInitType = InitType.BuildTime'
+          $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
+          $content = $content -replace 'IosNativeInitializationType = NativeInitializationType.Runtime', 'IosNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
       - name: Build Project with build-time initialization
