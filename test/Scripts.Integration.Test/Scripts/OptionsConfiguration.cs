@@ -40,6 +40,9 @@ public class OptionsConfiguration : SentryOptionsConfiguration
         // If an ANR triggers while the smoke test runs, the test would fail because we expect exact order of events.
         options.DisableAnrIntegration();
 
+        options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
+        options.IosNativeInitializationType = NativeInitializationType.Runtime;
+
         Debug.Log("Sentry: BuildTimeOptions::Configure() finished");
     }
 }
