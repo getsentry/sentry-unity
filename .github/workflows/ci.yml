@@ -480,7 +480,7 @@ jobs:
   mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: ${{ matrix.unity-version }} ${{ matrix.platform }}  Compile Smoke Test
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} ${{ matrix.init-type }} Compile Smoke Test
     runs-on: ${{ matrix.platform == 'iOS' && 'macos' || 'ubuntu' }}-latest
     strategy:
       fail-fast: false
@@ -638,10 +638,10 @@ jobs:
         uses: actions/download-artifact@v4
         id: download
         with:
-          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}-runtime
 
       - name: Extract test app
-        run: tar -xvzf test-app.tar.gz
+        run: tar -xvzf test-app-runtime.tar.gz
 
       - name: Run (WebGL)
         if: ${{ matrix.platform == 'WebGL' }}
