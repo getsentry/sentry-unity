@@ -13,18 +13,21 @@ The initialization behaviour is controlled by `IosNativeInitializationType` and 
 
 ### Dependencies
 
+- Bump .NET SDK from v4.13.0 to v5.0.0 ([#1940](https://github.com/getsentry/sentry-unity/pull/1940))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#500)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.0.0)
 - Bump CLI from v2.39.0 to v2.39.1 ([#1922](https://github.com/getsentry/sentry-unity/pull/1922))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2391)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.0...2.39.1)
 - Bump Java SDK from v7.18.0 to v7.19.0 ([#1926](https://github.com/getsentry/sentry-unity/pull/1926), [#1934](https://github.com/getsentry/sentry-unity/pull/1934))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7190)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.18.0...7.19.0)
-- Bump Native SDK from v0.7.15 to v0.7.16 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0716)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.16)
-- Bump .NET SDK from v4.13.0 to v5.0.0 ([#1940](https://github.com/getsentry/sentry-unity/pull/1940))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#500)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.0.0)
+- Bump Cocoa SDK from v8.41.0 to v8.42.0 ([#1937](https://github.com/getsentry/sentry-unity/pull/1937))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8420)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.41.0...8.42.0)
+- Bump Native SDK from v0.7.15 to v0.7.17 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928), [#1939](https://github.com/getsentry/sentry-unity/pull/1939))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0717)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.17)
 
 ## 2.4.0
 
