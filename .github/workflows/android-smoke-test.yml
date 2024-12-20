@@ -7,6 +7,9 @@ on:
       api-level:
         required: true
         type: string
+      init-type:
+        required: true
+        type: string
     # Map the workflow outputs to job outputs
     outputs:
       status:
@@ -33,7 +36,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v4
         with:
-          name: testapp-Android-compiled-${{ inputs.unity-version }}
+          name: testapp-Android-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
           path: samples/IntegrationTest/Build
 
       # See https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
