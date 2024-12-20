@@ -320,13 +320,8 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        run: |
-          $isAndroid = ('${{ matrix.platform }}' -eq 'Android')
-          $isNotMainBranch = ('${{ github.ref_name }}' -ne 'main')
-          $platform = if ($isAndroid -and $isNotMainBranch) { 'Android-Export' } else { '${{ matrix.platform }}' }
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
 
-          ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform $platform -CheckSymbols
-            
       - name: Build Project
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
 
