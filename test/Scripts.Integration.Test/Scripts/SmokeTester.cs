@@ -20,6 +20,11 @@ public class SmokeTester : MonoBehaviour
     private void Awake()
     {
         Debug.Log("SmokeTester, awake!");
+        Application.quitting += () =>
+        {
+            // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
+            Debug.Log("SmokeTester is quitting.");
+        };
     }
 
     public void Start()
@@ -155,6 +160,8 @@ public class SmokeTester : MonoBehaviour
             t.ExpectMessage(currentMessage, "'user':{'id':'user-id','username':'username','email':'email@example.com','ip_address':'::1','other':{'role':'admin'}}");
             t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
             t.ExpectMessageNot(currentMessage, "'length':0");
+
+            Debug.Log("SMOKE TEST: Finished checking messages.");
 
             t.Pass();
         }

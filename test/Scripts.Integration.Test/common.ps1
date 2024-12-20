@@ -79,6 +79,8 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         throw "SuccessString cannot be empty"
     }
 
+    Write-Host "Running crash test with server" -ForegroundColor Yellow
+
     # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
     if ($null -eq $env:CI)
     {
