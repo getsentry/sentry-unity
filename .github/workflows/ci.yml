@@ -349,8 +349,7 @@ jobs:
           path: test-app-runtime.tar.gz
           retention-days: 14
 
-      # Modify configuration for early initialization
-      - name: Configure Sentry for build-time initialization
+      - name: Configure Sentry for mobile platforms (build-time initialization)
         if: ${{ matrix.platform == 'iOS' || matrix.platform == 'Android' }}
         run: |
           $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionConfiguration.cs"
@@ -359,11 +358,10 @@ jobs:
           $content = $content -replace 'IosNativeInitializationType = NativeInitializationType.Runtime', 'IosNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
-      - name: Build Project with build-time initialization
+      - name: Build Project for mobile platforms (build-time initialization)
         if: ${{ matrix.platform == 'iOS' || matrix.platform == 'Android' }}
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
 
-      # Create archive for early initialization build
       - name: Create archive (build-time initialization)
         shell: bash
         run: |
@@ -476,7 +474,7 @@ jobs:
       matrix:
         api-level: [27, 31, 34] # last updated December 2024
         unity-version: ["2019", "2022", "6000"]
-        init-type: ["runtime", "early"]
+        init-type: ["runtime", "buildtime"]
 
 
   mobile-smoke-test-compile:
