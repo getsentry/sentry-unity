@@ -340,15 +340,44 @@ jobs:
           rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
           tar -cvzf test-app.tar.gz samples/IntegrationTest/Build
 
+      # Upload runtime initialization build
       - name: Upload test app
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}-runtime
           if-no-files-found: error
-          path: test-app.tar.gz
-          # Lower retention period - we only need this to retry CI.
+          path: test-app-runtime.tar.gz
           retention-days: 14
 
+      # Modify configuration for early initialization
+      - name: Configure Sentry for build-time initialization
+        if: ${{ matrix.platform == 'iOS' || matrix.platform == 'Android' }}
+        run: |
+          $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionConfiguration.cs"
+          $content = Get-Content $optionsPath -Raw
+          $content = $content -replace 'NativeInitType = InitType.Runtime', 'NativeInitType = InitType.BuildTime'
+          Set-Content $optionsPath $content
+
+      - name: Build Project with build-time initialization
+        if: ${{ matrix.platform == 'iOS' || matrix.platform == 'Android' }}
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
+
+      # Create archive for early initialization build
+      - name: Create archive (build-time initialization)
+        shell: bash
+        run: |
+          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          tar -cvzf test-app-early.tar.gz samples/IntegrationTest/Build
+
+      # Upload early initialization build
+      - name: Upload test app (build-time initialization)
+        uses: actions/upload-artifact@v4
+        with:
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}-buildtime
+          if-no-files-found: error
+          path: test-app-buildtime.tar.gz
+          retention-days: 14
+          
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -436,7 +465,7 @@ jobs:
   android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} Run Smoke Test
+    name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} ${{ matrix.init-type }} Run Smoke Test
     uses: ./.github/workflows/android-smoke-test.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -446,6 +475,8 @@ jobs:
       matrix:
         api-level: [27, 31, 34] # last updated December 2024
         unity-version: ["2019", "2022", "6000"]
+        init-type: ["runtime", "early"]
+
 
   mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
@@ -457,6 +488,7 @@ jobs:
       matrix:
         unity-version: ["2019", "2022", "6000"]
         platform: ["Android", "iOS"]
+        init-type: ["runtime", "buildtime"]
         include:
           # See supported version in https://docs.unity3d.com/6000.0/Documentation/Manual/android-sdksetup.html
           - unity-version: "2019"
@@ -473,7 +505,7 @@ jobs:
       - name: Download app project
         uses: actions/download-artifact@v4
         with:
-          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}
+          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}-${{ matrix.init-type }}
 
       - name: Extract app project
         run: tar -xvzf test-app.tar.gz
@@ -531,7 +563,7 @@ jobs:
       - name: Upload app
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-${{ matrix.platform }}-compiled-${{ matrix.unity-version }}
+          name: testapp-${{ matrix.platform }}-compiled-${{ matrix.unity-version }}-${{ matrix.init-type }}
           # Collect app but ignore the files that are not required for the test.
           path: |
             samples/IntegrationTest/Build/*.apk
@@ -544,7 +576,7 @@ jobs:
   ios-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [mobile-smoke-test-compile]
-    name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} Run Smoke Test
+    name: ${{ matrix.unity-version }} iOS ${{ matrix.ios }} ${{ matrix.init-type }} Run Smoke Test
     runs-on: macos-13 # Pinning to get the oldest, supported version of iOS simulator
     strategy:
       fail-fast: false
@@ -560,6 +592,7 @@ jobs:
         # Also make sure to match the versions available here:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md
         ios: ["16.1", latest] # last updated October 2024
+        init-type: ["runtime", "buildtime"]
 
     steps:
       - name: Checkout
