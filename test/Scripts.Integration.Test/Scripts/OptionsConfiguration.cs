@@ -43,6 +43,6 @@ public class OptionsConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
-        Debug.Log("Sentry: BuildTimeOptions::Configure() finished");
+        Debug.Log("Sentry: OptionsConfig::Configure() finished");
     }
 }

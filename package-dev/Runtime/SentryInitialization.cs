@@ -63,6 +63,8 @@ namespace Sentry.Unity
 
                 try
                 {
+                    options.DiagnosticLogger?.LogDebug("Attempting to configure the native SDK.")
+
 #if SENTRY_NATIVE_COCOA
                     SentryNativeCocoa.Configure(options, sentryUnityInfo);
 #elif SENTRY_NATIVE_ANDROID
