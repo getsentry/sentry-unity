@@ -7,3 +7,6 @@
 -keep class io.sentry.Scope { *; }
 -keep class io.sentry.ScopeCallback { *; }
 -keep class io.sentry.protocol.** { *; }
+
+# TODO Copy proguard rules from sentry-android-* in msbuild
+-keep class io.sentry.** { *; }
