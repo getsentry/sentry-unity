@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Java SDK from v7.19.0 to v7.19.1 ([#1946](https://github.com/getsentry/sentry-unity/pull/1946))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7191)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.19.0...7.19.1)
+
 ## 3.0.0-beta.0
 
 ### API Changes
