@@ -44,6 +44,7 @@ jobs:
 
   build:
     name: Build - ${{ matrix.unity-version }}
+    # Pinning ubuntu version to resolve permission issues with setup-dotnet: 
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
