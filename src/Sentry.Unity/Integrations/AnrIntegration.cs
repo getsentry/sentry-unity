@@ -80,7 +80,7 @@ internal abstract class AnrWatchDog
             Logger?.LogInfo("Detected an ANR event: {0}", message);
 
             var exception = new ApplicationNotRespondingException(message);
-            exception.SetSentryMechanism("ANR", handled: false);
+            exception.SetSentryMechanism("MainThreadWatchdog", "Main thread unresponsive.", false);
             OnApplicationNotResponding?.Invoke(this, exception);
         }
     }
