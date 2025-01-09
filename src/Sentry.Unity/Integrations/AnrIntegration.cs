@@ -78,7 +78,10 @@ internal abstract class AnrWatchDog
         {
             var message = $"Application not responding for at least {DetectionTimeoutMs} ms.";
             Logger?.LogInfo("Detected an ANR event: {0}", message);
-            OnApplicationNotResponding?.Invoke(this, new ApplicationNotRespondingException(message));
+
+            var exception = new ApplicationNotRespondingException(message);
+            exception.SetSentryMechanism("ANR", handled: false);
+            OnApplicationNotResponding?.Invoke(this, exception);
         }
     }
 }
