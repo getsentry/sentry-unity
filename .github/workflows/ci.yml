@@ -463,7 +463,7 @@ jobs:
           - unity-version: "2019"
             ndk: "r19"
           - unity-version: "2022"
-            ndk: "r21d"
+            ndk: "r23b"
           - unity-version: "6000"
             ndk: "r23b"
             
