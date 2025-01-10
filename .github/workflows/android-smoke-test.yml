@@ -16,7 +16,7 @@ on:
 jobs:
   run:
     name: Android Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
