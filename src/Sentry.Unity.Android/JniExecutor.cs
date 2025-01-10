@@ -9,7 +9,7 @@ namespace Sentry.Unity.Android;
 internal class JniExecutor : IJniExecutor
 {
     // We're capping out at 16ms - 1 frame at 60 frames per second
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(16);
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
     private readonly CancellationTokenSource _shutdownSource;
     private readonly AutoResetEvent _taskEvent;
