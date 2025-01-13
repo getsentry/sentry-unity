@@ -16,7 +16,7 @@ on:
 jobs:
   run:
     name: Android Smoke Test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -42,43 +42,27 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-          
-      # outputs variables: api-level, label, target
-      - name: Configure Android Settings
-        id: config
-        run: |
-          # Setup API Level
-          $apiLevel = '${{ inputs.api-level }}'
-          if ( $apiLevel -eq 'latest')
-          {
-            # Gets the latest API level that isn't in Beta/Alpha
-            $response = (Invoke-WebRequest -UseBasicParsing -Uri "https://developer.android.com/studio/releases/platforms").Content
-            $result = [regex]::Match($response, " \(API level (?<model>\d+)\)")
-            $apiLevel = $result.Groups["model"].Value
-            Write-Output "Latest API is $apiLevel"
-            $label = "$apiLevel (latest)"
-          }
-          else
-          {
-            Write-Output "Current API is $apiLevel"
-          }
-          # Setup Arch and Target
-          $target = $apiLevel -ge 30 ? 'google_apis' : 'default'
-          Write-Output "Current Target is $target"
-          "target=$target" >> $env:GITHUB_OUTPUT
-          "api-level=$apiLevel" >> $env:GITHUB_OUTPUT
-          "label=$($label ?? $apiLevel)" >> $env:GITHUB_OUTPUT
       
       - name: Run Android Smoke Tests
         uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.33.0
         id: smoke-test
         timeout-minutes: 30
         with:
-          api-level: ${{ steps.config.outputs.api-level }}
-          target: ${{ steps.config.outputs.target }}
+          api-level: ${{ inputs.api-level }}
+          target: 'aosp_atd'
+          channel: canary
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
+          disable-spellchecker: true
+          emulator-options: >
+            -no-window
+            -no-snapshot-save
+            -gpu swiftshader_indirect
+            -noaudio
+            -no-boot-anim
+            -camera-back none
+            -camera-front none
+            -timezone US/Pacific
           arch: x86_64
           script: |
             adb wait-for-device
@@ -90,6 +74,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-android-logs-${{ inputs.api-level }}-${{ inputs.unity-version }}-${{ inputs.try }}
+          name: testapp-android-logs-${{ inputs.api-level }}-${{ inputs.unity-version }}
           path: ${{ env.ARTIFACTS_PATH }}
           retention-days: 14
