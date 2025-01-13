@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed iOS native SDK initialization that could cause memory management issues ([#1963](https://github.com/getsentry/sentry-unity/pull/1963))
+
 ### Dependencies
 
 - Bump Java SDK from v7.19.0 to v7.19.1 ([#1946](https://github.com/getsentry/sentry-unity/pull/1946))
