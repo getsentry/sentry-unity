@@ -34,11 +34,9 @@ void SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
     NSError *error = nil;
-    
-    // selector -> direct call in order to prevent compile error
-    // "PerformSelector names a selector which retains the object"
+
     SentryOptions *sentryOptions = [[SentryOptions alloc] initWithDict:dictOptions didFailWithError:&error];
-    
+
     if (error) {
         NSLog(@"SentryOptions init failed: %@", error);
         return;
