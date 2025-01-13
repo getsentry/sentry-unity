@@ -51,7 +51,7 @@ jobs:
           api-level: ${{ inputs.api-level }}
           target: 'aosp_atd'
           channel: canary
-          force-avd-creation: false
+          force-avd-creation: true
           disable-animations: true
           disable-spellchecker: true
           emulator-options: >
