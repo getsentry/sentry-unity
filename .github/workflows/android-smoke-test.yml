@@ -43,6 +43,12 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       
+      - name: Setup Android directories
+        run: |
+          mkdir -p $HOME/.android
+          mkdir -p $HOME/.android/avd
+          touch $HOME/.android/repositories.cfg
+
       - name: Run Android Smoke Tests
         uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.33.0
         id: smoke-test
