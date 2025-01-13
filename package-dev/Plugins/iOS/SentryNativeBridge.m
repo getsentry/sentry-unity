@@ -37,8 +37,9 @@ void SentryNativeBridgeStartWithOptions(const void *options)
 
     SentryOptions *sentryOptions = [[SentryOptions alloc] initWithDict:dictOptions didFailWithError:&error];
 
-    if (error) {
-        NSLog(@"SentryOptions init failed: %@", error);
+    if (error != nil)
+    {
+        SENTRY_LOG_ERROR(@"SentryOptions init failed: %@", error);
         return;
     }
 
