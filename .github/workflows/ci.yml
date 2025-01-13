@@ -542,7 +542,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: integration-test-project-${{ matrix.platform }}-${{ matrix.unity-version }}-finalized
+          name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}-but-compiled
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
