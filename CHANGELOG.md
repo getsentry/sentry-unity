@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
+
 ### Dependencies
 
 - Bump Java SDK from v7.19.0 to v7.19.1 ([#1946](https://github.com/getsentry/sentry-unity/pull/1946))
