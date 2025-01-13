@@ -538,7 +538,7 @@ jobs:
         run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
         timeout-minutes: 10
     
-      - name: Upload integration-test project
+      - name: Upload integration-test project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
