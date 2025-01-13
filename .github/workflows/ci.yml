@@ -445,7 +445,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [27, 31, 34] # last updated December 2024
+        api-level: [30, 31, 34] # last updated January 2025
         unity-version: ["2019", "2022", "6000"]
 
   mobile-smoke-test-compile:
@@ -493,28 +493,7 @@ jobs:
 
       - name: Setup Java for Unity
         if: ${{ matrix.platform == 'Android' }}
-        run: |
-          switch -Regex ("${{ matrix.unity-version }}")
-          {
-              "2019" {
-                  $javaHome = $env:JAVA_HOME_8_X64
-                  Write-Host "Using Java 8 for Unity 2019"
-              }
-              "2022" {
-                $javaHome = "$env:JAVA_HOME_11_X64"
-                Write-Host "Using Java 11 for Unity 2022"
-              }
-              "6000" {
-                  $javaHome = "$env:JAVA_HOME_17_X64"
-                  Write-Host "Using Java 17 for Unity 6"
-              }
-              default {
-                  throw "Unexpected Unity version: ${{ matrix.unity-version }}"
-              }
-          }
-          
-          Write-Host "Selected JAVA_HOME: $javaHome"
-          "JAVA_HOME=$javaHome" >> $env:GITHUB_ENV
+        run: ./scripts/ci-setup-java.ps1 -UnityVersion "${{ matrix.unity-version }}"
 
       # We modify the exported gradle project to deal with the different build-environment
       # I.e. we're fixing the paths for SDK & NDK that have been hardcoded to point at the Unity installation 
