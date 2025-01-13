@@ -4,6 +4,7 @@
 
 ### Fixes
 
+Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
 - ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
 
 ### Dependencies
