@@ -39,7 +39,7 @@ void SentryNativeBridgeStartWithOptions(const void *options)
 
     if (error != nil)
     {
-        SENTRY_LOG_ERROR(@"SentryOptions init failed: %@", error);
+        NSLog(@"SentryOptions init failed: %@", error);
         return;
     }
 
