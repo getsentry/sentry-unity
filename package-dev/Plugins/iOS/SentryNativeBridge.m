@@ -1,3 +1,4 @@
+#import <Sentry/SentryOptions+HybridSDKs.h>
 #import <Sentry/PrivateSentrySDKOnly.h>
 #import <Sentry/Sentry.h>
 
@@ -33,11 +34,12 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
 void SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
-    id sentryOptions = [[SentryOptions alloc]
-        performSelector:@selector(initWithDict:didFailWithError:)
-        withObject:dictOptions withObject:nil];
-
-    [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
+    NSError *error = nil;
+    SentryOptions *sentryOptions = [[SentryOptions alloc] initWithDict:dictOptions didFailWithError:&error];
+    
+    if (sentryOptions) {
+        [SentrySDK startWithOptions:sentryOptions];
+    }
 }
 
 int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }
