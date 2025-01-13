@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([1959]https://github.com/getsentry/sentry-unity/pull/1959)
+- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959]https://github.com/getsentry/sentry-unity/pull/1959)
 
 ### Dependencies
 
