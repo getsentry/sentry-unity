@@ -350,7 +350,7 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-      - name: Upload IntegrationTest project
+      - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
