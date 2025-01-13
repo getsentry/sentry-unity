@@ -33,11 +33,16 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
 void SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
-    id sentryOptions = [[SentryOptions alloc]
-        performSelector:@selector(initWithDict:didFailWithError:)
-        withObject:dictOptions withObject:nil];
+    NSError *error = nil;
 
-    [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
+    SentryOptions *sentryOptions = [[SentryOptions alloc] initWithDict:dictOptions didFailWithError:&error];
+
+    if (error) {
+        NSLog(@"SentryOptions init failed: %@", error);
+        return;
+    }
+
+    [SentrySDK startWithOptions:sentryOptions];
 }
 
 int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }
