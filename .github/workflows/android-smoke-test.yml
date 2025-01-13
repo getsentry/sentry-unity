@@ -49,8 +49,8 @@ jobs:
         timeout-minutes: 30
         with:
           api-level: ${{ inputs.api-level }}
-          target: 'aosp_atd'
-          channel: canary
+          target: 'google_apis'
+          channel: 'stable'
           force-avd-creation: true
           disable-animations: true
           disable-spellchecker: true
