@@ -538,11 +538,11 @@ jobs:
         run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
         timeout-minutes: 10
     
-      - name: Upload Project project on failure
-        if: ${{ failure() }}
+      - name: Upload integration-test project
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-project-${{ matrix.platform }}-${{ matrix.unity-version }}-but-compiled
+          name: integration-test-project-${{ matrix.platform }}-${{ matrix.unity-version }}-finalized
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
