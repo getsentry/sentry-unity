@@ -445,7 +445,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [27, 31, 34] # last updated December 2024
+        api-level: [30, 31, 34] # last updated January 2025
         unity-version: ["2019", "2022", "6000"]
 
   mobile-smoke-test-compile:
