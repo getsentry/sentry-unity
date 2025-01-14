@@ -269,13 +269,13 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     Write-Host "Starting app '$activityName'"
 
-    # Start the adb command as a background job with a 30-second timeout
+    # Start the adb command as a background job so we can wait for it to finish with a timeout
     $job = Start-Job -ScriptBlock {
         param($device, $activityName, $Name)
         & adb -s $device shell am start -n $activityName -e test $Name -W 2>&1
     } -ArgumentList $device, $activityName, $Name
 
-    # Wait for the job to complete or timeout after 30 seconds
+    # Wait for the job to complete or to timeout
     $completed = Wait-Job $job -Timeout 60
     if ($null -eq $completed) {
         Stop-Job $job
@@ -433,7 +433,7 @@ catch
     Write-Host "Caught exception: $_"
     Write-Host $_.ScriptStackTrace
     OnError $device $deviceApi
-    return $false
+    exit 1
 }
 
 $failed = $false

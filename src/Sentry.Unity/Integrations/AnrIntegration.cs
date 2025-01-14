@@ -47,6 +47,8 @@ internal class AnrIntegration : ISdkIntegration
 
 internal abstract class AnrWatchDog
 {
+    public const string Mechanism = "MainThreadWatchdog";
+
     protected readonly int DetectionTimeoutMs;
     // Note: we don't sleep for the whole detection timeout or we wouldn't capture if the ANR started later.
     protected readonly int SleepIntervalMs;
@@ -78,7 +80,10 @@ internal abstract class AnrWatchDog
         {
             var message = $"Application not responding for at least {DetectionTimeoutMs} ms.";
             Logger?.LogInfo("Detected an ANR event: {0}", message);
-            OnApplicationNotResponding?.Invoke(this, new ApplicationNotRespondingException(message));
+
+            var exception = new ApplicationNotRespondingException(message);
+            exception.SetSentryMechanism(Mechanism, "Main thread unresponsive.", false);
+            OnApplicationNotResponding?.Invoke(this, exception);
         }
     }
 }
