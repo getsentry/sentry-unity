@@ -206,16 +206,23 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 new HttpStatusCodeRange(FailedRequestStatusCodes[i], FailedRequestStatusCodes[i + 1]));
         }
 
-        options.SetupLogging();
-
-        OptionsConfiguration?.Configure(options);
+        if (OptionsConfiguration != null)
+        {
+            options.DiagnosticLogger?.LogDebug("OptionsConfiguration found. Calling configure.");
+            OptionsConfiguration.Configure(options);
+        }
 
         // TODO: Deprecated and to be removed in the next major
+        // This has to happen in between options object creation and updating the options based on programmatic changes
         if (RuntimeOptionsConfiguration != null && !isBuilding)
         {
-            // This has to happen in between options object creation and updating the options based on programmatic changes
+            options.DiagnosticLogger?.LogDebug("RuntimeOptionsConfiguration found. Calling configure.");
             RuntimeOptionsConfiguration.Configure(options);
         }
+
+        // We need to set up logging here because the configure callback might have changed the debug options.
+        // Without setting up here we might miss out on logs between option-loading (now) and Init - i.e. native configuration
+        options.SetupLogging();
 
         if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
         {
