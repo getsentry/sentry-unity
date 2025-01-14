@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
+- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959]https://github.com/getsentry/sentry-unity/pull/1959)
+- ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
+
+### Dependencies
+
+- Bump Java SDK from v7.19.0 to v7.19.1 ([#1946](https://github.com/getsentry/sentry-unity/pull/1946))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7191)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.19.0...7.19.1)
+- Bump Cocoa SDK from v8.42.0 to v8.42.1 ([#1945](https://github.com/getsentry/sentry-unity/pull/1945))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8421)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.0...8.42.1)
+- Bump CLI from v2.39.1 to v2.40.0 ([#1948](https://github.com/getsentry/sentry-unity/pull/1948))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2400)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.1...2.40.0)
+
+## 3.0.0-beta.0
+
 ### API Changes
 
 - The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts. Previously, the SDK would use the options at build-time and bake them into the native layer. Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs. This allows users to modify the native SDK's options at runtime programmatically.

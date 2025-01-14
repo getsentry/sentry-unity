@@ -6,6 +6,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using Sentry.Extensibility;
+using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
 
@@ -67,6 +68,8 @@ public class AnrDetectionTests
 
         Assert.IsNotNull(arn);
         Assert.That(arn!.Message, Does.StartWith("Application not responding "));
+        Assert.That(arn!.Data.Contains(Mechanism.MechanismKey)); // Sanity Check
+        Assert.That(arn!.Data[Mechanism.MechanismKey], Is.EqualTo(AnrWatchDog.Mechanism));
     }
 
     [UnityTest]

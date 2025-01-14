@@ -5,7 +5,7 @@ int SentryNativeBridgeLoadLibrary() { return 0; }
 void *_Nullable SentryNativeBridgeOptionsNew() { return nil; }
 void SentryNativeBridgeOptionsSetString(void *options, const char *name, const char *value) { }
 void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }
-void SentryNativeBridgeStartWithOptions(void *options) { }
+int SentryNativeBridgeStartWithOptions(void *options) { return 0; }
 
 int SentryNativeBridgeCrashedLastRun() { return 0; }
 
