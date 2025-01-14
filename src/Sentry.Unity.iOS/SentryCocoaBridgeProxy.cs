@@ -80,7 +80,7 @@ internal static class SentryCocoaBridgeProxy
     private static extern void OptionsSetInt(IntPtr options, string name, int value);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeStartWithOptions")]
-    private static extern void StartWithOptions(IntPtr options);
+    private static extern int StartWithOptions(IntPtr options);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeCrashedLastRun")]
     public static extern int CrashedLastRun();
