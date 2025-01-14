@@ -1,4 +1,5 @@
 #import <Sentry/PrivateSentrySDKOnly.h>
+#import <Sentry/SentryOptions+HybridSDKs.h>
 #import <Sentry/Sentry.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -30,14 +31,19 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithInt:value];
 }
 
-void SentryNativeBridgeStartWithOptions(const void *options)
+int SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
-    id sentryOptions = [[SentryOptions alloc]
-        performSelector:@selector(initWithDict:didFailWithError:)
-        withObject:dictOptions withObject:nil];
+    NSError *error = nil;
 
-    [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
+    SentryOptions *sentryOptions = [[SentryOptions alloc] initWithDict:dictOptions didFailWithError:&error];
+    if (error != nil)
+    {
+        return 0;
+    }
+
+    [SentrySDK startWithOptions:sentryOptions];
+    return 1;
 }
 
 int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }

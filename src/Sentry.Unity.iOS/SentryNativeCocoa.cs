@@ -98,13 +98,15 @@ public static class SentryNativeCocoa
 
     internal static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
     {
+        options.DiagnosticLogger?.LogInfo("Attempting to close the Cocoa SDK");
+
         if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
         {
-            options.DiagnosticLogger?.LogDebug("Native Support is not enable. Skipping closing the native SDK");
+            options.DiagnosticLogger?.LogDebug("Cocoa Native Support is not enable. Skipping closing the Cocoa SDK");
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Closing the sentry-cocoa SDK");
+        options.DiagnosticLogger?.LogDebug("Closing the Cocoa SDK");
         SentryCocoaBridgeProxy.Close();
     }
 }
