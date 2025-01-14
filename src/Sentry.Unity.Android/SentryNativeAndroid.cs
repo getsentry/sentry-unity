@@ -121,14 +121,16 @@ public static class SentryNativeAndroid
 
     internal static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
     {
+        options.DiagnosticLogger?.LogInfo("Attempting to close the Android SDK");
+
         if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform) || !SentryJava.IsSentryJavaPresent())
         {
-            options.DiagnosticLogger?.LogDebug("Native Support is not enable. Skipping closing the native SDK");
+            options.DiagnosticLogger?.LogDebug("Android Native Support is not enable. Skipping closing the Android SDK");
             return;
         }
 
         // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
-        options.DiagnosticLogger?.LogDebug("Closing the sentry-java SDK");
+        options.DiagnosticLogger?.LogDebug("Closing the Android SDK");
 
         // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
         // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
