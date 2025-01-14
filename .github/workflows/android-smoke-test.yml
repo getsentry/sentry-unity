@@ -42,7 +42,8 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      
+
+      # Make sure that the required directories and .cfg do exists. Workaround to keep ADV happy on `ubuntu-latest`.
       - name: Setup Android directories
         run: |
           mkdir -p $HOME/.android
