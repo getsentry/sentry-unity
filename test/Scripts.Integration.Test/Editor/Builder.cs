@@ -134,6 +134,10 @@ public class Builder
     public static void BuildLinuxIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Linux IL2CPP Player");
+        PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneLinux64, false);
+        PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneLinux64, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore });
+        PlayerSettings.gpuSkinning = false;
+        PlayerSettings.graphicsJobs = false;
         BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
     public static void BuildAndroidIl2CPPPlayer()
