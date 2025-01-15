@@ -1,5 +1,6 @@
 using System;
 using Sentry.Integrations;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations;
@@ -38,13 +39,36 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
     private void OnLogMessageReceived(string condition, string stacktrace, LogType logType)
     {
+        if (_hub is null)
+        {
+            return;
+        }
+
         // LogType.Exception are getting handled by the UnityLogHandlerIntegration
         if (logType is LogType.Exception)
         {
             return;
         }
 
+        if (logType is LogType.Log or LogType.Warning)
+        {
+            _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+            return;
+        }
 
+        if (logType is LogType.Error)
+        {
+            if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
+            {
+                var ule = new UnityLogException(condition, stacktrace, _options);
+                var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
+
+                _hub.CaptureEvent(sentryEvent);
+            }
+        }
+
+        // Capture so the next event includes this error as breadcrumb
+        _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(logType));
     }
 
     internal void CaptureLog(LogType logType, UnityEngine.Object? context, string format, params object[] args)
