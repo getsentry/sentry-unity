@@ -84,7 +84,7 @@ function Test
 {
     Write-Host "Retrieving list of available simulators" -ForegroundColor Green
     $deviceListRaw = xcrun simctl list devices
-    Write-Host "Available simulators:" -ForegroundColor Green
+    Write-Host "::group::Available simulators:"
     $deviceListRaw | Write-Host
 
     [AppleDevice[]]$deviceList = @()
@@ -142,39 +142,33 @@ function Test
 
         function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "::group::Test: '$name'"
-            try
-            {
-                Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
-                $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
+            Write-Host "Test: '$name'"
+            Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
+            $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
-                if ("$SuccessString" -eq "")
-                {
-                    $SuccessString = "$($Name.ToUpper()) TEST: PASS"
-                }
-
-                Write-Host -NoNewline "'$Name' test STATUS: "
-                $stdout = $consoleOut  | Select-String $SuccessString
-                If ($null -ne $stdout)
-                {
-                    Write-Host "PASSED" -ForegroundColor Green
-                }
-                Else
-                {
-                    $device.TestFailed = $True
-                    Write-Host "FAILED" -ForegroundColor Red
-                    Write-Host "===== START OF '$($device.Name)' CONSOLE ====="
-                    foreach ($consoleLine in $consoleOut)
-                    {
-                        Write-Host $consoleLine
-                    }
-                    Write-Host " ===== END OF CONSOLE ====="
-                }
-            }
-            finally
+            if ("$SuccessString" -eq "")
             {
-                Write-Host "::endgroup::"
+                $SuccessString = "$($Name.ToUpper()) TEST: PASS"
             }
+
+            Write-Host -NoNewline "'$Name' test STATUS: "
+            $stdout = $consoleOut  | Select-String $SuccessString
+            If ($null -ne $stdout)
+            {
+                Write-Host "PASSED" -ForegroundColor Green
+            }
+            Else
+            {
+                $device.TestFailed = $True
+                Write-Host "FAILED" -ForegroundColor Red
+            }
+
+            Write-Host "::group::$($device.Name) Console Output"
+            foreach ($consoleLine in $consoleOut)
+            {
+                Write-Host $consoleLine
+            }
+            Write-Host "::endgroup::"
         }
 
         RunTest "smoke"
