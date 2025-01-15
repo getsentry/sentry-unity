@@ -86,7 +86,8 @@ function Test
     $deviceListRaw = xcrun simctl list devices
     Write-Host "::group::Available simulators:"
     $deviceListRaw | Write-Host
-
+    Write-Host "::endgroup::"
+    
     [AppleDevice[]]$deviceList = @()
 
     Write-Host "Picking simulator based on selected runtime" -ForegroundColor Green
