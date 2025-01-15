@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Java SDK from v7.19.0 to v7.20.0 ([#1947](https://github.com/getsentry/sentry-unity/pull/1947))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7200)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.19.0...7.20.0)
 ### Fixes
 
 - Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
@@ -10,6 +15,9 @@
 
 ### Dependencies
 
+- Bump Cocoa SDK from v8.42.0 to v8.43.0 ([#1949](https://github.com/getsentry/sentry-unity/pull/1949))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8430)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.0...8.43.0)
 - Bump Java SDK from v7.19.0 to v7.19.1 ([#1946](https://github.com/getsentry/sentry-unity/pull/1946))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7191)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.19.0...7.19.1)
@@ -22,6 +30,9 @@
 - Bump Native SDK from v0.7.17 to v0.7.18 ([#1967](https://github.com/getsentry/sentry-unity/pull/1967))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0718)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.7.17...0.7.18)
+- Bump .NET SDK from v5.0.0 to v5.0.1 ([#1953](https://github.com/getsentry/sentry-unity/pull/1953))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#501)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.0.0...5.0.1)
 
 ## 3.0.0-beta.0
 
