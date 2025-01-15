@@ -122,7 +122,7 @@ public class SentryNativeAndroidTests
 
         Assert.IsTrue(_logger.Logs.Any(log =>
             log.logLevel == SentryLevel.Error &&
-            log.message.Contains("Sentry Java SDK is missing.")));
+            log.message.Contains("Android SDK is missing.")));
 
         Assert.Null(_options.ScopeObserver);
     }

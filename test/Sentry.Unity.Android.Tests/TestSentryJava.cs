@@ -10,9 +10,9 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public bool IsEnabled(IJniExecutor jniExecutor) => Enabled;
+    public bool IsEnabled(IJniExecutor jniExecutor, TimeSpan timeout) => Enabled;
 
-    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout) => InitSuccessful;
+    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout) { }
 
     public string? GetInstallationId(IJniExecutor jniExecutor) => InstallationId;
 
