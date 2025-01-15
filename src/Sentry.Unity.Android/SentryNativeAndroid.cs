@@ -28,10 +28,12 @@ public static class SentryNativeAndroid
             return;
         }
 
+        options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK is present.");
+
         if (!SentryJava.IsSentryJavaPresent())
         {
             options.DiagnosticLogger?.LogError("Android Native Support has been enabled but the " +
-                                               "Sentry Java SDK is missing. This could have been caused by a mismatching" +
+                                               "Android SDK is missing. This could have been caused by a mismatching" +
                                                "build time / runtime configuration. Please make sure you have " +
                                                "Android Native Support enabled during build time.");
             return;
@@ -39,22 +41,33 @@ public static class SentryNativeAndroid
 
         JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
 
+        options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK has already been initialized");
+
         if (SentryJava.IsEnabled(JniExecutor))
         {
             options.DiagnosticLogger?.LogDebug("The Android SDK is already initialized");
         }
-        // Local testing had Init at an average of about 25ms.
-        else if (!SentryJava.Init(JniExecutor, options, TimeSpan.FromMilliseconds(200)))
+        else
         {
-            options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support");
-            return;
+            options.DiagnosticLogger?.LogDebug("Initializing the Android SDK");
+
+            // Local testing had Init at an average of about 25ms.
+            if (!SentryJava.Init(JniExecutor, options, TimeSpan.FromMilliseconds(200)))
+            {
+                options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support");
+                return;
+            }
         }
+
+        options.DiagnosticLogger?.LogDebug("Configuring scope sync");
 
         options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
         options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>
         {
+            options.DiagnosticLogger?.LogDebug("Checking for `CrashedLastRun`");
+
             var crashedLastRun = SentryJava.CrashedLastRun(JniExecutor);
             if (crashedLastRun is null)
             {
@@ -88,6 +101,8 @@ public static class SentryNativeAndroid
         }
 
         options.NativeSupportCloseCallback = () => Close(options, sentryUnityInfo);
+
+        options.DiagnosticLogger?.LogDebug("Fetching installation ID");
 
         options.DefaultUserId = SentryJava.GetInstallationId(JniExecutor);
         if (string.IsNullOrEmpty(options.DefaultUserId))
