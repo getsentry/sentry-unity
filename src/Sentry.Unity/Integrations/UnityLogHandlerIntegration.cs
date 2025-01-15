@@ -89,15 +89,15 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 
     public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
     {
-        try
-        {
-            CaptureLogFormat(logType, context, format, args);
-        }
-        finally
-        {
-            // Always pass the log back to Unity
-            _unityLogHandler.LogFormat(logType, context, format, args);
-        }
+        // try
+        // {
+        //     CaptureLogFormat(logType, context, format, args);
+        // }
+        // finally
+        // {
+        //     // Always pass the log back to Unity
+        //     _unityLogHandler.LogFormat(logType, context, format, args);
+        // }
     }
 
     internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
