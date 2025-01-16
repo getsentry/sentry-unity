@@ -37,7 +37,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         _application.Quitting += OnQuitting;
     }
 
-    private void OnLogMessageReceived(string condition, string stacktrace, LogType logType)
+    private void OnLogMessageReceived(string message, string stacktrace, LogType logType)
     {
         if (_hub is null)
         {
@@ -50,17 +50,27 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        if (logType is LogType.Log or LogType.Warning)
+        if (_options?.EnableLogDebouncing is true)
         {
-            _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(logType));
-            return;
+            var debounced = logType switch
+            {
+                LogType.Error or LogType.Assert => ErrorTimeDebounce?.Debounced(),
+                LogType.Log => LogTimeDebounce?.Debounced(),
+                LogType.Warning => WarningTimeDebounce?.Debounced(),
+                _ => true
+            };
+
+            if (debounced is not true)
+            {
+                return;
+            }
         }
 
         if (logType is LogType.Error)
         {
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {
-                var ule = new UnityLogException(condition, stacktrace, _options);
+                var ule = new UnityLogException(message, stacktrace, _options);
                 var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
 
                 _hub.CaptureEvent(sentryEvent);
@@ -68,7 +78,10 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         }
 
         // Capture so the next event includes this error as breadcrumb
-        _hub.AddBreadcrumb(message: condition, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+        if (_options?.AddBreadcrumbsForLogType[logType] is true)
+        {
+            _hub.AddBreadcrumb(message: message, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+        }
     }
 
     internal void CaptureLog(LogType logType, UnityEngine.Object? context, string format, params object[] args)
