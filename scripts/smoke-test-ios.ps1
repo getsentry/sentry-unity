@@ -60,6 +60,9 @@ function Build()
                 -scheme "Unity-iPhone" `
                 -configuration "Release" `
                 -sdk "iphonesimulator" `
+                -destination "platform=iOS Simulator,OS=16.1" `
+                -destination "platform=iOS Simulator,OS=latest" `
+                -parallel-testing-enabled YES `
                 -derivedDataPath "$ArchivePath/$ProjectName" `
             | Write-Host
         }
