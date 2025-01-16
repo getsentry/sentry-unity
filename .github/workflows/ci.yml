@@ -11,6 +11,10 @@ env:
   LOWEST_SUPPORTED_UNITY_VERSION: 2019
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
+  IOS_MIN_VERSION: "16.1"
+
+variables:
+  IOS_MIN_VERSION: "16.1"
 
 defaults:
   run:
@@ -514,7 +518,7 @@ jobs:
 
       - name: iOS smoke test
         if: ${{ matrix.platform == 'iOS' }}
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}" -iOSMinVersion "16.1"
         timeout-minutes: 10
     
       - name: Upload integration-test project on failure

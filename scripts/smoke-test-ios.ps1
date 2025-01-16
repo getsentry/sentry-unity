@@ -3,7 +3,8 @@ param (
     [string] $SelectedRuntime,
     [Int32] $DevicesToRun = 1,
     [Switch] $IsIntegrationTest,
-    [string] $UnityVersion = ""
+    [string] $UnityVersion = "",
+    [string] $iOSMinVersion = ""
 )
 Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIntegrationTest=$IsIntegrationTest"
 # $Action: 'Build' for build only
@@ -60,7 +61,7 @@ function Build()
                 -scheme "Unity-iPhone" `
                 -configuration "Release" `
                 -sdk "iphonesimulator" `
-                -destination "platform=iOS Simulator,OS=16.1" `
+                -destination "platform=iOS Simulator,OS=$iOSMinVersion" `
                 -destination "platform=iOS Simulator,OS=latest" `
                 -parallel-testing-enabled YES `
                 -derivedDataPath "$ArchivePath/$ProjectName" `
