@@ -40,6 +40,7 @@ public class OptionsConfiguration : SentryOptionsConfiguration
         // If an ANR triggers while the smoke test runs, the test would fail because we expect exact order of events.
         options.DisableAnrIntegration();
 
+        // These options will get overwritten by CI. This allows us to create artifacts for both initialization types.
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
