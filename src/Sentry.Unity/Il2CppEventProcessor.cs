@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Protocol;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using Application = UnityEngine.Application;
@@ -29,6 +30,13 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
     public void Process(Exception incomingException, SentryEvent sentryEvent)
     {
         Options.DiagnosticLogger?.LogDebug("Running Unity IL2CPP event exception processor on: Event {0}", sentryEvent.EventId);
+
+        // UnityLogException is a synthetic exception created by the LoggingIntegration by parsing the stacktrace provided
+        // to the SDK as a string. It therefor lacks the necessary data to fetch the native stacktrace and go from there
+        if (incomingException is UnityLogException)
+        {
+            return;
+        }
 
         var sentryExceptions = sentryEvent.SentryExceptions;
         if (sentryExceptions == null)

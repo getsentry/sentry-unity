@@ -1,6 +1,4 @@
-using System;
 using Sentry.Integrations;
-using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations;
@@ -8,9 +6,9 @@ namespace Sentry.Unity.Integrations;
 internal class UnityApplicationLoggingIntegration : ISdkIntegration
 {
     private readonly IApplication _application;
-    internal ErrorTimeDebounce? ErrorTimeDebounce = null!;
-    internal LogTimeDebounce? LogTimeDebounce = null!;
-    internal WarningTimeDebounce? WarningTimeDebounce = null!;
+    private ErrorTimeDebounce? _errorTimeDebounce;
+    private LogTimeDebounce? _logTimeDebounce;
+    private WarningTimeDebounce? _warningTimeDebounce;
 
     private IHub? _hub;
     private SentryUnityOptions? _options;
@@ -29,9 +27,9 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        LogTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
-        WarningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
-        ErrorTimeDebounce = new ErrorTimeDebounce(_options.DebounceTimeError);
+        _logTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
+        _warningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
+        _errorTimeDebounce = new ErrorTimeDebounce(_options.DebounceTimeError);
 
         _application.LogMessageReceived += OnLogMessageReceived;
         _application.Quitting += OnQuitting;
@@ -40,6 +38,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     private void OnLogMessageReceived(string message, string stacktrace, LogType logType)
     {
         if (_hub is null)
+        {
+            return;
+        }
+
+        // We're not capturing or creating breadcrumbs from SDK logs
+        if (message.StartsWith(UnityLogger.LogTag))
         {
             return;
         }
@@ -54,9 +58,9 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         {
             var debounced = logType switch
             {
-                LogType.Error or LogType.Assert => ErrorTimeDebounce?.Debounced(),
-                LogType.Log => LogTimeDebounce?.Debounced(),
-                LogType.Warning => WarningTimeDebounce?.Debounced(),
+                LogType.Error or LogType.Assert => _errorTimeDebounce?.Debounced(),
+                LogType.Log => _logTimeDebounce?.Debounced(),
+                LogType.Warning => _warningTimeDebounce?.Debounced(),
                 _ => true
             };
 
@@ -71,9 +75,13 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {
                 var ule = new UnityLogException(message, stacktrace, _options);
-                var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
+                var evt = new SentryEvent(ule) { Level = SentryLevel.Error };
 
-                _hub.CaptureEvent(sentryEvent);
+                _hub.CaptureEvent(evt);
+            }
+            else
+            {
+                _hub.CaptureMessage(message, level: SentryLevel.Error);
             }
         }
 
@@ -84,66 +92,10 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         }
     }
 
-    internal void CaptureLog(LogType logType, UnityEngine.Object? context, string format, params object[] args)
-    {
-        if (_hub?.IsEnabled is not true)
-        {
-            return;
-        }
-
-        // The SDK sets "Sentry" as tag when logging and we're not capturing SDK internal logs. Expected format: "{0}: {1}"
-        if (args.Length > 1 && "Sentry".Equals(args[0])) // Checking it this way around because `args[0]` could be null
-        {
-            return;
-        }
-
-        if (_options?.EnableLogDebouncing is true)
-        {
-            var debounced = logType switch
-            {
-                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce?.Debounced(),
-                LogType.Log => LogTimeDebounce?.Debounced(),
-                LogType.Warning => WarningTimeDebounce?.Debounced(),
-                _ => true
-            };
-
-            if (debounced is not true)
-            {
-                return;
-            }
-        }
-
-        var logMessage = args.Length == 0 ? format : string.Format(format, args);
-
-        if (logType is LogType.Error or LogType.Assert)
-        {
-            // TODO: Capture the context (i.e. grab the name if != null and set it as context)
-            _hub.CaptureMessage(logMessage, ToEventTagType(logType));
-        }
-
-        if (_options?.AddBreadcrumbsForLogType[logType] is true)
-        {
-            // So the next event includes this as a breadcrumb
-            _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
-        }
-    }
-
-
     private void OnQuitting()
     {
         _application.LogMessageReceived -= OnLogMessageReceived;
     }
-
-    private static SentryLevel ToEventTagType(LogType logType)
-        => logType switch
-        {
-            LogType.Assert => SentryLevel.Error,
-            LogType.Error => SentryLevel.Error,
-            LogType.Exception => SentryLevel.Error,
-            LogType.Log => SentryLevel.Info,
-            LogType.Warning => SentryLevel.Warning,
-            _ => SentryLevel.Fatal
-        };
 
     private static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
         => logType switch

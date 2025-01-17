@@ -273,6 +273,7 @@ public sealed class SentryUnityOptions : SentryOptions
         var processor = new UnityEventProcessor(this);
         this.AddEventProcessor(processor);
         this.AddTransactionProcessor(processor);
+        this.AddExceptionProcessor(new UnityExceptionProcessor());
 
         this.AddIntegration(new UnityLogHandlerIntegration(this));
         this.AddIntegration(new UnityApplicationLoggingIntegration());

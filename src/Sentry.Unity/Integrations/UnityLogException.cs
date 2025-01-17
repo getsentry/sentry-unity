@@ -14,144 +14,43 @@ namespace Sentry.Unity.Integrations
     /// </remarks>
     internal class UnityLogException : Exception
     {
-        public string LogString { get; }
-        public string LogStackTrace { get; }
+        private readonly string _logString = string.Empty;
+        private readonly string _logStackTrace = string.Empty;
 
-        private SentryOptions? _options { get; }
+        private readonly SentryOptions? _options;
 
         public UnityLogException(string logString, string logStackTrace, SentryOptions? options)
         {
-            LogString = logString;
-            LogStackTrace = logStackTrace;
+            _logString = logString;
+            _logStackTrace = logStackTrace;
             _options = options;
         }
 
-        public UnityLogException(string logString, string logStackTrace)
+        internal UnityLogException(string logString, string logStackTrace)
         {
-            LogString = logString;
-            LogStackTrace = logStackTrace;
+            _logString = logString;
+            _logStackTrace = logStackTrace;
         }
 
-        internal UnityLogException() : base()
-        {
-            LogString = "";
-            LogStackTrace = "";
-        }
+        internal UnityLogException() : base() { }
 
-        private UnityLogException(string message) : base(message)
-        {
-            LogString = "";
-            LogStackTrace = "";
-        }
+        private UnityLogException(string message) : base(message) { }
 
-        private UnityLogException(string message, Exception innerException) : base(message, innerException)
-        {
-            LogString = "";
-            LogStackTrace = "";
-        }
+        private UnityLogException(string message, Exception innerException) : base(message, innerException) { }
 
         public SentryException ToSentryException()
         {
-            var frames = new List<SentryStackFrame>();
-            var exc = LogString.Split(new char[] { ':' }, 2);
-            var excType = exc[0];
-            // TODO: condition may NOT contain ':' separator
-            var excValue = exc.Length == 1 ? exc[0] : exc[1].Substring(1); // strip the space
-            var stackList = LogStackTrace.Split('\n');
-
-            // The format is as follows:
-            // Module.Class.Method[.Invoke] (arguments) (at filename:lineno)
-            // where :lineno is optional, will be ommitted in builds
-            for (var i = 0; i < stackList.Length; i++)
-            {
-                string functionName;
-                string filename;
-                int lineNo;
-
-                var item = stackList[i].TrimEnd('\r');
-                if (item == string.Empty)
-                {
-                    continue;
-                }
-
-                var closingParen = item.IndexOf(')');
-
-                if (closingParen == -1)
-                {
-                    functionName = item;
-                    lineNo = -1;
-                    filename = string.Empty;
-                }
-                else
-                {
-                    try
-                    {
-                        functionName = item.Substring(0, closingParen + 1);
-                        if (item.Substring(closingParen + 1, 5) != " (at ")
-                        {
-                            // we did something wrong, failed the check
-                            Debug.Log("failed parsing " + item);
-                            functionName = item;
-                            lineNo = -1;
-                            filename = string.Empty;
-                        }
-                        else
-                        {
-                            var colon = item.LastIndexOf(':', item.Length - 1, item.Length - closingParen);
-                            if (closingParen == item.Length - 1)
-                            {
-                                filename = string.Empty;
-                                lineNo = -1;
-                            }
-                            else if (colon == -1)
-                            {
-                                filename = item.Substring(closingParen + 6, item.Length - closingParen - 7);
-                                lineNo = -1;
-                            }
-                            else
-                            {
-                                filename = item.Substring(closingParen + 6, colon - closingParen - 6);
-                                lineNo = Convert.ToInt32(item.Substring(colon + 1, item.Length - 2 - colon));
-                            }
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        functionName = item;
-                        lineNo = -1;
-                        filename = string.Empty; // we have no clue
-                    }
-                }
-
-                var filenameWithoutZeroes = StripZeroes(filename);
-                var stackFrame = new SentryStackFrame
-                {
-                    FileName = TryResolveFileNameForMono(filenameWithoutZeroes),
-                    AbsolutePath = filenameWithoutZeroes,
-                    Function = functionName,
-                    LineNumber = lineNo == -1 ? null : lineNo
-                };
-                if (_options is not null)
-                {
-                    stackFrame.ConfigureAppFrame(_options);
-                }
-
-                frames.Add(stackFrame);
-            }
-
+            var (exceptionType, exceptionValue) = ParseExceptionDetails(_logString);
+            var frames = ParseStackTrace(_logStackTrace);
             frames.Reverse();
 
-            var stacktrace = new SentryStackTrace();
-            foreach (var frame in frames)
-            {
-                stacktrace.Frames.Add(frame);
-            }
+            var stacktrace = new SentryStackTrace { Frames = frames };
 
             return new SentryException
             {
                 Stacktrace = stacktrace,
-                Type = excType,
-                Value = excValue,
+                Type = exceptionType,
+                Value = exceptionValue,
                 Mechanism = new Mechanism
                 {
                     Handled = false,
@@ -160,13 +59,109 @@ namespace Sentry.Unity.Integrations
             };
         }
 
+        private const string AtFileMarker = " (at ";
+
+        private static (string Type, string Value) ParseExceptionDetails(string logString)
+        {
+            var parts = logString.Split([':'], 2);
+            return parts.Length switch
+            {
+                1 => (parts[0], parts[0]),
+                _ => (parts[0], parts[1].TrimStart()) // Remove leading space
+            };
+        }
+
+        private List<SentryStackFrame> ParseStackTrace(string stackTrace)
+        {
+            // Example: Sentry.Unity.Integrations.UnityLogHandlerIntegration:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[]) (at UnityLogHandlerIntegration.cs:89)
+            // This follows the following format:
+            // Module.Class.Method[.Invoke] (arguments) (at filepath:linenumber)
+            // The ':linenumber' is optional and will be omitted in builds
+
+            var frames = new List<SentryStackFrame>();
+            var stackList = stackTrace.Split('\n');
+
+            foreach (var line in stackList)
+            {
+                var item = line.TrimEnd('\r');
+                if (string.IsNullOrEmpty(item))
+                {
+                    continue;
+                }
+
+                var frame = ParseStackFrame(item);
+                if (_options is not null)
+                {
+                    frame.ConfigureAppFrame(_options);
+                }
+                frames.Add(frame);
+            }
+
+            return frames;
+        }
+
+        private static SentryStackFrame ParseStackFrame(string stackFrameLine)
+        {
+            var closingParenthesis = stackFrameLine.IndexOf(')');
+            if (closingParenthesis == -1)
+            {
+                return CreateBasicStackFrame(stackFrameLine);
+            }
+
+            try
+            {
+                var functionName = stackFrameLine.Substring(0, closingParenthesis + 1);
+                var remainingText = stackFrameLine.Substring(closingParenthesis + 1);
+
+                if (!remainingText.StartsWith(AtFileMarker))
+                {
+                    // If it does not start with '(at' it's an unknown format. We're falling back to a basic stackframe
+                    return CreateBasicStackFrame(stackFrameLine);
+                }
+
+                var (filename, lineNo) = ParseFileLocation(remainingText);
+                var filenameWithoutZeroes = StripZeroes(filename);
+
+                return new SentryStackFrame
+                {
+                    FileName = TryResolveFileNameForMono(filenameWithoutZeroes),
+                    AbsolutePath = filenameWithoutZeroes,
+                    Function = functionName,
+                    LineNumber = lineNo == -1 ? null : lineNo
+                };
+            }
+            catch (Exception)
+            {
+                // Suppress any errors while parsing and fall back to a basic stackframe
+                return CreateBasicStackFrame(stackFrameLine);
+            }
+        }
+
+        private static (string Filename, int LineNo) ParseFileLocation(string location)
+        {
+            // Remove " (at " prefix and trailing ")"
+            var fileInfo = location.Substring(AtFileMarker.Length, location.Length - AtFileMarker.Length - 1);
+            var lastColon = fileInfo.LastIndexOf(':');
+
+            return lastColon == -1
+                ? (fileInfo, -1)
+                : (fileInfo.Substring(0, lastColon), int.Parse(fileInfo.Substring(lastColon + 1)));
+        }
+
+        private static SentryStackFrame CreateBasicStackFrame(string functionName) => new()
+        {
+            Function = functionName,
+            FileName = string.Empty,
+            AbsolutePath = string.Empty,
+            LineNumber = null
+        };
+
         // https://github.com/getsentry/sentry-unity/issues/103
         private static string StripZeroes(string filename)
             => filename.Equals("<00000000000000000000000000000000>", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
                 : filename;
 
-        // TODO: discuss
         private static string TryResolveFileNameForMono(string fileName)
         {
             try
