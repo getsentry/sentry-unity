@@ -8,62 +8,9 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
     {
         // Here you can programmatically modify the Sentry option properties used for the SDK's initialization
 
-#if UNITY_ANDROID || UNITY_IOS
-        // NOTE!
-        // On Android and iOS, ALL options configured here will be "baked" into the exported project
-        // during the build process.
-        // Changes to the options at runtime will not affect the native SDKs (Java, C/C++, Objective-C)
-        // and only apply to the C# layer.
+        Debug.Log("SentryOptionConfigure started.");
 
-        /*
-        * Sentry Unity SDK - Hybrid Architecture
-        * ======================================
-        *
-        *          Build Time                          Runtime
-        *  ┌─────────────────────────┐        ┌─────────────────────────┐
-        *  │      Unity Editor       │        │       Game Startup      │
-        *  └──────────┬──────────────┘        └───────────┬─────────────┘
-        *             │                                   │
-        *             ▼                                   ▼
-        *  ┌────────────────────────────────────────────────────────────┐
-        *  │                    Options Configuration                   │
-        *  │                       (This Method)                        │
-        *  └─────────────────────────────┬──────────────────────────────┘
-        *                                │
-        *               ┌───────────────────────────────────┐
-        *               │      Options used for Init        │
-        *               ▼                                   ▼
-        *  ┌──────────────────────────┐         ┌──────────────────────┐
-        *  │        Native SDK        │         │     Unity C# SDK     │
-        *  │       Android & iOS      │         │    Initialization    │
-        *  │  ┌────────────────────┐  │         └──────────────────────┘
-        *  │  │ Options "Baked in" │  │
-        *  │  └────────────────────┘  │
-        *  │  The configure call made │
-        *  │  for this part ran on    │
-        *  │  your build-machine      │
-        *  └──────────────────────────┘
-        *               │
-        *               ▼
-        *  ┌──────────────────────────┐
-        *  │        Native SDK        │
-        *  │       Android & iOS      │
-        *  └──────────────────────────┘
-        */
-
-        // Works as expected and will enable all debug logging
-        // options.Debug = true;
-
-        // Will NOT work as expected.
-        // This will run twice.
-        //    1. Once during the build, being baked into the native SDKs
-        //    2. And a second time every time when the game starts
-        // options.Release = ComputeVersion();
-#endif
-
-        Debug.Log("OptionConfigure started.");
-
-        // Making sure the SDK is not already initialized during tests
+        // This is making sure the SDK is not already initialized during tests for local development
         var sceneName = SceneManager.GetActiveScene().name;
         if (sceneName != null && sceneName.Contains("TestScene"))
         {
@@ -71,7 +18,8 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             options.Enabled = false;
         }
 
-        // BeforeSend is only relevant at runtime. It wouldn't hurt to be set at build time, just wouldn't do anything.
+        // BeforeSend is currently limited to C# code. Native errors - such as crashes in C/C++ code - are getting 
+        // captured by the native SDKs, but the native SDKs won't invoke this callback.
         options.SetBeforeSend((sentryEvent, _) =>
         {
             if (sentryEvent.Tags.ContainsKey("SomeTag"))
@@ -83,8 +31,19 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             return sentryEvent;
         });
 
-        options.IosNativeInitializationType = NativeInitializationType.BuildTime;
+        // Native SDK initialization timing options:
+        // Build-time initialization:
+        //   + Can capture Unity engine errors
+        //   - Options are fixed at build time
+        // Runtime initialization:
+        //   + Allows dynamic configuration
+        //   - May miss some early errors
+#if UNITY_ANDROID
+        options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
+#elif UNITY_IOS
+        options.IosNativeInitializationType = NativeInitializationType.Runtime;
+#endif
 
-        Debug.Log("OptionConfigure finished.");
+        Debug.Log("SentryOptionConfigure finished.");
     }
 }
