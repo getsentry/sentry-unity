@@ -445,7 +445,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [27, 31, 34] # last updated December 2024
+        api-level: [30, 31, 34] # last updated January 2025
         unity-version: ["2019", "2022", "6000"]
 
   mobile-smoke-test-compile:
@@ -514,10 +514,10 @@ jobs:
 
       - name: iOS smoke test
         if: ${{ matrix.platform == 'iOS' }}
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}" -iOSMinVersion "16.1"
         timeout-minutes: 10
     
-      - name: Upload Project project on failure
+      - name: Upload integration-test project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
@@ -579,7 +579,7 @@ jobs:
 
       - name: Smoke test
         id: smoke-test-ios
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
           $runtime = "${{ matrix.ios }}"
           If ($runtime -ne "latest")
