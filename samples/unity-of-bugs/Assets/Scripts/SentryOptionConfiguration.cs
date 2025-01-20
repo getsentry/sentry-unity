@@ -8,9 +8,9 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
     {
         // Here you can programmatically modify the Sentry option properties used for the SDK's initialization
 
-        Debug.Log("OptionConfigure started.");
+        Debug.Log("SentryOptionConfigure started.");
 
-        // Making sure the SDK is not already initialized during tests
+        // This is making sure the SDK is not already initialized during tests for local development
         var sceneName = SceneManager.GetActiveScene().name;
         if (sceneName != null && sceneName.Contains("TestScene"))
         {
@@ -18,7 +18,8 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             options.Enabled = false;
         }
 
-        // BeforeSend is only relevant at runtime. It wouldn't hurt to be set at build time, just wouldn't do anything.
+        // BeforeSend is currently limited to C# code. Native errors - such as crashes in C/C++ code - are getting 
+        // captured by the native SDKs, but the native SDKs won't invoke this callback.
         options.SetBeforeSend((sentryEvent, _) =>
         {
             if (sentryEvent.Tags.ContainsKey("SomeTag"))
@@ -30,8 +31,19 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             return sentryEvent;
         });
 
+        // Native SDK initialization timing options:
+        // Build-time initialization:
+        //   + Can capture Unity engine errors
+        //   - Options are fixed at build time
+        // Runtime initialization:
+        //   + Allows dynamic configuration
+        //   - May miss some early errors
+#if UNITY_ANDROID
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
+#elif UNITY_IOS
+        options.IosNativeInitializationType = NativeInitializationType.Runtime;
+#endif
 
-        Debug.Log("OptionConfigure finished.");
+        Debug.Log("SentryOptionConfigure finished.");
     }
 }

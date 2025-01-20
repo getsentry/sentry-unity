@@ -546,7 +546,7 @@ jobs:
 
       - name: iOS smoke test
         if: ${{ matrix.platform == 'iOS' }}
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}" -iOSMinVersion "16.1"
         timeout-minutes: 10
     
       - name: Upload integration-test project on failure
@@ -612,7 +612,7 @@ jobs:
 
       - name: Smoke test
         id: smoke-test-ios
-        timeout-minutes: 10
+        timeout-minutes: 20
         run: |
           $runtime = "${{ matrix.ios }}"
           If ($runtime -ne "latest")
