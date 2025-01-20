@@ -11,15 +11,12 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.42.0 to v8.43.0 ([#1949](https://github.com/getsentry/sentry-unity/pull/1949))
+- Bump Cocoa SDK from v8.42.0 to v8.43.0 ([#1945](https://github.com/getsentry/sentry-unity/pull/1945), [#1949](https://github.com/getsentry/sentry-unity/pull/1949))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8430)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.0...8.43.0)
 - Bump Java SDK from v7.19.0 to v7.20.0 ([#1946](https://github.com/getsentry/sentry-unity/pull/1946), [#1947](https://github.com/getsentry/sentry-unity/pull/1947))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7200)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.19.0...7.20.0)
-- Bump Cocoa SDK from v8.42.0 to v8.42.1 ([#1945](https://github.com/getsentry/sentry-unity/pull/1945))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8421)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.42.0...8.42.1)
 - Bump CLI from v2.39.1 to v2.40.0 ([#1948](https://github.com/getsentry/sentry-unity/pull/1948))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2400)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.1...2.40.0)
