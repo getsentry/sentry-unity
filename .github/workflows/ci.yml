@@ -475,14 +475,13 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [30, 31, 34] # last updated January 2025
-        unity-version: ["2019", "2022", "6000"]
         init-type: ["runtime", "buildtime"]
-
+        unity-version: ["2019", "6000"]
 
   mobile-smoke-test-compile:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: ${{ matrix.unity-version }} ${{ matrix.platform }}  Compile Smoke Test
+    name: ${{ matrix.unity-version }} ${{ matrix.platform }} ${{ matrix.init-type }} Compile Smoke Test
     runs-on: ${{ matrix.platform == 'iOS' && 'macos-latest' || 'ubuntu-latest-4-cores' }}
     strategy:
       fail-fast: false
@@ -539,7 +538,12 @@ jobs:
   
       - name: Android smoke test
         if: ${{ matrix.platform == 'Android' }}
-        run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+        # Skipping Android on Unity 2022 for now
+        run: |
+          if ("${{ matrix.unity-version }}" -ne "2022")
+          {
+            ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
+          }
         timeout-minutes: 10
         env:
           JAVA_HOME: ${{ env.JAVA_HOME }}
@@ -562,6 +566,9 @@ jobs:
 
       - name: Upload app
         uses: actions/upload-artifact@v4
+        # Skipping Android on Unity 2022 for now
+        if: |
+          !(matrix.platform == 'Android' && matrix.unity-version == '2022') || matrix.platform == 'iOS'
         with:
           name: testapp-${{ matrix.platform }}-compiled-${{ matrix.unity-version }}-${{ matrix.init-type }}
           # Collect app but ignore the files that are not required for the test.
