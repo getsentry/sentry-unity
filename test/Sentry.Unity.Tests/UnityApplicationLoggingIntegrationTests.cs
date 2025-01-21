@@ -8,7 +8,6 @@ namespace Sentry.Unity.Tests
 {
     public class UnityApplicationLoggingIntegrationTests
     {
-
         private class Fixture
         {
             public TestHub Hub { get; set; } = null!;
@@ -36,7 +35,7 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void CaptureLogFormat_LogContainsSentryTag_NotCaptured()
+        public void OnLogMessageReceived_LogContainsSentryTag_NotCaptured()
         {
             var sut = _fixture.GetSut();
             var message = $"{UnityLogger.LogTag}: {TestContext.CurrentContext.Test.Name}";
@@ -47,7 +46,7 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void CaptureLogFormat_LogTypeError_CaptureEvent()
+        public void OnLogMessageReceived_LogTypeError_CaptureEvent()
         {
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
@@ -63,7 +62,7 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Log)]
         [TestCase(LogType.Warning)]
         [TestCase(LogType.Error)]
-        public void CaptureLogFormat_LogDebounceEnabled_DebouncesMessage(LogType unityLogType)
+        public void OnLogMessageReceived_LogDebounceEnabled_DebouncesMessage(LogType unityLogType)
         {
             _fixture.SentryOptions.EnableLogDebouncing = true;
             var sut = _fixture.GetSut();
@@ -77,7 +76,7 @@ namespace Sentry.Unity.Tests
         private static readonly object[] LogTypesCaptured = [new object[] { LogType.Error, SentryLevel.Error, BreadcrumbLevel.Error }];
 
         [TestCaseSource(nameof(LogTypesCaptured))]
-        public void CaptureLogFormat_UnityErrorLogTypes_CapturedAndCorrespondToSentryLevel(LogType unityLogType, SentryLevel sentryLevel, BreadcrumbLevel breadcrumbLevel)
+        public void OnLogMessageReceived_UnityErrorLogTypes_CapturedAndCorrespondToSentryLevel(LogType unityLogType, SentryLevel sentryLevel, BreadcrumbLevel breadcrumbLevel)
         {
             var sut = _fixture.GetSut();
             var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
@@ -101,7 +100,7 @@ namespace Sentry.Unity.Tests
         };
 
         [TestCaseSource(nameof(LogTypesNotCaptured))]
-        public void CaptureLogFormat_UnityNotErrorLogTypes_NotCaptured(LogType unityLogType, BreadcrumbLevel breadcrumbLevel)
+        public void OnLogMessageReceived_UnityNotErrorLogTypes_NotCaptured(LogType unityLogType, BreadcrumbLevel breadcrumbLevel)
         {
             var sut = _fixture.GetSut();
             var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
@@ -122,7 +121,7 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Log)]
         [TestCase(LogType.Warning)]
         [TestCase(LogType.Error)]
-        public void CaptureLogFormat_AddAsBreadcrumbEnabled_AddedAsBreadcrumb(LogType unityLogType)
+        public void OnLogMessageReceived_AddAsBreadcrumbEnabled_AddedAsBreadcrumb(LogType unityLogType)
         {
             _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
             var sut = _fixture.GetSut();
@@ -142,7 +141,7 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Warning)]
         [TestCase(LogType.Error)]
         [TestCase(LogType.Assert)]
-        public void CaptureLogFormat_AddAsBreadcrumbDisabled_NotAddedAsBreadcrumb(LogType unityLogType)
+        public void OnLogMessageReceived_AddAsBreadcrumbDisabled_NotAddedAsBreadcrumb(LogType unityLogType)
         {
             _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = false;
             var sut = _fixture.GetSut();
