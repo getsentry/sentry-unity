@@ -13,7 +13,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     private IHub? _hub;
     private SentryUnityOptions? _options;
 
-    public UnityApplicationLoggingIntegration(IApplication? application = null)
+    internal UnityApplicationLoggingIntegration(IApplication? application = null)
     {
         _application = application ?? ApplicationAdapter.Instance;
     }
@@ -35,7 +35,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         _application.Quitting += OnQuitting;
     }
 
-    private void OnLogMessageReceived(string message, string stacktrace, LogType logType)
+    internal void OnLogMessageReceived(string message, string stacktrace, LogType logType)
     {
         if (_hub is null)
         {

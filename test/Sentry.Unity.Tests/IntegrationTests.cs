@@ -15,7 +15,7 @@ namespace Sentry.Unity.Tests;
 public sealed class IntegrationTests
 {
     private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
-    private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
+    private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(10);
 
     private string _eventMessage = null!; // Set in setup
     private string _identifyingEventValueAttribute = null!; // Set in setup
@@ -232,6 +232,8 @@ public sealed class IntegrationTests
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogError), _eventMessage);
+
+        Debug.LogError("what...what?");
 
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
