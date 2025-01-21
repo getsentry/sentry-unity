@@ -509,7 +509,8 @@ jobs:
         if: ${{ matrix.platform == 'Android' }}
         # Skipping Android on Unity 2022 for now
         run: |
-          if (${{ matrix.unity-version != '2022' }}) {
+          if ("${{ matrix.unity-version }}" -ne "2022")
+          {
             ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ matrix.unity-version }}"
           }
         timeout-minutes: 10
