@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- The SDK now provides stacktraces when capturing events created via `Debug.LogError`. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
+
 ## 3.0.0-beta.1
 
 ### API Changes
