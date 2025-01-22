@@ -8,7 +8,7 @@ public class UnityExceptionProcessor : ISentryEventExceptionProcessor
 {
     public void Process(Exception exception, SentryEvent sentryEvent)
     {
-        if (exception is UnityLogException ule)
+        if (exception is UnityErrorLogException ule)
         {
             sentryEvent.SentryExceptions = [ule.ToSentryException()];
             sentryEvent.SetTag("source", "log");

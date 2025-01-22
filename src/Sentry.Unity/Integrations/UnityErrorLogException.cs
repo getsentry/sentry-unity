@@ -12,35 +12,36 @@ namespace Sentry.Unity.Integrations
     /// <remarks>
     /// <see cref="Application.logMessageReceived"/>
     /// </remarks>
-    internal class UnityLogException : Exception
+    internal class UnityErrorLogException : Exception
     {
+        internal static readonly string ExceptionType = "LogError";
+
         private readonly string _logString = string.Empty;
         private readonly string _logStackTrace = string.Empty;
 
         private readonly SentryOptions? _options;
 
-        public UnityLogException(string logString, string logStackTrace, SentryOptions? options)
+        public UnityErrorLogException(string logString, string logStackTrace, SentryOptions? options)
         {
             _logString = logString;
             _logStackTrace = logStackTrace;
             _options = options;
         }
 
-        internal UnityLogException(string logString, string logStackTrace)
+        internal UnityErrorLogException(string logString, string logStackTrace)
         {
             _logString = logString;
             _logStackTrace = logStackTrace;
         }
 
-        internal UnityLogException() : base() { }
+        internal UnityErrorLogException() : base() { }
 
-        private UnityLogException(string message) : base(message) { }
+        private UnityErrorLogException(string message) : base(message) { }
 
-        private UnityLogException(string message, Exception innerException) : base(message, innerException) { }
+        private UnityErrorLogException(string message, Exception innerException) : base(message, innerException) { }
 
         public SentryException ToSentryException()
         {
-            var (exceptionType, exceptionValue) = ParseExceptionDetails(_logString);
             var frames = ParseStackTrace(_logStackTrace);
             frames.Reverse();
 
@@ -49,8 +50,8 @@ namespace Sentry.Unity.Integrations
             return new SentryException
             {
                 Stacktrace = stacktrace,
-                Type = exceptionType,
-                Value = exceptionValue,
+                Type = ExceptionType,
+                Value = _logString,
                 Mechanism = new Mechanism
                 {
                     Handled = false,
@@ -60,16 +61,6 @@ namespace Sentry.Unity.Integrations
         }
 
         private const string AtFileMarker = " (at ";
-
-        private static (string Type, string Value) ParseExceptionDetails(string logString)
-        {
-            var parts = logString.Split([':'], 2);
-            return parts.Length switch
-            {
-                1 => (parts[0], parts[0]),
-                _ => (parts[0], parts[1].TrimStart()) // Remove leading space
-            };
-        }
 
         private List<SentryStackFrame> ParseStackTrace(string stackTrace)
         {
@@ -151,8 +142,8 @@ namespace Sentry.Unity.Integrations
         private static SentryStackFrame CreateBasicStackFrame(string functionName) => new()
         {
             Function = functionName,
-            FileName = string.Empty,
-            AbsolutePath = string.Empty,
+            FileName = null,
+            AbsolutePath = null,
             LineNumber = null
         };
 

@@ -74,7 +74,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         {
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {
-                var ule = new UnityLogException(message, stacktrace, _options);
+                var ule = new UnityErrorLogException(message, stacktrace, _options);
                 var evt = new SentryEvent(ule) { Level = SentryLevel.Error };
 
                 _hub.CaptureEvent(evt);

@@ -33,7 +33,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
 
         // UnityLogException is a synthetic exception created by the LoggingIntegration by parsing the stacktrace provided
         // to the SDK as a string. It therefor lacks the necessary data to fetch the native stacktrace and go from there
-        if (incomingException is UnityLogException)
+        if (incomingException is UnityErrorLogException)
         {
             return;
         }
