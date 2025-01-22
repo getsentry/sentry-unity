@@ -117,8 +117,9 @@ function RunTest([string] $type)
             Write-Host "$type test: Player.log contents END" -ForegroundColor Yellow
         }
 
-        # ExitCode 200 is the status code indicating success inside SmokeTest.cs
-        If ($process.ExitCode -eq 200)
+        # Relying on ExitCode does not seem reliable. We're looking for the line "SmokeTester is quitting." instead to indicate 
+        # a successful shut-down.
+        If ($appLog | Select-String "SmokeTester is quitting.")
         {
             Write-Host "$type test: PASSED" -ForegroundColor Green
         }
