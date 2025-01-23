@@ -424,8 +424,8 @@ $results.hasntCrashedTestPassed = RunTestWithRetry -Name "hasnt-crashed" -Succes
 try
 {
     CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
-        $results.crashTestPassed = RunTestWithRetry -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL" -MaxRetries 3
-        $results.hasCrashTestPassed = RunTestWithRetry -Name "has-crashed" -SuccessString "HAS-CRASHED TEST: PASS" -FailureString "HAS-CRASHED TEST: FAIL" -MaxRetries 3
+        $results.crashTestPassed = RunTest -Name "crash" -SuccessString "CRASH TEST: Issuing a native crash" -FailureString "CRASH TEST: FAIL"
+        $results.hasCrashTestPassed = RunTest -Name "has-crashed" -SuccessString "HAS-CRASHED TEST: PASS" -FailureString "HAS-CRASHED TEST: FAIL"
     }
 }
 catch
