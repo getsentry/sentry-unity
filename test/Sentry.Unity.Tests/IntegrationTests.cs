@@ -222,7 +222,10 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogError_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
     {
-        Assert.Inconclusive("Flaky"); // Ignoring because of flakiness.
+        if (TestEnvironment.IsGitHubActions)
+        {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness
+        }
 
         yield return SetupSceneCoroutine("1_BugFarm");
 
@@ -242,7 +245,10 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogError_InTask_IsCapturedAndIsMainThreadIsFalse()
     {
-        Assert.Inconclusive("Flaky"); // Ignoring because of flakiness.
+        if (TestEnvironment.IsGitHubActions)
+        {
+            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness
+        }
 
         yield return SetupSceneCoroutine("1_BugFarm");
 

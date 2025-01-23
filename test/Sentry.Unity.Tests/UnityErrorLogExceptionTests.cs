@@ -9,11 +9,11 @@ namespace Sentry.Unity.Tests;
 public class UnityErrorLogExceptionTests
 {
     [Test]
-    public void ToSentryException_MarkedAsUnhandled()
+    public void ToSentryException_MarkedAsHandled()
     {
         var sentryException = new UnityErrorLogException("", "", new SentryUnityOptions()).ToSentryException();
 
-        Assert.IsFalse(sentryException.Mechanism?.Handled);
+        Assert.IsTrue(sentryException.Mechanism?.Handled);
     }
 
     [TestCaseSource(nameof(ParsingTestCases))]
