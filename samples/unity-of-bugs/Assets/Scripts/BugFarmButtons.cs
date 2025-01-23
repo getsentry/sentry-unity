@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Sentry;
 using UnityEngine;
@@ -52,14 +53,38 @@ public class BugFarmButtons : MonoBehaviour
 
     public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
 
+    // IL2CPP inlines this anyway :( - so we're adding some fake work to prevent the compiler from optimizing too much
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StackTraceExampleB() => throw new InvalidOperationException("Exception from a lady beetle 🐞");
+    private void StackTraceExampleB()
+    {
+        var someWork = DateTime.Now.ToString();
+        if (someWork.Length > 0)  // This condition will always be true but compiler can't be certain
+        {
+            throw new InvalidOperationException("Exception from a lady beetle 🐞");
+        }
+    }
 
-    // IL2CPP inlines this anyway :(
+    // IL2CPP inlines this anyway :( - so we're adding some fake work to prevent the compiler from optimizing too much
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void StackTraceExampleA() => StackTraceExampleB();
+    public void StackTraceExampleA()
+    {
+        var someWork = DateTime.Now.ToString();
+        if (someWork.Length > 0)  // This condition will always be true but compiler can't be certain
+        {
+            StackTraceExampleB();
+        }
+    }
 
-    public void LogError() => Debug.LogError("Debug.LogError() called");
+    // IL2CPP inlines this anyway :( - so we're adding some fake work to prevent the compiler from optimizing too much
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void LogError()
+    {
+        var someWork = DateTime.Now.ToString();
+        if (someWork.Length > 0)  // This condition will always be true but compiler can't be certain
+        {
+            Debug.LogError("Debug.LogError() called");
+        }
+    }
 }
 
 public class CustomException : Exception

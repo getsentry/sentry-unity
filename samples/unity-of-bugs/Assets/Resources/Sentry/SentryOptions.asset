@@ -27,7 +27,7 @@ MonoBehaviour:
   <AutoSessionTrackingInterval>k__BackingField: 30000
   <ReleaseOverride>k__BackingField: 
   <EnvironmentOverride>k__BackingField: 
-  <AttachStacktrace>k__BackingField: 0
+  <AttachStacktrace>k__BackingField: 1
   <AttachScreenshot>k__BackingField: 0
   <ScreenshotQuality>k__BackingField: 1
   <ScreenshotCompression>k__BackingField: 75

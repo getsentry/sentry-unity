@@ -40,34 +40,21 @@ public class TestHttpClientHandler : HttpClientHandler
 
     public string GetEvent(string identifier, TimeSpan timeout)
     {
-        // Check all the already received requests
-        lock (_requests)
-        {
-            var eventRequest = _requests.Find(r => r.Contains(identifier));
-            if (!string.IsNullOrEmpty(eventRequest))
-            {
-                Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
-                return eventRequest;
-            }
-        }
-
-        // While within timeout: check every newly received request
         var stopwatch = Stopwatch.StartNew();
+
         while (stopwatch.Elapsed < timeout)
         {
-            if (_requestReceived.WaitOne(TimeSpan.FromMilliseconds(16))) // Once per frame
+            lock (_requests)
             {
-                lock (_requests)
+                var eventRequest = _requests.Find(r => r.Contains(identifier));
+                if (!string.IsNullOrEmpty(eventRequest))
                 {
-                    if (_requests.Count > 0 && _requests[_requests.Count - 1].Contains(identifier))
-                    {
-                        var eventRequest = _requests[_requests.Count - 1];
-                        Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
-
-                        return eventRequest;
-                    }
+                    Debug.Log($"{UnityLogger.LogTag}{name} returns event:\n" + eventRequest);
+                    return eventRequest;
                 }
             }
+
+            _requestReceived.WaitOne(TimeSpan.FromMilliseconds(16)); // Once per frame
         }
 
         Debug.LogError($"{UnityLogger.LogTag}{name} timed out waiting for an event.");
