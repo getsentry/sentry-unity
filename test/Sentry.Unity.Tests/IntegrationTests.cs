@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
@@ -222,14 +224,8 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogError_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
     {
-        if (TestEnvironment.IsGitHubActions)
-        {
-            Assert.Inconclusive("Flaky"); // Ignoring because of flakiness
-        }
-
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage); // DebugLogError gets captured as a message
         var expectedAttribute = CreateAttribute("unity.is_main_thread", "true");
 
         using var _ = InitSentrySdk();
@@ -252,7 +248,6 @@ public sealed class IntegrationTests
 
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage); // DebugLogError gets captured as a message
         var expectedAttribute = CreateAttribute("unity.is_main_thread", "false");
 
         using var _ = InitSentrySdk();
