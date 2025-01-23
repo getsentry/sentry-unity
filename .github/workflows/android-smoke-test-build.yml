@@ -102,7 +102,7 @@ jobs:
       - name: Upload test app
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-${{ matrix.platform }}-${{ inputs.unity-version }}-runtime
+          name: testapp-android-${{ inputs.unity-version }}-runtime
           if-no-files-found: error
           path: test-app-runtime.tar.gz
           retention-days: 14
@@ -127,7 +127,7 @@ jobs:
       - name: Upload test app (build-time initialization)
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-${{ matrix.platform }}-${{ inputs.unity-version }}-buildtime
+          name: testapp-android-${{ inputs.unity-version }}-buildtime
           if-no-files-found: error
           path: test-app-buildtime.tar.gz
           retention-days: 14
@@ -136,7 +136,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-project-${{ matrix.platform }}-${{ inputs.unity-version }}
+          name: failed-project-android-${{ inputs.unity-version }}
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
