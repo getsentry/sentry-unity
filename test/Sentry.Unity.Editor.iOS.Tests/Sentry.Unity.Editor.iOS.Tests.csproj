@@ -14,6 +14,7 @@
     <ProjectReference Include="../../src/Sentry.Unity/Sentry.Unity.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Editor/Sentry.Unity.Editor.csproj" Private="false" />
     <ProjectReference Include="../../src/Sentry.Unity.Editor.iOS/Sentry.Unity.Editor.iOS.csproj" Private="false" />
+    <ProjectReference Include="..\..\src\Sentry.Unity.iOS\Sentry.Unity.iOS.csproj" />
   </ItemGroup>
 
   <ItemGroup>
