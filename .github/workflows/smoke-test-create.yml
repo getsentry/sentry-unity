@@ -1,0 +1,50 @@
+name: Create Smoke Test Project
+
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  create:
+    name: Create Smoke Test - ${{ inputs.unity-version }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+    - name: Docker Login
+      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }} 
+        password: ${{ secrets.GITHUB_TOKEN }} 
+
+    - name: Start the Unity docker container
+      run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+      shell: bash
+
+    - name: Create new Project
+      run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "docker exec unity unity-editor"
+
+    # We create tar explicitly because upload-artifact is slow for many files.
+    - name: Create archive
+      run: tar -cvzf test-project.tar.gz samples/IntegrationTest
+
+    - name: Upload project
+      uses: actions/upload-artifact@v4
+      with:
+        name: smoke-test-${{ inputs.unity-version }}
+        if-no-files-found: error
+        path: test-project.tar.gz
+        # Lower retention period - we only need this to retry CI.
+        retention-days: 14 
+            

@@ -43,6 +43,7 @@ jobs:
       runsOn: ${{ matrix.host }}
 
   build:
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
@@ -51,7 +52,7 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       unity-version: ${{ matrix.unity-version }}
-    secrets: inherit
+    
 
   package-validation:
     name: UPM Package validation
@@ -75,49 +76,17 @@ jobs:
 
   # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`.
   smoke-test-create:
+    secrets: inherit
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     name: ${{ matrix.unity-version }} Prepare Smoke Test
-    runs-on: ubuntu-latest
-    needs: [package-validation]
     strategy:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000"]
-    env:
-      UNITY_PATH: docker exec unity unity-editor
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
-
-      - name: Docker Login
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }} 
-          password: ${{ secrets.GITHUB_TOKEN }} 
-
-      - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
-        shell: bash
-
-      - name: Create new Project
-        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
-
-      # We create tar explicitly because upload-artifact is slow for many files.
-      - name: Create archive
-        run: tar -cvzf test-project.tar.gz samples/IntegrationTest
-
-      - name: Upload project
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-test-${{ matrix.unity-version }}
-          if-no-files-found: error
-          path: test-project.tar.gz
-          # Lower retention period - we only need this to retry CI.
-          retention-days: 14
-
+    uses: ./.github/workflows/smoke-test-create.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
+    
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
@@ -192,9 +161,10 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
-        uses: actions/download-artifact@v4
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
           name: ${{ github.sha }}
+          wait-timeout: 3600
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
