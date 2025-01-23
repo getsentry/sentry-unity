@@ -54,7 +54,7 @@ namespace Sentry.Unity.Integrations
                 Value = _logString,
                 Mechanism = new Mechanism
                 {
-                    Handled = false,
+                    Handled = true,
                     Type = "unity.log"
                 }
             };

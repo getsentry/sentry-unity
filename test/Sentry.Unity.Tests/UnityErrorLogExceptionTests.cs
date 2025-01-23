@@ -92,7 +92,7 @@ public class UnityErrorLogExceptionTests
                 },
                 Mechanism = new Mechanism
                 {
-                    Handled = false,
+                    Handled = true,
                     Type = "unity.log"
                 }
             }
@@ -188,7 +188,7 @@ public class UnityErrorLogExceptionTests
                 },
                 Mechanism = new Mechanism
                 {
-                    Handled = false,
+                    Handled = true,
                     Type = "unity.log"
                 }
             }
@@ -203,30 +203,23 @@ public class UnityErrorLogExceptionTests
         Assert.AreEqual(expected.Type, actual.Type);
         if (expected.Stacktrace is not null)
         {
-            if (expected.Stacktrace.Frames is not null)
+            Assert.AreEqual(expected.Stacktrace.Frames.Count, actual.Stacktrace!.Frames.Count);
+            for (var i = 0; i < expected.Stacktrace.Frames.Count; i++)
             {
-                Assert.AreEqual(expected.Stacktrace.Frames.Count, actual.Stacktrace!.Frames!.Count);
-                for (var i = 0; i < expected.Stacktrace.Frames.Count; i++)
-                {
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].Function, actual.Stacktrace.Frames[i].Function);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].Module, actual.Stacktrace.Frames[i].Module);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].Package, actual.Stacktrace.Frames[i].Package);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].Platform, actual.Stacktrace.Frames[i].Platform);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].AbsolutePath, actual.Stacktrace.Frames[i].AbsolutePath);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].ColumnNumber, actual.Stacktrace.Frames[i].ColumnNumber);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].FileName, actual.Stacktrace.Frames[i].FileName);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].ImageAddress, actual.Stacktrace.Frames[i].ImageAddress);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].InApp, actual.Stacktrace.Frames[i].InApp);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].InstructionAddress, actual.Stacktrace.Frames[i].InstructionAddress);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].LineNumber, actual.Stacktrace.Frames[i].LineNumber);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].PostContext, actual.Stacktrace.Frames[i].PostContext);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].PreContext, actual.Stacktrace.Frames[i].PreContext);
-                    Assert.AreEqual(expected.Stacktrace.Frames[i].SymbolAddress, actual.Stacktrace.Frames[i].SymbolAddress);
-                }
-            }
-            else
-            {
-                Assert.Null(actual.Stacktrace!.Frames);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].Function, actual.Stacktrace.Frames[i].Function);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].Module, actual.Stacktrace.Frames[i].Module);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].Package, actual.Stacktrace.Frames[i].Package);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].Platform, actual.Stacktrace.Frames[i].Platform);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].AbsolutePath, actual.Stacktrace.Frames[i].AbsolutePath);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].ColumnNumber, actual.Stacktrace.Frames[i].ColumnNumber);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].FileName, actual.Stacktrace.Frames[i].FileName);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].ImageAddress, actual.Stacktrace.Frames[i].ImageAddress);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].InApp, actual.Stacktrace.Frames[i].InApp);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].InstructionAddress, actual.Stacktrace.Frames[i].InstructionAddress);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].LineNumber, actual.Stacktrace.Frames[i].LineNumber);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].PostContext, actual.Stacktrace.Frames[i].PostContext);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].PreContext, actual.Stacktrace.Frames[i].PreContext);
+                Assert.AreEqual(expected.Stacktrace.Frames[i].SymbolAddress, actual.Stacktrace.Frames[i].SymbolAddress);
             }
         }
         else
@@ -240,24 +233,10 @@ public class UnityErrorLogExceptionTests
             Assert.AreEqual(expected.Mechanism.Type, actual.Mechanism.Type);
             Assert.AreEqual(expected.Mechanism.HelpLink, actual.Mechanism.HelpLink);
             Assert.AreEqual(expected.Mechanism.Data, actual.Mechanism.Data);
-            if (expected.Mechanism.Data is not null)
-            {
-                Assert.True(expected.Mechanism.Data.Keys.SequenceEqual(actual.Mechanism.Data.Keys));
-                Assert.True(expected.Mechanism.Data.Values.SequenceEqual(actual.Mechanism.Data.Values));
-            }
-            else
-            {
-                Assert.Null(actual.Mechanism.Meta);
-            }
-            if (expected.Mechanism.Meta is not null)
-            {
-                Assert.True(expected.Mechanism.Meta.Keys.SequenceEqual(actual.Mechanism.Meta.Keys));
-                Assert.True(expected.Mechanism.Meta.Values.SequenceEqual(actual.Mechanism.Meta.Values));
-            }
-            else
-            {
-                Assert.Null(actual.Mechanism.Meta);
-            }
+            Assert.True(expected.Mechanism.Data.Keys.SequenceEqual(actual.Mechanism.Data.Keys));
+            Assert.True(expected.Mechanism.Data.Values.SequenceEqual(actual.Mechanism.Data.Values));
+            Assert.True(expected.Mechanism.Meta.Keys.SequenceEqual(actual.Mechanism.Meta.Keys));
+            Assert.True(expected.Mechanism.Meta.Values.SequenceEqual(actual.Mechanism.Meta.Values));
         }
         else
         {
