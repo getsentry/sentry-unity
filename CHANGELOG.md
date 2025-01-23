@@ -6,6 +6,15 @@
 
 - When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
 
+### Dependencies
+
+- Bump Native SDK from v0.7.18 to v0.7.19 ([#1981](https://github.com/getsentry/sentry-unity/pull/1981))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0719)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.18...0.7.19)
+- Bump CLI from v2.40.0 to v2.41.1 ([#1984](https://github.com/getsentry/sentry-unity/pull/1984))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.40.0...2.41.1)
+
 ## 3.0.0-beta.1
 
 ### API Changes
