@@ -149,7 +149,7 @@ namespace Sentry.Unity.Integrations
 
         // https://github.com/getsentry/sentry-unity/issues/103
         private static string StripZeroes(string filename)
-            => filename.Equals("<00000000000000000000000000000000>", StringComparison.OrdinalIgnoreCase)
+            => filename.Replace("0", "").Equals("<>", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
                 : filename;
 
