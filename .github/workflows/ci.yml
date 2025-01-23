@@ -43,140 +43,14 @@ jobs:
       runsOn: ${{ matrix.host }}
 
   build:
-    name: Build - ${{ matrix.unity-version }}
-    # Pinning ubuntu version to resolve permission issues with setup-dotnet: https://github.com/actions/setup-dotnet/issues/565
-    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         # Building the SDK with Unity 2022 and newer requires ns2.1 - skipping for now
         unity-version: ["2019", "2020", "2021"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Checkout submodules
-        run: git submodule update --init --recursive src/sentry-dotnet
-
-      - name: Load env
-        id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
-
-      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
-
-      - name: Restore Unity Packages
-        uses: actions/cache@v3
-        with:
-          path: |
-            samples/unity-of-bugs/Library/Packages
-            temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
-          key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
-
-      - name: Docker Login
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }} 
-          password: ${{ secrets.GITHUB_TOKEN }} 
-
-      - name: Start the Unity docker container
-        # We must use the iOS version of the image instead of 'base' - Sentry.Unity.Editor.iOS.csproj requires some libraries.
-        # Maybe we could just cache the needed file instead of pulling the 1 GB larger image on every build...
-        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
-        shell: bash
-
-      - name: Install .NET SDK
-        if: runner.os != 'Windows'
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            9.0.100
-        
-      # Required by sentry-dotnet since 3.19.0
-      - name: Install Android dotnet workflow
-        run: dotnet workload install android --temp-dir "${{ runner.temp }}"
-
-      - name: Download CLI
-        run: ./scripts/download-sentry-cli.ps1
-
-      - name: Download Android SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: Android-sdk
-          path: package-dev/Plugins/Android
-          wait-timeout: 3600
-
-      - name: Download Android Libraries
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: Android-libraries
-          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          wait-timeout: 3600
-
-      - name: Download Linux SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: Linux-sdk
-          path: package-dev/Plugins/Linux
-          wait-timeout: 3600
-
-      - name: Download Windows SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: Windows-sdk
-          path: package-dev/Plugins/Windows
-          wait-timeout: 3600
-
-      - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build -c Release
-
-      - name: Install assemblyalias
-        run: docker exec unity dotnet tool install --global Alias --version 0.4.3
-
-      - name: Alias editor assemblies
-        run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;Mono.Cecil*"
-
-      - name: Alias runtime assemblies
-        run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
-
-      - name: Package for release
-        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
-        run: |
-          # Before packaging, we need to open & close Unity on the sample project to update .meta files in package-dev.
-          # We could add a new custom target but reusing UnityConfigureSentryOptions is good enough.
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          ./scripts/pack.ps1
-
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
-        if: ${{ matrix.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
-        with:
-          name: ${{ github.sha }}
-          if-no-files-found: error
-          # Adding the native libraries so the symbol collector craft target can find/upload them
-          path: |
-            package-release.zip
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
-
-      - name: Run Unity tests (playmode)
-        run: |
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn= /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
-
-      - name: Upload test artifacts (playmode)
-        uses: actions/upload-artifact@v4
-        with:
-          name: Test results (playmode) - ${{matrix.unity-version}}
-          path: artifacts/test/playmode
-
-      - name: Run Unity tests (editmode)
-        run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
-
-      - name: Upload test artifacts (editmode)
-        uses: actions/upload-artifact@v4
-        with:
-          name: Test results (editmode) - ${{matrix.unity-version}}
-          path: artifacts/test/editmode
+    uses: ./.github/workflows/build.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
 
   package-validation:
     name: UPM Package validation
