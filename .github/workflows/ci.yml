@@ -51,6 +51,7 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+    secrets: inherit
 
   package-validation:
     name: UPM Package validation
