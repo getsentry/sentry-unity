@@ -1,0 +1,144 @@
+name: Android Create Smoke Test Project
+
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  android-build-smoke-test:
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    name: ${{ inputs.unity-version }} Android Smoke Test Build
+    # needs: [smoke-test-create]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Android
+            check_symbols: false
+            build_platform: Android-Export
+    env:
+      UNITY_PATH: docker exec unity unity-editor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8
+        with:
+          android: true
+          dotnet: false
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: true
+
+      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+
+      - name: Docker Login
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} 
+          password: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Start the Unity docker container
+        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' '${{ matrix.platform }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        shell: bash
+
+      # Workaround for missing libMonoPosixHelper.so
+      # See https://github.com/getsentry/sentry-unity/pull/1295
+      - name: Install mono-devel
+        if: ${{ inputs.unity-version == '2019' }}
+        run: |
+          docker exec --user root unity apt-get update
+          docker exec --user root unity apt-get -y -q install mono-devel
+
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@v4
+        with:
+          name: smoke-test-${{ inputs.unity-version }}
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
+
+    #   - name: Build without Sentry SDK
+    #     run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+
+      - name: Download UPM package
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+        with:
+          name: ${{ github.sha }}
+          wait-timeout: 3600
+
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+
+      - name: Configure Sentry
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
+
+      - name: Build Project
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
+
+      # We create tar explicitly because upload-artifact is slow for many files.
+      - name: Create archive
+        shell: bash
+        run: |
+          # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
+          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
+
+      # Upload runtime initialization build
+      - name: Upload test app
+        uses: actions/upload-artifact@v4
+        with:
+          name: testapp-${{ matrix.platform }}-${{ inputs.unity-version }}-runtime
+          if-no-files-found: error
+          path: test-app-runtime.tar.gz
+          retention-days: 14
+
+      - name: Configure Sentry for mobile platforms (build-time initialization)
+        run: |
+          $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
+          $content = Get-Content $optionsPath -Raw
+          $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
+          Set-Content $optionsPath $content
+
+      - name: Build Project for mobile platforms (build-time initialization)
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
+
+      - name: Create archive (build-time initialization)
+        shell: bash
+        run: |
+          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          tar -cvzf test-app-buildtime.tar.gz samples/IntegrationTest/Build
+
+      # Upload build-time initialization build
+      - name: Upload test app (build-time initialization)
+        uses: actions/upload-artifact@v4
+        with:
+          name: testapp-${{ matrix.platform }}-${{ inputs.unity-version }}-buildtime
+          if-no-files-found: error
+          path: test-app-buildtime.tar.gz
+          retention-days: 14
+          
+      - name: Upload IntegrationTest project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-project-${{ matrix.platform }}-${{ inputs.unity-version }}
+          path: |
+            samples/IntegrationTest
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
