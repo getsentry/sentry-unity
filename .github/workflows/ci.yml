@@ -262,7 +262,7 @@ jobs:
 
   android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [android-smoke-test-build]
+    needs: [android-smoke-test-compile]
     name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} ${{ matrix.init-type }} Run Smoke Test
     uses: ./.github/workflows/android-smoke-test.yml
     with:
