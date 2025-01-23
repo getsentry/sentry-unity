@@ -88,23 +88,23 @@ internal static class SentryCocoaBridgeProxy
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeClose")]
     public static extern void Close();
 
-    [DllImport("__Internal")]
-    public static extern void SentryNativeBridgeAddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeAddBreadcrumb")]
+    public static extern void AddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
 
-    [DllImport("__Internal")]
-    public static extern void SentryNativeBridgeSetExtra(string key, string? value);
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetExtra")]
+    public static extern void SetExtra(string key, string? value);
 
-    [DllImport("__Internal")]
-    public static extern void SentryNativeBridgeSetTag(string key, string value);
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetTag")]
+    public static extern void SetTag(string key, string value);
 
-    [DllImport("__Internal")]
-    public static extern void SentryNativeBridgeUnsetTag(string key);
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeUnsetTag")]
+    public static extern void UnsetTag(string key);
 
-    [DllImport("__Internal")]
-    public static extern void SentryNativeBridgeSetUser(string? email, string? userId, string? ipAddress, string? username);
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetUser")]
+    public static extern void SetUser(string? email, string? userId, string? ipAddress, string? username);
 
-    [DllImport("__Internal")]
-    public static extern void SentryNativeBridgeUnsetUser();
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeUnsetUser")]
+    public static extern void UnsetUser();
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeGetInstallationId")]
     public static extern string GetInstallationId();
