@@ -2,6 +2,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // macOS only
 int SentryNativeBridgeLoadLibrary() { return 0; }
+int SentryNativeBridgeIsEnabled() { return 0; }
 void *_Nullable SentryNativeBridgeOptionsNew() { return nil; }
 void SentryNativeBridgeOptionsSetString(void *options, const char *name, const char *value) { }
 void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }

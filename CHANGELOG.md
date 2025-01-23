@@ -6,6 +6,10 @@
 
 - The SDK now provides stacktraces when capturing events created via `Debug.LogError`. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
 
+### Fixes
+
+- When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
+
 ### Dependencies
 
 - Bump Native SDK from v0.7.18 to v0.7.19 ([#1981](https://github.com/getsentry/sentry-unity/pull/1981))

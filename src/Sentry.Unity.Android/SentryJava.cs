@@ -8,8 +8,8 @@ namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
-    public bool IsEnabled(IJniExecutor jniExecutor);
-    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout);
+    public bool IsEnabled(IJniExecutor jniExecutor, TimeSpan timeout);
+    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout);
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
@@ -45,16 +45,16 @@ internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-    public bool IsEnabled(IJniExecutor jniExecutor)
+    public bool IsEnabled(IJniExecutor jniExecutor, TimeSpan timeout)
     {
         return jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             return sentry.CallStatic<bool>("isEnabled");
-        });
+        }, timeout);
     }
 
-    public bool Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout)
+    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout)
     {
         jniExecutor.Run(() =>
         {
@@ -97,8 +97,6 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setEnableScopePersistence", false);
             }, options.DiagnosticLogger));
         }, timeout);
-
-        return IsEnabled(jniExecutor);
     }
 
     internal class AndroidOptionsConfiguration : AndroidJavaProxy
