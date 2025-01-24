@@ -21,7 +21,7 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIn
 $ProjectName = "Unity-iPhone"
 $XcodeArtifactPath = "samples/IntegrationTest/Build"
 $ArchivePath = "$XcodeArtifactPath/archive"
-$AppPath = "$ArchivePath/$ProjectName/Build/Products/Release-iphonesimulator/IntegrationTest.app"
+$AppPath = "$ArchivePath/$ProjectName/Build/IntegrationTest.app"
 $AppName = "com.DefaultCompany.IntegrationTest"
 
 Class AppleDevice
