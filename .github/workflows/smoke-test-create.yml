@@ -15,6 +15,9 @@ jobs:
   create:
     name: Create Smoke Test - ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
+    env:
+      UNITY_PATH: docker exec unity unity-editor
+
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -33,7 +36,7 @@ jobs:
       shell: bash
 
     - name: Create new Project
-      run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "docker exec unity unity-editor"
+      run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
     # We create tar explicitly because upload-artifact is slow for many files.
     - name: Create archive
@@ -47,4 +50,8 @@ jobs:
         path: test-project.tar.gz
         # Lower retention period - we only need this to retry CI.
         retention-days: 14 
+
+    # TODO: Can we build without Sentry SDK for all platforms here? The rest of the CI run waits for the SDK build to finish anyway
+    # - name: Build without Sentry SDK
+    #   run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
             
