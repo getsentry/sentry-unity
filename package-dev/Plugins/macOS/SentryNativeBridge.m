@@ -9,6 +9,7 @@ static Class SentryBreadcrumb;
 static Class SentryUser;
 static Class SentryOptions;
 static Class PrivateSentrySDKOnly;
+static Class SentryId;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
@@ -41,6 +42,16 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryUser)
             LOAD_CLASS_OR_BREAK(SentryOptions)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
+            
+            // Try to load SentryId from Swift module
+            SentryId = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$__TtC6Sentry8SentryId");
+            if (!SentryId) {
+                // Fallback to try the Objective-C name
+                SentryId = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_SentryId");
+                if (!SentryId) {
+                    NSLog(@"Sentry (bridge): SentryId class not available - some features will be disabled");
+                }
+            }
 
             // everything above passed - mark as successfully loaded
             loadStatus = 1;
@@ -72,14 +83,23 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithInt:value];
 }
 
-void SentryNativeBridgeStartWithOptions(const void *options)
+int SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
+    NSError *error = nil;
+
     id sentryOptions = [[SentryOptions alloc]
         performSelector:@selector(initWithDict:didFailWithError:)
-        withObject:dictOptions withObject:nil];
+        withObject:dictOptions
+        withObject:&error];
+
+    if (error != nil)
+    {
+        return 0;
+    }
 
     [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
+    return 1;
 }
 
 void SentryConfigureScope(void (^callback)(id))
@@ -253,6 +273,34 @@ char *SentryNativeBridgeGetInstallationId()
     char *cString = (char *)malloc(len);
     memcpy(cString, nsStringUtf8, len);
     return cString;
+}
+
+void SentryNativeBridgeSetTraceId(const char *traceId) 
+{
+    if (traceId == NULL) {
+        return;
+    }
+
+    SentryConfigureScope(^(id scope) {
+        @try {
+            id sentryTraceId = [[SentryId alloc] performSelector:@selector(initWithUUIDString:)
+                                                     withObject:[NSString stringWithUTF8String:traceId]];
+            [scope setValue:sentryTraceId forKeyPath:@"propagationContext.traceId"];
+        } @catch (NSException *exception) {
+            NSLog(@"Sentry (bridge): Failed to set trace ID: %@", exception.reason);
+        }
+    });
+    
+    @try {
+        [SentrySDK performSelector:@selector(currentHub) withObject:nil];
+        id currentScope = [[SentrySDK performSelector:@selector(currentHub)] performSelector:@selector(scope)];
+        id propagationContext = [currentScope valueForKeyPath:@"propagationContext"];
+        id setTraceId = [propagationContext valueForKey:@"traceId"];
+        NSString *setTraceIdString = [setTraceId performSelector:@selector(sentryIdString)];
+        NSLog(@"Sentry (bridge): Verified trace ID is set to: %@", setTraceIdString);
+    } @catch (NSException *exception) {
+        NSLog(@"Sentry (bridge): Failed to verify trace ID: %@", exception.reason);
+    }
 }
 
 static inline NSString *_NSStringOrNil(const char *value)
