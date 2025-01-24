@@ -1,5 +1,3 @@
-name: Android Create Smoke Test Project
-
 on:
   workflow_call:
     inputs:
@@ -12,9 +10,9 @@ defaults:
     shell: pwsh
 
 jobs:
-  android-build-smoke-test:
+  build:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ inputs.unity-version }} Android Smoke Test Build
+    name: ${{ inputs.unity-version }}
     # needs: [smoke-test-create]
     runs-on: ubuntu-latest
     strategy:

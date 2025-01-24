@@ -235,7 +235,6 @@ jobs:
     needs: [smoke-test-create]
     secrets: inherit
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ matrix.unity-version }} Build Android Smoke Test
     strategy:
       fail-fast: false
       matrix:
@@ -248,7 +247,6 @@ jobs:
     needs: [android-smoke-test-build]
     secrets: inherit
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ matrix.unity-version }} ${{ matrix.init-type }} Compile Android Smoke Test
     strategy:
       fail-fast: false
       matrix:
@@ -263,8 +261,7 @@ jobs:
   android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [android-smoke-test-compile]
-    name: ${{ matrix.unity-version }} Android ${{ matrix.api-level }} ${{ matrix.init-type }} Run Smoke Test
-    uses: ./.github/workflows/android-smoke-test.yml
+    uses: ./.github/workflows/android-smoke-test-run.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       api-level: ${{ matrix.api-level }}
