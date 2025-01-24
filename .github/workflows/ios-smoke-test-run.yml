@@ -38,6 +38,10 @@ jobs:
           name: testapp-ios-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
           path: samples/IntegrationTest/Build
 
+      - name: List downloaded files
+        run: |
+          Get-ChildItem -Path "samples/IntegrationTest/Build" -Recurse
+
       - name: Set Xcode for iOS version ${{ inputs.ios-version }}
         if: ${{ inputs.ios-version != 'latest'}}
         uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # pin@v1.6

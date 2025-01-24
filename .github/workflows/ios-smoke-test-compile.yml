@@ -44,6 +44,10 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
+      - name: List downloaded files
+        run: |
+          Get-ChildItem -Path "samples/IntegrationTest/Build" -Recurse
+          
       - name: Upload app
         uses: actions/upload-artifact@v4
         with:
