@@ -30,6 +30,7 @@ jobs:
     # Map the job outputs to step outputs
     outputs:
       status: ${{ steps.smoke-test.outputs.status }}
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4

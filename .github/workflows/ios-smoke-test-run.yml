@@ -1,0 +1,56 @@
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+      ios-version:
+        required: true
+        type: string
+      init-type:
+        required: true
+        type: string
+    # Map the workflow outputs to job outputs
+    outputs:
+      status:
+        description: "Smoke test status"
+        value: ${{ jobs.run.outputs.status }}
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  run:
+    name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
+    runs-on: macos-13 # Pinning to get the oldest, supported version of iOS simulator
+    # Map the job outputs to step outputs
+    outputs:
+      status: ${{ steps.smoke-test.outputs.status }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: testapp-iOS-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          path: samples/IntegrationTest/Build
+
+      - name: Set Xcode for iOS version ${{ inputs.ios-version }}
+        if: ${{ inputs.ios-version != 'latest'}}
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # pin@v1.6
+        with:
+          xcode-version: '14.1' # to run iOS 16.1 we need Xcode 14.1
+
+      - name: Run iOS Smoke Tests
+        id: smoke-test
+        timeout-minutes: 20
+        run: |
+          $runtime = "${{ inputs.ios-version }}"
+          If ($runtime -ne "latest")
+          {
+            $runtime = "iOS " + $runtime
+          }
+          ./Scripts/smoke-test-ios.ps1 Test "$runtime" -IsIntegrationTest

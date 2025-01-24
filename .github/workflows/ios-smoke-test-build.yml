@@ -4,11 +4,11 @@ on:
       unity-version:
         required: true
         type: string
-
+  
 defaults:
   run:
     shell: pwsh
-
+  
 jobs:
   build:
     name: ${{ inputs.unity-version }}
@@ -16,25 +16,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - platform: Android
+          - platform: iOS
             check_symbols: false
-            build_platform: Android-Export
+            build_platform: iOS
     env:
       UNITY_PATH: docker exec unity unity-editor
     
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8
-        with:
-          android: true
-          dotnet: false
-          haskell: true
-          large-packages: false
-          docker-images: false
-          swap-storage: true
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -46,7 +36,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'android' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'iOS' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
 
       # Workaround for missing libMonoPosixHelper.so
@@ -65,8 +55,8 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-    #   - name: Build without Sentry SDK
-    #     run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+      # - name: Build without Sentry SDK
+      #   run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
@@ -98,7 +88,7 @@ jobs:
       - name: Upload test app
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-android-${{ inputs.unity-version }}-runtime
+          name: testapp-ios-${{ inputs.unity-version }}-runtime
           if-no-files-found: error
           path: test-app-runtime.tar.gz
           retention-days: 14
@@ -107,7 +97,7 @@ jobs:
         run: |
           $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
-          $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
+          $content = $content -replace 'IosNativeInitializationType = NativeInitializationType.Runtime', 'IosNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
       - name: Build Project for mobile platforms (build-time initialization)
@@ -123,7 +113,7 @@ jobs:
       - name: Upload test app (build-time initialization)
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-android-${{ inputs.unity-version }}-buildtime
+          name: testapp-ios-${{ inputs.unity-version }}-buildtime
           if-no-files-found: error
           path: test-app-buildtime.tar.gz
           retention-days: 14
@@ -132,7 +122,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-project-android-${{ inputs.unity-version }}
+          name: failed-project-ios-${{ inputs.unity-version }}
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
