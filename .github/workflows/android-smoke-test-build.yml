@@ -83,25 +83,20 @@ jobs:
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
 
-      - name: Build Project
+      - name: Export Gradle Project - Runtime
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
 
-      # We create tar explicitly because upload-artifact is slow for many files.
-      - name: Create archive
-        shell: bash
-        run: |
-          # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
-          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
+      - name: Build Gradle Project - Runtime
+        run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
 
-      # Upload runtime initialization build
-      - name: Upload test app
+      - name: Upload app
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-android-${{ inputs.unity-version }}-runtime
-          if-no-files-found: error
-          path: test-app-runtime.tar.gz
-          retention-days: 14
+          name: testapp-android-compiled-${{ inputs.unity-version }}-runtime
+          # Collect app but ignore the files that are not required for the test.
+          path: |
+            samples/IntegrationTest/Build/*.apk
+          retention-days: 14 # Lower retention period - we only need this to retry CI.
 
       - name: Configure Sentry for mobile platforms (build-time initialization)
         run: |
@@ -110,23 +105,20 @@ jobs:
           $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
-      - name: Build Project for mobile platforms (build-time initialization)
+      - name: Export Gradle Project - Build Time
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
 
-      - name: Create archive (build-time initialization)
-        shell: bash
-        run: |
-          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app-buildtime.tar.gz samples/IntegrationTest/Build
+      - name: Build Gradle Project - Build Time
+        run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
 
-      # Upload build-time initialization build
-      - name: Upload test app (build-time initialization)
+      - name: Upload app
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-android-${{ inputs.unity-version }}-buildtime
-          if-no-files-found: error
-          path: test-app-buildtime.tar.gz
-          retention-days: 14
+          name: testapp-android-compiled-${{ inputs.unity-version }}-buildtime
+          # Collect app but ignore the files that are not required for the test.
+          path: |
+            samples/IntegrationTest/Build/*.apk
+          retention-days: 14 # Lower retention period - we only need this to retry CI.
           
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
@@ -136,5 +128,4 @@ jobs:
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          # Lower retention period - we only need this to retry CI.
-          retention-days: 14
+          retention-days: 14 # Lower retention period - we only need this to retry CI.
