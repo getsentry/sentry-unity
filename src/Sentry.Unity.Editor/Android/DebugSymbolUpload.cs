@@ -47,7 +47,7 @@ internal class DebugSymbolUpload
             stringBuilder.AppendLine("task sentryUploadSymbols {");
             stringBuilder.AppendLine("    doLast {");
             stringBuilder.AppendLine("        println 'Uploading symbols to Sentry.'");
-            
+
             if (!_isExporting && _ignoreCliErrors)
             {
                 stringBuilder.AppendLine("        try {");
