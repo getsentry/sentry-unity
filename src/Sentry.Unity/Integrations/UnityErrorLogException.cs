@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
+using Sentry.Extensibility;
 using Sentry.Protocol;
 using UnityEngine;
 
@@ -20,18 +22,14 @@ namespace Sentry.Unity.Integrations
         private readonly string _logStackTrace = string.Empty;
 
         private readonly SentryOptions? _options;
+        private readonly IDiagnosticLogger? _logger;
 
         public UnityErrorLogException(string logString, string logStackTrace, SentryOptions? options)
         {
             _logString = logString;
             _logStackTrace = logStackTrace;
             _options = options;
-        }
-
-        internal UnityErrorLogException(string logString, string logStackTrace)
-        {
-            _logString = logString;
-            _logStackTrace = logStackTrace;
+            _logger = _options?.DiagnosticLogger;
         }
 
         internal UnityErrorLogException() : base() { }
@@ -42,6 +40,8 @@ namespace Sentry.Unity.Integrations
 
         public SentryException ToSentryException()
         {
+            _logger?.LogDebug("Creating SentryException out of synthetic ErrorLogException");
+
             var frames = ParseStackTrace(_logStackTrace);
             frames.Reverse();
 
@@ -80,7 +80,7 @@ namespace Sentry.Unity.Integrations
                     continue;
                 }
 
-                var frame = ParseStackFrame(item);
+                var frame = ParseStackFrame(item, _logger);
                 if (_options is not null)
                 {
                     frame.ConfigureAppFrame(_options);
@@ -91,7 +91,7 @@ namespace Sentry.Unity.Integrations
             return frames;
         }
 
-        private static SentryStackFrame ParseStackFrame(string stackFrameLine)
+        private static SentryStackFrame ParseStackFrame(string stackFrameLine, IDiagnosticLogger? logger = null)
         {
             var closingParenthesis = stackFrameLine.IndexOf(')');
             if (closingParenthesis == -1)
@@ -121,8 +121,10 @@ namespace Sentry.Unity.Integrations
                     LineNumber = lineNo == -1 ? null : lineNo
                 };
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                logger?.LogError(e, "Failed to parse the stack frame line {0}", stackFrameLine);
+
                 // Suppress any errors while parsing and fall back to a basic stackframe
                 return CreateBasicStackFrame(stackFrameLine);
             }
