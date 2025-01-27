@@ -18,7 +18,7 @@ jobs:
         include:
           - platform: Android
             check_symbols: false
-            build_platform: Android-Export
+            build_platform: Android
     env:
       UNITY_PATH: docker exec unity unity-editor
     
@@ -83,11 +83,11 @@ jobs:
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
 
-      - name: Export Gradle Project - Runtime
+      - name: Export Project - Runtime
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
 
-      - name: Build Gradle Project - Runtime
-        run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
+      # - name: Build Gradle Project - Runtime
+      #   run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
 
       - name: Upload app
         uses: actions/upload-artifact@v4
@@ -105,11 +105,11 @@ jobs:
           $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
-      - name: Export Gradle Project - Build Time
+      - name: Export Project - Build Time
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
 
-      - name: Build Gradle Project - Build Time
-        run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
+      # - name: Build Gradle Project - Build Time
+      #   run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
 
       - name: Upload app
         uses: actions/upload-artifact@v4
