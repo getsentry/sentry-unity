@@ -86,6 +86,10 @@ namespace Sentry.Unity
 
                 SentryUnity.Init(options);
 
+#if SENTRY_NATIVE_COCOA
+                SentryNativeCocoa.SetTraceId(options);
+#endif
+
 #if !SENTRY_WEBGL
                 if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
                 {
