@@ -13,12 +13,6 @@ jobs:
   build:
     name: ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - platform: Android
-            check_symbols: false
-            build_platform: Android
     env:
       UNITY_PATH: docker exec unity unity-editor
     
@@ -66,7 +60,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
     #   - name: Build without Sentry SDK
-    #     run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+    #     run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android"
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
@@ -81,10 +75,10 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols
 
       - name: Export Project - Runtime
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
 
       # - name: Build Gradle Project - Runtime
       #   run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
@@ -106,7 +100,7 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Export Project - Build Time
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
 
       # - name: Build Gradle Project - Build Time
       #   run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
