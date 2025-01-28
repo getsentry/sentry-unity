@@ -46,23 +46,39 @@ internal class DebugSymbolUpload
             stringBuilder.AppendLine("afterEvaluate {");
             stringBuilder.AppendLine("task sentryUploadSymbols {");
             stringBuilder.AppendLine("    doLast {");
-            stringBuilder.AppendLine("        println 'Uploading symbols to Sentry.'");
-
-            if (!_isExporting && _ignoreCliErrors)
+            if (_isExporting)
             {
-                stringBuilder.AppendLine("        try {");
+                stringBuilder.AppendLine("        println 'Uploading symbols to Sentry.'");
+            }
+            else
+            {
+                var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
+                Directory.CreateDirectory(logsDir);
+                stringBuilder.AppendLine("        println 'Uploading symbols to Sentry. You can find the full log in ./Logs/sentry-symbols-upload.log (the file content may not be strictly sequential because it\\'s a merge of two streams).'");
+                stringBuilder.AppendLine($"        def logFilePath = '{logsDir}/{SymbolUploadLogName}'");
+                stringBuilder.AppendLine("        def sentryLogFile = new FileOutputStream(logFilePath)");
+                if (_ignoreCliErrors)
+                {
+                    stringBuilder.AppendLine("        try {");
+                }
             }
 
             stringBuilder.AppendLine("        exec {");
             stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
             stringBuilder.AppendLine($"            executable '{SentryCliMarker}'");
             stringBuilder.AppendLine($"            args = ['debug-files', 'upload'{UploadArgsMarker}]");
-            stringBuilder.AppendLine("        }");
+            if (!_isExporting)
+            {
+                stringBuilder.AppendLine("            standardOutput sentryLogFile");
+                stringBuilder.AppendLine("            errorOutput sentryLogFile");
+            }
 
+            stringBuilder.AppendLine("        }");
             if (!_isExporting && _ignoreCliErrors)
             {
                 stringBuilder.AppendLine("        } catch (exception) {");
-                stringBuilder.AppendLine("            println '===ERROR===' + exception");
+                stringBuilder.AppendLine("            def file = new File(logFilePath)");
+                stringBuilder.AppendLine("            file.append('===ERROR===' + exception)");
                 stringBuilder.AppendLine("        }");
             }
             CheckMapping(stringBuilder);
