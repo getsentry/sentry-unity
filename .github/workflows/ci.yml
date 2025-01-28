@@ -207,7 +207,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "6000"]
+        unity-version: ["2019", "2022", "6000"]
     uses: ./.github/workflows/android-smoke-test-build.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -225,7 +225,7 @@ jobs:
       matrix:
         api-level: [30, 31, 34] # last updated January 2025
         init-type: ["runtime", "buildtime"]
-        unity-version: ["2019", "6000"]
+        unity-version: ["2019", "2022", "6000"]
 
   ios-smoke-test-build:
     needs: [smoke-test-create]
