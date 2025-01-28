@@ -87,6 +87,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
 
       # We create tar explicitly because upload-artifact is slow for many files.
+      # TODO verify this is still true with upload-artifact@v4 which improved performance a lot.
       - name: Create archive
         shell: bash
         run: |
