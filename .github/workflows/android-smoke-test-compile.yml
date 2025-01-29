@@ -1,0 +1,87 @@
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+      init-type:
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  compile:
+    name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
+    runs-on: 'ubuntu-latest-4-cores'
+            
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download app project
+        uses: actions/download-artifact@v4
+        with:
+          name: testapp-android-${{ inputs.unity-version }}-${{ inputs.init-type }}
+
+      - name: Extract app project
+        run: tar -xvzf test-app-${{ inputs.init-type }}.tar.gz
+
+      - name: Setup Android
+        uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc # pin@v2
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@8c3b609ff4d54576ea420551943fd34b4d03b0dc # pin@v1
+        id: setup-ndk
+        with:
+          # See supported version in https://docs.unity3d.com/6000.0/Documentation/Manual/android-sdksetup.html
+          ndk-version: ${{ inputs.unity-version == '2019' && 'r19' || 'r23b' }}
+          add-to-path: false
+
+      - name: Setup Java for Unity
+        run: ./scripts/ci-setup-java.ps1 -UnityVersion "${{ inputs.unity-version }}"
+
+      # We modify the exported gradle project to deal with the different build-environment
+      # I.e. we're fixing the paths for SDK & NDK that have been hardcoded to point at the Unity installation 
+      - name: Modify gradle project
+        run: |
+          ./test/Scripts.Integration.Test/modify-gradle-project.ps1 `
+            -AndroidSdkRoot $env:ANDROID_SDK_ROOT `
+            -NdkPath ${{ steps.setup-ndk.outputs.ndk-path }} `
+            -UnityVersion ${{ inputs.unity-version }}
+  
+      - name: Android smoke test
+        # Skipping Android on Unity 2022 for now
+        run: |
+          if ("${{ inputs.unity-version }}" -ne "2022")
+          {
+            ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
+          }
+        timeout-minutes: 10
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+    
+      - name: Upload integration-test project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-project-android-${{ inputs.unity-version }}-${{ inputs.init-type }}-compiled
+          path: |
+            samples/IntegrationTest
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        # Skipping Android on Unity 2022 for now
+        if: ${{ inputs.unity-version != '2022' }}
+        with:
+          name: testapp-android-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          # Collect app but ignore the files that are not required for the test.
+          path: |
+            samples/IntegrationTest/Build/*.apk
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14

@@ -16,19 +16,21 @@ on:
         description: "Smoke test status"
         value: ${{ jobs.run.outputs.status }}
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   run:
-    name: Android Smoke Test
+    name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
     runs-on: ubuntu-latest
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
-    defaults:
-      run:
-        shell: pwsh
     # Map the job outputs to step outputs
     outputs:
       status: ${{ steps.smoke-test.outputs.status }}
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +38,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@v4
         with:
-          name: testapp-Android-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          name: testapp-android-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
           path: samples/IntegrationTest/Build
 
       # See https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
