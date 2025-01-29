@@ -53,7 +53,6 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
     
-
   package-validation:
     name: UPM Package validation
     runs-on: ubuntu-latest
