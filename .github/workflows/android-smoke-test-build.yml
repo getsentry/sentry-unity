@@ -62,18 +62,16 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols
 
       - name: Export APK - Runtime Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
 
       - name: Upload .apk
         uses: actions/upload-artifact@v4
         with:
           name: testapp-android-compiled-${{ inputs.unity-version }}-runtime
-          # Collect app but ignore the files that are not required for the test.
-          path: |
-            samples/IntegrationTest/Build/*.apk
+          path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
           retention-days: 14 # Lower retention period - we only need this to retry CI.
 
       - name: Configure Sentry for mobile platforms (build-time initialization)
@@ -90,9 +88,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: testapp-android-compiled-${{ inputs.unity-version }}-buildtime
-          # Collect app but ignore the files that are not required for the test.
-          path: |
-            samples/IntegrationTest/Build/*.apk
+          path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
           retention-days: 14 # Lower retention period - we only need this to retry CI.
           
       - name: Upload IntegrationTest project on failure
