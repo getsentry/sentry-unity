@@ -49,9 +49,6 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-    #   - name: Build without Sentry SDK
-    #     run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android"
-
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
@@ -65,15 +62,12 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
 
-      - name: Export Project - Runtime
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
+      - name: Export APK - Runtime Initialization
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
 
-      # - name: Build Gradle Project - Runtime
-      #   run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
-
-      - name: Upload app
+      - name: Upload .apk
         uses: actions/upload-artifact@v4
         with:
           name: testapp-android-compiled-${{ inputs.unity-version }}-runtime
@@ -89,13 +83,10 @@ jobs:
           $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
-      - name: Export Project - Build Time
+      - name: Export APK - Build-Time Initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
 
-      # - name: Build Gradle Project - Build Time
-      #   run: ./scripts/smoke-test-android.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}"
-
-      - name: Upload app
+      - name: Upload .apk
         uses: actions/upload-artifact@v4
         with:
           name: testapp-android-compiled-${{ inputs.unity-version }}-buildtime
