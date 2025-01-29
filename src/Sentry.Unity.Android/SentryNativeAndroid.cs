@@ -132,6 +132,24 @@ public static class SentryNativeAndroid
         options.DiagnosticLogger?.LogInfo("Successfully configured the Android SDK");
     }
 
+    public static void SetTraceId(SentryUnityOptions options)
+    {
+        options.DiagnosticLogger?.LogInfo("Setting Trace ID");
+
+        var traceId = SentrySdk.GetTraceHeader()?.TraceId;
+        if (traceId is null)
+        {
+            options.DiagnosticLogger?.LogInfo("fucking trace id is null");
+        }
+        else
+        {
+            options.DiagnosticLogger?.LogInfo("Setting the trace ID on the native layer {0}", traceId);
+
+            JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
+            SentryJava.ContinueTrace(JniExecutor, traceId.ToString());
+        }
+    }
+
     /// <summary>
     /// Closes the native Android support.
     /// </summary>

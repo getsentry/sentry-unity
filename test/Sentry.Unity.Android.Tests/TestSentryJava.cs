@@ -19,6 +19,7 @@ internal class TestSentryJava : ISentryJava
     public bool? CrashedLastRun(IJniExecutor jniExecutor) => IsCrashedLastRun;
 
     public void Close(IJniExecutor jniExecutor) { }
+    public void ContinueTrace(IJniExecutor jniExecutor, string traceId) { }
 
     public void WriteScope(
         IJniExecutor jniExecutor,
