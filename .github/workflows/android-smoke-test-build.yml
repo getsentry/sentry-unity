@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
+      
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
       - name: Docker Login
@@ -74,7 +74,7 @@ jobs:
           path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
           retention-days: 14 # Lower retention period - we only need this to retry CI.
 
-      - name: Configure Sentry for mobile platforms (build-time initialization)
+      - name: Overwrite OptionsConfiguration for build-time initialization
         run: |
           $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
