@@ -65,9 +65,6 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-    #   - name: Build without Sentry SDK
-    #     run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
-
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
