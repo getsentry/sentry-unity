@@ -90,7 +90,7 @@ jobs:
           path: test-app-runtime.tar.gz
           retention-days: 14
 
-      - name: Configure Sentry for mobile platforms (build-time initialization)
+      - name: Overwrite OptionsConfiguration for build-time initialization
         run: |
           $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw

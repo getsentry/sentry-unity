@@ -53,7 +53,6 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
     
-
   package-validation:
     name: UPM Package validation
     runs-on: ubuntu-latest
@@ -212,23 +211,9 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  android-smoke-test-compile:
-    needs: [android-smoke-test-build]
-    secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        unity-version: ["2019", "6000"]
-        init-type: ["runtime", "buildtime"]
-    uses: ./.github/workflows/android-smoke-test-compile.yml
-    with:
-      unity-version: ${{ matrix.unity-version }}
-      init-type: ${{ matrix.init-type }}
-
   android-smoke-test-run:
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [android-smoke-test-compile]
+    needs: [android-smoke-test-build]
     uses: ./.github/workflows/android-smoke-test-run.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -239,7 +224,7 @@ jobs:
       matrix:
         api-level: [30, 31, 34] # last updated January 2025
         init-type: ["runtime", "buildtime"]
-        unity-version: ["2019", "6000"]
+        unity-version: ["2019", "2022", "6000"]
 
   ios-smoke-test-build:
     needs: [smoke-test-create]
