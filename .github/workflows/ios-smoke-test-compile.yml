@@ -1,0 +1,61 @@
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+      init-type:
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  compile:
+    name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
+    runs-on: 'macos-latest'
+            
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download app project
+        uses: actions/download-artifact@v4
+        with:
+          name: testapp-ios-${{ inputs.unity-version }}-${{ inputs.init-type }}
+
+      - name: Extract app project
+        run: tar -xvzf test-app-${{ inputs.init-type }}.tar.gz
+
+      - name: iOS smoke test
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}" -iOSMinVersion "16.1"
+        timeout-minutes: 10
+    
+      - name: Upload integration-test project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-project-ios-${{ inputs.unity-version }}-${{ inputs.init-type }}-compiled
+          path: |
+            samples/IntegrationTest
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - name: List downloaded files
+        run: |
+          Get-ChildItem -Path "samples/IntegrationTest/Build" -Recurse
+          
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: testapp-ios-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          # Collect app but ignore the files that are not required for the test.
+          path: |
+            samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
+            !**/Release-iphonesimulator/*.dSYM
+            !**/Release-iphonesimulator/UnityFramework.framework/*
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
