@@ -55,12 +55,6 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-<<<<<<< HEAD
-      # - name: Build without Sentry SDK
-      #   run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
-
-=======
->>>>>>> main
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
@@ -96,11 +90,7 @@ jobs:
           path: test-app-runtime.tar.gz
           retention-days: 14
 
-<<<<<<< HEAD
-      - name: Configure Sentry for mobile platforms (build-time initialization)
-=======
       - name: Overwrite OptionsConfiguration for build-time initialization
->>>>>>> main
         run: |
           $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
