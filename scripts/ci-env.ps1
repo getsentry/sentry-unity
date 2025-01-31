@@ -20,7 +20,7 @@ switch ($name) {
         return "2023.2.20f1"
     }
     "unity6000" {
-        return "6000.0.34f1"
+        return "6000.0.36f1"
     }
     Default {
         throw "Unkown variable '$name'"

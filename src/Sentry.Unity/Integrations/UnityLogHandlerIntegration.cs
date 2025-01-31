@@ -8,9 +8,7 @@ namespace Sentry.Unity.Integrations;
 
 internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 {
-    internal readonly ErrorTimeDebounce ErrorTimeDebounce;
-    internal readonly LogTimeDebounce LogTimeDebounce;
-    internal readonly WarningTimeDebounce WarningTimeDebounce;
+
 
     private readonly IApplication _application;
 
@@ -22,10 +20,6 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     public UnityLogHandlerIntegration(SentryUnityOptions options, IApplication? application = null)
     {
         _application = application ?? ApplicationAdapter.Instance;
-
-        LogTimeDebounce = new LogTimeDebounce(options.DebounceTimeLog);
-        WarningTimeDebounce = new WarningTimeDebounce(options.DebounceTimeWarning);
-        ErrorTimeDebounce = new ErrorTimeDebounce(options.DebounceTimeError);
     }
 
     public void Register(IHub hub, SentryOptions sentryOptions)
@@ -89,59 +83,10 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 
     public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
     {
-        try
-        {
-            CaptureLogFormat(logType, context, format, args);
-        }
-        finally
-        {
-            // Always pass the log back to Unity
-            _unityLogHandler.LogFormat(logType, context, format, args);
-        }
-    }
-
-    internal void CaptureLogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
-    {
-        if (_hub?.IsEnabled is not true)
-        {
-            return;
-        }
-
-        // The SDK sets "Sentry" as tag when logging and we're not capturing SDK internal logs. Expected format: "{0}: {1}"
-        if (args.Length > 1 && "Sentry".Equals(args[0])) // Checking it this way around because `args[0]` could be null
-        {
-            return;
-        }
-
-        if (_sentryOptions?.EnableLogDebouncing is true)
-        {
-            var debounced = logType switch
-            {
-                LogType.Error or LogType.Exception or LogType.Assert => ErrorTimeDebounce.Debounced(),
-                LogType.Log => LogTimeDebounce.Debounced(),
-                LogType.Warning => WarningTimeDebounce.Debounced(),
-                _ => true
-            };
-
-            if (!debounced)
-            {
-                return;
-            }
-        }
-
-        var logMessage = args.Length == 0 ? format : string.Format(format, args);
-
-        if (logType is LogType.Error or LogType.Assert)
-        {
-            // TODO: Capture the context (i.e. grab the name if != null and set it as context)
-            _hub.CaptureMessage(logMessage, ToEventTagType(logType));
-        }
-
-        if (_sentryOptions?.AddBreadcrumbsForLogType[logType] is true)
-        {
-            // So the next event includes this as a breadcrumb
-            _hub.AddBreadcrumb(message: logMessage, category: "unity.logger", level: ToBreadcrumbLevel(logType));
-        }
+        // Always pass the log back to Unity
+        // Capturing of `Debug`, `Warning`, and `Error` happens in the Application Logging Integration.
+        // The LogHandler does not have access to the stacktrace information required
+        _unityLogHandler.LogFormat(logType, context, format, args);
     }
 
     private void OnQuitting()
@@ -162,26 +107,4 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         }
         _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
     }
-
-    private static SentryLevel ToEventTagType(LogType logType)
-        => logType switch
-        {
-            LogType.Assert => SentryLevel.Error,
-            LogType.Error => SentryLevel.Error,
-            LogType.Exception => SentryLevel.Error,
-            LogType.Log => SentryLevel.Info,
-            LogType.Warning => SentryLevel.Warning,
-            _ => SentryLevel.Fatal
-        };
-
-    private static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
-        => logType switch
-        {
-            LogType.Assert => BreadcrumbLevel.Error,
-            LogType.Error => BreadcrumbLevel.Error,
-            LogType.Exception => BreadcrumbLevel.Error,
-            LogType.Log => BreadcrumbLevel.Info,
-            LogType.Warning => BreadcrumbLevel.Warning,
-            _ => BreadcrumbLevel.Info
-        };
 }
