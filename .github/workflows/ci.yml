@@ -43,6 +43,7 @@ jobs:
       runsOn: ${{ matrix.host }}
 
   build-unity-sdk:
+    name: Build Unity SDK
     secrets: inherit
     strategy:
       fail-fast: false
@@ -75,9 +76,9 @@ jobs:
 
   # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`.
   smoke-test-create:
-    secrets: inherit
+    name: Create ${{ matrix.unity-version }} Smoke Test Project
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: Prepare ${{ matrix.unity-version }} Smoke Test
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
@@ -88,8 +89,8 @@ jobs:
     
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create]
     runs-on: ubuntu-latest
     strategy:
@@ -201,9 +202,9 @@ jobs:
 
   android-smoke-test-build:
     name: Build Android ${{ matrix.unity-version }} Smoke Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create]
     secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     strategy:
       fail-fast: false
       matrix:
@@ -230,9 +231,9 @@ jobs:
 
   ios-smoke-test-build:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create]
     secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     strategy:
       fail-fast: false
       matrix:
@@ -243,9 +244,9 @@ jobs:
 
   ios-smoke-test-compile:
     name: Compile iOS ${{ matrix.unity-version }} Smoke Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [ios-smoke-test-build]
     secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     strategy:
       fail-fast: false
       matrix:

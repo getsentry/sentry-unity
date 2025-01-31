@@ -22,7 +22,7 @@ defaults:
 
 jobs:
   run:
-    name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
+    name: ${{ inputs.unity-version }} ${{ inputs.api-level }} ${{ inputs.init-type }}
     runs-on: ubuntu-latest
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/

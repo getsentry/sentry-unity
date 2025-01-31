@@ -22,7 +22,7 @@ defaults:
 
 jobs:
   run:
-    name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
+    name: ${{ inputs.unity-version }} ${{ inputs.ios-version }} ${{ inputs.init-type }}
     runs-on: macos-13 # Pinning to get the oldest, supported version of iOS simulator
     # Map the job outputs to step outputs
     outputs:
