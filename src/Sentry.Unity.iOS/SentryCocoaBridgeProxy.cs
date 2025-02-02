@@ -60,6 +60,9 @@ internal static class SentryCocoaBridgeProxy
         options.DiagnosticLogger?.LogDebug("Setting MaxCacheItems: {0}", options.MaxCacheItems);
         OptionsSetInt(cOptions, "maxCacheItems", options.MaxCacheItems);
 
+        options.DiagnosticLogger?.LogDebug("Setting TracesSampleRate: 0");
+        OptionsSetInt(cOptions, "tracesSampleRate", 0);
+
         var result = StartWithOptions(cOptions);
         return result is 1;
     }
@@ -108,4 +111,7 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeGetInstallationId")]
     public static extern string GetInstallationId();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetTraceId")]
+    public static extern void SetTraceId(string? traceId);
 }

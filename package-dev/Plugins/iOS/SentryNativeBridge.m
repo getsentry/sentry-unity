@@ -169,6 +169,18 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
+void SentryNativeBridgeSetTraceId(const char *traceId) 
+{
+    if (traceId == NULL) {
+        return;
+    }
+
+    [SentrySDK configureScope:^(SentryScope *scope) {
+        SentryId *sentryTraceId = [[SentryId alloc] initWithUUIDString:[NSString stringWithUTF8String:traceId]];
+        scope.propagationContext.traceId = sentryTraceId;
+    }];
+}
+
 static inline NSString *_NSStringOrNil(const char *value)
 {
     return value ? [NSString stringWithUTF8String:value] : nil;

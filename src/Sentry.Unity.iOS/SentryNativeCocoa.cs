@@ -90,6 +90,23 @@ public static class SentryNativeCocoa
         options.DiagnosticLogger?.LogInfo("Successfully configured the native SDK");
     }
 
+    public static void SetTraceId(SentryUnityOptions options)
+    {
+        options.DiagnosticLogger?.LogInfo("Setting Trace ID");
+
+        var traceId = SentrySdk.GetTraceHeader()?.TraceId;
+        if (traceId is null)
+        {
+            options.DiagnosticLogger?.LogInfo("fucking trace id is null");
+        }
+        else
+        {
+            options.DiagnosticLogger?.LogInfo("Setting the trace ID on the native layer {0}", traceId);
+
+            SentryCocoaBridgeProxy.SetTraceId(traceId.ToString());
+        }
+    }
+
     /// <summary>
     /// Closes the native Cocoa support.
     /// </summary>
