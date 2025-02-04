@@ -21,6 +21,9 @@
 - Bump Cocoa SDK from v8.43.0 to v8.44.0 ([#2001](https://github.com/getsentry/sentry-unity/pull/2001))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8440)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.43.0...8.44.0)
+- Bump .NET SDK from v5.0.1 to v5.1.0 ([#2005](https://github.com/getsentry/sentry-unity/pull/2005))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#510)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.0.1...5.1.0)
 
 ## 3.0.0-beta.1
 
