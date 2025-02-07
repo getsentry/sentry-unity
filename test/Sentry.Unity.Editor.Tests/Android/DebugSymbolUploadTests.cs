@@ -155,13 +155,12 @@ public class DebugSymbolUploadTests
 
         if (!isExporting)
         {
-            keywords.Add("logFilePath");
+            keywords.Add("standardOutput outputStream");
         }
 
-        if (!isExporting && ignoreCliErrors)
+        if (ignoreCliErrors)
         {
-            keywords.Add("try {");
-            keywords.Add("} catch");
+            keywords.Add("--allow-failure");
         }
 
         if (addMapping)
@@ -169,7 +168,7 @@ public class DebugSymbolUploadTests
             keywords.Add("args = ['upload-proguard'");
             if (!isExporting)
             {
-                keywords.Add("mappingLogFile");
+                keywords.Add("standardOutput mappingOutputStream");
             }
         }
 
