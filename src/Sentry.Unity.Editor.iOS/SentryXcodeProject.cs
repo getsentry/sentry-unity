@@ -169,6 +169,12 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
         {
             uploadDifArguments += " --include-sources";
         }
+
+        if (sentryCliOptions.IgnoreCliErrors)
+        {
+            uploadDifArguments += " --allow-failure";
+        }
+
         var uploadScript = string.Format(_uploadScript, SentryCli.SentryCliMacOS, uploadDifArguments);
 
         _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
