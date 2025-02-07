@@ -126,11 +126,12 @@ internal class DebugSymbolUpload
             uploadDifArguments += ", project.rootDir";
             sentryCliPath = $"./{Path.GetFileName(sentryCliPath)}";
         }
-        else
+        else if (_symbolUploadPaths.Count > 0)
         {
+            _logger.LogInfo("Setting upload-dif paths");
+
             foreach (var symbolUploadPath in _symbolUploadPaths)
             {
-                _logger.LogInfo("Setting upload-dif paths");
                 if (Directory.Exists(symbolUploadPath))
                 {
                     _logger.LogDebug("Adding '{0}'", symbolUploadPath);
