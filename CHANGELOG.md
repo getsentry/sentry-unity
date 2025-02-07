@@ -12,15 +12,18 @@
 
 ### Dependencies
 
-- Bump Native SDK from v0.7.18 to v0.7.19 ([#1981](https://github.com/getsentry/sentry-unity/pull/1981))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0719)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.18...0.7.19)
+- Bump Native SDK from v0.7.18 to v0.7.20 ([#1981](https://github.com/getsentry/sentry-unity/pull/1981), [#2003](https://github.com/getsentry/sentry-unity/pull/2003))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.18...0.7.20)
 - Bump CLI from v2.40.0 to v2.41.1 ([#1984](https://github.com/getsentry/sentry-unity/pull/1984))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.40.0...2.41.1)
 - Bump Cocoa SDK from v8.43.0 to v8.44.0 ([#2001](https://github.com/getsentry/sentry-unity/pull/2001))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8440)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.43.0...8.44.0)
+- Bump .NET SDK from v5.0.1 to v5.1.0 ([#2005](https://github.com/getsentry/sentry-unity/pull/2005))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#510)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.0.1...5.1.0)
 
 ## 3.0.0-beta.1
 
