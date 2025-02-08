@@ -63,6 +63,10 @@ internal static class EnrichmentTab
         EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
         EditorGUILayout.Space();
 
+        options.CaptureLogErrorEvents = EditorGUILayout.Toggle(
+            new GUIContent("Capture LogError as Event", "Whether the SDK automatically captures events for 'Debug.LogError'."),
+            options.CaptureLogErrorEvents);
+
         GUILayout.Label("Breadcrumbs automatically added for LogType:", EditorStyles.boldLabel);
 
         options.BreadcrumbsForLogs = EditorGUILayout.Toggle(
