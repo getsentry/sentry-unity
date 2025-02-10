@@ -4,6 +4,7 @@
 
 ### Features
 
+- The `Ignore CLI Errors` checkbox in the Debug Symbols tab now applies to all supported platforms. ([#2008](https://github.com/getsentry/sentry-unity/pull/2008))
 - The SDK now provides stacktraces when capturing events created via `Debug.LogError`. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
 
 ### Fixes

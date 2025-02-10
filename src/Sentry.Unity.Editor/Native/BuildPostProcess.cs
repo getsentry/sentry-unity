@@ -212,6 +212,10 @@ public static class BuildPostProcess
         {
             cliArgs += "--include-sources ";
         }
+        if (cliOptions.IgnoreCliErrors)
+        {
+            cliArgs += "--allow-failure";
+        }
         cliArgs += paths;
 
         // Configure the process using the StartInfo properties.
