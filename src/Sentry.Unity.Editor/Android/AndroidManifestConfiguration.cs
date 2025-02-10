@@ -96,6 +96,15 @@ public class AndroidManifestConfiguration
 
         CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
         AddAndroidSdkDependencies(gradleProjectPath);
+
+        if (_sentryCliOptions?.IgnoreCliErrors is true)
+        {
+            _logger.LogWarning("Sentry CLI errors will be ignored during build. BE AWARE you might have " +
+                               "unminified/unsymbolicated crashes in production if the debug symbol upload fails. " +
+                               "When using this flag, you should store built sourcemaps and debug files, to re-run the " +
+                               "upload symbols command at a later point.");
+        }
+
         SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
         SetupProguard(gradleProjectPath);
     }
