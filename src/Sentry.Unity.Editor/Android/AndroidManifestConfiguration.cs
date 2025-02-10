@@ -101,7 +101,7 @@ public class AndroidManifestConfiguration
         {
             _logger.LogWarning("Sentry CLI errors will be ignored during build. BE AWARE you might have " +
                                "unminified/unsymbolicated crashes in production if the debug symbol upload fails. " +
-                               "When using this flag, you should download your sourcemaps/debug files, to re-run the " +
+                               "When using this flag, you should store built sourcemaps and debug files, to re-run the " +
                                "upload symbols command at a later point.");
         }
 
