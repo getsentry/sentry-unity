@@ -130,6 +130,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public int ScreenshotCompression { get; set; } = 75;
 
     /// <summary>
+    /// Whether the SDK automatically captures events for 'Debug.LogError'.
+    /// </summary>
+    public bool CaptureLogErrorEvents { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should automatically add breadcrumbs per LogType
     /// </summary>
     public Dictionary<LogType, bool> AddBreadcrumbsForLogType { get; set; }

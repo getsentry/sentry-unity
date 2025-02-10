@@ -63,6 +63,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForErrors { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForExceptions { get; set; } = true;
+    [field: SerializeField] public bool CaptureLogErrorEvents { get; set; } = true;
 
     [field: SerializeField] public int MaxBreadcrumbs { get; set; } = SentryConstants.DefaultMaxBreadcrumbs;
 
@@ -169,6 +170,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             // need to set it here directly.
             Debug = ShouldDebug(application.IsEditor && !isBuilding),
             DiagnosticLevel = DiagnosticLevel,
+            CaptureLogErrorEvents = CaptureLogErrorEvents,
             AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
             CaptureFailedRequests = CaptureFailedRequests,
             FilterBadGatewayExceptions = FilterBadGatewayExceptions,
