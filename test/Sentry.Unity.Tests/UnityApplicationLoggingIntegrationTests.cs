@@ -46,16 +46,26 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void OnLogMessageReceived_LogTypeError_CaptureEvent()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void OnLogMessageReceived_LogTypeError_CaptureEvent(bool captureLogErrorEvents)
         {
+            _fixture.SentryOptions.CaptureLogErrorEvents = captureLogErrorEvents;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 
             sut.OnLogMessageReceived(message, string.Empty, LogType.Error);
 
-            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
-            Assert.NotNull(_fixture.Hub.CapturedEvents[0].Message);
-            Assert.AreEqual(message, _fixture.Hub.CapturedEvents[0].Message!.Message);
+            if (captureLogErrorEvents)
+            {
+                Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
+                Assert.NotNull(_fixture.Hub.CapturedEvents[0].Message);
+                Assert.AreEqual(message, _fixture.Hub.CapturedEvents[0].Message!.Message);
+            }
+            else
+            {
+                Assert.AreEqual(0, _fixture.Hub.CapturedEvents.Count);
+            }
         }
 
         [Test]
