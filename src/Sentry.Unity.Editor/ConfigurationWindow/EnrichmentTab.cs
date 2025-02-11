@@ -63,26 +63,31 @@ internal static class EnrichmentTab
         EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
         EditorGUILayout.Space();
 
+        GUILayout.Label("Automatically capture and send events for:", EditorStyles.boldLabel);
+        EditorGUILayout.Space();
+
         options.CaptureLogErrorEvents = EditorGUILayout.Toggle(
-            new GUIContent("Capture LogError as Event", "Whether the SDK automatically captures events for 'Debug.LogError'."),
+            new GUIContent("Debug.LogError", "Whether the SDK automatically captures events for 'Debug.LogError'."),
             options.CaptureLogErrorEvents);
 
-        GUILayout.Label("Breadcrumbs automatically added for LogType:", EditorStyles.boldLabel);
+        EditorGUILayout.Space();
+        GUILayout.Label("Automatically create breadcrumbs for:", EditorStyles.boldLabel);
+        EditorGUILayout.Space();
 
         options.BreadcrumbsForLogs = EditorGUILayout.Toggle(
-            new GUIContent("Log", "Whether the SDK automatically adds breadcrumbs 'Debug.Log'."),
+            new GUIContent("Debug.Log", "Whether the SDK automatically adds breadcrumbs 'Debug.Log'."),
             options.BreadcrumbsForLogs);
         options.BreadcrumbsForWarnings = EditorGUILayout.Toggle(
-            new GUIContent("Warning", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogWarning'."),
+            new GUIContent("Debug.Warning", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogWarning'."),
             options.BreadcrumbsForWarnings);
         options.BreadcrumbsForAsserts = EditorGUILayout.Toggle(
-            new GUIContent("Assert", "Whether the SDK automatically adds breadcrumbs for 'Debug.Assert'."),
+            new GUIContent("Debug.Assert", "Whether the SDK automatically adds breadcrumbs for 'Debug.Assert'."),
             options.BreadcrumbsForAsserts);
         options.BreadcrumbsForErrors = EditorGUILayout.Toggle(
-            new GUIContent("Error", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogError'."),
+            new GUIContent("Debug.Error", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogError'."),
             options.BreadcrumbsForErrors);
         options.BreadcrumbsForExceptions = EditorGUILayout.Toggle(
-            new GUIContent("Exception", "Whether the SDK automatically adds breadcrumbs for exceptions and 'Debug.LogException'."),
+            new GUIContent("Debug.Exception", "Whether the SDK automatically adds breadcrumbs for exceptions and 'Debug.LogException'."),
             options.BreadcrumbsForExceptions);
 
         EditorGUILayout.Space();
