@@ -48,6 +48,26 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
         return stream;
     }
 
+    internal List<GameObject> GetDontDestroyOnLoadRoots() {
+        GameObject temp = null;
+        var list = new List<GameObject>();
+        try {
+            temp = new GameObject();
+            DontDestroyOnLoad(temp);
+            var scene = temp.scene;
+            DestroyImmediate(temp);
+            temp = null;
+
+            scene.GetRootGameObjects(list);
+
+            return list;
+        }
+        finally {
+            if (temp)
+                DestroyImmediate(temp);
+        }
+    }
+
     internal ViewHierarchy CreateViewHierarchy(int maxRootGameObjectCount, int maxChildCount, int maxDepth)
     {
         var rootGameObjects = new List<GameObject>();
@@ -63,6 +83,20 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
         for (var i = 0; i < rootElementCount; i++)
         {
             CreateNode(maxDepth, maxChildCount, root, rootGameObjects[i].transform);
+        }
+
+        var newMaxRootGameObjectCount = maxRootGameObjectCount - rootElementCount;
+        if (newMaxRootGameObjectCount > 0) {
+            var ddolRootGameObjects = GetDontDestroyOnLoadRoots();
+            if (ddolRootGameObjects != null) {
+                var ddolRoot = new UnityViewHierarchyNode("DontDestroyOnLoad");
+                viewHierarchy.Windows.Add(ddolRoot);
+
+                var newRootElementCount = Math.Min(ddolRootGameObjects.Count, newMaxRootGameObjectCount);
+                for (var i = 0; i < newRootElementCount; i++) {
+                    CreateNode(maxDepth, maxChildCount, ddolRoot, ddolRootGameObjects[i].transform);
+                }
+            }
         }
 
         return viewHierarchy;
