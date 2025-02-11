@@ -53,9 +53,9 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
         var list = new List<GameObject>();
         try {
             temp = new GameObject();
-            DontDestroyOnLoad(temp);
+            GameObject.DontDestroyOnLoad(temp);
             var scene = temp.scene;
-            DestroyImmediate(temp);
+            GameObject.DestroyImmediate(temp);
             temp = null;
 
             scene.GetRootGameObjects(list);
@@ -64,7 +64,7 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
         }
         finally {
             if (temp)
-                DestroyImmediate(temp);
+                GameObject.DestroyImmediate(temp);
         }
     }
 
