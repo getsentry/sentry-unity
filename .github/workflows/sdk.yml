@@ -50,14 +50,13 @@ jobs:
       #       modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
       #     key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
-      - name: Installing Linux Dependencies
-        # if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
+      # - name: Installing Linux Dependencies
+      #   if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
       - name: Build
-        # if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
