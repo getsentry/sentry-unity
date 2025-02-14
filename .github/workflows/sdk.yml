@@ -47,7 +47,6 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
           key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
       - name: Installing Linux Dependencies
@@ -74,13 +73,5 @@ jobs:
         with:
           name: ${{ inputs.target }}-sdk
           path: package-dev/Plugins/${{ inputs.target }}
-          # Lower retention period - we only need this to retry CI.
-          retention-days: 14
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ inputs.target == 'Android' }}
-        with:
-          name: ${{ inputs.target }}-libraries
-          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
           # Lower retention period - we only need this to retry CI.
           retention-days: 14

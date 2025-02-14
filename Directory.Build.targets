@@ -16,7 +16,7 @@
     <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/Sentry.xcframework~/</SentryiOSArtifactsDestination>
     <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry/</SentrymacOSArtifactsDestination>
     <!-- Android -->
-    <SentryAndroidCache>$(RepoRoot)modules/sentry-java-cache/</SentryAndroidCache>
+    <SentryNativeNdkCache>$(RepoRoot)modules/sentry-native-ndk/</SentryNativeNdkCache>
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)Android/Sentry~/</SentryAndroidArtifactsDestination>
     <!-- Native -->
@@ -210,24 +210,24 @@ Expected to exist:
 
     <!-- Clean cache if version does not exist to get rid of old versions -->
     <RemoveDir
-      Condition="!Exists('$(SentryAndroidCache)sentry-native-ndk-$(NativeVersion).zip')"
-      Directories="$(SentryAndroidCache)" />
+      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
+      Directories="$(SentryNativeNdkCache)" />
 
     <!-- Create cache directory -->
-    <MakeDir Condition="!Exists('$(SentryAndroidCache)')" Directories="$(SentryAndroidCache)" />
+    <MakeDir Condition="!Exists('$(SentryNativeNdkCache)')" Directories="$(SentryNativeNdkCache)" />
 
     <Message Importance="High" Text="Downloading sentry-native-ndk version '$(NativeVersion)'." />
 
     <!-- Download prebuilt sentry-native-ndk -->
     <Exec
-      Condition="!Exists('$(SentryAndroidCache)sentry-native-ndk-$(NativeVersion).zip')"
-      Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o $(SentryAndroidCache)sentry-native-ndk-$(NativeVersion).zip" />
+      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
+      Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip" />
 
     <Exec
-      Condition="!Exists('$(SentryAndroidCache)sentry-native-ndk-$(NativeVersion)')"
-      Command="unzip -o $(SentryAndroidCache)sentry-native-ndk-$(NativeVersion).zip -d $(SentryAndroidCache)" />
+      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)')"
+      Command="unzip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip -d $(SentryNativeNdkCache)" />
 
-    <Copy SourceFiles="$(SentryAndroidCache)sentry-native-ndk-$(NativeVersion)/sentry-native-ndk-release.aar" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
+    <Copy SourceFiles="$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)/sentry-native-ndk-release.aar" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
   </Target>
