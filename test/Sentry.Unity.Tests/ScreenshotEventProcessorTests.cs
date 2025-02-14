@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Sentry.Unity.Tests;
 
-public class ScreenshotAttachmentTests
+public class ScreenshotEventProcessorTests
 {
     private class Fixture
     {
