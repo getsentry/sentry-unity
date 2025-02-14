@@ -51,11 +51,6 @@ internal class SentryUnitySdk
 
         unitySdk._dotnetSdk = SentrySdk.Init(options);
 
-        if (options.AttachScreenshot)
-        {
-            options.AddEventProcessor(new ScreenshotEventProcessor(options));
-        }
-
         if (options.AttachViewHierarchy)
         {
             SentrySdk.ConfigureScope(s =>

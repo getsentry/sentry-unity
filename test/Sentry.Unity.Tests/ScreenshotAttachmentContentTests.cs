@@ -11,7 +11,7 @@ public class ScreenshotAttachmentTests
     {
         public SentryUnityOptions Options = new() { AttachScreenshot = true };
 
-        public ScreenshotAttachmentContent GetSut() => new(Options);
+        public ScreenshotEventProcessor GetSut() => new(Options);
     }
 
     private Fixture _fixture = null!;
@@ -34,33 +34,36 @@ public class ScreenshotAttachmentTests
     [TestCase(ScreenshotQuality.Low, 854)]
     public void GetTargetResolution_ReturnsTargetMaxSize(ScreenshotQuality quality, int expectedValue)
     {
-        var actualValue = ScreenshotAttachmentContent.GetTargetResolution(quality);
+        var actualValue = ScreenshotEventProcessor.GetTargetResolution(quality);
 
         Assert.AreEqual(expectedValue, actualValue);
     }
 
     [Test]
-    public void GetStream_IsMainThread_ReturnsStream()
+    public void GetStream_IsMainThread_AddsScreenshotToHint()
     {
         var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
 
-        var stream = sut.GetStream();
+        sut.Process(sentryEvent, hint);
 
-        Assert.IsNotNull(stream);
+        Assert.AreEqual(1, hint.Attachments.Count);
     }
 
     [Test]
-    public void GetStream_IsNonMainThread_ReturnsNullStream()
+    public void GetStream_IsNonMainThread_DoesNotAddScreenshotToHint()
     {
         var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
 
         new Thread(() =>
         {
             Thread.CurrentThread.IsBackground = true;
-            var stream = sut.GetStream();
+            var stream = sut.Process(sentryEvent, hint);
 
-            Assert.NotNull(stream);
-            Assert.AreEqual(Stream.Null, stream);
+            Assert.AreEqual(0, hint.Attachments.Count);
         }).Start();
     }
 

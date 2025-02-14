@@ -19,6 +19,11 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
+        if (!MainThreadData.IsMainThread())
+        {
+            return @event;
+        }
+
         if (Screen.width == 0 || Screen.height == 0)
         {
             _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
