@@ -21,25 +21,31 @@
 - Bump CLI from v2.40.0 to v2.41.1 ([#1984](https://github.com/getsentry/sentry-unity/pull/1984))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.40.0...2.41.1)
-- Bump Cocoa SDK from v8.43.0 to v8.44.0 ([#2001](https://github.com/getsentry/sentry-unity/pull/2001))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8440)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.43.0...8.44.0)
-- Bump .NET SDK from v5.0.1 to v5.1.0 ([#2005](https://github.com/getsentry/sentry-unity/pull/2005))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#510)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.0.1...5.1.0)
+- Bump Cocoa SDK from v8.43.0 to v8.45.0 ([#2001](https://github.com/getsentry/sentry-unity/pull/2001), [#2017](https://github.com/getsentry/sentry-unity/pull/2017))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.43.0...8.45.0)
+- Bump .NET SDK from v5.0.1 to v5.1.1 ([#2005](https://github.com/getsentry/sentry-unity/pull/2005), [#2018](https://github.com/getsentry/sentry-unity/pull/2018))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#511)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.0.1...5.1.1)
+- Bump Java SDK from v7.20.0 to v8.2.0 ([#2014](https://github.com/getsentry/sentry-unity/pull/2014))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.20.0...8.2.0)
 
 ## 3.0.0-beta.1
 
 ### API Changes
 
-- The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts. Previously, the SDK would use the options at build-time and bake them into the native layer. Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs. This allows users to modify the native SDK's options at runtime programmatically.
+- The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts. 
+Previously, the SDK would use the options at build-time and bake them into the native layer. 
+Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs. 
+This allows users to modify the native SDK's options at runtime programmatically.
 The initialization behaviour is controlled by `IosNativeInitializationType` and `AndroidNativeInitializationType` options. These can be set from `Runtime` (default) to `BuildTime` to restore the previous flow and bake the options into the native projects. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915), [#1924](https://github.com/getsentry/sentry-unity/pull/1924))
 
 ### Fixes
 
 - The SDK now sets the supported platforms in the `.asmdef` explicitely, preventing runtime issues on currently non-supported platforms ([#1974](https://github.com/getsentry/sentry-unity/pull/1974))
 - Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
-- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959]https://github.com/getsentry/sentry-unity/pull/1959)
+- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959](https://github.com/getsentry/sentry-unity/pull/1959))
 - ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
 - On Android, the SDK not longer freezes the game when failing to sync with the native SDK ([#1927](https://github.com/getsentry/sentry-unity/pull/1927))
 

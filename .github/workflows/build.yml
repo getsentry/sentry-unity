@@ -72,13 +72,6 @@ jobs:
           path: package-dev/Plugins/Android
           wait-timeout: 3600
 
-      - name: Download Android Libraries
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
-        with:
-          name: Android-libraries
-          path: modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib
-          wait-timeout: 3600
-
       - name: Download Linux SDK
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
         with:
@@ -119,7 +112,6 @@ jobs:
           if-no-files-found: error
           path: |
             package-release.zip
-            modules/sentry-java/sentry-android-ndk/build/intermediates/merged_native_libs/release/out/lib/*
 
       - name: Run Unity tests (playmode)
         run: |
