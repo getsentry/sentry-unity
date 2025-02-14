@@ -199,6 +199,7 @@ public class AndroidManifestConfiguration
         // // androidManifest.SetSendDefaultPii(options.SendDefaultPii);
 
         // Note: doesn't work - produces a blank (white) screenshot
+        
         // _logger.LogDebug("Setting AttachScreenshot: {0}", _options.AttachScreenshot);
         // androidManifest.SetAttachScreenshot(_options.AttachScreenshot);
         androidManifest.SetAttachScreenshot(false);
