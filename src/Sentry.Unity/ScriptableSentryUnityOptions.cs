@@ -226,6 +226,11 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         // Without setting up here we might miss out on logs between option-loading (now) and Init - i.e. native configuration
         options.SetupLogging();
 
+        if (options.AttachViewHierarchy)
+        {
+            options.AddEventProcessor(new ViewHierarchyEventProcessor(options));
+        }
+
         if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
         {
             options.AddIl2CppExceptionProcessor(unityInfo);
