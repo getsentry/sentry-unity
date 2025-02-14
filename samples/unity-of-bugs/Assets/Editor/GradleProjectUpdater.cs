@@ -5,6 +5,10 @@ using UnityEngine;
 
 namespace Editor
 {
+    /// <summary>
+    /// With version v8 of the sentry-java SDK the min-sdk-version got raised to 21
+    /// The default min-version for Unity 2019 builds is 19
+    /// </summary>
     public class GradleProjectUpdater : MonoBehaviour
     {
         [PostProcessBuild]
