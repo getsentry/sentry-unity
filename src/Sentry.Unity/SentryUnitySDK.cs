@@ -53,9 +53,7 @@ internal class SentryUnitySdk
 
         if (options.AttachScreenshot)
         {
-            SentrySdk.ConfigureScope(s =>
-                s.AddAttachment(new ScreenshotAttachment(
-                    new ScreenshotAttachmentContent(options))));
+            options.AddEventProcessor(new ScreenshotEventProcessor(options));
         }
 
         if (options.AttachViewHierarchy)
