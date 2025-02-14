@@ -30,7 +30,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", contentType:"application/json");
+        hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", contentType: "application/json");
 
         return @event;
     }
