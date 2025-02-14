@@ -10,6 +10,7 @@
 
 ### Fixes
 
+- The SDK no longer fails to attach the `ViewHierarchy` when the scope has previously been cleared. ([#2020](https://github.com/getsentry/sentry-unity/pull/2020))
 - The SDK's build logs when targeting Android are not a lot less noisy. The SDK will also no longer omit the sentry-cli logs from the gradle build output. ([#1995](https://github.com/getsentry/sentry-unity/pull/1995))
 - When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
 
