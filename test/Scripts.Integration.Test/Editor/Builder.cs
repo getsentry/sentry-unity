@@ -78,6 +78,11 @@ public class Builder
             Debug.Log($"Builder: Creating output directory at '{outputDir}'");
             Directory.CreateDirectory(outputDir);
 
+#if !UNITY_2020_1_OR_NEWER
+            Debug.Log("Builder: Raising the minSdkVersion to 21");
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel21;
+#endif
+
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
