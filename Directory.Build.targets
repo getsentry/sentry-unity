@@ -16,6 +16,7 @@
     <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/Sentry.xcframework~/</SentryiOSArtifactsDestination>
     <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry/</SentrymacOSArtifactsDestination>
     <!-- Android -->
+    <SentryNativeNdkCache>$(RepoRoot)modules/sentry-native-ndk/</SentryNativeNdkCache>
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)Android/Sentry~/</SentryAndroidArtifactsDestination>
     <!-- Native -->
@@ -228,8 +229,10 @@ Expected to exist:
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
-  <Target Name="BuildAndroidSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-          And !Exists('$(SentryAndroidArtifactsDestination)')" BeforeTargets="BeforeBuild">
+  <Target Name="BuildAndroidSDK" 
+          DependsOnTargets="DownloadCLI"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And !Exists('$(SentryAndroidArtifactsDestination)')" 
+          BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)." />
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
@@ -242,6 +245,48 @@ Expected to exist:
 
     <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
     <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp sentry/build/libs/sentry*.jar $(SentryAndroidArtifactsDestination)sentry.jar" />
+
+    <Message Importance="High" Text="Reading the sentry-native-ndk version from the 'Config.kt' file." />
+
+    <PropertyGroup>
+        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-java/buildSrc/src/main/java/Config.kt"))</PropertiesContent>
+        <NativeVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'sentryNativeNdk\s*=\s*"[^"]+:([^"]+)"').Groups[1].Value)</NativeVersion>
+    </PropertyGroup>
+
+    <!-- Clean cache if version does not exist to get rid of old versions -->
+    <RemoveDir
+      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
+      Directories="$(SentryNativeNdkCache)" />
+
+    <!-- Create cache directory -->
+    <MakeDir Condition="!Exists('$(SentryNativeNdkCache)')" Directories="$(SentryNativeNdkCache)" />
+
+    <Message Importance="High" Text="Downloading sentry-native-ndk version '$(NativeVersion)'." />
+
+    <!-- Download prebuilt sentry-native-ndk -->
+    <Exec
+      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
+      Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip" />
+
+    <Exec
+      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)')"
+      Command="unzip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip -d $(SentryNativeNdkCache)" />
+
+    <Copy SourceFiles="$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)/sentry-native-ndk-release.aar" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
+
+    <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
+  </Target>
+
+<!-- Build the NDK: dotnet msbuild /t:DownloadNDK src/Sentry.Unity -->
+  <Target Name="DownloadNDK" >
+    <Message Importance="High" Text="Downloading Sentry NDK SDK." />
+
+    <PropertyGroup>
+        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-java/buildSrc/src/main/java/Config.kt"))</PropertiesContent>
+        <NativeVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'sentryNativeNdk\s*=\s*"[^"]+:([^"]+)"').Groups[1].Value)</NativeVersion>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="Downloading up the NDK SDK version '$(NativeVersion)'." />
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
   </Target>
