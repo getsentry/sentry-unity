@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-- Add support for finding Unity in the Hub alternate install path ([#2015](https://github.com/getsentry/sentry-unity/pull/2015))
-
 ### Features
 
 - The `Ignore CLI Errors` checkbox in the Debug Symbols tab now applies to all supported platforms. ([#2008](https://github.com/getsentry/sentry-unity/pull/2008))
