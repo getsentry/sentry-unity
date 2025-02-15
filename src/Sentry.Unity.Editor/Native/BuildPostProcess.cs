@@ -147,6 +147,7 @@ public static class BuildPostProcess
 
         switch (target)
         {
+            case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
                 addPath("UnityPlayer.dll");
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
@@ -196,7 +197,17 @@ public static class BuildPostProcess
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
 
                 if (isMono)
-                { }
+                { 
+                    addFilesMatching(buildOutputDir, new[] { "*.pdb" });
+
+                    // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
+                    // './Temp/ManagedSymbols/'. We want the one in 'Temp/ManagedSymbols/' specifically.
+                    var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
+                    if (Directory.Exists(managedSymbolsDirectory))
+                    {
+                        addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
+                    }
+                }
                 else // IL2CPP
                 {
                     addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");

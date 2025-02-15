@@ -12,7 +12,7 @@
 
 - The SDK's build logs when targeting Android are not a lot less noisy. The SDK will also no longer omit the sentry-cli logs from the gradle build output. ([#1995](https://github.com/getsentry/sentry-unity/pull/1995))
 - When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
-- The SDK will no longer skip uploading debugging symbols if native support isn't enabled for a build. ([#2021](https://github.com/getsentry/sentry-unity/pull/2021))
+- The SDK will now upload debugging symbols without native support being enabled, and uploads debugging files for MacOS mono builds. ([#2021](https://github.com/getsentry/sentry-unity/pull/2021))
 
 ### Dependencies
 
