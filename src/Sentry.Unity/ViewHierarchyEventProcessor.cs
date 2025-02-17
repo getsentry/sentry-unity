@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using Sentry.Extensibility;
 using UnityEngine;
@@ -9,31 +8,36 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity;
 
-internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
+public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
 
-    public UnityViewHierarchyAttachmentContent(SentryUnityOptions options)
+    public ViewHierarchyEventProcessor(SentryUnityOptions sentryOptions)
     {
-        _options = options;
+        _options = sentryOptions;
     }
 
-    public Stream GetStream()
+    public SentryEvent? Process(SentryEvent @event)
     {
-        // Note: we need to check explicitly that we're on the same thread. While Unity would throw otherwise
-        // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
+        return @event;
+    }
+
+    public SentryEvent? Process(SentryEvent @event, SentryHint hint)
+    {
         if (!MainThreadData.IsMainThread())
         {
             _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
-            return Stream.Null;
+            return @event;
         }
 
-        return CaptureViewHierarchy();
+        hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", contentType: "application/json");
+
+        return @event;
     }
 
-    internal Stream CaptureViewHierarchy()
+    internal byte[] CaptureViewHierarchy()
     {
-        var stream = new MemoryStream();
+        using var stream = new MemoryStream();
         using var writer = new Utf8JsonWriter(stream);
 
         var viewHierarchy = CreateViewHierarchy(
@@ -43,9 +47,7 @@ internal class UnityViewHierarchyAttachmentContent : IAttachmentContent
         viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
 
         writer.Flush();
-        stream.Seek(0, SeekOrigin.Begin);
-
-        return stream;
+        return stream.ToArray();
     }
 
     internal ViewHierarchy CreateViewHierarchy(int maxRootGameObjectCount, int maxChildCount, int maxDepth)
