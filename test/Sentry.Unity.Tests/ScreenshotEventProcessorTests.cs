@@ -40,7 +40,7 @@ public class ScreenshotEventProcessorTests
     }
 
     [Test]
-    public void GetStream_IsMainThread_AddsScreenshotToHint()
+    public void Process_IsMainThread_AddsScreenshotToHint()
     {
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
@@ -52,7 +52,7 @@ public class ScreenshotEventProcessorTests
     }
 
     [Test]
-    public void GetStream_IsNonMainThread_DoesNotAddScreenshotToHint()
+    public void Process_IsNonMainThread_DoesNotAddScreenshotToHint()
     {
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
@@ -65,6 +65,21 @@ public class ScreenshotEventProcessorTests
 
             Assert.AreEqual(0, hint.Attachments.Count);
         }).Start();
+    }
+
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Process_BeforeAddScreenshotCallbackProvided_RespectsScreenshotCaptureDecision(bool captureScreenshot)
+    {
+        _fixture.Options.SetBeforeAttachScreenshot(() => captureScreenshot);
+        var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
+
+        sut.Process(sentryEvent, hint);
+
+        Assert.AreEqual(!captureScreenshot ? 1 : 0, hint.Attachments.Count);
     }
 
     [Test]

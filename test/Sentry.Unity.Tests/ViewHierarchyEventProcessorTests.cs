@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests;
 
-public class UnityViewHierarchyEventProcessorTests
+public class ViewHierarchyEventProcessorTests
 {
     private class Fixture
     {
@@ -30,7 +30,7 @@ public class UnityViewHierarchyEventProcessorTests
     }
 
     [Test]
-    public void GetStream_IsMainThread_AddsViewHierarchyToHint()
+    public void Process_IsMainThread_AddsViewHierarchyToHint()
     {
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
@@ -42,7 +42,7 @@ public class UnityViewHierarchyEventProcessorTests
     }
 
     [Test]
-    public void GetStream_IsNonMainThread_DoesNotAddViewHierarchyToHint()
+    public void Process_IsNonMainThread_DoesNotAddViewHierarchyToHint()
     {
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
@@ -56,6 +56,21 @@ public class UnityViewHierarchyEventProcessorTests
 
             Assert.AreEqual(0, hint.Attachments.Count);
         }).Start();
+    }
+
+    [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Process_BeforeAddViewHierarchyCallbackProvided_RespectViewHierarchyCaptureDecision(bool captureViewHierarchy)
+    {
+        _fixture.Options.SetBeforeAttachViewHierarchy(() => captureViewHierarchy);
+        var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
+
+        sut.Process(sentryEvent, hint);
+
+        Assert.AreEqual(!captureViewHierarchy ? 1 : 0, hint.Attachments.Count);
     }
 
     [Test]
