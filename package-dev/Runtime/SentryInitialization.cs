@@ -55,9 +55,9 @@ namespace Sentry.Unity
 #endif
         public static void Init()
         {
-            var sentryUnityInfo = new SentryUnityInfo();
+            var unityInfo = new SentryUnityInfo();
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(sentryUnityInfo);
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
             if (options != null && options.ShouldInitializeSdk())
             {
                 // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
@@ -65,7 +65,7 @@ namespace Sentry.Unity
                 // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
                 SentryIntegrations.Configure(options);
                 // Configures scope sync and (by default) initializes the native SDK.
-                SetupNativeSdk(options, sentryUnityInfo);
+                SetupNativeSdk(options, unityInfo);
                 SentryUnity.Init(options);
                 SetupStartupTracing(options);
             }
@@ -74,9 +74,9 @@ namespace Sentry.Unity
                 // If the SDK is not `enabled` we're closing down the native layer as well. This is especially relevant
                 // in a `built-time-initialization` scenario where the native SDKs self-initialize.
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Close(options, sentryUnityInfo);
+                SentryNativeCocoa.Close(options, unityInfo);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Close(options, sentryUnityInfo);
+                SentryNativeAndroid.Close(options, unityInfo);
 #endif
             }
         }
@@ -86,11 +86,11 @@ namespace Sentry.Unity
             try
             {
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Configure(options, sentryUnityInfo);
+                SentryNativeCocoa.Configure(options, unityInfo);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Configure(options, sentryUnityInfo);
+                SentryNativeAndroid.Configure(options, unityInfo);
 #elif SENTRY_NATIVE
-                SentryNative.Configure(options, sentryUnityInfo);
+                SentryNative.Configure(options, unityInfo);
 #elif SENTRY_WEBGL
               SentryWebGL.Configure(options);
 #endif
