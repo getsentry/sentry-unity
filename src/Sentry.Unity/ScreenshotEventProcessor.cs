@@ -24,14 +24,23 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        if (Screen.width == 0 || Screen.height == 0)
+        if (_options.BeforeAttachScreenshotInternal?.Invoke() is not false)
         {
-            _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
+            if (Screen.width == 0 || Screen.height == 0)
+            {
+                _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
+            }
+            else
+            {
+                hint.AddAttachment(CaptureScreenshot(Screen.width, Screen.height), "screenshot.jpg", contentType: "image/jpeg");
+            }
         }
         else
         {
-            hint.AddAttachment(CaptureScreenshot(Screen.width, Screen.height), "screenshot.jpg", contentType: "image/jpeg");
+            _options.DiagnosticLogger?.LogInfo("Screenshot attachment skipped by BeforeAttachScreenshot callback.");
         }
+
+
 
         return @event;
     }

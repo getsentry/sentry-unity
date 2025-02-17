@@ -79,7 +79,7 @@ public class ScreenshotEventProcessorTests
 
         sut.Process(sentryEvent, hint);
 
-        Assert.AreEqual(!captureScreenshot ? 1 : 0, hint.Attachments.Count);
+        Assert.AreEqual(captureScreenshot ? 1 : 0, hint.Attachments.Count);
     }
 
     [Test]

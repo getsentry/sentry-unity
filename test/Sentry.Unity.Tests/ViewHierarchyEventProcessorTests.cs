@@ -70,7 +70,7 @@ public class ViewHierarchyEventProcessorTests
 
         sut.Process(sentryEvent, hint);
 
-        Assert.AreEqual(!captureViewHierarchy ? 1 : 0, hint.Attachments.Count);
+        Assert.AreEqual(captureViewHierarchy ? 1 : 0, hint.Attachments.Count);
     }
 
     [Test]

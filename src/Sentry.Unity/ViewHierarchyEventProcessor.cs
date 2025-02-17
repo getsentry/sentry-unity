@@ -26,7 +26,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
     {
         if (!MainThreadData.IsMainThread())
         {
-            _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
+            _options.DiagnosticLogger?.LogDebug("Can't capture view hierarchy on other than main (UI) thread.");
             return @event;
         }
 
