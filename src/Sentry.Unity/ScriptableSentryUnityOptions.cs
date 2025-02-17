@@ -230,6 +230,10 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         {
             options.AddEventProcessor(new ViewHierarchyEventProcessor(options));
         }
+        if (options.AttachScreenshot)
+        {
+            options.AddEventProcessor(new ScreenshotEventProcessor(options));
+        }
 
         if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
         {
