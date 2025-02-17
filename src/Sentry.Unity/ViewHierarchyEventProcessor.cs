@@ -26,11 +26,18 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
     {
         if (!MainThreadData.IsMainThread())
         {
-            _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
+            _options.DiagnosticLogger?.LogDebug("Can't capture view hierarchy on other than main (UI) thread.");
             return @event;
         }
 
-        hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", contentType: "application/json");
+        if (_options.BeforeCaptureViewHierarchyInternal?.Invoke() is not false)
+        {
+            hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", contentType: "application/json");
+        }
+        else
+        {
+            _options.DiagnosticLogger?.LogInfo("View hierarchy attachment skipped by BeforeAttachViewHierarchy callback.");
+        }
 
         return @event;
     }

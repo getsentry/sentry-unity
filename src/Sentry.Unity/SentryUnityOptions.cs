@@ -228,6 +228,38 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public new StackTraceMode StackTraceMode { get; private set; }
 
+    private Func<bool>? _beforeCaptureScreenshot;
+
+    internal Func<bool>? BeforeCaptureScreenshotInternal => _beforeCaptureScreenshot;
+
+    /// <summary>
+    /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
+    /// </summary>
+    /// <remarks>
+    /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
+    /// be taken return `false`.
+    /// </remarks>
+    public void SetBeforeCaptureScreenshot(Func<bool> beforeAttachScreenshot)
+    {
+        _beforeCaptureScreenshot = beforeAttachScreenshot;
+    }
+
+    private Func<bool>? _beforeCaptureViewHierarchy;
+
+    internal Func<bool>? BeforeCaptureViewHierarchyInternal => _beforeCaptureViewHierarchy;
+
+    /// <summary>
+    /// Configures a callback function to be invoked before capturing and attaching the view hierarchy to an event.
+    /// </summary>
+    /// <remarks>
+    /// This callback will get invoked right before the view hierarchy gets taken. If the view hierarchy should not
+    /// be taken return `false`.
+    /// </remarks>
+    public void SetBeforeCaptureViewHierarchy(Func<bool> beforeAttachViewHierarchy)
+    {
+        _beforeCaptureViewHierarchy = beforeAttachViewHierarchy;
+    }
+
     // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
     internal string? _defaultUserId;
     internal string? DefaultUserId
