@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>3.0.0-beta.1</Version>
+    <Version>3.0.0</Version>
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
