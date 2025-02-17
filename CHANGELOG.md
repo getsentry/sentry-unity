@@ -12,6 +12,7 @@
 
 ### Features
 
+- Added `SetBeforeCaptureScreenshot` and `SetBeforeCaptureViewHierarchy` to the options. Users can now choose whether to capture those as attachment on an individual event basis. ([#2023](https://github.com/getsentry/sentry-unity/pull/2023))
 - When capturing events via `Debug.LogError`, the SDK now provides stacktraces. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
 - Added option to enable/disable automatic capture of `Debug.LogError` as event. ([#2009](https://github.com/getsentry/sentry-unity/pull/2009))
 - The `Ignore CLI Errors` checkbox in the Debug Symbols tab now applies to all supported platforms. ([#2008](https://github.com/getsentry/sentry-unity/pull/2008))
