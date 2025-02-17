@@ -2,17 +2,30 @@
 
 ## Unreleased
 
+### API Changes
+
+- The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts.
+  Previously, the SDK would use the options at build-time and bake them into the native layer.
+  Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs.
+  This allows users to modify the native SDK's options at runtime programmatically.
+  The initialization behaviour is controlled by `IosNativeInitializationType` and `AndroidNativeInitializationType` options. These can be set from `Runtime` (default) to `BuildTime` to restore the previous flow and bake the options into the native projects. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915), [#1924](https://github.com/getsentry/sentry-unity/pull/1924))
+
 ### Features
 
+- When capturing events via `Debug.LogError`, the SDK now provides stacktraces. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
 - Added option to enable/disable automatic capture of `Debug.LogError` as event. ([#2009](https://github.com/getsentry/sentry-unity/pull/2009))
 - The `Ignore CLI Errors` checkbox in the Debug Symbols tab now applies to all supported platforms. ([#2008](https://github.com/getsentry/sentry-unity/pull/2008))
-- The SDK now provides stacktraces when capturing events created via `Debug.LogError`. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
 
 ### Fixes
 
 - The SDK no longer fails to attach the `ViewHierarchy` when the scope has previously been cleared. ([#2020](https://github.com/getsentry/sentry-unity/pull/2020))
 - The SDK's build logs when targeting Android are not a lot less noisy. The SDK will also no longer omit the sentry-cli logs from the gradle build output. ([#1995](https://github.com/getsentry/sentry-unity/pull/1995))
 - When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
+- The SDK now sets the supported platforms in the `.asmdef` explicitely, preventing runtime issues on currently non-supported platforms ([#1974](https://github.com/getsentry/sentry-unity/pull/1974))
+- Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
+- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959](https://github.com/getsentry/sentry-unity/pull/1959))
+- ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
+- On Android, the SDK not longer freezes the game when failing to sync with the native SDK ([#1927](https://github.com/getsentry/sentry-unity/pull/1927))
 
 ### Dependencies
 
@@ -31,24 +44,6 @@
 - Bump Java SDK from v7.20.0 to v8.2.0 ([#2014](https://github.com/getsentry/sentry-unity/pull/2014))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
   - [diff](https://github.com/getsentry/sentry-java/compare/7.20.0...8.2.0)
-
-## 3.0.0-beta.1
-
-### API Changes
-
-- The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts. 
-Previously, the SDK would use the options at build-time and bake them into the native layer. 
-Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs. 
-This allows users to modify the native SDK's options at runtime programmatically.
-The initialization behaviour is controlled by `IosNativeInitializationType` and `AndroidNativeInitializationType` options. These can be set from `Runtime` (default) to `BuildTime` to restore the previous flow and bake the options into the native projects. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915), [#1924](https://github.com/getsentry/sentry-unity/pull/1924))
-
-### Fixes
-
-- The SDK now sets the supported platforms in the `.asmdef` explicitely, preventing runtime issues on currently non-supported platforms ([#1974](https://github.com/getsentry/sentry-unity/pull/1974))
-- Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
-- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959](https://github.com/getsentry/sentry-unity/pull/1959))
-- ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
-- On Android, the SDK not longer freezes the game when failing to sync with the native SDK ([#1927](https://github.com/getsentry/sentry-unity/pull/1927))
 
 ### Dependencies
 
