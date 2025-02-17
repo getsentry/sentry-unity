@@ -30,7 +30,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        if (_options.BeforeAttachViewHierarchyInternal?.Invoke() is not false)
+        if (_options.BeforeCaptureViewHierarchyInternal?.Invoke() is not false)
         {
             hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", contentType: "application/json");
         }

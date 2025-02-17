@@ -24,7 +24,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        if (_options.BeforeAttachScreenshotInternal?.Invoke() is not false)
+        if (_options.BeforeCaptureScreenshotInternal?.Invoke() is not false)
         {
             if (Screen.width == 0 || Screen.height == 0)
             {

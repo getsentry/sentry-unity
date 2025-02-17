@@ -61,9 +61,9 @@ public class ViewHierarchyEventProcessorTests
     [Test]
     [TestCase(true)]
     [TestCase(false)]
-    public void Process_BeforeAddViewHierarchyCallbackProvided_RespectViewHierarchyCaptureDecision(bool captureViewHierarchy)
+    public void Process_BeforeCaptureViewHierarchyCallbackProvided_RespectViewHierarchyCaptureDecision(bool captureViewHierarchy)
     {
-        _fixture.Options.SetBeforeAttachViewHierarchy(() => captureViewHierarchy);
+        _fixture.Options.SetBeforeCaptureViewHierarchy(() => captureViewHierarchy);
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
         var hint = new SentryHint();

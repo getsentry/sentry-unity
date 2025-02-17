@@ -70,9 +70,9 @@ public class ScreenshotEventProcessorTests
     [Test]
     [TestCase(true)]
     [TestCase(false)]
-    public void Process_BeforeAddScreenshotCallbackProvided_RespectsScreenshotCaptureDecision(bool captureScreenshot)
+    public void Process_BeforeCaptureScreenshotCallbackProvided_RespectsScreenshotCaptureDecision(bool captureScreenshot)
     {
-        _fixture.Options.SetBeforeAttachScreenshot(() => captureScreenshot);
+        _fixture.Options.SetBeforeCaptureScreenshot(() => captureScreenshot);
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
         var hint = new SentryHint();

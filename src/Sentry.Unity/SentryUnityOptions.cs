@@ -228,9 +228,9 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public new StackTraceMode StackTraceMode { get; private set; }
 
-    private Func<bool>? _beforeAttachScreenshot;
+    private Func<bool>? _beforeCaptureScreenshot;
 
-    internal Func<bool>? BeforeAttachScreenshotInternal => _beforeAttachScreenshot;
+    internal Func<bool>? BeforeCaptureScreenshotInternal => _beforeCaptureScreenshot;
 
     /// <summary>
     /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
@@ -239,14 +239,14 @@ public sealed class SentryUnityOptions : SentryOptions
     /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
     /// be taken return `false`.
     /// </remarks>
-    public void SetBeforeAttachScreenshot(Func<bool> beforeAttachScreenshot)
+    public void SetBeforeCaptureScreenshot(Func<bool> beforeAttachScreenshot)
     {
-        _beforeAttachScreenshot = beforeAttachScreenshot;
+        _beforeCaptureScreenshot = beforeAttachScreenshot;
     }
 
-    private Func<bool>? _beforeAttachViewHierarchy;
+    private Func<bool>? _beforeCaptureViewHierarchy;
 
-    internal Func<bool>? BeforeAttachViewHierarchyInternal => _beforeAttachViewHierarchy;
+    internal Func<bool>? BeforeCaptureViewHierarchyInternal => _beforeCaptureViewHierarchy;
 
     /// <summary>
     /// Configures a callback function to be invoked before capturing and attaching the view hierarchy to an event.
@@ -255,9 +255,9 @@ public sealed class SentryUnityOptions : SentryOptions
     /// This callback will get invoked right before the view hierarchy gets taken. If the view hierarchy should not
     /// be taken return `false`.
     /// </remarks>
-    public void SetBeforeAttachViewHierarchy(Func<bool> beforeAttachViewHierarchy)
+    public void SetBeforeCaptureViewHierarchy(Func<bool> beforeAttachViewHierarchy)
     {
-        _beforeAttachViewHierarchy = beforeAttachViewHierarchy;
+        _beforeCaptureViewHierarchy = beforeAttachViewHierarchy;
     }
 
     // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
