@@ -6,13 +6,13 @@ using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.Tests;
 
-public class UnityViewHierarchyAttachmentTests
+public class ViewHierarchyEventProcessorTests
 {
     private class Fixture
     {
         public SentryUnityOptions Options = new() { AttachViewHierarchy = true };
 
-        public UnityViewHierarchyAttachmentContent GetSut() => new(Options);
+        public ViewHierarchyEventProcessor GetSut() => new(Options);
     }
 
     private Fixture _fixture = null!;
@@ -30,39 +30,58 @@ public class UnityViewHierarchyAttachmentTests
     }
 
     [Test]
-    public void GetStream_IsMainThread_ReturnsStream()
+    public void Process_IsMainThread_AddsViewHierarchyToHint()
     {
         var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
 
-        var stream = sut.GetStream();
+        sut.Process(sentryEvent, hint);
 
-        Assert.IsNotNull(stream);
+        Assert.AreEqual(1, hint.Attachments.Count);
     }
 
     [Test]
-    public void GetStream_IsNonMainThread_ReturnsNullStream()
+    public void Process_IsNonMainThread_DoesNotAddViewHierarchyToHint()
     {
         var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
 
         new Thread(() =>
         {
             Thread.CurrentThread.IsBackground = true;
 
-            var stream = sut.GetStream();
+            var stream = sut.Process(sentryEvent, hint);
 
-            Assert.NotNull(stream);
-            Assert.AreEqual(Stream.Null, stream);
+            Assert.AreEqual(0, hint.Attachments.Count);
         }).Start();
     }
 
     [Test]
-    public void CaptureViewHierarchy_ReturnsNonNullStream()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Process_BeforeCaptureViewHierarchyCallbackProvided_RespectViewHierarchyCaptureDecision(bool captureViewHierarchy)
+    {
+        _fixture.Options.SetBeforeCaptureViewHierarchy(() => captureViewHierarchy);
+        var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
+
+        sut.Process(sentryEvent, hint);
+
+        Assert.AreEqual(captureViewHierarchy ? 1 : 0, hint.Attachments.Count);
+    }
+
+    [Test]
+    public void CaptureViewHierarchy_ReturnsNonNullOrEmptyByteArray()
     {
         var sut = _fixture.GetSut();
 
-        using var stream = sut.CaptureViewHierarchy();
+        var byteArray = sut.CaptureViewHierarchy();
 
-        Assert.AreNotEqual(Stream.Null, stream);
+        Assert.That(byteArray, Is.Not.Null);
+        Assert.That(byteArray.Length, Is.GreaterThan(0));
     }
 
     [Test]

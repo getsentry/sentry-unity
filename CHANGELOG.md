@@ -2,71 +2,63 @@
 
 ## Unreleased
 
-### Features
-
-- Added option to enable/disable automatic capture of `Debug.LogError` as event. ([#2009](https://github.com/getsentry/sentry-unity/pull/2009))
-- The `Ignore CLI Errors` checkbox in the Debug Symbols tab now applies to all supported platforms. ([#2008](https://github.com/getsentry/sentry-unity/pull/2008))
-- The SDK now provides stacktraces when capturing events created via `Debug.LogError`. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
-
 ### Fixes
 
-- The SDK's build logs when targeting Android are not a lot less noisy. The SDK will also no longer omit the sentry-cli logs from the gradle build output. ([#1995](https://github.com/getsentry/sentry-unity/pull/1995))
-- When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
-- The SDK will now upload debugging symbols without native support being enabled, and uploads debugging files for MacOS mono builds. ([#2021](https://github.com/getsentry/sentry-unity/pull/2021))
+- Then targeting desktop platforms, the SDK now also uploads debugging symbols when native support is disabled. ([#2021](https://github.com/getsentry/sentry-unity/pull/2021))
+- The SDK will now upload debugging symobol files for macOS mono builds.([#2021](https://github.com/getsentry/sentry-unity/pull/2021))
 
 ### Dependencies
 
-- Bump Native SDK from v0.7.18 to v0.7.20 ([#1981](https://github.com/getsentry/sentry-unity/pull/1981), [#2003](https://github.com/getsentry/sentry-unity/pull/2003))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.18...0.7.20)
-- Bump CLI from v2.40.0 to v2.41.1 ([#1984](https://github.com/getsentry/sentry-unity/pull/1984))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.40.0...2.41.1)
-- Bump Cocoa SDK from v8.43.0 to v8.45.0 ([#2001](https://github.com/getsentry/sentry-unity/pull/2001), [#2017](https://github.com/getsentry/sentry-unity/pull/2017))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.43.0...8.45.0)
-- Bump .NET SDK from v5.0.1 to v5.1.1 ([#2005](https://github.com/getsentry/sentry-unity/pull/2005), [#2018](https://github.com/getsentry/sentry-unity/pull/2018))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#511)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.0.1...5.1.1)
-- Bump Java SDK from v7.20.0 to v8.2.0 ([#2014](https://github.com/getsentry/sentry-unity/pull/2014))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.20.0...8.2.0)
+- Bump CLI from v2.41.1 to v2.42.1 ([#2026](https://github.com/getsentry/sentry-unity/pull/2026))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2421)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.41.1...2.42.1)
 
-## 3.0.0-beta.1
+## 3.0.0
 
 ### API Changes
 
-- The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts. 
-Previously, the SDK would use the options at build-time and bake them into the native layer. 
-Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs. 
-This allows users to modify the native SDK's options at runtime programmatically.
-The initialization behaviour is controlled by `IosNativeInitializationType` and `AndroidNativeInitializationType` options. These can be set from `Runtime` (default) to `BuildTime` to restore the previous flow and bake the options into the native projects. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915), [#1924](https://github.com/getsentry/sentry-unity/pull/1924))
+- The native layer on mobile platforms (iOS and Android) no longer self-initializes before the Unity game starts.
+  Previously, the SDK would use the options at build-time and bake them into the native layer.
+  Instead, the SDK will now take the options passed into the `Configure` callback and use those to initialize the native SDKs.
+  This allows users to modify the native SDK's options at runtime programmatically.
+  The initialization behaviour is controlled by `IosNativeInitializationType` and `AndroidNativeInitializationType` options. These can be set from `Runtime` (default) to `BuildTime` to restore the previous flow and bake the options into the native projects. ([#1915](https://github.com/getsentry/sentry-unity/pull/1915), [#1924](https://github.com/getsentry/sentry-unity/pull/1924))
+
+### Features
+
+- Added `SetBeforeCaptureScreenshot` and `SetBeforeCaptureViewHierarchy` to the options. Users can now choose whether to capture those as attachment on an individual event basis. ([#2023](https://github.com/getsentry/sentry-unity/pull/2023))
+- When capturing events via `Debug.LogError`, the SDK now provides stacktraces. Note, that the SDK is currently not able to provide line numbers for these events. ([#1965](https://github.com/getsentry/sentry-unity/pull/1965))
+- Added option to enable/disable automatic capture of `Debug.LogError` as event. ([#2009](https://github.com/getsentry/sentry-unity/pull/2009))
+- The `Ignore CLI Errors` checkbox in the Debug Symbols tab now applies to all supported platforms. ([#2008](https://github.com/getsentry/sentry-unity/pull/2008))
 
 ### Fixes
 
+- The SDK no longer fails to attach the `ViewHierarchy` when the scope has previously been cleared. ([#2020](https://github.com/getsentry/sentry-unity/pull/2020))
+- The SDK no longer fails to attach a screenshot when the scope has previously been cleared. ([#2019](https://github.com/getsentry/sentry-unity/pull/2019))
+- The SDK's build logs when targeting Android are not a lot less noisy. The SDK will also no longer omit the sentry-cli logs from the gradle build output. ([#1995](https://github.com/getsentry/sentry-unity/pull/1995))
+- When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
 - The SDK now sets the supported platforms in the `.asmdef` explicitely, preventing runtime issues on currently non-supported platforms ([#1974](https://github.com/getsentry/sentry-unity/pull/1974))
 - Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
 - The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959](https://github.com/getsentry/sentry-unity/pull/1959))
 - ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
-- On Android, the SDK not longer freezes the game when failing to sync with the native SDK ([#1927](https://github.com/getsentry/sentry-unity/pull/1927))
+- On Android, the SDK no longer freezes the game when failing to sync with the native SDK ([#1927](https://github.com/getsentry/sentry-unity/pull/1927))
 
 ### Dependencies
 
-- Bump .NET SDK from v4.13.0 to v5.0.1 ([#1940](https://github.com/getsentry/sentry-unity/pull/1940), [#1953](https://github.com/getsentry/sentry-unity/pull/1953))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#501)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.0.1)
-- Bump CLI from v2.39.0 to v2.40.0 ([#1922](https://github.com/getsentry/sentry-unity/pull/1922), [#1948](https://github.com/getsentry/sentry-unity/pull/1948))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2400)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.0...2.40.0)
-- Bump Java SDK from v7.18.0 to v7.20.0 ([#1926](https://github.com/getsentry/sentry-unity/pull/1926), [#1934](https://github.com/getsentry/sentry-unity/pull/1934), [#1946](https://github.com/getsentry/sentry-unity/pull/1946), [#1947](https://github.com/getsentry/sentry-unity/pull/1947))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#7200)
-  - [diff](https://github.com/getsentry/sentry-java/compare/7.18.0...7.20.0)
-- Bump Cocoa SDK from v8.41.0 to v8.43.0 ([#1937](https://github.com/getsentry/sentry-unity/pull/1937), [#1945](https://github.com/getsentry/sentry-unity/pull/1945), [#1949](https://github.com/getsentry/sentry-unity/pull/1949))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8430)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.41.0...8.43.0)
-- Bump Native SDK from v0.7.15 to v0.7.18 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928), [#1939](https://github.com/getsentry/sentry-unity/pull/1939), [#1967](https://github.com/getsentry/sentry-unity/pull/1967))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0718)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.18)
+- Bump Native SDK from v0.7.15 to v0.7.20 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928), [#1939](https://github.com/getsentry/sentry-unity/pull/1939), [#1967](https://github.com/getsentry/sentry-unity/pull/1967), [#1981](https://github.com/getsentry/sentry-unity/pull/1981), [#2003](https://github.com/getsentry/sentry-unity/pull/2003))
+    - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
+    - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.20)
+- Bump CLI from v2.39.0 to v2.41.1 ([#1922](https://github.com/getsentry/sentry-unity/pull/1922), [#1948](https://github.com/getsentry/sentry-unity/pull/1948), [#1984](https://github.com/getsentry/sentry-unity/pull/1984))
+    - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
+    - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.0...2.41.1)
+- Bump Cocoa SDK from v8.41.0 to v8.45.0 ([#1937](https://github.com/getsentry/sentry-unity/pull/1937), [#1945](https://github.com/getsentry/sentry-unity/pull/1945), [#1949](https://github.com/getsentry/sentry-unity/pull/1949), [#2001](https://github.com/getsentry/sentry-unity/pull/2001), [#2017](https://github.com/getsentry/sentry-unity/pull/2017))
+    - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
+    - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.41.0...8.45.0)
+- Bump .NET SDK from v4.13.0 to v5.1.1 ([#1940](https://github.com/getsentry/sentry-unity/pull/1940), [#1953](https://github.com/getsentry/sentry-unity/pull/1953), [#2005](https://github.com/getsentry/sentry-unity/pull/2005), [#2018](https://github.com/getsentry/sentry-unity/pull/2018))
+    - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#511)
+    - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.1.1)
+- Bump Java SDK from v7.18.0 to v8.2.0 ([#1926](https://github.com/getsentry/sentry-unity/pull/1926), [#1934](https://github.com/getsentry/sentry-unity/pull/1934), [#1946](https://github.com/getsentry/sentry-unity/pull/1946), [#1947](https://github.com/getsentry/sentry-unity/pull/1947), [#2014](https://github.com/getsentry/sentry-unity/pull/2014))
+    - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
+    - [diff](https://github.com/getsentry/sentry-java/compare/7.18.0...8.2.0)
 
 ## 2.4.0
 

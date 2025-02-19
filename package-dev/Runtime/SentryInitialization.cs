@@ -55,63 +55,76 @@ namespace Sentry.Unity
 #endif
         public static void Init()
         {
-            var sentryUnityInfo = new SentryUnityInfo();
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(sentryUnityInfo);
+            var unityInfo = new SentryUnityInfo();
+            // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
             if (options != null && options.ShouldInitializeSdk())
             {
+                // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
+                // compile them with the game instead of precompiling them with the rest of the SDK.
+                // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
                 SentryIntegrations.Configure(options);
-
-                try
-                {
-#if SENTRY_NATIVE_COCOA
-                    SentryNativeCocoa.Configure(options, sentryUnityInfo);
-#elif SENTRY_NATIVE_ANDROID
-                    SentryNativeAndroid.Configure(options, sentryUnityInfo);
-#elif SENTRY_NATIVE
-                    SentryNative.Configure(options, sentryUnityInfo);
-#elif SENTRY_WEBGL
-                    SentryWebGL.Configure(options);
-#endif
-                }
-                catch (DllNotFoundException e)
-                {
-                    options.DiagnosticLogger?.LogError(e,
-                        "Sentry native-error capture configuration failed to load a native library. This usually " +
-                        "means the library is missing from the application bundle or the installation directory.");
-                }
-                catch (Exception e)
-                {
-                    options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
-                }
-
+                // Configures scope sync and (by default) initializes the native SDK.
+                SetupNativeSdk(options, unityInfo);
                 SentryUnity.Init(options);
-
-#if !SENTRY_WEBGL
-                if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
-                {
-                    options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.",
-                        StartupTransactionOperation);
-
-                    var runtimeStartTransaction =
-                        SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
-                    SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
-
-                    options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
-                    InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
-                    options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
-                    SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
-                }
-#endif
+                SetupStartupTracing(options);
             }
             else
             {
-                // Closing down the native layer that are set up during build and self-initialize
+                // If the SDK is not `enabled` we're closing down the native layer as well. This is especially relevant
+                // in a `built-time-initialization` scenario where the native SDKs self-initialize.
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Close(options, sentryUnityInfo);
+                SentryNativeCocoa.Close(options, unityInfo);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Close(options, sentryUnityInfo);
+                SentryNativeAndroid.Close(options, unityInfo);
 #endif
             }
+        }
+
+        private static void SetupNativeSdk(SentryUnityOptions options, SentryUnityInfo unityInfo)
+        {
+            try
+            {
+#if SENTRY_NATIVE_COCOA
+                SentryNativeCocoa.Configure(options, unityInfo);
+#elif SENTRY_NATIVE_ANDROID
+                SentryNativeAndroid.Configure(options, unityInfo);
+#elif SENTRY_NATIVE
+                SentryNative.Configure(options, unityInfo);
+#elif SENTRY_WEBGL
+              SentryWebGL.Configure(options);
+#endif
+            }
+            catch (DllNotFoundException e)
+            {
+                options.DiagnosticLogger?.LogError(e,
+                    "Sentry native-error capture configuration failed to load a native library. This usually " +
+                    "means the library is missing from the application bundle or the installation directory.");
+            }
+            catch (Exception e)
+            {
+                options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
+            }
+        }
+
+        private static void SetupStartupTracing(SentryUnityOptions options)
+        {
+#if !SENTRY_WEBGL
+            if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
+            {
+                options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.",
+                    StartupTransactionOperation);
+
+                var runtimeStartTransaction =
+                    SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
+                SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
+
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
+                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
+                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
+                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
+            }
+#endif
         }
     }
 
