@@ -29,6 +29,9 @@ public static class BuildPostProcess
         var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 #pragma warning restore CS0618
 
+        var buildOutputDir = Path.GetDirectoryName(executablePath);
+        var executableName = Path.GetFileName(executablePath);
+
         try
         {
             if (options is null)
@@ -52,15 +55,16 @@ public static class BuildPostProcess
 
             logger.LogDebug("Adding native support.");
 
-            var buildOutputDir = Path.GetDirectoryName(executablePath);
-            var executableName = Path.GetFileName(executablePath);
             AddCrashHandler(logger, target, buildOutputDir, executableName);
-            UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Failed to add the Sentry native integration to the built application");
             throw new BuildFailedException("Sentry Native BuildPostProcess failed");
+        }
+        finally
+        {
+            UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
         }
     }
 
@@ -143,6 +147,7 @@ public static class BuildPostProcess
 
         switch (target)
         {
+            case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
                 addPath("UnityPlayer.dll");
                 addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
@@ -192,7 +197,17 @@ public static class BuildPostProcess
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
 
                 if (isMono)
-                { }
+                { 
+                    addFilesMatching(buildOutputDir, new[] { "*.pdb" });
+
+                    // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
+                    // './Temp/ManagedSymbols/'. We want the one in 'Temp/ManagedSymbols/' specifically.
+                    var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
+                    if (Directory.Exists(managedSymbolsDirectory))
+                    {
+                        addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
+                    }
+                }
                 else // IL2CPP
                 {
                     addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
