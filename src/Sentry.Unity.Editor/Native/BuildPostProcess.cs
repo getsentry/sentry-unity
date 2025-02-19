@@ -25,36 +25,43 @@ public static class BuildPostProcess
 
         var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
+
+        if (options is null)
+        {
+            logger.LogWarning("Native support disabled because Sentry has not been configured. " +
+                              "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
+            return;
+        }
+
+        if (!options.IsValid())
+        {
+            logger.LogDebug("Native support disabled.");
+            return;
+        }
+
+        if (!IsEnabledForPlatform(target, options))
+        {
+            logger.LogDebug("Native support for the current platform is disabled in the configuration.");
+            return;
+        }
+
+        logger.LogDebug("Adding native support.");
+
 #pragma warning disable CS0618
         var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 #pragma warning restore CS0618
 
-        var buildOutputDir = Path.GetDirectoryName(executablePath);
         var executableName = Path.GetFileName(executablePath);
+        var buildOutputDir = Path.GetDirectoryName(executablePath);
+        if (string.IsNullOrEmpty(buildOutputDir))
+        {
+            logger.LogError("Failed to find build output directory based on the executable path '{0}'." +
+                            "\nSkipping adding crashhandler and uploading debug symbols.", executablePath);
+            return;
+        }
 
         try
         {
-            if (options is null)
-            {
-                logger.LogWarning("Native support disabled because Sentry has not been configured. " +
-                                  "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
-                return;
-            }
-
-            if (!options.IsValid())
-            {
-                logger.LogDebug("Native support disabled.");
-                return;
-            }
-
-            if (!IsEnabledForPlatform(target, options))
-            {
-                logger.LogDebug("Native support for the current platform is disabled in the configuration.");
-                return;
-            }
-
-            logger.LogDebug("Adding native support.");
-
             AddCrashHandler(logger, target, buildOutputDir, executableName);
         }
         catch (Exception e)
@@ -62,14 +69,13 @@ public static class BuildPostProcess
             logger.LogError(e, "Failed to add the Sentry native integration to the built application");
             throw new BuildFailedException("Sentry Native BuildPostProcess failed");
         }
-        finally
-        {
-            UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
-        }
+
+        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
     }
 
     private static bool IsEnabledForPlatform(BuildTarget target, SentryUnityOptions options) => target switch
     {
+        BuildTarget.StandaloneWindows => options.WindowsNativeSupportEnabled,
         BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
         BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
@@ -80,6 +86,7 @@ public static class BuildPostProcess
     {
         switch (target)
         {
+            case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
                 CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_handler.exe"));
                 CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_wer.dll"));
@@ -197,7 +204,7 @@ public static class BuildPostProcess
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
 
                 if (isMono)
-                { 
+                {
                     addFilesMatching(buildOutputDir, new[] { "*.pdb" });
 
                     // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
