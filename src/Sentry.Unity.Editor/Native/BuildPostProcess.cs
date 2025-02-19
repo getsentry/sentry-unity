@@ -69,8 +69,11 @@ public static class BuildPostProcess
             logger.LogError(e, "Failed to add the Sentry native integration to the built application");
             throw new BuildFailedException("Sentry Native BuildPostProcess failed");
         }
-
-        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+        finally
+        {
+            // We always want to end up with the debug symbols being uploadde
+            UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+        }
     }
 
     private static bool IsEnabledForPlatform(BuildTarget target, SentryUnityOptions options) => target switch
