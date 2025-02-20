@@ -197,7 +197,7 @@ public static class BuildPostProcess
                 addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
 
                 if (isMono)
-                { 
+                {
                     addFilesMatching(buildOutputDir, new[] { "*.pdb" });
 
                     // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
