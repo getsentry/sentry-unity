@@ -40,6 +40,7 @@ public class SceneManagerIntegrationTests
 
         Assert.AreEqual($"Scene '{sceneName}' was loaded", actualCrumb.Message);
         Assert.AreEqual("scene.loaded", actualCrumb.Category);
+        Assert.AreEqual("navigation", actualCrumb.Type);
     }
 
     [Test]
@@ -72,6 +73,7 @@ public class SceneManagerIntegrationTests
 
         Assert.AreEqual($"Scene '{sceneName}' was unloaded", actualCrumb.Message);
         Assert.AreEqual("scene.unloaded", actualCrumb.Category);
+        Assert.AreEqual("navigation", actualCrumb.Type);
     }
 
     [Test]
@@ -106,6 +108,7 @@ public class SceneManagerIntegrationTests
 
         Assert.AreEqual($"Changed active scene '{expectedFromScene.Name}' to '{expectedToScene.Name}'", actualCrumb.Message);
         Assert.AreEqual("scene.changed", actualCrumb.Category);
+        Assert.AreEqual("navigation", actualCrumb.Type);
         Assert.Null(actualCrumb.Data);
     }
 

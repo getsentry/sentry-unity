@@ -29,7 +29,8 @@ internal class SceneManagerIntegration : ISdkIntegration
 
             hub.AddBreadcrumb(
                 message: $"Scene '{scene.Name}' was loaded",
-                category: "scene.loaded");
+                category: "scene.loaded",
+                type: "navigation");
         }
 
         void SceneManagerOnSceneUnloaded(SceneAdapter scene)
@@ -42,7 +43,8 @@ internal class SceneManagerIntegration : ISdkIntegration
 
             hub.AddBreadcrumb(
                 message: $"Scene '{scene.Name}' was unloaded",
-                category: "scene.unloaded");
+                category: "scene.unloaded",
+                type: "navigation");
         }
 
         void SceneManagerOnActiveSceneChanged(SceneAdapter fromScene, SceneAdapter toScene)
@@ -57,7 +59,8 @@ internal class SceneManagerIntegration : ISdkIntegration
                 message: fromScene.Name == null
                     ? $"Changed active scene to '{toScene.Name}'"
                     : $"Changed active scene '{fromScene.Name}' to '{toScene.Name}'",
-                category: "scene.changed");
+                category: "scene.changed",
+                type: "navigation");
         }
     }
 }
