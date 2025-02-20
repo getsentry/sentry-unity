@@ -35,17 +35,9 @@ public static class BuildPostProcess
 
         if (!options.IsValid())
         {
-            logger.LogDebug("Native support disabled.");
+            logger.LogDebug("Skipping native post build process.");
             return;
         }
-
-        if (!IsEnabledForPlatform(target, options))
-        {
-            logger.LogDebug("Native support for the current platform is disabled in the configuration.");
-            return;
-        }
-
-        logger.LogDebug("Adding native support.");
 
 #pragma warning disable CS0618
         var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
@@ -56,23 +48,27 @@ public static class BuildPostProcess
         if (string.IsNullOrEmpty(buildOutputDir))
         {
             logger.LogError("Failed to find build output directory based on the executable path '{0}'." +
-                            "\nSkipping adding crashhandler and uploading debug symbols.", executablePath);
+                            "\nSkipping adding crash-handler and uploading debug symbols.", executablePath);
+            return;
+        }
+
+        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+
+        if (!IsEnabledForPlatform(target, options))
+        {
+            logger.LogDebug("Skipping adding the crash-handler. Native support for the current platform is disabled in the configuration.");
             return;
         }
 
         try
         {
+            logger.LogDebug("Adding the crash-handler.");
             AddCrashHandler(logger, target, buildOutputDir, executableName);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to add the Sentry native integration to the built application");
+            logger.LogError(e, "Failed to add the crash-handler to the built application.");
             throw new BuildFailedException("Sentry Native BuildPostProcess failed");
-        }
-        finally
-        {
-            // We always want to end up with the debug symbols being uploaded
-            UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
         }
     }
 
