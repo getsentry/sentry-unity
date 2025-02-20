@@ -71,7 +71,7 @@ public static class BuildPostProcess
         }
         finally
         {
-            // We always want to end up with the debug symbols being uploadde
+            // We always want to end up with the debug symbols being uploaded
             UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
         }
     }
