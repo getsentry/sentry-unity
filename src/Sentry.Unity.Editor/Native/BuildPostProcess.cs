@@ -62,7 +62,6 @@ public static class BuildPostProcess
 
         try
         {
-            logger.LogDebug("Adding the crash-handler.");
             AddCrashHandler(logger, target, buildOutputDir, executableName);
         }
         catch (Exception e)
@@ -87,6 +86,7 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
+                logger.LogDebug("Adding crashpad.");
                 CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_handler.exe"));
                 CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_wer.dll"));
                 break;
