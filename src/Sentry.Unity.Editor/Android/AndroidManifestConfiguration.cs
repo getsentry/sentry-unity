@@ -228,13 +228,22 @@ public class AndroidManifestConfiguration
                 throw new DirectoryNotFoundException($"Failed to find the Android SDK at '{androidSdkPath}'.");
             }
 
+            Directory.CreateDirectory(targetPath);
+
             _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
             foreach (var file in Directory.GetFiles(androidSdkPath))
             {
                 var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
-                if (!File.Exists(destinationFile))
+                
+                try 
                 {
-                    File.Copy(file, destinationFile);
+                    File.Copy(file, destinationFile, overwrite: true);
+                    _logger.LogDebug("Copied SDK file: {0}", Path.GetFileName(file));
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Failed to copy SDK file: {0}", Path.GetFileName(file));
+                    throw;
                 }
             }
         }

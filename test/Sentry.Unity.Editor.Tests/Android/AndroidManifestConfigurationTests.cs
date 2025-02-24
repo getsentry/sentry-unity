@@ -421,6 +421,28 @@ public class AndroidManifestTests
         Directory.Delete(fakeProjectPath, true);
     }
 
+    [Test]
+    public void CopyAndroidSdkToGradleProject_SdkAlreadyExists_OverwritesExistingSdk()
+    {
+        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+
+        var targetPath = Path.Combine(gradleProjectPath, "unityLibrary", "libs");
+        Directory.CreateDirectory(targetPath);
+        var existingFile = Path.Combine(targetPath, "androidSdk.jar");
+        File.WriteAllText(existingFile, "original content");
+
+        var sut = _fixture.GetSut();
+        sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+        var newContent = File.ReadAllBytes(existingFile);
+        Assert.AreNotEqual("original content", System.Text.Encoding.UTF8.GetString(newContent));
+
+        Directory.Delete(fakeProjectPath, true);
+    }
+
     private string WithAndroidManifest(Action<string> callback)
     {
         var basePath = GetFakeManifestFileBasePath();
