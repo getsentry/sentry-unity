@@ -236,8 +236,7 @@ public class AndroidManifestConfiguration
                 var fileName = Path.GetFileName(file);
                 _logger.LogDebug("Copying '{0}'", fileName);
 
-                var destinationFile = Path.Combine(targetPath, fileName);
-                File.Copy(file, destinationFile, overwrite: true);
+                File.Copy(file, Path.Combine(targetPath, fileName), overwrite: true);
             }
         }
         else
