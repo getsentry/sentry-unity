@@ -233,18 +233,11 @@ public class AndroidManifestConfiguration
             _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
             foreach (var file in Directory.GetFiles(androidSdkPath))
             {
-                var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
-                
-                try 
-                {
-                    File.Copy(file, destinationFile, overwrite: true);
-                    _logger.LogDebug("Copied SDK file: {0}", Path.GetFileName(file));
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Failed to copy SDK file: {0}", Path.GetFileName(file));
-                    throw;
-                }
+                var fileName = Path.GetFileName(file);
+                _logger.LogDebug("Copying '{0}'", fileName);
+
+                var destinationFile = Path.Combine(targetPath, fileName);
+                File.Copy(file, destinationFile, overwrite: true);
             }
         }
         else
