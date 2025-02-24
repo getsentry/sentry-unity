@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The SDK now ensures that the correct version of the Android SDK gets used during the build. This prevents dependency conflicts and no longer requires "clean" builds to resolve ([#2031](https://github.com/getsentry/sentry-unity/pull/2031))
+
 ## 3.0.1
 
 ### Fixes
