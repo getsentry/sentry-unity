@@ -260,6 +260,22 @@ public sealed class SentryUnityOptions : SentryOptions
         _beforeCaptureViewHierarchy = beforeAttachViewHierarchy;
     }
 
+    private Func<ViewHierarchy, ViewHierarchy?>? _beforeSendViewHierarchy;
+
+    internal Func<ViewHierarchy, ViewHierarchy?>? BeforeSendViewHierarchyInternal => _beforeSendViewHierarchy;
+
+    /// <summary>
+    /// Configures a callback function to be invoked before capturing and attaching the view hierarchy to an event.
+    /// </summary>
+    /// <remarks>
+    /// This callback will get invoked right before the view hierarchy gets taken. If the view hierarchy should not
+    /// be taken return `false`.
+    /// </remarks>
+    public void SetBeforeSendViewHierarchy(Func<ViewHierarchy, ViewHierarchy?> beforeSendViewHierarchy)
+    {
+        _beforeSendViewHierarchy = beforeSendViewHierarchy;
+    }
+
     // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
     internal string? _defaultUserId;
     internal string? DefaultUserId
