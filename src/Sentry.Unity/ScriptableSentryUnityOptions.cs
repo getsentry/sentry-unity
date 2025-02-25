@@ -63,6 +63,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForErrors { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForExceptions { get; set; } = true;
+    [field: SerializeField] public bool CaptureLogErrorEvents { get; set; } = true;
 
     [field: SerializeField] public int MaxBreadcrumbs { get; set; } = SentryConstants.DefaultMaxBreadcrumbs;
 
@@ -169,6 +170,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             // need to set it here directly.
             Debug = ShouldDebug(application.IsEditor && !isBuilding),
             DiagnosticLevel = DiagnosticLevel,
+            CaptureLogErrorEvents = CaptureLogErrorEvents,
             AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
             CaptureFailedRequests = CaptureFailedRequests,
             FilterBadGatewayExceptions = FilterBadGatewayExceptions,
@@ -223,6 +225,15 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         // We need to set up logging here because the configure callback might have changed the debug options.
         // Without setting up here we might miss out on logs between option-loading (now) and Init - i.e. native configuration
         options.SetupLogging();
+
+        if (options.AttachViewHierarchy)
+        {
+            options.AddEventProcessor(new ViewHierarchyEventProcessor(options));
+        }
+        if (options.AttachScreenshot)
+        {
+            options.AddEventProcessor(new ScreenshotEventProcessor(options));
+        }
 
         if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
         {

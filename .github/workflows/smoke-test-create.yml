@@ -13,7 +13,7 @@ defaults:
 
 jobs:
   create:
-    name: Create Smoke Test - ${{ inputs.unity-version }}
+    name: ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
     env:
       UNITY_PATH: docker exec unity unity-editor

@@ -130,6 +130,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public int ScreenshotCompression { get; set; } = 75;
 
     /// <summary>
+    /// Whether the SDK automatically captures events for 'Debug.LogError'.
+    /// </summary>
+    public bool CaptureLogErrorEvents { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should automatically add breadcrumbs per LogType
     /// </summary>
     public Dictionary<LogType, bool> AddBreadcrumbsForLogType { get; set; }
@@ -222,6 +227,38 @@ public sealed class SentryUnityOptions : SentryOptions
     /// This option is restricted due to incompatibility between IL2CPP and Enhanced mode.
     /// </summary>
     public new StackTraceMode StackTraceMode { get; private set; }
+
+    private Func<bool>? _beforeCaptureScreenshot;
+
+    internal Func<bool>? BeforeCaptureScreenshotInternal => _beforeCaptureScreenshot;
+
+    /// <summary>
+    /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
+    /// </summary>
+    /// <remarks>
+    /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
+    /// be taken return `false`.
+    /// </remarks>
+    public void SetBeforeCaptureScreenshot(Func<bool> beforeAttachScreenshot)
+    {
+        _beforeCaptureScreenshot = beforeAttachScreenshot;
+    }
+
+    private Func<bool>? _beforeCaptureViewHierarchy;
+
+    internal Func<bool>? BeforeCaptureViewHierarchyInternal => _beforeCaptureViewHierarchy;
+
+    /// <summary>
+    /// Configures a callback function to be invoked before capturing and attaching the view hierarchy to an event.
+    /// </summary>
+    /// <remarks>
+    /// This callback will get invoked right before the view hierarchy gets taken. If the view hierarchy should not
+    /// be taken return `false`.
+    /// </remarks>
+    public void SetBeforeCaptureViewHierarchy(Func<bool> beforeAttachViewHierarchy)
+    {
+        _beforeCaptureViewHierarchy = beforeAttachViewHierarchy;
+    }
 
     // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
     internal string? _defaultUserId;

@@ -43,6 +43,7 @@ jobs:
       runsOn: ${{ matrix.host }}
 
   build-unity-sdk:
+    name: Build Unity SDK
     secrets: inherit
     strategy:
       fail-fast: false
@@ -53,7 +54,6 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
     
-
   package-validation:
     name: UPM Package validation
     runs-on: ubuntu-latest
@@ -76,9 +76,9 @@ jobs:
 
   # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`.
   smoke-test-create:
-    secrets: inherit
+    name: Create ${{ matrix.unity-version }} Smoke Test Project
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ matrix.unity-version }} Prepare Smoke Test
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
@@ -89,8 +89,8 @@ jobs:
     
   # A Linux, docker-based build to prepare a game ("player") for some platforms. The tests run in `smoke-test-run`.
   smoke-test-build:
+    name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Build Smoke Test
     needs: [smoke-test-create]
     runs-on: ubuntu-latest
     strategy:
@@ -201,9 +201,10 @@ jobs:
           retention-days: 14
 
   android-smoke-test-build:
+    name: Build Android ${{ matrix.unity-version }} Smoke Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create]
     secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     strategy:
       fail-fast: false
       matrix:
@@ -212,23 +213,10 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  android-smoke-test-compile:
-    needs: [android-smoke-test-build]
-    secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        unity-version: ["2019", "6000"]
-        init-type: ["runtime", "buildtime"]
-    uses: ./.github/workflows/android-smoke-test-compile.yml
-    with:
-      unity-version: ${{ matrix.unity-version }}
-      init-type: ${{ matrix.init-type }}
-
   android-smoke-test-run:
+    name: Run Android ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [android-smoke-test-compile]
+    needs: [android-smoke-test-build]
     uses: ./.github/workflows/android-smoke-test-run.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -239,12 +227,13 @@ jobs:
       matrix:
         api-level: [30, 31, 34] # last updated January 2025
         init-type: ["runtime", "buildtime"]
-        unity-version: ["2019", "6000"]
+        unity-version: ["2019", "2022", "6000"]
 
   ios-smoke-test-build:
+    name: Build iOS ${{ matrix.unity-version }} Smoke Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create]
     secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     strategy:
       fail-fast: false
       matrix:
@@ -254,9 +243,10 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
 
   ios-smoke-test-compile:
+    name: Compile iOS ${{ matrix.unity-version }} Smoke Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [ios-smoke-test-build]
     secrets: inherit
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     strategy:
       fail-fast: false
       matrix:
@@ -268,6 +258,7 @@ jobs:
       init-type: ${{ matrix.init-type }}
 
   ios-smoke-test-run:
+    name: Run iOS ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [ios-smoke-test-compile]
     uses: ./.github/workflows/ios-smoke-test-run.yml
@@ -292,9 +283,9 @@ jobs:
         init-type: ["runtime", "buildtime"]
 
   smoke-test-run:
+    name: Run ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build]
-    name: ${{ matrix.unity-version }} ${{ matrix.platform }} Run Smoke Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -330,8 +321,8 @@ jobs:
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
 
   desktop-smoke-test:
+    name: Run ${{ matrix.os }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    name: ${{ matrix.unity-version }} ${{ matrix.os }} Run Smoke Test
     needs: [smoke-test-create]
     runs-on: ${{ matrix.os }}-latest
     strategy:

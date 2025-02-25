@@ -70,7 +70,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             }
         }
 
-        if (logType is LogType.Error)
+        if (logType is LogType.Error && _options?.CaptureLogErrorEvents is true)
         {
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {

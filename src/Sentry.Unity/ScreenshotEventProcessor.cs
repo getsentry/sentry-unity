@@ -1,43 +1,48 @@
-using System.IO;
 using Sentry.Extensibility;
 using UnityEngine;
 
 namespace Sentry.Unity;
 
-internal class ScreenshotAttachment : SentryAttachment
-{
-    public ScreenshotAttachment(IAttachmentContent content)
-        : base(AttachmentType.Default, content, "screenshot.jpg", "image/jpeg") { }
-}
-
-internal class ScreenshotAttachmentContent : IAttachmentContent
+public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
 
-    public ScreenshotAttachmentContent(SentryUnityOptions options)
+    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions)
     {
-        _options = options;
+        _options = sentryOptions;
     }
 
-    public Stream GetStream()
+    public SentryEvent? Process(SentryEvent @event)
     {
-        // Note: we need to check explicitly that we're on the same thread. While Unity would throw otherwise
-        // when capturing the screenshot, it would only do so on development builds. On release, it just crashes...
+        return @event;
+    }
+
+    public SentryEvent? Process(SentryEvent @event, SentryHint hint)
+    {
         if (!MainThreadData.IsMainThread())
         {
-            _options.DiagnosticLogger?.LogDebug("Can't capture screenshots on other than main (UI) thread.");
-            return Stream.Null;
+            return @event;
         }
 
-        if (Screen.width == 0 || Screen.height == 0)
+        if (_options.BeforeCaptureScreenshotInternal?.Invoke() is not false)
         {
-            _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
-            // Returning a memory stream with a capacity of 1 so we can smoke-test the attempt to capture a screenshot in CI
-            return new MemoryStream(new byte[] { 0x00 });
-
+            if (Screen.width == 0 || Screen.height == 0)
+            {
+                _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
+            }
+            else
+            {
+                hint.AddAttachment(CaptureScreenshot(Screen.width, Screen.height), "screenshot.jpg", contentType: "image/jpeg");
+            }
+        }
+        else
+        {
+            _options.DiagnosticLogger?.LogInfo("Screenshot attachment skipped by BeforeAttachScreenshot callback.");
         }
 
-        return new MemoryStream(CaptureScreenshot(Screen.width, Screen.height));
+
+
+        return @event;
     }
 
     internal static int GetTargetResolution(ScreenshotQuality quality)

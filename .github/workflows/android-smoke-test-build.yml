@@ -12,29 +12,13 @@ defaults:
 jobs:
   build:
     name: ${{ inputs.unity-version }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - platform: Android
-            check_symbols: false
-            build_platform: Android-Export
+    runs-on: ubuntu-latest-4-cores
     env:
       UNITY_PATH: docker exec unity unity-editor
     
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8
-        with:
-          android: true
-          dotnet: false
-          haskell: true
-          large-packages: false
-          docker-images: false
-          swap-storage: true
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -78,53 +62,34 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols
 
-      - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
+      - name: Export APK - Runtime Initialization
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
 
-      # We create tar explicitly because upload-artifact is slow for many files.
-      # TODO verify this is still true with upload-artifact@v4 which improved performance a lot.
-      - name: Create archive
-        shell: bash
-        run: |
-          # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
-          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
-
-      # Upload runtime initialization build
-      - name: Upload test app
+      - name: Upload .apk
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-android-${{ inputs.unity-version }}-runtime
-          if-no-files-found: error
-          path: test-app-runtime.tar.gz
-          retention-days: 14
+          name: testapp-android-compiled-${{ inputs.unity-version }}-runtime
+          path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
+          retention-days: 14 # Lower retention period - we only need this to retry CI.
 
-      - name: Configure Sentry for mobile platforms (build-time initialization)
+      - name: Overwrite OptionsConfiguration for build-time initialization
         run: |
           $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
           $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
-      - name: Build Project for mobile platforms (build-time initialization)
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
+      - name: Export APK - Build-Time Initialization
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
 
-      - name: Create archive (build-time initialization)
-        shell: bash
-        run: |
-          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app-buildtime.tar.gz samples/IntegrationTest/Build
-
-      # Upload build-time initialization build
-      - name: Upload test app (build-time initialization)
+      - name: Upload .apk
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-android-${{ inputs.unity-version }}-buildtime
-          if-no-files-found: error
-          path: test-app-buildtime.tar.gz
-          retention-days: 14
+          name: testapp-android-compiled-${{ inputs.unity-version }}-buildtime
+          path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
+          retention-days: 14 # Lower retention period - we only need this to retry CI.
           
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
@@ -134,5 +99,5 @@ jobs:
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          # Lower retention period - we only need this to retry CI.
-          retention-days: 14
+          retention-days: 14 # Lower retention period - we only need this to retry CI.
+

@@ -96,6 +96,15 @@ public class AndroidManifestConfiguration
 
         CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
         AddAndroidSdkDependencies(gradleProjectPath);
+
+        if (_sentryCliOptions?.IgnoreCliErrors is true)
+        {
+            _logger.LogWarning("Sentry CLI errors will be ignored during build. BE AWARE you might have " +
+                               "unminified/unsymbolicated crashes in production if the debug symbol upload fails. " +
+                               "When using this flag, you should store built sourcemaps and debug files, to re-run the " +
+                               "upload symbols command at a later point.");
+        }
+
         SetupSymbolsUpload(unityProjectPath, gradleProjectPath);
         SetupProguard(gradleProjectPath);
     }
@@ -219,14 +228,16 @@ public class AndroidManifestConfiguration
                 throw new DirectoryNotFoundException($"Failed to find the Android SDK at '{androidSdkPath}'.");
             }
 
+            Directory.CreateDirectory(targetPath);
+
             _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
-            foreach (var file in Directory.GetFiles(androidSdkPath))
+            foreach (var sourceFileName in Directory.GetFiles(androidSdkPath))
             {
-                var destinationFile = Path.Combine(targetPath, Path.GetFileName(file));
-                if (!File.Exists(destinationFile))
-                {
-                    File.Copy(file, destinationFile);
-                }
+                var fileName = Path.GetFileName(sourceFileName);
+                var destFileName = Path.Combine(targetPath, fileName);
+                _logger.LogDebug("Copying '{0}' to '{1}'", fileName, destFileName);
+
+                File.Copy(sourceFileName, destFileName, overwrite: true);
             }
         }
         else
