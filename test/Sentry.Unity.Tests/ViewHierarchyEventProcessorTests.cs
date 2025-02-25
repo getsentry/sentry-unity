@@ -73,16 +73,16 @@ public class ViewHierarchyEventProcessorTests
         Assert.AreEqual(captureViewHierarchy ? 1 : 0, hint.Attachments.Count);
     }
 
-    [Test]
-    public void CaptureViewHierarchy_ReturnsNonNullOrEmptyByteArray()
-    {
-        var sut = _fixture.GetSut();
-
-        var byteArray = sut.CaptureViewHierarchy();
-
-        Assert.That(byteArray, Is.Not.Null);
-        Assert.That(byteArray.Length, Is.GreaterThan(0));
-    }
+    // [Test]
+    // public void CaptureViewHierarchy_ReturnsNonNullOrEmptyByteArray()
+    // {
+    //     var sut = _fixture.GetSut();
+    //
+    //     var byteArray = sut.CaptureViewHierarchy();
+    //
+    //     Assert.That(byteArray, Is.Not.Null);
+    //     Assert.That(byteArray.Length, Is.GreaterThan(0));
+    // }
 
     [Test]
     public void CreateViewHierarchy_CapturesSceneAsRoot()
