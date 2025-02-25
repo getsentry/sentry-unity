@@ -32,7 +32,26 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
 
         if (_options.BeforeCaptureViewHierarchyInternal?.Invoke() is not false)
         {
-            hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", contentType: "application/json");
+            var viewHierarchy = CreateViewHierarchy(
+                _options.MaxViewHierarchyRootObjects,
+                _options.MaxViewHierarchyObjectChildCount,
+                _options.MaxViewHierarchyDepth);
+
+            if (_options.BeforeSendViewHierarchyInternal is not null)
+            {
+                viewHierarchy = _options.BeforeSendViewHierarchyInternal.Invoke(viewHierarchy);
+                if (viewHierarchy is null)
+                {
+                    return @event;
+                }
+            }
+
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream);
+            viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
+            writer.Flush();
+
+            hint.AddAttachment(stream.ToArray(), "view-hierarchy.json", contentType: "application/json");
         }
         else
         {
@@ -40,21 +59,6 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
         }
 
         return @event;
-    }
-
-    internal byte[] CaptureViewHierarchy()
-    {
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream);
-
-        var viewHierarchy = CreateViewHierarchy(
-            _options.MaxViewHierarchyRootObjects,
-            _options.MaxViewHierarchyObjectChildCount,
-            _options.MaxViewHierarchyDepth);
-        viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
-
-        writer.Flush();
-        return stream.ToArray();
     }
 
     internal ViewHierarchy CreateViewHierarchy(int maxRootGameObjectCount, int maxChildCount, int maxDepth)
