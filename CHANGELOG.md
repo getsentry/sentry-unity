@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Resolved an issue where the SDK would not properly annotate the ViewHierarchy's `AttachmentType`. This would cause it to not render properly on the issues-page on Sentry ([#2036](https://github.com/getsentry/sentry-unity/pull/2036))
 - The SDK now ensures that the correct version of the Android SDK gets used during the build. This prevents dependency conflicts and no longer requires "clean" builds to resolve ([#2031](https://github.com/getsentry/sentry-unity/pull/2031))
 
 ### Dependencies

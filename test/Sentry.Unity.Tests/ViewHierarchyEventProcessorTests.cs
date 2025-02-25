@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using UnityEngine;
@@ -39,6 +40,7 @@ public class ViewHierarchyEventProcessorTests
         sut.Process(sentryEvent, hint);
 
         Assert.AreEqual(1, hint.Attachments.Count);
+        Assert.AreEqual(AttachmentType.ViewHierarchy, hint.Attachments.First().Type);
     }
 
     [Test]
