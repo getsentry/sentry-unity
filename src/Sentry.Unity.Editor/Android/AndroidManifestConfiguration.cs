@@ -231,12 +231,13 @@ public class AndroidManifestConfiguration
             Directory.CreateDirectory(targetPath);
 
             _logger.LogInfo("Copying the Android SDK to '{0}'.", gradlePath);
-            foreach (var file in Directory.GetFiles(androidSdkPath))
+            foreach (var sourceFileName in Directory.GetFiles(androidSdkPath))
             {
-                var fileName = Path.GetFileName(file);
-                _logger.LogDebug("Copying '{0}'", fileName);
+                var fileName = Path.GetFileName(sourceFileName);
+                var destFileName = Path.Combine(targetPath, fileName);
+                _logger.LogDebug("Copying '{0}' to '{1}'", fileName, destFileName);
 
-                File.Copy(file, Path.Combine(targetPath, fileName), overwrite: true);
+                File.Copy(sourceFileName, destFileName, overwrite: true);
             }
         }
         else
