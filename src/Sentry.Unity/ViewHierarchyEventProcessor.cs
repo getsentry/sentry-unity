@@ -51,7 +51,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
             viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
             writer.Flush();
 
-            hint.AddAttachment(stream.ToArray(), "view-hierarchy.json", contentType: "application/json");
+            hint.AddAttachment(stream.ToArray(), "view-hierarchy.json", AttachmentType.ViewHierarchy, "application/json");
         }
         else
         {
