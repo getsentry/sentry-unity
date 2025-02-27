@@ -13,7 +13,7 @@ internal interface ISentryJava
     public string? GetInstallationId(IJniExecutor jniExecutor);
     public bool? CrashedLastRun(IJniExecutor jniExecutor);
     public void Close(IJniExecutor jniExecutor);
-    public void ContinueTrace(IJniExecutor jniExecutor, string traceId);
+    public void SetTrace(IJniExecutor jniExecutor, string traceId, string spanId);
     public void WriteScope(
         IJniExecutor jniExecutor,
         int? GpuId,
@@ -45,6 +45,7 @@ internal interface ISentryJava
 internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+    private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.InternalSentrySdk");
 
     public bool IsEnabled(IJniExecutor jniExecutor, TimeSpan timeout)
     {
@@ -171,12 +172,12 @@ internal class SentryJava : ISentryJava
         });
     }
 
-    public void ContinueTrace(IJniExecutor jniExecutor, string traceId)
+    public void SetTrace(IJniExecutor jniExecutor, string traceId, string spanId)
     {
         jniExecutor.Run(() =>
         {
-            using var sentry = GetSentryJava();
-            sentry.CallStatic<AndroidJavaObject>("continueTrace", traceId, null);
+            using var sentry = GetInternalSentryJava();
+            sentry.CallStatic<AndroidJavaObject>("setTrace", traceId, spanId);
         });
     }
 
