@@ -35,12 +35,14 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
         // to the SDK as a string. It therefore lacks the necessary data to fetch the native stacktrace and go from there
         if (incomingException is UnityErrorLogException)
         {
+            Options.DiagnosticLogger?.LogDebug("Skipping. No IL2CPP processing support for synthetic UnityErrorLogExceptions.");
             return;
         }
 
         var sentryExceptions = sentryEvent.SentryExceptions;
         if (sentryExceptions == null)
         {
+            Options.DiagnosticLogger?.LogDebug("Skipping. The event does not contain SentryExceptions.");
             return;
         }
 
@@ -58,6 +60,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             {
                 // We will only augment an existing stack trace with native
                 // instructions, so with no stack trace, there is nothing to do
+                Options.DiagnosticLogger?.LogDebug("The exception does not contain a stack trace. Nothing to do.");
                 continue;
             }
 
