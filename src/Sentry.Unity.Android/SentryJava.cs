@@ -45,7 +45,7 @@ internal interface ISentryJava
 internal class SentryJava : ISentryJava
 {
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
-    private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.InternalSentrySdk");
+    private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
 
     public bool IsEnabled(IJniExecutor jniExecutor, TimeSpan timeout)
     {
@@ -177,7 +177,7 @@ internal class SentryJava : ISentryJava
         jniExecutor.Run(() =>
         {
             using var sentry = GetInternalSentryJava();
-            sentry.CallStatic<AndroidJavaObject>("setTrace", traceId, spanId);
+            sentry.CallStatic("setTrace", traceId, spanId, (Double?)null, (Double?)null);
         });
     }
 
