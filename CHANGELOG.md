@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump .NET SDK from v5.1.1 to v5.2.0 ([#2040](https://github.com/getsentry/sentry-unity/pull/2040))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#520)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.1.1...5.2.0)
+- Bump Java SDK from v8.2.0 to v8.3.0 ([#2039](https://github.com/getsentry/sentry-unity/pull/2039))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#830)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.2.0...8.3.0)
+
+## 3.0.2
+
 ### Fixes
 
 - Resolved an issue where the SDK would not properly annotate the ViewHierarchy's `AttachmentType`. This would cause it to not render properly on the issues-page on Sentry ([#2036](https://github.com/getsentry/sentry-unity/pull/2036))
