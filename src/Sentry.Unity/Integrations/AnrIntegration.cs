@@ -126,7 +126,7 @@ internal class AnrWatchDogMultiThreaded : AnrWatchDog
         yield return waitForSeconds;
         while (!_stop)
         {
-            _ticksSinceUiUpdate = 0;
+            Interlocked.Exchange(ref _ticksSinceUiUpdate, 0);
             _reported = false;
             yield return waitForSeconds;
         }
@@ -144,12 +144,12 @@ internal class AnrWatchDogMultiThreaded : AnrWatchDog
 
             while (!_stop)
             {
-                _ticksSinceUiUpdate++;
+                Interlocked.Increment(ref _ticksSinceUiUpdate);
                 Thread.Sleep(SleepIntervalMs);
 
                 if (Paused)
                 {
-                    _ticksSinceUiUpdate = 0;
+                    Interlocked.Exchange(ref _ticksSinceUiUpdate, 0);
                 }
                 else if (_ticksSinceUiUpdate >= reportThreshold && !_reported)
                 {

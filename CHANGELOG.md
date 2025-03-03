@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed a potential race condition in the ANR watchdog integration ([2045](https://github.com/getsentry/sentry-unity/pull/2045))
+
 ### Dependencies
 
 - Bump .NET SDK from v5.1.1 to v5.2.0 ([#2040](https://github.com/getsentry/sentry-unity/pull/2040))
