@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
