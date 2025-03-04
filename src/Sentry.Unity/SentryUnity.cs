@@ -52,7 +52,7 @@ public static class SentryUnity
     /// Represents the crash state of the games's previous run.
     /// Used to determine if the last execution terminated normally or crashed.
     /// </summary>
-    public enum LastRunState
+    public enum CrashedLastRun
     {
         /// <summary>
         /// The LastRunState is unknown. This might be due to the SDK not being initialized, native crash support
@@ -75,14 +75,14 @@ public static class SentryUnity
     /// Retrieves the crash state of the previous application run.
     /// This indicates whether the application terminated normally or crashed.
     /// </summary>
-    /// <returns><see cref="LastRunState"/> indicating the state of the previous run.</returns>
-    public static LastRunState GetLastRunState()
+    /// <returns><see cref="CrashedLastRun"/> indicating the state of the previous run.</returns>
+    public static CrashedLastRun GetLastRunState()
     {
         if (UnitySdk is null)
         {
-            return LastRunState.Unknown;
+            return CrashedLastRun.Unknown;
         }
 
-        return UnitySdk.GetLastRunState();
+        return UnitySdk.CrashedLastRun();
     }
 }

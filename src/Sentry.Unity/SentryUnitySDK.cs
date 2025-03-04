@@ -100,17 +100,17 @@ internal class SentryUnitySdk
         }
     }
 
-    public SentryUnity.LastRunState GetLastRunState()
+    public SentryUnity.CrashedLastRun CrashedLastRun()
     {
         if (_options.CrashedLastRun is null)
         {
             _options.DiagnosticLogger?.LogDebug("The SDK does not have a 'CrashedLastRun' set. " +
                                                 "This might be due to a missing or disabled native integration.");
-            return SentryUnity.LastRunState.Unknown;
+            return SentryUnity.CrashedLastRun.Unknown;
         }
 
         return _options.CrashedLastRun.Invoke()
-            ? SentryUnity.LastRunState.Crashed
-            : SentryUnity.LastRunState.DidNotCrash;
+            ? SentryUnity.CrashedLastRun.Crashed
+            : SentryUnity.CrashedLastRun.DidNotCrash;
     }
 }
