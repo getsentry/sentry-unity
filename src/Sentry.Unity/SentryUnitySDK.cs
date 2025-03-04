@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
@@ -98,5 +99,19 @@ internal class SentryUnitySdk
             _options.DiagnosticLogger?.Log(SentryLevel.Warning,
                 "Exception while releasing the lockfile on the config directory.", ex);
         }
+    }
+
+    public SentryUnity.LastRunState GetLastRunState()
+    {
+        if (_options.CrashedLastRun is null)
+        {
+            _options.DiagnosticLogger?.LogDebug("The SDK does not have a 'CrashedLastRun' set. " +
+                                                "This might be due to a missing or disabled native integration.");
+            return SentryUnity.LastRunState.Unknown;
+        }
+
+        return _options.CrashedLastRun.Invoke()
+            ? SentryUnity.LastRunState.Crashed
+            : SentryUnity.LastRunState.DidNotCrash;
     }
 }
