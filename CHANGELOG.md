@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added `SentryUnity.CrashedLastRun()`. This allows you to check whether the SDK captured a crash the last time the game ran. ([#2049](https://github.com/getsentry/sentry-unity/pull/2049))
+
 ### Fixes
 
 - Fixed a potential race condition in the ANR watchdog integration ([2045](https://github.com/getsentry/sentry-unity/pull/2045))
