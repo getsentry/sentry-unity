@@ -40,6 +40,10 @@ public class NativeScopeObserver : ScopeObserver
     }
 
     public override void UnsetUserImpl() => C.sentry_remove_user();
+    public override void SetTraceImpl(SentryId traceId, SpanId parentSpanId)
+    {
+        throw new NotImplementedException();
+    }
 
     private static string GetTimestamp(DateTimeOffset timestamp) =>
         // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.

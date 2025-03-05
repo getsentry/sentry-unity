@@ -3,7 +3,7 @@ using Sentry.Unity.Json;
 namespace Sentry.Unity;
 
 /// <summary>
-/// Sentry Unity Scope Observer wrapper for the common behaviour accross platforms.
+/// Sentry Unity Scope Observer wrapper for the common behaviour across platforms.
 /// </summary>
 public abstract class ScopeObserver : IScopeObserver
 {
@@ -84,4 +84,9 @@ public abstract class ScopeObserver : IScopeObserver
     public abstract void SetUserImpl(SentryUser user);
 
     public abstract void UnsetUserImpl();
+
+    public abstract void SetTraceImpl(SentryId traceId, SpanId parentSpanId);
+
+    public void SetTrace(SentryId traceId, SpanId parentSpanId)
+        => SetTraceImpl(traceId, parentSpanId);
 }
