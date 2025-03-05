@@ -15,6 +15,7 @@
 #endif
 
 using System;
+using JetBrains.Annotations;
 using Sentry.Extensibility;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
@@ -55,13 +56,14 @@ namespace Sentry.Unity
 #endif
         public static void Init()
         {
-            RegisterAndroidCallbacks();
-
             var unityInfo = new SentryUnityInfo();
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
             if (options != null && options.ShouldInitializeSdk())
             {
+                // Register LifeCycle Callbacks so the SDK is aware of the app losing focus during startup
+                RegisterAndroidCallbacks(options.DiagnosticLogger);
+
                 // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
                 // compile them with the game instead of precompiling them with the rest of the SDK.
                 // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
@@ -83,74 +85,54 @@ namespace Sentry.Unity
             }
         }
 
-        private static void RegisterAndroidCallbacks()
+        private static void RegisterAndroidCallbacks([CanBeNull] IDiagnosticLogger logger)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
+            logger?.LogError("Registering Android LifeCycleCallbacks.");
+
             try
             {
-using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
-using (var application = activity.Call<AndroidJavaObject>("getApplication"))
-{
-    AndroidJavaProxy lifecycleCallbacks = new AndroidLifecycleCallbacks();
+                using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                using var application = activity.Call<AndroidJavaObject>("getApplication");
+                AndroidJavaProxy lifecycleCallbacks = new AndroidLifecycleCallbacks(logger);
 
-    // Properly register the callbacks with the application
-    application.Call("registerActivityLifecycleCallbacks", lifecycleCallbacks);
-
-    Debug.Log("Android lifecycle callbacks registered successfully");
-}
+                application.Call("registerActivityLifecycleCallbacks", lifecycleCallbacks);
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error setting up Android lifecycle callbacks: {ex}");
+                logger?.LogError("Failed to register Android LifeCycleCallbacks.");
             }
 #endif
         }
 
         private class AndroidLifecycleCallbacks : AndroidJavaProxy
         {
-            public AndroidLifecycleCallbacks() : base("android.app.Application$ActivityLifecycleCallbacks") { }
+            [CanBeNull] private IDiagnosticLogger _logger;
 
-            // Called when the activity is paused - app going to background
+            public AndroidLifecycleCallbacks([CanBeNull] IDiagnosticLogger logger) : base(
+                "android.app.Application$ActivityLifecycleCallbacks")
+            {
+                _logger = logger;
+            }
+
+            // App going to background
             public void onActivityPaused(AndroidJavaObject activity)
             {
-                Debug.Log("Android: Application moved to background (onActivityPaused)");
-                // You can add your background transition handling here
+                _logger?.LogInfo("Application move to background. Pausing session.");
             }
 
-            // Called when the activity is resumed - app coming to foreground
+            // App coming to foreground
             public void onActivityResumed(AndroidJavaObject activity)
             {
-                Debug.Log("Android: Application moved to foreground (onActivityResumed)");
-                // You can add your foreground transition handling here
+                _logger?.LogInfo("Application move to foreground. Resuming session.");
             }
 
-            // The following methods are required to implement the interface
-            // but may not be needed for your background detection
-            public void onActivityCreated(AndroidJavaObject activity, AndroidJavaObject savedInstanceState)
-            {
-                Debug.Log("Android: Activity created");
-            }
-
-            public void onActivityStarted(AndroidJavaObject activity)
-            {
-                Debug.Log("Android: Activity started");
-            }
-
-            public void onActivityStopped(AndroidJavaObject activity)
-            {
-                Debug.Log("Android: Activity stopped");
-            }
-
-            public void onActivitySaveInstanceState(AndroidJavaObject activity, AndroidJavaObject outState)
-            {
-                // No action needed
-            }
-
-            public void onActivityDestroyed(AndroidJavaObject activity)
-            {
-                Debug.Log("Android: Activity destroyed");
-            }
+            public void onActivityCreated(AndroidJavaObject activity, AndroidJavaObject savedInstanceState) { }
+            public void onActivityStarted(AndroidJavaObject activity) { }
+            public void onActivityStopped(AndroidJavaObject activity) { }
+            public void onActivitySaveInstanceState(AndroidJavaObject activity, AndroidJavaObject outState) { }
+            public void onActivityDestroyed(AndroidJavaObject activity) { }
         }
 
         private static void SetupNativeSdk(SentryUnityOptions options, SentryUnityInfo unityInfo)
