@@ -55,6 +55,8 @@ namespace Sentry.Unity
 #endif
         public static void Init()
         {
+            RegisterAndroidCallbacks();
+
             var unityInfo = new SentryUnityInfo();
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
@@ -78,6 +80,76 @@ namespace Sentry.Unity
 #elif SENTRY_NATIVE_ANDROID
                 SentryNativeAndroid.Close(options, unityInfo);
 #endif
+            }
+        }
+
+        private static void RegisterAndroidCallbacks()
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            try
+            {
+using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+using (var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+using (var application = activity.Call<AndroidJavaObject>("getApplication"))
+{
+    AndroidJavaProxy lifecycleCallbacks = new AndroidLifecycleCallbacks();
+
+    // Properly register the callbacks with the application
+    application.Call("registerActivityLifecycleCallbacks", lifecycleCallbacks);
+
+    Debug.Log("Android lifecycle callbacks registered successfully");
+}
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error setting up Android lifecycle callbacks: {ex}");
+            }
+#endif
+        }
+
+        private class AndroidLifecycleCallbacks : AndroidJavaProxy
+        {
+            public AndroidLifecycleCallbacks() : base("android.app.Application$ActivityLifecycleCallbacks") { }
+
+            // Called when the activity is paused - app going to background
+            public void onActivityPaused(AndroidJavaObject activity)
+            {
+                Debug.Log("Android: Application moved to background (onActivityPaused)");
+                // You can add your background transition handling here
+            }
+
+            // Called when the activity is resumed - app coming to foreground
+            public void onActivityResumed(AndroidJavaObject activity)
+            {
+                Debug.Log("Android: Application moved to foreground (onActivityResumed)");
+                // You can add your foreground transition handling here
+            }
+
+            // The following methods are required to implement the interface
+            // but may not be needed for your background detection
+            public void onActivityCreated(AndroidJavaObject activity, AndroidJavaObject savedInstanceState)
+            {
+                Debug.Log("Android: Activity created");
+            }
+
+            public void onActivityStarted(AndroidJavaObject activity)
+            {
+                Debug.Log("Android: Activity started");
+            }
+
+            public void onActivityStopped(AndroidJavaObject activity)
+            {
+                Debug.Log("Android: Activity stopped");
+            }
+
+            public void onActivitySaveInstanceState(AndroidJavaObject activity, AndroidJavaObject outState)
+            {
+                // No action needed
+            }
+
+            public void onActivityDestroyed(AndroidJavaObject activity)
+            {
+                Debug.Log("Android: Activity destroyed");
             }
         }
 
