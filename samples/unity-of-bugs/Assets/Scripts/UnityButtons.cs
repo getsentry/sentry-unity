@@ -35,10 +35,12 @@ public class UnityButtons : MonoBehaviour
                 name = "PureVirtualFunction";
                 _selectedForcedCrashCategory = ForcedCrashCategory.PureVirtualFunction;
                 break;
+#if UNITY_2021_3_OR_NEWER
             case 4:
                 name = "MonoAbort";
                 _selectedForcedCrashCategory = ForcedCrashCategory.MonoAbort;
                 break;
+#endif
             default:
                 throw new ArgumentException($"Invalid forced-crash-type value: {value}");
         }
