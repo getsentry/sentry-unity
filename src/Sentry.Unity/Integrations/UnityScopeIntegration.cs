@@ -45,7 +45,7 @@ internal class UnityScopeUpdater
     {
         PopulateSdk(scope.Sdk);
         PopulateApp(scope.Contexts.App);
-        PopulateOperatingSystem(scope.Contexts.OperatingSystem);
+        // PopulateOperatingSystem(scope.Contexts.OperatingSystem);
         PopulateDevice(scope.Contexts.Device);
         PopulateGpu(scope.Contexts.Gpu);
 

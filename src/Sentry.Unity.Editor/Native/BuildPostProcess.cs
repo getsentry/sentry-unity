@@ -18,10 +18,11 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-        if (targetGroup is not BuildTargetGroup.Standalone)
-        {
-            return;
-        }
+        // TODO: Is Xbox standalone?
+        // if (targetGroup is not BuildTargetGroup.Standalone)
+        // {
+        //     return;
+        // }
 
         var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
@@ -77,6 +78,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
         BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
+        (BuildTarget)42 => true,
         _ => false,
     };
 
@@ -94,6 +96,9 @@ public static class BuildPostProcess
             case BuildTarget.StandaloneOSX:
                 // No standalone crash handler for Linux/macOS - uses built-in handlers.
                 return;
+            case (BuildTarget)42:
+                logger.LogDebug("I know it's Xbox but I don't know what do to with it (yet).");
+                break;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
         }
@@ -218,6 +223,9 @@ public static class BuildPostProcess
                 {
                     addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
                 }
+                break;
+            case (BuildTarget)42:
+                logger.LogDebug("This is where I would attempt to upload stuff for Xbox to Sentry as well.");
                 break;
             default:
                 logger.LogError($"Symbol upload for '{target}' is currently not supported.");
