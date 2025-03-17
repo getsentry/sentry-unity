@@ -70,7 +70,7 @@ public static class SentryNativeAndroid
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>
         {
-            options.DiagnosticLogger?.LogDebug("Checking for `CrashedLastRun`");
+            options.DiagnosticLogger?.LogDebug("Checking for 'CrashedLastRun'");
 
             var crashedLastRun = SentryJava.CrashedLastRun(JniExecutor);
             if (crashedLastRun is null)
@@ -83,8 +83,7 @@ public static class SentryNativeAndroid
             }
             else
             {
-                options.DiagnosticLogger?
-                    .LogDebug("Native Android SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
+                options.DiagnosticLogger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
             }
 
             return crashedLastRun.Value;
