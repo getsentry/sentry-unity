@@ -56,9 +56,10 @@ public static class SentryNativeCocoa
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>
         {
+            options.DiagnosticLogger?.LogDebug("Checking for 'CrashedLastRun'");
+
             var crashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun() == 1;
-            options.DiagnosticLogger?
-                .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
+            options.DiagnosticLogger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
 
             return crashedLastRun;
         };
