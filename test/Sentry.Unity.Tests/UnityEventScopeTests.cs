@@ -256,6 +256,7 @@ public sealed class UnityEventProcessorTests
     public void AppProtocol_Assigned()
     {
         // arrange
+        _testApplication = new TestApplication(productName: "TestGame");
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
 
@@ -263,8 +264,24 @@ public sealed class UnityEventProcessorTests
         sut.ConfigureScope(scope);
 
         // assert
+        Assert.IsNotNull(scope.Contexts.App.Name);
         Assert.IsNotNull(scope.Contexts.App.StartTime);
         Assert.IsNotNull(scope.Contexts.App.BuildType);
+    }
+
+    [Test]
+    public void AppProtocol_AppNameIsApplicationName()
+    {
+        // arrange
+        _testApplication = new TestApplication(productName: "TestGame");
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
+        var scope = new Scope(_sentryOptions);
+
+        // act
+        sut.ConfigureScope(scope);
+
+        // assert
+        Assert.AreEqual(scope.Contexts.App.Name, _testApplication.ProductName);
     }
 
     [Test]
