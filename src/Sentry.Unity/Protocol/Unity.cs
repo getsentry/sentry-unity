@@ -52,13 +52,22 @@ public sealed class Unity : ISentryJsonSerializable
     /// </summary>
     public string? TargetFrameRate { get; set; }
 
+    /// <summary>
+    /// Application install mode.
+    /// </summary>
+    /// <example>
+    /// Unknown, Store, DeveloperBuild, Adhoc, Enterprise, Editor
+    /// </example>
+    public string? ActiveSceneName { get; set; }
+
     internal Unity Clone()
         => new()
         {
             InstallMode = InstallMode,
             CopyTextureSupport = CopyTextureSupport,
             RenderingThreadingMode = RenderingThreadingMode,
-            TargetFrameRate = TargetFrameRate
+            TargetFrameRate = TargetFrameRate,
+            ActiveSceneName = ActiveSceneName
         };
 
     public void WriteTo(Utf8JsonWriter writer, IDiagnosticLogger? logger)
@@ -92,6 +101,11 @@ public sealed class Unity : ISentryJsonSerializable
             writer.WriteString("target_frame_rate", TargetFrameRate);
         }
 
+        if (!string.IsNullOrWhiteSpace(ActiveSceneName))
+        {
+            writer.WriteString("active_scene_name", ActiveSceneName);
+        }
+
         writer.WriteEndObject();
     }
 
@@ -102,7 +116,8 @@ public sealed class Unity : ISentryJsonSerializable
             InstallMode = json.GetPropertyOrNull("install_mode")?.GetString(),
             CopyTextureSupport = json.GetPropertyOrNull("copy_texture_support")?.GetString(),
             RenderingThreadingMode = json.GetPropertyOrNull("rendering_threading_mode")?.GetString(),
-            TargetFrameRate = json.GetPropertyOrNull("target_frame_rate")?.GetString()
+            TargetFrameRate = json.GetPropertyOrNull("target_frame_rate")?.GetString(),
+            ActiveSceneName = json.GetPropertyOrNull("active_scene_name")?.GetString()
         };
 
     public string ToJsonString(IDiagnosticLogger? logger = null)

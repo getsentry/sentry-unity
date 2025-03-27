@@ -3,6 +3,7 @@ using Sentry.Protocol;
 using Sentry.Reflection;
 using Sentry.Integrations;
 using Sentry.Unity.Integrations;
+using UnityEngine.SceneManagement;
 using OperatingSystem = Sentry.Protocol.OperatingSystem;
 
 namespace Sentry.Unity;
@@ -34,11 +35,13 @@ internal class UnityScopeUpdater
 {
     private readonly SentryUnityOptions _options;
     private readonly IApplication _application;
+    private readonly ISceneManager _sceneManager;
 
-    public UnityScopeUpdater(SentryUnityOptions options, IApplication application)
+    public UnityScopeUpdater(SentryUnityOptions options, IApplication application, ISceneManager? sceneManager = null)
     {
         _options = options;
         _application = application;
+        _sceneManager = sceneManager ?? SceneManagerAdapter.Instance;
     }
 
     public void ConfigureScope(Scope scope)
@@ -139,6 +142,7 @@ internal class UnityScopeUpdater
         unity.TargetFrameRate = MainThreadData.TargetFrameRate;
         unity.CopyTextureSupport = MainThreadData.CopyTextureSupport;
         unity.RenderingThreadingMode = MainThreadData.RenderingThreadingMode;
+        unity.ActiveSceneName = _sceneManager.GetActiveScene().Name;
     }
 
     private void PopulateTags(Action<string, string> setTag)
