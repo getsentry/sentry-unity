@@ -53,11 +53,8 @@ public sealed class Unity : ISentryJsonSerializable
     public string? TargetFrameRate { get; set; }
 
     /// <summary>
-    /// Application install mode.
+    /// The active scene's name
     /// </summary>
-    /// <example>
-    /// Unknown, Store, DeveloperBuild, Adhoc, Enterprise, Editor
-    /// </example>
     public string? ActiveSceneName { get; set; }
 
     internal Unity Clone()

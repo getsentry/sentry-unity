@@ -3,7 +3,6 @@ using Sentry.Protocol;
 using Sentry.Reflection;
 using Sentry.Integrations;
 using Sentry.Unity.Integrations;
-using UnityEngine.SceneManagement;
 using OperatingSystem = Sentry.Protocol.OperatingSystem;
 
 namespace Sentry.Unity;
