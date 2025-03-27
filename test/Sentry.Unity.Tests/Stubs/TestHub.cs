@@ -25,6 +25,12 @@ internal sealed class TestHub : IHub
         return evt.EventId;
     }
 
+    public void CaptureFeedback(SentryFeedback feedback, Scope? scope = null, SentryHint? hint = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    [Obsolete("Obsolete")]
     public void CaptureUserFeedback(UserFeedback userFeedback)
     {
         throw new NotImplementedException();
