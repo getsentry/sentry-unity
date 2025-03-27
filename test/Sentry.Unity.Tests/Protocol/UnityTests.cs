@@ -22,7 +22,8 @@ public sealed class UnityTests
             InstallMode = "DeveloperBuild",
             CopyTextureSupport = "Copy3D",
             RenderingThreadingMode = "MultiThreaded",
-            TargetFrameRate = "30"
+            TargetFrameRate = "30",
+            ActiveSceneName = "TestScene",
         };
 
         var actual = sut.ToJsonString();
@@ -32,7 +33,8 @@ public sealed class UnityTests
             "\"install_mode\":\"DeveloperBuild\"," +
             "\"copy_texture_support\":\"Copy3D\"," +
             "\"rendering_threading_mode\":\"MultiThreaded\"," +
-            "\"target_frame_rate\":\"30\"}",
+            "\"target_frame_rate\":\"30\"," +
+            "\"active_scene_name\":\"TestScene\"}",
             actual);
     }
 
@@ -44,7 +46,8 @@ public sealed class UnityTests
             InstallMode = "DeveloperBuild",
             CopyTextureSupport = "Copy3D",
             RenderingThreadingMode = "MultiThreaded",
-            TargetFrameRate = "30"
+            TargetFrameRate = "30",
+            ActiveSceneName = "TestScene"
         };
 
         var clone = sut.Clone();
@@ -53,6 +56,7 @@ public sealed class UnityTests
         Assert.AreEqual(sut.CopyTextureSupport, clone.CopyTextureSupport);
         Assert.AreEqual(sut.RenderingThreadingMode, clone.RenderingThreadingMode);
         Assert.AreEqual(sut.TargetFrameRate, clone.TargetFrameRate);
+        Assert.AreEqual(sut.ActiveSceneName, clone.ActiveSceneName);
     }
 
     [TestCaseSource(nameof(TestCases))]
@@ -69,6 +73,7 @@ public sealed class UnityTests
         new object[] { (new Unity.Protocol.Unity { InstallMode = "Adhoc" }, "{\"type\":\"unity\",\"install_mode\":\"Adhoc\"}") },
         new object[] { (new Unity.Protocol.Unity { CopyTextureSupport = "TextureToRT" }, "{\"type\":\"unity\",\"copy_texture_support\":\"TextureToRT\"}") },
         new object[] { (new Unity.Protocol.Unity { RenderingThreadingMode = "NativeGraphicsJobs" }, "{\"type\":\"unity\",\"rendering_threading_mode\":\"NativeGraphicsJobs\"}") },
-        new object[] { (new Unity.Protocol.Unity { TargetFrameRate = "30" }, "{\"type\":\"unity\",\"target_frame_rate\":\"30\"}") }
+        new object[] { (new Unity.Protocol.Unity { TargetFrameRate = "30" }, "{\"type\":\"unity\",\"target_frame_rate\":\"30\"}") },
+        new object[] { (new Unity.Protocol.Unity { ActiveSceneName = "TestScene" }, "{\"type\":\"unity\",\"active_scene_name\":\"TestScene\"}") }
     };
 }
