@@ -4,18 +4,21 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.45.0 to v8.47.0 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8470)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.47.0)
+- Bump Cocoa SDK from v8.45.0 to v8.48.0 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063), [#2071](https://github.com/getsentry/sentry-unity/pull/2071))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8480)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.48.0)
 - Bump Java SDK from v8.3.0 to v8.4.0 ([#2066](https://github.com/getsentry/sentry-unity/pull/2066))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#840)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.4.0)
-- Bump CLI from v2.42.2 to v2.42.3 ([#2065](https://github.com/getsentry/sentry-unity/pull/2065))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2423)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.42.3)
+- Bump CLI from v2.42.2 to v2.42.5 ([#2065](https://github.com/getsentry/sentry-unity/pull/2065), [#2082](https://github.com/getsentry/sentry-unity/pull/2082))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2425)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.42.5)
 - Bump .NET SDK from v5.2.0 to v5.4.0 ([#2067](https://github.com/getsentry/sentry-unity/pull/2067))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#540)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.2.0...5.4.0)
+- Bump Native SDK from v0.8.1 to v0.8.2 ([#2077](https://github.com/getsentry/sentry-unity/pull/2077))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#082)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.2)
 
 ## 3.1.0
 
