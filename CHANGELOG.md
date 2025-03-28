@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.45.0 to v8.48.0 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063), [#2071](https://github.com/getsentry/sentry-unity/pull/2071))
