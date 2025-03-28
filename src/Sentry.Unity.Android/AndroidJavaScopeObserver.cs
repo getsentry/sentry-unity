@@ -96,6 +96,7 @@ internal class AndroidJavaScopeObserver : ScopeObserver
         _jniExecutor.Run(() =>
         {
             using var sentry = GetInternalSentryJava();
+            // We have to explicitly cast to `(Double?)`
             sentry.CallStatic("setTrace", traceId.ToString(), parentSpanId.ToString(), (Double?)null, (Double?)null);
         });
     }

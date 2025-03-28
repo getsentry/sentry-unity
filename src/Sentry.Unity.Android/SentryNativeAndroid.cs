@@ -131,12 +131,6 @@ public static class SentryNativeAndroid
         options.DiagnosticLogger?.LogInfo("Successfully configured the Android SDK");
     }
 
-    public static void SetTraceId(SentryUnityOptions options)
-    {
-        options.DiagnosticLogger?.LogInfo("Setting new Trace");
-        SentrySdk.ContinueTrace(SentryId.Create().ToString(), null);
-    }
-
     /// <summary>
     /// Closes the native Android support.
     /// </summary>
