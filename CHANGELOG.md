@@ -2,6 +2,48 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.45.0 to v8.48.0 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063), [#2071](https://github.com/getsentry/sentry-unity/pull/2071))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8480)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.48.0)
+- Bump Java SDK from v8.3.0 to v8.5.0 ([#2066](https://github.com/getsentry/sentry-unity/pull/2066), [#2075](https://github.com/getsentry/sentry-unity/pull/2075))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#850)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.5.0)
+- Bump CLI from v2.42.2 to v2.43.0 ([#2065](https://github.com/getsentry/sentry-unity/pull/2065), [#2082](https://github.com/getsentry/sentry-unity/pull/2082), [#2085](https://github.com/getsentry/sentry-unity/pull/2085))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2430)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.43.0)
+- Bump .NET SDK from v5.2.0 to v5.4.0 ([#2067](https://github.com/getsentry/sentry-unity/pull/2067))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#540)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.2.0...5.4.0)
+- Bump Native SDK from v0.8.1 to v0.8.2 ([#2077](https://github.com/getsentry/sentry-unity/pull/2077))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#082)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.2)
+
+## 3.1.0
+
+### Features
+
+- Added `SentryUnity.CrashedLastRun()`. This allows you to check whether the SDK captured a crash the last time the game ran. ([#2049](https://github.com/getsentry/sentry-unity/pull/2049))
+
+### Fixes
+
+- Fixed a potential race condition in the ANR watchdog integration ([2045](https://github.com/getsentry/sentry-unity/pull/2045))
+
+### Dependencies
+
+- Bump .NET SDK from v5.1.1 to v5.2.0 ([#2040](https://github.com/getsentry/sentry-unity/pull/2040))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#520)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.1.1...5.2.0)
+- Bump Java SDK from v8.2.0 to v8.3.0 ([#2039](https://github.com/getsentry/sentry-unity/pull/2039))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#830)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.2.0...8.3.0)
+- Bump Native SDK from v0.8.0 to v0.8.1 ([#2047](https://github.com/getsentry/sentry-unity/pull/2047))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#081)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.0...0.8.1)
+
+## 3.0.2
+
 ### Fixes
 
 - Resolved an issue where the SDK would not properly annotate the ViewHierarchy's `AttachmentType`. This would cause it to not render properly on the issues-page on Sentry ([#2036](https://github.com/getsentry/sentry-unity/pull/2036))

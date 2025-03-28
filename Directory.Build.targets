@@ -277,20 +277,6 @@ Expected to exist:
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
   </Target>
 
-<!-- Build the NDK: dotnet msbuild /t:DownloadNDK src/Sentry.Unity -->
-  <Target Name="DownloadNDK" >
-    <Message Importance="High" Text="Downloading Sentry NDK SDK." />
-
-    <PropertyGroup>
-        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-java/buildSrc/src/main/java/Config.kt"))</PropertiesContent>
-        <NativeVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'sentryNativeNdk\s*=\s*"[^"]+:([^"]+)"').Groups[1].Value)</NativeVersion>
-    </PropertyGroup>
-
-    <Message Importance="High" Text="Downloading up the NDK SDK version '$(NativeVersion)'." />
-
-    <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
-  </Target>
-
   <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
   <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
