@@ -58,11 +58,11 @@ public static class SentryNative
         options.NativeContextWriter = new NativeContextWriter();
 
         // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
-        options.DefaultUserId = AnalyticsSessionInfo.userId;
-        if (options.DefaultUserId is not null)
-        {
-            options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
-        }
+        // options.DefaultUserId = AnalyticsSessionInfo.userId;
+        // if (options.DefaultUserId is not null)
+        // {
+        //     options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
+        // }
 
         // Note: we must actually call the function now and on every other call use the value we get here.
         // Additionally, we cannot call this multiple times for the same directory, because the result changes
