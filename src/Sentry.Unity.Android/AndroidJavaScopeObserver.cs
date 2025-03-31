@@ -88,4 +88,9 @@ internal class AndroidJavaScopeObserver : ScopeObserver
             sentry.CallStatic("setUser", null);
         });
     }
+
+    public override void SetTraceImpl(SentryId traceId, SpanId parentSpanId)
+    {
+        // Todo: Needs to be implemented
+    }
 }
