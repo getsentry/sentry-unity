@@ -68,9 +68,6 @@ namespace Sentry.Unity
                 SetupNativeSdk(options, unityInfo);
                 SentryUnity.Init(options);
 
-#if SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.SetTraceId(options);
-#endif
                 SetupStartupTracing(options);
             }
             else
