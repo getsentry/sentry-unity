@@ -67,7 +67,6 @@ namespace Sentry.Unity
                 // Configures scope sync and (by default) initializes the native SDK.
                 SetupNativeSdk(options, unityInfo);
                 SentryUnity.Init(options);
-
                 SetupStartupTracing(options);
             }
             else
