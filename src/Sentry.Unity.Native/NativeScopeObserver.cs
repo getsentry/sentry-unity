@@ -42,7 +42,7 @@ public class NativeScopeObserver : ScopeObserver
     public override void UnsetUserImpl() => C.sentry_remove_user();
     public override void SetTraceImpl(SentryId traceId, SpanId parentSpanId)
     {
-        throw new NotImplementedException();
+        // TODO: Needs to be implemented
     }
 
     private static string GetTimestamp(DateTimeOffset timestamp) =>
