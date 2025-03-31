@@ -206,6 +206,7 @@ public class AndroidManifestConfiguration
         // Disabling the native in favor of the C# layer for now
         androidManifest.SetNdkEnabled(_options.NdkIntegrationEnabled);
         androidManifest.SetNdkScopeSync(_options.NdkScopeSyncEnabled);
+        androidManifest.SetAutoTraceIdGeneration(false);
         androidManifest.SetAutoSessionTracking(false);
         androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
         androidManifest.SetAnr(false);
@@ -482,6 +483,9 @@ internal class AndroidManifest : AndroidXmlDocument
 
     internal void SetNdkScopeSync(bool enableNdkScopeSync)
         => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
+
+    public void SetAutoTraceIdGeneration(bool enableAutoTraceIdGeneration)
+        => SetMetaData($"{SentryPrefix}.traces.enable-auto-id-generation", enableAutoTraceIdGeneration.ToString());
 
     internal void SetDebug(bool debug) => SetMetaData($"{SentryPrefix}.debug", debug ? "true" : "false");
 

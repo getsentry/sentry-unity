@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Sentry.Unity.Android;
@@ -16,6 +17,7 @@ internal class AndroidJavaScopeObserver : ScopeObserver
     }
 
     private AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+    private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
 
     public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
     {
@@ -91,6 +93,11 @@ internal class AndroidJavaScopeObserver : ScopeObserver
 
     public override void SetTraceImpl(SentryId traceId, SpanId parentSpanId)
     {
-        // Todo: Needs to be implemented
+        _jniExecutor.Run(() =>
+        {
+            using var sentry = GetInternalSentryJava();
+            // We have to explicitly cast to `(Double?)`
+            sentry.CallStatic("setTrace", traceId.ToString(), parentSpanId.ToString(), (Double?)null, (Double?)null);
+        });
     }
 }

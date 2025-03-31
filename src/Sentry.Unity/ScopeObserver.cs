@@ -89,7 +89,7 @@ public abstract class ScopeObserver : IScopeObserver
     {
         _options.DiagnosticLogger?.Log(
             SentryLevel.Debug, "{0} Scope Sync - Setting Trace traceId:{1} parentSpanId:{2}", null,
-            _name, traceId, parentSpanId);
+                _name, traceId, parentSpanId);
         SetTraceImpl(traceId, parentSpanId);
     }
 
