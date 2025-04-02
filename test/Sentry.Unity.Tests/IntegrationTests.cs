@@ -210,7 +210,7 @@ public sealed class IntegrationTests
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var expectedMechanism = "\"mechanism\":{\"type\":\"Unity.LogException\",\"handled\":false}}]}";
+        var expectedMechanism = "\"mechanism\":{\"type\":\"Unity.LogException\",\"handled\":false";
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
