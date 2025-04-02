@@ -119,13 +119,16 @@ public class SceneManagerIntegrationTests
 
     private readonly Fixture _fixture = new();
 
-    private class FakeSceneManager : ISceneManager
+    internal class FakeSceneManager : ISceneManager
     {
+        public string ActiveSceneName { get; set; } = string.Empty;
+
         public event Action<SceneAdapter, LoadSceneMode>? SceneLoaded;
         public event Action<SceneAdapter>? SceneUnloaded;
         public event Action<SceneAdapter, SceneAdapter>? ActiveSceneChanged;
         public void OnSceneLoaded(SceneAdapter scene, LoadSceneMode mode) => SceneLoaded?.Invoke(scene, mode);
         public void OnSceneUnloaded(SceneAdapter scene) => SceneUnloaded?.Invoke(scene);
         public void OnActiveSceneChanged(SceneAdapter fromScene, SceneAdapter toScene) => ActiveSceneChanged?.Invoke(fromScene, toScene);
+        public SceneAdapter GetActiveScene() => new(ActiveSceneName);
     }
 }

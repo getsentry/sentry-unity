@@ -5,21 +5,25 @@
 ### Features
 
 - The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
+- The SDK now reports the active scene's name as part of the `Unity Context` ([2084](https://github.com/getsentry/sentry-unity/pull/2084))
 
 ### Dependencies
 
 - Bump Cocoa SDK from v8.45.0 to v8.48.0 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063), [#2071](https://github.com/getsentry/sentry-unity/pull/2071))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8480)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.48.0)
-- Bump Java SDK from v8.3.0 to v8.5.0 ([#2066](https://github.com/getsentry/sentry-unity/pull/2066), [#2075](https://github.com/getsentry/sentry-unity/pull/2075))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#850)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.5.0)
-- Bump CLI from v2.42.2 to v2.42.5 ([#2065](https://github.com/getsentry/sentry-unity/pull/2065), [#2082](https://github.com/getsentry/sentry-unity/pull/2082))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2425)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.42.5)
-- Bump Native SDK from v0.8.1 to v0.8.2 ([#2077](https://github.com/getsentry/sentry-unity/pull/2077))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#082)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.2)
+- Bump Java SDK from v8.3.0 to v8.6.0 ([#2066](https://github.com/getsentry/sentry-unity/pull/2066), [#2075](https://github.com/getsentry/sentry-unity/pull/2075), [#2092](https://github.com/getsentry/sentry-unity/pull/2092))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#860)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.6.0)
+- Bump CLI from v2.42.2 to v2.43.0 ([#2065](https://github.com/getsentry/sentry-unity/pull/2065), [#2082](https://github.com/getsentry/sentry-unity/pull/2082), [#2085](https://github.com/getsentry/sentry-unity/pull/2085))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2430)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.43.0)
+- Bump .NET SDK from v5.2.0 to v5.4.0 ([#2067](https://github.com/getsentry/sentry-unity/pull/2067))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#540)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.2.0...5.4.0)
+- Bump Native SDK from v0.8.1 to v0.8.3 ([#2077](https://github.com/getsentry/sentry-unity/pull/2077), [#2087](https://github.com/getsentry/sentry-unity/pull/2087))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#083)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.1...0.8.3)
 
 ## 3.1.0
 
