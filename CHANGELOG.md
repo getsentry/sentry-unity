@@ -4,6 +4,7 @@
 
 ### Features
 
+- The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
 - The SDK now reports the active scene's name as part of the `Unity Context` ([2084](https://github.com/getsentry/sentry-unity/pull/2084))
 
 ### Dependencies

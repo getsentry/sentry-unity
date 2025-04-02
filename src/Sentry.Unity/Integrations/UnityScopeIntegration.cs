@@ -68,6 +68,7 @@ internal class UnityScopeUpdater
 
     private void PopulateApp(App app)
     {
+        app.Name = _application.ProductName;
         app.StartTime = MainThreadData.StartTime;
         var isDebugBuild = MainThreadData.IsDebugBuild;
         app.BuildType = isDebugBuild is null ? null : (isDebugBuild.Value ? "debug" : "release");
