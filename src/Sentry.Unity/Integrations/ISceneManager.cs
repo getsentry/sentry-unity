@@ -15,6 +15,7 @@ internal interface ISceneManager
     public event Action<SceneAdapter, LoadSceneMode> SceneLoaded;
     public event Action<SceneAdapter> SceneUnloaded;
     public event Action<SceneAdapter, SceneAdapter> ActiveSceneChanged;
+    public SceneAdapter GetActiveScene();
 }
 
 internal sealed class SceneManagerAdapter : ISceneManager
@@ -40,4 +41,6 @@ internal sealed class SceneManagerAdapter : ISceneManager
                 new SceneAdapter(sceneTo.name));
         };
     }
+
+    public SceneAdapter GetActiveScene() => new(SceneManager.GetActiveScene().name);
 }
