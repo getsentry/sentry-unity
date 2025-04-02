@@ -81,6 +81,9 @@ public abstract class ScopeObserver : IScopeObserver
         }
     }
 
+    public void SetTrace(SentryId traceId, SpanId parentSpanId)
+    { }
+
     public abstract void SetUserImpl(SentryUser user);
 
     public abstract void UnsetUserImpl();
