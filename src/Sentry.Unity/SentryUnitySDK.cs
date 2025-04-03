@@ -51,6 +51,11 @@ internal class SentryUnitySdk
 
         unitySdk._dotnetSdk = SentrySdk.Init(options);
 
+        // For now, we're creating a new trace after initializing to be able to tie errors and crashes together on all
+        // layers. To be able to regenerate new traces based on some mechanism, this will move into some sort of
+        // integration i.e. scene manager.
+        SentrySdk.SetTrace(SentryId.Create(), SpanId.Create());
+
         if (options.NativeContextWriter is { } contextWriter)
         {
             SentrySdk.ConfigureScope((scope) =>
