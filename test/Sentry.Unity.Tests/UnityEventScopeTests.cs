@@ -8,6 +8,7 @@ using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 // TODO do we need a real (working) DSN in these tests?
@@ -158,6 +159,8 @@ public sealed class UnityEventProcessorThreadingTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityContext!.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityContext.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityContext.RenderingThreadingMode);
+        Assert.AreEqual(SceneManager.GetActiveScene().name, unityContext.ActiveSceneName);
+
         Assert.IsNull(@event.ServerName);
     }
 }
@@ -256,6 +259,7 @@ public sealed class UnityEventProcessorTests
     public void AppProtocol_Assigned()
     {
         // arrange
+        _testApplication = new TestApplication(productName: "TestGame");
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
 
@@ -263,8 +267,24 @@ public sealed class UnityEventProcessorTests
         sut.ConfigureScope(scope);
 
         // assert
+        Assert.IsNotNull(scope.Contexts.App.Name);
         Assert.IsNotNull(scope.Contexts.App.StartTime);
         Assert.IsNotNull(scope.Contexts.App.BuildType);
+    }
+
+    [Test]
+    public void AppProtocol_AppNameIsApplicationName()
+    {
+        // arrange
+        _testApplication = new TestApplication(productName: "TestGame");
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
+        var scope = new Scope(_sentryOptions);
+
+        // act
+        sut.ConfigureScope(scope);
+
+        // assert
+        Assert.AreEqual(scope.Contexts.App.Name, _testApplication.ProductName);
     }
 
     [Test]
@@ -412,6 +432,7 @@ public sealed class UnityEventProcessorTests
     [Test]
     public void UnityProtocol_Assigned()
     {
+        var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
         var systemInfo = new TestSentrySystemInfo
         {
             EditorVersion = "TestEditorVersion2022.3.2f1",
@@ -423,7 +444,7 @@ public sealed class UnityEventProcessorTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, sceneManager);
         var scope = new Scope(_sentryOptions);
 
         // act
@@ -438,6 +459,7 @@ public sealed class UnityEventProcessorTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityProtocol.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityProtocol.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityProtocol.RenderingThreadingMode);
+        Assert.AreEqual(sceneManager.GetActiveScene().Name, unityProtocol.ActiveSceneName);
     }
 
     [Test]

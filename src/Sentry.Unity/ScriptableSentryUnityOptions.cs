@@ -224,7 +224,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         // We need to set up logging here because the configure callback might have changed the debug options.
         // Without setting up here we might miss out on logs between option-loading (now) and Init - i.e. native configuration
-        options.SetupLogging();
+        options.SetupUnityLogging();
 
         if (options.AttachViewHierarchy)
         {
