@@ -99,7 +99,7 @@ public class SentryUnityOptionsExtensionsTests
 
         Assert.IsNull(options.DiagnosticLogger); // Sanity check
 
-        options.SetupLogging();
+        options.SetupUnityLogging();
 
         Assert.IsInstanceOf<UnityLogger>(options.DiagnosticLogger);
     }
@@ -111,7 +111,7 @@ public class SentryUnityOptionsExtensionsTests
         var options = _fixture.GetSut();
         options.DiagnosticLogger = new UnityLogger(options);
 
-        options.SetupLogging();
+        options.SetupUnityLogging();
 
         Assert.IsNull(options.DiagnosticLogger);
     }
@@ -125,7 +125,7 @@ public class SentryUnityOptionsExtensionsTests
         var options = _fixture.GetSut();
         options.DiagnosticLogger = new UnityLogger(options);
 
-        options.SetupLogging();
+        options.SetupUnityLogging();
 
         Assert.AreEqual(debug, options.DiagnosticLogger is not null);
     }
