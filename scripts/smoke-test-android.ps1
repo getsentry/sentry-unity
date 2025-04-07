@@ -22,47 +22,9 @@ Write-Host "#  |___/_|  |_|\___/|_|\_\___| |_| |___|___/  |_|   #"
 Write-Host "#                                                   #"
 Write-Host "#####################################################"
 
-if ($IsIntegrationTest)
-{
-    $BuildDir = $(GetNewProjectBuildPath)
-    $ApkFileName = "test.apk"
-    $ProcessName = "com.DefaultCompany.$(GetNewProjectName)"
-
-    if ($Action -eq "Build")
-    {
-        $buildCallback = {
-            Write-Host "::group::Gradle build $BuildDir"
-            Push-Location $BuildDir
-            try
-            {
-                MakeExecutable "./gradlew"
-                & ./gradlew --info --no-daemon assembleRelease | ForEach-Object {
-                    Write-Host "  $_"
-                }
-                if (-not $?)
-                {
-                    throw "Gradle execution failed"
-                }
-                Copy-Item -Path launcher/build/outputs/apk/release/launcher-release.apk -Destination $ApkFileName
-            }
-            finally
-            {
-                Pop-Location
-                Write-Host "::endgroup::"
-            }
-        }
-
-        $symbolServerOutput = RunWithSymbolServer -Callback $buildCallback
-        CheckSymbolServerOutput 'Android' $symbolServerOutput $UnityVersion
-        return;
-    }
-}
-else
-{
-    $BuildDir = "samples/artifacts/builds/Android"
-    $ApkFileName = "IL2CPP_Player.apk"
-    $ProcessName = "io.sentry.samples.unityofbugs"
-}
+$BuildDir = $(GetNewProjectBuildPath)
+$ApkFileName = "test.apk"
+$ProcessName = "com.DefaultCompany.$(GetNewProjectName)"
 $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 $FallBackTestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
 
