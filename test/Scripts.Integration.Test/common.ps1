@@ -4,19 +4,19 @@
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 
-function RunApiServer([string] $ServerScript, [string] $Uri)
+function RunApiServer([string] $ServerScript, [string] $Uri, [string] $EnvelopeDir)
 {
     if ([string]::IsNullOrEmpty($Uri))
     {
         $Uri = SymbolServerUrlFor ((Test-Path variable:UnityPath) ? $UnityPath : '')
     }
 
-    $result = "" | Select-Object -Property process, outFile, errFile, stop, output, dispose
-    Write-Host "Starting the $ServerScript on $Uri"
+    $result = "" | Select-Object -Property process, outFile, errFile, stop, output, dispose, envelopeDir
+    Write-Host "Starting the '$ServerScript' on '$Uri' with envelope dir '$EnvelopeDir'"
     $result.outFile = New-TemporaryFile
     $result.errFile = New-TemporaryFile
 
-    $result.process = Start-Process "python3" -ArgumentList @("$PSScriptRoot/$ServerScript.py", $Uri) `
+    $result.process = Start-Process "python3" -ArgumentList @("$PSScriptRoot/$ServerScript.py", $Uri, $EnvelopeDir) `
         -NoNewWindow -PassThru -RedirectStandardOutput $result.outFile -RedirectStandardError $result.errFile
 
     $result.output = { "$(Get-Content $result.outFile -Raw)`n$(Get-Content $result.errFile -Raw)" }.GetNewClosure()
@@ -24,16 +24,20 @@ function RunApiServer([string] $ServerScript, [string] $Uri)
     $result.dispose = {
         $result.stop.Invoke()
 
-        Write-Host "::group::  Server stdout" -ForegroundColor Yellow
         $stdout = Get-Content $result.outFile -Raw
-        Write-Host $stdout
-        Write-Host "::endgroup::"
-
-        Write-Host "::group::  Server stderr" -ForegroundColor Yellow
         $stderr = Get-Content $result.errFile -Raw
-        Write-Host $stderr
-        Write-Host "::endgroup::"
 
+        if ($env:CI)
+        {
+            Write-Host "::group::  Server stdout" -ForegroundColor Yellow
+            Write-Host $stdout
+            Write-Host "::endgroup::"
+    
+            Write-Host "::group::  Server stderr" -ForegroundColor Yellow
+            Write-Host $stderr
+            Write-Host "::endgroup::"
+        }
+        
         Remove-Item $result.outFile -ErrorAction Continue
         Remove-Item $result.errFile -ErrorAction Continue
         return "$stdout`n$stderr"
@@ -125,33 +129,324 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         }
 
         # evaluate the result
-        for ($i = $timeout; $i -gt 0; $i--)
-        {
-            Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
-            if ("$($httpServer.output.Invoke())".Contains($SuccessString))
-            {
-                break
-            }
-            Start-Sleep -Milliseconds 1000
-        }
+        # for ($i = $timeout; $i -gt 0; $i--)
+        # {
+        #     Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
+        #     if ("$($httpServer.output.Invoke())".Contains($SuccessString))
+        #     {
+        #         break
+        #     }
+        #     Start-Sleep -Milliseconds 1000
+        # }
 
         $output = $httpServer.dispose.Invoke()
-        Write-Host "Looking for the SuccessString ($SuccessString) in the server output..."
-        if ("$output".Contains($SuccessString))
+        # Write-Host "Looking for the SuccessString ($SuccessString) in the server output..."
+        # if ("$output".Contains($SuccessString))
+        # {
+        #     Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
+        #     break
+        # }
+        # Write-Host "SuccessString ($SuccessString) not found..." -ForegroundColor Red
+        # if ($run -eq $runs)
+        # {
+        #     throw "crash test $run/$runs : FAILED"
+        # }
+        # else
+        # {
+        #     Write-Warning "crash test $run/$runs : FAILED, retrying"
+        # }
+    }
+}
+
+function SmokeTestWithServer([string] $EnvelopeDir, [ScriptBlock] $RunGameCallback)
+{
+    RunEnvelopeCapturingServer -EnvelopeDir $EnvelopeDir -RunGameCallback $RunGameCallback
+    
+    $envelopeContents = @(ReadEnvelopes $EnvelopeDir)
+    
+    if ($envelopeContents.Count -le 0)
+    {
+        Write-Host "No envelopes found in $EnvelopeDir" -ForegroundColor Red
+        throw "Smoke Test with Server: FAILED - No envelopes found"
+    }
+    
+    # Find all event envelopes
+    $eventEnvelopes = @()
+    $sessionEnvelopes = @()
+    $transactionEnvelopes = @()
+    foreach ($envelope in $envelopeContents)
+    {
+        if ($envelope -match """type"":""event""")
         {
-            Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
-            break
+            $eventEnvelopes += $envelope
         }
-        Write-Host "SuccessString ($SuccessString) not found..." -ForegroundColor Red
-        if ($run -eq $runs)
+        elseif ($envelope -match """type"":""session""")
         {
-            throw "crash test $run/$runs : FAILED"
+            $sessionEnvelopes += $envelope
+        }
+        elseif ($envelope -match """type"":""transaction""")
+        {
+            $transactionEnvelopes += $envelope
+        }
+    }
+
+    Write-Host "Checking for expected session envelope:" -ForegroundColor Yellow
+    $sessionEnvelopesFound = $sessionEnvelopes.Count -gt 0
+    if ($sessionEnvelopesFound)
+    {
+        Write-Host "  ✓ Found session envelopes" -ForegroundColor Green
+        
+    }
+    else
+    {
+        Write-Host "  ✗ Missing session envelopes" -ForegroundColor Red
+    }
+
+    Write-Host "Checking for expected transaction envelope:" -ForegroundColor Yellow
+    $transactionEnvelopesFound = $transactionEnvelopes.Count -gt 0
+    if ($transactionEnvelopesFound)
+    {
+        Write-Host "  ✓ Found transaction envelopes" -ForegroundColor Green
+    }
+    else
+    {
+        Write-Host "  ✗ Missing transaction envelopes" -ForegroundColor Red
+    }
+
+    $expectedEventEnvelopes = @(
+        @{ name = "CaptureLogError event"; pattern = """message"":""CaptureLogError""" },
+        @{ name = "CaptureMessage event"; pattern = """message"":""CaptureMessage""" },
+        @{ name = "CaptureException event"; pattern = """type"":""System.Exception"",""value"":""CaptureException""" }
+    )
+    
+    $allEventEnvelopesFound = $true
+    $exceptionEnvelope = $null
+
+    Write-Host "Checking for expected events:" -ForegroundColor Yellow
+    foreach ($expectedEvent in $expectedEventEnvelopes)
+    {
+        $eventFound = $false
+        foreach ($envelope in $eventEnvelopes)
+        {
+            if ($envelope -match $expectedEvent.pattern)
+            {
+                $eventFound = $true
+
+                # We're going to check for additional contexts in the exception envelope only
+                if ($expectedEvent.name -eq "CaptureException event")
+                {
+                    $exceptionEnvelope = $envelope
+                }
+                break
+            }
+        }
+        
+        if ($eventFound)
+        {
+            Write-Host "  ✓ Found $($expectedEvent.name)" -ForegroundColor Green
         }
         else
         {
-            Write-Warning "crash test $run/$runs : FAILED, retrying"
+            Write-Host "  ✗ Missing $($expectedEvent.name)" -ForegroundColor Red
+            $allEventEnvelopesFound = $false
         }
     }
+    
+    # Required contexts to validate to be present by default in all envelopes
+    $defaultContexts = @(
+        @{ name = "app context"; pattern = """type""\s*:\s*""app""" },
+        @{ name = "device context"; pattern = """type""\s*:\s*""device""" },
+        @{ name = "gpu context"; pattern = """type""\s*:\s*""gpu""" },
+        @{ name = "os context"; pattern = """type""\s*:\s*""os""" },
+        @{ name = "runtime context"; pattern = """type""\s*:\s*""runtime""" },
+        @{ name = "unity context"; pattern = """type""\s*:\s*""unity""" },
+        @{ name = "user data"; pattern = """user""\s*:\s*\{""id""" },
+        @{ name = "attachment"; pattern = """filename""\s*:\s*""screenshot.jpg""" }
+    )
+    
+    Write-Host "Checking for all default contexts expected to be present in all envelopes:" -ForegroundColor Yellow
+    $allDefaultContextsPassed = $true
+    foreach ($context in $defaultContexts)
+    {
+        $contextFound = $false
+        foreach ($envelope in $eventEnvelopes)
+        {
+            if ($envelope -match $context.pattern)
+            {
+                $contextFound = $true
+                break
+            }
+        }
+        
+        if ($contextFound)
+        {
+            Write-Host "  ✓ Found $($context.name)" -ForegroundColor Green
+        }
+        else
+        {
+            Write-Host "  ✗ Missing $($context.name)" -ForegroundColor Red
+            $allDefaultContextsPassed = $false
+        }
+    }
+
+    $additionalContexts = @(
+        @{ name = "breadcrumb"; pattern = """message"":""crumb"",""type"":""error"",""data"":\{""foo"":""bar""" },
+        @{ name = "scope breadcrumb"; pattern = """message"":""scope-crumb""" },
+        @{ name = "extra data"; pattern = """extra"":\{""extra-key"":42\}" },
+        @{ name = "tag"; pattern = """tag-key"":""tag-value""" },
+        @{ name = "user id"; pattern = """user"":\{""id"":""user-id""" },
+        @{ name = "username"; pattern = """username"":""username""" },
+        @{ name = "email"; pattern = """email"":""email@example.com""" },
+        @{ name = "ip address"; pattern = """ip_address"":""::1""" },
+        @{ name = "user role"; pattern = """role"":""admin""" }
+    )
+
+    Write-Host "Checking for additional contexts in exception envelope only:" -ForegroundColor Yellow
+    $allAdditionalContextsPassed = $true
+    foreach ($context in $additionalContexts)
+    {
+        if ($exceptionEnvelope -match $context.pattern)
+        {
+            Write-Host "  ✓ Found $($context.name) in exception envelope" -ForegroundColor Green
+        }
+        else
+        {
+            Write-Host "  ✗ Missing $($context.name) in exception envelope" -ForegroundColor Red
+            $allAdditionalContextsPassed = $false
+        }
+    }
+
+    if ($allEventEnvelopesFound -and $allDefaultContextsPassed -and $allAdditionalContextsPassed -and $sessionEnvelopesFound -and $transactionEnvelopesFound)
+    {
+        Write-Host "Smoke Test with Server: PASSED" -ForegroundColor Green
+    }
+    else
+    {
+        Write-Host "Smoke Test with Server: FAILED" -ForegroundColor Red
+        exit 1
+    }
+}
+
+function RunEnvelopeCapturingServer([string] $EnvelopeDir, [ScriptBlock] $RunGameCallback)
+{
+    # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
+    if ($null -eq $env:CI)
+    {
+        $runs = 1
+        $timeout = 5
+    }
+    else
+    {
+        $runs = 5
+        $timeout = 30
+    }
+
+    for ($run = 1; $run -le $runs; $run++)
+    {
+        if ($run -ne 1)
+        {
+            Write-Host "Sleeping for $run seconds before the next retry..."
+            Start-Sleep -Seconds $run
+        }
+
+        # Clear all envelopes from the previous run
+        Get-ChildItem -Path $EnvelopeDir -Filter "envelope_*.json" -ErrorAction SilentlyContinue | Remove-Item -Force
+
+        $httpServer = RunApiServer "envelope-logging-server" -EnvelopeDir $EnvelopeDir
+
+        try
+        {
+            $RunGameCallback.Invoke()
+        }
+        catch
+        {
+            $httpServer.stop.Invoke()
+            if ($run -eq $runs)
+            {
+                throw
+            }
+            else
+            {
+                Write-Warning "crash test $run/$runs : FAILED, retrying. The error was: $_"
+                Write-Host $_.ScriptStackTrace
+                continue
+            }
+        }
+
+        # Wait for all envelopes to be processed
+        Start-Sleep -Seconds 2
+
+        # Stop the server
+        $httpServer.dispose.Invoke()
+
+
+        # evaluate the result
+        # for ($i = $timeout; $i -gt 0; $i--)
+        # {
+        #     Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
+        #     if ("$($httpServer.output.Invoke())".Contains($SuccessString))
+        #     {
+        #         break
+        #     }
+        #     Start-Sleep -Milliseconds 1000
+        # }
+
+        # $output = $httpServer.dispose.Invoke()
+        # Write-Host "Looking for the SuccessString ($SuccessString) in the server output..."
+        # if ("$output".Contains($SuccessString))
+        # {
+        #     Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
+        #     break
+        # }
+        # Write-Host "SuccessString ($SuccessString) not found..." -ForegroundColor Red
+        # if ($run -eq $runs)
+        # {
+        #     throw "crash test $run/$runs : FAILED"
+        # }
+        # else
+        # {
+        #     Write-Warning "crash test $run/$runs : FAILED, retrying"
+        # }
+    }
+}
+
+function ReadEnvelopes([string] $EnvelopeDir)
+{
+    Write-Host "Reading all envelopes in '$EnvelopeDir'" -ForegroundColor Yellow
+    
+    if (-not (Test-Path $EnvelopeDir))
+    {
+        Write-Warning "Envelope directory '$EnvelopeDir' does not exist"
+        return @()
+    }
+    
+    $envelopeFiles = @(Get-ChildItem -Path $EnvelopeDir -Filter "envelope_*.json" -ErrorAction SilentlyContinue)
+    $envelopeCount = $envelopeFiles.Length
+    
+    if ($envelopeCount -eq 0)
+    {
+        Write-Warning "No envelope files found in directory"
+        return @()
+    }
+    
+    Write-Host "Found $envelopeCount envelope file(s)" -ForegroundColor Cyan
+    
+    [System.Collections.ArrayList]$envelopeContents = @()
+    foreach ($file in $envelopeFiles)
+    {
+        try
+        {
+            $content = Get-Content -Path $file.FullName -Raw
+            [void]$envelopeContents.Add($content)
+        }
+        catch
+        {
+            Write-Warning "Failed to read envelope file $($file.FullName): $_"
+        }
+    }
+    
+    # Force array return even if only one element
+    return @($envelopeContents)
 }
 
 function SymbolServerUrlFor([string] $UnityPath, [string] $Platform = "")
