@@ -66,8 +66,8 @@ else
 $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 $FallBackTestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
 
-$_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$BuildDir/../test-artifacts/") `
-    + $(Get-Date -Format "HHmmss")
+$_ArtifactsPath = (Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : (Join-Path $BuildDir "../test-artifacts/" $(Get-Date -Format "HHmmss"))
+
 function ArtifactsPath
 {
     if (-not (Test-Path $_ArtifactsPath))
