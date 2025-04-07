@@ -332,8 +332,8 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         $logCache = ProcessNewLogs -newLogs $newLogs -lastLogCount ([ref]$lastLogCount) -logCache $logCache
 
         # The SmokeTester logs "SmokeTester is quitting." in OnApplicationQuit() to reliably inform when tests finish running.
-        # For crash tests, we expect to see a native crash log "terminating with uncaught exception of type char const*".
-        if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "terminating with uncaught exception of type char const*"))
+        # For crash tests, we're checking for `sentry-native` logging "crash has been captured" to reliably inform when tests finished running.
+        if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "crash has been captured"))
         {
             Write-Host "Process finished marker detected. Finish waiting for tests to run."
             $processFinished = $true
