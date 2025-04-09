@@ -4,6 +4,7 @@
 
 ### Features
 
+- When running on Android, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#1997](https://github.com/getsentry/sentry-unity/pull/1997))
 - The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
 - The SDK now reports the active scene's name as part of the `Unity Context` ([2084](https://github.com/getsentry/sentry-unity/pull/2084))
 
