@@ -19,6 +19,13 @@ static Class PrivateSentrySDKOnly;
         break;                                                                                     \
     }
 
+#define LOAD_SWIFT_CLASS_OR_BREAK(name, mangled_name)                                              \
+    name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #mangled_name);                            \
+    if (!name) {                                                                                   \
+        NSLog(@"Sentry (bridge): Couldn't load class '" #name "' from the dynamic library");       \
+        break;                                                                                     \
+    }
+
 // Returns (bool): 0 on failure, 1 on success
 // WARNING: you may only call other Sentry* functions AFTER calling this AND only if it returned "1"
 int SentryNativeBridgeLoadLibrary()
@@ -42,8 +49,8 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
             LOAD_CLASS_OR_BREAK(SentryUser)
             LOAD_CLASS_OR_BREAK(SentryOptions)
-            LOAD_CLASS_OR_BREAK(SentryId)
-            LOAD_CLASS_OR_BREAK(SentrySpanId)
+            // LOAD_SWIFT_CLASS_OR_BREAK(SentryId, _TtC6Sentry8SentryId)
+            // LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
 
             // everything above passed - mark as successfully loaded
@@ -259,24 +266,24 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
-void SentryNativeBridgeSetTraceId(const char *traceId, const char *spanId)
+void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
     if (traceId == NULL || spanId == NULL) {
         return;
     }
     
-    id sentryTraceId = [[SentryId alloc] 
-        performSelector:@selector(initWithUUIDString:) 
-        withObject:[NSString stringWithUTF8String:traceId]];
+    // id sentryTraceId = [[SentryId alloc] 
+    //     performSelector:@selector(initWithUUIDString:) 
+    //     withObject:[NSString stringWithUTF8String:traceId]];
         
-    id sentrySpanId = [[SentrySpanId alloc]
-        performSelector:@selector(initWithValue:)
-        withObject:[NSString stringWithUTF8String:spanId]];
+    // id sentrySpanId = [[SentrySpanId alloc]
+    //     performSelector:@selector(initWithValue:)
+    //     withObject:[NSString stringWithUTF8String:spanId]];
     
-    [PrivateSentrySDKOnly 
-        performSelector:@selector(setTrace:spanId:) 
-        withObject:sentryTraceId 
-        withObject:sentrySpanId];
+    // [PrivateSentrySDKOnly 
+    //     performSelector:@selector(setTrace:spanId:) 
+    //     withObject:sentryTraceId 
+    //     withObject:sentrySpanId];
 }
 
 static inline NSString *_NSStringOrNil(const char *value)
