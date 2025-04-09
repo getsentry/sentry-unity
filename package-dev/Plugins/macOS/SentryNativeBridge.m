@@ -83,14 +83,22 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithInt:value];
 }
 
-void SentryNativeBridgeStartWithOptions(const void *options)
+int SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
+    NSError *error = nil;
+
     id sentryOptions = [[SentryOptions alloc]
         performSelector:@selector(initWithDict:didFailWithError:)
-        withObject:dictOptions withObject:nil];
+        withObject:dictOptions withObject:&error];
+
+    if (error != nil)
+    {
+        return 0;
+    }
 
     [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
+    return 1;
 }
 
 void SentryConfigureScope(void (^callback)(id))
