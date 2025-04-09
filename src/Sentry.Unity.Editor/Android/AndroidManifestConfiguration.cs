@@ -484,7 +484,7 @@ internal class AndroidManifest : AndroidXmlDocument
     internal void SetNdkScopeSync(bool enableNdkScopeSync)
         => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
 
-    public void SetAutoTraceIdGeneration(bool enableAutoTraceIdGeneration)
+    internal void SetAutoTraceIdGeneration(bool enableAutoTraceIdGeneration)
         => SetMetaData($"{SentryPrefix}.traces.enable-auto-id-generation", enableAutoTraceIdGeneration.ToString());
 
     internal void SetDebug(bool debug) => SetMetaData($"{SentryPrefix}.debug", debug ? "true" : "false");
