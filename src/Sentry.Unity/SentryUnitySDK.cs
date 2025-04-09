@@ -22,7 +22,7 @@ internal class SentryUnitySdk
     {
         var unitySdk = new SentryUnitySdk(options);
 
-        options.SetupLogging();
+        options.SetupUnityLogging();
         if (!options.ShouldInitializeSdk())
         {
             return null;

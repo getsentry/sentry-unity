@@ -47,7 +47,7 @@ public static class SentryUnityOptionsExtensions
         return true;
     }
 
-    internal static void SetupLogging(this SentryUnityOptions options)
+    internal static void SetupUnityLogging(this SentryUnityOptions options)
     {
         if (options.Debug)
         {
