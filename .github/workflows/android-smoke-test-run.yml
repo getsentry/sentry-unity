@@ -80,7 +80,7 @@ jobs:
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            pwsh ./scripts/smoke-test-android.ps1 -IsIntegrationTest -WarnIfFlaky
+            pwsh ./scripts/smoke-test-android.ps1 -WarnIfFlaky
 
       - name: Upload artifacts on failure
         if: ${{ failure() }}
