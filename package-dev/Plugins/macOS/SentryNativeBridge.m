@@ -8,6 +8,8 @@ static Class SentryScope;
 static Class SentryBreadcrumb;
 static Class SentryUser;
 static Class SentryOptions;
+static Class SentryId;
+static Class SentrySpanId;
 static Class PrivateSentrySDKOnly;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
@@ -40,6 +42,8 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
             LOAD_CLASS_OR_BREAK(SentryUser)
             LOAD_CLASS_OR_BREAK(SentryOptions)
+            LOAD_CLASS_OR_BREAK(SentryId)
+            LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
 
             // everything above passed - mark as successfully loaded
@@ -253,6 +257,26 @@ char *SentryNativeBridgeGetInstallationId()
     char *cString = (char *)malloc(len);
     memcpy(cString, nsStringUtf8, len);
     return cString;
+}
+
+void SentryNativeBridgeSetTraceId(const char *traceId, const char *spanId)
+{
+    if (traceId == NULL || spanId == NULL) {
+        return;
+    }
+    
+    id sentryTraceId = [[SentryId alloc] 
+        performSelector:@selector(initWithUUIDString:) 
+        withObject:[NSString stringWithUTF8String:traceId]];
+        
+    id sentrySpanId = [[SentrySpanId alloc]
+        performSelector:@selector(initWithValue:)
+        withObject:[NSString stringWithUTF8String:spanId]];
+    
+    [PrivateSentrySDKOnly 
+        performSelector:@selector(setTrace:spanId:) 
+        withObject:sentryTraceId 
+        withObject:sentrySpanId];
 }
 
 static inline NSString *_NSStringOrNil(const char *value)
