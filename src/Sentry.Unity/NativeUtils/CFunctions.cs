@@ -148,6 +148,9 @@ internal static class C
     [DllImport("sentry")]
     internal static extern void sentry_remove_extra(string key);
 
+    [DllImport("sentry")]
+    internal static extern void sentry_set_trace(string traceId, string parentSpanId);
+
     internal static readonly Lazy<IEnumerable<DebugImage>> DebugImages = new(LoadDebugImages);
 
     private static IEnumerable<DebugImage> LoadDebugImages()

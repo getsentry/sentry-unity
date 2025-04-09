@@ -82,18 +82,16 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols
 }
 
+# Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
 If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
 {
     Write-Host "Building Project"
 
-    If (("iOS", "Android-Export") -contains $Platform)
+    If ("iOS" -eq $Platform)
     {
-        # Workaround for having `exportAsGoogleAndroidProject` remain `false` in Unity 6 on first build
+        # We're exporting an Xcode project and building that in a separate step.
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
-        Remove-Item -Path $(GetNewProjectBuildPath) -Recurse -Force -Confirm:$false
-
-        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
-        & "./scripts/smoke-test-$($Platform -eq 'iOS' ? 'ios' : 'android').ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
+        & "./scripts/smoke-test-ios.ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
     }
     Else
     {
@@ -109,9 +107,9 @@ Switch -Regex ($Platform)
     {
         ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
     }
-    "^(Android|Android-Export)$"
+    "^(Android)$"
     {
-        ./scripts/smoke-test-android.ps1 -IsIntegrationTest
+        ./scripts/smoke-test-android.ps1
     }
     "^iOS$"
     {
