@@ -40,7 +40,7 @@ public class NativeScopeObserver : ScopeObserver
     }
 
     public override void UnsetUserImpl() => C.sentry_remove_user();
-    public override void SetTraceImpl(SentryId traceId, SpanId parentSpanId)
+    public override void SetTraceImpl(SentryId traceId, SpanId spanId)
     {
         // TODO: Needs to be implemented
     }

@@ -91,13 +91,13 @@ internal class AndroidJavaScopeObserver : ScopeObserver
         });
     }
 
-    public override void SetTraceImpl(SentryId traceId, SpanId parentSpanId)
+    public override void SetTraceImpl(SentryId traceId, SpanId spanId)
     {
         _jniExecutor.Run(() =>
         {
             using var sentry = GetInternalSentryJava();
             // We have to explicitly cast to `(Double?)`
-            sentry.CallStatic("setTrace", traceId.ToString(), parentSpanId.ToString(), (Double?)null, (Double?)null);
+            sentry.CallStatic("setTrace", traceId.ToString(), spanId.ToString(), (Double?)null, (Double?)null);
         });
     }
 }
