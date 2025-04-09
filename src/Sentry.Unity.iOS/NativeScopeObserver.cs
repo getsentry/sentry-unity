@@ -28,7 +28,7 @@ public class NativeScopeObserver : ScopeObserver
 
     public override void SetTraceImpl(SentryId traceId, SpanId spanId)
     {
-        // SentryCocoaBridgeProxy.SetTrace(traceId.ToString(), spanId.ToString());
+        SentryCocoaBridgeProxy.SetTrace(traceId.ToString(), spanId.ToString());
     }
 
     internal static string GetTimestamp(DateTimeOffset timestamp) =>

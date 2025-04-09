@@ -49,8 +49,8 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
             LOAD_CLASS_OR_BREAK(SentryUser)
             LOAD_CLASS_OR_BREAK(SentryOptions)
-            // LOAD_SWIFT_CLASS_OR_BREAK(SentryId, _TtC6Sentry8SentryId)
-            // LOAD_CLASS_OR_BREAK(SentrySpanId)
+            LOAD_SWIFT_CLASS_OR_BREAK(SentryId, _TtC6Sentry8SentryId)
+            LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
 
             // everything above passed - mark as successfully loaded
@@ -276,17 +276,13 @@ char *SentryNativeBridgeGetInstallationId()
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
-    if (traceId == NULL || spanId == NULL) {
-        return;
-    }
-    
-    // id sentryTraceId = [[SentryId alloc] 
-    //     performSelector:@selector(initWithUUIDString:) 
-    //     withObject:[NSString stringWithUTF8String:traceId]];
+    id sentryTraceId = [[SentryId alloc] 
+        performSelector:@selector(initWithUUIDString:) 
+        withObject:[NSString stringWithUTF8String:traceId]];
         
-    // id sentrySpanId = [[SentrySpanId alloc]
-    //     performSelector:@selector(initWithValue:)
-    //     withObject:[NSString stringWithUTF8String:spanId]];
+    id sentrySpanId = [[SentrySpanId alloc]
+        performSelector:@selector(initWithValue:)
+        withObject:[NSString stringWithUTF8String:spanId]];
     
     // [PrivateSentrySDKOnly 
     //     performSelector:@selector(setTrace:spanId:) 
