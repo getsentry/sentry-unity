@@ -16,7 +16,7 @@ internal class AndroidJavaScopeObserver : ScopeObserver
         _jniExecutor = jniExecutor;
     }
 
-    private AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+    private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
 
     public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
