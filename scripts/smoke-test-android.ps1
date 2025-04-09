@@ -22,52 +22,14 @@ Write-Host "#  |___/_|  |_|\___/|_|\_\___| |_| |___|___/  |_|   #"
 Write-Host "#                                                   #"
 Write-Host "#####################################################"
 
-if ($IsIntegrationTest)
-{
-    $BuildDir = $(GetNewProjectBuildPath)
-    $ApkFileName = "test.apk"
-    $ProcessName = "com.DefaultCompany.$(GetNewProjectName)"
-
-    if ($Action -eq "Build")
-    {
-        $buildCallback = {
-            Write-Host "::group::Gradle build $BuildDir"
-            Push-Location $BuildDir
-            try
-            {
-                MakeExecutable "./gradlew"
-                & ./gradlew --info --no-daemon assembleRelease | ForEach-Object {
-                    Write-Host "  $_"
-                }
-                if (-not $?)
-                {
-                    throw "Gradle execution failed"
-                }
-                Copy-Item -Path launcher/build/outputs/apk/release/launcher-release.apk -Destination $ApkFileName
-            }
-            finally
-            {
-                Pop-Location
-                Write-Host "::endgroup::"
-            }
-        }
-
-        $symbolServerOutput = RunWithSymbolServer -Callback $buildCallback
-        CheckSymbolServerOutput 'Android' $symbolServerOutput $UnityVersion
-        return;
-    }
-}
-else
-{
-    $BuildDir = "samples/artifacts/builds/Android"
-    $ApkFileName = "IL2CPP_Player.apk"
-    $ProcessName = "io.sentry.samples.unityofbugs"
-}
+$BuildDir = $(GetNewProjectBuildPath)
+$ApkFileName = "test.apk"
+$ProcessName = "com.DefaultCompany.$(GetNewProjectName)"
 $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 $FallBackTestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
 
-$_ArtifactsPath = ((Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : "./$BuildDir/../test-artifacts/") `
-    + $(Get-Date -Format "HHmmss")
+$_ArtifactsPath = (Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : (Join-Path $BuildDir "../test-artifacts/" $(Get-Date -Format "HHmmss"))
+
 function ArtifactsPath
 {
     if (-not (Test-Path $_ArtifactsPath))
@@ -332,8 +294,8 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         $logCache = ProcessNewLogs -newLogs $newLogs -lastLogCount ([ref]$lastLogCount) -logCache $logCache
 
         # The SmokeTester logs "SmokeTester is quitting." in OnApplicationQuit() to reliably inform when tests finish running.
-        # For crash tests, we expect to see a native crash log "terminating with uncaught exception of type char const*".
-        if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "terminating with uncaught exception of type char const*"))
+        # For crash tests, we're checking for `sentry-native` logging "crash has been captured" to reliably inform when tests finished running.
+        if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "crash has been captured"))
         {
             Write-Host "Process finished marker detected. Finish waiting for tests to run."
             $processFinished = $true

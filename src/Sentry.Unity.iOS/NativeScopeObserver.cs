@@ -26,7 +26,7 @@ public class NativeScopeObserver : ScopeObserver
 
     public override void UnsetUserImpl() => SentryCocoaBridgeProxy.UnsetUser();
 
-    public override void SetTraceImpl(SentryId traceId, SpanId parentSpanId)
+    public override void SetTraceImpl(SentryId traceId, SpanId spanId)
     {
         // Todo: Needs to be implemented
     }
