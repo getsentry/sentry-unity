@@ -44,9 +44,6 @@ public class NativeScopeObserver : ScopeObserver
     public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
         C.sentry_set_trace(traceId.ToString(), spanId.ToString());
 
-    public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
-        C.sentry_set_trace(traceId.ToString(), spanId.ToString());
-
     private static string GetTimestamp(DateTimeOffset timestamp) =>
         // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.
         // https://docs.microsoft.com/en-gb/dotnet/standard/base-types/standard-date-and-time-format-strings#Roundtrip
