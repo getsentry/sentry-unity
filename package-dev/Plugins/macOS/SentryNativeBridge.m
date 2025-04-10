@@ -284,10 +284,10 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
         performSelector:@selector(initWithValue:)
         withObject:[NSString stringWithUTF8String:spanId]];
     
-    // [PrivateSentrySDKOnly 
-    //     performSelector:@selector(setTrace:spanId:) 
-    //     withObject:sentryTraceId 
-    //     withObject:sentrySpanId];
+    [PrivateSentrySDKOnly 
+        performSelector:@selector(setTrace:spanId:) 
+        withObject:sentryTraceId 
+        withObject:sentrySpanId];
 }
 
 static inline NSString *_NSStringOrNil(const char *value)
