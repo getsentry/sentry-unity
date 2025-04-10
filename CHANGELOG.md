@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When targeting macOS, the SDK no longer fails to sync the scope to native events ([#2104](https://github.com/getsentry/sentry-unity/pull/2104))
+
 ### Features
 
 - The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
