@@ -169,6 +169,22 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
+void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
+{
+    id sentryTraceId = [[SentryId alloc] 
+        performSelector:@selector(initWithUUIDString:) 
+        withObject:[NSString stringWithUTF8String:traceId]];
+        
+    id sentrySpanId = [[SentrySpanId alloc]
+        performSelector:@selector(initWithValue:)
+        withObject:[NSString stringWithUTF8String:spanId]];
+    
+    [PrivateSentrySDKOnly 
+        performSelector:@selector(setTrace:spanId:) 
+        withObject:sentryTraceId 
+        withObject:sentrySpanId];
+}
+
 static inline NSString *_NSStringOrNil(const char *value)
 {
     return value ? [NSString stringWithUTF8String:value] : nil;
