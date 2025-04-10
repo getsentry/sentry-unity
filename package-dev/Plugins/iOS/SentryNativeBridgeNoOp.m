@@ -28,6 +28,8 @@ void SentryNativeBridgeUnsetUser() { }
 
 char *SentryNativeBridgeGetInstallationId() { return NULL; }
 
+void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
+
 void SentryNativeBridgeWriteScope( // clang-format off
     // // const char *AppStartTime,
     // const char *AppBuildType,
