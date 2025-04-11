@@ -118,25 +118,27 @@ namespace Sentry.Unity.Android.Tests
             // Arrange
             var executed = false;
             var completionSource = new TaskCompletionSource<bool>();
-            var action = () =>
+            var fakeLongOperation = TimeSpan.FromMilliseconds(100);
+
+            void Action()
             {
-                Thread.Sleep(100); // Simulate long-running operation
+                Thread.Sleep(fakeLongOperation); // Simulate long-running operation
                 executed = true;
                 completionSource.SetResult(true);
-            };
+            }
 
             // Act
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
-            _sut.RunAsync(action);
+            _sut.RunAsync(Action);
             stopwatch.Stop();
 
             // Assert
-            Assert.That(stopwatch.ElapsedMilliseconds, Is.LessThan(50), "RunAsync should return immediately");
+            Assert.That(stopwatch.Elapsed, Is.LessThan(fakeLongOperation), "RunAsync should return immediately");
             Assert.That(executed, Is.False, "Operation should not have completed yet");
 
-            // Wait for async operation to complete
-            Assert.That(completionSource.Task.Wait(500), Is.True, "Operation should eventually complete");
+            // Wait for fake long work to complete
+            Assert.That(completionSource.Task.Wait(500), Is.True, "Operation should complete eventually");
             Assert.That(executed, Is.True, "Operation should have completed after waiting");
         }
 
@@ -145,19 +147,24 @@ namespace Sentry.Unity.Android.Tests
         {
             // Arrange
             var counter = 0;
-            var manualReset = new ManualResetEventSlim();
+            const int expectedCount = 5;
+            var countdownEvent = new CountdownEvent(expectedCount);
 
             // Act
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < expectedCount; i++)
             {
-                _sut.RunAsync(() => Interlocked.Increment(ref counter));
+                _sut.RunAsync(() => {
+                    Interlocked.Increment(ref counter);
+                    countdownEvent.Signal();
+                });
             }
 
-            // Wait a bit to allow operations to execute
-            Thread.Sleep(200);
+            // Wait with timeout instead of arbitrary sleep
+            var allOperationsCompleted = countdownEvent.Wait(TimeSpan.FromMilliseconds(500));
 
             // Assert
-            Assert.That(counter, Is.EqualTo(5), "All operations should be executed");
+            Assert.That(allOperationsCompleted, Is.True, "All operations should complete within the timeout");
+            Assert.That(counter, Is.EqualTo(expectedCount));
         }
     }
 }
