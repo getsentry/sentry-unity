@@ -1,6 +1,8 @@
 #import <Sentry/PrivateSentrySDKOnly.h>
 #import <Sentry/SentryOptions+HybridSDKs.h>
 #import <Sentry/Sentry.h>
+#import <Sentry/SentryId.h>
+#import <Sentry/SentrySpanId.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -171,18 +173,13 @@ char *SentryNativeBridgeGetInstallationId()
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
-    id sentryTraceId = [[SentryId alloc] 
-        performSelector:@selector(initWithUUIDString:) 
-        withObject:[NSString stringWithUTF8String:traceId]];
-        
-    id sentrySpanId = [[SentrySpanId alloc]
-        performSelector:@selector(initWithValue:)
-        withObject:[NSString stringWithUTF8String:spanId]];
+    NSString *traceIdStr = [NSString stringWithUTF8String:traceId];
+    NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
     
-    [PrivateSentrySDKOnly 
-        performSelector:@selector(setTrace:spanId:) 
-        withObject:sentryTraceId 
-        withObject:sentrySpanId];
+    SentryId *sentryTraceId = [[SentryId alloc] initWithUUIDString:traceIdStr];
+    SentrySpanId *sentrySpanId = [[SentrySpanId alloc] initWithValue:spanIdStr];
+    
+    [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
 }
 
 static inline NSString *_NSStringOrNil(const char *value)
