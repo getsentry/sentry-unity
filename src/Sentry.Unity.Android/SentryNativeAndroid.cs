@@ -11,8 +11,7 @@ namespace Sentry.Unity.Android;
 /// </summary>
 public static class SentryNativeAndroid
 {
-    internal static IJniExecutor? JniExecutor;
-    internal static ISentryJava SentryJava = new SentryJava();
+    internal static ISentryJava? SentryJava;
 
     /// <summary>
     /// Configures the native Android support.
@@ -30,6 +29,7 @@ public static class SentryNativeAndroid
 
         options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK is present.");
 
+        SentryJava = new SentryJava(options.DiagnosticLogger);
         if (!SentryJava.IsSentryJavaPresent())
         {
             options.DiagnosticLogger?.LogError("Android Native Support has been enabled but the " +
@@ -39,11 +39,9 @@ public static class SentryNativeAndroid
             return;
         }
 
-        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
-
         options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK has already been initialized");
 
-        if (SentryJava.IsEnabled(JniExecutor, TimeSpan.FromSeconds(10)))
+        if (SentryJava.IsEnabled( TimeSpan.FromMilliseconds(200)))
         {
             options.DiagnosticLogger?.LogDebug("The Android SDK is already initialized");
         }
@@ -52,11 +50,11 @@ public static class SentryNativeAndroid
             options.DiagnosticLogger?.LogInfo("Initializing the Android SDK");
 
             // Local testing had Init at an average of about 25ms.
-            SentryJava.Init(JniExecutor, options, TimeSpan.FromSeconds(10));
+            SentryJava.Init(options, TimeSpan.FromMilliseconds(200));
 
             options.DiagnosticLogger?.LogDebug("Validating Android SDK initialization");
 
-            if (!SentryJava.IsEnabled(JniExecutor, TimeSpan.FromSeconds(10)))
+            if (!SentryJava.IsEnabled(TimeSpan.FromMilliseconds(200)))
             {
                 options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support");
                 return;
@@ -65,14 +63,14 @@ public static class SentryNativeAndroid
 
         options.DiagnosticLogger?.LogDebug("Configuring scope sync");
 
-        options.NativeContextWriter = new NativeContextWriter(JniExecutor, SentryJava);
-        options.ScopeObserver = new AndroidJavaScopeObserver(options, JniExecutor);
+        options.NativeContextWriter = new NativeContextWriter(SentryJava);
+        options.ScopeObserver = new AndroidJavaScopeObserver(options, SentryJava);
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>
         {
             options.DiagnosticLogger?.LogDebug("Checking for 'CrashedLastRun'");
 
-            var crashedLastRun = SentryJava.CrashedLastRun(JniExecutor);
+            var crashedLastRun = SentryJava.CrashedLastRun();
             if (crashedLastRun is null)
             {
                 // Could happen if the Android SDK wasn't initialized before the .NET layer.
@@ -107,7 +105,7 @@ public static class SentryNativeAndroid
 
         options.DiagnosticLogger?.LogDebug("Fetching installation ID");
 
-        options.DefaultUserId = SentryJava.GetInstallationId(JniExecutor);
+        options.DefaultUserId = SentryJava.GetInstallationId();
         if (string.IsNullOrEmpty(options.DefaultUserId))
         {
             // In case we can't get an installation ID we create one and sync that down to the native layer
@@ -141,19 +139,19 @@ public static class SentryNativeAndroid
     {
         options.DiagnosticLogger?.LogInfo("Attempting to close the Android SDK");
 
-        if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform) || !SentryJava.IsSentryJavaPresent())
+        if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
         {
-            options.DiagnosticLogger?.LogDebug("Android Native Support is not enable. Skipping closing the Android SDK");
+            options.DiagnosticLogger?.LogDebug("Android Native Support is not enabled. Skipping closing the Android SDK");
             return;
         }
 
-        // Sentry Native is initialized and closed by the Java SDK, no need to call into it directly
-        options.DiagnosticLogger?.LogDebug("Closing the Android SDK");
+        if (SentryJava?.IsSentryJavaPresent() is not true)
+        {
+            options.DiagnosticLogger?.LogDebug("Failed to find Sentry Java. Skipping closing the Android SDK");
+            return;
+        }
 
-        // This is an edge-case where the Android SDK has been enabled and setup during build-time but is being
-        // shut down at runtime. In this case Configure() has not been called and there is no JniExecutor yet
-        JniExecutor ??= new JniExecutor(options.DiagnosticLogger);
-        SentryJava?.Close(JniExecutor);
-        JniExecutor.Dispose();
+        options.DiagnosticLogger?.LogDebug("Closing the Android SDK");
+        SentryJava.Close();
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
@@ -8,150 +9,165 @@ namespace Sentry.Unity.Android;
 
 internal class JniExecutor : IJniExecutor
 {
-    // We're capping out at 16ms - 1 frame at 60 frames per second
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(16);
-
-    private readonly CancellationTokenSource _shutdownSource;
-    private readonly AutoResetEvent _taskEvent;
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
+    
+    private readonly ConcurrentQueue<JniOperation> _operationQueue = new ConcurrentQueue<JniOperation>();
+    private readonly AutoResetEvent _queueSignal = new AutoResetEvent(false);
     private readonly IDiagnosticLogger? _logger;
+    private readonly CancellationTokenSource _shutdownSource = new CancellationTokenSource();
 
-    private Delegate _currentTask = null!; // The current task will always be set together with the task event
-
-    private TaskCompletionSource<object?>? _taskCompletionSource;
-
-    private readonly object _lock = new object();
-
-    private bool _isDisposed;
     private Thread? _workerThread;
+    private bool _isDisposed;
+
+    private class JniOperation
+    {
+        public Delegate Action { get; }
+        public TaskCompletionSource<object?>? CompletionSource { get; }
+
+        public JniOperation(Delegate action, TaskCompletionSource<object?>? completionSource = null)
+        {
+            Action = action;
+            CompletionSource = completionSource;
+        }
+    }
 
     public JniExecutor(IDiagnosticLogger? logger)
     {
         _logger = logger;
-        _taskEvent = new AutoResetEvent(false);
-        _shutdownSource = new CancellationTokenSource();
-
-        _workerThread = new Thread(DoWork) { IsBackground = true, Name = "SentryJniExecutorThread" };
+        _workerThread = new Thread(ProcessJniQueue) { IsBackground = true, Name = "SentryJniExecutorThread" };
         _workerThread.Start();
     }
 
-    private void DoWork()
+    private void ProcessJniQueue()
     {
         AndroidJNI.AttachCurrentThread();
 
-        var waitHandles = new[] { _taskEvent, _shutdownSource.Token.WaitHandle };
+        var waitHandles = new[] { _queueSignal, _shutdownSource.Token.WaitHandle };
 
         while (!_isDisposed)
         {
             var index = WaitHandle.WaitAny(waitHandles);
-            if (index > 0)
+            if (index > 0 || _isDisposed)
             {
-                // We only care about the _taskEvent
                 break;
             }
 
-            try
+            while (!_isDisposed && _operationQueue.TryDequeue(out var operation))
             {
-                // Matching the type of the `_currentTask` exactly. The result gets cast to the expected type
-                // when returning from the blocking call.
-                switch (_currentTask)
+                try
                 {
-                    case Action action:
-                        {
-                            action.Invoke();
-                            _taskCompletionSource?.SetResult(null);
-                            break;
-                        }
-                    case Func<bool> func1:
-                        {
-                            var result = func1.Invoke();
-                            _taskCompletionSource?.SetResult(result);
-                            break;
-                        }
-                    case Func<bool?> func2:
-                        {
-                            var result = func2.Invoke();
-                            _taskCompletionSource?.SetResult(result);
-                            break;
-                        }
-                    case Func<string?> func3:
-                        {
-                            var result = func3.Invoke();
-                            _taskCompletionSource?.SetResult(result);
-                            break;
-                        }
-                    default:
-                        throw new NotImplementedException($"Task type '{_currentTask?.GetType()}' with value '{_currentTask}' is not implemented in the JniExecutor.");
+                    ExecuteJniOperation(operation);
                 }
-            }
-            catch (Exception e)
-            {
-                _logger?.LogError(e, "Error during JNI execution.");
-                _taskCompletionSource?.SetException(e);
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "Error executing JNI operation");
+                    operation.CompletionSource?.TrySetException(ex);
+                }
             }
         }
 
         AndroidJNI.DetachCurrentThread();
+        _logger?.LogDebug("JNI executor thread terminated");
     }
 
+    private void ExecuteJniOperation(JniOperation operation)
+    {
+        try
+        {
+            switch (operation.Action)
+            {
+                case Action action:
+                    action.Invoke();
+                    operation.CompletionSource?.TrySetResult(null);
+                    break;
+                case Func<bool> func1:
+                    var result1 = func1.Invoke();
+                    operation.CompletionSource?.TrySetResult(result1);
+                    break;
+                case Func<bool?> func2:
+                    var result2 = func2.Invoke();
+                    operation.CompletionSource?.TrySetResult(result2);
+                    break;
+                case Func<string?> func3:
+                    var result3 = func3.Invoke();
+                    operation.CompletionSource?.TrySetResult(result3);
+                    break;
+                default:
+                    var error = new NotImplementedException($"Task type '{operation.Action.GetType()}' is not implemented in JniExecutor");
+                    _logger?.LogError(error, "Unsupported JNI operation type");
+                    operation.CompletionSource?.TrySetException(error);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error during JNI operation execution");
+            operation.CompletionSource?.TrySetException(ex);
+        }
+    }
+
+    /// <summary>
+    /// Runs a JNI operation that returns a result, waiting for completion with a timeout
+    /// </summary>
     public TResult? Run<TResult>(Func<TResult?> jniOperation, TimeSpan? timeout = null)
     {
-        lock (_lock)
-        {
-            timeout ??= DefaultTimeout;
-            using var timeoutCts = new CancellationTokenSource(timeout.Value);
-            _taskCompletionSource = new TaskCompletionSource<object?>();
-            _currentTask = jniOperation;
-            _taskEvent.Set();
+        timeout ??= DefaultTimeout;
+        var completionSource = new TaskCompletionSource<object?>();
+        var operation = new JniOperation(jniOperation, completionSource);
+        
+        _operationQueue.Enqueue(operation);
+        _queueSignal.Set();
 
-            try
+        try
+        {
+            if (completionSource.Task.Wait(timeout.Value))
             {
-                _taskCompletionSource.Task.Wait(timeoutCts.Token);
-                return (TResult?)_taskCompletionSource.Task.Result;
+                return (TResult?)completionSource.Task.Result;
             }
-            catch (OperationCanceledException)
-            {
-                _logger?.LogError("JNI execution timed out.");
-                return default;
-            }
-            catch (Exception e)
-            {
-                _logger?.LogError(e, "Error during JNI execution.");
-                return default;
-            }
-            finally
-            {
-                _currentTask = null!;
-            }
+            
+            _logger?.LogError("JNI operation timed out after {0}ms", timeout.Value.TotalMilliseconds);
+            return default;
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error waiting for JNI operation result");
+            return default;
         }
     }
 
+    /// <summary>
+    /// Runs a JNI operation with no return value, waiting for completion with a timeout
+    /// </summary>
     public void Run(Action jniOperation, TimeSpan? timeout = null)
     {
-        lock (_lock)
-        {
-            timeout ??= DefaultTimeout;
-            using var timeoutCts = new CancellationTokenSource(timeout.Value);
-            _taskCompletionSource = new TaskCompletionSource<object?>();
-            _currentTask = jniOperation;
-            _taskEvent.Set();
+        timeout ??= DefaultTimeout;
+        var completionSource = new TaskCompletionSource<object?>();
+        var operation = new JniOperation(jniOperation, completionSource);
+        
+        _operationQueue.Enqueue(operation);
+        _queueSignal.Set();
 
-            try
+        try
+        {
+            if (!completionSource.Task.Wait(timeout.Value))
             {
-                _taskCompletionSource.Task.Wait(timeoutCts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger?.LogError("JNI execution timed out.");
-            }
-            catch (Exception e)
-            {
-                _logger?.LogError(e, "Error during JNI execution.");
-            }
-            finally
-            {
-                _currentTask = null!;
+                _logger?.LogError("JNI operation timed out after {0}ms", timeout.Value.TotalMilliseconds);
             }
         }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Error waiting for JNI operation completion");
+        }
+    }
+
+    /// <summary>
+    /// Runs a JNI operation without waiting for completion - true fire and forget
+    /// </summary>
+    public void RunAsync(Action jniOperation)
+    {
+        var operation = new JniOperation(jniOperation);
+        _operationQueue.Enqueue(operation);
+        _queueSignal.Set();
     }
 
     public void Dispose()
@@ -162,21 +178,18 @@ internal class JniExecutor : IJniExecutor
         }
 
         _isDisposed = true;
-
         _shutdownSource.Cancel();
+        
         try
         {
             _workerThread?.Join(100);
         }
-        catch (ThreadStateException)
+        catch (Exception ex)
         {
-            _logger?.LogError("JNI Executor Worker thread was never started during disposal");
-        }
-        catch (ThreadInterruptedException)
-        {
-            _logger?.LogError("JNI Executor Worker thread was interrupted during disposal");
+            _logger?.LogError(ex, "Error during JNI executor thread shutdown");
         }
 
-        _taskEvent.Dispose();
+        _queueSignal.Dispose();
+        _shutdownSource.Dispose();
     }
 }

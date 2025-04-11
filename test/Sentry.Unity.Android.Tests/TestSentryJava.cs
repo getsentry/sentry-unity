@@ -10,19 +10,17 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public bool IsEnabled(IJniExecutor jniExecutor, TimeSpan timeout) => Enabled;
+    public bool IsEnabled(TimeSpan timeout) => Enabled;
 
-    public void Init(IJniExecutor jniExecutor, SentryUnityOptions options, TimeSpan timeout) { }
+    public void Init(SentryUnityOptions options, TimeSpan timeout) { }
 
-    public string? GetInstallationId(IJniExecutor jniExecutor) => InstallationId;
+    public string? GetInstallationId() => InstallationId;
 
-    public bool? CrashedLastRun(IJniExecutor jniExecutor) => IsCrashedLastRun;
+    public bool? CrashedLastRun() => IsCrashedLastRun;
 
-    public void Close(IJniExecutor jniExecutor) { }
-    public void SetTrace(IJniExecutor jniExecutor, string traceId, string spanId) { }
+    public void Close() { }
 
     public void WriteScope(
-        IJniExecutor jniExecutor,
         int? GpuId,
         string? GpuName,
         string? GpuVendorName,
@@ -41,4 +39,16 @@ internal class TestSentryJava : ISentryJava
     { }
 
     public bool IsSentryJavaPresent() => SentryPresent;
+    public void AddBreadCrumb(Breadcrumb breadcrumb) { }
+
+    public void SetExtra(string key, string? value) { }
+    public void SetTag(string key, string? value) { }
+
+    public void UnsetTag(string key) { }
+
+    public void SetUser(SentryUser user) { }
+
+    public void UnsetUser() { }
+
+    public void SetTrace(SentryId traceId, SpanId spanId) { }
 }
