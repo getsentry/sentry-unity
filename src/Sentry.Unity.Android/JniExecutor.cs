@@ -10,7 +10,7 @@ namespace Sentry.Unity.Android;
 internal class JniExecutor : IJniExecutor
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
-    
+
     private readonly ConcurrentQueue<JniOperation> _operationQueue = new ConcurrentQueue<JniOperation>();
     private readonly AutoResetEvent _queueSignal = new AutoResetEvent(false);
     private readonly IDiagnosticLogger? _logger;
@@ -54,15 +54,7 @@ internal class JniExecutor : IJniExecutor
 
             while (!_isDisposed && _operationQueue.TryDequeue(out var operation))
             {
-                try
-                {
-                    ExecuteJniOperation(operation);
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "Error executing JNI operation");
-                    operation.CompletionSource?.TrySetException(ex);
-                }
+                ExecuteJniOperation(operation);
             }
         }
 
@@ -101,7 +93,7 @@ internal class JniExecutor : IJniExecutor
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error during JNI operation execution");
+            _logger?.LogError(ex, "Error during JNI operation execution.");
             operation.CompletionSource?.TrySetException(ex);
         }
     }
@@ -114,7 +106,7 @@ internal class JniExecutor : IJniExecutor
         timeout ??= DefaultTimeout;
         var completionSource = new TaskCompletionSource<object?>();
         var operation = new JniOperation(jniOperation, completionSource);
-        
+
         _operationQueue.Enqueue(operation);
         _queueSignal.Set();
 
@@ -124,7 +116,7 @@ internal class JniExecutor : IJniExecutor
             {
                 return (TResult?)completionSource.Task.Result;
             }
-            
+
             _logger?.LogError("JNI operation timed out after {0}ms", timeout.Value.TotalMilliseconds);
             return default;
         }
@@ -143,7 +135,7 @@ internal class JniExecutor : IJniExecutor
         timeout ??= DefaultTimeout;
         var completionSource = new TaskCompletionSource<object?>();
         var operation = new JniOperation(jniOperation, completionSource);
-        
+
         _operationQueue.Enqueue(operation);
         _queueSignal.Set();
 
@@ -179,7 +171,7 @@ internal class JniExecutor : IJniExecutor
 
         _isDisposed = true;
         _shutdownSource.Cancel();
-        
+
         try
         {
             _workerThread?.Join(100);

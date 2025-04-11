@@ -11,6 +11,8 @@ namespace Sentry.Unity.Android;
 /// </summary>
 public static class SentryNativeAndroid
 {
+    // This is an internal static field that gets overwritten during testing. We cannot have it as optional
+    // parameter on `Configure` due SentryNativeAndroid being public
     internal static ISentryJava? SentryJava;
 
     /// <summary>
@@ -29,7 +31,8 @@ public static class SentryNativeAndroid
 
         options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK is present.");
 
-        SentryJava = new SentryJava(options.DiagnosticLogger);
+        // Only overwriting if it has not been set yet (by tests)
+        SentryJava ??= new SentryJava(options.DiagnosticLogger);
         if (!SentryJava.IsSentryJavaPresent())
         {
             options.DiagnosticLogger?.LogError("Android Native Support has been enabled but the " +
