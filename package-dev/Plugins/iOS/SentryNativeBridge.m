@@ -176,10 +176,16 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
     NSString *traceIdStr = [NSString stringWithUTF8String:traceId];
     NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
     
-    SentryId *sentryTraceId = [[SentryId alloc] initWithUUIDString:traceIdStr];
-    SentrySpanId *sentrySpanId = [[SentrySpanId alloc] initWithValue:spanIdStr];
+    // This is a workaround to deal with SentryId living inside the Swift header
+    Class sentryIdClass = NSClassFromString(@"SentryId");
+    Class sentrySpanIdClass = NSClassFromString(@"SentrySpanId");
     
-    [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
+    if (sentryIdClass && sentrySpanIdClass) {
+        id sentryTraceId = [[sentryIdClass alloc] initWithUUIDString:traceIdStr];
+        id sentrySpanId = [[sentrySpanIdClass alloc] initWithValue:spanIdStr];
+        
+        [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
+    }
 }
 
 static inline NSString *_NSStringOrNil(const char *value)
