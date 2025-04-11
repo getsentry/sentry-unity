@@ -44,7 +44,7 @@ public static class SentryNativeAndroid
 
         options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK has already been initialized");
 
-        if (SentryJava.IsEnabled( TimeSpan.FromMilliseconds(200)))
+        if (SentryJava.IsEnabled(TimeSpan.FromMilliseconds(200)))
         {
             options.DiagnosticLogger?.LogDebug("The Android SDK is already initialized");
         }

@@ -153,7 +153,8 @@ namespace Sentry.Unity.Android.Tests
             // Act
             for (var i = 0; i < expectedCount; i++)
             {
-                _sut.RunAsync(() => {
+                _sut.RunAsync(() =>
+                {
                     Interlocked.Increment(ref counter);
                     countdownEvent.Signal();
                 });
