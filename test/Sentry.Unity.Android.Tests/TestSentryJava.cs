@@ -1,4 +1,5 @@
 using System;
+using Sentry.Extensibility;
 
 namespace Sentry.Unity.Android.Tests;
 
@@ -10,7 +11,7 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public bool IsEnabled(TimeSpan timeout) => Enabled;
+    public bool? IsEnabled(TimeSpan timeout) => Enabled;
 
     public void Init(SentryUnityOptions options, TimeSpan timeout) { }
 
@@ -51,4 +52,8 @@ internal class TestSentryJava : ISentryJava
     public void UnsetUser() { }
 
     public void SetTrace(SentryId traceId, SpanId spanId) { }
+    public void SetLogger(IDiagnosticLogger? optionsDiagnosticLogger)
+    {
+
+    }
 }

@@ -7,16 +7,23 @@ using UnityEngine;
 
 namespace Sentry.Unity.Android;
 
-internal class JniExecutor : IJniExecutor
+internal class JniExecutor
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
 
-    private readonly ConcurrentQueue<JniOperation> _operationQueue = new ConcurrentQueue<JniOperation>();
-    private readonly AutoResetEvent _queueSignal = new AutoResetEvent(false);
-    private readonly IDiagnosticLogger? _logger;
-    private readonly CancellationTokenSource _shutdownSource = new CancellationTokenSource();
+    private JniOperation? _highPriorityOperation;
+    private static readonly object HighPriorityOperationLock = new();
 
-    private Thread? _workerThread;
+    private readonly ConcurrentQueue<JniOperation> _lowPriorityQueue = new();
+    private const int LowPriorityQueueCapacity = 100;
+    private int _lowPriorityQueueSize;
+
+    private readonly IDiagnosticLogger? _logger;
+
+    private readonly AutoResetEvent _workerSignal = new(false);
+    private readonly CancellationTokenSource _shutdownSource = new();
+
+    private readonly Thread? _workerThread;
     private bool _isDisposed;
 
     private class JniOperation
@@ -42,19 +49,34 @@ internal class JniExecutor : IJniExecutor
     {
         AndroidJNI.AttachCurrentThread();
 
-        var waitHandles = new[] { _queueSignal, _shutdownSource.Token.WaitHandle };
+        var waitHandles = new[] { _workerSignal, _shutdownSource.Token.WaitHandle };
 
         while (!_isDisposed)
         {
-            var index = WaitHandle.WaitAny(waitHandles);
-            if (index > 0 || _isDisposed)
+            if (_highPriorityOperation is not null)
             {
-                break;
+                JniOperation? highPriorityOperation;
+                lock (HighPriorityOperationLock)
+                {
+                    highPriorityOperation = _highPriorityOperation;
+                    _highPriorityOperation = null;
+                }
+
+                ExecuteJniOperation(highPriorityOperation);
+                continue;
             }
 
-            while (!_isDisposed && _operationQueue.TryDequeue(out var operation))
+            if (_lowPriorityQueue.TryDequeue(out var lowPriorityOp))
             {
-                ExecuteJniOperation(operation);
+                Interlocked.Decrement(ref _lowPriorityQueueSize);
+                ExecuteJniOperation(lowPriorityOp);
+                continue;
+            }
+
+            WaitHandle.WaitAny(waitHandles);
+            if (_shutdownSource.IsCancellationRequested || _isDisposed)
+            {
+                break;
             }
         }
 
@@ -107,8 +129,11 @@ internal class JniExecutor : IJniExecutor
         var completionSource = new TaskCompletionSource<object?>();
         var operation = new JniOperation(jniOperation, completionSource);
 
-        _operationQueue.Enqueue(operation);
-        _queueSignal.Set();
+        lock (HighPriorityOperationLock)
+        {
+            _highPriorityOperation = operation;
+            _workerSignal.Set();
+        }
 
         try
         {
@@ -136,8 +161,12 @@ internal class JniExecutor : IJniExecutor
         var completionSource = new TaskCompletionSource<object?>();
         var operation = new JniOperation(jniOperation, completionSource);
 
-        _operationQueue.Enqueue(operation);
-        _queueSignal.Set();
+        lock (HighPriorityOperationLock)
+        {
+            _highPriorityOperation = operation;
+            _workerSignal.Set();
+        }
+
 
         try
         {
@@ -158,8 +187,24 @@ internal class JniExecutor : IJniExecutor
     public void RunAsync(Action jniOperation)
     {
         var operation = new JniOperation(jniOperation);
-        _operationQueue.Enqueue(operation);
-        _queueSignal.Set();
+        if(!TryEnqueueOperation(operation))
+        {
+            // _logger?.LogWarning("Low priority JNI operation queue is full ({0}/{1}). Operation rejected.",
+            //     _lowPriorityQueueSize, LowPriorityQueueCapacity);
+        }
+    }
+
+    private bool TryEnqueueOperation(JniOperation operation)
+    {
+        if (Interlocked.Increment(ref _lowPriorityQueueSize) <= LowPriorityQueueCapacity)
+        {
+            _lowPriorityQueue.Enqueue(operation);
+            _workerSignal.Set();
+            return true;
+        }
+
+        Interlocked.Decrement(ref _lowPriorityQueueSize);
+        return false;
     }
 
     public void Dispose()
@@ -181,7 +226,7 @@ internal class JniExecutor : IJniExecutor
             _logger?.LogError(ex, "Error during JNI executor thread shutdown");
         }
 
-        _queueSignal.Dispose();
+        _workerSignal.Dispose();
         _shutdownSource.Dispose();
     }
 }

@@ -1,14 +1,12 @@
 using System;
-using System.Diagnostics;
 using Sentry.Extensibility;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
-    public bool IsEnabled(TimeSpan timeout);
+    public bool? IsEnabled(TimeSpan timeout);
     public void Init(SentryUnityOptions options, TimeSpan timeout);
     public string? GetInstallationId();
     public bool? CrashedLastRun();
@@ -52,22 +50,19 @@ internal interface ISentryJava
 internal class SentryJava : ISentryJava
 {
     private readonly JniExecutor? _jniExecutor;
+    private IDiagnosticLogger? _logger;
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
 
     public SentryJava(IDiagnosticLogger? logger)
     {
-        _jniExecutor = new JniExecutor(logger);
+        _logger = logger;
+        _jniExecutor = new JniExecutor(_logger);
     }
 
-    public bool IsEnabled(TimeSpan timeout)
+    public bool? IsEnabled(TimeSpan timeout)
     {
-        if (_jniExecutor is null)
-        {
-            return false;
-        }
-
-        return _jniExecutor.Run(() =>
+        return _jniExecutor?.Run(() =>
         {
             using var sentry = GetSentryJava();
             return sentry.CallStatic<bool>("isEnabled");
@@ -228,7 +223,7 @@ internal class SentryJava : ISentryJava
 
     public void SetExtra(string key, string? value)
     {
-        _jniExecutor?.RunAsync(() =>
+        _jniExecutor?.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setExtra", key, value);
@@ -237,7 +232,7 @@ internal class SentryJava : ISentryJava
 
     public void SetTag(string key, string? value)
     {
-        _jniExecutor?.RunAsync(() =>
+        _jniExecutor?.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setTag", key, value);
@@ -246,7 +241,7 @@ internal class SentryJava : ISentryJava
 
     public void UnsetTag(string key)
     {
-        _jniExecutor?.RunAsync(() =>
+        _jniExecutor?.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("removeTag", key);
@@ -255,7 +250,7 @@ internal class SentryJava : ISentryJava
 
     public void SetUser(SentryUser user)
     {
-        _jniExecutor?.RunAsync(() =>
+        _jniExecutor?.Run(() =>
         {
             AndroidJavaObject? javaUser = null;
             try
@@ -277,7 +272,7 @@ internal class SentryJava : ISentryJava
 
     public void UnsetUser()
     {
-        _jniExecutor?.RunAsync(() =>
+        _jniExecutor?.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setUser", null);
@@ -286,7 +281,7 @@ internal class SentryJava : ISentryJava
 
     public void SetTrace(SentryId traceId, SpanId spanId)
     {
-        _jniExecutor?.RunAsync(() =>
+        _jniExecutor?.Run(() =>
         {
             using var sentry = GetInternalSentryJava();
             // We have to explicitly cast to `(Double?)`
