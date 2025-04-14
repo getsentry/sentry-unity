@@ -1,8 +1,6 @@
 #import <Sentry/PrivateSentrySDKOnly.h>
 #import <Sentry/SentryOptions+HybridSDKs.h>
 #import <Sentry/Sentry.h>
-#import <Sentry/SentryId.h>
-#import <Sentry/SentrySpanId.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -173,18 +171,24 @@ char *SentryNativeBridgeGetInstallationId()
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
+    if (traceId == NULL || spanId == NULL) {
+        return;
+    }
+
     NSString *traceIdStr = [NSString stringWithUTF8String:traceId];
     NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
     
     // This is a workaround to deal with SentryId living inside the Swift header
-    Class sentryIdClass = NSClassFromString(@"SentryId");
+    Class sentryIdClass = NSClassFromString(@"_TtC6Sentry8SentryId");
     Class sentrySpanIdClass = NSClassFromString(@"SentrySpanId");
     
     if (sentryIdClass && sentrySpanIdClass) {
         id sentryTraceId = [[sentryIdClass alloc] initWithUUIDString:traceIdStr];
         id sentrySpanId = [[sentrySpanIdClass alloc] initWithValue:spanIdStr];
         
-        [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
+        if (sentryTraceId && sentrySpanId) {
+            [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
+        }
     }
 }
 

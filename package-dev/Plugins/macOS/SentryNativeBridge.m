@@ -276,6 +276,10 @@ char *SentryNativeBridgeGetInstallationId()
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
+    if (traceId == NULL || spanId == NULL) {
+        return;
+    }
+
     id sentryTraceId = [[SentryId alloc] 
         performSelector:@selector(initWithUUIDString:) 
         withObject:[NSString stringWithUTF8String:traceId]];
