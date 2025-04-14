@@ -187,7 +187,7 @@ internal class JniExecutor
     public void RunAsync(Action jniOperation)
     {
         var operation = new JniOperation(jniOperation);
-        if(!TryEnqueueOperation(operation))
+        if (!TryEnqueueOperation(operation))
         {
             // _logger?.LogWarning("Low priority JNI operation queue is full ({0}/{1}). Operation rejected.",
             //     _lowPriorityQueueSize, LowPriorityQueueCapacity);
