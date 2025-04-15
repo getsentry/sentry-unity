@@ -88,6 +88,21 @@ public class NativeOptionsTests
     }
 
     [Test]
+    public void CreateOptionsFile_NewSentryOptions_ContainsSdkNameSetting()
+    {
+        const string testOptionsFileName = "testOptions.m";
+
+        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
+
+        Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
+
+        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        StringAssert.Contains("SentryNativeBridgeSetSdkName();", nativeOptions);
+
+        File.Delete(testOptionsFileName);
+    }
+
+    [Test]
     public void CreateOptionsFile_FilterBadGatewayEnabled_AddsFiltering()
     {
         const string testOptionsFileName = "testOptions.m";
