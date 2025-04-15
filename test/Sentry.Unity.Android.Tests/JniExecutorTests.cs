@@ -11,7 +11,7 @@ namespace Sentry.Unity.Android.Tests
     [TestFixture]
     public class JniExecutorTests
     {
-        private TestLogger _logger = null!; // Set during SetUp
+        private TestLogger _logger = null!;
         private TestAndroidJNI _androidJni = null!;
         private TestApplication _application = null!;
         private JniExecutor _sut = null!;
@@ -19,6 +19,8 @@ namespace Sentry.Unity.Android.Tests
         [SetUp]
         public void SetUp()
         {
+            // Reset the version to ensure it's not cached from previous tests or the Editor
+            SentryUnityVersion.Version = null;
             _logger = new TestLogger();
             _androidJni = new TestAndroidJNI();
             _application = new TestApplication(unityVersion: "2019.4.40f1");
