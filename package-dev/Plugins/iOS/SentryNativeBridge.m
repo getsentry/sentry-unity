@@ -46,6 +46,11 @@ int SentryNativeBridgeStartWithOptions(const void *options)
     return 1;
 }
 
+void SentryNativeBridgeSetSdkName()
+{
+    [PrivateSentrySDKOnly performSelector:@selector(setSdkName:) withObject:@"sentry.cocoa.unity"];
+}
+
 int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }
 
 void SentryNativeBridgeClose() { [SentrySDK close]; }
