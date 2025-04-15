@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When targeting macOS, the SDK no longer fails to sync the scope to native events ([#2104](https://github.com/getsentry/sentry-unity/pull/2104))
+
 ### Features
 
 - Drastically improved performance of scope sync when targeting Android ([#2107](https://github.com/getsentry/sentry-unity/pull/2107))
@@ -14,9 +18,9 @@
 - Bump Cocoa SDK from v8.45.0 to v8.49.0 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063), [#2071](https://github.com/getsentry/sentry-unity/pull/2071), [#2105](https://github.com/getsentry/sentry-unity/pull/2105))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8490)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.49.0)
-- Bump Java SDK from v8.3.0 to v8.7.0 ([#2066](https://github.com/getsentry/sentry-unity/pull/2066), [#2075](https://github.com/getsentry/sentry-unity/pull/2075), [#2092](https://github.com/getsentry/sentry-unity/pull/2092), [#2103](https://github.com/getsentry/sentry-unity/pull/2103))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#870)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.7.0)
+- Bump Java SDK from v8.3.0 to v8.8.0 ([#2066](https://github.com/getsentry/sentry-unity/pull/2066), [#2075](https://github.com/getsentry/sentry-unity/pull/2075), [#2092](https://github.com/getsentry/sentry-unity/pull/2092), [#2103](https://github.com/getsentry/sentry-unity/pull/2103), [#2111](https://github.com/getsentry/sentry-unity/pull/2111))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#880)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.8.0)
 - Bump CLI from v2.42.2 to v2.43.0 ([#2065](https://github.com/getsentry/sentry-unity/pull/2065), [#2082](https://github.com/getsentry/sentry-unity/pull/2082), [#2085](https://github.com/getsentry/sentry-unity/pull/2085))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2430)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.42.2...2.43.0)
