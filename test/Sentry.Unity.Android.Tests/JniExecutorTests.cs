@@ -20,7 +20,7 @@ namespace Sentry.Unity.Android.Tests
         {
             _logger = new TestLogger();
             _androidJni = new TestAndroidJNI();
-            _sut = new  JniExecutor(_logger, _androidJni);
+            _sut = new JniExecutor(_logger, _androidJni);
         }
 
         [Test]
