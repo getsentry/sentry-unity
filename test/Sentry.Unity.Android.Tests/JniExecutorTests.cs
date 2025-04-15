@@ -20,12 +20,6 @@ namespace Sentry.Unity.Android.Tests
             _sut = new JniExecutor(_logger);
         }
 
-        [TearDown]
-        public void TearDown()
-        {
-            _sut.Dispose();
-        }
-
         [Test]
         public void Run_Action_ExecutesSuccessfully()
         {
@@ -75,7 +69,7 @@ namespace Sentry.Unity.Android.Tests
             var timeout = TimeSpan.FromMilliseconds(50);
 
             // Act
-            _sut.Run(slowAction, timeout);
+            _sut.Run(slowAction);
 
             // Assert
             Assert.IsTrue(_logger.Logs.Any(log =>
@@ -110,62 +104,6 @@ namespace Sentry.Unity.Android.Tests
 
             // Assert
             Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        public void RunAsync_Action_DoesNotWaitForCompletion()
-        {
-            // Arrange
-            var executed = false;
-            var completionSource = new TaskCompletionSource<bool>();
-            var fakeLongOperation = TimeSpan.FromMilliseconds(100);
-
-            void Action()
-            {
-                Thread.Sleep(fakeLongOperation); // Simulate long-running operation
-                executed = true;
-                completionSource.SetResult(true);
-            }
-
-            // Act
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-            _sut.RunAsync(Action);
-            stopwatch.Stop();
-
-            // Assert
-            Assert.That(stopwatch.Elapsed, Is.LessThan(fakeLongOperation), "RunAsync should return immediately");
-            Assert.That(executed, Is.False, "Operation should not have completed yet");
-
-            // Wait for fake long work to complete
-            Assert.That(completionSource.Task.Wait(500), Is.True, "Operation should complete eventually");
-            Assert.That(executed, Is.True, "Operation should have completed after waiting");
-        }
-
-        [Test]
-        public void RunAsync_MultipleOperations_AllExecuteEventually()
-        {
-            // Arrange
-            var counter = 0;
-            const int expectedCount = 5;
-            var countdownEvent = new CountdownEvent(expectedCount);
-
-            // Act
-            for (var i = 0; i < expectedCount; i++)
-            {
-                _sut.RunAsync(() =>
-                {
-                    Interlocked.Increment(ref counter);
-                    countdownEvent.Signal();
-                });
-            }
-
-            // Wait with timeout instead of arbitrary sleep
-            var allOperationsCompleted = countdownEvent.Wait(TimeSpan.FromMilliseconds(500));
-
-            // Assert
-            Assert.That(allOperationsCompleted, Is.True, "All operations should complete within the timeout");
-            Assert.That(counter, Is.EqualTo(expectedCount));
         }
     }
 }

@@ -44,7 +44,7 @@ public static class SentryNativeAndroid
 
         options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK has already been initialized");
 
-        if (SentryJava.IsEnabled(TimeSpan.FromMilliseconds(200)) is true)
+        if (SentryJava.IsEnabled() is true)
         {
             options.DiagnosticLogger?.LogDebug("The Android SDK is already initialized");
         }
@@ -52,12 +52,11 @@ public static class SentryNativeAndroid
         {
             options.DiagnosticLogger?.LogInfo("Initializing the Android SDK");
 
-            // Local testing had Init at an average of about 25ms.
-            SentryJava.Init(options, TimeSpan.FromMilliseconds(200));
+            SentryJava.Init(options);
 
             options.DiagnosticLogger?.LogDebug("Validating Android SDK initialization");
 
-            if (SentryJava.IsEnabled(TimeSpan.FromMilliseconds(200)) is not true)
+            if (SentryJava.IsEnabled() is not true)
             {
                 options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support");
                 return;

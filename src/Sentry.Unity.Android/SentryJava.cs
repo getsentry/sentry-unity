@@ -6,8 +6,8 @@ namespace Sentry.Unity.Android;
 
 internal interface ISentryJava
 {
-    public bool? IsEnabled(TimeSpan timeout);
-    public void Init(SentryUnityOptions options, TimeSpan timeout);
+    public bool? IsEnabled();
+    public void Init(SentryUnityOptions options);
     public string? GetInstallationId();
     public bool? CrashedLastRun();
     public void Close();
@@ -60,16 +60,16 @@ internal class SentryJava : ISentryJava
         _jniExecutor = new JniExecutor(_logger);
     }
 
-    public bool? IsEnabled(TimeSpan timeout)
+    public bool? IsEnabled()
     {
         return _jniExecutor?.Run(() =>
         {
             using var sentry = GetSentryJava();
             return sentry.CallStatic<bool>("isEnabled");
-        }, timeout);
+        });
     }
 
-    public void Init(SentryUnityOptions options, TimeSpan timeout)
+    public void Init(SentryUnityOptions options)
     {
         _jniExecutor?.Run(() =>
         {
@@ -111,7 +111,7 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setAnrEnabled", false);
                 androidOptions.Call("setEnableScopePersistence", false);
             }, options.DiagnosticLogger));
-        }, timeout);
+        });
     }
 
     public string? GetInstallationId()
@@ -208,7 +208,7 @@ internal class SentryJava : ISentryJava
 
     public void AddBreadCrumb(Breadcrumb breadcrumb)
     {
-        _jniExecutor?.RunAsync(() =>
+        _jniExecutor?.Run(() =>
         {
             using var sentry = GetSentryJava();
             using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
