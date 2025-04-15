@@ -12,7 +12,7 @@ internal static class SentryUnityVersion
     public static bool IsNewerOrEqualThan(string version, IApplication? application = null)
         => GetVersion(application) >= new Version(version);
 
-    internal static Version? GetVersion(IApplication? application = null)
+    internal static Version GetVersion(IApplication? application = null)
     {
         if (Version is not null)
         {

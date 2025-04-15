@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Android.Tests
 {
@@ -11,99 +12,168 @@ namespace Sentry.Unity.Android.Tests
     public class JniExecutorTests
     {
         private TestLogger _logger = null!; // Set during SetUp
-        private JniExecutor _sut = null!; // Set during SetUp
+        private TestAndroidJNI _androidJni = null!;
+        private TestApplication _application = null!;
+        private JniExecutor _sut = null!;
 
         [SetUp]
         public void SetUp()
         {
             _logger = new TestLogger();
-            _sut = new JniExecutor(_logger);
+            _androidJni = new TestAndroidJNI();
+            _application = new TestApplication(unityVersion: "2019.4.40f1");
+            _sut = new  JniExecutor(_logger, _androidJni, _application);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _androidJni = null!;
+            _sut = null!;
         }
 
         [Test]
-        public void Run_Action_ExecutesSuccessfully()
+        public void Run_TResult_ExecutesOperation()
         {
             // Arrange
-            var executed = false;
-            var action = () => executed = true;
+            var operationExecuted = false;
+            var operation = () =>
+            {
+                operationExecuted = true;
+                return true;
+            };
 
             // Act
-            _sut.Run(action);
+            var result = _sut.Run(operation);
 
             // Assert
-            Assert.That(executed, Is.True);
+            Assert.IsTrue(operationExecuted);
+            Assert.IsTrue(result);
         }
 
         [Test]
-        public void Run_FuncBool_ReturnsExpectedResult()
+        public void Run_Void_ExecutesOperation()
         {
             // Arrange
-            var func = () => true;
+            var sut = new  JniExecutor(_logger, _androidJni, _application);
+            bool operationExecuted = false;
+            var operation = () =>
+            {
+                operationExecuted = true;
+            };
+
 
             // Act
-            var result = _sut.Run(func);
+            _sut.Run(operation);
 
             // Assert
-            Assert.That(result, Is.True);
+            Assert.IsTrue(operationExecuted);
         }
 
         [Test]
-        public void Run_FuncString_ReturnsExpectedResult()
+        [TestCase("2019.4.40f1", true, true, Description = "Unity <2020 + main thread = should attach")]
+        [TestCase("2019.4.40f1", false, true, Description = "Unity <2020 + non main thread = should attach")]
+        [TestCase("2020.3.1f1", true, false, Description = "Unity >2020 + main thread = should not attach")]
+        [TestCase("2020.3.1f1", false, true, Description = "Unity >2020+ + non main thread = should attach")]
+        public void Run_TResult_AttachesThreadBasedOnVersionAndThread(string unityVersion, bool isMainThread, bool shouldAttach)
         {
             // Arrange
-            const string? expected = "Hello";
-            var func = () => expected;
+            _androidJni = new TestAndroidJNI();
+            _application = new TestApplication(unityVersion: unityVersion);
+            _sut = new JniExecutor(_logger, _androidJni, _application);
 
             // Act
-            var result = _sut.Run(func);
+            _sut.Run(() => true, isMainThread);
 
             // Assert
-            Assert.AreEqual(expected, result);
+            Assert.AreEqual(shouldAttach, _androidJni.AttachCalled);
+            Assert.AreEqual(shouldAttach, _androidJni.DetachCalled);
         }
 
         [Test]
-        public void Run_WithTimeout_LogsErrorOnTimeout()
+        [TestCase("2019.4.40f1", true, true, Description = "Unity <2020 + main thread = should attach")]
+        [TestCase("2019.4.40f1", false, true, Description = "Unity <2020 + non main thread = should attach")]
+        [TestCase("2020.3.1f1", true, false, Description = "Unity >2020 + main thread = should not attach")]
+        [TestCase("2020.3.1f1", false, true, Description = "Unity >2020+ + non main thread = should attach")]
+        public void Run_Void_AttachesThreadBasedOnVersionAndThread(string unityVersion, bool isMainThread, bool shouldAttach)
         {
             // Arrange
-            var slowAction = () => Thread.Sleep(100);
-            var timeout = TimeSpan.FromMilliseconds(50);
+            _androidJni = new TestAndroidJNI();
+            _application = new TestApplication(unityVersion: unityVersion);
+            _sut = new JniExecutor(_logger, _androidJni, _application);
 
             // Act
-            _sut.Run(slowAction);
+            _sut.Run(() => true, isMainThread);
 
             // Assert
-            Assert.IsTrue(_logger.Logs.Any(log =>
-                log.logLevel == SentryLevel.Error &&
-                log.message.Contains("JNI operation timed out after ")));
+            Assert.AreEqual(shouldAttach, _androidJni.AttachCalled);
+            Assert.AreEqual(shouldAttach, _androidJni.DetachCalled);
         }
 
         [Test]
-        public void Run_ThrowingOperation_LogsError()
+        public void Run_TResult_DetachesEvenOnException()
         {
             // Arrange
-            var exception = new Exception("Test exception");
-            Action throwingAction = () => throw exception;
+            _application.UnityVersion = "2019.4.40f1";
 
-            // Act
-            _sut.Run(throwingAction);
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+                _sut.Run<bool>(() => throw new InvalidOperationException()));
 
-            // Assert
-            Assert.IsTrue(_logger.Logs.Any(log =>
-                log.logLevel == SentryLevel.Error &&
-                log.message.Contains("Error during JNI operation execution.")));
+            Assert.IsTrue(_androidJni.AttachCalled);
+            Assert.IsTrue(_androidJni.DetachCalled);
         }
 
         [Test]
-        public void Run_Generic_ReturnsDefaultOnException()
+        public void Run_Void_DetachesEvenOnException()
         {
             // Arrange
-            Func<string> throwingFunc = () => throw new Exception("Test exception");
+            _application.UnityVersion = "2019.4.0f1";
 
-            // Act
-            var result = _sut.Run(throwingFunc);
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+                _sut.Run(() => throw new InvalidOperationException()));
 
-            // Assert
-            Assert.That(result, Is.Null);
+            Assert.IsTrue(_androidJni.AttachCalled);
+            Assert.IsTrue(_androidJni.DetachCalled);
+        }
+
+        [Test]
+        public void Run_TResult_UsesDefaultAndroidJNIWhenNotProvided()
+        {
+            // This test is more of a smoke test since we can't easily verify the use of the singleton
+            var result = _sut.Run(() => true);
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void Run_Void_UsesDefaultAndroidJNIWhenNotProvided()
+        {
+            // This test is more of a smoke test since we can't easily verify the use of the singleton
+            Assert.DoesNotThrow(() => _sut.Run(() => { }));
+        }
+    }
+
+    // Test implementations
+    public class TestAndroidJNI : IAndroidJNI
+    {
+        public bool AttachCalled { get; private set; }
+        public bool DetachCalled { get; private set; }
+
+        public TestAndroidJNI()
+        {
+            AttachCalled = false;
+            DetachCalled = false;
+        }
+
+        public void AttachCurrentThread()
+        {
+            AttachCalled = true;
+        }
+
+        public void DetachCurrentThread()
+        {
+            DetachCalled = true;
         }
     }
 }

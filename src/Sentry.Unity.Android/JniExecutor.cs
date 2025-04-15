@@ -1,56 +1,67 @@
 using System;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using UnityEngine;
 
 namespace Sentry.Unity.Android;
 
 internal class JniExecutor
 {
     private readonly IDiagnosticLogger? _logger;
+    private readonly IAndroidJNI _androidJNI;
+    private readonly IApplication _application;
 
-    public JniExecutor(IDiagnosticLogger? logger)
+    public JniExecutor(IDiagnosticLogger? logger, IAndroidJNI? androidJNI = null, IApplication? application = null)
     {
         _logger = logger;
+        _androidJNI ??= androidJNI ?? AndroidJNIAdapter.Instance;
+        _application ??= application ?? ApplicationAdapter.Instance;
     }
 
     /// <summary>
     /// Runs a JNI operation that returns a result, waiting for completion with a timeout
     /// </summary>
-    public TResult? Run<TResult>(Func<TResult?> jniOperation)
+    public TResult? Run<TResult>(Func<TResult?> jniOperation, bool? isMainThread = null)
     {
-        if (SentryUnityVersion.IsNewerOrEqualThan("2020"))
+        isMainThread ??= MainThreadData.IsMainThread();
+
+        _logger?.LogDebug("Checking for version");
+        if (SentryUnityVersion.IsNewerOrEqualThan("2020.3", _application))
         {
-            if (!MainThreadData.IsMainThread())
+            _logger?.LogDebug("Is newer");
+            if (isMainThread is not true)
             {
-                AndroidJNI.AttachCurrentThread();
+                _logger?.LogDebug("is non main thread");
+                _androidJNI.AttachCurrentThread();
             }
 
             try
             {
+                _logger?.LogDebug("invoking");
                 return jniOperation.Invoke();
             }
             finally
             {
-                if (!MainThreadData.IsMainThread())
+                _logger?.LogDebug("finally");
+                if (isMainThread is not true)
                 {
-                    AndroidJNI.DetachCurrentThread();
+                    _logger?.LogDebug("still not main thread");
+                    _androidJNI.DetachCurrentThread();
                 }
             }
         }
         else
         {
-            AndroidJNI.AttachCurrentThread();
+            _logger?.LogDebug("else part");
+            _androidJNI.AttachCurrentThread();
             try
             {
+                _logger?.LogDebug("invoking");
                 return jniOperation.Invoke();
             }
             finally
             {
-                AndroidJNI.DetachCurrentThread();
+                _logger?.LogDebug("finally");
+                _androidJNI.DetachCurrentThread();
             }
         }
     }
@@ -58,37 +69,48 @@ internal class JniExecutor
     /// <summary>
     /// Runs a JNI operation with no return value, waiting for completion with a timeout
     /// </summary>
-    public void Run(Action jniOperation)
+    public void Run(Action jniOperation, bool? isMainThread = null)
     {
-        if (SentryUnityVersion.IsNewerOrEqualThan("2020"))
+        isMainThread ??= MainThreadData.IsMainThread();
+
+        _logger?.LogDebug("Checking for version");
+        if (SentryUnityVersion.IsNewerOrEqualThan("2020.3", _application))
         {
-            if (!MainThreadData.IsMainThread())
+            _logger?.LogDebug("Is newer");
+            if (isMainThread is not true)
             {
-                AndroidJNI.AttachCurrentThread();
+                _logger?.LogDebug("is non main thread");
+                _androidJNI.AttachCurrentThread();
             }
 
             try
             {
+                _logger?.LogDebug("invoking");
                 jniOperation.Invoke();
             }
             finally
             {
-                if (!MainThreadData.IsMainThread())
+                _logger?.LogDebug("finally");
+                if (isMainThread is not true)
                 {
-                    AndroidJNI.DetachCurrentThread();
+                    _logger?.LogDebug("still not main thread");
+                    _androidJNI.DetachCurrentThread();
                 }
             }
         }
         else
         {
-            AndroidJNI.AttachCurrentThread();
+            _logger?.LogDebug("else part");
+            _androidJNI.AttachCurrentThread();
             try
             {
+                _logger?.LogDebug("invoking");
                 jniOperation.Invoke();
             }
             finally
             {
-                AndroidJNI.DetachCurrentThread();
+                _logger?.LogDebug("finally");
+                _androidJNI.DetachCurrentThread();
             }
         }
     }
