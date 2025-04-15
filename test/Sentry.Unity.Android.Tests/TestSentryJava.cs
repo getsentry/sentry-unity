@@ -11,9 +11,9 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
 
-    public bool? IsEnabled(TimeSpan timeout) => Enabled;
+    public bool? IsEnabled() => Enabled;
 
-    public void Init(SentryUnityOptions options, TimeSpan timeout) { }
+    public void Init(SentryUnityOptions options) { }
 
     public string? GetInstallationId() => InstallationId;
 
@@ -52,8 +52,4 @@ internal class TestSentryJava : ISentryJava
     public void UnsetUser() { }
 
     public void SetTrace(SentryId traceId, SpanId spanId) { }
-    public void SetLogger(IDiagnosticLogger? optionsDiagnosticLogger)
-    {
-
-    }
 }
