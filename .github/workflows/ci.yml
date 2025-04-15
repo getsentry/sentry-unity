@@ -34,7 +34,7 @@ jobs:
           - target: Linux
             # Build using older Linux version to preserve sdk compatibility with old GLIBC
             # See discussion in https://github.com/getsentry/sentry-unity/issues/1730 for more details
-            host: ubuntu-20.04
+            host: ubuntu-22.04
           - target: Windows
             host: windows-latest
     uses: ./.github/workflows/sdk.yml
