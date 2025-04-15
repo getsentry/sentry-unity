@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When targeting macOS, the SDK no longer fails to sync the scope to native events ([#2104](https://github.com/getsentry/sentry-unity/pull/2104))
+
 ### Features
 
 - When running on Android, Windows or Linux, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#1997](https://github.com/getsentry/sentry-unity/pull/1997), [#2089](https://github.com/getsentry/sentry-unity/pull/2089))
