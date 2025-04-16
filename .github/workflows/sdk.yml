@@ -54,6 +54,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
+          # Ubuntu 22.04 -> 20.04 GLIBC Compatibility Solution
+          sudo apt-get install -y gcc-multilib g++-multilib
+          echo "CFLAGS=-Wl,--hash-style=both -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fstack-protector" >> $GITHUB_ENV
+          echo "LDFLAGS=-Wl,--hash-style=both -Wl,--dynamic-linker=/lib64/ld-linux-x86-64.so.2" >> $GITHUB_ENV
+          echo "CMAKE_FLAGS=-DCMAKE_C_FLAGS=\"-U__GLIBC_MINOR__ -D__GLIBC_MINOR__=26 -fPIC\" -DCMAKE_CXX_FLAGS=\"-U__GLIBC_MINOR__ -D__GLIBC_MINOR__=26 -fPIC\"" >> $GITHUB_ENV
 
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
