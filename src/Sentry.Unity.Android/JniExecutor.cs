@@ -14,10 +14,12 @@ internal class JniExecutor
         _androidJNI ??= androidJNI ?? AndroidJNIAdapter.Instance;
     }
 
-    public TResult? Run<TResult>(Func<TResult?> jniOperation, bool? isMainThread = null)
+    public TResult? Run<TResult>(Func<TResult?> jniOperation) => Run(jniOperation, MainThreadData.IsMainThread());
+
+    // Internal for testing
+    internal TResult? Run<TResult>(Func<TResult?> jniOperation, bool isMainThread)
     {
-        isMainThread ??= MainThreadData.IsMainThread();
-        if (isMainThread is not true)
+        if (isMainThread is false)
         {
             _androidJNI.AttachCurrentThread();
         }
@@ -26,19 +28,27 @@ internal class JniExecutor
         {
             return jniOperation.Invoke();
         }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Failed to execute operation");
+        }
         finally
         {
-            if (isMainThread is not true)
+            if (isMainThread is false)
             {
                 _androidJNI.DetachCurrentThread();
             }
         }
+
+        return default;
     }
 
-    public void Run(Action jniOperation, bool? isMainThread = null)
+    public void Run(Action jniOperation) => Run(jniOperation, MainThreadData.IsMainThread());
+
+    // Internal for testing
+    internal void Run(Action jniOperation, bool isMainThread)
     {
-        isMainThread ??= MainThreadData.IsMainThread();
-        if (isMainThread is not true)
+        if (isMainThread is false)
         {
             _androidJNI.AttachCurrentThread();
         }
@@ -49,7 +59,7 @@ internal class JniExecutor
         }
         finally
         {
-            if (isMainThread is not true)
+            if (isMainThread is false)
             {
                 _androidJNI.DetachCurrentThread();
             }

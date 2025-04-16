@@ -29,7 +29,7 @@ internal class AndroidOptionsConfiguration : AndroidJavaProxy
         }
         catch (Exception e)
         {
-            _logger?.LogError(e, "Error invoking {0} ’.", methodName);
+            _logger?.LogError(e, "Error invoking '{0}'.", methodName);
         }
         return null;
     }

@@ -49,7 +49,7 @@ internal interface ISentryJava
 /// <see href="https://github.com/getsentry/sentry-java"/>
 internal class SentryJava : ISentryJava
 {
-    private readonly JniExecutor? _jniExecutor;
+    private readonly JniExecutor _jniExecutor;
     private IDiagnosticLogger? _logger;
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
@@ -71,7 +71,7 @@ internal class SentryJava : ISentryJava
 
     public void Init(SentryUnityOptions options)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
             using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
@@ -116,7 +116,7 @@ internal class SentryJava : ISentryJava
 
     public string? GetInstallationId()
     {
-        return _jniExecutor?.Run(() =>
+        return _jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
@@ -137,7 +137,7 @@ internal class SentryJava : ISentryJava
     /// </returns>
     public bool? CrashedLastRun()
     {
-        return _jniExecutor?.Run(() =>
+        return _jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             using var jo = sentry.CallStatic<AndroidJavaObject>("isCrashedLastRun");
@@ -171,7 +171,7 @@ internal class SentryJava : ISentryJava
         bool? GpuMultiThreadedRendering,
         string? GpuGraphicsShaderLevel)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
             gpu.SetIfNotNull("name", GpuName);
@@ -208,7 +208,7 @@ internal class SentryJava : ISentryJava
 
     public void AddBreadCrumb(Breadcrumb breadcrumb)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
@@ -223,7 +223,7 @@ internal class SentryJava : ISentryJava
 
     public void SetExtra(string key, string? value)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setExtra", key, value);
@@ -232,7 +232,7 @@ internal class SentryJava : ISentryJava
 
     public void SetTag(string key, string? value)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setTag", key, value);
@@ -241,7 +241,7 @@ internal class SentryJava : ISentryJava
 
     public void UnsetTag(string key)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("removeTag", key);
@@ -250,7 +250,7 @@ internal class SentryJava : ISentryJava
 
     public void SetUser(SentryUser user)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             AndroidJavaObject? javaUser = null;
             try
@@ -272,7 +272,7 @@ internal class SentryJava : ISentryJava
 
     public void UnsetUser()
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setUser", null);
@@ -281,7 +281,7 @@ internal class SentryJava : ISentryJava
 
     public void SetTrace(SentryId traceId, SpanId spanId)
     {
-        _jniExecutor?.Run(() =>
+        _jniExecutor.Run(() =>
         {
             using var sentry = GetInternalSentryJava();
             // We have to explicitly cast to `(Double?)`
