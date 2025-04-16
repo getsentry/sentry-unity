@@ -7,6 +7,9 @@ on:
       target:
         required: true
         type: string
+      container_image:
+        required: false
+        type: string
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -15,6 +18,7 @@ env:
 jobs:
   build:
     runs-on: ${{ inputs.runsOn }}
+    container: ${{ inputs.container_image != '' && format('{0}', inputs.container_image) || null }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
@@ -50,13 +54,12 @@ jobs:
           key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
       - name: Installing Linux Dependencies
-        if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ inputs.target == 'Linux'}}
         run: |
           sudo apt-get update
           sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
       - name: Build
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
