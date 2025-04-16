@@ -57,7 +57,7 @@ jobs:
         if: ${{ inputs.target == 'Linux'}}
         run: |
           apt-get update
-          apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
+          apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev
 
       - name: Build
         run: |
