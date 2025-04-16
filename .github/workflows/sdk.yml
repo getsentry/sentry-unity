@@ -56,8 +56,8 @@ jobs:
       - name: Installing Linux Dependencies
         if: ${{ inputs.target == 'Linux'}}
         run: |
-          sudo apt-get update
-          sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
+          apt-get update
+          apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
 
       - name: Build
         run: |
