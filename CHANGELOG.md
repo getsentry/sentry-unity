@@ -8,6 +8,8 @@
 
 ### Features
 
+- When running on Windows or Linux, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#2089](https://github.com/getsentry/sentry-unity/pull/2089)) 
+- When running on Android, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#1997](https://github.com/getsentry/sentry-unity/pull/1997))
 - Drastically improved performance of scope sync when targeting Android ([#2107](https://github.com/getsentry/sentry-unity/pull/2107))
 - When running on Android, Windows or Linux, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#1997](https://github.com/getsentry/sentry-unity/pull/1997), [#2089](https://github.com/getsentry/sentry-unity/pull/2089))
 - The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
