@@ -75,18 +75,14 @@ jobs:
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         run: |
           apt-get update
-          apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake
+          apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
+          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+          echo "/usr/share/dotnet" >> $GITHUB_PATH
         env:
           DEBIAN_FRONTEND: noninteractive
 
-      - name: Build for Linux
-        if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
-          ./scripts/build-linux-sdk.sh modules/sentry-native package-dev/Plugins/Linux/Sentry
-
-      - name: Run MSBuild
-        if: ${{ inputs.target != 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+      - name: Build
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
