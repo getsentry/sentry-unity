@@ -4,11 +4,16 @@ using UnityEngine;
 
 namespace Sentry.Unity;
 
+internal interface ISentryMonoBehaviour
+{
+    event Action? ApplicationResuming;
+}
+
 /// <summary>
 /// Singleton and DontDestroyOnLoad setup.
 /// </summary>
 [AddComponentMenu("")] // Hides it from being added as a component in the inspector
-public partial class SentryMonoBehaviour : MonoBehaviour
+public partial class SentryMonoBehaviour : MonoBehaviour, ISentryMonoBehaviour
 {
     private static SentryMonoBehaviour? _instance;
     public static SentryMonoBehaviour Instance
