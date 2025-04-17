@@ -54,62 +54,34 @@ internal static class CoreTab
         EditorGUILayout.Space();
 
         {
-            options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
-                                                        "same type if they are more frequent than once per second."),
-                options.EnableLogDebouncing);
-
-            options.DebounceTimeLog = EditorGUILayout.IntField(
-                new GUIContent("Log Debounce [ms]", "The time that has to pass between events of " +
-                                                    "LogType.Log before the SDK sends it again."),
-                options.DebounceTimeLog);
-            options.DebounceTimeLog = Math.Max(0, options.DebounceTimeLog);
-
-            options.DebounceTimeWarning = EditorGUILayout.IntField(
-                new GUIContent("Warning Debounce [ms]", "The time that has to pass between events of " +
-                                                        "LogType.Warning before the SDK sends it again."),
-                options.DebounceTimeWarning);
-            options.DebounceTimeWarning = Math.Max(0, options.DebounceTimeWarning);
-
-            options.DebounceTimeError = EditorGUILayout.IntField(
-                new GUIContent("Error Debounce [ms]", "The time that has to pass between events of " +
-                                                      "LogType.Assert, LogType.Exception and LogType.Error before " +
-                                                      "the SDK sends it again."),
-                options.DebounceTimeError);
-            options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
-
-            EditorGUILayout.EndToggleGroup();
-        }
-
-        EditorGUILayout.Space();
-        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-        EditorGUILayout.Space();
-
-        {
             GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
 
-            options.TracesSampleRate = EditorGUILayout.Slider(
+            var sampleRate = EditorGUILayout.FloatField(
                 new GUIContent("Traces Sample Rate", "Indicates the percentage of transactions that are " +
                                                      "captured. Setting this to 0 discards all trace data. " +
                                                      "Setting this to 1.0 captures all."),
-                (float)options.TracesSampleRate, 0.0f, 1.0f);
+                (float)options.TracesSampleRate);
+            options.TracesSampleRate = Mathf.Clamp01(sampleRate);
 
             EditorGUI.BeginDisabledGroup(options.TracesSampleRate <= 0);
 
+            EditorGUILayout.Space();
+            GUILayout.Label("Auto Instrumentation", EditorStyles.boldLabel);
+
             options.AutoStartupTraces = EditorGUILayout.Toggle(
-                new GUIContent("Auto Startup Traces ", "Whether the SDK should automatically create " +
+                new GUIContent("Startup Traces ", "Whether the SDK should automatically create " +
                                                        "traces during startup. This integration is currently " +
                                                        "unavailable on WebGL."),
                 options.AutoStartupTraces);
 
             options.AutoSceneLoadTraces = EditorGUILayout.Toggle(
-                new GUIContent("Auto Scene Traces ", "Whether the SDK should automatically create traces " +
+                new GUIContent("Scene Traces ", "Whether the SDK should automatically create traces " +
                                                      "during scene loading. Requires Unity 2020.3 or newer."),
                 options.AutoSceneLoadTraces);
 
             EditorGUILayout.Space();
 
-            GUILayout.Label("Auto Instrumentation - Experimental", EditorStyles.boldLabel);
+            GUILayout.Label("Instrumentation through IL Weaving", EditorStyles.boldLabel);
 
             EditorGUILayout.HelpBox("The SDK will modify the compiled assembly during a post build step " +
                                     "to create transaction and spans automatically.", MessageType.Info);
