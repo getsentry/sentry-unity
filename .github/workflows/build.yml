@@ -55,9 +55,6 @@ jobs:
       - name: Install .NET SDK
         if: runner.os != 'Windows'
         uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            9.0.100
         
       - name: Install Android dotnet workflow
         run: dotnet workload install android --temp-dir "${{ runner.temp }}"
