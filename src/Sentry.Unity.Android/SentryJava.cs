@@ -30,7 +30,7 @@ internal interface ISentryJava
     public bool IsSentryJavaPresent();
 
     // Methods for the ScopeObserver
-    public void AddBreadCrumb(Breadcrumb breadcrumb);
+    public void AddBreadcrumb(Breadcrumb breadcrumb);
     public void SetExtra(string key, string? value);
     public void SetTag(string key, string? value);
     public void UnsetTag(string key);
@@ -49,29 +49,43 @@ internal interface ISentryJava
 /// <see href="https://github.com/getsentry/sentry-java"/>
 internal class SentryJava : ISentryJava
 {
-    private readonly JniExecutor _jniExecutor;
+    private readonly IAndroidJNI _androidJNI;
     private IDiagnosticLogger? _logger;
-    private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
+    protected virtual AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
-    public SentryJava(IDiagnosticLogger? logger)
+    public SentryJava(IDiagnosticLogger? logger, IAndroidJNI? androidJNI = null)
     {
         _logger = logger;
-        _jniExecutor = new JniExecutor(_logger);
+        _androidJNI ??= androidJNI ?? AndroidJNIAdapter.Instance;
     }
 
     public bool? IsEnabled()
     {
-        return _jniExecutor?.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             return sentry.CallStatic<bool>("isEnabled");
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.IsEnabled' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
+
+        return null;
     }
 
     public void Init(SentryUnityOptions options)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
             using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
@@ -111,18 +125,38 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setAnrEnabled", false);
                 androidOptions.Call("setEnableScopePersistence", false);
             }, options.DiagnosticLogger));
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.Init' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public string? GetInstallationId()
     {
-        return _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
             using var options = hub?.Call<AndroidJavaObject>("getOptions");
             return options?.Call<string>("getDistinctId");
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.GetInstallationId' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -137,21 +171,43 @@ internal class SentryJava : ISentryJava
     /// </returns>
     public bool? CrashedLastRun()
     {
-        return _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             using var jo = sentry.CallStatic<AndroidJavaObject>("isCrashedLastRun");
             return jo?.Call<bool>("booleanValue");
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.CrashedLastRun' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
+
+        return null;
     }
 
     public void Close()
     {
-        _jniExecutor?.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("close");
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.Close' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public void WriteScope(
@@ -171,7 +227,9 @@ internal class SentryJava : ISentryJava
         bool? GpuMultiThreadedRendering,
         string? GpuGraphicsShaderLevel)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
             gpu.SetIfNotNull("name", GpuName);
@@ -189,7 +247,15 @@ internal class SentryJava : ISentryJava
                 using var contexts = scope.Call<AndroidJavaObject>("getContexts");
                 contexts.Call("setGpu", gpu);
             }));
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.WriteScope' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public bool IsSentryJavaPresent()
@@ -206,9 +272,11 @@ internal class SentryJava : ISentryJava
         return true;
     }
 
-    public void AddBreadCrumb(Breadcrumb breadcrumb)
+    public void AddBreadcrumb(Breadcrumb breadcrumb)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             using var javaBreadcrumb = new AndroidJavaObject("io.sentry.Breadcrumb");
@@ -218,75 +286,137 @@ internal class SentryJava : ISentryJava
             using var javaLevel = breadcrumb.Level.ToJavaSentryLevel();
             javaBreadcrumb.Set("level", javaLevel);
             sentry.CallStatic("addBreadcrumb", javaBreadcrumb, null);
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.AddBreadcrumb' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public void SetExtra(string key, string? value)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setExtra", key, value);
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.SetExtra' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public void SetTag(string key, string? value)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setTag", key, value);
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.SetTag' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public void UnsetTag(string key)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("removeTag", key);
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.UnsetTag' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public void SetUser(SentryUser user)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+        AndroidJavaObject? javaUser = null;
+
+        try
         {
-            AndroidJavaObject? javaUser = null;
-            try
-            {
-                javaUser = new AndroidJavaObject("io.sentry.protocol.User");
-                javaUser.Set("email", user.Email);
-                javaUser.Set("id", user.Id);
-                javaUser.Set("username", user.Username);
-                javaUser.Set("ipAddress", user.IpAddress);
-                using var sentry = GetSentryJava();
-                sentry.CallStatic("setUser", javaUser);
-            }
-            finally
-            {
-                javaUser?.Dispose();
-            }
-        });
+            javaUser = new AndroidJavaObject("io.sentry.protocol.User");
+            javaUser.Set("email", user.Email);
+            javaUser.Set("id", user.Id);
+            javaUser.Set("username", user.Username);
+            javaUser.Set("ipAddress", user.IpAddress);
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("setUser", javaUser);
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.SetUser' failed.");
+        }
+        finally
+        {
+            javaUser?.Dispose();
+            HandleJniThreadDetachment();
+        }
     }
 
     public void UnsetUser()
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetSentryJava();
             sentry.CallStatic("setUser", null);
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.UnsetUser' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     public void SetTrace(SentryId traceId, SpanId spanId)
     {
-        _jniExecutor.Run(() =>
+        HandleJniThreadAttachment();
+
+        try
         {
             using var sentry = GetInternalSentryJava();
             // We have to explicitly cast to `(Double?)`
             sentry.CallStatic("setTrace", traceId.ToString(), spanId.ToString(), (Double?)null, (Double?)null);
-        });
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.SetTrace' failed.");
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
+        }
     }
 
     // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
@@ -299,6 +429,24 @@ internal class SentryJava : ISentryJava
         SentryLevel.Warning => "WARNING",
         _ => "DEBUG"
     };
+
+    internal void HandleJniThreadAttachment(bool? isMainThread = null)
+    {
+        isMainThread ??= MainThreadData.IsMainThread();
+        if (isMainThread is false)
+        {
+            _androidJNI.AttachCurrentThread();
+        }
+    }
+
+    internal void HandleJniThreadDetachment(bool? isMainThread = null)
+    {
+        isMainThread ??= MainThreadData.IsMainThread();
+        if (isMainThread is false)
+        {
+            _androidJNI.DetachCurrentThread();
+        }
+    }
 }
 
 internal static class AndroidJavaObjectExtension

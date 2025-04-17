@@ -17,7 +17,7 @@ internal class AndroidJavaScopeObserver : ScopeObserver
     }
 
     public override void AddBreadcrumbImpl(Breadcrumb breadcrumb) =>
-        _sentryJava.AddBreadCrumb(breadcrumb);
+        _sentryJava.AddBreadcrumb(breadcrumb);
 
     public override void SetExtraImpl(string key, string? value) =>
         _sentryJava.SetExtra(key, value);

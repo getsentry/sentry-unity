@@ -40,7 +40,7 @@ internal class TestSentryJava : ISentryJava
     { }
 
     public bool IsSentryJavaPresent() => SentryPresent;
-    public void AddBreadCrumb(Breadcrumb breadcrumb) { }
+    public void AddBreadcrumb(Breadcrumb breadcrumb) { }
 
     public void SetExtra(string key, string? value) { }
     public void SetTag(string key, string? value) { }
