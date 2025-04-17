@@ -73,10 +73,12 @@ jobs:
 
       - name: Installing Linux Dependencies
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+        shell: bash
         run: |
           apt-get update
           apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
-          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+          set -eo pipefail
+          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
           echo "/usr/share/dotnet" >> $GITHUB_PATH
         env:
           DEBIAN_FRONTEND: noninteractive
