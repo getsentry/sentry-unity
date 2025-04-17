@@ -56,28 +56,32 @@ internal static class CoreTab
         {
             GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
 
-            options.TracesSampleRate = EditorGUILayout.Slider(
+            var sampleRate = EditorGUILayout.FloatField(
                 new GUIContent("Traces Sample Rate", "Indicates the percentage of transactions that are " +
                                                      "captured. Setting this to 0 discards all trace data. " +
                                                      "Setting this to 1.0 captures all."),
-                (float)options.TracesSampleRate, 0.0f, 1.0f);
+                (float)options.TracesSampleRate);
+            options.TracesSampleRate = Mathf.Clamp01(sampleRate);
 
             EditorGUI.BeginDisabledGroup(options.TracesSampleRate <= 0);
 
+            EditorGUILayout.Space();
+            GUILayout.Label("Auto Instrumentation", EditorStyles.boldLabel);
+
             options.AutoStartupTraces = EditorGUILayout.Toggle(
-                new GUIContent("Auto Startup Traces ", "Whether the SDK should automatically create " +
+                new GUIContent("Startup Traces ", "Whether the SDK should automatically create " +
                                                        "traces during startup. This integration is currently " +
                                                        "unavailable on WebGL."),
                 options.AutoStartupTraces);
 
             options.AutoSceneLoadTraces = EditorGUILayout.Toggle(
-                new GUIContent("Auto Scene Traces ", "Whether the SDK should automatically create traces " +
+                new GUIContent("Scene Traces ", "Whether the SDK should automatically create traces " +
                                                      "during scene loading. Requires Unity 2020.3 or newer."),
                 options.AutoSceneLoadTraces);
 
             EditorGUILayout.Space();
 
-            GUILayout.Label("Auto Instrumentation - Experimental", EditorStyles.boldLabel);
+            GUILayout.Label("Instrumentation through IL Weaving", EditorStyles.boldLabel);
 
             EditorGUILayout.HelpBox("The SDK will modify the compiled assembly during a post build step " +
                                     "to create transaction and spans automatically.", MessageType.Info);
