@@ -9,7 +9,7 @@ internal class TraceGenerationIntegration : ISdkIntegration
     private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
 
     public TraceGenerationIntegration(SentryMonoBehaviour sentryMonoBehaviour) : this(sentryMonoBehaviour, SceneManagerAdapter.Instance)
-    {}
+    { }
 
     internal TraceGenerationIntegration(ISentryMonoBehaviour sentryMonoBehaviour, ISceneManager sceneManager)
     {
