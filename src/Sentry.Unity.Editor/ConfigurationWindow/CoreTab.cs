@@ -54,38 +54,6 @@ internal static class CoreTab
         EditorGUILayout.Space();
 
         {
-            options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
-                                                        "same type if they are more frequent than once per second."),
-                options.EnableLogDebouncing);
-
-            options.DebounceTimeLog = EditorGUILayout.IntField(
-                new GUIContent("Log Debounce [ms]", "The time that has to pass between events of " +
-                                                    "LogType.Log before the SDK sends it again."),
-                options.DebounceTimeLog);
-            options.DebounceTimeLog = Math.Max(0, options.DebounceTimeLog);
-
-            options.DebounceTimeWarning = EditorGUILayout.IntField(
-                new GUIContent("Warning Debounce [ms]", "The time that has to pass between events of " +
-                                                        "LogType.Warning before the SDK sends it again."),
-                options.DebounceTimeWarning);
-            options.DebounceTimeWarning = Math.Max(0, options.DebounceTimeWarning);
-
-            options.DebounceTimeError = EditorGUILayout.IntField(
-                new GUIContent("Error Debounce [ms]", "The time that has to pass between events of " +
-                                                      "LogType.Assert, LogType.Exception and LogType.Error before " +
-                                                      "the SDK sends it again."),
-                options.DebounceTimeError);
-            options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
-
-            EditorGUILayout.EndToggleGroup();
-        }
-
-        EditorGUILayout.Space();
-        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-        EditorGUILayout.Space();
-
-        {
             GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
 
             options.TracesSampleRate = EditorGUILayout.Slider(
