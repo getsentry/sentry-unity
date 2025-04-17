@@ -55,6 +55,8 @@ jobs:
       - name: Install .NET SDK
         if: runner.os != 'Windows'
         uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: src/sentry-dotnet/global.json
         
       - name: Install Android dotnet workflow
         run: dotnet workload install android --temp-dir "${{ runner.temp }}"
