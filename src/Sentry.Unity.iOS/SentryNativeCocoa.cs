@@ -52,6 +52,8 @@ public static class SentryNativeCocoa
             options.ScopeObserver = new NativeScopeObserver("macOS", options);
         }
 
+        SentryCocoaBridgeProxy.SetSdkName(); // Since we're not building the SDK we have to overwrite the name here
+
         options.NativeContextWriter = new NativeContextWriter();
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>

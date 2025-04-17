@@ -21,7 +21,7 @@ internal static class NativeOptions
 
 static SentryOptions* getSentryOptions()
 {{
-    [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
+    SentryNativeBridgeSetSdkName();
 
     NSDictionary* optionsDictionary = @{{
         @""dsn"" : @""{options.Dsn}"",
