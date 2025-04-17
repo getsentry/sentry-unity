@@ -7,6 +7,10 @@ on:
       target:
         required: true
         type: string
+      container:
+        required: false
+        type: string
+        default: ''
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -15,8 +19,26 @@ env:
 jobs:
   build:
     runs-on: ${{ inputs.runsOn }}
+    container: ${{ inputs.container }}
     timeout-minutes: 30
     steps:
+      - name: Set up Git in container
+        if: ${{ inputs.container != '' }}
+        # ubuntu:20.04 does not have git installed by default. Make it available
+        # for actions/checkout to get a proper clone instead of downloading a
+        # tarball using the GitHub REST API. This ensures that git submodule
+        # commands work as expected.
+        #
+        # Furthermore, add an exception for the workspace directory to avoid the
+        # following git error (runner host vs. container):
+        # fatal: detected dubious ownership in repository at '/__w/sentry-unity/sentry-unity'
+        run: |
+          apt-get update
+          apt-get install -y git
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
       - uses: actions/checkout@v3
 
       - name: Select submodules
@@ -52,8 +74,12 @@ jobs:
       - name: Installing Linux Dependencies
         if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         run: |
-          sudo apt-get update
-          sudo apt-get install zlib1g-dev libcurl4-openssl-dev libssl-dev
+          apt-get update
+          apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
+          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+          echo "/usr/share/dotnet" >> $GITHUB_PATH
+        env:
+          DEBIAN_FRONTEND: noninteractive
 
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
