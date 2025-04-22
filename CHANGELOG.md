@@ -8,8 +8,7 @@
 
 ### Features
 
-- When running on Windows or Linux, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#2089](https://github.com/getsentry/sentry-unity/pull/2089)) 
-- When running on Android, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#1997](https://github.com/getsentry/sentry-unity/pull/1997))
+- The SDK now links errors and events (managed and native errors) via `trace ID`. This allows you to correlate events captured from different layers of your game ([#1997](https://github.com/getsentry/sentry-unity/pull/1997), [#2089](https://github.com/getsentry/sentry-unity/pull/2089), [#2106](https://github.com/getsentry/sentry-unity/pull/2106))
 - Drastically improved performance of scope sync when targeting Android ([#2107](https://github.com/getsentry/sentry-unity/pull/2107))
 - When running on Android, Windows or Linux, the SDK now links errors and events originating on different layers (managed, native errors) via `trace ID` ([#1997](https://github.com/getsentry/sentry-unity/pull/1997), [#2089](https://github.com/getsentry/sentry-unity/pull/2089))
 - The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
@@ -17,9 +16,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.45.0 to v8.49.0 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063), [#2071](https://github.com/getsentry/sentry-unity/pull/2071), [#2105](https://github.com/getsentry/sentry-unity/pull/2105))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8490)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.49.0)
+- Bump Cocoa SDK from v8.45.0 to v8.49.1 ([#2063](https://github.com/getsentry/sentry-unity/pull/2063), [#2071](https://github.com/getsentry/sentry-unity/pull/2071), [#2105](https://github.com/getsentry/sentry-unity/pull/2105), [#2106](https://github.com/getsentry/sentry-unity/pull/2106))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8491)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.45.0...8.49.1)
 - Bump Java SDK from v8.3.0 to v8.8.0 ([#2066](https://github.com/getsentry/sentry-unity/pull/2066), [#2075](https://github.com/getsentry/sentry-unity/pull/2075), [#2092](https://github.com/getsentry/sentry-unity/pull/2092), [#2103](https://github.com/getsentry/sentry-unity/pull/2103), [#2111](https://github.com/getsentry/sentry-unity/pull/2111))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#880)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.3.0...8.8.0)
