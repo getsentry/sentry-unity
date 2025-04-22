@@ -31,7 +31,7 @@ jobs:
 
       - name: iOS smoke test
         run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}" -iOSMinVersion "16.1"
-        timeout-minutes: 10
+        timeout-minutes: 20
     
       - name: Upload integration-test project on failure
         if: ${{ failure() }}
