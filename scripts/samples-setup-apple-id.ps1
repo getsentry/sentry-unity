@@ -3,51 +3,13 @@ $ErrorActionPreference = "Stop"
 
 Write-Output "Setting up Apple Developer Team ID from environment variable"
 
-$appleId = $Env:APPLE_ID
-
-if (-not $appleId)
+if (-not $Env:APPLE_ID)
 {
-    # Check if running on macOS
-    if ($IsOSX -or $IsMacOS -or $PSVersionTable.OS -like "*Darwin*")
-    {
-        Write-Output "APPLE_ID not set, attempting to detect from macOS system..."
-        
-        try {
-            # Try to get Team ID from code signing identities
-            $codesigningOutput = & xcrun security find-identity -v -p codesigning 2>$null
-            if ($codesigningOutput) {
-                # Extract Team ID from output using regex pattern matching
-                $match = [regex]::Match($codesigningOutput, '\(([A-Z0-9]{10})\)')
-                if ($match.Success) {
-                    $appleId = $match.Groups[1].Value
-                    Write-Output "Found Apple Developer Team ID: $appleId from code signing identity"
-                }
-            }
-            
-            # If first method failed, try another approach with certificates
-            if (-not $appleId) {
-                $certOutput = & security find-certificate -a -c "Apple Development" -p 2>$null | grep "OU=" 
-                if ($certOutput) {
-                    $match = [regex]::Match($certOutput, 'OU=([A-Z0-9]{10})')
-                    if ($match.Success) {
-                        $appleId = $match.Groups[1].Value
-                        Write-Output "Found Apple Developer Team ID: $appleId from certificate"
-                    }
-                }
-            }
-        }
-        catch {
-            Write-Output "Error attempting to detect Apple Developer Team ID: $_"
-        }
-    }
-    
-    if (-not $appleId)
-    {
-        Write-Error "APPLE_ID environment variable is not set and couldn't be detected automatically. Skipping..."
-        exit
-    }
+    Write-Error "APPLE_ID environment variable is not set. Skipping..."
+    exit
 }
 
+$appleId = $Env:APPLE_ID
 $projectSettingsPath = "$PSScriptRoot/../samples/unity-of-bugs/ProjectSettings/ProjectSettings.asset"
 if (-not (Test-Path -Path $projectSettingsPath)) 
 {
