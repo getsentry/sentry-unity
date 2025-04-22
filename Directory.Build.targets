@@ -571,17 +571,17 @@ void PrintFailedTests(XElement element)
   <!-- Checks if the environment variable 'SENTRY_AUTH_TOKEN' has been set and creates the SentryCliOptions.asset for the sample project
        This is meant for developers - so they don't have to configure the CLI options after each clean checkout (or git clean).
        Gets automatically run after 'DownloadNativeSDKs'
-       dotnet msbuild /t:SetupSampleSentryCliOptions src/Sentry.Unity -->
-  <Target Name="SetupSampleSentryCliOptions" AfterTargets="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(SENTRY_AUTH_TOKEN)' != ''">
+       dotnet msbuild /t:SamplesSetupCliOptions src/Sentry.Unity -->
+  <Target Name="SamplesSetupCliOptions" AfterTargets="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(SENTRY_AUTH_TOKEN)' != ''">
     <Message Importance="High" Text="Found environment variable 'SENTRY_AUTH_TOKEN'. Creating Sentry CLI options for sample project. " />
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/samples-setup-cli-options.ps1&quot;"/>
   </Target>
 
-    <!-- Checks if the environment variable 'SENTRY_AUTH_TOKEN' has been set and creates the SentryCliOptions.asset for the sample project
-       This is meant for developers - so they don't have to configure the CLI options after each clean checkout (or git clean).
-       Gets automatically run after 'DownloadNativeSDKs'
-       dotnet msbuild /t:SetupSampleSentryCliOptions src/Sentry.Unity -->
-  <Target Name="SetupSampleAppleId" AfterTargets="SetupSampleSentryCliOptions" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(APPLE_ID)' != ''">
+    <!-- Checks if the environment variable 'APPLE_ID' has been set and modifies the ProjectSettings.asset for the sample project
+       This is meant for developers - so they don't have to configure the playersettings after each clean checkout (or git clean).
+       Gets automatically run after 'SamplesSetupCliOptions'
+       dotnet msbuild /t:SamplesSetupAppleId src/Sentry.Unity -->
+  <Target Name="SamplesSetupAppleId" AfterTargets="SetupSampleSentryCliOptions" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(APPLE_ID)' != ''">
     <Message Importance="High" Text="Found environment variable 'APPLE_ID'. Setting Apple ID for sample project. " />
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/samples-setup-apple-id.ps1&quot;"/>
   </Target>
