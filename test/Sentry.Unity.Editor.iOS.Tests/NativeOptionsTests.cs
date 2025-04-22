@@ -97,7 +97,7 @@ public class NativeOptionsTests
         Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
 
         var nativeOptions = File.ReadAllText(testOptionsFileName);
-        StringAssert.Contains("SentryNativeBridgeSetSdkName();", nativeOptions);
+        StringAssert.Contains("sentry.cocoa.unity", nativeOptions);
 
         File.Delete(testOptionsFileName);
     }
