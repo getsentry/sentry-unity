@@ -22,13 +22,15 @@ internal class TraceGenerationIntegration : ISdkIntegration
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
             options.DiagnosticLogger?.LogDebug("Application resumed. Creating new Trace.");
-            SentrySdk.SetTrace(SentryId.Create(), SpanId.Create());
+            hub.ConfigureScope(scope =>
+                scope.SetPropagationContext(new SentryPropagationContext(SentryId.Create(), SpanId.Create())));
         };
 
         _sceneManager.ActiveSceneChanged += (_, _) =>
         {
             options.DiagnosticLogger?.LogDebug("Active Scene changed. Creating new Trace.");
-            SentrySdk.SetTrace(SentryId.Create(), SpanId.Create());
+            hub.ConfigureScope(scope =>
+                scope.SetPropagationContext(new SentryPropagationContext(SentryId.Create(), SpanId.Create())));
         };
     }
 }
