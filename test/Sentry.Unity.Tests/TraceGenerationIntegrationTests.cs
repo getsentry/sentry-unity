@@ -56,12 +56,15 @@ public class TraceGenerationIntegrationTests
         // Arrange
         var sut = _fixture.GetSut();
         sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+        var initialCallsCount = _fixture.TestHub.ConfigureScopeCalls.Count;
 
         // Act
         _fixture.SentryMonoBehaviour.ResumeApplication();
 
         // Assert
-        var configureScope = _fixture.TestHub.ConfigureScopeCalls.Single();
+        // Calling 'Register' already generated a trace, so we expect 1+1 calls to ConfigureScope
+        Assert.AreEqual(initialCallsCount + 1, _fixture.TestHub.ConfigureScopeCalls.Count);
+        var configureScope = _fixture.TestHub.ConfigureScopeCalls.Last();
         var scope = new Scope(_fixture.SentryOptions);
         var initialPropagationContext = scope.PropagationContext;
         configureScope(scope);
@@ -75,12 +78,15 @@ public class TraceGenerationIntegrationTests
         // Arrange
         var sut = _fixture.GetSut();
         sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+        var initialCallsCount = _fixture.TestHub.ConfigureScopeCalls.Count;
 
         // Act
         _fixture.SceneManager.OnActiveSceneChanged(new SceneAdapter("from scene name"), new SceneAdapter("to scene name"));
 
         // Assert
-        var configureScope = _fixture.TestHub.ConfigureScopeCalls.Single();
+        // Calling 'Register' already generated a trace, so we expect 1+1 calls to ConfigureScope
+        Assert.AreEqual(initialCallsCount + 1, _fixture.TestHub.ConfigureScopeCalls.Count);
+        var configureScope = _fixture.TestHub.ConfigureScopeCalls.Last();
         var scope = new Scope(_fixture.SentryOptions);
         var initialPropagationContext = scope.PropagationContext;
         configureScope(scope);
