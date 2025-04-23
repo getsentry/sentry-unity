@@ -3,7 +3,7 @@ using Sentry.Integrations;
 
 namespace Sentry.Unity.Integrations;
 
-internal class TraceGenerationIntegration : ISdkIntegration
+internal sealed class TraceGenerationIntegration : ISdkIntegration
 {
     private readonly ISceneManager _sceneManager;
     private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
