@@ -33,6 +33,24 @@ public class TraceGenerationIntegrationTests
     }
 
     [Test]
+    public void TraceGeneration_OnRegister_GeneratesInitialTrace()
+    {
+        // Arrange
+        var sut = _fixture.GetSut();
+        
+        // Act
+        sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+        
+        // Assert
+        var configureScope = _fixture.TestHub.ConfigureScopeCalls.Single();
+        var scope = new Scope(_fixture.SentryOptions);
+        var initialPropagationContext = scope.PropagationContext;
+        configureScope(scope);
+        
+        Assert.AreNotEqual(initialPropagationContext, scope.PropagationContext);
+    }
+
+    [Test]
     public void TraceGeneration_OnApplicationResume_GeneratesNewTrace()
     {
         // Arrange

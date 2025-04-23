@@ -19,6 +19,9 @@ internal class TraceGenerationIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions options)
     {
+        hub.ConfigureScope(scope =>
+            scope.SetPropagationContext(new SentryPropagationContext(SentryId.Create(), SpanId.Create())));
+
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
             options.DiagnosticLogger?.LogDebug("Application resumed. Creating new Trace.");
