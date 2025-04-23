@@ -8,6 +8,8 @@ void SentryNativeBridgeOptionsSetString(void *options, const char *name, const c
 void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }
 int SentryNativeBridgeStartWithOptions(void *options) { return 0; }
 
+void SentryNativeBridgeSetSdkName() { }
+
 int SentryNativeBridgeCrashedLastRun() { return 0; }
 
 void SentryNativeBridgeClose() { }
