@@ -8,7 +8,7 @@
 
 ### Features
 
-- The SDK now recreates a new trace based on app focus and active scene changes. ([#2123](https://github.com/getsentry/sentry-unity/pull/2123))
+- The trace used to connect errors on different layers of your game now gets regenerated every time the aspp gains focus again, or the active scene changes ([#2123](https://github.com/getsentry/sentry-unity/pull/2123))
 - The SDK now links errors and events (managed and native errors) via `trace ID`. This allows you to correlate events captured from different layers of your game ([#1997](https://github.com/getsentry/sentry-unity/pull/1997), [#2089](https://github.com/getsentry/sentry-unity/pull/2089), [#2106](https://github.com/getsentry/sentry-unity/pull/2106))
 - Drastically improved performance of scope sync when targeting Android ([#2107](https://github.com/getsentry/sentry-unity/pull/2107))
 - The SDK now reports the game's name as part of the app context ([2083](https://github.com/getsentry/sentry-unity/pull/2083))
