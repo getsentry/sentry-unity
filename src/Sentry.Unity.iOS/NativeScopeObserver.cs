@@ -26,10 +26,8 @@ public class NativeScopeObserver : ScopeObserver
 
     public override void UnsetUserImpl() => SentryCocoaBridgeProxy.UnsetUser();
 
-    public override void SetTraceImpl(SentryId traceId, SpanId spanId)
-    {
-        // TODO: Needs to be implemented
-    }
+    public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
+        SentryCocoaBridgeProxy.SetTrace(traceId.ToString(), spanId.ToString());
 
     internal static string GetTimestamp(DateTimeOffset timestamp) =>
         // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.
