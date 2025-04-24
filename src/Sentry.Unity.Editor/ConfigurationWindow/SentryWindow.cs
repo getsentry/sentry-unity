@@ -35,7 +35,7 @@ public class SentryWindow : EditorWindow
     public static void OpenSentryWindow()
     {
         Instance = GetWindow<SentryWindow>();
-        Instance.minSize = new Vector2(600, 420);
+        Instance.minSize = new Vector2(800, 550);
     }
 
     public static SentryWindow? Instance;
@@ -53,6 +53,7 @@ public class SentryWindow : EditorWindow
     private readonly string[] _tabs =
     {
         "Core",
+        "Logging",
         "Enrichment",
         "Transport",
         "Advanced",
@@ -129,6 +130,9 @@ public class SentryWindow : EditorWindow
         }
 
         EditorGUI.BeginDisabledGroup(!Options.Enabled);
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
         EditorGUILayout.Space();
 
         switch (_currentTab)
@@ -137,18 +141,21 @@ public class SentryWindow : EditorWindow
                 CoreTab.Display(Options);
                 break;
             case 1:
-                EnrichmentTab.Display(Options);
+                LoggingTab.Display(Options);
                 break;
             case 2:
-                TransportTab.Display(Options);
+                EnrichmentTab.Display(Options);
                 break;
             case 3:
-                AdvancedTab.Display(Options, CliOptions);
+                TransportTab.Display(Options);
                 break;
             case 4:
-                OptionsConfigurationTab.Display(Options);
+                AdvancedTab.Display(Options, CliOptions);
                 break;
             case 5:
+                OptionsConfigurationTab.Display(Options);
+                break;
+            case 6:
                 DebugSymbolsTab.Display(CliOptions);
                 break;
             default:
