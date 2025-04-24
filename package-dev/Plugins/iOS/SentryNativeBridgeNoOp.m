@@ -8,6 +8,8 @@ void SentryNativeBridgeOptionsSetString(void *options, const char *name, const c
 void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }
 int SentryNativeBridgeStartWithOptions(void *options) { return 0; }
 
+void SentryNativeBridgeSetSdkName() { }
+
 int SentryNativeBridgeCrashedLastRun() { return 0; }
 
 void SentryNativeBridgeClose() { }
@@ -27,6 +29,8 @@ const char *email, const char *userId, const char *ipAddress, const char *userna
 void SentryNativeBridgeUnsetUser() { }
 
 char *SentryNativeBridgeGetInstallationId() { return NULL; }
+
+void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
 
 void SentryNativeBridgeWriteScope( // clang-format off
     // // const char *AppStartTime,

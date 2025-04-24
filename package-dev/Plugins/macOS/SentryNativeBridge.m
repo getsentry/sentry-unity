@@ -8,10 +8,19 @@ static Class SentryScope;
 static Class SentryBreadcrumb;
 static Class SentryUser;
 static Class SentryOptions;
+static Class SentryId;
+static Class SentrySpanId;
 static Class PrivateSentrySDKOnly;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
+    if (!name) {                                                                                   \
+        NSLog(@"Sentry (bridge): Couldn't load class '" #name "' from the dynamic library");       \
+        break;                                                                                     \
+    }
+
+#define LOAD_SWIFT_CLASS_OR_BREAK(name, mangled_name)                                              \
+    name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #mangled_name);                            \
     if (!name) {                                                                                   \
         NSLog(@"Sentry (bridge): Couldn't load class '" #name "' from the dynamic library");       \
         break;                                                                                     \
@@ -40,6 +49,8 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
             LOAD_CLASS_OR_BREAK(SentryUser)
             LOAD_CLASS_OR_BREAK(SentryOptions)
+            LOAD_SWIFT_CLASS_OR_BREAK(SentryId, _TtC6Sentry8SentryId)
+            LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
 
             // everything above passed - mark as successfully loaded
@@ -111,6 +122,11 @@ void SentryConfigureScope(void (^callback)(id))
 /*   - use `id` as variable types                                              */
 /*   - use [obj setValue:value forKey:@"prop"] instead of `obj.prop = value`   */
 /*******************************************************************************/
+
+void SentryNativeBridgeSetSdkName()
+{
+    [PrivateSentrySDKOnly performSelector:@selector(setSdkName:) withObject:@"sentry.cocoa.unity"];
+}
 
 int SentryNativeBridgeCrashedLastRun()
 {
@@ -261,6 +277,26 @@ char *SentryNativeBridgeGetInstallationId()
     char *cString = (char *)malloc(len);
     memcpy(cString, nsStringUtf8, len);
     return cString;
+}
+
+void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
+{
+    if (traceId == NULL || spanId == NULL) {
+        return;
+    }
+
+    id sentryTraceId = [[SentryId alloc] 
+        performSelector:@selector(initWithUUIDString:) 
+        withObject:[NSString stringWithUTF8String:traceId]];
+        
+    id sentrySpanId = [[SentrySpanId alloc]
+        performSelector:@selector(initWithValue:)
+        withObject:[NSString stringWithUTF8String:spanId]];
+    
+    [PrivateSentrySDKOnly 
+        performSelector:@selector(setTrace:spanId:) 
+        withObject:sentryTraceId 
+        withObject:sentrySpanId];
 }
 
 static inline NSString *_NSStringOrNil(const char *value)

@@ -46,6 +46,11 @@ int SentryNativeBridgeStartWithOptions(const void *options)
     return 1;
 }
 
+void SentryNativeBridgeSetSdkName()
+{
+    [PrivateSentrySDKOnly performSelector:@selector(setSdkName:) withObject:@"sentry.cocoa.unity"];
+}
+
 int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }
 
 void SentryNativeBridgeClose() { [SentrySDK close]; }
@@ -167,6 +172,29 @@ char *SentryNativeBridgeGetInstallationId()
     char *cString = (char *)malloc(len);
     memcpy(cString, nsStringUtf8, len);
     return cString;
+}
+
+void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
+{
+    if (traceId == NULL || spanId == NULL) {
+        return;
+    }
+
+    NSString *traceIdStr = [NSString stringWithUTF8String:traceId];
+    NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
+    
+    // This is a workaround to deal with SentryId living inside the Swift header
+    Class sentryIdClass = NSClassFromString(@"_TtC6Sentry8SentryId");
+    Class sentrySpanIdClass = NSClassFromString(@"SentrySpanId");
+    
+    if (sentryIdClass && sentrySpanIdClass) {
+        id sentryTraceId = [[sentryIdClass alloc] initWithUUIDString:traceIdStr];
+        id sentrySpanId = [[sentrySpanIdClass alloc] initWithValue:spanIdStr];
+        
+        if (sentryTraceId && sentrySpanId) {
+            [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
+        }
+    }
 }
 
 static inline NSString *_NSStringOrNil(const char *value)
