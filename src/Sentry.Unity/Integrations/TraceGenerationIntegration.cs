@@ -19,21 +19,21 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions options)
     {
-        hub.ConfigureScope(scope =>
-            scope.SetPropagationContext(new SentryPropagationContext(SentryId.Create(), SpanId.Create())));
+        hub.ConfigureScope(UpdatePropagationContext);
 
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
             options.DiagnosticLogger?.LogDebug("Application resumed. Creating new Trace.");
-            hub.ConfigureScope(scope =>
-                scope.SetPropagationContext(new SentryPropagationContext(SentryId.Create(), SpanId.Create())));
+            hub.ConfigureScope(UpdatePropagationContext);
         };
 
         _sceneManager.ActiveSceneChanged += (_, _) =>
         {
             options.DiagnosticLogger?.LogDebug("Active Scene changed. Creating new Trace.");
-            hub.ConfigureScope(scope =>
-                scope.SetPropagationContext(new SentryPropagationContext(SentryId.Create(), SpanId.Create())));
+            hub.ConfigureScope(UpdatePropagationContext);
         };
     }
+
+    private static void UpdatePropagationContext(Scope scope) =>
+        scope.SetPropagationContext(new SentryPropagationContext());
 }
