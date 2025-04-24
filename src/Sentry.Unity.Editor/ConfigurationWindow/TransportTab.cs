@@ -10,7 +10,7 @@ internal static class TransportTab
     {
         {
             options.EnableOfflineCaching = EditorGUILayout.BeginToggleGroup(
-            new GUIContent("Enable Offline Caching", "Whether the SDK Sentry SDK will persist events locally " +
+            new GUIContent("Enable Offline Caching", "Whether the Sentry SDK will persist events locally " +
                         "\nbefore sending them to Sentry. This helps in cases where internet connectivity is limited."),
             options.EnableOfflineCaching);
             EditorGUI.indentLevel++;
