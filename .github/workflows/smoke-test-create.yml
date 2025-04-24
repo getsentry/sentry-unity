@@ -1,5 +1,4 @@
 name: "SmokeTest: Create Project"
-
 on:
   workflow_call:
     inputs:

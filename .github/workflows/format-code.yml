@@ -1,4 +1,4 @@
-name: format code
+name: "Format Code"
 on:
   pull_request:
 
