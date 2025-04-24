@@ -35,7 +35,7 @@ public class SentryWindow : EditorWindow
     public static void OpenSentryWindow()
     {
         Instance = GetWindow<SentryWindow>();
-        Instance.minSize = new Vector2(800, 600);
+        Instance.minSize = new Vector2(800, 550);
     }
 
     public static SentryWindow? Instance;
