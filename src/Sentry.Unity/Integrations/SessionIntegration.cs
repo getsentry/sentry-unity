@@ -19,8 +19,6 @@ internal class SessionIntegration : ISdkIntegration
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Registering Session integration.");
-
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
             options.DiagnosticLogger?.LogDebug("Resuming session.");
