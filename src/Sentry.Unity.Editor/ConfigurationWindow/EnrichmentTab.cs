@@ -112,7 +112,7 @@ internal static class EnrichmentTab
 
             options.EnvironmentOverride = EditorGUILayout.TextField(
                 new GUIContent("Override Environment", "Auto detects 'production' or 'editor' by " +
-                                                       "default based on 'Application.isEditor." +
+                                                       "default based on 'Application.isEditor'." +
                                                        "\nThis option is an override."),
                 options.EnvironmentOverride);
         }
