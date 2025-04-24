@@ -1,4 +1,4 @@
-name: Create Smoke Test Project
+name: "SmokeTest: Create Project"
 
 on:
   workflow_call:
