@@ -55,6 +55,7 @@ internal static class OptionsConfigurationTab
         EditorGUILayout.HelpBox("The 'Option Config Script' allows you to programmatically configure and " +
                                 "modify the options used by the Sentry SDK.", MessageType.Info);
 
+        EditorGUI.indentLevel++;
         options.OptionsConfiguration = OptionsConfigurationItem.Display(
             options.OptionsConfiguration,
             "Option Config Script",
@@ -63,6 +64,7 @@ internal static class OptionsConfigurationTab
             "and allows you to programmatically modify Sentry options."
         );
 
+        EditorGUI.indentLevel--;
         EditorGUILayout.EndVertical();
     }
 }

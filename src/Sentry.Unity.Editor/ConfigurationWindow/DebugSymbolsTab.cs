@@ -11,6 +11,7 @@ internal static class DebugSymbolsTab
             new GUIContent("Upload Symbols", "Whether debug symbols should be uploaded automatically " +
                                              "on release builds."),
             cliOptions.UploadSymbols);
+        EditorGUI.indentLevel++;
 
         cliOptions.UploadDevelopmentSymbols = EditorGUILayout.Toggle(
             new GUIContent("Upload Dev Symbols", "Whether debug symbols should be uploaded automatically " +
@@ -52,10 +53,12 @@ internal static class DebugSymbolsTab
 
         cliOptions.CliOptionsConfiguration = OptionsConfigurationItem.Display(
             cliOptions.CliOptionsConfiguration,
-            "Sentry CLI Config Script",
+            "CLI Config Script",
             "SentryCliConfiguration",
             "A scriptable object that inherits from 'SentryCliOptionsConfiguration'." +
             "It allows you to programmatically modify the options used during debug symbols upload."
         );
+
+        EditorGUI.indentLevel--;
     }
 }

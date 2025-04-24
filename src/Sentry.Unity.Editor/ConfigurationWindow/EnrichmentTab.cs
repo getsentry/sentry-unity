@@ -14,12 +14,15 @@ internal static class EnrichmentTab
                 new GUIContent("Send default PII", "Whether to include default Personal Identifiable " +
                                                    "Information."),
                 options.SendDefaultPii);
+            EditorGUI.indentLevel++;
 
             options.IsEnvironmentUser = EditorGUILayout.Toggle(
                 new GUIContent("Auto Set UserName", "Whether to report the 'Environment.UserName' as " +
                                                     "the User affected in the event. Should be disabled for " +
                                                     "Android and iOS."),
                 options.IsEnvironmentUser);
+
+            EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
         }
 
@@ -28,39 +31,13 @@ internal static class EnrichmentTab
         EditorGUILayout.Space();
 
         {
-            GUILayout.Label("Tag Overrides", EditorStyles.boldLabel);
-
-            options.ReleaseOverride = EditorGUILayout.TextField(
-                new GUIContent("Override Release", "By default release is built from the Application info as: " +
-                                                   "\"{productName}@{version}+{buildGUID}\". " +
-                                                   "\nThis option is an override."),
-                options.ReleaseOverride);
-
-            options.EnvironmentOverride = EditorGUILayout.TextField(
-                new GUIContent("Override Environment", "Auto detects 'production' or 'editor' by " +
-                                                       "default based on 'Application.isEditor." +
-                                                       "\nThis option is an override."),
-                options.EnvironmentOverride);
-
-            options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
-                new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
-                                                         "Version or InformationalVersion in each event sent to sentry."),
-                options.ReportAssembliesMode);
-        }
-
-        EditorGUILayout.Space();
-        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-        EditorGUILayout.Space();
-
-        {
-            GUILayout.Label("Capture Screenshots", EditorStyles.boldLabel);
-
             options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Attach Screenshot", "Try to attach current screenshot on events.\n" +
+                new GUIContent("Attach Screenshots to Events", "Try to attach current screenshot on events.\n" +
                                                     "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
                                                     "Additionally, the screenshot is captured mid-frame, when an event happens, so it may be incomplete.\n" +
                                                     "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
                 options.AttachScreenshot);
+            EditorGUI.indentLevel++;
 
             options.ScreenshotQuality = (ScreenshotQuality)EditorGUILayout.EnumPopup(
                 new GUIContent("Quality", "The resolution quality of the screenshot.\n" +
@@ -74,6 +51,7 @@ internal static class EnrichmentTab
                 new GUIContent("Compression", "The compression of the screenshot."),
                 options.ScreenshotCompression, 1, 100);
 
+            EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
         }
 
@@ -82,11 +60,10 @@ internal static class EnrichmentTab
         EditorGUILayout.Space();
 
         {
-            GUILayout.Label("Capture Scene Hierarchy", EditorStyles.boldLabel);
-
             options.AttachViewHierarchy = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Attach Hierarchy", "Try to attach the current scene's hierarchy."),
+                new GUIContent("Attach Hierarchy to Events", "Try to attach the current scene's hierarchy."),
                 options.AttachViewHierarchy);
+            EditorGUI.indentLevel++;
 
             options.MaxViewHierarchyRootObjects = EditorGUILayout.IntField(
                 new GUIContent("Max Root GameObjects", "Maximum number of captured GameObjects in " +
@@ -118,7 +95,37 @@ internal static class EnrichmentTab
                 options.MaxViewHierarchyDepth = 0;
             }
 
+            EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
+        }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        {
+            options.ReleaseOverride = EditorGUILayout.TextField(
+                new GUIContent("Override Release", "By default release is built from the Application info as: " +
+                                                   "\"{productName}@{version}+{buildGUID}\". " +
+                                                   "\nThis option is an override."),
+                options.ReleaseOverride);
+
+            options.EnvironmentOverride = EditorGUILayout.TextField(
+                new GUIContent("Override Environment", "Auto detects 'production' or 'editor' by " +
+                                                       "default based on 'Application.isEditor." +
+                                                       "\nThis option is an override."),
+                options.EnvironmentOverride);
+        }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        {
+            options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
+                new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
+                                                         "Version or InformationalVersion in each event sent to sentry."),
+                options.ReportAssembliesMode);
         }
     }
 }

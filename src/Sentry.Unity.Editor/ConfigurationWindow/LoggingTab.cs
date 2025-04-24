@@ -9,22 +9,12 @@ internal static class LoggingTab
     internal static void Display(ScriptableSentryUnityOptions options)
     {
         {
-            options.MaxBreadcrumbs = EditorGUILayout.IntField(
-                new GUIContent("Max Breadcrumbs", "Maximum number of breadcrumbs that get captured." +
-                                                  "\nDefault: 100"),
-                options.MaxBreadcrumbs);
-            options.MaxBreadcrumbs = Math.Max(0, options.MaxBreadcrumbs);
-        }
-
-        EditorGUILayout.Space();
-        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-        EditorGUILayout.Space();
-
-        {
             options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
                                                         "same type if they are more frequent than once per second."),
                 options.EnableLogDebouncing);
+
+            EditorGUI.indentLevel++;
 
             options.DebounceTimeLog = EditorGUILayout.IntField(
                 new GUIContent("Log Debounce [ms]", "The time that has to pass between events of " +
@@ -45,6 +35,7 @@ internal static class LoggingTab
                 options.DebounceTimeError);
             options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
 
+            EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
         }
 
@@ -54,6 +45,7 @@ internal static class LoggingTab
 
         {
             GUILayout.Label("Automatically capture and send events for:", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
 
             options.CaptureLogErrorEvents = EditorGUILayout.Toggle(
                 new GUIContent("Debug.LogError", "Whether the SDK automatically captures events for 'Debug.LogError'."),
@@ -77,6 +69,8 @@ internal static class LoggingTab
             options.BreadcrumbsForExceptions = EditorGUILayout.Toggle(
                 new GUIContent("Debug.Exception", "Whether the SDK automatically adds breadcrumbs for exceptions and 'Debug.LogException'."),
                 options.BreadcrumbsForExceptions);
+
+            EditorGUI.indentLevel--;
         }
 
         EditorGUILayout.Space();
@@ -84,7 +78,20 @@ internal static class LoggingTab
         EditorGUILayout.Space();
 
         {
-            GUILayout.Label("Create and attach stack trace when capturing a log message. These will not contain line numbers.", EditorStyles.boldLabel);
+            options.MaxBreadcrumbs = EditorGUILayout.IntField(
+                new GUIContent("Max Breadcrumbs", "Maximum number of breadcrumbs that get captured." +
+                                                  "\nDefault: 100"),
+                options.MaxBreadcrumbs);
+            options.MaxBreadcrumbs = Math.Max(0, options.MaxBreadcrumbs);
+        }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        {
+            GUILayout.Label("Attach the stack trace when capturing log messages. NOTE: These will not contain line numbers.", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
 
             options.AttachStacktrace = EditorGUILayout.Toggle(
                 new GUIContent("Attach Stack Trace", "Whether to include a stack trace for non " +
@@ -92,6 +99,7 @@ internal static class LoggingTab
                                                       "exception was thrown. Refer to AttachStacktrace on sentry docs."),
                 options.AttachStacktrace);
 
+            EditorGUI.indentLevel--;
             // Enhanced not supported on IL2CPP so not displaying this for the time being:
             // Options.StackTraceMode = (StackTraceMode) EditorGUILayout.EnumPopup(
             //     new GUIContent("Stacktrace Mode", "Enhanced is the default." +

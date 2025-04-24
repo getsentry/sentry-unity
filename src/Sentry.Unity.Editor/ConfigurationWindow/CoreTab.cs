@@ -9,8 +9,6 @@ internal static class CoreTab
     internal static void Display(ScriptableSentryUnityOptions options)
     {
         {
-            GUILayout.Label("Base Options", EditorStyles.boldLabel);
-
             options.Dsn = EditorGUILayout.TextField(
                 new GUIContent("DSN", "The URL to your Sentry project. " +
                                       "Get yours on sentry.io -> Project Settings."),
@@ -20,6 +18,15 @@ internal static class CoreTab
             {
                 EditorGUILayout.HelpBox("The SDK requires a DSN.", MessageType.Error);
             }
+
+            var sampleRate = EditorGUILayout.FloatField(
+                new GUIContent("Event Sample Rate", "Indicates the percentage of events that are " +
+                                                    "captured. Setting this to 0.1 captures 10% of events. " +
+                                                    "Setting this to 1.0 captures all events." +
+                                                    "\nThis affects only errors and logs, not performance " +
+                                                    "(transactions) data. See TraceSampleRate for that."),
+                options.SampleRate);
+            options.SampleRate = Mathf.Clamp01(sampleRate);
 
             options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
@@ -36,6 +43,7 @@ internal static class CoreTab
                                                       "diagnostic logs to the console."),
                 options.Debug);
 
+            EditorGUI.indentLevel++;
             options.DebugOnlyInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Only In Editor", "Only print logs when in the editor. Development " +
                                                  "builds of the player will not include Sentry's SDK diagnostics."),
@@ -46,6 +54,7 @@ internal static class CoreTab
                                                   "Log messages with a level below this level are dropped."),
                 options.DiagnosticLevel);
 
+            EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
         }
 
@@ -55,6 +64,7 @@ internal static class CoreTab
 
         {
             GUILayout.Label("Tracing - Performance Monitoring", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
 
             var sampleRate = EditorGUILayout.FloatField(
                 new GUIContent("Traces Sample Rate", "Indicates the percentage of transactions that are " +
@@ -65,7 +75,6 @@ internal static class CoreTab
 
             EditorGUI.BeginDisabledGroup(options.TracesSampleRate <= 0);
 
-            EditorGUILayout.Space();
             GUILayout.Label("Auto Instrumentation", EditorStyles.boldLabel);
 
             options.AutoStartupTraces = EditorGUILayout.Toggle(
@@ -91,6 +100,7 @@ internal static class CoreTab
                                               "of Awake as Spans."),
                 options.AutoAwakeTraces);
 
+            EditorGUI.indentLevel--;
             EditorGUI.EndDisabledGroup();
         }
     }

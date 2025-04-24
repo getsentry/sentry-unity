@@ -130,6 +130,9 @@ public class SentryWindow : EditorWindow
         }
 
         EditorGUI.BeginDisabledGroup(!Options.Enabled);
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
         EditorGUILayout.Space();
 
         switch (_currentTab)
