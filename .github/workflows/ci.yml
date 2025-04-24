@@ -202,7 +202,7 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-  android-smoke-test-build:
+  smoke-test-build-android:
     name: Build Android ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create]
@@ -211,15 +211,15 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000"]
-    uses: ./.github/workflows/android-smoke-test-build.yml
+    uses: ./.github/workflows/smoke-test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  android-smoke-test-run:
+  smoke-test-run-android:
     name: Run Android ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [android-smoke-test-build]
-    uses: ./.github/workflows/android-smoke-test-run.yml
+    needs: [smoke-test-build-android]
+    uses: ./.github/workflows/smoke-test-run-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       api-level: ${{ matrix.api-level }}
@@ -231,7 +231,7 @@ jobs:
         init-type: ["runtime", "buildtime"]
         unity-version: ["2019", "2022", "6000"]
 
-  ios-smoke-test-build:
+  smoke-test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create]
@@ -240,30 +240,30 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000"]
-    uses: ./.github/workflows/ios-smoke-test-build.yml
+    uses: ./.github/workflows/smoke-test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  ios-smoke-test-compile:
+  smoke-test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [ios-smoke-test-build]
+    needs: [smoke-test-build-ios]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000"]
         init-type: ["runtime", "buildtime"]
-    uses: ./.github/workflows/ios-smoke-test-compile.yml
+    uses: ./.github/workflows/smoke-test-compile-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       init-type: ${{ matrix.init-type }}
 
-  ios-smoke-test-run:
+  smoke-test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [ios-smoke-test-compile]
-    uses: ./.github/workflows/ios-smoke-test-run.yml
+    needs: [smoke-test-compile-ios]
+    uses: ./.github/workflows/smoke-test-run-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       ios-version: ${{ matrix.ios-version }}
