@@ -123,6 +123,11 @@ void SentryConfigureScope(void (^callback)(id))
 /*   - use [obj setValue:value forKey:@"prop"] instead of `obj.prop = value`   */
 /*******************************************************************************/
 
+void SentryNativeBridgeSetSdkName()
+{
+    [PrivateSentrySDKOnly performSelector:@selector(setSdkName:) withObject:@"sentry.cocoa.unity"];
+}
+
 int SentryNativeBridgeCrashedLastRun()
 {
     @try {
