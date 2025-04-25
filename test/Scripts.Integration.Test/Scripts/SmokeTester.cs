@@ -50,6 +50,10 @@ public class SmokeTester : MonoBehaviour
         {
             HasCrashedTest();
         }
+        else if (arg == "trace-id")
+        {
+            TraceIdTest();
+        }
         else if (arg != null)
         {
             Debug.Log($"Unknown command line argument: {arg}");
@@ -207,6 +211,21 @@ public class SmokeTester : MonoBehaviour
         var crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == true (1)", crashed == 1);
         t.Pass();
+    }
+
+    public static void TraceIdTest()
+    {
+        t.Start("TRACE-ID-TEST");
+
+        var ex = new Exception("Trace ID exception");
+        SentrySdk.CaptureException(ex);
+
+        Debug.Log("TRACE-ID-TEST TEST: Issuing a native crash (c++ unhandled exception)");
+        throw_cpp();
+
+        // shouldn't execute because the previous call should have failed
+        Debug.Log("CRASH TEST: FAIL - unexpected code executed...");
+        Application.Quit(-1);
     }
 
     private static void AddContext()
