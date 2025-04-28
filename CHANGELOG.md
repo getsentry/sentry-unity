@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Updated the SDK's `proguard.cfg` file to preserve the relevant Java SDK API to keep observing and synching the scope. The SDK no longer fails to set the trace on the native layer ([#2132](https://github.com/getsentry/sentry-unity/pull/2132))
+
 ## 3.2.0
 
 ### Fixes
