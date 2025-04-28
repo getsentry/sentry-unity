@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
     uses: ./.github/workflows/smoke-test-create.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
         platform: ["WebGL", "Linux"]
         include:
           - platform: WebGL
@@ -210,7 +210,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
     uses: ./.github/workflows/android-smoke-test-build.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -229,7 +229,7 @@ jobs:
       matrix:
         api-level: [30, 31, 34] # last updated January 2025
         init-type: ["runtime", "buildtime"]
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
 
   ios-smoke-test-build:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
@@ -239,7 +239,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
     uses: ./.github/workflows/ios-smoke-test-build.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -252,7 +252,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
         init-type: ["runtime", "buildtime"]
     uses: ./.github/workflows/ios-smoke-test-compile.yml
     with:
@@ -271,7 +271,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
         # - `iOS 17`: 86 %
@@ -292,7 +292,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
         platform: ["WebGL", "Linux"]
     steps:
       - name: Checkout
@@ -330,7 +330,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2019", "2022", "6000", "6100"]
         # os: ["windows", "macos"]
         os: ["windows"]
         include:
