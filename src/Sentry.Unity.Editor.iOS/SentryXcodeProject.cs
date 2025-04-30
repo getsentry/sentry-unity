@@ -25,8 +25,11 @@ internal class SentryXcodeProject : IDisposable
     private readonly string _uploadScript = @"
 export SENTRY_PROPERTIES=sentry.properties
 echo ""Uploading debug symbols and bcsymbolmaps.""
-./{0} debug-files upload {1} $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
+./{0} debug-files upload {1} $BUILT_PRODUCTS_DIR {2}
 ";
+
+    internal const string LogAndPrintArg = "2>&1 | tee ./sentry-symbols-upload.log";
+    internal const string LogOnlyArg = "2> ./sentry-symbols-upload.log";
 
     private readonly IDiagnosticLogger? _logger = null;
     private readonly Type _pbxProjectType = null!;              // Set in constructor or throws
@@ -175,7 +178,13 @@ echo ""Uploading debug symbols and bcsymbolmaps.""
             uploadDifArguments += " --allow-failure";
         }
 
-        var uploadScript = string.Format(_uploadScript, SentryCli.SentryCliMacOS, uploadDifArguments);
+        var uploadScript = string.Format(_uploadScript,
+            SentryCli.SentryCliMacOS,
+            uploadDifArguments,
+            // Xcode parses the log-messages for 'error:', causing the phase to error with
+            // 'Command PhaseScriptExecution emitted errors but did not return a nonzero exit code to indicate failure'
+            // even with the '--allow-failure' arg. In that case, we're just logging to file instead.
+            sentryCliOptions.IgnoreCliErrors ? LogOnlyArg : LogAndPrintArg);
 
         _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
             .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", uploadScript });
