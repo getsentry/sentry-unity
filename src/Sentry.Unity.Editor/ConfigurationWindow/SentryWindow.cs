@@ -95,7 +95,6 @@ public class SentryWindow : EditorWindow
         options.Dsn = config.Dsn;
         cliOptions.UploadSymbols = !string.IsNullOrWhiteSpace(config.Token);
         cliOptions.Auth = config.Token;
-        cliOptions.Organization = config.OrgSlug;
         cliOptions.Project = config.ProjectSlug;
 
         EditorUtility.SetDirty(options);

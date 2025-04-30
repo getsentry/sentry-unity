@@ -52,12 +52,6 @@ public sealed class SentryCliOptions : ScriptableObject
             validated = false;
         }
 
-        if (string.IsNullOrWhiteSpace(Organization))
-        {
-            MissingFieldWarning(logger, "Organization");
-            validated = false;
-        }
-
         if (string.IsNullOrWhiteSpace(Project))
         {
             MissingFieldWarning(logger, "Project");
