@@ -1,3 +1,4 @@
+name: "Build native SDKs"
 on:
   workflow_call:
     inputs:
