@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes 
+
+- When targeting Desktop Platforms, Sentry-CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138)) 
+
 ### Dependencies
 
 - Bump CLI from v2.43.0 to v2.43.1 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133))
