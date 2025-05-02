@@ -1,3 +1,4 @@
+name: "SmokeTest: Run Android"
 on:
   workflow_call:
     inputs:

@@ -1,5 +1,4 @@
-name: Update Dependencies
-
+name: "Update Dependencies"
 on:
   # Run every day on multiple occasions, with each job running at a different time to limit license-acquisition issues.
   schedule:

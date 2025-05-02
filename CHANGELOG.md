@@ -6,6 +6,24 @@
 
 - When targeting iOS and setting `IgnoreCliErrors = true`, the Xcode build will now succeed even if the symbol upload itself failed. This is aimed to allow users to unblock themselves ([#2136](https://github.com/getsentry/sentry-unity/pull/2136)) 
 
+### Dependencies
+
+- Bump CLI from v2.43.0 to v2.43.1 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2431)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.0...2.43.1)
+- Bump Cocoa SDK from v8.49.1 to v8.49.2 ([#2134](https://github.com/getsentry/sentry-unity/pull/2134))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8492)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.49.1...8.49.2)
+- Bump Java SDK from v8.9.0 to v8.11.0 ([#2135](https://github.com/getsentry/sentry-unity/pull/2135))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8110)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.9.0...8.11.0)
+
+## 3.2.1
+
+### Fixes
+
+- Updated the SDK's `proguard.cfg` file to preserve the relevant Java SDK API to keep observing and synching the scope. The SDK no longer fails to set the trace on the native layer ([#2132](https://github.com/getsentry/sentry-unity/pull/2132))
+
 ## 3.2.0
 
 ### Fixes
