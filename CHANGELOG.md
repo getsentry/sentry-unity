@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Sentry CLI no longer requires the 'Organisation' option, and they have been removed from the configuration window. If you're providing an Organisation right now, nothing changes. Fresh setups will have the option omitted  ([#2137](https://github.com/getsentry/sentry-unity/pull/2137))
+
 ### Dependencies
 
 - Bump CLI from v2.43.0 to v2.43.1 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133))
