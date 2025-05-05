@@ -1,15 +1,16 @@
 using UnityEditor;
 using UnityEditor.Build;
-using UnityEditor.Callbacks;
+using UnityEditor.Build.Reporting;
 
 namespace Sentry.Unity.Editor.WebGL;
 
-public static class BuildPostProcess
+internal class BuildPreProcess : IPreprocessBuildWithReport
 {
-    [PostProcessBuild(1)]
-    public static void OnPostProcessBuild(BuildTarget target, string executablePath)
+    public int callbackOrder => 1;
+
+    public void OnPreprocessBuild(BuildReport report)
     {
-        var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
+        var targetGroup = BuildPipeline.GetBuildTargetGroup(report.summary.platform);
         if (targetGroup is not BuildTargetGroup.WebGL)
         {
             return;
