@@ -25,7 +25,11 @@ internal static class SentryCli
             properties.WriteLine($"defaults.url={urlOverride}");
         }
 
-        properties.WriteLine($"defaults.org={cliOptions.Organization}");
+        if (!string.IsNullOrEmpty(cliOptions.Organization))
+        {
+            properties.WriteLine($"defaults.org={cliOptions.Organization}");
+        }
+
         properties.WriteLine($"defaults.project={cliOptions.Project}");
         properties.WriteLine($"auth.token={cliOptions.Auth}");
         properties.WriteLine("dif.max_item_size=10485760"); // 10 MiB
