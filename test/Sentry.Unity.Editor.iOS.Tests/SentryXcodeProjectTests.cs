@@ -161,38 +161,76 @@ public class SentryXcodeProjectTests
             Regex.Escape(SentryXcodeProject.SymbolUploadPhaseName)).Count;
 
         Assert.IsTrue(_fixture.TestLogger.Logs.Any(log =>
-            log.logLevel == SentryLevel.Debug &&
+            log.logLevel == SentryLevel.Info &&
             log.message.Contains("already added."))); // Sanity check
         Assert.AreEqual(expectedBuildPhaseOccurence, actualBuildPhaseOccurence);
     }
 
     [Test]
-    public void AddBuildPhaseSymbolUpload_IgnoreCliErrorsFalse_UsesLogAndPrintArgs()
+    public void AddBuildPhaseSymbolUpload_OptionsEnabled_SetsCorrectBuildProperties()
     {
         var xcodeProject = _fixture.GetSut();
         xcodeProject.ReadFromProjectFile();
 
         var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
-        sentryCliOptions.IgnoreCliErrors = false;
-
-        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions);
-
-        StringAssert.DoesNotContain("--allow-failure", xcodeProject.ProjectToString()); // sanity check
-        StringAssert.Contains(SentryXcodeProject.LogAndPrintArg, xcodeProject.ProjectToString());
-    }
-
-    [Test]
-    public void AddBuildPhaseSymbolUpload_IgnoreCliErrorsTrue_UsesLogOnlyArgs()
-    {
-        var xcodeProject = _fixture.GetSut();
-        xcodeProject.ReadFromProjectFile();
-
-        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        sentryCliOptions.UploadSymbols = true;
+        sentryCliOptions.UploadSources = true;
         sentryCliOptions.IgnoreCliErrors = true;
 
         xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions);
+        var projectString = xcodeProject.ProjectToString();
 
-        StringAssert.Contains("--allow-failure", xcodeProject.ProjectToString());
-        StringAssert.Contains(SentryXcodeProject.LogOnlyArg, xcodeProject.ProjectToString());
+        StringAssert.Contains($"{SentryXcodeProject.SymbolUploadPropertyName} = YES", projectString);
+        StringAssert.Contains($"{SentryXcodeProject.IncludeSourcesPropertyName} = YES", projectString);
+        StringAssert.Contains($"{SentryXcodeProject.AllowFailurePropertyName} = YES", projectString);
+        StringAssert.Contains($"{SentryXcodeProject.PrintLogsPropertyName} = NO", projectString);
+    }
+
+    [Test]
+    public void AddBuildPhaseSymbolUpload_OptionsDisabled_SetsCorrectBuildProperties()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        sentryCliOptions.UploadSymbols = false;
+        sentryCliOptions.UploadSources = false;
+        sentryCliOptions.IgnoreCliErrors = false;
+
+        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions);
+        var projectString = xcodeProject.ProjectToString();
+
+        StringAssert.Contains($"{SentryXcodeProject.SymbolUploadPropertyName} = NO", projectString);
+        StringAssert.Contains($"{SentryXcodeProject.IncludeSourcesPropertyName} = NO", projectString);
+        StringAssert.Contains($"{SentryXcodeProject.AllowFailurePropertyName} = NO", projectString);
+        StringAssert.Contains($"{SentryXcodeProject.PrintLogsPropertyName} = YES", projectString);
+    }
+
+    [Test]
+    public void AddBuildPhaseSymbolUpload_UploadScriptContainsPropertyReferences()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions);
+        var projectString = xcodeProject.ProjectToString();
+
+        StringAssert.Contains($"${{{SentryXcodeProject.SymbolUploadPropertyName}}}", projectString);
+        StringAssert.Contains($"${{{SentryXcodeProject.IncludeSourcesPropertyName}}}", projectString);
+        StringAssert.Contains($"${{{SentryXcodeProject.AllowFailurePropertyName}}}", projectString);
+        StringAssert.Contains($"${{{SentryXcodeProject.PrintLogsPropertyName}}}", projectString);
+    }
+
+    [Test]
+    public void AddBuildPhaseSymbolUpload_ScriptContainsSentryCliPath()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions);
+
+        StringAssert.Contains(SentryCli.SentryCliMacOS, xcodeProject.ProjectToString());
     }
 }

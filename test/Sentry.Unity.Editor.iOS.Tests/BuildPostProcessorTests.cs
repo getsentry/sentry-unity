@@ -174,7 +174,7 @@ public class BuildPostProcessorTests
         var options = new SentryUnityOptions();
         var testLogger = new TestLogger();
 
-        BuildPostProcess.SetupSentry(options, null, testLogger, _outputProjectPath);
+        BuildPostProcess.SetupSentry(options, testLogger, _outputProjectPath);
 
         var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
             SentryXcodeProject.BridgeName);

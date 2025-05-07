@@ -20,17 +20,36 @@ internal class SentryXcodeProject : IDisposable
     internal const string OptionsName = "SentryOptions.m";
     internal const string SymbolUploadPhaseName = "SymbolUpload";
 
+    internal const string SymbolUploadPropertyName = "SENTRY_CLI_UPLOAD_SYMBOLS";
+    internal const string IncludeSourcesPropertyName = "SENTRY_CLI_INCLUDE_SOURCES";
+    internal const string AllowFailurePropertyName = "SENTRY_CLI_ALLOW_FAILURE";
+    internal const string PrintLogsPropertyName = "SENTRY_CLI_PRINT_LOGS";
+
     internal static readonly string MainPath = Path.Combine("MainApp", "main.mm");
     private readonly string _optionsPath = Path.Combine("MainApp", OptionsName);
-    private readonly string _uploadScript = @"
-export SENTRY_PROPERTIES=sentry.properties
-echo ""Uploading debug symbols and bcsymbolmaps.""
-echo ""Writing logs to './sentry-symbols-upload.log'""
-./{0} debug-files upload {1} $BUILT_PRODUCTS_DIR {2}
-";
+    private readonly string _uploadScript = @"export SENTRY_PROPERTIES=sentry.properties
+if [ ""${" + SymbolUploadPropertyName + @"}"" == ""YES"" ]; then
+    echo ""Uploading debug symbols and bcsymbolmaps.""
+    echo ""Writing logs to './sentry-symbols-upload.log'""
 
-    internal const string LogAndPrintArg = "2>&1 | tee ./sentry-symbols-upload.log";
-    internal const string LogOnlyArg = "2> ./sentry-symbols-upload.log";
+    ARGS=""--il2cpp-mapping""
+
+    if [ ""${" + IncludeSourcesPropertyName + @"}"" == ""YES"" ]; then
+        ARGS=""$ARGS --include-sources""
+    fi
+
+    if [ ""${" + AllowFailurePropertyName + @"}"" == ""YES"" ]; then
+        ARGS=""$ARGS --allow-failure""
+    fi
+
+    if [ ""${" + PrintLogsPropertyName + @"}"" == ""YES"" ]; then
+        ./" + SentryCli.SentryCliMacOS + @" debug-files upload $ARGS $BUILT_PRODUCTS_DIR 2>&1 | tee ./sentry-symbols-upload.log
+    else
+        ./" + SentryCli.SentryCliMacOS + @" debug-files upload $ARGS $BUILT_PRODUCTS_DIR 2> ./sentry-symbols-upload.log
+    fi
+else
+    echo ""Sentry symbol upload has been disabled via build setting '" + SymbolUploadPropertyName + @"'.""
+fi";
 
     private readonly IDiagnosticLogger? _logger = null;
     private readonly Type _pbxProjectType = null!;              // Set in constructor or throws
@@ -160,37 +179,33 @@ echo ""Writing logs to './sentry-symbols-upload.log'""
 
     public void AddBuildPhaseSymbolUpload(SentryCliOptions sentryCliOptions)
     {
-        _logger?.LogInfo("Adding automated debug symbol upload script to build phase.");
+        _logger?.LogInfo("Setting up Sentry CLI build properties and upload script.");
+
+        _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+            .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPropertyName, sentryCliOptions.UploadSymbols ? "YES" : "NO" });
+
+        // Set additional upload properties
+        _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+            .Invoke(_project, new object[] { _mainTargetGuid, IncludeSourcesPropertyName, sentryCliOptions.UploadSources ? "YES" : "NO" });
+
+        _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+            .Invoke(_project, new object[] { _mainTargetGuid, AllowFailurePropertyName, sentryCliOptions.IgnoreCliErrors ? "YES" : "NO" });
+
+        _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
+            .Invoke(_project, new object[] { _mainTargetGuid, PrintLogsPropertyName, sentryCliOptions.IgnoreCliErrors ? "NO" : "YES" });
 
         if (MainTargetContainsSymbolUploadBuildPhase())
         {
-            _logger?.LogDebug("Build phase '{0}' already added.", SymbolUploadPhaseName);
+            _logger?.LogInfo("Success. Build phase '{0}' was already added.", SymbolUploadPhaseName);
             return;
         }
 
-        var uploadDifArguments = "--il2cpp-mapping";
-        if (sentryCliOptions.UploadSources)
-        {
-            uploadDifArguments += " --include-sources";
-        }
-
-        if (sentryCliOptions.IgnoreCliErrors)
-        {
-            uploadDifArguments += " --allow-failure";
-        }
-
-        var uploadScript = string.Format(_uploadScript,
-            SentryCli.SentryCliMacOS,
-            uploadDifArguments,
-            // Xcode parses the log-messages for 'error:', causing the phase to error with
-            // 'Command PhaseScriptExecution emitted errors but did not return a nonzero exit code to indicate failure'
-            // even with the '--allow-failure' arg. In that case, we're just logging to file instead.
-            sentryCliOptions.IgnoreCliErrors ? LogOnlyArg : LogAndPrintArg);
+        _logger?.LogDebug("Adding the upload script to {0}.", SymbolUploadPhaseName);
 
         _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
-            .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", uploadScript });
+                .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
 
-        _logger?.LogDebug("Successfully added automated debug symbol upload script to build phase.");
+        _logger?.LogInfo("Success. Added automated debug symbol upload script to build phase.");
     }
 
     public void AddNativeOptions(SentryUnityOptions options, Action<string, SentryUnityOptions> nativeOptionFileCreation)
