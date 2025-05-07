@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When targeting WebGL, the SDK now warns if running in an unsupported configuration (i.e. when the exception support is set to `none`) ([#2141](https://github.com/getsentry/sentry-unity/pull/2141))
+
 ### Dependencies
 
 - Bump CLI from v2.43.0 to v2.43.1 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133))
