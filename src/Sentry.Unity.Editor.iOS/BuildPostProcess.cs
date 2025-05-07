@@ -42,22 +42,6 @@ public static class BuildPostProcess
         return true;
     }
 
-    internal static bool IsDebugSymbolUploadEnabled(SentryCliOptions? cliOptions, IDiagnosticLogger logger)
-    {
-        if (cliOptions is null)
-        {
-            logger.LogInfo("The CLI options are not found Skipping debug symbol upload.");
-            return false;
-        }
-
-        if (!cliOptions.IsValid(logger, EditorUserBuildSettings.development))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     internal static void AddSentryToXcodeProject(SentryUnityOptions? options,
         SentryCliOptions? cliOptions,
         IDiagnosticLogger logger,
