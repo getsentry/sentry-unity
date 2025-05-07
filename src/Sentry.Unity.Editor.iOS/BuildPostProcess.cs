@@ -167,8 +167,15 @@ public static class BuildPostProcess
         SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
         SentryCli.SetupSentryCli(pathToProject, RuntimePlatform.OSXEditor);
 
-        using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
-        sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions);
+        try
+        {
+            using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
+            sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to add the debug symbol upload build phase.");
+        }
     }
 
     internal static void CopyFramework(string sourcePath, string targetPath, IDiagnosticLogger? logger)
