@@ -34,6 +34,16 @@ public class Builder
         EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
 #endif
 
+        Debug.Log("Builder: Configuring code stripping level");
+#if UNITY_6000_0_OR_NEWER
+        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.High);
+#elif UNITY_2022_1_OR_NEWER
+        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.Low);
+#elif UNITY_2019_1_OR_NEWER
+        PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
+#endif
+
+
         // This is a workaround for build issues with Unity 2022.3. and newer.
         // https://discussions.unity.com/t/gradle-build-issues-for-android-api-sdk-35-in-unity-2022-3lts/1502187/10
 #if UNITY_2022_3_OR_NEWER

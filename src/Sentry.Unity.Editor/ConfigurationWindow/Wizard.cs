@@ -120,7 +120,6 @@ internal class Wizard : EditorWindow
                     {
                         Token = Response.apiKeys!.token,
                         Dsn = project.keys.First().dsn!.@public,
-                        OrgSlug = project.organization!.slug,
                         ProjectSlug = project.slug,
                     };
                 }
@@ -223,7 +222,6 @@ internal class WizardConfiguration
 {
     public string? Token { get; set; }
     public string? Dsn { get; set; }
-    public string? OrgSlug { get; set; }
     public string? ProjectSlug { get; set; }
 }
 
