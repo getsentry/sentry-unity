@@ -35,10 +35,8 @@ public class Builder
 #endif
 
         Debug.Log("Builder: Configuring code stripping level");
-#if UNITY_6000_0_OR_NEWER
+#if UNITY_2022_1_OR_NEWER
         PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.High);
-#elif UNITY_2022_1_OR_NEWER
-        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.Low);
 #elif UNITY_2019_1_OR_NEWER
         PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
 #endif
