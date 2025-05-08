@@ -38,9 +38,9 @@ public class Builder
 #if UNITY_6000_0_OR_NEWER
         PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.High);
 #elif UNITY_2022_1_OR_NEWER
-        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.Low);
+        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.High);
 #elif UNITY_2019_1_OR_NEWER
-        PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
+        PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.High);
 #endif
 
 
