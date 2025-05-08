@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+### Fixes 
+
+- When targeting Desktop Platforms, Sentry-CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138)) 
+- When targeting iOS and setting `IgnoreCliErrors = true`, the Xcode build will now succeed even if the symbol upload itself failed. This is aimed to allow users to unblock themselves ([#2136](https://github.com/getsentry/sentry-unity/pull/2136)) 
+- Sentry CLI no longer requires the 'Organisation' option, and they have been removed from the configuration window. If you're providing an Organisation right now, nothing changes. Fresh setups will have the option omitted  ([#2137](https://github.com/getsentry/sentry-unity/pull/2137))
+
+### Dependencies
+
+- Bump CLI from v2.43.0 to v2.44.0 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133), [#2143](https://github.com/getsentry/sentry-unity/pull/2143))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2440)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.0...2.44.0)
+- Bump Cocoa SDK from v8.49.1 to v8.50.0 ([#2134](https://github.com/getsentry/sentry-unity/pull/2134), [#2142](https://github.com/getsentry/sentry-unity/pull/2142))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8500)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.49.1...8.50.0)
+- Bump Java SDK from v8.9.0 to v8.11.1 ([#2135](https://github.com/getsentry/sentry-unity/pull/2135), [#2140](https://github.com/getsentry/sentry-unity/pull/2140))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8111)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.9.0...8.11.1)
+
+## 3.2.1
+
+### Fixes
+
+- Updated the SDK's `proguard.cfg` file to preserve the relevant Java SDK API to keep observing and synching the scope. The SDK no longer fails to set the trace on the native layer ([#2132](https://github.com/getsentry/sentry-unity/pull/2132))
+
 ## 3.2.0
 
 ### Fixes

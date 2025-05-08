@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>3.2.0</Version>
+    <Version>3.2.1</Version>
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
