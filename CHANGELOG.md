@@ -10,9 +10,9 @@
 
 ### Dependencies
 
-- Bump CLI from v2.43.0 to v2.44.0 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133), [#2143](https://github.com/getsentry/sentry-unity/pull/2143))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2440)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.0...2.44.0)
+- Bump CLI from v2.43.0 to v2.45.0 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133), [#2143](https://github.com/getsentry/sentry-unity/pull/2143), [#2150](https://github.com/getsentry/sentry-unity/pull/2150))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2450)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.0...2.45.0)
 - Bump Cocoa SDK from v8.49.1 to v8.50.0 ([#2134](https://github.com/getsentry/sentry-unity/pull/2134), [#2142](https://github.com/getsentry/sentry-unity/pull/2142))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8500)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.49.1...8.50.0)
