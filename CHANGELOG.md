@@ -6,17 +6,19 @@
 
 - When targeting WebGL, the SDK now warns if running in an unsupported configuration (i.e. when the exception support is set to `none`) ([#2141](https://github.com/getsentry/sentry-unity/pull/2141))
 - When targeting Desktop Platforms, Sentry-CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138)) 
+- When targeting iOS, the SDK now correctly updates the Sentry CLI options used for debug symbol upload when appending builds ([#2146](https://github.com/getsentry/sentry-unity/pull/2146))
+- When targeting Desktop Platforms, Sentry CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138)) 
 - When targeting iOS and setting `IgnoreCliErrors = true`, the Xcode build will now succeed even if the symbol upload itself failed. This is aimed to allow users to unblock themselves ([#2136](https://github.com/getsentry/sentry-unity/pull/2136)) 
 - Sentry CLI no longer requires the 'Organisation' option, and they have been removed from the configuration window. If you're providing an Organisation right now, nothing changes. Fresh setups will have the option omitted  ([#2137](https://github.com/getsentry/sentry-unity/pull/2137))
 
 ### Dependencies
 
-- Bump CLI from v2.43.0 to v2.44.0 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133), [#2143](https://github.com/getsentry/sentry-unity/pull/2143))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2440)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.0...2.44.0)
-- Bump Cocoa SDK from v8.49.1 to v8.50.0 ([#2134](https://github.com/getsentry/sentry-unity/pull/2134), [#2142](https://github.com/getsentry/sentry-unity/pull/2142))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8500)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.49.1...8.50.0)
+- Bump CLI from v2.43.0 to v2.45.0 ([#2133](https://github.com/getsentry/sentry-unity/pull/2133), [#2143](https://github.com/getsentry/sentry-unity/pull/2143), [#2150](https://github.com/getsentry/sentry-unity/pull/2150))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2450)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.43.0...2.45.0)
+- Bump Cocoa SDK from v8.49.1 to v8.50.1 ([#2134](https://github.com/getsentry/sentry-unity/pull/2134), [#2142](https://github.com/getsentry/sentry-unity/pull/2142), [#2151](https://github.com/getsentry/sentry-unity/pull/2151))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8501)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.49.1...8.50.1)
 - Bump Java SDK from v8.9.0 to v8.11.1 ([#2135](https://github.com/getsentry/sentry-unity/pull/2135), [#2140](https://github.com/getsentry/sentry-unity/pull/2140))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8111)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.9.0...8.11.1)
