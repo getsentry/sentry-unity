@@ -172,4 +172,9 @@ internal sealed class TestHub : IHub
     {
         throw new NotImplementedException();
     }
+
+    public void CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
+    {
+        throw new NotImplementedException();
+    }
 }
