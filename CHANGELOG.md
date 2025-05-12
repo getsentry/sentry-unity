@@ -5,10 +5,9 @@
 ### Fixes
 
 - When targeting WebGL with an unsupported configuration (i.e. when the exception support is set to `none`), the SDK now shows an error at build time instead of a runtime failure ([#2141](https://github.com/getsentry/sentry-unity/pull/2141))
-- When targeting Desktop Platforms, Sentry-CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138)) 
-- When targeting iOS, the SDK now correctly updates the Sentry CLI options used for debug symbol upload when appending builds ([#2146](https://github.com/getsentry/sentry-unity/pull/2146))
-- When targeting Desktop Platforms, Sentry CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138)) 
+- When targeting Desktop Platforms, Sentry CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138))
 - When targeting iOS and setting `IgnoreCliErrors = true`, the Xcode build will now succeed even if the symbol upload itself failed. This is aimed to allow users to unblock themselves ([#2136](https://github.com/getsentry/sentry-unity/pull/2136)) 
+- When targeting iOS, the SDK now correctly updates the Sentry CLI options used for debug symbol upload when appending builds ([#2146](https://github.com/getsentry/sentry-unity/pull/2146))
 - Sentry CLI no longer requires the 'Organisation' option, and they have been removed from the configuration window. If you're providing an Organisation right now, nothing changes. Fresh setups will have the option omitted  ([#2137](https://github.com/getsentry/sentry-unity/pull/2137))
 
 ### Dependencies
