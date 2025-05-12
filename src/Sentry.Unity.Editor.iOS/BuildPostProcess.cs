@@ -59,7 +59,7 @@ public static class BuildPostProcess
 
         if (IsNativeSupportEnabled(options, logger))
         {
-            SetupSentry(options, cliOptions, logger, pathToProject);
+            SetupSentry(options, logger, pathToProject);
         }
         else
         {
@@ -69,6 +69,8 @@ public static class BuildPostProcess
             // Even with native support disabled the P/Invoke declarations from `SentryCocoaBridgeProxy` must exist.
             SetupNoOpBridge(logger, pathToProject);
         }
+
+        SetupSentryCli(options, cliOptions, logger, pathToProject);
 
         // We want to avoid users getting stuck on a cached built output.
         // This can happen if the user appends builds
@@ -108,16 +110,13 @@ public static class BuildPostProcess
         }
     }
 
-    internal static void SetupSentry(SentryUnityOptions options,
-        SentryCliOptions? cliOptions,
-        IDiagnosticLogger logger,
-        string pathToProject)
+    internal static void SetupSentry(SentryUnityOptions options, IDiagnosticLogger logger, string pathToProject)
     {
         logger.LogInfo("Attempting to add Sentry to the Xcode project.");
 
         try
         {
-            // The Sentry.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the XCode build.
+            // The Sentry.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the Xcode build.
             // Ideally, we would let Unity copy this over but:
             // - Detection of `.xcframework` as datatype and non-folder happened in Unity 2021
             // - Without a `.meta` file we cannot opt-in embedding the framework
@@ -137,19 +136,6 @@ public static class BuildPostProcess
                 sentryXcodeProject.AddNativeOptions(options, NativeOptions.CreateFile);
                 sentryXcodeProject.AddSentryToMain(options);
             }
-
-            if (cliOptions != null && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
-            {
-                logger.LogInfo("Automatic symbol upload enabled. Adding script to build phase.");
-
-                SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
-                SentryCli.SetupSentryCli(pathToProject, RuntimePlatform.OSXEditor);
-                sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions);
-            }
-            else if (options.Il2CppLineNumberSupportEnabled)
-            {
-                logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
-            }
         }
         catch (Exception e)
         {
@@ -158,6 +144,38 @@ public static class BuildPostProcess
         }
 
         logger.LogInfo("Successfully added Sentry to the Xcode project.");
+    }
+
+    internal static void SetupSentryCli(SentryUnityOptions options,
+        SentryCliOptions? cliOptions,
+        IDiagnosticLogger logger,
+        string pathToProject)
+    {
+        if (cliOptions is null)
+        {
+            logger.LogWarning("No Sentry CLI options provided. You can create them by opening the Configuration Window at Tools -> Sentry");
+            return;
+        }
+
+        logger.LogInfo("Setting up Sentry CLI.");
+
+        if (options.Il2CppLineNumberSupportEnabled && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
+        {
+            logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
+        }
+
+        SentryCli.CreateSentryProperties(pathToProject, cliOptions, options);
+        SentryCli.SetupSentryCli(pathToProject, RuntimePlatform.OSXEditor);
+
+        try
+        {
+            using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
+            sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to add the debug symbol upload build phase.");
+        }
     }
 
     internal static void CopyFramework(string sourcePath, string targetPath, IDiagnosticLogger? logger)
