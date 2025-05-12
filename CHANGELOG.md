@@ -20,7 +20,7 @@
 - Bump Java SDK from v8.9.0 to v8.11.1 ([#2135](https://github.com/getsentry/sentry-unity/pull/2135), [#2140](https://github.com/getsentry/sentry-unity/pull/2140))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8111)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.9.0...8.11.1)
-- Bump .NET SDK from v5.2.0 to v5.6.0 ([#2152](https://github.com/getsentry/sentry-unity/pull/2153))
+- Bump .NET SDK from v5.2.0 to v5.7.0-beta.0 ([#2152](https://github.com/getsentry/sentry-unity/pull/2152))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#570-beta0)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.6.0...5.7.0-beta0)
 
