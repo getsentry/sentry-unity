@@ -29,14 +29,14 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        if (_application.IsEditor)
-        {
-            _options.DiagnosticLogger?.LogInfo("Screenshot attachment skipped. Capturing screenshots it not supported in the Editor");
-            return @event;
-        }
-
         if (_options.BeforeCaptureScreenshotInternal?.Invoke() is not false)
         {
+            if (_application.IsEditor)
+            {
+                _options.DiagnosticLogger?.LogInfo("Screenshot attachment skipped. Capturing screenshots it not supported in the Editor");
+                return @event;
+            }
+
             if (Screen.width == 0 || Screen.height == 0)
             {
                 _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
