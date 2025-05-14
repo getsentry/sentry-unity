@@ -45,7 +45,7 @@ internal class UnityScopeUpdater
     {
         PopulateSdk(scope.Sdk);
         PopulateApp(scope.Contexts.App);
-        // PopulateOperatingSystem(scope.Contexts.OperatingSystem);
+        PopulateOperatingSystem(scope.Contexts.OperatingSystem);
         PopulateDevice(scope.Contexts.Device);
         PopulateGpu(scope.Contexts.Gpu);
 
@@ -73,7 +73,8 @@ internal class UnityScopeUpdater
 
     private void PopulateOperatingSystem(OperatingSystem operatingSystem)
     {
-        operatingSystem.RawDescription = MainThreadData.OperatingSystem;
+        // operatingSystem.RawDescription = MainThreadData.OperatingSystem;
+        operatingSystem.RawDescription = "Xbox 10.0.26100";
     }
 
     private void PopulateDevice(Device device)
