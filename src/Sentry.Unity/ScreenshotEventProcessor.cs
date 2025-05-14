@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -6,10 +7,14 @@ namespace Sentry.Unity;
 public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
+    private readonly ApplicationAdapter  _application;
 
-    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions)
+    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, null) { }
+
+    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, ApplicationAdapter? application)
     {
         _options = sentryOptions;
+        _application = application ?? ApplicationAdapter.Instance;
     }
 
     public SentryEvent? Process(SentryEvent @event)
@@ -21,6 +26,12 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
     {
         if (!MainThreadData.IsMainThread())
         {
+            return @event;
+        }
+
+        if (_application.IsEditor)
+        {
+            _options.DiagnosticLogger?.LogInfo("Screenshot attachment skipped. Capturing screenshots it not supported in the Editor");
             return @event;
         }
 
