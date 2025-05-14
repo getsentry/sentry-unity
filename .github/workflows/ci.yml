@@ -7,7 +7,7 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
-      - "**.txt"      
+      - "**.txt"
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
