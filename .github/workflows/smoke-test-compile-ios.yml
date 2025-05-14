@@ -1,3 +1,4 @@
+name: "SmokeTest: Compile iOS"
 on:
   workflow_call:
     inputs:

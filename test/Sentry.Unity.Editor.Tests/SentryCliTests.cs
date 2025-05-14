@@ -64,7 +64,6 @@ public class SentryCliTests
 
         var sentryCliTestOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
         sentryCliTestOptions.Auth = Guid.NewGuid().ToString();
-        sentryCliTestOptions.Organization = Guid.NewGuid().ToString();
         sentryCliTestOptions.Project = Guid.NewGuid().ToString();
         sentryCliTestOptions.UrlOverride = urlOverride;
 
@@ -73,12 +72,38 @@ public class SentryCliTests
         var properties = File.ReadAllText(Path.Combine(propertiesDirectory, "sentry.properties"));
 
         StringAssert.Contains(sentryCliTestOptions.Auth, properties);
-        StringAssert.Contains(sentryCliTestOptions.Organization, properties);
         StringAssert.Contains(sentryCliTestOptions.Project, properties);
 
         if (!string.IsNullOrEmpty(sentryCliTestOptions.UrlOverride))
         {
             StringAssert.Contains(urlOverride, properties);
+        }
+
+        Directory.Delete(propertiesDirectory, true);
+    }
+
+    [Test]
+    [TestCase("")]
+    [TestCase("testorg")]
+    public void CreateSentryProperties_OrgProvided_PropertyFileCreatedAndContainsOrg(string org)
+    {
+        var propertiesDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(propertiesDirectory);
+
+        var sentryCliTestOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        sentryCliTestOptions.Organization = org;
+
+        SentryCli.CreateSentryProperties(propertiesDirectory, sentryCliTestOptions, new());
+
+        var properties = File.ReadAllText(Path.Combine(propertiesDirectory, "sentry.properties"));
+
+        if (!string.IsNullOrEmpty(sentryCliTestOptions.Organization))
+        {
+            StringAssert.Contains(org, properties);
+        }
+        else
+        {
+            StringAssert.DoesNotContain("defaults.org=", properties);
         }
 
         Directory.Delete(propertiesDirectory, true);

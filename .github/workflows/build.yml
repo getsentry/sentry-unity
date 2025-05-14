@@ -1,5 +1,4 @@
-name: Build Unity SDK
-
+name: "Build Unity SDK"
 on:
   workflow_call:
     inputs:

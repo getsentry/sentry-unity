@@ -265,7 +265,7 @@ public static class BuildPostProcess
                 {
                     var msg = e.Data.Trim();
                     var msgLower = msg.ToLowerInvariant();
-                    var level = SentryLevel.Info;
+                    var level = SentryLevel.Debug;
                     if (msgLower.StartsWith("error"))
                     {
                         level = SentryLevel.Error;
@@ -273,6 +273,10 @@ public static class BuildPostProcess
                     else if (msgLower.StartsWith("warn"))
                     {
                         level = SentryLevel.Warning;
+                    }
+                    else if (msgLower.StartsWith("info"))
+                    {
+                        level = SentryLevel.Info;
                     }
 
                     // Remove the level and timestamp from the beginning of the message.

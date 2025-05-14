@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
+using UnityEngine;
 
 namespace Sentry.Unity.Editor.iOS.Tests;
 
@@ -163,5 +164,35 @@ public class SentryXcodeProjectTests
             log.logLevel == SentryLevel.Debug &&
             log.message.Contains("already added."))); // Sanity check
         Assert.AreEqual(expectedBuildPhaseOccurence, actualBuildPhaseOccurence);
+    }
+
+    [Test]
+    public void AddBuildPhaseSymbolUpload_IgnoreCliErrorsFalse_UsesLogAndPrintArgs()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        sentryCliOptions.IgnoreCliErrors = false;
+
+        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions);
+
+        StringAssert.DoesNotContain("--allow-failure", xcodeProject.ProjectToString()); // sanity check
+        StringAssert.Contains(SentryXcodeProject.LogAndPrintArg, xcodeProject.ProjectToString());
+    }
+
+    [Test]
+    public void AddBuildPhaseSymbolUpload_IgnoreCliErrorsTrue_UsesLogOnlyArgs()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        sentryCliOptions.IgnoreCliErrors = true;
+
+        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions);
+
+        StringAssert.Contains("--allow-failure", xcodeProject.ProjectToString());
+        StringAssert.Contains(SentryXcodeProject.LogOnlyArg, xcodeProject.ProjectToString());
     }
 }
