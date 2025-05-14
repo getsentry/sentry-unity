@@ -210,7 +210,7 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000", "6100"]
-    uses: ./.github/workflows/android-smoke-test-build.yml
+    uses: ./.github/workflows/smoke-test-build-android.yml```
     with:
       unity-version: ${{ matrix.unity-version }}
 
@@ -239,7 +239,7 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ["2019", "2022", "6000", "6100"]
-    uses: ./.github/workflows/ios-smoke-test-build.yml
+    uses: ./.github/workflows/smoke-test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
