@@ -188,7 +188,7 @@ Expected to exist:
   <Target Name="SetupCocoaSDK"
       Condition="!$([MSBuild]::IsOSPlatform('Windows') AND '$(MSBuildProjectName)' == 'Sentry.Unity'
         And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
-      AfterTargets="DownloadNativeSDKs">
+      AfterTargets="BeforeBuild">
 
     <PropertyGroup>
         <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-cocoa.properties"))</PropertiesContent>
