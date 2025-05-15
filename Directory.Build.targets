@@ -186,7 +186,7 @@ Expected to exist:
 
   <!-- Downloads and sets up the Cocoa SDK: dotnet msbuild /t:SetupCocoaSDK src/Sentry.Unity -->
   <Target Name="SetupCocoaSDK"
-      Condition="!$([MSBuild]::IsOSPlatform('Windows') AND '$(MSBuildProjectName)' == 'Sentry.Unity'
+      Condition="!$([MSBuild]::IsOSPlatform('Windows')) AND '$(MSBuildProjectName)' == 'Sentry.Unity'
         And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
       BeforeTargets="BeforeBuild">
 
