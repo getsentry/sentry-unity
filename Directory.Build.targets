@@ -211,12 +211,8 @@ Expected to exist:
       Command="curl -L https://github.com/getsentry/sentry-cocoa/releases/download/$(CocoaVersion)/Sentry-Dynamic.xcframework.zip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip" />
 
     <Exec
-      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework') AND !$([MSBuild]::IsOSPlatform('Windows'))"
-      Command="unzip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip -d $(SentryCocoaCache)" />
-
-    <Exec
-      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework') AND $([MSBuild]::IsOSPlatform('Windows'))"
-      Command="powershell -Command &quot;Expand-Archive -Path '$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip' -DestinationPath '$(SentryCocoaCache)' -Force&quot;" />
+      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework')"
+      Command="pwsh -Command &quot;Expand-Archive -Path '$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip' -DestinationPath '$(SentryCocoaCache)' -Force&quot;" />
 
     <!-- Set up the iOS support -->
     <ItemGroup>
