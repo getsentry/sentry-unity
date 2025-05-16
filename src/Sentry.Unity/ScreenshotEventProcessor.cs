@@ -7,11 +7,11 @@ namespace Sentry.Unity;
 public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
-    private readonly ApplicationAdapter  _application;
+    private readonly IApplication  _application;
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, null) { }
 
-    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, ApplicationAdapter? application)
+    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, IApplication? application)
     {
         _options = sentryOptions;
         _application = application ?? ApplicationAdapter.Instance;
