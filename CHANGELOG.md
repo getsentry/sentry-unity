@@ -2,11 +2,29 @@
 
 ## Unreleased
 
-### Fixes 
+### Dependencies
 
-- When targeting iOS, the SDK now correctly updates the Sentry CLI options used for debug symbol upload when appending builds ([#2146](https://github.com/getsentry/sentry-unity/pull/2146))
-- When targeting Desktop Platforms, Sentry CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138)) 
+- Bump Java SDK from v8.11.1 to v8.12.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8120)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.12.0)
+- Bump .NET SDK from v5.7.0-beta.0 to v5.7.0 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#570)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.7.0-beta.0...5.7.0)
+- Bump Cocoa SDK from v8.50.1 to v8.50.2 ([#2160](https://github.com/getsentry/sentry-unity/pull/2160))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8502)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.50.1...8.50.2)
+- Bump Native SDK from v0.8.4 to v0.8.5 ([#2159](https://github.com/getsentry/sentry-unity/pull/2159))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#085)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.8.4...0.8.5)
+
+## 3.2.2
+
+### Fixes
+
+- When targeting WebGL with an unsupported configuration (i.e. when the exception support is set to `none`), the SDK now shows an error at build time instead of a runtime failure ([#2141](https://github.com/getsentry/sentry-unity/pull/2141))
+- When targeting Desktop Platforms, Sentry CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138))
 - When targeting iOS and setting `IgnoreCliErrors = true`, the Xcode build will now succeed even if the symbol upload itself failed. This is aimed to allow users to unblock themselves ([#2136](https://github.com/getsentry/sentry-unity/pull/2136)) 
+- When targeting iOS, the SDK now correctly updates the Sentry CLI options used for debug symbol upload when appending builds ([#2146](https://github.com/getsentry/sentry-unity/pull/2146))
 - Sentry CLI no longer requires the 'Organisation' option, and they have been removed from the configuration window. If you're providing an Organisation right now, nothing changes. Fresh setups will have the option omitted  ([#2137](https://github.com/getsentry/sentry-unity/pull/2137))
 
 ### Dependencies
@@ -20,6 +38,9 @@
 - Bump Java SDK from v8.9.0 to v8.11.1 ([#2135](https://github.com/getsentry/sentry-unity/pull/2135), [#2140](https://github.com/getsentry/sentry-unity/pull/2140))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8111)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.9.0...8.11.1)
+- Bump .NET SDK from v5.6.0 to v5.7.0-beta.0 ([#2152](https://github.com/getsentry/sentry-unity/pull/2152))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#570-beta0)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.6.0...5.7.0-beta0)
 
 ## 3.2.1
 
