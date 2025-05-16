@@ -1,7 +1,9 @@
 using System.IO;
 using System.Threading;
 using NUnit.Framework;
+using Sentry.Unity.Integrations;
 using UnityEngine;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Tests;
 
@@ -10,8 +12,9 @@ public class ScreenshotEventProcessorTests
     private class Fixture
     {
         public SentryUnityOptions Options = new() { AttachScreenshot = true };
+        public TestApplication TestApplication = new();
 
-        public ScreenshotEventProcessor GetSut() => new(Options);
+        public ScreenshotEventProcessor GetSut() => new(Options, TestApplication);
     }
 
     private Fixture _fixture = null!;
@@ -110,5 +113,23 @@ public class ScreenshotEventProcessorTests
         texture.LoadImage(bytes);
 
         Assert.IsTrue(texture.width == testScreenSize && texture.height == testScreenSize);
+    }
+
+    [Test]
+    [TestCase(true, 1)]
+    [TestCase(false, 0)]
+    public void Process_InEditorEnvironment_DoesNotCaptureScreenshot(bool isEditor, int expectedAttachmentCount)
+    {
+        // Arrange
+        _fixture.TestApplication = new TestApplication(isEditor);
+        var sut = _fixture.GetSut();
+        var sentryEvent = new SentryEvent();
+        var hint = new SentryHint();
+
+        // Act
+        sut.Process(sentryEvent, hint);
+
+        // Assert
+        Assert.AreEqual(expectedAttachmentCount, hint.Attachments.Count);
     }
 }
