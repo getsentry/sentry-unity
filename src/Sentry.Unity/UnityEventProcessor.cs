@@ -94,5 +94,13 @@ internal static class TagValueNormalizer
 {
     internal static string ToTagValue(this bool value) => value ? "true" : "false";
 
-    internal static string ToTagValue(this bool? value) => value.HasValue ? value.ToTagValue() : "unknown";
+    internal static string ToTagValue(this bool? value)
+    {
+        if (value.HasValue)
+        {
+            return value.Value ? "true" : "false";
+        }
+
+        return "unknown";
+    }
 }
