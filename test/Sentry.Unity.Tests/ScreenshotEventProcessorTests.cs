@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading;
 using NUnit.Framework;
@@ -45,6 +46,7 @@ public class ScreenshotEventProcessorTests
     [Test]
     public void Process_IsMainThread_AddsScreenshotToHint()
     {
+        _fixture.TestApplication.IsEditor = false;
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
         var hint = new SentryHint();
@@ -75,6 +77,7 @@ public class ScreenshotEventProcessorTests
     [TestCase(false)]
     public void Process_BeforeCaptureScreenshotCallbackProvided_RespectsScreenshotCaptureDecision(bool captureScreenshot)
     {
+        _fixture.TestApplication.IsEditor = false;
         _fixture.Options.SetBeforeCaptureScreenshot(() => captureScreenshot);
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
@@ -121,7 +124,7 @@ public class ScreenshotEventProcessorTests
     public void Process_InEditorEnvironment_DoesNotCaptureScreenshot(bool isEditor, int expectedAttachmentCount)
     {
         // Arrange
-        _fixture.TestApplication = new TestApplication(isEditor);
+        _fixture.TestApplication.IsEditor = isEditor;
         var sut = _fixture.GetSut();
         var sentryEvent = new SentryEvent();
         var hint = new SentryHint();

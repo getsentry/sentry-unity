@@ -8,7 +8,6 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
     private readonly IApplication _application;
-
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, null) { }
 
     internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, IApplication? application)
@@ -24,7 +23,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
-        if (!MainThreadData.IsMainThread())
+        if (MainThreadData.IsMainThread() is not true)
         {
             return @event;
         }
