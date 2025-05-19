@@ -15,7 +15,6 @@
 #endif
 
 using System;
-using System.Threading;
 using Sentry.Extensibility;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
