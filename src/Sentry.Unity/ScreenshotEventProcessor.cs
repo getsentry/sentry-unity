@@ -23,7 +23,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
-        if (MainThreadData.IsMainThread() is not true)
+        if (!MainThreadData.IsMainThread())
         {
             return @event;
         }
