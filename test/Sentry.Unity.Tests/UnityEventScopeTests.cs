@@ -262,6 +262,7 @@ public sealed class UnityEventProcessorTests
         _testApplication = new TestApplication(productName: "TestGame");
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
+        SentryMainThreadData.Collect();
 
         // act
         sut.ConfigureScope(scope);

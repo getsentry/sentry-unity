@@ -88,7 +88,7 @@ public static class SentryMainThreadData
     {
         if (Collected)
         {
-            return;
+            // return;
         }
 
         var sentrySystemInfo = SentrySystemInfo ?? SentrySystemInfoAdapter.Instance;
