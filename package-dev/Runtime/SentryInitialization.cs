@@ -15,6 +15,7 @@
 #endif
 
 using System;
+using System.Threading;
 using Sentry.Extensibility;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
@@ -55,6 +56,7 @@ namespace Sentry.Unity
 #endif
         public static void Init()
         {
+            SentryMainThreadData.Collect();
             var unityInfo = new SentryUnityInfo();
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
@@ -92,7 +94,7 @@ namespace Sentry.Unity
 #elif SENTRY_NATIVE
                 SentryNative.Configure(options, unityInfo);
 #elif SENTRY_WEBGL
-              SentryWebGL.Configure(options);
+                SentryWebGL.Configure(options);
 #endif
             }
             catch (DllNotFoundException e)
@@ -130,6 +132,27 @@ namespace Sentry.Unity
 
     public class SentryUnityInfo : ISentryUnityInfo
     {
+        public SentryUnityInfo()
+        {
+            // We're only ever going to create an instance of `SentryUnityInfo` when initializing via
+            // `RuntimeInitializeOnLoadMethod`. This guarantees, that this is running on the main thread.
+            MainThreadId = Thread.CurrentThread.ManagedThreadId;
+        }
+
+        private static int? MainThreadId;
+
+        public bool? IsMainThread()
+        {
+            if (MainThreadId.HasValue)
+            {
+                return MainThreadId.Equals(Thread.CurrentThread.ManagedThreadId);
+            }
+
+            // Fallback so we don't make assumptinos. We don't know whether this is the main thread or not. Operations
+            // such as detaching from the JNI on the main thread would cause a crash.
+            return null;
+        }
+
         public bool IL2CPP
         {
             get =>
