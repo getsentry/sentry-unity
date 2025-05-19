@@ -116,8 +116,8 @@ public class ScreenshotEventProcessorTests
     }
 
     [Test]
-    [TestCase(true, 1)]
-    [TestCase(false, 0)]
+    [TestCase(true, 0)]
+    [TestCase(false, 1)]
     public void Process_InEditorEnvironment_DoesNotCaptureScreenshot(bool isEditor, int expectedAttachmentCount)
     {
         // Arrange
