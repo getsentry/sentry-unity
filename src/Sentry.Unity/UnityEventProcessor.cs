@@ -41,7 +41,7 @@ internal class UnityEventProcessor :
             // that it got added last or that there was not an integration added at a later point
             PopulateSdkIntegrations(sentryEvent.Sdk);
             // TODO revisit which tags we should be adding by default
-            sentryEvent.SetTag("unity.is_main_thread", MainThreadData.IsMainThread().ToTagValue());
+            sentryEvent.SetTag("unity.is_main_thread", SentryMainThreadData.IsMainThread().ToTagValue());
         }
         catch (Exception exception)
         {
@@ -51,7 +51,7 @@ internal class UnityEventProcessor :
 
     private void PopulateDevice(Device device)
     {
-        if (!MainThreadData.IsMainThread())
+        if (SentryMainThreadData.IsMainThread() is not true)
         {
             return;
         }
@@ -93,4 +93,6 @@ internal class UnityEventProcessor :
 internal static class TagValueNormalizer
 {
     internal static string ToTagValue(this bool value) => value ? "true" : "false";
+
+    internal static string ToTagValue(this bool? value) => value.HasValue ? value.ToTagValue() : "unknown";
 }

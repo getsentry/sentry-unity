@@ -432,7 +432,7 @@ internal class SentryJava : ISentryJava
 
     internal void HandleJniThreadAttachment(bool? isMainThread = null)
     {
-        isMainThread ??= MainThreadData.IsMainThread();
+        isMainThread ??= SentryMainThreadData.IsMainThread();
         if (isMainThread is false)
         {
             _androidJNI.AttachCurrentThread();
@@ -441,7 +441,7 @@ internal class SentryJava : ISentryJava
 
     internal void HandleJniThreadDetachment(bool? isMainThread = null)
     {
-        isMainThread ??= MainThreadData.IsMainThread();
+        isMainThread ??= SentryMainThreadData.IsMainThread();
         if (isMainThread is false)
         {
             _androidJNI.DetachCurrentThread();

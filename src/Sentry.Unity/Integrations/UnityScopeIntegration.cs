@@ -69,57 +69,57 @@ internal class UnityScopeUpdater
     private void PopulateApp(App app)
     {
         app.Name = _application.ProductName;
-        app.StartTime = MainThreadData.StartTime;
-        var isDebugBuild = MainThreadData.IsDebugBuild;
+        app.StartTime = SentryMainThreadData.StartTime;
+        var isDebugBuild = SentryMainThreadData.IsDebugBuild;
         app.BuildType = isDebugBuild is null ? null : (isDebugBuild.Value ? "debug" : "release");
     }
 
     private void PopulateOperatingSystem(OperatingSystem operatingSystem)
     {
-        operatingSystem.RawDescription = MainThreadData.OperatingSystem;
+        operatingSystem.RawDescription = SentryMainThreadData.OperatingSystem;
     }
 
     private void PopulateDevice(Device device)
     {
-        device.ProcessorCount = MainThreadData.ProcessorCount;
-        device.CpuDescription = MainThreadData.CpuDescription;
+        device.ProcessorCount = SentryMainThreadData.ProcessorCount;
+        device.CpuDescription = SentryMainThreadData.CpuDescription;
         device.Timezone = TimeZoneInfo.Local;
-        device.SupportsVibration = MainThreadData.SupportsVibration;
-        device.Name = MainThreadData.DeviceName;
+        device.SupportsVibration = SentryMainThreadData.SupportsVibration;
+        device.Name = SentryMainThreadData.DeviceName;
 
         // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
         device.Simulator = _application.IsEditor ? true : null;
         device.DeviceUniqueIdentifier = _options.SendDefaultPii
-            ? MainThreadData.DeviceUniqueIdentifier
+            ? SentryMainThreadData.DeviceUniqueIdentifier
             : null;
-        device.DeviceType = MainThreadData.DeviceType;
-        device.Model = MainThreadData.DeviceModel;
+        device.DeviceType = SentryMainThreadData.DeviceType;
+        device.Model = SentryMainThreadData.DeviceModel;
 
         // This is the approximate amount of system memory in megabytes.
         // This function is not supported on Windows Store Apps and will always return 0.
-        if (MainThreadData.SystemMemorySize > 0)
+        if (SentryMainThreadData.SystemMemorySize > 0)
         {
-            device.MemorySize = MainThreadData.SystemMemorySize * 1048576L; // Sentry device mem is in Bytes
+            device.MemorySize = SentryMainThreadData.SystemMemorySize * 1048576L; // Sentry device mem is in Bytes
         }
     }
 
     private void PopulateGpu(Gpu gpu)
     {
-        gpu.Id = MainThreadData.GraphicsDeviceId;
-        gpu.Name = MainThreadData.GraphicsDeviceName;
-        gpu.VendorName = MainThreadData.GraphicsDeviceVendor;
-        gpu.MemorySize = MainThreadData.GraphicsMemorySize;
-        gpu.NpotSupport = MainThreadData.NpotSupport;
-        gpu.Version = MainThreadData.GraphicsDeviceVersion;
-        gpu.ApiType = MainThreadData.GraphicsDeviceType;
-        gpu.MaxTextureSize = MainThreadData.MaxTextureSize;
-        gpu.SupportsDrawCallInstancing = MainThreadData.SupportsDrawCallInstancing;
-        gpu.SupportsRayTracing = MainThreadData.SupportsRayTracing;
-        gpu.SupportsComputeShaders = MainThreadData.SupportsComputeShaders;
-        gpu.SupportsGeometryShaders = MainThreadData.SupportsGeometryShaders;
-        gpu.VendorId = MainThreadData.GraphicsDeviceVendorId;
-        gpu.MultiThreadedRendering = MainThreadData.GraphicsMultiThreaded;
-        gpu.GraphicsShaderLevel = MainThreadData.GraphicsShaderLevel switch
+        gpu.Id = SentryMainThreadData.GraphicsDeviceId;
+        gpu.Name = SentryMainThreadData.GraphicsDeviceName;
+        gpu.VendorName = SentryMainThreadData.GraphicsDeviceVendor;
+        gpu.MemorySize = SentryMainThreadData.GraphicsMemorySize;
+        gpu.NpotSupport = SentryMainThreadData.NpotSupport;
+        gpu.Version = SentryMainThreadData.GraphicsDeviceVersion;
+        gpu.ApiType = SentryMainThreadData.GraphicsDeviceType;
+        gpu.MaxTextureSize = SentryMainThreadData.MaxTextureSize;
+        gpu.SupportsDrawCallInstancing = SentryMainThreadData.SupportsDrawCallInstancing;
+        gpu.SupportsRayTracing = SentryMainThreadData.SupportsRayTracing;
+        gpu.SupportsComputeShaders = SentryMainThreadData.SupportsComputeShaders;
+        gpu.SupportsGeometryShaders = SentryMainThreadData.SupportsGeometryShaders;
+        gpu.VendorId = SentryMainThreadData.GraphicsDeviceVendorId;
+        gpu.MultiThreadedRendering = SentryMainThreadData.GraphicsMultiThreaded;
+        gpu.GraphicsShaderLevel = SentryMainThreadData.GraphicsShaderLevel switch
         {
             null => null,
             -1 => null,
@@ -131,39 +131,39 @@ internal class UnityScopeUpdater
             45 => "Metal / OpenGL ES 3.1",
             46 => "OpenGL 4.1",
             50 => "Shader Model 5.0",
-            _ => MainThreadData.GraphicsShaderLevel.ToString()
+            _ => SentryMainThreadData.GraphicsShaderLevel.ToString()
         };
     }
 
     private void PopulateUnity(Protocol.Unity unity)
     {
-        unity.EditorVersion = MainThreadData.EditorVersion;
-        unity.InstallMode = MainThreadData.InstallMode;
-        unity.TargetFrameRate = MainThreadData.TargetFrameRate;
-        unity.CopyTextureSupport = MainThreadData.CopyTextureSupport;
-        unity.RenderingThreadingMode = MainThreadData.RenderingThreadingMode;
+        unity.EditorVersion = SentryMainThreadData.EditorVersion;
+        unity.InstallMode = SentryMainThreadData.InstallMode;
+        unity.TargetFrameRate = SentryMainThreadData.TargetFrameRate;
+        unity.CopyTextureSupport = SentryMainThreadData.CopyTextureSupport;
+        unity.RenderingThreadingMode = SentryMainThreadData.RenderingThreadingMode;
         unity.ActiveSceneName = _sceneManager.GetActiveScene().Name;
     }
 
     private void PopulateTags(Action<string, string> setTag)
     {
         // TODO revisit which tags we should be adding by default
-        if (MainThreadData.InstallMode is { } installMode)
+        if (SentryMainThreadData.InstallMode is { } installMode)
         {
             setTag("unity.install_mode", installMode);
         }
 
-        if (MainThreadData.SupportsDrawCallInstancing.HasValue)
+        if (SentryMainThreadData.SupportsDrawCallInstancing.HasValue)
         {
-            setTag("unity.gpu.supports_instancing", MainThreadData.SupportsDrawCallInstancing.Value.ToTagValue());
+            setTag("unity.gpu.supports_instancing", SentryMainThreadData.SupportsDrawCallInstancing.Value.ToTagValue());
         }
 
-        if (MainThreadData.DeviceType is { } deviceType)
+        if (SentryMainThreadData.DeviceType is { } deviceType)
         {
             setTag("unity.device.device_type", deviceType);
         }
 
-        if (_options.SendDefaultPii && MainThreadData.DeviceUniqueIdentifier is { } deviceUniqueIdentifier)
+        if (_options.SendDefaultPii && SentryMainThreadData.DeviceUniqueIdentifier is { } deviceUniqueIdentifier)
         {
             setTag("unity.device.unique_identifier", deviceUniqueIdentifier);
         }

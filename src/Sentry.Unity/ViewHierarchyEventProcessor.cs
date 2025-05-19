@@ -24,7 +24,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
-        if (!MainThreadData.IsMainThread())
+        if (SentryMainThreadData.IsMainThread() is not true)
         {
             _options.DiagnosticLogger?.LogDebug("Can't capture view hierarchy on other than main (UI) thread.");
             return @event;

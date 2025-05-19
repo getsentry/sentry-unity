@@ -1,82 +1,96 @@
 using System;
 using System.Threading;
-using UnityEngine;
 
 namespace Sentry.Unity;
 
-internal static class MainThreadData
+public static class SentryMainThreadData
 {
     internal static int? MainThreadId { get; set; }
 
-    public static string? OperatingSystem { get; set; }
+    internal static string? OperatingSystem { get; set; }
 
-    public static int? ProcessorCount { get; set; }
+    internal static int? ProcessorCount { get; set; }
 
-    public static bool? SupportsVibration { get; set; }
+    internal static bool? SupportsVibration { get; set; }
 
-    public static string? DeviceType { get; set; }
+    internal static string? DeviceType { get; set; }
 
-    public static string? CpuDescription { get; set; }
+    internal static string? CpuDescription { get; set; }
 
-    public static string? DeviceName { get; set; }
+    internal static string? DeviceName { get; set; }
 
-    public static string? DeviceUniqueIdentifier { get; set; }
+    internal static string? DeviceUniqueIdentifier { get; set; }
 
-    public static string? DeviceModel { get; set; }
+    internal static string? DeviceModel { get; set; }
 
-    public static int? SystemMemorySize { get; set; }
+    internal static int? SystemMemorySize { get; set; }
 
-    public static int? GraphicsDeviceId { get; set; }
+    internal static int? GraphicsDeviceId { get; set; }
 
-    public static string? GraphicsDeviceName { get; set; }
+    internal static string? GraphicsDeviceName { get; set; }
 
-    public static string? GraphicsDeviceVendorId { get; set; }
+    internal static string? GraphicsDeviceVendorId { get; set; }
 
-    public static string? GraphicsDeviceVendor { get; set; }
+    internal static string? GraphicsDeviceVendor { get; set; }
 
-    public static int? GraphicsMemorySize { get; set; }
+    internal static int? GraphicsMemorySize { get; set; }
 
-    public static bool? GraphicsMultiThreaded { get; set; }
+    internal static bool? GraphicsMultiThreaded { get; set; }
 
-    public static string? NpotSupport { get; set; }
+    internal static string? NpotSupport { get; set; }
 
-    public static string? GraphicsDeviceVersion { get; set; }
+    internal static string? GraphicsDeviceVersion { get; set; }
 
-    public static string? GraphicsDeviceType { get; set; }
+    internal static string? GraphicsDeviceType { get; set; }
 
-    public static int? MaxTextureSize { get; set; }
+    internal static int? MaxTextureSize { get; set; }
 
-    public static bool? SupportsDrawCallInstancing { get; set; }
+    internal static bool? SupportsDrawCallInstancing { get; set; }
 
-    public static bool? SupportsRayTracing { get; set; }
+    internal static bool? SupportsRayTracing { get; set; }
 
-    public static bool? SupportsComputeShaders { get; set; }
+    internal static bool? SupportsComputeShaders { get; set; }
 
-    public static bool? SupportsGeometryShaders { get; set; }
+    internal static bool? SupportsGeometryShaders { get; set; }
 
-    public static int? GraphicsShaderLevel { get; set; }
+    internal static int? GraphicsShaderLevel { get; set; }
 
-    public static bool? IsDebugBuild { get; set; }
+    internal static bool? IsDebugBuild { get; set; }
 
-    public static string? EditorVersion { get; set; }
-    public static string? InstallMode { get; set; }
+    internal static string? EditorVersion { get; set; }
+    internal static string? InstallMode { get; set; }
 
-    public static string? TargetFrameRate { get; set; }
+    internal static string? TargetFrameRate { get; set; }
 
-    public static string? CopyTextureSupport { get; set; }
+    internal static string? CopyTextureSupport { get; set; }
 
-    public static string? RenderingThreadingMode { get; set; }
+    internal static string? RenderingThreadingMode { get; set; }
 
-    public static DateTimeOffset? StartTime { get; set; }
+    internal static DateTimeOffset? StartTime { get; set; }
 
-    public static bool IsMainThread()
-        => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
+    internal static bool Collected = false;
+
+    public static bool? IsMainThread()
+    {
+        if (MainThreadId.HasValue)
+        {
+            return MainThreadId.Equals(Thread.CurrentThread.ManagedThreadId);
+        }
+
+        // We don't know whether this is the main thread or not
+        return null;
+    }
 
     // For testing
     internal static ISentrySystemInfo? SentrySystemInfo { get; set; }
 
-    public static void CollectData()
+    public static void Collect()
     {
+        if (Collected)
+        {
+            return;
+        }
+
         var sentrySystemInfo = SentrySystemInfo ?? SentrySystemInfoAdapter.Instance;
 
         MainThreadId = sentrySystemInfo.MainThreadId;
@@ -111,5 +125,7 @@ internal static class MainThreadData
         CopyTextureSupport = sentrySystemInfo.CopyTextureSupport?.Value;
         RenderingThreadingMode = sentrySystemInfo.RenderingThreadingMode?.Value;
         StartTime = sentrySystemInfo.StartTime?.Value;
+
+        Collected = true;
     }
 }

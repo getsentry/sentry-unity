@@ -120,8 +120,8 @@ public sealed class UnityEventProcessorThreadingTests
         };
 
         // In an actual build, the collection is automatically triggered before the SDK initializes
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = systemInfo;
+        SentryMainThreadData.Collect();
 
         SentryUnity.Init(options);
 
@@ -236,11 +236,11 @@ public sealed class UnityEventProcessorTests
     public void DeviceUniqueIdentifierWithSendDefaultPii_IsNotNull()
     {
         // arrange
-        MainThreadData.SentrySystemInfo = new TestSentrySystemInfo
+        SentryMainThreadData.SentrySystemInfo = new TestSentrySystemInfo
         {
             DeviceUniqueIdentifier = new Lazy<string>(() => "83fdd6d4-50b1-4735-a4d1-d4f7de64aff0")
         };
-        MainThreadData.CollectData();
+        SentryMainThreadData.Collect();
 
         var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
         var sut = new UnityScopeUpdater(sentryOptions, _testApplication);
@@ -329,8 +329,8 @@ public sealed class UnityEventProcessorTests
             DeviceUniqueIdentifier = new(() => "f810306c-68db-4ebe-89ba-13c457449339"),
             InstallMode = ApplicationInstallMode.Store.ToString()
         };
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = systemInfo;
+        SentryMainThreadData.Collect();
 
         var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
         var scopeUpdater = new UnityScopeUpdater(sentryOptions, _testApplication);
@@ -382,8 +382,8 @@ public sealed class UnityEventProcessorTests
     {
         // arrange
         var systemInfo = new TestSentrySystemInfo { OperatingSystem = "Windows" };
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = systemInfo;
+        SentryMainThreadData.Collect();
 
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
@@ -409,8 +409,8 @@ public sealed class UnityEventProcessorTests
             DeviceModel = new Lazy<string>(() => "Samsung Galaxy S3"),
             SystemMemorySize = 16000
         };
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = systemInfo;
+        SentryMainThreadData.Collect();
 
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
@@ -441,8 +441,8 @@ public sealed class UnityEventProcessorTests
             CopyTextureSupport = new Lazy<string>(() => "Basic, Copy3D, DifferentTypes, TextureToRT, RTToTexture"),
             RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded")
         };
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = systemInfo;
+        SentryMainThreadData.Collect();
 
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, sceneManager);
         var scope = new Scope(_sentryOptions);
@@ -482,8 +482,8 @@ public sealed class UnityEventProcessorTests
             SupportsComputeShaders = true,
             SupportsGeometryShaders = true
         };
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = systemInfo;
+        SentryMainThreadData.Collect();
 
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
@@ -514,8 +514,8 @@ public sealed class UnityEventProcessorTests
         [ValueSource(nameof(ShaderLevels))] (int, string) shaderValue)
     {
         var (shaderLevel, shaderDescription) = shaderValue;
-        MainThreadData.SentrySystemInfo = new TestSentrySystemInfo { GraphicsShaderLevel = shaderLevel };
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = new TestSentrySystemInfo { GraphicsShaderLevel = shaderLevel };
+        SentryMainThreadData.Collect();
 
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
@@ -552,8 +552,8 @@ public sealed class UnityEventProcessorTests
         var scope = new Scope(_sentryOptions);
 
         // act
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
+        SentryMainThreadData.SentrySystemInfo = systemInfo;
+        SentryMainThreadData.Collect();
         sut.ConfigureScope(scope);
 
         // assert
