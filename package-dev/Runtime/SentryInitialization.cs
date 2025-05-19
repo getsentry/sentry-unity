@@ -132,27 +132,6 @@ namespace Sentry.Unity
 
     public class SentryUnityInfo : ISentryUnityInfo
     {
-        public SentryUnityInfo()
-        {
-            // We're only ever going to create an instance of `SentryUnityInfo` when initializing via
-            // `RuntimeInitializeOnLoadMethod`. This guarantees, that this is running on the main thread.
-            MainThreadId = Thread.CurrentThread.ManagedThreadId;
-        }
-
-        private static int? MainThreadId;
-
-        public bool? IsMainThread()
-        {
-            if (MainThreadId.HasValue)
-            {
-                return MainThreadId.Equals(Thread.CurrentThread.ManagedThreadId);
-            }
-
-            // Fallback so we don't make assumptinos. We don't know whether this is the main thread or not. Operations
-            // such as detaching from the JNI on the main thread would cause a crash.
-            return null;
-        }
-
         public bool IL2CPP
         {
             get =>
