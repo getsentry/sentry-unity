@@ -26,7 +26,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
     {
         if (SentryMainThreadData.IsMainThread() is not true)
         {
-            _options.DiagnosticLogger?.LogDebug("Can't capture view hierarchy on other than main (UI) thread.");
+            _options.DiagnosticLogger?.LogDebug("Hierarchy capture skipped. Can't capture hierarchy on other than the main thread.");
             return @event;
         }
 
@@ -36,7 +36,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
         }
         else
         {
-            _options.DiagnosticLogger?.LogInfo("View hierarchy attachment skipped by BeforeAttachViewHierarchy callback.");
+            _options.DiagnosticLogger?.LogInfo("Hierarchy capture skipped by BeforeAttachViewHierarchy callback.");
         }
 
         return @event;

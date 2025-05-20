@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Significant change in behavior
+
+- The SDK no longer attaches screenshots when capturing errors in the Unity Editor. ([#2163](https://github.com/getsentry/sentry-unity/pull/2163))
+
 ### Dependencies
 
 - Bump Java SDK from v8.11.1 to v8.12.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155))
@@ -10,9 +14,9 @@
 - Bump .NET SDK from v5.7.0-beta.0 to v5.7.0 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#570)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.7.0-beta.0...5.7.0)
-- Bump Cocoa SDK from v8.50.1 to v8.50.2 ([#2160](https://github.com/getsentry/sentry-unity/pull/2160))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8502)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.50.1...8.50.2)
+- Bump Cocoa SDK from v8.50.1 to v8.51.0 ([#2160](https://github.com/getsentry/sentry-unity/pull/2160), [#2166](https://github.com/getsentry/sentry-unity/pull/2166))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8510)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.50.1...8.51.0)
 - Bump Native SDK from v0.8.4 to v0.8.5 ([#2159](https://github.com/getsentry/sentry-unity/pull/2159))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#085)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.8.4...0.8.5)
