@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Sentry.Unity;
 
-public static class SentryMainThreadData
+internal static class MainThreadData
 {
     internal static int? MainThreadId { get; set; }
 
@@ -82,7 +82,7 @@ public static class SentryMainThreadData
     // For testing
     internal static ISentrySystemInfo? SentrySystemInfo { get; set; }
 
-    public static void Collect()
+    public static void CollectData()
     {
         var sentrySystemInfo = SentrySystemInfo ?? SentrySystemInfoAdapter.Instance;
 

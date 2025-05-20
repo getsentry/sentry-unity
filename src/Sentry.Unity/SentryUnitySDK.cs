@@ -47,7 +47,7 @@ internal class SentryUnitySdk
             }
         }
 
-        SentryMainThreadData.Collect();
+        MainThreadData.CollectData();
 
         unitySdk._dotnetSdk = SentrySdk.Init(options);
 

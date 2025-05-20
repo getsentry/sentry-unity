@@ -77,15 +77,12 @@ public sealed class ContextWriterTests
             NativeContextWriter = context,
         };
 
-        // In an actual build, it's getting collected before initialization via the RuntimeInitializeOnLoadMethod
-        SentryMainThreadData.SentrySystemInfo = sysInfo;
-        SentryMainThreadData.Collect();
-
         // act
+        MainThreadData.SentrySystemInfo = sysInfo;
         SentryUnity.Init(options);
+        Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
         // assert
-        Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
         Assert.AreEqual(sysInfo.StartTime?.Value.ToString("o"), context.AppStartTime);
         Assert.AreEqual("debug", context.AppBuildType);
         Assert.AreEqual(sysInfo.OperatingSystem, context.OperatingSystemRawDescription);
