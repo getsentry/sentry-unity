@@ -25,6 +25,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
     {
         if (!MainThreadData.IsMainThread())
         {
+            _options.DiagnosticLogger?.LogDebug("Screenshot capture skipped. Can't capture screenshots on other than the main thread.");
             return @event;
         }
 
@@ -32,7 +33,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
         {
             if (_application.IsEditor)
             {
-                _options.DiagnosticLogger?.LogInfo("Screenshot attachment skipped. Capturing screenshots it not supported in the Editor");
+                _options.DiagnosticLogger?.LogInfo("Screenshot capture skipped. Capturing screenshots it not supported in the Editor");
                 return @event;
             }
 
@@ -47,7 +48,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
         }
         else
         {
-            _options.DiagnosticLogger?.LogInfo("Screenshot attachment skipped by BeforeAttachScreenshot callback.");
+            _options.DiagnosticLogger?.LogInfo("Screenshot capture skipped by BeforeAttachScreenshot callback.");
         }
 
 
