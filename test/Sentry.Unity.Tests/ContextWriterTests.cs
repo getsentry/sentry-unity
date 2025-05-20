@@ -78,6 +78,7 @@ public sealed class ContextWriterTests
         };
 
         // In an actual build, it's getting collected before initialization via the RuntimeInitializeOnLoadMethod
+        SentryMainThreadData.SentrySystemInfo = sysInfo;
         SentryMainThreadData.Collect();
 
         // act
