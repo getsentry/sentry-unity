@@ -68,8 +68,6 @@ public static class SentryMainThreadData
 
     internal static DateTimeOffset? StartTime { get; set; }
 
-    internal static bool MainThreadICollected = false;
-
     public static bool? IsMainThread()
     {
         if (MainThreadId.HasValue)
@@ -88,11 +86,8 @@ public static class SentryMainThreadData
     {
         var sentrySystemInfo = SentrySystemInfo ?? SentrySystemInfoAdapter.Instance;
 
-        if (!MainThreadICollected)
-        {
-            MainThreadId = sentrySystemInfo.MainThreadId;
-            MainThreadICollected = true;
-        }
+        // Don't overwrite the MainThreadId if it's already been set
+        MainThreadId ??= sentrySystemInfo.MainThreadId;
 
         ProcessorCount = sentrySystemInfo.ProcessorCount;
         OperatingSystem = sentrySystemInfo.OperatingSystem;
