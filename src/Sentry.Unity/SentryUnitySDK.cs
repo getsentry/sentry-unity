@@ -47,6 +47,8 @@ internal class SentryUnitySdk
             }
         }
 
+        MainThreadData.CollectData();
+
         unitySdk._dotnetSdk = SentrySdk.Init(options);
 
         if (options.NativeContextWriter is { } contextWriter)

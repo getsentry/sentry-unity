@@ -356,6 +356,24 @@ internal class SentryJava : ISentryJava
         SentryLevel.Warning => "WARNING",
         _ => "DEBUG"
     };
+
+    internal void HandleJniThreadAttachment(bool? isMainThread = null)
+    {
+        isMainThread ??= MainThreadData.IsMainThread();
+        if (isMainThread is false)
+        {
+            _androidJNI.AttachCurrentThread();
+        }
+    }
+
+    internal void HandleJniThreadDetachment(bool? isMainThread = null)
+    {
+        isMainThread ??= MainThreadData.IsMainThread();
+        if (isMainThread is false)
+        {
+            _androidJNI.DetachCurrentThread();
+        }
+    }
 }
 
 internal static class AndroidJavaObjectExtension

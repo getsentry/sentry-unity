@@ -23,7 +23,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
-        if (SentryMainThreadData.IsMainThread() is not true)
+        if (MainThreadData.IsMainThread() is not true)
         {
             _options.DiagnosticLogger?.LogDebug("Screenshot capture skipped. Can't capture screenshots on other than the main thread.");
             return @event;

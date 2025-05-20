@@ -24,7 +24,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
-        if (SentryMainThreadData.IsMainThread() is not true)
+        if (MainThreadData.IsMainThread() is not true)
         {
             _options.DiagnosticLogger?.LogDebug("Hierarchy capture skipped. Can't capture hierarchy on other than the main thread.");
             return @event;

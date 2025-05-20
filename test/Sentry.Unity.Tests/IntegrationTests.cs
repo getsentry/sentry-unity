@@ -15,7 +15,6 @@ namespace Sentry.Unity.Tests;
 
 public sealed class IntegrationTests
 {
-    private TestSentrySystemInfo? _testSystemInfo = null;
     private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
     private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
 
@@ -339,10 +338,6 @@ public sealed class IntegrationTests
 
     internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
     {
-        // In an actual build, it's getting collected before initialization via the RuntimeInitializeOnLoadMethod
-        SentryMainThreadData.SentrySystemInfo = _testSystemInfo;
-        SentryMainThreadData.Collect();
-
         SentryUnity.Init(options =>
         {
             options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";

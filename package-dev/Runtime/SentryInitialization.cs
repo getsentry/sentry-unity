@@ -60,8 +60,6 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
             if (options != null && options.ShouldInitializeSdk())
             {
-                SentryMainThreadData.Collect();
-
                 // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
                 // compile them with the game instead of precompiling them with the rest of the SDK.
                 // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
