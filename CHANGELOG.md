@@ -6,6 +6,10 @@
 
 - The SDK no longer attaches screenshots when capturing errors in the Unity Editor. ([#2163](https://github.com/getsentry/sentry-unity/pull/2163))
 
+## Fixes
+
+- Fixed a potential race condition that when targeting Android could cause 'attempting to detach while still running code' crashes ([#2165](https://github.com/getsentry/sentry-unity/pull/2165))
+
 ### Dependencies
 
 - Bump Java SDK from v8.11.1 to v8.12.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155))

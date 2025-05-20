@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using UnityEngine;
 
 namespace Sentry.Unity;
 
@@ -69,8 +68,16 @@ internal static class MainThreadData
 
     public static DateTimeOffset? StartTime { get; set; }
 
-    public static bool IsMainThread()
-        => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
+    public static bool? IsMainThread()
+    {
+        if (MainThreadId.HasValue)
+        {
+            return MainThreadId.Equals(Thread.CurrentThread.ManagedThreadId);
+        }
+
+        // We don't know whether this is the main thread or not
+        return null;
+    }
 
     // For testing
     internal static ISentrySystemInfo? SentrySystemInfo { get; set; }
@@ -79,7 +86,9 @@ internal static class MainThreadData
     {
         var sentrySystemInfo = SentrySystemInfo ?? SentrySystemInfoAdapter.Instance;
 
-        MainThreadId = sentrySystemInfo.MainThreadId;
+        // Don't overwrite the MainThreadId if it's already been set
+        MainThreadId ??= sentrySystemInfo.MainThreadId;
+
         ProcessorCount = sentrySystemInfo.ProcessorCount;
         OperatingSystem = sentrySystemInfo.OperatingSystem;
         CpuDescription = sentrySystemInfo.CpuDescription;

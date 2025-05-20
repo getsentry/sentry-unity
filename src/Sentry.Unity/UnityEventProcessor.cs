@@ -51,7 +51,7 @@ internal class UnityEventProcessor :
 
     private void PopulateDevice(Device device)
     {
-        if (!MainThreadData.IsMainThread())
+        if (MainThreadData.IsMainThread() is not true)
         {
             return;
         }
@@ -93,4 +93,14 @@ internal class UnityEventProcessor :
 internal static class TagValueNormalizer
 {
     internal static string ToTagValue(this bool value) => value ? "true" : "false";
+
+    internal static string ToTagValue(this bool? value)
+    {
+        if (value.HasValue)
+        {
+            return value.Value ? "true" : "false";
+        }
+
+        return "unknown";
+    }
 }
