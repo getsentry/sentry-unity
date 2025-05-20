@@ -68,7 +68,7 @@ public static class SentryMainThreadData
 
     internal static DateTimeOffset? StartTime { get; set; }
 
-    internal static bool Collected = false;
+    internal static bool MainThreadICollected = false;
 
     public static bool? IsMainThread()
     {
@@ -86,14 +86,14 @@ public static class SentryMainThreadData
 
     public static void Collect()
     {
-        if (Collected)
-        {
-            // return;
-        }
-
         var sentrySystemInfo = SentrySystemInfo ?? SentrySystemInfoAdapter.Instance;
 
-        MainThreadId = sentrySystemInfo.MainThreadId;
+        if (!MainThreadICollected)
+        {
+            MainThreadId = sentrySystemInfo.MainThreadId;
+            MainThreadICollected = true;
+        }
+
         ProcessorCount = sentrySystemInfo.ProcessorCount;
         OperatingSystem = sentrySystemInfo.OperatingSystem;
         CpuDescription = sentrySystemInfo.CpuDescription;
@@ -125,7 +125,5 @@ public static class SentryMainThreadData
         CopyTextureSupport = sentrySystemInfo.CopyTextureSupport?.Value;
         RenderingThreadingMode = sentrySystemInfo.RenderingThreadingMode?.Value;
         StartTime = sentrySystemInfo.StartTime?.Value;
-
-        Collected = true;
     }
 }
