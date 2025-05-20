@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Significant change in behavior
+
+- The SDK no longer attaches screenshots when capturing errors in the Unity Editor. ([#2163](https://github.com/getsentry/sentry-unity/pull/2163))
+
 ### Dependencies
 
 - Bump Java SDK from v8.11.1 to v8.12.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155))

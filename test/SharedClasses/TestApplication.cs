@@ -27,7 +27,7 @@ public sealed class TestApplication : IApplication
     public event Application.LogCallback? LogMessageReceived;
     public event Action? Quitting;
     public string ActiveSceneName => "TestSceneName";
-    public bool IsEditor { get; }
+    public bool IsEditor { get; set; }
     public string ProductName { get; }
     public string Version { get; }
     public string BuildGUID { get; }
