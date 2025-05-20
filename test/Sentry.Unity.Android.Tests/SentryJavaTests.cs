@@ -1,5 +1,7 @@
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
+using System;
+using System.Linq;
 
 namespace Sentry.Unity.Android.Tests;
 
@@ -39,6 +41,63 @@ public class SentryJavaTests
 
         // Assert
         Assert.AreEqual(shouldAttach, _androidJni.DetachCalled);
+    }
+
+    [Test]
+    public void SafeExecuteJniOperation_WithFunc_ExecutesActionAndReturnsResult()
+    {
+        // Arrange
+        const string expectedResult = "test-result";
+
+        // Act
+        var result = _sut.SafeExecuteJniOperation(() => expectedResult);
+
+        // Assert
+        Assert.AreEqual(expectedResult, result);
+    }
+
+    [Test]
+    public void SafeExecuteJniOperation_WithFunc_HandlesException()
+    {
+        // Arrange
+        var exception = new Exception("Test exception");
+
+        // Act
+        var result = _sut.SafeExecuteJniOperation<string>(() => throw exception);
+
+        // Assert
+        Assert.IsNull(result);
+        Assert.IsTrue(_logger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Error &&
+            log.message.Contains("JNI operation calling 'SafeExecuteJniOperation_WithFunc_HandlesException' failed.")));
+    }
+
+    [Test]
+    public void SafeExecuteJniOperation_WithAction_ExecutesAction()
+    {
+        // Arrange
+        var actionExecuted = false;
+
+        // Act
+        _sut.SafeExecuteJniOperation(() => actionExecuted = true);
+
+        // Assert
+        Assert.IsTrue(actionExecuted);
+    }
+
+    [Test]
+    public void SafeExecuteJniOperation_WithAction_HandlesException()
+    {
+        // Arrange
+        var exception = new Exception("Test exception");
+
+        // Act
+        _sut.SafeExecuteJniOperation(() => throw exception);
+
+        // Assert
+        Assert.IsTrue(_logger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Error &&
+            log.message.Contains("JNI operation calling 'SafeExecuteJniOperation_WithAction_HandlesException' failed.")));
     }
 
     internal class TestAndroidJNI : IAndroidJNI
