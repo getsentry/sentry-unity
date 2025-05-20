@@ -328,7 +328,7 @@ internal class SentryJava : ISentryJava
 
     internal void HandleJniThreadAttachment(bool? isMainThread = null)
     {
-        isMainThread ??= SentryMainThreadData.IsMainThread();
+        isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is false)
         {
             _androidJNI.AttachCurrentThread();
@@ -339,7 +339,7 @@ internal class SentryJava : ISentryJava
     {
         // We need to be sure that we're not on the main thread. Detaching on the main thread leads to a crash with
         // "attempting to detach while still running code"
-        isMainThread ??= SentryMainThreadData.IsMainThread();
+        isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is false)
         {
             _androidJNI.DetachCurrentThread();
@@ -356,24 +356,6 @@ internal class SentryJava : ISentryJava
         SentryLevel.Warning => "WARNING",
         _ => "DEBUG"
     };
-
-    internal void HandleJniThreadAttachment(bool? isMainThread = null)
-    {
-        isMainThread ??= MainThreadData.IsMainThread();
-        if (isMainThread is false)
-        {
-            _androidJNI.AttachCurrentThread();
-        }
-    }
-
-    internal void HandleJniThreadDetachment(bool? isMainThread = null)
-    {
-        isMainThread ??= MainThreadData.IsMainThread();
-        if (isMainThread is false)
-        {
-            _androidJNI.DetachCurrentThread();
-        }
-    }
 }
 
 internal static class AndroidJavaObjectExtension
