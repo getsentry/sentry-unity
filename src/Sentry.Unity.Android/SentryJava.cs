@@ -197,26 +197,19 @@ internal class SentryJava : ISentryJava
     {
         try
         {
-            var isMainThread = SentryMainThreadData.IsMainThread();
+            HandleJniThreadAttachment();
 
-            try
-            {
-                HandleJniThreadAttachment(isMainThread);
-                _ = GetSentryJava();
-                return true;
-            }
-            catch (AndroidJavaException)
-            {
-                return false;
-            }
-            finally
-            {
-                HandleJniThreadDetachment(isMainThread);
-            }
+            // This relies on 'GetSentryJava' throwing an 'AndroidJavaException' if the Java SDK is not present
+            _ = GetSentryJava();
+            return true;
         }
-        catch (Exception)
+        catch (AndroidJavaException)
         {
             return false;
+        }
+        finally
+        {
+            HandleJniThreadDetachment();
         }
     }
 
