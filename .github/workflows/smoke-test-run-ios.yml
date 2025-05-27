@@ -28,6 +28,10 @@ jobs:
     # Map the job outputs to step outputs
     outputs:
       status: ${{ steps.smoke-test.outputs.status }}
+    env:
+      UNITY_VERSION: ${{ inputs.unity-version }}
+      IOS_VERSION: ${{ inputs.ios-version }}
+      INIT_TYPE: ${{ inputs.init-type }}
 
     steps:
       - name: Checkout
@@ -36,15 +40,15 @@ jobs:
       - name: Download app artifact
         uses: actions/download-artifact@v4
         with:
-          name: testapp-ios-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          name: testapp-ios-compiled-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
           path: samples/IntegrationTest/Build
 
       - name: List downloaded files
         run: |
           Get-ChildItem -Path "samples/IntegrationTest/Build" -Recurse
 
-      - name: Set Xcode for iOS version ${{ inputs.ios-version }}
-        if: ${{ inputs.ios-version != 'latest'}}
+      - name: Set Xcode for iOS version ${{ env.IOS_VERSION }}
+        if: ${{ env.IOS_VERSION != 'latest'}}
         uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # pin@v1.6
         with:
           xcode-version: '14.1' # to run iOS 16.1 we need Xcode 14.1
@@ -53,7 +57,7 @@ jobs:
         id: smoke-test
         timeout-minutes: 20
         run: |
-          $runtime = "${{ inputs.ios-version }}"
+          $runtime = "${{ env.IOS_VERSION }}"
           If ($runtime -ne "latest")
           {
             $runtime = "iOS " + $runtime

@@ -17,6 +17,9 @@ jobs:
   compile:
     name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
     runs-on: 'macos-latest'
+    env:
+      UNITY_VERSION: ${{ inputs.unity-version }}
+      INIT_TYPE: ${{ inputs.init-type }}
             
     steps:
       - name: Checkout
@@ -25,20 +28,20 @@ jobs:
       - name: Download app project
         uses: actions/download-artifact@v4
         with:
-          name: testapp-ios-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          name: testapp-ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
 
       - name: Extract app project
-        run: tar -xvzf test-app-${{ inputs.init-type }}.tar.gz
+        run: tar -xvzf test-app-${{ env.INIT_TYPE }}.tar.gz
 
       - name: iOS smoke test
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}" -iOSMinVersion "16.1"
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ env.UNITY_VERSION }}" -iOSMinVersion "16.1"
         timeout-minutes: 20
     
       - name: Upload integration-test project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-project-ios-${{ inputs.unity-version }}-${{ inputs.init-type }}-compiled
+          name: failed-project-ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}-compiled
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
@@ -52,7 +55,7 @@ jobs:
       - name: Upload app
         uses: actions/upload-artifact@v4
         with:
-          name: testapp-ios-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          name: testapp-ios-compiled-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
           # Collect app but ignore the files that are not required for the test.
           path: |
             samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/
