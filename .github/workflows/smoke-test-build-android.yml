@@ -22,7 +22,7 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -46,7 +46,7 @@ jobs:
           docker exec --user root unity apt-get -y -q install mono-devel
 
       - name: Download IntegrationTest project
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: smoke-test-${{ env.UNITY_VERSION }}
 
@@ -54,7 +54,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Download UPM package
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
           name: ${{ env.GITHUB_SHA }}
           wait-timeout: 3600
@@ -72,7 +72,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ env.UNITY_VERSION }}"
 
       - name: Upload .apk
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: testapp-android-compiled-${{ env.UNITY_VERSION }}-runtime
           path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
@@ -89,7 +89,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ env.UNITY_VERSION }}"
 
       - name: Upload .apk
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: testapp-android-compiled-${{ env.UNITY_VERSION }}-buildtime
           path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
@@ -97,7 +97,7 @@ jobs:
           
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: failed-project-android-${{ env.UNITY_VERSION }}
           path: |
