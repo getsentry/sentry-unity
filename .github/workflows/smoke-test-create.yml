@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UNITY_PATH: docker exec unity unity-editor
+      GITHUB_ACTOR: ${{ github.actor }}
+      UNITY_VERSION: ${{ inputs.unity-version }}
 
     steps:
     - name: Checkout
@@ -27,11 +29,11 @@ jobs:
       uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
       with:
         registry: ghcr.io
-        username: ${{ github.actor }} 
-        password: ${{ secrets.GITHUB_TOKEN }} 
+        username: ${{ env.GITHUB_ACTOR }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Start the Unity docker container
-      run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+      run: ./scripts/ci-docker.sh "${{ env.UNITY_VERSION }}" 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
       shell: bash
 
     - name: Create new Project
@@ -44,7 +46,7 @@ jobs:
     - name: Upload project
       uses: actions/upload-artifact@v4
       with:
-        name: smoke-test-${{ inputs.unity-version }}
+        name: smoke-test-${{ env.UNITY_VERSION }}
         if-no-files-found: error
         path: test-project.tar.gz
         # Lower retention period - we only need this to retry CI.

@@ -10,6 +10,9 @@ env:
   LOWEST_SUPPORTED_UNITY_VERSION: 2019
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
+  GITHUB_ACTOR: ${{ github.actor }}
+  GITHUB_SHA: ${{ github.sha }}
+  UNITY_VERSION: ${{ inputs.unity-version }}
 
 defaults:
   run:
@@ -28,7 +31,7 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ inputs.unity-version }}")" >> $env:GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ env.UNITY_VERSION }}")" >> $env:GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -44,11 +47,11 @@ jobs:
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }} 
-          password: ${{ secrets.GITHUB_TOKEN }} 
+          username: ${{ env.GITHUB_ACTOR }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh "${{ env.UNITY_VERSION }}" 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
 
       - name: Install .NET SDK
@@ -97,16 +100,16 @@ jobs:
         run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
       - name: Package for release
-        if: ${{ inputs.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        if: ${{ env.UNITY_VERSION == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         run: |
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           ./scripts/pack.ps1
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ inputs.unity-version == env.LOWEST_SUPPORTED_UNITY_VERSION }}
+        if: ${{ env.UNITY_VERSION == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         with:
-          name: ${{ github.sha }}
+          name: ${{ env.GITHUB_SHA }}
           if-no-files-found: error
           path: |
             package-release.zip
@@ -119,7 +122,7 @@ jobs:
       - name: Upload test artifacts (playmode)
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (playmode) - ${{inputs.unity-version}}
+          name: Test results (playmode) - ${{ env.UNITY_VERSION }}
           path: artifacts/test/playmode
 
       - name: Run Unity tests (editmode)
@@ -128,5 +131,5 @@ jobs:
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@v4
         with:
-          name: Test results (editmode) - ${{inputs.unity-version}}
+          name: Test results (editmode) - ${{ env.UNITY_VERSION }}
           path: artifacts/test/editmode
