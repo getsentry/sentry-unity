@@ -34,7 +34,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh "${{ env.UNITY_VERSION }}" 'android' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh "${UNITY_VERSION}" 'android' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
 
       # Workaround for missing libMonoPosixHelper.so
@@ -63,13 +63,13 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${env:UNITY_PATH}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols
 
       - name: Export APK - Runtime Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ env.UNITY_VERSION }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${env:UNITY_VERSION}"
 
       - name: Upload .apk
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -86,7 +86,7 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Export APK - Build-Time Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ env.UNITY_VERSION }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${env:UNITY_VERSION}"
 
       - name: Upload .apk
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
