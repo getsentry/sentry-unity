@@ -57,7 +57,7 @@ jobs:
         id: smoke-test
         timeout-minutes: 20
         run: |
-          $runtime = "${{ env.IOS_VERSION }}"
+          $runtime = "${env:IOS_VERSION}"
           If ($runtime -ne "latest")
           {
             $runtime = "iOS " + $runtime
