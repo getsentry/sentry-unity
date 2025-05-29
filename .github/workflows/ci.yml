@@ -157,7 +157,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       # - name: Build without Sentry SDK
-      #   run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+      #   run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "${{ matrix.platform }}"
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -373,7 +373,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}"
 
       - name: Download UPM package
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
