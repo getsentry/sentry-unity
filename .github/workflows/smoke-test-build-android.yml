@@ -16,10 +16,13 @@ jobs:
     runs-on: ubuntu-latest-4-cores
     env:
       UNITY_PATH: docker exec unity unity-editor
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_SHA: ${{ github.sha }}
+      UNITY_VERSION: ${{ inputs.unity-version }}
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -27,11 +30,11 @@ jobs:
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }} 
-          password: ${{ secrets.GITHUB_TOKEN }} 
+          username: ${{ env.GITHUB_ACTOR }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'android' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh "${UNITY_VERSION}" 'android' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
 
       # Workaround for missing libMonoPosixHelper.so
@@ -43,35 +46,35 @@ jobs:
           docker exec --user root unity apt-get -y -q install mono-devel
 
       - name: Download IntegrationTest project
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: smoke-test-${{ inputs.unity-version }}
+          name: smoke-test-${{ env.UNITY_VERSION }}
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
       - name: Download UPM package
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
-          name: ${{ github.sha }}
+          name: ${{ env.GITHUB_SHA }}
           wait-timeout: 3600
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${env:UNITY_PATH}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols
 
       - name: Export APK - Runtime Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${env:UNITY_VERSION}"
 
       - name: Upload .apk
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-android-compiled-${{ inputs.unity-version }}-runtime
+          name: testapp-android-compiled-${{ env.UNITY_VERSION }}-runtime
           path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
           retention-days: 14 # Lower retention period - we only need this to retry CI.
 
@@ -83,20 +86,20 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Export APK - Build-Time Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${{ inputs.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${env:UNITY_VERSION}"
 
       - name: Upload .apk
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-android-compiled-${{ inputs.unity-version }}-buildtime
+          name: testapp-android-compiled-${{ env.UNITY_VERSION }}-buildtime
           path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
           retention-days: 14 # Lower retention period - we only need this to retry CI.
           
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: failed-project-android-${{ inputs.unity-version }}
+          name: failed-project-android-${{ env.UNITY_VERSION }}
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame

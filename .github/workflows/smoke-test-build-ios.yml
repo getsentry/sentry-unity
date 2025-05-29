@@ -22,10 +22,13 @@ jobs:
             build_platform: iOS
     env:
       UNITY_PATH: docker exec unity unity-editor
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_SHA: ${{ github.sha }}
+      UNITY_VERSION: ${{ inputs.unity-version }}
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -33,11 +36,11 @@ jobs:
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }} 
-          password: ${{ secrets.GITHUB_TOKEN }} 
+          username: ${{ env.GITHUB_ACTOR }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'iOS' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh "${UNITY_VERSION}" 'iOS' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
 
       # Workaround for missing libMonoPosixHelper.so
@@ -49,30 +52,30 @@ jobs:
           docker exec --user root unity apt-get -y -q install mono-devel
 
       - name: Download IntegrationTest project
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: smoke-test-${{ inputs.unity-version }}
+          name: smoke-test-${{ env.UNITY_VERSION }}
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
       - name: Download UPM package
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
-          name: ${{ github.sha }}
+          name: ${{ env.GITHUB_SHA }}
           wait-timeout: 3600
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${env:UNITY_PATH}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${env:UNITY_PATH}" -Platform ${{ matrix.build_platform }} -CheckSymbols
 
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${env:UNITY_VERSION}"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -84,9 +87,9 @@ jobs:
 
       # Upload runtime initialization build
       - name: Upload test app
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-ios-${{ inputs.unity-version }}-runtime
+          name: testapp-ios-${{ env.UNITY_VERSION }}-runtime
           if-no-files-found: error
           path: test-app-runtime.tar.gz
           retention-days: 14
@@ -99,7 +102,7 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Build Project for mobile platforms (build-time initialization)
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${{ inputs.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$false -UnityVersion "${env:UNITY_VERSION}"
 
       - name: Create archive (build-time initialization)
         shell: bash
@@ -109,18 +112,18 @@ jobs:
 
       # Upload build-time initialization build
       - name: Upload test app (build-time initialization)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-ios-${{ inputs.unity-version }}-buildtime
+          name: testapp-ios-${{ env.UNITY_VERSION }}-buildtime
           if-no-files-found: error
           path: test-app-buildtime.tar.gz
           retention-days: 14
           
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: failed-project-ios-${{ inputs.unity-version }}
+          name: failed-project-ios-${{ env.UNITY_VERSION }}
           path: |
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
