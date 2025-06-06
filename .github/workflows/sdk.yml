@@ -16,15 +16,18 @@ on:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
+  TARGET: ${{ inputs.target }}
+  CONTAINER: ${{ inputs.container }}
+  RUNS_ON: ${{ inputs.runsOn }}
 
 jobs:
   build:
-    runs-on: ${{ inputs.runsOn }}
-    container: ${{ inputs.container }}
+    runs-on: ${{ env.RUNS_ON }}
+    container: ${{ env.CONTAINER }}
     timeout-minutes: 30
     steps:
       - name: Set up Git in container
-        if: ${{ inputs.container != '' }}
+        if: ${{ env.CONTAINER != '' }}
         # ubuntu:20.04 does not have git installed by default. Make it available
         # for actions/checkout to get a proper clone instead of downloading a
         # tarball using the GitHub REST API. This ensures that git submodule
@@ -40,13 +43,13 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - name: Select submodules
         id: env
         shell: bash
         run: |
-          if [[ "${{ inputs.target }}" == "Android" ]]; then
+          if [[ "${TARGET}" == "Android" ]]; then
             submodules="modules/sentry-java"
           else
             submodules="modules/sentry-native"
@@ -58,11 +61,11 @@ jobs:
       - name: Get submodule status
         run: git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
 
-      - run: cp -r package-dev/Plugins/${{ inputs.target }} sdk-static || echo "never mind, no files checked in..."
+      - run: cp -r package-dev/Plugins/${TARGET} sdk-static || echo "never mind, no files checked in..."
         shell: bash
 
       - name: Restore from cache
-        uses: actions/cache@v3
+        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         id: cache
         with:
           # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
@@ -70,10 +73,10 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ inputs.target }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
+          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
       - name: Installing Linux Dependencies
-        if: ${{ inputs.target == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
           apt-get update
@@ -88,19 +91,19 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
-          dotnet msbuild /t:Build${{ inputs.target }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          dotnet msbuild /t:Build${TARGET}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload build logs on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           path: ${{ steps.env.outputs.submodulesPath }}/build.log
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: ${{ inputs.target }}-sdk
-          path: package-dev/Plugins/${{ inputs.target }}
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/${{ env.TARGET }}
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
