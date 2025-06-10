@@ -1,7 +1,7 @@
 ---
 name: 🐞 Bug Report
 about: Report a bug in this repo
-labels: ["Platform: Unity", "Type: Bug"]
+labels: ["Unity", "Bug"]
 ---
 
 ### Environment
