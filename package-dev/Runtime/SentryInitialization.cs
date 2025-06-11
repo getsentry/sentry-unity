@@ -92,7 +92,7 @@ namespace Sentry.Unity
 #elif SENTRY_NATIVE
                 SentryNative.Configure(options, unityInfo);
 #elif SENTRY_WEBGL
-              SentryWebGL.Configure(options);
+                SentryWebGL.Configure(options);
 #endif
             }
             catch (DllNotFoundException e)

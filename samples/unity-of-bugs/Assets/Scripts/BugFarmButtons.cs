@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Sentry;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -15,7 +17,9 @@ public class BugFarmButtons : MonoBehaviour
     private void Start()
     {
         Debug.Log("Sample Start 🦋");
-        Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
+        Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜!");
+
+        Task.Run(() => { Debug.Log("The spider snuck up from a task! 🕷"); });
     }
 
     public void AssertFalse() => Assert.AreEqual(true, false);
