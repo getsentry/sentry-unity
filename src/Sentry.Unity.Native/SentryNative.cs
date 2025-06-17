@@ -28,11 +28,11 @@ public static class SentryNative
 
         Logger?.LogInfo("Attempting to configure native support via the Native SDK");
 
-        if (!sentryUnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
-        {
-            Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
-            return;
-        }
+        // if (!sentryUnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
+        // {
+        //     Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
+        //     return;
+        // }
 
         try
         {
