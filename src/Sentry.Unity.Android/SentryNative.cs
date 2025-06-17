@@ -27,7 +27,7 @@ public static class SentryNative
     public static void ReinstallBackend() => ReinstallSentryNativeBackendStrategy();
 
     // libsentry.io
-    [DllImport("sentry")]
+    [DllImport("__Internal")]
     private static extern void sentry_reinstall_backend();
 
     // Testing
