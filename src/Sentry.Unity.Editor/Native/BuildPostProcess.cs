@@ -19,7 +19,8 @@ public static class BuildPostProcess
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         if (targetGroup is not BuildTargetGroup.Standalone
             and not BuildTargetGroup.GameCoreXboxSeries
-            and not BuildTargetGroup.PS5)
+            and not BuildTargetGroup.PS5
+            and not BuildTargetGroup.Switch)
         {
             return;
         }
@@ -185,6 +186,9 @@ public static class BuildPostProcess
                 {
                     paths += $" \"{macOSSentryDsym}\"";
                 }
+                break;
+            case BuildTarget.Switch:
+                // TODO: Add Switch-specific symbol path if needed
                 break;
             default:
                 logger.LogError($"Symbol upload for '{target}' is currently not supported.");
