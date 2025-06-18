@@ -18,10 +18,10 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-        if (targetGroup is not BuildTargetGroup.Standalone)
-        {
-            return;
-        }
+        // if (targetGroup is not BuildTargetGroup.Standalone)
+        // {
+        //     return;
+        // }
 
         var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
@@ -220,7 +220,7 @@ public static class BuildPostProcess
                 }
                 break;
             default:
-                logger.LogError($"Symbol upload for '{target}' is currently not supported.");
+                // logger.LogError($"Symbol upload for '{target}' is currently not supported.");
                 break;
         }
 
