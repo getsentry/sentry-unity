@@ -83,6 +83,15 @@ internal sealed class TestHub : IHub
     public void ConfigureScope(Action<Scope> configureScope) => _configureScopeCalls.Add(configureScope);
 
     public Task ConfigureScopeAsync(Func<Scope, Task> configureScope) => Task.CompletedTask;
+    public void SetTag(string key, string value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void UnsetTag(string key)
+    {
+        throw new NotImplementedException();
+    }
 
     public void BindClient(ISentryClient client)
     {
