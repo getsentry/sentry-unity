@@ -8,18 +8,21 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.11.1 to v8.12.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8120)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.12.0)
-- Bump .NET SDK from v5.7.0-beta.0 to v5.7.0 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#570)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.7.0-beta.0...5.7.0)
+- Bump .NET SDK from v5.7.0-beta.0 to v5.10.0 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154), [#2188](https://github.com/getsentry/sentry-unity/pull/2188))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5100)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.7.0-beta.0...5.10.0)
+- Bump Java SDK from v8.11.1 to v8.14.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155), [#2199](https://github.com/getsentry/sentry-unity/pull/2199))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8140)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.14.0)
 - Bump Cocoa SDK from v8.50.1 to v8.51.0 ([#2160](https://github.com/getsentry/sentry-unity/pull/2160), [#2166](https://github.com/getsentry/sentry-unity/pull/2166))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8510)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.50.1...8.51.0)
 - Bump Native SDK from v0.8.4 to v0.9.0 ([#2159](https://github.com/getsentry/sentry-unity/pull/2159), [#2186](https://github.com/getsentry/sentry-unity/pull/2186))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#090)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.8.4...0.9.0)
+- Bump CLI from v2.45.0 to v2.46.0 ([#2176](https://github.com/getsentry/sentry-unity/pull/2176))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2460)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.45.0...2.46.0)
 
 ## 3.2.2
 
