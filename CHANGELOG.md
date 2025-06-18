@@ -8,9 +8,9 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.11.1 to v8.12.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8120)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.12.0)
+- Bump Java SDK from v8.11.1 to v8.14.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155), [#2199](https://github.com/getsentry/sentry-unity/pull/2199))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8140)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.14.0)
 - Bump .NET SDK from v5.7.0-beta.0 to v5.7.0 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#570)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.7.0-beta.0...5.7.0)
