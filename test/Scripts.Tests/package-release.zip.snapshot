@@ -50,6 +50,11 @@ Plugins/iOS/Sentry.xcframework~/watchos-arm64_i386_x86_64-simulator/
 Plugins/iOS/Sentry.xcframework~/xros-arm64_arm64e/
 Plugins/iOS/Sentry.xcframework~/xros-arm64_x86_64-simulator/
 Plugins/iOS/Sentry.xcframework~/Info.plist
+Plugins/iOS/Sentry.xcframework~/_CodeSignature/CodeDirectory
+Plugins/iOS/Sentry.xcframework~/_CodeSignature/CodeRequirements
+Plugins/iOS/Sentry.xcframework~/_CodeSignature/CodeRequirements-1
+Plugins/iOS/Sentry.xcframework~/_CodeSignature/CodeResources
+Plugins/iOS/Sentry.xcframework~/_CodeSignature/CodeSignature
 Plugins/iOS/Sentry.xcframework~/xros-arm64_arm64e/dSYMs/
 Plugins/iOS/Sentry.xcframework~/xros-arm64_arm64e/Sentry.framework/Info.plist
 Plugins/iOS/Sentry.xcframework~/xros-arm64_arm64e/Sentry.framework/PrivacyInfo.xcprivacy
