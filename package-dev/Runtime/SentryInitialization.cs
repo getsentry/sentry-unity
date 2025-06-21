@@ -15,6 +15,7 @@
 #endif
 
 using System;
+using JetBrains.Annotations;
 using Sentry.Extensibility;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
@@ -60,6 +61,9 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
             if (options != null && options.ShouldInitializeSdk())
             {
+                // Register LifeCycle Callbacks so the SDK is aware of the app losing focus during startup
+                RegisterAndroidCallbacks(options.DiagnosticLogger);
+
                 // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
                 // compile them with the game instead of precompiling them with the rest of the SDK.
                 // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
@@ -79,6 +83,56 @@ namespace Sentry.Unity
                 SentryNativeAndroid.Close(options, unityInfo);
 #endif
             }
+        }
+
+        private static void RegisterAndroidCallbacks([CanBeNull] IDiagnosticLogger logger)
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            logger?.LogError("Registering Android LifeCycleCallbacks.");
+
+            try
+            {
+                using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                using var application = activity.Call<AndroidJavaObject>("getApplication");
+                AndroidJavaProxy lifecycleCallbacks = new AndroidLifecycleCallbacks(logger);
+
+                application.Call("registerActivityLifecycleCallbacks", lifecycleCallbacks);
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError("Failed to register Android LifeCycleCallbacks.");
+            }
+#endif
+        }
+
+        private class AndroidLifecycleCallbacks : AndroidJavaProxy
+        {
+            [CanBeNull] private IDiagnosticLogger _logger;
+
+            public AndroidLifecycleCallbacks([CanBeNull] IDiagnosticLogger logger) : base(
+                "android.app.Application$ActivityLifecycleCallbacks")
+            {
+                _logger = logger;
+            }
+
+            // App going to background
+            public void onActivityPaused(AndroidJavaObject activity)
+            {
+                _logger?.LogInfo("Application move to background. Pausing session.");
+            }
+
+            // App coming to foreground
+            public void onActivityResumed(AndroidJavaObject activity)
+            {
+                _logger?.LogInfo("Application move to foreground. Resuming session.");
+            }
+
+            public void onActivityCreated(AndroidJavaObject activity, AndroidJavaObject savedInstanceState) { }
+            public void onActivityStarted(AndroidJavaObject activity) { }
+            public void onActivityStopped(AndroidJavaObject activity) { }
+            public void onActivitySaveInstanceState(AndroidJavaObject activity, AndroidJavaObject outState) { }
+            public void onActivityDestroyed(AndroidJavaObject activity) { }
         }
 
         private static void SetupNativeSdk(SentryUnityOptions options, SentryUnityInfo unityInfo)
