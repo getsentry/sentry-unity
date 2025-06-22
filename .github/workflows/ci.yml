@@ -137,7 +137,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+          PLATFORM: ${{ matrix.platform }}
+          IMAGE_SUFFIX: ${{ matrix.image-suffix }}
+          UNITY_LICENSE_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" "$PLATFORM$IMAGE_SUFFIX" "$UNITY_LICENSE_CONFIG"
         shell: bash
 
       # Workaround for missing libMonoPosixHelper.so
@@ -172,10 +177,16 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "$BUILD_PLATFORM" -CheckSymbols
 
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
+          CHECK_SYMBOLS: ${{ matrix.check_symbols }}
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "$BUILD_PLATFORM" -CheckSymbols:$"$CHECK_SYMBOLS" -UnityVersion "$UNITY_VERSION"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -349,7 +360,9 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity$UNITY_VERSION")" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
         uses: getsentry/setup-unity@d84ad1d1fb3020e48883c3ac8e87d64baf1135c7
@@ -390,7 +403,9 @@ jobs:
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "$UNITY_VERSION"
 
       - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke

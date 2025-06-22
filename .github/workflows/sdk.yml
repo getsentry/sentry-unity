@@ -56,9 +56,14 @@ jobs:
           echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
 
       - name: Get submodule status
-        run: git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
+        env:
+          SUBMODULES: ${{ steps.env.outputs.submodules }}
+        run: git submodule status --cached "$SUBMODULES" | tee submodules-status
 
-      - run: cp -r package-dev/Plugins/${{ inputs.target }} sdk-static || echo "never mind, no files checked in..."
+      - name: Copy static SDK files
+        env:
+          TARGET: ${{ inputs.target }}
+        run: cp -r package-dev/Plugins/"$TARGET" sdk-static || echo "never mind, no files checked in..."
         shell: bash
 
       - name: Restore from cache

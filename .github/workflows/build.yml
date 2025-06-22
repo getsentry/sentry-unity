@@ -28,7 +28,9 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ inputs.unity-version }}")" >> $env:GITHUB_OUTPUT
+        env:
+          UNITY_VERSION: ${{ inputs.unity-version }}
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity$UNITY_VERSION")" >> $env:GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
@@ -48,7 +50,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ inputs.unity-version }}' 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        env:
+          UNITY_VERSION: ${{ inputs.unity-version }}
+          UNITY_LICENSE_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'ios' "$UNITY_LICENSE_CONFIG"
         shell: bash
 
       - name: Install .NET SDK
@@ -58,7 +63,9 @@ jobs:
           global-json-file: src/sentry-dotnet/global.json
         
       - name: Install Android dotnet workflow
-        run: dotnet workload install android --temp-dir "${{ runner.temp }}"
+        env:
+          RUNNER_TEMP: ${{ runner.temp }}
+        run: dotnet workload install android --temp-dir "$RUNNER_TEMP"
 
       - name: Download CLI
         run: ./scripts/download-sentry-cli.ps1

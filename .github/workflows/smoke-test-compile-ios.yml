@@ -28,10 +28,14 @@ jobs:
           name: testapp-ios-${{ inputs.unity-version }}-${{ inputs.init-type }}
 
       - name: Extract app project
-        run: tar -xvzf test-app-${{ inputs.init-type }}.tar.gz
+        env:
+          INIT_TYPE: ${{ inputs.init-type }}
+        run: tar -xvzf test-app-"$INIT_TYPE".tar.gz
 
       - name: iOS smoke test
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${{ inputs.unity-version }}" -iOSMinVersion "16.1"
+        env:
+          UNITY_VERSION: ${{ inputs.unity-version }}
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "$UNITY_VERSION" -iOSMinVersion "16.1"
         timeout-minutes: 20
     
       - name: Upload integration-test project on failure
