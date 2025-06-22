@@ -186,7 +186,7 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           CHECK_SYMBOLS: ${{ matrix.check_symbols }}
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "$BUILD_PLATFORM" -CheckSymbols:$"$CHECK_SYMBOLS" -UnityVersion "$UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "$BUILD_PLATFORM" -CheckSymbols:$$CHECK_SYMBOLS -UnityVersion "$UNITY_VERSION"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -362,7 +362,7 @@ jobs:
         id: env
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity$UNITY_VERSION")" >> $env:GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 `"unity$UNITY_VERSION`")" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
         uses: getsentry/setup-unity@d84ad1d1fb3020e48883c3ac8e87d64baf1135c7
