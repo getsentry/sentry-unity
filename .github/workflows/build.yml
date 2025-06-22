@@ -30,7 +30,7 @@ jobs:
         id: env
         env:
           UNITY_VERSION: ${{ inputs.unity-version }}
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 'unity$UNITY_VERSION')" >> $env:GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 ("unity" + $UNITY_VERSION))" >> $env:GITHUB_OUTPUT
 
       - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
 
