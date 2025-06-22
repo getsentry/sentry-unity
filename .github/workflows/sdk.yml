@@ -58,7 +58,10 @@ jobs:
       - name: Get submodule status
         env:
           SUBMODULES: ${{ steps.env.outputs.submodules }}
-        run: git submodule status --cached "$SUBMODULES" | tee submodules-status
+        shell: bash
+        run: |
+          IFS=' ' read -ra SUBMODULE_ARRAY <<< "$SUBMODULES"
+          git submodule status --cached "${SUBMODULE_ARRAY[@]}" | tee submodules-status
 
       - name: Copy static SDK files
         env:
