@@ -118,6 +118,7 @@ public sealed class UnityEventProcessorThreadingTests
             Debug = true,
             DiagnosticLogger = _testLogger
         };
+        options.AddIntegration(new UnityScopeIntegration(_testApplication, new TestUnityInfo { IL2CPP = true }));
 
         // In an actual build, the collection is automatically triggered before the SDK initializes
         MainThreadData.SentrySystemInfo = systemInfo;
