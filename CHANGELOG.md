@@ -6,6 +6,10 @@
 
 - The SDK no longer attaches screenshots when capturing errors in the Unity Editor. ([#2163](https://github.com/getsentry/sentry-unity/pull/2163))
 
+### Fixes
+
+- When choosing the Mono scripting backend, and on certain NVIDIA platforms, the SDK would cause a crash with `EXCEPTION_ACCESS_VIOLATION_READ`. This is done by limiting adding the active scene name to the contexts to IL2CPP builds ([#2206](https://github.com/getsentry/sentry-unity/pull/2206))
+
 ### Dependencies
 
 - Bump .NET SDK from v5.7.0-beta.0 to v5.10.0 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154), [#2188](https://github.com/getsentry/sentry-unity/pull/2188))
