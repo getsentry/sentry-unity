@@ -12,11 +12,7 @@ public class TestUnityInfo : ISentryUnityInfo
     public string? Platform { get; }
     public Il2CppMethods? Il2CppMethods { get; }
 
-    public TestUnityInfo(
-        bool isKnownPlatform = true,
-        bool isLinux = false,
-        bool isNativeSupportEnabled = true,
-        bool isSupportedBySentryNative = true)
+    public TestUnityInfo(bool isKnownPlatform = true, bool isLinux = false, bool isNativeSupportEnabled = true, bool isSupportedBySentryNative = true)
     {
         _isKnownPlatform = isKnownPlatform;
         _isLinux = isLinux;
