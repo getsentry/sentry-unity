@@ -185,8 +185,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
         };
 
-        options.AddIntegration(new UnityScopeIntegration(application, unityInfo));
-
         if (!string.IsNullOrWhiteSpace(ReleaseOverride))
         {
             options.Release = ReleaseOverride;

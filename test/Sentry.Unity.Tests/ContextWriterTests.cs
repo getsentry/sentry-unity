@@ -76,7 +76,6 @@ public sealed class ContextWriterTests
             DiagnosticLogger = new TestLogger(),
             NativeContextWriter = context,
         };
-        options.AddIntegration(new UnityScopeIntegration(_testApplication, new TestUnityInfo()));
 
         // act
         MainThreadData.SentrySystemInfo = sysInfo;

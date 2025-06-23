@@ -296,11 +296,12 @@ public sealed class SentryUnityOptions : SentryOptions
 
     public SentryUnityOptions() : this(false, ApplicationAdapter.Instance) { }
 
-    internal SentryUnityOptions(bool isBuilding, IApplication application) :
-        this(SentryMonoBehaviour.Instance, application, isBuilding)
+    internal SentryUnityOptions(bool isBuilding, IApplication application, ISentryUnityInfo? unityInfo = null) :
+        this(SentryMonoBehaviour.Instance, application, isBuilding, unityInfo)
     { }
 
-    internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding)
+    // For testing
+    internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding, ISentryUnityInfo? unityInfo = null)
     {
         // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
         DetectStartupTime = StartupTimeDetectionMode.Fast;
@@ -315,6 +316,7 @@ public sealed class SentryUnityOptions : SentryOptions
         this.AddIntegration(new UnityLogHandlerIntegration(this));
         this.AddIntegration(new UnityApplicationLoggingIntegration());
         this.AddIntegration(new AnrIntegration(behaviour));
+        this.AddIntegration(new UnityScopeIntegration(application, unityInfo));
         this.AddIntegration(new UnityBeforeSceneLoadIntegration());
         this.AddIntegration(new SceneManagerIntegration());
         this.AddIntegration(new SessionIntegration(behaviour));

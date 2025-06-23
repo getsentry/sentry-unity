@@ -109,7 +109,7 @@ public sealed class UnityEventProcessorThreadingTests
             RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
             StartTime = new(() => DateTimeOffset.UtcNow),
         };
-        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false, new TestUnityInfo { IL2CPP = true })
         {
             Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
             Enabled = true,
@@ -118,7 +118,6 @@ public sealed class UnityEventProcessorThreadingTests
             Debug = true,
             DiagnosticLogger = _testLogger
         };
-        options.AddIntegration(new UnityScopeIntegration(_testApplication, new TestUnityInfo { IL2CPP = true }));
 
         // In an actual build, the collection is automatically triggered before the SDK initializes
         MainThreadData.SentrySystemInfo = systemInfo;
