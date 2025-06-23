@@ -11,23 +11,21 @@ on:
       container:
         required: false
         type: string
-        default: ''
+        default: ""
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
   TARGET: ${{ inputs.target }}
-  CONTAINER: ${{ inputs.container }}
-  RUNS_ON: ${{ inputs.runsOn }}
 
 jobs:
   build:
-    runs-on: ${{ env.RUNS_ON }}
-    container: ${{ env.CONTAINER }}
+    runs-on: ${{ inputs.runsOn }}
+    container: ${{ inputs.container }}
     timeout-minutes: 30
     steps:
       - name: Set up Git in container
-        if: ${{ env.CONTAINER != '' }}
+        if: ${{ inputs.container != '' }}
         # ubuntu:20.04 does not have git installed by default. Make it available
         # for actions/checkout to get a proper clone instead of downloading a
         # tarball using the GitHub REST API. This ensures that git submodule
@@ -54,7 +52,7 @@ jobs:
           else
             submodules="modules/sentry-native"
           fi
-          
+
           echo "submodulesPath=$submodules" >> $GITHUB_OUTPUT
           echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
 
