@@ -443,11 +443,10 @@ public sealed class UnityEventProcessorTests
             CopyTextureSupport = new Lazy<string>(() => "Basic, Copy3D, DifferentTypes, TextureToRT, RTToTexture"),
             RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded")
         };
-        var testUnityInfo = new TestUnityInfo { IL2CPP = isIL2CPP };
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, testUnityInfo, sceneManager);
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, new TestUnityInfo { IL2CPP = isIL2CPP }, sceneManager);
         var scope = new Scope(_sentryOptions);
 
         // act
