@@ -8,7 +8,7 @@
 
 ### Fixes
 
-- When choosing the Mono scripting backend, and on certain NVIDIA platforms, the SDK would cause a crash with `EXCEPTION_ACCESS_VIOLATION_READ`. This is done by limiting adding the active scene name to the contexts to IL2CPP builds ([#2206](https://github.com/getsentry/sentry-unity/pull/2206))
+- The SDK no longer causes crashes with `EXCEPTION_ACCESS_VIOLATION_READ` when using the Mono scripting backend. The SDK now adds the active scene name to the context in IL2CPP builds only ([#2206](https://github.com/getsentry/sentry-unity/pull/2206))
 
 ### Dependencies
 
