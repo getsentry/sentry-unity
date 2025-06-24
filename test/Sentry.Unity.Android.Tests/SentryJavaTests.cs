@@ -131,9 +131,8 @@ public class SentryJavaTests
             _isAttached = false;
         }
 
-        public int GetVersion() => _isAttached ? 1 : 0;
+        public int GetVersion() => _isAttached ? 1 : 0;// Test helper methods
 
-        // Test helper methods
         public void SetAttached(bool attached) => _isAttached = attached;
 
         public void Reset()
