@@ -438,9 +438,9 @@ internal class SentryJava : ISentryJava
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is false)
         {
-            // if (!IsAttached())
+            if (!IsAttached())
             {
-                // DidSdkAttachToJni.Value = true;
+                DidSdkAttachToJni.Value = true;
                 _androidJNI.AttachCurrentThread();
             }
         }
@@ -451,19 +451,15 @@ internal class SentryJava : ISentryJava
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is false)
         {
-            // if (DidSdkAttachToJni.Value)
+            if (DidSdkAttachToJni.Value)
             {
                 _androidJNI.DetachCurrentThread();
-                // DidSdkAttachToJni.Value = false;
+                DidSdkAttachToJni.Value = false;
             }
         }
     }
 
-    private bool IsAttached()
-    {
-        return false;
-        // return _androidJNI.GetVersion() > 0;
-    }
+    private bool IsAttached() => _androidJNI.GetVersion() > 0;
 }
 
 internal static class AndroidJavaObjectExtension
