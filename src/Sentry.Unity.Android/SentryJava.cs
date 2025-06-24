@@ -52,7 +52,7 @@ internal class SentryJava : ISentryJava
 {
     private readonly IAndroidJNI _androidJNI;
     private IDiagnosticLogger? _logger;
-    private ThreadLocal<bool> DidSdkAttachToJni =  new();
+    private ThreadLocal<bool> DidSdkAttachToJni = new();
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     protected virtual AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
