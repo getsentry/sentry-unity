@@ -1,6 +1,6 @@
 name: Blank Issue
 description: Blank Issue. Reserved for maintainers.
-labels: [".NET"]
+labels: ["Unity"]
 body:
   - type: textarea
     id: description
