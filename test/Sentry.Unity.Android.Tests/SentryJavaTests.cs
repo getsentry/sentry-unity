@@ -49,5 +49,6 @@ public class SentryJavaTests
         public void AttachCurrentThread() => AttachCalled = true;
 
         public void DetachCurrentThread() => DetachCalled = true;
+        public int GetVersion() => 1;
     }
 }

@@ -6,6 +6,7 @@ public interface IAndroidJNI
 {
     public void AttachCurrentThread();
     public void DetachCurrentThread();
+    public int GetVersion();
 }
 
 public class AndroidJNIAdapter : IAndroidJNI
@@ -15,4 +16,5 @@ public class AndroidJNIAdapter : IAndroidJNI
     public void AttachCurrentThread() => AndroidJNI.AttachCurrentThread();
 
     public void DetachCurrentThread() => AndroidJNI.DetachCurrentThread();
+    public int GetVersion() => AndroidJNI.GetVersion();
 }

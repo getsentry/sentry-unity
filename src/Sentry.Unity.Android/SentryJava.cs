@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Sentry.Extensibility;
 using UnityEngine;
 
@@ -51,6 +52,8 @@ internal class SentryJava : ISentryJava
 {
     private readonly IAndroidJNI _androidJNI;
     private IDiagnosticLogger? _logger;
+    private ThreadLocal<bool> DidSdkAttachToJni =  new();
+
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     protected virtual AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
@@ -435,7 +438,11 @@ internal class SentryJava : ISentryJava
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is false)
         {
-            _androidJNI.AttachCurrentThread();
+            // if (!IsAttached())
+            {
+                // DidSdkAttachToJni.Value = true;
+                _androidJNI.AttachCurrentThread();
+            }
         }
     }
 
@@ -444,8 +451,18 @@ internal class SentryJava : ISentryJava
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is false)
         {
-            _androidJNI.DetachCurrentThread();
+            // if (DidSdkAttachToJni.Value)
+            {
+                _androidJNI.DetachCurrentThread();
+                // DidSdkAttachToJni.Value = false;
+            }
         }
+    }
+
+    private bool IsAttached()
+    {
+        return false;
+        // return _androidJNI.GetVersion() > 0;
     }
 }
 
