@@ -81,16 +81,12 @@ internal sealed class TestHub : IHub
     }
 
     public void ConfigureScope(Action<Scope> configureScope) => _configureScopeCalls.Add(configureScope);
-    public void ConfigureScope<TArg>(Action<Scope, TArg> configureScope, TArg arg)
-    {
-        throw new NotImplementedException();
-    }
+    public void ConfigureScope<TArg>(Action<Scope, TArg> configureScope, TArg arg) =>
+        ConfigureScope(scope => configureScope.Invoke(scope, arg));
 
     public Task ConfigureScopeAsync(Func<Scope, Task> configureScope) => Task.CompletedTask;
-    public Task ConfigureScopeAsync<TArg>(Func<Scope, TArg, Task> configureScope, TArg arg)
-    {
-        throw new NotImplementedException();
-    }
+    public Task ConfigureScopeAsync<TArg>(Func<Scope, TArg, Task> configureScope, TArg arg) =>
+        ConfigureScopeAsync(scope => configureScope.Invoke(scope, arg));
 
     public void SetTag(string key, string value)
     {
