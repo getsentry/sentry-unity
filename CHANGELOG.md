@@ -6,6 +6,10 @@
 
 - The SDK no longer attaches screenshots when capturing errors in the Unity Editor. ([#2163](https://github.com/getsentry/sentry-unity/pull/2163))
 
+### Fixes
+
+- When targeting Android, the SDK no longer causes `SIGABORT` crashes due to `attempting to detach while still running code`. ([#2212](https://github.com/getsentry/sentry-unity/pull/2212)) 
+
 ### Dependencies
 
 - Bump .NET SDK from v5.7.0-beta.0 to v5.10.0 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154), [#2188](https://github.com/getsentry/sentry-unity/pull/2188))
