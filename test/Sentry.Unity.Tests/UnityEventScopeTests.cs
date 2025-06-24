@@ -109,7 +109,7 @@ public sealed class UnityEventProcessorThreadingTests
             RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
             StartTime = new(() => DateTimeOffset.UtcNow),
         };
-        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false, new TestUnityInfo { IL2CPP = true })
         {
             Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
             Enabled = true,
@@ -430,7 +430,9 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
-    public void UnityProtocol_Assigned()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void UnityProtocol_Assigned(bool isIL2CPP)
     {
         var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
         var systemInfo = new TestSentrySystemInfo
@@ -444,7 +446,7 @@ public sealed class UnityEventProcessorTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, sceneManager);
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, new TestUnityInfo { IL2CPP = isIL2CPP }, sceneManager);
         var scope = new Scope(_sentryOptions);
 
         // act
@@ -459,7 +461,7 @@ public sealed class UnityEventProcessorTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityProtocol.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityProtocol.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityProtocol.RenderingThreadingMode);
-        Assert.AreEqual(sceneManager.GetActiveScene().Name, unityProtocol.ActiveSceneName);
+        Assert.AreEqual(isIL2CPP ? sceneManager.GetActiveScene().Name : null, unityProtocol.ActiveSceneName);
     }
 
     [Test]
