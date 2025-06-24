@@ -51,8 +51,8 @@ internal interface ISentryJava
 internal class SentryJava : ISentryJava
 {
     private readonly IAndroidJNI _androidJNI;
-    private IDiagnosticLogger? _logger;
-    private ThreadLocal<bool> DidSdkAttachToJni = new();
+    private readonly IDiagnosticLogger? _logger;
+    private readonly ThreadLocal<bool> _didSdkAttachToJni = new();
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     protected virtual AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
@@ -209,8 +209,10 @@ internal class SentryJava : ISentryJava
         }
         finally
         {
-            HandleJniThreadDetachment();
+             HandleJniThreadDetachment();
         }
+
+        _didSdkAttachToJni.Dispose();
     }
 
     public void WriteScope(
@@ -440,7 +442,7 @@ internal class SentryJava : ISentryJava
         {
             if (!IsAttached())
             {
-                DidSdkAttachToJni.Value = true;
+                _didSdkAttachToJni.Value = true;
                 _androidJNI.AttachCurrentThread();
             }
         }
@@ -451,14 +453,15 @@ internal class SentryJava : ISentryJava
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is false)
         {
-            if (DidSdkAttachToJni.Value)
+            if (_didSdkAttachToJni.Value)
             {
                 _androidJNI.DetachCurrentThread();
-                DidSdkAttachToJni.Value = false;
+                _didSdkAttachToJni.Value = false;
             }
         }
     }
 
+    // This returns `0` when the current thread is not attached to the JNI. If attached, it returns the version.
     private bool IsAttached() => _androidJNI.GetVersion() > 0;
 }
 
