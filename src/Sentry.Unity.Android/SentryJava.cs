@@ -209,10 +209,8 @@ internal class SentryJava : ISentryJava
         }
         finally
         {
-             HandleJniThreadDetachment();
+            HandleJniThreadDetachment();
         }
-
-        _didSdkAttachToJni.Dispose();
     }
 
     public void WriteScope(
