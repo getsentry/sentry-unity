@@ -65,9 +65,10 @@ internal class SentryJava : ISentryJava
 
     public bool? IsEnabled()
     {
-        if (MainThreadData.IsMainThread())
+        if (!MainThreadData.IsMainThread())
         {
-            //
+            _logger?.LogError("Calling IsEnabled() on Android SDK requires running on MainThread");
+            return null;
         }
 
         try
@@ -85,6 +86,12 @@ internal class SentryJava : ISentryJava
 
     public void Init(SentryUnityOptions options)
     {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling Init() on Android SDK requires running on MainThread");
+            return;
+        }
+
         try
         {
             using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
@@ -134,6 +141,12 @@ internal class SentryJava : ISentryJava
 
     public string? GetInstallationId()
     {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling GetInstallationId() on Android SDK requires running on MainThread");
+            return null;
+        }
+
         try
         {
             using var sentry = GetSentryJava();
@@ -156,11 +169,17 @@ internal class SentryJava : ISentryJava
     /// This value is returned by the Android SDK and reports for both ART and NDK.
     /// </remarks>
     /// <returns>
-    /// True if the last run terminated in a crash. No otherwise.
+    /// True if the last run terminated in a crash, false otherwise.
     /// If the SDK wasn't able to find this information, null is returned.
     /// </returns>
     public bool? CrashedLastRun()
     {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling CrashedLastRun() on Android SDK requires running on MainThread");
+            return null;
+        }
+
         try
         {
             using var sentry = GetSentryJava();
@@ -177,6 +196,12 @@ internal class SentryJava : ISentryJava
 
     public void Close()
     {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling Close() on Android SDK requires running on MainThread");
+            return;
+        }
+
         try
         {
             using var sentry = GetSentryJava();
@@ -341,7 +366,14 @@ internal class SentryJava : ISentryJava
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is true)
         {
-            action.Invoke();
+            try
+            {
+                action.Invoke();
+            }
+            catch (Exception)
+            {
+                _logger?.LogError("Calling '{0}' failed.", actionName);
+            }
         }
         else
         {
