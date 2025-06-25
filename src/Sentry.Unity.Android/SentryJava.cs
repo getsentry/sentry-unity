@@ -328,7 +328,6 @@ internal class SentryJava : ISentryJava
                 javaUser?.Dispose();
             }
         });
-
     }
 
     public void UnsetUser()
