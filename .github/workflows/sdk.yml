@@ -59,7 +59,7 @@ jobs:
       - name: Get submodule status
         run: git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
 
-      - run: cp -r package-dev/Plugins/${TARGET} sdk-static || echo "never mind, no files checked in..."
+      - run: cp -r package-dev/Plugins/${{ env.TARGET }} sdk-static || echo "never mind, no files checked in..."
         shell: bash
 
       - name: Restore from cache
@@ -89,7 +89,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
-          dotnet msbuild /t:Build${TARGET}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload build logs on failure
         if: ${{ failure() }}
