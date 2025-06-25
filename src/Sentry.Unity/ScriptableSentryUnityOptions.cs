@@ -135,7 +135,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     {
         application ??= ApplicationAdapter.Instance;
 
-        var options = new SentryUnityOptions(isBuilding, application)
+        var options = new SentryUnityOptions(isBuilding, application, unityInfo)
         {
             Enabled = Enabled,
             Dsn = Dsn,
