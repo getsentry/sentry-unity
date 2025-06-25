@@ -17,6 +17,7 @@ public class SentryJavaTests
         _sut = new SentryJava(_logger, _androidJni);
     }
 
+<<<<<<< Updated upstream
     [Test]
     [TestCase(true, false, Description = "main thread = should attach")]
     [TestCase(false, true, Description = "non main thread = should not attach")]
@@ -41,6 +42,8 @@ public class SentryJavaTests
         Assert.AreEqual(shouldAttach, _androidJni.DetachCalled);
     }
 
+=======
+>>>>>>> Stashed changes
     internal class TestAndroidJNI : IAndroidJNI
     {
         public bool AttachCalled { get; private set; }
