@@ -1,9 +1,6 @@
 using System;
-<<<<<<< Updated upstream
-=======
 using System.Runtime.CompilerServices;
 using System.Threading;
->>>>>>> Stashed changes
 using Sentry.Extensibility;
 using UnityEngine;
 
@@ -55,12 +52,8 @@ internal interface ISentryJava
 internal class SentryJava : ISentryJava
 {
     private readonly IAndroidJNI _androidJNI;
-<<<<<<< Updated upstream
-    private IDiagnosticLogger? _logger;
-=======
     private readonly IDiagnosticLogger? _logger;
 
->>>>>>> Stashed changes
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     protected virtual AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
@@ -348,20 +341,6 @@ internal class SentryJava : ISentryJava
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is true)
         {
-<<<<<<< Updated upstream
-            _androidJNI.AttachCurrentThread();
-        }
-    }
-
-    internal void HandleJniThreadDetachment(bool? isMainThread = null)
-    {
-        isMainThread ??= MainThreadData.IsMainThread();
-        if (isMainThread is false)
-        {
-            _androidJNI.DetachCurrentThread();
-        }
-    }
-=======
             action.Invoke();
         }
         else
@@ -386,7 +365,6 @@ internal class SentryJava : ISentryJava
             }, (_androidJNI, _logger, actionName));
         }
     }
->>>>>>> Stashed changes
 }
 
 internal static class AndroidJavaObjectExtension

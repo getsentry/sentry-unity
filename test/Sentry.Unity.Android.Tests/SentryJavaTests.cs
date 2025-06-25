@@ -17,33 +17,6 @@ public class SentryJavaTests
         _sut = new SentryJava(_logger, _androidJni);
     }
 
-<<<<<<< Updated upstream
-    [Test]
-    [TestCase(true, false, Description = "main thread = should attach")]
-    [TestCase(false, true, Description = "non main thread = should not attach")]
-    public void HandleJniThreadAttachment_AttachesIfMainThread(bool isMainThread, bool shouldAttach)
-    {
-        // Act
-        _sut.HandleJniThreadAttachment(isMainThread);
-
-        // Assert
-        Assert.AreEqual(shouldAttach, _androidJni.AttachCalled);
-    }
-
-    [Test]
-    [TestCase(true, false, Description = "main thread = should detach")]
-    [TestCase(false, true, Description = "non main thread = should not detach")]
-    public void HandleJniThreadDetachment_DetachesIfMainThread(bool isMainThread, bool shouldAttach)
-    {
-        // Act
-        _sut.HandleJniThreadDetachment(isMainThread);
-
-        // Assert
-        Assert.AreEqual(shouldAttach, _androidJni.DetachCalled);
-    }
-
-=======
->>>>>>> Stashed changes
     internal class TestAndroidJNI : IAndroidJNI
     {
         public bool AttachCalled { get; private set; }
