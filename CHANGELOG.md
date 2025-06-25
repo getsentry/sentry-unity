@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- When targeting Android, the SDK no longer causes `SIGABORT` crashes due to `attempting to detach while still running code`. ([#2215](https://github.com/getsentry/sentry-unity/pull/2215))
 - The SDK no longer causes crashes with `EXCEPTION_ACCESS_VIOLATION_READ` when using the Mono scripting backend. The SDK now adds the active scene name to the context in IL2CPP builds only ([#2206](https://github.com/getsentry/sentry-unity/pull/2206))
 
 ### Dependencies
