@@ -42,6 +42,8 @@ public class SentryJavaTests
         // Arrange
         var actionExecuted = false;
         var resetEvent = new ManualResetEvent(false);
+        var detachResetEvent = new ManualResetEvent(false);
+        _androidJni.OnDetachCalled = () => detachResetEvent.Set();
         var action = new Action(() =>
         {
             actionExecuted = true;
@@ -52,44 +54,15 @@ public class SentryJavaTests
         _sut.RunJniSafe(action, isMainThread: false);
 
         // Assert
-        Assert.That(resetEvent.WaitOne(TimeSpan.FromSeconds(5)), Is.True, "Action should execute within timeout");
+        Assert.That(resetEvent.WaitOne(TimeSpan.FromSeconds(1)), Is.True, "Action should execute within timeout");
+        Assert.That(detachResetEvent.WaitOne(TimeSpan.FromSeconds(1)), Is.True, "Detach should execute within timeout");
         Assert.That(actionExecuted, Is.True);
         Assert.That(_androidJni.AttachCalled, Is.True);
-        Assert.That(_androidJni.DetachCalled, Is.True);
+        Assert.That(_androidJni.DetachCalled, Is.True, "Detach should be called");
     }
 
     [Test]
-    public void RunJniSafe_ActionThrows_CatchesExceptionAndLogsError()
-    {
-        // Arrange
-        var exception = new InvalidOperationException("Test exception");
-        var resetEvent = new ManualResetEvent(false);
-        var action = new Action(() =>
-        {
-            try
-            {
-                throw exception;
-            }
-            finally
-            {
-                resetEvent.Set();
-            }
-        });
-
-        // Act
-        _sut.RunJniSafe(action, "TestAction", isMainThread: false);
-
-        // Assert
-        Assert.That(resetEvent.WaitOne(TimeSpan.FromSeconds(5)), Is.True, "Action should execute within timeout");
-        Assert.That(_androidJni.AttachCalled, Is.True);
-        Assert.That(_androidJni.DetachCalled, Is.True);
-        Assert.IsTrue(_logger.Logs.Any(log =>
-            log.logLevel == SentryLevel.Error &&
-            log.message.Contains("Calling 'TestAction' failed.")));
-    }
-
-    [Test]
-    public void RunJniSafe_ActionThrowsOnMainThread_DoesNotCatchException()
+    public void RunJniSafe_ActionThrowsOnMainThread_CatchesExceptionAndLogsError()
     {
         // Arrange
         var exception = new InvalidOperationException("Test exception");
@@ -106,11 +79,46 @@ public class SentryJavaTests
     }
 
     [Test]
+    public void RunJniSafe_ActionThrowsOnNonMainThread_CatchesExceptionAndLogsError()
+    {
+        // Arrange
+        var exception = new InvalidOperationException("Test exception");
+        var resetEvent = new ManualResetEvent(false);
+        var detachResetEvent = new ManualResetEvent(false);
+        _androidJni.OnDetachCalled = () => detachResetEvent.Set();
+        var action = new Action(() =>
+        {
+            try
+            {
+                throw exception;
+            }
+            finally
+            {
+                resetEvent.Set();
+            }
+        });
+
+        // Act
+        _sut.RunJniSafe(action, "TestAction", isMainThread: false);
+
+        // Assert
+        Assert.That(resetEvent.WaitOne(TimeSpan.FromSeconds(1)), Is.True, "Action should execute within timeout");
+        Assert.That(detachResetEvent.WaitOne(TimeSpan.FromSeconds(1)), Is.True, "Detach should execute within timeout");
+        Assert.That(_androidJni.AttachCalled, Is.True);
+        Assert.That(_androidJni.DetachCalled, Is.True);
+        Assert.IsTrue(_logger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Error &&
+            log.message.Contains("Calling 'TestAction' failed.")));
+    }
+
+    [Test]
     public void RunJniSafe_ActionThrowsOnNonMainThread_DetachIsAlwaysCalled()
     {
         // Arrange
         var exception = new InvalidOperationException("Test exception");
         var resetEvent = new ManualResetEvent(false);
+        var detachResetEvent = new ManualResetEvent(false);
+        _androidJni.OnDetachCalled = () => detachResetEvent.Set();
         var action = new Action(() =>
         {
             try
@@ -127,7 +135,8 @@ public class SentryJavaTests
         _sut.RunJniSafe(action, isMainThread: false);
 
         // Assert
-        Assert.That(resetEvent.WaitOne(TimeSpan.FromSeconds(5)), Is.True, "Action should execute within timeout");
+        Assert.That(resetEvent.WaitOne(TimeSpan.FromSeconds(1)), Is.True, "Action should execute within timeout");
+        Assert.That(detachResetEvent.WaitOne(TimeSpan.FromSeconds(1)), Is.True, "Detach should execute within timeout");
         Assert.That(_androidJni.AttachCalled, Is.True);
         Assert.That(_androidJni.DetachCalled, Is.True, "DetachCurrentThread should always be called");
     }
@@ -136,9 +145,14 @@ public class SentryJavaTests
     {
         public bool AttachCalled { get; private set; }
         public bool DetachCalled { get; private set; }
+        public Action? OnDetachCalled { get; set; }
 
         public void AttachCurrentThread() => AttachCalled = true;
 
-        public void DetachCurrentThread() => DetachCalled = true;
+        public void DetachCurrentThread()
+        {
+            DetachCalled = true;
+            OnDetachCalled?.Invoke();
+        }
     }
 }
