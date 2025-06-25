@@ -12,9 +12,9 @@
 
 ### Dependencies
 
-- Bump .NET SDK from v5.7.0-beta.0 to v5.11.1 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154), [#2188](https://github.com/getsentry/sentry-unity/pull/2188), [#2207](https://github.com/getsentry/sentry-unity/pull/2207))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5111)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.7.0-beta.0...5.11.1)
+- Bump .NET SDK from v5.7.0-beta.0 to v5.11.2 ([#2154](https://github.com/getsentry/sentry-unity/pull/2154), [#2188](https://github.com/getsentry/sentry-unity/pull/2188), [#2207](https://github.com/getsentry/sentry-unity/pull/2207), [#2214](https://github.com/getsentry/sentry-unity/pull/2214))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5112)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.7.0-beta.0...5.11.2)
 - Bump Java SDK from v8.11.1 to v8.14.0 ([#2155](https://github.com/getsentry/sentry-unity/pull/2155), [#2199](https://github.com/getsentry/sentry-unity/pull/2199))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8140)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.11.1...8.14.0)
