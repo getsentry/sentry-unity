@@ -85,4 +85,10 @@ public static class SentryUnity
 
         return UnitySdk.CrashedLastRun();
     }
+
+    /// <summary>
+    /// Captures a User Feedback
+    /// </summary>
+    public static void CaptureFeedback(string message, string? email, string? name, bool addScreenshot) =>
+        UnitySdk?.CaptureFeedback(message, email, name, addScreenshot);
 }
