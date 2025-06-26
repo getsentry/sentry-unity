@@ -1,0 +1,10 @@
+name: 💡 Feature Request
+description: Tell us about a problem our SDK could solve but doesn't.
+labels: ["Unity", "Feature"]
+body:
+  - type: textarea
+    id: feature-request
+    attributes:
+      label: What problem could Sentry solve that it doesn't?
+    validations:
+      required: true 

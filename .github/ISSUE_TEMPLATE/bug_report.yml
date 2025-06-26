@@ -1,0 +1,55 @@
+name: 🐞 Bug Report
+description: Report a bug in this repo
+labels: ["Unity", "Bug"]
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        How do you use Sentry?
+        Sentry SaaS (sentry.io) or self-hosted/on-premise (which version?)
+
+        Which version of the SDK?
+
+        How did you install the package? (Git-URL, Assetstore)
+
+        Which version of Unity?
+
+        Is this happening in Unity (editor) or on a player like Android, iOS, Windows?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        1. What
+        2. you
+        3. did.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-result
+    attributes:
+      label: Expected Result
+      description: What you thought would happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: Actual Result
+      description: What actually happened. Maybe a screenshot/recording? Maybe some logs?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs-screenshots
+    attributes:
+      label: Any logs or screenshots
+    validations:
+      required: false 
