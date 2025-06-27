@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Sentry.Unity
 {
-    public class SentryUserFeedbackMonoBehaviour : MonoBehaviour
+    public class SentryUserFeedback : MonoBehaviour
     {
         // Form
         [SerializeField] private GameObject _feedbackForm;

@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace Sentry.Unity
 {
-    [CustomEditor(typeof(SentryUserFeedbackMonoBehaviour))]
+    [CustomEditor(typeof(SentryUserFeedback))]
     public class SentryUserFeedbackEditor : UnityEditor.Editor
     {
         private SerializedProperty _openFeedbackButton;
