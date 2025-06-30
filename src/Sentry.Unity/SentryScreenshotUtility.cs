@@ -35,49 +35,61 @@ internal static class SentryScreenshotUtility
             }
         }
 
-        // Captures the current screenshot synchronously.
-        var screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
-        var renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
-        ScreenCapture.CaptureScreenshotIntoRenderTexture(renderTextureFull);
-        var renderTextureResized = RenderTexture.GetTemporary(width, height);
-
-        // The image may be mirrored on some platforms - mirror it back.
-        // See https://docs.unity3d.com/2019.4/Documentation/Manual/SL-PlatformDifferences.html for more info.
-        // Note, we can't use the `UNITY_UV_STARTS_AT_TOP` macro because it's only available in shaders.
-        // Instead, there's https://docs.unity3d.com/2019.4/Documentation/ScriptReference/SystemInfo-graphicsUVStartsAtTop.html
-        if (SentrySystemInfoAdapter.Instance.GraphicsUVStartsAtTop ?? true)
-        {
-            Graphics.Blit(renderTextureFull, renderTextureResized, new Vector2(1, -1), new Vector2(0, 1));
-        }
-        else
-        {
-            Graphics.Blit(renderTextureFull, renderTextureResized);
-        }
-        RenderTexture.ReleaseTemporary(renderTextureFull);
-        // Remember the previous render target and change it to our target texture.
+        Texture2D? screenshot = null;
+        RenderTexture? renderTextureFull = null;
+        RenderTexture? renderTextureResized = null;
         var previousRenderTexture = RenderTexture.active;
-        RenderTexture.active = renderTextureResized;
 
         try
         {
-            // actually copy from the current render target a texture & read data from the active RenderTexture
+            // Captures the current screenshot synchronously.
+            screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
+            renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
+            ScreenCapture.CaptureScreenshotIntoRenderTexture(renderTextureFull);
+            renderTextureResized = RenderTexture.GetTemporary(width, height);
+
+            // The image may be mirrored on some platforms - mirror it back.
+            // See https://docs.unity3d.com/2019.4/Documentation/Manual/SL-PlatformDifferences.html for more info.
+            // Note, we can't use the `UNITY_UV_STARTS_AT_TOP` macro because it's only available in shaders.
+            // Instead, there's https://docs.unity3d.com/2019.4/Documentation/ScriptReference/SystemInfo-graphicsUVStartsAtTop.html
+            if (SentrySystemInfoAdapter.Instance.GraphicsUVStartsAtTop ?? true)
+            {
+                Graphics.Blit(renderTextureFull, renderTextureResized, new Vector2(1, -1), new Vector2(0, 1));
+            }
+            else
+            {
+                Graphics.Blit(renderTextureFull, renderTextureResized);
+            }
+
+            RenderTexture.active = renderTextureResized;
             screenshot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             screenshot.Apply();
+
+            var bytes = screenshot.EncodeToJPG(options.ScreenshotCompression);
+
+            options.DiagnosticLogger?.Log(SentryLevel.Debug,
+                "Screenshot captured at {0}x{1}: {2} bytes", null, width, height, bytes.Length);
+
+            return bytes;
         }
         finally
         {
-            // Restore the render target.
             RenderTexture.active = previousRenderTexture;
+
+            if (renderTextureFull)
+            {
+                RenderTexture.ReleaseTemporary(renderTextureFull);
+            }
+
+            if (renderTextureResized)
+            {
+                RenderTexture.ReleaseTemporary(renderTextureResized);
+            }
+
+            if (screenshot)
+            {
+                Object.Destroy(screenshot);
+            }
         }
-
-        RenderTexture.ReleaseTemporary(renderTextureResized);
-
-        var bytes = screenshot.EncodeToJPG(options.ScreenshotCompression);
-        Object.Destroy(screenshot);
-
-        options.DiagnosticLogger?.Log(SentryLevel.Debug,
-            "Screenshot captured at {0}x{1}: {2} bytes", null, width, height, bytes.Length);
-
-        return bytes;
     }
 }
