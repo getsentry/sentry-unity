@@ -43,4 +43,12 @@ $projectSettings = $projectSettings -replace "AndroidTargetArchitectures: ?[0-9]
 $projectSettings = $projectSettings -replace "iPhoneSdkVersion: ?[0-9]+", "iPhoneSdkVersion: 989"
 $projectSettings | Out-File $projectSettingsPath
 
+# Add Unity UI package to manifest.json
+Write-Host "Adding Unity UI package to manifest.json:"
+$manifestPath = "$(GetNewProjectPath)/Packages/manifest.json"
+$manifest = Get-Content $manifestPath | ConvertFrom-Json
+$manifest.dependencies | Add-Member -MemberType NoteProperty -Name "com.unity.ugui" -Value "2.0.0"
+$manifest | ConvertTo-Json -Depth 10 | Out-File $manifestPath -Encoding utf8
+Write-Host " OK"
+
 Write-Host "`nProject created!!"
