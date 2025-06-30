@@ -1524,8 +1524,8 @@ Plugins/Windows/Sentry/sentry.dll
 Plugins/Windows/Sentry/sentry.dll.meta
 Plugins/Windows/Sentry/sentry.pdb
 Plugins/Windows/Sentry/sentry.pdb.meta
-Prefabs/User Feedback.prefab
-Prefabs/User Feedback.prefab.meta
+Prefabs/Sentry User Feedback.prefab
+Prefabs/Sentry User Feedback.prefab.meta
 Runtime/io.sentry.unity.runtime.asmdef
 Runtime/io.sentry.unity.runtime.asmdef.meta
 Runtime/Sentry.dll
@@ -1619,6 +1619,8 @@ Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m
 Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs.meta
+Textures/Logo.png
+Textures/Logo.png.meta
 Textures/Megaphone.png
 Textures/Megaphone.png.meta
 CHANGELOG.md
