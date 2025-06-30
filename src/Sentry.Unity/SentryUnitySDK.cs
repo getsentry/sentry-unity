@@ -131,6 +131,7 @@ internal class SentryUnitySdk
                     "image/jpeg"))
             : null;
 
+
         SentrySdk.CaptureFeedback(message, email, name, hint: hint);
     }
 }

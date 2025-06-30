@@ -8,22 +8,22 @@ namespace Sentry.Unity
     {
         private SerializedProperty _openFeedbackButton;
         private SerializedProperty _feedbackForm;
-        private SerializedProperty _sendBugReportButton;
-        private SerializedProperty _cancelButton;
+        private SerializedProperty _sendFeedbackButton;
         private SerializedProperty _name;
         private SerializedProperty _email;
-        private SerializedProperty _message;
+        private SerializedProperty _description;
         private SerializedProperty _addScreenshot;
 
         private void OnEnable()
         {
-            _openFeedbackButton = serializedObject.FindProperty("_openFeedbackButton");
             _feedbackForm = serializedObject.FindProperty("_feedbackForm");
-            _sendBugReportButton = serializedObject.FindProperty("_sendBugReportButton");
-            _cancelButton = serializedObject.FindProperty("_cancelButton");
+
+            _openFeedbackButton = serializedObject.FindProperty("_openFeedbackButton");
+            _sendFeedbackButton = serializedObject.FindProperty("_sendFeedbackButton");
+
             _name = serializedObject.FindProperty("_name");
             _email = serializedObject.FindProperty("_email");
-            _message = serializedObject.FindProperty("_message");
+            _description = serializedObject.FindProperty("_description");
             _addScreenshot = serializedObject.FindProperty("_addScreenshot");
         }
 
@@ -33,29 +33,28 @@ namespace Sentry.Unity
 
             EditorGUILayout.LabelField("Form", EditorStyles.boldLabel);
 
-            DrawPropertyField(_feedbackForm, "Feedback Form");
+            DrawPropertyField(_feedbackForm, "Feedback Form", true);
 
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Buttons", EditorStyles.boldLabel);
 
-            DrawPropertyField(_openFeedbackButton, "Open Feedback Button");
-            DrawPropertyField(_sendBugReportButton, "Send Bug Report Button");
-            DrawPropertyField(_cancelButton, "Cancel Button");
+            DrawPropertyField(_openFeedbackButton, "Open Feedback Form Button", true);
+            DrawPropertyField(_sendFeedbackButton, "Send Feedback Button", true);
 
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Input Fields", EditorStyles.boldLabel);
 
-            DrawPropertyField(_name, "Name Input Field");
-            DrawPropertyField(_email, "Email Input Field");
-            DrawPropertyField(_message, "Message Input Field");
-            DrawPropertyField(_addScreenshot, "Add Screenshot Toggle");
+            DrawPropertyField(_name, "Name Input Field", false);
+            DrawPropertyField(_email, "Email Input Field", false);
+            DrawPropertyField(_description, "Description Input Field", true);
+            DrawPropertyField(_addScreenshot, "Add Screenshot Toggle", false);
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private static void DrawPropertyField(SerializedProperty property, string displayName)
+        private static void DrawPropertyField(SerializedProperty property, string displayName, bool isRequired)
         {
             if (property.objectReferenceValue)
             {
@@ -63,7 +62,7 @@ namespace Sentry.Unity
             }
             else
             {
-                GUI.backgroundColor = Color.red;
+                GUI.backgroundColor = isRequired ? Color.red : Color.yellow;
                 EditorGUILayout.PropertyField(property, new GUIContent(displayName));
                 GUI.backgroundColor = Color.white;
             }
