@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Sentry.Unity;
 
-internal static class SentryScreenshotUtility
+internal static class SentryScreenshot
 {
     internal static int GetTargetResolution(ScreenshotQuality quality)
     {
@@ -15,11 +15,12 @@ internal static class SentryScreenshotUtility
         };
     }
 
-    public static byte[] Capture(SentryUnityOptions options)
-    {
-        var width = Screen.width;
-        var height = Screen.height;
+    public static byte[] Capture(SentryUnityOptions options) =>
+        Capture(options, Screen.width, Screen.height);
 
+    // For testing
+    internal static byte[] Capture(SentryUnityOptions options, int width, int height)
+    {
         // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
         // original ratio based on which, width or height, is the smaller
         if (options.ScreenshotQuality is not ScreenshotQuality.Full)

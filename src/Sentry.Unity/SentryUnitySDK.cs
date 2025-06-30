@@ -126,7 +126,7 @@ internal class SentryUnitySdk
             ? SentryHint.WithAttachments(
                 new SentryAttachment(
                     AttachmentType.Default,
-                    new ByteAttachmentContent(SentryScreenshotUtility.Capture(_options)),
+                    new ByteAttachmentContent(SentryScreenshot.Capture(_options)),
                     "screenshot.jpg",
                     "image/jpeg"))
             : null;

@@ -23,6 +23,14 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
+        // save event id
+        // wait for end of frame
+        // check if last id is event it
+        // send screenshot
+
+        // add workitem: screentshot for ID xxx
+        // sdk integration checking for work: if ID got sent, follow up with screenshot
+
         if (!MainThreadData.IsMainThread())
         {
             _options.DiagnosticLogger?.LogDebug("Screenshot capture skipped. Can't capture screenshots on other than the main thread.");
@@ -43,7 +51,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             }
             else
             {
-                hint.AddAttachment(SentryScreenshotUtility.Capture(_options), "screenshot.jpg", contentType: "image/jpeg");
+                hint.AddAttachment(SentryScreenshot.Capture(_options), "screenshot.jpg", contentType: "image/jpeg");
             }
         }
         else
