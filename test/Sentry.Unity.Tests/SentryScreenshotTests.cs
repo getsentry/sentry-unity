@@ -37,7 +37,7 @@ public class SentryScreenshotTests
         var testScreenSize = 2000;
         var options = new SentryUnityOptions { ScreenshotQuality = ScreenshotQuality.Full };
 
-        var bytes = SentryScreenshot.Capture(options,testScreenSize, testScreenSize);
+        var bytes = SentryScreenshot.Capture(options, testScreenSize, testScreenSize);
         var texture = new Texture2D(1, 1); // Size does not matter. Will be overwritten by loading
         texture.LoadImage(bytes);
 
