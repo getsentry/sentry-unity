@@ -48,9 +48,13 @@ $projectSettings | Out-File $projectSettingsPath
 Write-Host -NoNewline "Checking Unity UI package in manifest.json:"
 $manifestPath = "$(GetNewProjectPath)/Packages/manifest.json"
 $manifest = Get-Content $manifestPath | ConvertFrom-Json
-if (-not $manifest.dependencies.PSObject.Properties.Name -contains "com.unity.ugui") {
+if (-not ($manifest.dependencies.PSObject.Properties.Name -contains "com.unity.ugui")) {
+    Write-Host " Adding Unity UI package"
     $manifest.dependencies | Add-Member -MemberType NoteProperty -Name "com.unity.ugui" -Value "2.0.0"
     $manifest | ConvertTo-Json -Depth 10 | Out-File $manifestPath -Encoding utf8
+} else {
+    Write-Host " Unity UI package already exists"
 }
+
 
 Write-Host "`nProject created!!"
