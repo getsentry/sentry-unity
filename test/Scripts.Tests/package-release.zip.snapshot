@@ -1524,8 +1524,8 @@ Plugins/Windows/Sentry/sentry.dll
 Plugins/Windows/Sentry/sentry.dll.meta
 Plugins/Windows/Sentry/sentry.pdb
 Plugins/Windows/Sentry/sentry.pdb.meta
-Prefabs/Sentry User Feedback.prefab
-Prefabs/Sentry User Feedback.prefab.meta
+Prefabs/SentryUserFeedback.prefab
+Prefabs/SentryUserFeedback.prefab.meta
 Runtime/io.sentry.unity.runtime.asmdef
 Runtime/io.sentry.unity.runtime.asmdef.meta
 Runtime/Sentry.dll
