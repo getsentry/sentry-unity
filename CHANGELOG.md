@@ -6,7 +6,7 @@
 
 - The SDK now comes with a `SentryUserFeedback` prefab ready to be used. You can drag and drop it into your scene or 
   customize it by creating your own variant. The user feedback feature allows your users to provide feedback in form
-  of a written message that can optionally have a screenshot attached. Read more about it ([here](https://docs.sentry.io/product/user-feedback/)).
+  of a written message that can optionally have a screenshot attached. Read more about it ([here](https://docs.sentry.io/product/user-feedback/)). ([#2220](https://github.com/getsentry/sentry-unity/pull/2220))
 
 ### Dependencies
 
