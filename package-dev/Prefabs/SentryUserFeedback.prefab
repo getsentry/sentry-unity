@@ -652,7 +652,7 @@ GameObject:
   - component: {fileID: 7785050923577126035}
   - component: {fileID: 1268522588167309499}
   m_Layer: 5
-  m_Name: Sentry User Feedback
+  m_Name: SentryUserFeedback
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -751,7 +751,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2718688665650588677}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d785bafa75491450fad09a9034b679ad, type: 3}
+  m_Script: {fileID: 11500000, guid: 11f844e6d9b96427caa75a0243753370, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _feedbackForm: {fileID: 2476548082770084497}
