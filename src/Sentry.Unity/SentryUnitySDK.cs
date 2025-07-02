@@ -113,4 +113,25 @@ internal class SentryUnitySdk
             ? SentryUnity.CrashedLastRun.Crashed
             : SentryUnity.CrashedLastRun.DidNotCrash;
     }
+
+    public void CaptureFeedback(string message, string? email, string? name, bool addScreenshot)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            _options.LogError("To submit a feedback, you must provide a message.");
+            return;
+        }
+
+        var hint = addScreenshot
+            ? SentryHint.WithAttachments(
+                new SentryAttachment(
+                    AttachmentType.Default,
+                    new ByteAttachmentContent(SentryScreenshot.Capture(_options)),
+                    "screenshot.jpg",
+                    "image/jpeg"))
+            : null;
+
+
+        SentrySdk.CaptureFeedback(message, email, name, hint: hint);
+    }
 }

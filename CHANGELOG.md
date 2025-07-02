@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now comes with a `SentryUserFeedback` prefab ready to be used. You can drag and drop it into your scene or 
+  customize it by creating your own variant. The user feedback feature allows your users to provide feedback in form
+  of a written message that can optionally have a screenshot attached. Read more about it ([here](https://docs.sentry.io/product/user-feedback/)). ([#2220](https://github.com/getsentry/sentry-unity/pull/2220))
+
 ### Dependencies
 
 - Bump Java SDK from v8.14.0 to v8.16.0 ([#2218](https://github.com/getsentry/sentry-unity/pull/2218), [#2223](https://github.com/getsentry/sentry-unity/pull/2223))

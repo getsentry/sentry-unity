@@ -13,6 +13,8 @@ Editor/Sentry.Mono.Cecil.Rocks.dll
 Editor/Sentry.Mono.Cecil.Rocks.dll.meta
 Editor/Sentry.Unity.Editor.dll
 Editor/Sentry.Unity.Editor.dll.meta
+Editor/SentryUserFeedbackEditor.cs
+Editor/SentryUserFeedbackEditor.cs.meta
 Editor/iOS/Sentry.Unity.Editor.iOS.dll
 Editor/iOS/Sentry.Unity.Editor.iOS.dll.meta
 Editor/sentry-cli/sentry-cli-Darwin-universal
@@ -1522,6 +1524,8 @@ Plugins/Windows/Sentry/sentry.dll
 Plugins/Windows/Sentry/sentry.dll.meta
 Plugins/Windows/Sentry/sentry.pdb
 Plugins/Windows/Sentry/sentry.pdb.meta
+Prefabs/SentryUserFeedback.prefab
+Prefabs/SentryUserFeedback.prefab.meta
 Runtime/io.sentry.unity.runtime.asmdef
 Runtime/io.sentry.unity.runtime.asmdef.meta
 Runtime/Sentry.dll
@@ -1570,6 +1574,8 @@ Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
 Runtime/SentryIntegrations.cs
 Runtime/SentryIntegrations.cs.meta
+Runtime/SentryUserFeedback.cs
+Runtime/SentryUserFeedback.cs.meta
 Samples~/unity-of-bugs/Scenes.meta
 Samples~/unity-of-bugs/Scripts.meta
 Samples~/unity-of-bugs/Scenes/1_Bugfarm.unity
@@ -1613,6 +1619,10 @@ Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m
 Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs.meta
+Textures/Logo.png
+Textures/Logo.png.meta
+Textures/Megaphone.png
+Textures/Megaphone.png.meta
 CHANGELOG.md
 CHANGELOG.md.meta
 Editor.meta
@@ -1621,6 +1631,8 @@ LICENSE.md.meta
 package.json
 package.json.meta
 Plugins.meta
+Prefabs.meta
 README.md
 README.md.meta
 Runtime.meta
+Textures.meta
