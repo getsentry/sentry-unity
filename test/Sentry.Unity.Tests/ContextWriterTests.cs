@@ -79,7 +79,7 @@ public sealed class ContextWriterTests
 
         // act
         MainThreadData.SentrySystemInfo = sysInfo;
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
         Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
         // assert

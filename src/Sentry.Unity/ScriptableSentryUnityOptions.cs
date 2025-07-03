@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -120,12 +121,12 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     /// <remarks>
     /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
     /// </remarks>
-    public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
+    public static SentryUnityOptions? LoadSentryUnityOptions()
     {
         var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
         if (scriptableOptions is not null)
         {
-            return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
+            return scriptableOptions.ToSentryUnityOptions(false, SentryPlatformServices.UnityInfo);
         }
 
         return null;

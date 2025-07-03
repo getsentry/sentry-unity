@@ -5,7 +5,7 @@
 using System;
 using System.Collections;
 using NUnit.Framework;
-using Sentry.Unity.Tests;
+using Sentry.Internal.Unity;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
@@ -52,7 +52,7 @@ namespace Sentry.Unity
 
         public static IDisposable InitSentrySdk(SentryUnityOptions options)
         {
-            SentryUnity.Init(options);
+            SentrySdk.Init(options);
             return new SentryDisposable();
         }
 

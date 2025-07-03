@@ -15,7 +15,9 @@
 #endif
 
 using System;
+using Sentry.Unity;
 using Sentry.Extensibility;
+using Sentry.Unity.NativeUtils;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -37,9 +39,9 @@ using Sentry.Unity.Default;
 
 [assembly: AlwaysLinkAssembly]
 
-namespace Sentry.Unity
+namespace Sentry.Internal.Unity
 {
-    public static class SentryInitialization
+    internal static class SentryInitialization
     {
         public const string StartupTransactionOperation = "app.start";
         public static ISpan InitSpan;
@@ -53,20 +55,23 @@ namespace Sentry.Unity
 #else
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #endif
-        public static void Init()
+        internal static void Init()
         {
-            var unityInfo = new SentryUnityInfo();
+            // We're setting up `UnityInfo` and the platform specific configure callbacks as the very first thing to be
+            // available during initialization.
+            SetupPlatformConfiguration();
+
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options != null && options.ShouldInitializeSdk())
             {
                 // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
-                // compile them with the game instead of precompiling them with the rest of the SDK.
+                // compile them with the game instead of pre-compiling them with the rest of the SDK.
                 // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
+                // TODO: Find a way to move this into `SentrySdk.Init` too
                 SentryIntegrations.Configure(options);
-                // Configures scope sync and (by default) initializes the native SDK.
-                SetupNativeSdk(options, unityInfo);
-                SentryUnity.Init(options);
+
+                SentrySdk.Init(options);
                 SetupStartupTracing(options);
             }
             else
@@ -74,37 +79,25 @@ namespace Sentry.Unity
                 // If the SDK is not `enabled` we're closing down the native layer as well. This is especially relevant
                 // in a `built-time-initialization` scenario where the native SDKs self-initialize.
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Close(options, unityInfo);
+                SentryNativeCocoa.Close(options, SentryPlatformServices.UnityInfo);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Close(options, unityInfo);
+                SentryNativeAndroid.Close(options, SentryPlatformServices.UnityInfo);
 #endif
             }
         }
 
-        private static void SetupNativeSdk(SentryUnityOptions options, SentryUnityInfo unityInfo)
+        private static void SetupPlatformConfiguration()
         {
-            try
-            {
+            SentryPlatformServices.UnityInfo = new SentryUnityInfo();
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Configure(options, unityInfo);
+            SentryPlatformServices.PlatformConfiguration = SentryNativeCocoa.Configure;
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Configure(options, unityInfo);
+            SentryPlatformServices.PlatformConfiguration = SentryNativeAndroid.Configure;
 #elif SENTRY_NATIVE
-                SentryNative.Configure(options, unityInfo);
+            SentryPlatformServices.PlatformConfiguration = SentryNative.Configure;
 #elif SENTRY_WEBGL
-              SentryWebGL.Configure(options);
+            SentryPlatformServices.PlatformConfiguration = SentryWebGL.Configure;
 #endif
-            }
-            catch (DllNotFoundException e)
-            {
-                options.DiagnosticLogger?.LogError(e,
-                    "Sentry native-error capture configuration failed to load a native library. This usually " +
-                    "means the library is missing from the application bundle or the installation directory.");
-            }
-            catch (Exception e)
-            {
-                options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
-            }
         }
 
         private static void SetupStartupTracing(SentryUnityOptions options)

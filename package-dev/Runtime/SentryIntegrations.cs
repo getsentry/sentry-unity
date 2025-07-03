@@ -10,10 +10,11 @@
 
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Sentry.Unity
+namespace Sentry.Internal.Unity
 {
     public static class SentryIntegrations
     {

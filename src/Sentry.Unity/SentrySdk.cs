@@ -1,13 +1,14 @@
 using System;
 using System.ComponentModel;
 using Sentry.Extensibility;
+using Sentry.Unity.NativeUtils;
 
 namespace Sentry.Unity;
 
 /// <summary>
 /// Sentry Unity initialization class.
 /// </summary>
-public static class SentryUnity
+public static partial class SentrySdk
 {
     private static SentryUnitySdk? UnitySdk;
 
@@ -32,7 +33,25 @@ public static class SentryUnity
     {
         if (UnitySdk is not null)
         {
-            options.DiagnosticLogger?.LogWarning("The SDK has already been initialized.");
+            options.LogWarning("The SDK has already been initialized.");
+        }
+
+        if (SentryPlatformServices.UnityInfo is not null)
+        {
+            try
+            {
+                SentryPlatformServices.PlatformConfiguration?.Invoke(options, SentryPlatformServices.UnityInfo);
+            }
+            catch (DllNotFoundException e)
+            {
+                options.DiagnosticLogger?.LogError(e,
+                    "Sentry native-error capture configuration failed to load a native library. This usually " +
+                    "means the library is missing from the application bundle or the installation directory.");
+            }
+            catch (Exception e)
+            {
+                options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
+            }
         }
 
         UnitySdk = SentryUnitySdk.Init(options);
@@ -91,4 +110,5 @@ public static class SentryUnity
     /// </summary>
     public static void CaptureFeedback(string message, string? email, string? name, bool addScreenshot) =>
         UnitySdk?.CaptureFeedback(message, email, name, addScreenshot);
+
 }
