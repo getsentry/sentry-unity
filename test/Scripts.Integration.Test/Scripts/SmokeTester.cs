@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Sentry;
+using Sentry.Unity;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
