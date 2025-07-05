@@ -22,9 +22,9 @@ public class ScreenshotEventProcessorTests
     [TearDown]
     public void TearDown()
     {
-        if (SentrySdk.IsEnabled)
+        if (Sentry.SentrySdk.IsEnabled)
         {
-            SentryUnity.Close();
+            SentrySdk.Close();
         }
     }
 

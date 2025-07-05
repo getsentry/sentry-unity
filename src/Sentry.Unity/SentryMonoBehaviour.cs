@@ -39,9 +39,9 @@ public partial class SentryMonoBehaviour : MonoBehaviour, ISentryMonoBehaviour
 public partial class SentryMonoBehaviour
 {
     public void StartAwakeSpan(MonoBehaviour monoBehaviour) =>
-        SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
+        Sentry.SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
 
-    public void FinishAwakeSpan() => SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
+    public void FinishAwakeSpan() => Sentry.SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
 }
 
 /// <summary>

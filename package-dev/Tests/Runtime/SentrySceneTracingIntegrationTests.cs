@@ -5,8 +5,8 @@
 using System;
 using System.Collections;
 using NUnit.Framework;
+using Sentry.Internal.Unity;
 using Sentry.Unity.Tests;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 

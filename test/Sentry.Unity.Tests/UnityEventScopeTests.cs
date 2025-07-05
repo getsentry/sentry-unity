@@ -35,9 +35,9 @@ public sealed class UnityEventProcessorThreadingTests
     {
         Object.Destroy(_gameObject);
 
-        if (SentrySdk.IsEnabled)
+        if (Sentry.SentrySdk.IsEnabled)
         {
-            SentryUnity.Close();
+            SentrySdk.Close();
         }
     }
 
@@ -66,7 +66,7 @@ public sealed class UnityEventProcessorThreadingTests
             Debug = true,
             DiagnosticLogger = _testLogger
         };
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
 
         var sentryEvent = new SentryEvent
         {
@@ -77,9 +77,9 @@ public sealed class UnityEventProcessorThreadingTests
         };
 
         // act
-        Task.Run(() => SentrySdk.CaptureEvent(sentryEvent)).Wait();
+        Task.Run(() => Sentry.SentrySdk.CaptureEvent(sentryEvent)).Wait();
 
-        SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+        Sentry.SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
         // assert
         var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning && log.message != "Cache directory is empty.").ToList();
@@ -123,7 +123,7 @@ public sealed class UnityEventProcessorThreadingTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
 
         // Act
         var @event = new SentryEvent
@@ -134,16 +134,16 @@ public sealed class UnityEventProcessorThreadingTests
         // Events should have the same context, regardless of the thread they were issued on.
         if (captureOnUiThread)
         {
-            SentrySdk.CaptureEvent(@event);
+            Sentry.SentrySdk.CaptureEvent(@event);
         }
         else
         {
-            var task = Task.Run(() => SentrySdk.CaptureEvent(@event));
+            var task = Task.Run(() => Sentry.SentrySdk.CaptureEvent(@event));
             Thread.Sleep(10);
             task.Wait();
         }
 
-        SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+        Sentry.SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
         // Assert
         Assert.AreEqual(systemInfo.GraphicsDeviceVendorId!.Value, @event.Contexts.Gpu.VendorId);
