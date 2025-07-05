@@ -23,7 +23,7 @@ Install the package via the Unity Package Manager using a Git URL to Sentry's SD
 https://github.com/getsentry/unity.git
 ```
 
-To use this specific version of the SDK, append `#3.2.3` to the URL.
+To use this specific version of the SDK, append `#3.2.3` to the URL, but note that this will stop Unity from suggesting version updates automatically.
 
 ## Documentation
 
