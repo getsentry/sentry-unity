@@ -33,25 +33,29 @@ public static partial class SentrySdk
     {
         if (UnitySdk is not null)
         {
-            options.LogWarning("The SDK has already been initialized.");
+            options.LogWarning("The SDK has already been initialized. Skipping initialization.");
         }
 
-        if (SentryPlatformServices.UnityInfo is not null)
+        if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is not null)
         {
             try
             {
-                SentryPlatformServices.PlatformConfiguration?.Invoke(options, SentryPlatformServices.UnityInfo);
+                SentryPlatformServices.PlatformConfiguration.Invoke(options, SentryPlatformServices.UnityInfo);
             }
             catch (DllNotFoundException e)
             {
-                options.DiagnosticLogger?.LogError(e,
+                options.LogError(e,
                     "Sentry native-error capture configuration failed to load a native library. This usually " +
                     "means the library is missing from the application bundle or the installation directory.");
             }
             catch (Exception e)
             {
-                options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
+                options.LogError(e, "Sentry native error capture configuration failed.");
             }
+        }
+        else
+        {
+            options.LogWarning("The SDK's Platform Services have not been set up. Native support will be limited.");
         }
 
         UnitySdk = SentryUnitySdk.Init(options);
@@ -68,7 +72,7 @@ public static partial class SentrySdk
     }
 
     /// <summary>
-    /// Represents the crash state of the games's previous run.
+    /// Represents the crash state of the game's previous run.
     /// Used to determine if the last execution terminated normally or crashed.
     /// </summary>
     public enum CrashedLastRun
@@ -110,5 +114,4 @@ public static partial class SentrySdk
     /// </summary>
     public static void CaptureFeedback(string message, string? email, string? name, bool addScreenshot) =>
         UnitySdk?.CaptureFeedback(message, email, name, addScreenshot);
-
 }
