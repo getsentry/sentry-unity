@@ -14,7 +14,7 @@ using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Sentry.Internal.Unity
+namespace Sentry.Unity
 {
     public static class SentryIntegrations
     {

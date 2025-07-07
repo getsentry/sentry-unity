@@ -39,7 +39,7 @@ using Sentry.Unity.Default;
 
 [assembly: AlwaysLinkAssembly]
 
-namespace Sentry.Internal.Unity
+namespace Sentry.Unity
 {
     internal static class SentryInitialization
     {
