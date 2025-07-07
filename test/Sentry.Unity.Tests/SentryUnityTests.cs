@@ -16,7 +16,7 @@ public class SentryUnitySelfInitializationTests
     [TearDown]
     public void TearDown()
     {
-        if (Sentry.SentrySdk.IsEnabled)
+        if (SentrySdk.IsEnabled)
         {
             SentrySdk.Close();
         }
@@ -74,7 +74,7 @@ public class SentryUnitySelfInitializationTests
 
         SentrySdk.Init(options);
 
-        Assert.IsTrue(Sentry.SentrySdk.IsEnabled);
+        Assert.IsTrue(SentrySdk.IsEnabled);
     }
 
     [Test]
@@ -85,7 +85,7 @@ public class SentryUnitySelfInitializationTests
         // Even tho the defaults are set the DSN is missing making the options invalid for initialization
         SentrySdk.Init(options);
 
-        Assert.IsFalse(Sentry.SentrySdk.IsEnabled);
+        Assert.IsFalse(SentrySdk.IsEnabled);
     }
 
     [Test]

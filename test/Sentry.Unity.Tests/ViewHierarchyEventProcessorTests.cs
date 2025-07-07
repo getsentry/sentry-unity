@@ -24,7 +24,7 @@ public class ViewHierarchyEventProcessorTests
     [TearDown]
     public void TearDown()
     {
-        if (Sentry.SentrySdk.IsEnabled)
+        if (SentrySdk.IsEnabled)
         {
             SentrySdk.Close();
         }

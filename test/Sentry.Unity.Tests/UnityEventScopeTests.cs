@@ -35,7 +35,7 @@ public sealed class UnityEventProcessorThreadingTests
     {
         Object.Destroy(_gameObject);
 
-        if (Sentry.SentrySdk.IsEnabled)
+        if (SentrySdk.IsEnabled)
         {
             SentrySdk.Close();
         }
@@ -77,9 +77,9 @@ public sealed class UnityEventProcessorThreadingTests
         };
 
         // act
-        Task.Run(() => Sentry.SentrySdk.CaptureEvent(sentryEvent)).Wait();
+        Task.Run(() => SentrySdk.CaptureEvent(sentryEvent)).Wait();
 
-        Sentry.SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+        SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
         // assert
         var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning && log.message != "Cache directory is empty.").ToList();
@@ -134,16 +134,16 @@ public sealed class UnityEventProcessorThreadingTests
         // Events should have the same context, regardless of the thread they were issued on.
         if (captureOnUiThread)
         {
-            Sentry.SentrySdk.CaptureEvent(@event);
+            SentrySdk.CaptureEvent(@event);
         }
         else
         {
-            var task = Task.Run(() => Sentry.SentrySdk.CaptureEvent(@event));
+            var task = Task.Run(() => SentrySdk.CaptureEvent(@event));
             Thread.Sleep(10);
             task.Wait();
         }
 
-        Sentry.SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+        SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
         // Assert
         Assert.AreEqual(systemInfo.GraphicsDeviceVendorId!.Value, @event.Contexts.Gpu.VendorId);

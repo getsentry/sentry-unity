@@ -22,6 +22,6 @@ public static class SentryTests
 
     private sealed class SentryDisposable : IDisposable
     {
-        public void Dispose() => Sentry.SentrySdk.Close();
+        public void Dispose() => SentrySdk.Close();
     }
 }

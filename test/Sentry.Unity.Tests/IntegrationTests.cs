@@ -32,7 +32,7 @@ public sealed class IntegrationTests
     [TearDown]
     public void TearDown()
     {
-        if (Sentry.SentrySdk.IsEnabled)
+        if (SentrySdk.IsEnabled)
         {
             SentrySdk.Close();
         }
@@ -351,6 +351,6 @@ public sealed class IntegrationTests
 
     private sealed class SentryDisposable : IDisposable
     {
-        public void Dispose() => Sentry.SentrySdk.Close();
+        public void Dispose() => SentrySdk.Close();
     }
 }
