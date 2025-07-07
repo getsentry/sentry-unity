@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- **Breaking Change**: The Unity SDK's static API has been simplified moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk`
+  to `Sentry.Unity.SentrySdk`. 
+  This change enables manual SDK initialization with full functionality, previously only available through auto-initialization.
+  The underlying .NET SDK's `SentrySdk` class is now internal, and several previously public classes like `SentryInitialization` 
+  and `SentryIntegrations` are now internal.
+  
+  **Migration**: Update your using statements from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically 
+  import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
+  (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
+  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227))
+
 ### Features
 
 - The SDK now comes with a `SentryUserFeedback` prefab ready to be used. You can drag and drop it into your scene or 
