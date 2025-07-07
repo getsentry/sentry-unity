@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using Sentry;
 using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -10,8 +11,6 @@ public class BugFarmButtons : MonoBehaviour
     private void Awake()
     {
         Debug.Log("Sample 🐛");
-
-        SentrySdk.Init(options => {});
     }
 
     private void Start()
