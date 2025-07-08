@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Updated Unity support by updating to Unity versions (2020+), removing Unity 2019 which reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
+
 ### Features
 
 - The SDK now comes with a `SentryUserFeedback` prefab ready to be used. You can drag and drop it into your scene or 
