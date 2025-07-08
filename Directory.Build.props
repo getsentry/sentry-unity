@@ -10,7 +10,7 @@
     <Features>strict</Features>
     <SignAssembly>false</SignAssembly>
 
-    <!-- This is the default for our lowest supported version 2019 LTS: netstandard2.0 -->
+    <!-- This is the default for our lowest supported version 2020 LTS: netstandard2.0 -->
     <!-- The TargetFramework gets overridden depending on the UnityVersion here and in test/props -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- The RepoRoot gets used in the conditional propertygroup for finding the Unity version -->

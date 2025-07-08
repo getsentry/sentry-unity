@@ -319,6 +319,7 @@ public sealed class SentryUnityOptions : SentryOptions
         this.AddIntegration(new UnityScopeIntegration(application, unityInfo));
         this.AddIntegration(new UnityBeforeSceneLoadIntegration());
         this.AddIntegration(new SceneManagerIntegration());
+        this.AddIntegration(new SceneManagerTracingIntegration());
         this.AddIntegration(new SessionIntegration(behaviour));
         this.AddIntegration(new TraceGenerationIntegration(behaviour));
 

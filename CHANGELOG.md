@@ -14,6 +14,7 @@
   import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
   (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
   remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227))
+- Updated Unity support by updating to Unity versions (2020+), removing Unity 2019 which reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
 
 ### Features
 
