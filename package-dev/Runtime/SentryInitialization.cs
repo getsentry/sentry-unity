@@ -43,12 +43,6 @@ namespace Sentry.Unity
 {
     internal static class SentryInitialization
     {
-        public const string StartupTransactionOperation = "app.start";
-        public static ISpan InitSpan;
-        private const string InitSpanOperation = "runtime.init";
-        public static ISpan SubSystemRegistrationSpan;
-        private const string SubSystemSpanOperation = "runtime.init.subsystem";
-
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -65,14 +59,13 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options != null && options.ShouldInitializeSdk())
             {
-                // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
-                // compile them with the game instead of pre-compiling them with the rest of the SDK.
-                // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
-                // TODO: Find a way to move this into `SentrySdk.Init` too
-                SentryIntegrations.Configure(options);
+                // We have to keep the StartupTracing outside the SDK as the integration relies on the `RuntimeInitializeOnLoadMethod`
+                // attribute.
+                SentryStartupTracing.SetUpTracingIntration(options);
 
                 SentrySdk.Init(options);
-                SetupStartupTracing(options);
+
+                SentryStartupTracing.StartTracing();
             }
             else
             {
@@ -97,26 +90,6 @@ namespace Sentry.Unity
             SentryPlatformServices.PlatformConfiguration = SentryNative.Configure;
 #elif SENTRY_WEBGL
             SentryPlatformServices.PlatformConfiguration = SentryWebGL.Configure;
-#endif
-        }
-
-        private static void SetupStartupTracing(SentryUnityOptions options)
-        {
-#if !SENTRY_WEBGL
-            if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
-            {
-                options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.",
-                    StartupTransactionOperation);
-
-                var runtimeStartTransaction =
-                    SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
-                SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
-
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
-                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
-                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
-            }
 #endif
         }
     }

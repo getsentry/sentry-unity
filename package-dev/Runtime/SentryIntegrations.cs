@@ -6,15 +6,15 @@
 
 using Sentry.Extensibility;
 using Sentry.Integrations;
-using Sentry.Unity;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity
 {
-    public static class SentryIntegrations
+    internal static class SentryStartupTracing
     {
-        public static void Configure(SentryUnityOptions options)
+        private static StartupTracingIntegration StartupTracingIntegration;
+
+        public static void SetUpTracingIntration(SentryUnityOptions options)
         {
             if (options.TracesSampleRate > 0.0)
             {
@@ -22,16 +22,31 @@ namespace Sentry.Unity
 #if !SENTRY_WEBGL
                 if (options.AutoStartupTraces)
                 {
-                    options.AddIntegration(new StartupTracingIntegration());
+                    StartupTracingIntegration = new StartupTracingIntegration();
+                    options.AddIntegration(StartupTracingIntegration);
                 }
 #endif
             }
         }
+
+        public static void StartTracing()
+        {
+            if (StartupTracingIntegration != null)
+            {
+                StartupTracingIntegration.StartTracing();
+            }
+        }
+
     }
 
 #if !SENTRY_WEBGL
-    public class StartupTracingIntegration : ISdkIntegration
+    internal class StartupTracingIntegration : ISdkIntegration
     {
+        private const string StartupTransactionOperation = "app.start";
+        private static ISpan InitSpan;
+        private const string InitSpanOperation = "runtime.init";
+        public static ISpan SubSystemRegistrationSpan;
+        private const string SubSystemSpanOperation = "runtime.init.subsystem";
         private static ISpan AfterAssembliesSpan;
         private const string AfterAssembliesSpanOperation = "runtime.init.afterassemblies";
         private static ISpan SplashScreenSpan;
@@ -51,6 +66,26 @@ namespace Sentry.Unity
             IntegrationRegistered = true;
         }
 
+        public static void StartTracing()
+        {
+            if (!IntegrationRegistered || StartupAlreadyCaptured)
+            {
+                return;
+            }
+
+            Logger.LogInfo("Creating '{0}' transaction for runtime initialization.",
+                StartupTransactionOperation);
+
+            var runtimeStartTransaction =
+                SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
+            SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
+
+            Logger.LogDebug("Creating '{0}' span.", InitSpanOperation);
+            InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
+            Logger.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
+            SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         public static void AfterAssembliesLoaded()
         {
@@ -59,11 +94,11 @@ namespace Sentry.Unity
                 return;
             }
 
-            SentryInitialization.SubSystemRegistrationSpan?.Finish(SpanStatus.Ok);
-            SentryInitialization.SubSystemRegistrationSpan = null;
+            SubSystemRegistrationSpan?.Finish(SpanStatus.Ok);
+            SubSystemRegistrationSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", AfterAssembliesSpanOperation);
-            AfterAssembliesSpan = SentryInitialization.InitSpan?.StartChild(AfterAssembliesSpanOperation, "after assemblies");
+            AfterAssembliesSpan = InitSpan?.StartChild(AfterAssembliesSpanOperation, "after assemblies");
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
@@ -78,7 +113,7 @@ namespace Sentry.Unity
             AfterAssembliesSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", SplashScreenSpanOperation);
-            SplashScreenSpan = SentryInitialization.InitSpan?.StartChild(SplashScreenSpanOperation, "splashscreen");
+            SplashScreenSpan = InitSpan?.StartChild(SplashScreenSpanOperation, "splashscreen");
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -93,7 +128,7 @@ namespace Sentry.Unity
             SplashScreenSpan = null;
 
             Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanOperation);
-            FirstSceneLoadSpan = SentryInitialization.InitSpan?.StartChild(FirstSceneLoadSpanOperation, "first scene load");
+            FirstSceneLoadSpan = InitSpan?.StartChild(FirstSceneLoadSpanOperation, "first scene load");
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -107,10 +142,10 @@ namespace Sentry.Unity
             FirstSceneLoadSpan?.Finish(SpanStatus.Ok);
             FirstSceneLoadSpan = null;
 
-            SentryInitialization.InitSpan?.Finish(SpanStatus.Ok);
-            SentryInitialization.InitSpan = null;
+            InitSpan?.Finish(SpanStatus.Ok);
+            InitSpan = null;
 
-            Logger?.LogInfo("Finishing '{0}' transaction.", SentryInitialization.StartupTransactionOperation);
+            Logger?.LogInfo("Finishing '{0}' transaction.", StartupTransactionOperation);
             SentrySdk.ConfigureScope(s =>
             {
                 s.Transaction?.Finish(SpanStatus.Ok);
