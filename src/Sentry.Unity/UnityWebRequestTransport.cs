@@ -89,12 +89,7 @@ internal class UnityWebRequestTransport : HttpTransportBase
 
     private HttpResponseMessage? GetResponse(UnityWebRequest www)
     {
-        // Let's disable treating "warning:obsolete" as an error here because the alternative of putting a static
-        // function to user code (to be able to use #if UNITY_2019) is just ugly.
-#pragma warning disable 618
-        // if (www.result == UnityWebRequest.Result.ConnectionError) // Unity 2020.1+; `.result` not present on 2019
-        if (www.isNetworkError) // Unity 2019; obsolete (error) on later versions
-#pragma warning restore 618
+        if (www.result == UnityWebRequest.Result.ConnectionError)
         {
             _options.DiagnosticLogger?.LogWarning("Failed to send request: {0}", www.error);
             return null;
