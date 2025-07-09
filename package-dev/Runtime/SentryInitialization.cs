@@ -41,12 +41,6 @@ namespace Sentry.Unity
 {
     public static class SentryInitialization
     {
-        public const string StartupTransactionOperation = "app.start";
-        public static ISpan InitSpan;
-        private const string InitSpanOperation = "runtime.init";
-        public static ISpan SubSystemRegistrationSpan;
-        private const string SubSystemSpanOperation = "runtime.init.subsystem";
-
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -60,14 +54,9 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
             if (options != null && options.ShouldInitializeSdk())
             {
-                // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
-                // compile them with the game instead of precompiling them with the rest of the SDK.
-                // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
-                SentryIntegrations.Configure(options);
                 // Configures scope sync and (by default) initializes the native SDK.
                 SetupNativeSdk(options, unityInfo);
                 SentryUnity.Init(options);
-                SetupStartupTracing(options);
             }
             else
             {
@@ -92,7 +81,7 @@ namespace Sentry.Unity
 #elif SENTRY_NATIVE
                 SentryNative.Configure(options, unityInfo);
 #elif SENTRY_WEBGL
-              SentryWebGL.Configure(options);
+              	SentryWebGL.Configure(options);
 #endif
             }
             catch (DllNotFoundException e)
@@ -105,26 +94,6 @@ namespace Sentry.Unity
             {
                 options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
             }
-        }
-
-        private static void SetupStartupTracing(SentryUnityOptions options)
-        {
-#if !SENTRY_WEBGL
-            if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
-            {
-                options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.",
-                    StartupTransactionOperation);
-
-                var runtimeStartTransaction =
-                    SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
-                SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
-
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
-                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
-                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
-            }
-#endif
         }
     }
 
