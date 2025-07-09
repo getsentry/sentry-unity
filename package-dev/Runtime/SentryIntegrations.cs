@@ -12,7 +12,9 @@ namespace Sentry.Unity
 {
     internal static class SentryStartupTracing
     {
+#if !SENTRY_WEBGL
         private static StartupTracingIntegration StartupTracingIntegration;
+#endif
 
         public static void SetUpTracingIntration(SentryUnityOptions options)
         {
@@ -31,10 +33,12 @@ namespace Sentry.Unity
 
         public static void StartTracing()
         {
+#if !SENTRY_WEBGL
             if (StartupTracingIntegration != null)
             {
                 StartupTracingIntegration.StartTracing();
             }
+#endif
         }
 
     }
