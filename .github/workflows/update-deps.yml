@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-prefix: ['2019', '2020', '2021', '2022', '6000']
+        unity-prefix: ['2020', '2021', '2022', '6000']
     steps:
       - name: Find the latest Unity version
         id: version-select
@@ -61,7 +61,7 @@ jobs:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Update sample ProjectVersion.txt
-        if: ${{ matrix.unity-prefix == '2019' }}
+        if: ${{ matrix.unity-prefix == '2020' }}
         run: |
           "m_EditorVersion: ${{ steps.version-select.outputs.version }}`nm_EditorVersionWithRevision: ${{ steps.version-select.outputs.version }} (${{ steps.version-select.outputs.changeset }})" `
             | Out-File "samples\unity-of-bugs\ProjectSettings\ProjectVersion.txt"
