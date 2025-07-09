@@ -4,7 +4,7 @@
 
 ### Breaking Changes
 
-- Updated Unity support by updating to Unity versions (2020+), removing Unity 2019 which reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
+- Dropped support for Unity 2019. It reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
 
 ### Features
 
