@@ -18,9 +18,8 @@ internal class StartupTracingIntegration : ISdkIntegration
         private static ISpan? FirstSceneLoadSpan;
         private const string FirstSceneLoadSpanOperation = "runtime.init.firstscene";
 
-        // Flag to make sure we create spans through the runtime initialization only once
-        private static bool StartupAlreadyCaptured;
-        private static bool IntegrationRegistered;
+        private static bool GameStartupFinished; // Flag to make sure we only create spans during the game's startup.
+        private static bool IsIntegrationRegistered;
 
         private static IDiagnosticLogger? Logger;
 
@@ -30,21 +29,21 @@ internal class StartupTracingIntegration : ISdkIntegration
 
             if (options is SentryUnityOptions { TracesSampleRate: > 0, AutoStartupTraces: true })
             {
-                IntegrationRegistered = true;
+                IsIntegrationRegistered = true;
             }
         }
 
         internal static bool IsStartupTracingAllowed()
         {
-            if (Application.isEditor
-                || Application.platform == RuntimePlatform.WebGLPlayer
-                || !IntegrationRegistered
-                || StartupAlreadyCaptured)
+            if (!Application.isEditor
+                || Application.platform != RuntimePlatform.WebGLPlayer // Startup Tracing does not properly work on WebGL
+                || IsIntegrationRegistered
+                || !GameStartupFinished)
             {
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         public static void StartTracing()
@@ -117,6 +116,8 @@ internal class StartupTracingIntegration : ISdkIntegration
         {
             if (!IsStartupTracingAllowed())
             {
+                // To make sure late init calls don't try to trace the startup
+                GameStartupFinished = true;
                 return;
             }
 
@@ -129,6 +130,6 @@ internal class StartupTracingIntegration : ISdkIntegration
             Logger?.LogInfo("Finishing '{0}' transaction.", StartupTransactionOperation);
             SentrySdk.ConfigureScope(s => s.Transaction?.Finish(SpanStatus.Ok));
 
-            StartupAlreadyCaptured = true;
+            GameStartupFinished = true;
         }
     }
