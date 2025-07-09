@@ -188,7 +188,7 @@ public class StartupTracingIntegrationTests
         // Verify that ConfigureScope was called at least twice (start transaction, finish transaction)
         Assert.GreaterOrEqual(_fixture.Hub.ConfigureScopeCalls.Count, 2); // Sanity Check
 
-        var mockScope = new Scope();
+        var mockScope = new Scope(_fixture.Options);
 
         // Apply the transaction start
         _fixture.Hub.ConfigureScopeCalls.First().Invoke(mockScope);
