@@ -12,12 +12,6 @@ public static class SentryUnity
 {
     private static SentryUnitySdk? UnitySdk;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void DoTheThing()
-    {
-        Debug.Log("What the actual fuck.");
-    }
-
     /// <summary>
     /// Initializes Sentry Unity SDK while configuring the options.
     /// </summary>
