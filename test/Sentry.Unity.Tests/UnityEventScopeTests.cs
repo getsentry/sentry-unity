@@ -82,7 +82,11 @@ public sealed class UnityEventProcessorThreadingTests
         SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
         // assert
-        var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning && log.message != "Cache directory is empty.").ToList();
+        var logsFound = _testLogger.Logs.Where(log =>
+            log.logLevel >= SentryLevel.Warning &&
+                // Ignore expected or harmless warnings
+                log.message != "Cache directory is empty." &&
+                log.message != "The SDK's Platform Services have not been set up. Native support will be limited.").ToList();
 
         Assert.Zero(logsFound.Count, FormatLogs(logsFound));
 
