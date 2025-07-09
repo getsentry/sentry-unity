@@ -7,21 +7,24 @@ namespace Sentry.Unity.Integrations;
 internal class StartupTracingIntegration : ISdkIntegration
     {
         private const string StartupTransactionOperation = "app.start";
-        private static ISpan? InitSpan;
+        internal static ISpan? InitSpan;
         private const string InitSpanOperation = "runtime.init";
-        private static ISpan? SubSystemRegistrationSpan;
+        internal static ISpan? SubSystemRegistrationSpan;
         private const string SubSystemSpanOperation = "runtime.init.subsystem";
-        private static ISpan? AfterAssembliesSpan;
+        internal static ISpan? AfterAssembliesSpan;
         private const string AfterAssembliesSpanOperation = "runtime.init.afterassemblies";
-        private static ISpan? SplashScreenSpan;
+        internal static ISpan? SplashScreenSpan;
         private const string SplashScreenSpanOperation = "runtime.init.splashscreen";
-        private static ISpan? FirstSceneLoadSpan;
+        internal static ISpan? FirstSceneLoadSpan;
         private const string FirstSceneLoadSpanOperation = "runtime.init.firstscene";
 
-        private static bool GameStartupFinished; // Flag to make sure we only create spans during the game's startup.
-        private static bool IsIntegrationRegistered;
+        internal static bool IsGameStartupFinished; // Flag to make sure we only create spans during the game's startup.
+        internal static bool IsIntegrationRegistered;
 
         private static IDiagnosticLogger? Logger;
+
+        // For testing. Methods with the RuntimeLoad attribute cannot have arguments
+        internal static IApplication? Application = null;
 
         public void Register(IHub hub, SentryOptions options)
         {
@@ -35,10 +38,11 @@ internal class StartupTracingIntegration : ISdkIntegration
 
         internal static bool IsStartupTracingAllowed()
         {
-            if (!Application.isEditor
-                || Application.platform != RuntimePlatform.WebGLPlayer // Startup Tracing does not properly work on WebGL
-                || IsIntegrationRegistered
-                || !GameStartupFinished)
+            Application ??= ApplicationAdapter.Instance;
+            if (!Application.IsEditor
+                && Application.Platform != RuntimePlatform.WebGLPlayer // Startup Tracing does not properly work on WebGL
+                && IsIntegrationRegistered
+                && !IsGameStartupFinished)
             {
                 return true;
             }
@@ -117,7 +121,7 @@ internal class StartupTracingIntegration : ISdkIntegration
             if (!IsStartupTracingAllowed())
             {
                 // To make sure late init calls don't try to trace the startup
-                GameStartupFinished = true;
+                IsGameStartupFinished = true;
                 return;
             }
 
@@ -130,6 +134,6 @@ internal class StartupTracingIntegration : ISdkIntegration
             Logger?.LogInfo("Finishing '{0}' transaction.", StartupTransactionOperation);
             SentrySdk.ConfigureScope(s => s.Transaction?.Finish(SpanStatus.Ok));
 
-            GameStartupFinished = true;
+            IsGameStartupFinished = true;
         }
     }
