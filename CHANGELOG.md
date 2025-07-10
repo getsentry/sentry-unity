@@ -13,7 +13,7 @@
   **Migration**: Update your using statements from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically 
   import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
   (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
-  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227))
+  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227), [#2239](https://github.com/getsentry/sentry-unity/pull/2239))
 - Updated Unity support by updating to Unity versions (2020+), removing Unity 2019 which reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
 - Dropped support for Unity 2019. It reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
 
