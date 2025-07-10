@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -30,24 +31,11 @@ internal class SentryUnitySdk
 
         MainThreadData.CollectData();
 
-        // On Standalone, we disable cache dir in case multiple app instances run over the same path.
-        // Note: we cannot use a named Mutex, because Unit doesn't support it. Instead, we create a file with `FileShare.None`.
-        // https://forum.unity.com/threads/unsupported-internal-call-for-il2cpp-mutex-createmutex_internal-named-mutexes-are-not-supported.387334/
-        if (ApplicationAdapter.Instance.Platform is RuntimePlatform.WindowsPlayer && options.CacheDirectoryPath is not null)
-        {
-            try
-            {
-                unitySdk._lockFile = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite, FileShare.None);
-            }
-            catch (Exception ex)
-            {
-                options.DiagnosticLogger?.LogWarning("An exception was thrown while trying to " +
-                                                     "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
-                options.CacheDirectoryPath = null;
-                options.AutoSessionTracking = false;
-            }
-        }
+        // Some integrations are controlled through a flag and opt-in. Adding these integrations late so we have the
+        // same behaviour whether we're self or manually initializing
+        HandleLateIntegrations(options);
+        HandlePlatformRestrictedOptions(options, SentryPlatformServices.UnityInfo);
+        HandleWindowsPlayer(unitySdk, options);
 
         unitySdk._dotnetSdk = Sentry.SentrySdk.Init(options);
 
@@ -136,5 +124,78 @@ internal class SentryUnitySdk
             : null;
 
         Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
+    }
+
+    internal static void HandleWindowsPlayer(SentryUnitySdk unitySdk, SentryUnityOptions options)
+    {
+        // On Windows-Standalone, we disable cache dir in case multiple app instances run over the same path.
+        // Note: we cannot use a named Mutex, because Unity doesn't support it. Instead, we create a file with `FileShare.None`.
+        // https://forum.unity.com/threads/unsupported-internal-call-for-il2cpp-mutex-createmutex_internal-named-mutexes-are-not-supported.387334/
+        if (ApplicationAdapter.Instance.Platform is not RuntimePlatform.WindowsPlayer ||
+            options.CacheDirectoryPath is null)
+        {
+            return;
+        }
+
+        try
+        {
+            unitySdk._lockFile = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
+                FileAccess.ReadWrite, FileShare.None);
+        }
+        catch (Exception ex)
+        {
+            options.DiagnosticLogger?.LogWarning("An exception was thrown while trying to " +
+                                                 "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
+            options.CacheDirectoryPath = null;
+            options.AutoSessionTracking = false;
+        }
+    }
+
+    internal static void HandleLateIntegrations(SentryUnityOptions options)
+    {
+        if (options.AttachViewHierarchy)
+        {
+            options.AddEventProcessor(new ViewHierarchyEventProcessor(options));
+        }
+        if (options.AttachScreenshot)
+        {
+            options.AddEventProcessor(new ScreenshotEventProcessor(options));
+        }
+
+        if (!ApplicationAdapter.Instance.IsEditor &&
+            (SentryPlatformServices.UnityInfo?.IL2CPP ?? false) &&
+            options.Il2CppLineNumberSupportEnabled)
+        {
+            if (SentryPlatformServices.UnityInfo.Il2CppMethods is not null)
+            {
+                options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options));
+            }
+            else
+            {
+                options.DiagnosticLogger?.LogWarning("Failed to find required IL2CPP methods - Skipping line number support");
+            }
+        }
+    }
+
+    internal static void HandlePlatformRestrictedOptions(SentryUnityOptions options, ISentryUnityInfo? unityInfo)
+    {
+        if (unityInfo?.IsKnownPlatform() == false)
+        {
+            options.DisableFileWrite = true;
+
+            // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
+            if (options.AutoSessionTracking)
+            {
+                options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
+                options.AutoSessionTracking = false;
+            }
+
+            // This is only provided on a best-effort basis for other than the explicitly supported platforms.
+            if (options.BackgroundWorker is null)
+            {
+                options.DiagnosticLogger?.LogDebug("Platform support for background thread execution is unknown: using WebBackgroundWorker.");
+                options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
+            }
+        }
     }
 }
