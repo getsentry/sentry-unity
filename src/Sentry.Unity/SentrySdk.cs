@@ -37,12 +37,13 @@ public static partial class SentrySdk
         }
 
         // The SDK expects these to be set from `SentryInitialization.cs` via `RuntimeInitializeOnLoadMethod` attribute
-        if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is not null)
+        // if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is not null)
+        if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is {} platformConfiguration)
         {
             try
             {
-                // Since it mutates the options, this has to happen before initializing the SDK
-                SentryPlatformServices.PlatformConfiguration.Invoke(options);
+                // Since this mutates the options (i.e. adding scope observer) we have to invoke before initializing the SDK
+                platformConfiguration.Invoke(options);
             }
             catch (DllNotFoundException e)
             {

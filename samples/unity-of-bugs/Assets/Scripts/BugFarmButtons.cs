@@ -5,7 +5,6 @@ using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-
 public class BugFarmButtons : MonoBehaviour
 {
     private void Awake()

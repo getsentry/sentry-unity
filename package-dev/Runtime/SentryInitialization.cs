@@ -43,16 +43,22 @@ namespace Sentry.Unity
 {
     internal static class SentryInitialization
     {
+        /// <summary>
+        /// This is intended for internal use only.
+        /// The SDK relies on <c>SetupPlatformServices</c> getting called as the very first thing during the game's
+        /// startup. This ensures that features like line number and native support are set up and configured properly.
+        /// This is also the case when initializing manually from code.
+        /// </summary>
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 #else
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #endif
-        internal static void Init()
+        private static void Init()
         {
-            // We're setting up `UnityInfo` and the platform specific configure callbacks as the very first thing to be
-            // available during initialization.
+            // We're setting up `UnityInfo` and the platform specific configure callbacks as the very first thing.
+            // These are required to be available during initialization.
             SetupPlatformServices();
 
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
