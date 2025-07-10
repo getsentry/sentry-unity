@@ -38,7 +38,7 @@ public static partial class SentrySdk
 
         // The SDK expects these to be set from `SentryInitialization.cs` via `RuntimeInitializeOnLoadMethod` attribute
         // if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is not null)
-        if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is {} platformConfiguration)
+        if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is { } platformConfiguration)
         {
             try
             {
