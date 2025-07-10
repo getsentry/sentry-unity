@@ -51,6 +51,10 @@ internal class SentryUnitySdk
 
         unitySdk._dotnetSdk = Sentry.SentrySdk.Init(options);
 
+        // We can safely call this during initialization. If the SDK self-initialized we're right on time. If the SDK
+        // was initialized manually, the RuntimeOnLoad attributes already triggered, making this call a no-op.
+        StartupTracingIntegration.StartTracing();
+
         if (options.NativeContextWriter is { } contextWriter)
         {
             Sentry.SentrySdk.CurrentHub.ConfigureScope((scope) =>

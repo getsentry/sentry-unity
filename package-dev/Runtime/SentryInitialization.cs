@@ -59,13 +59,7 @@ namespace Sentry.Unity
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options != null && options.ShouldInitializeSdk())
             {
-                // We have to keep the StartupTracing outside the SDK as the integration relies on the `RuntimeInitializeOnLoadMethod`
-                // attribute.
-                SentryStartupTracing.SetUpTracingIntration(options);
-
                 SentrySdk.Init(options);
-
-                SentryStartupTracing.StartTracing();
             }
             else
             {
