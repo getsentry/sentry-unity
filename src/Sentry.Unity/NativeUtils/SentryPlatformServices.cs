@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Sentry.Unity.NativeUtils;
 
@@ -10,6 +11,13 @@ namespace Sentry.Unity.NativeUtils;
 /// <remarks>Consider this <c>internal</c>.</remarks>
 public static class SentryPlatformServices
 {
+    /// <summary>
+    /// The UnityInfo holds methods that rely on conditionally compilation, i.e. IL2CPP backend.
+    /// </summary>
     public static ISentryUnityInfo? UnityInfo { get; set; }
-    public static Action<SentryUnityOptions, ISentryUnityInfo>? PlatformConfiguration { get; set; }
+
+    /// <summary>
+    /// The PlatformConfiguration callback is responsible for configuring the native SDK and setting up scope sync.
+    /// </summary>
+    public static Action<SentryUnityOptions>? PlatformConfiguration { get; set; }
 }

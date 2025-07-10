@@ -66,9 +66,9 @@ namespace Sentry.Unity
                 // If the SDK is not `enabled` we're closing down the native layer as well. This is especially relevant
                 // in a `built-time-initialization` scenario where the native SDKs self-initialize.
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Close(options, SentryPlatformServices.UnityInfo);
+                SentryNativeCocoa.Close(options);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Close(options, SentryPlatformServices.UnityInfo);
+                SentryNativeAndroid.Close(options);
 #endif
             }
         }

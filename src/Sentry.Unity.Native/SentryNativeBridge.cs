@@ -12,13 +12,11 @@ namespace Sentry.Unity.Native;
 /// P/Invoke to `sentry-native` functions.
 /// </summary>
 /// <see href="https://github.com/getsentry/sentry-native"/>
-public static class SentryNativeBridge
+internal static class SentryNativeBridge
 {
-    public static bool CrashedLastRun;
-
-    public static bool Init(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
+    public static bool Init(SentryUnityOptions options, ISentryUnityInfo? sentryUnityInfo)
     {
-        _isLinux = sentryUnityInfo.IsLinux();
+        _isLinux = sentryUnityInfo?.IsLinux() ?? false;
 
         var cOptions = sentry_options_new();
 

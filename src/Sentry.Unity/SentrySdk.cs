@@ -36,11 +36,13 @@ public static partial class SentrySdk
             options.LogWarning("The SDK has already been initialized. Skipping initialization.");
         }
 
+        // The SDK expects these to be set from `SentryInitialization.cs` via `RuntimeInitializeOnLoadMethod` attribute
         if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is not null)
         {
             try
             {
-                SentryPlatformServices.PlatformConfiguration.Invoke(options, SentryPlatformServices.UnityInfo);
+                // Since it mutates the options, this has to happen before initializing the SDK
+                SentryPlatformServices.PlatformConfiguration.Invoke(options);
             }
             catch (DllNotFoundException e)
             {
