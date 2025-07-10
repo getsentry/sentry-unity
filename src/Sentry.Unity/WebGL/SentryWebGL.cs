@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using Sentry.Unity.NativeUtils;
 using UnityEngine.Analytics;
 
 namespace Sentry.Unity.WebGL;
@@ -12,7 +13,10 @@ public static class SentryWebGL
     /// Configures the WebGL support.
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
-    public static void Configure(SentryUnityOptions options, ISentryUnityInfo unityInfo)
+    public static void Configure(SentryUnityOptions options) =>
+        Configure(options, SentryPlatformServices.UnityInfo);
+
+    internal static void Configure(SentryUnityOptions options, ISentryUnityInfo? unityInfo)
     {
         options.DiagnosticLogger?.LogDebug("Updating configuration for Unity WebGL.");
 
