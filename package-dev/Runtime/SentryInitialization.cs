@@ -53,7 +53,7 @@ namespace Sentry.Unity
         {
             // We're setting up `UnityInfo` and the platform specific configure callbacks as the very first thing to be
             // available during initialization.
-            SetupPlatformConfiguration();
+            SetupPlatformServices();
 
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
@@ -73,9 +73,10 @@ namespace Sentry.Unity
             }
         }
 
-        private static void SetupPlatformConfiguration()
+        private static void SetupPlatformServices()
         {
             SentryPlatformServices.UnityInfo = new SentryUnityInfo();
+
 #if SENTRY_NATIVE_COCOA
             SentryPlatformServices.PlatformConfiguration = SentryNativeCocoa.Configure;
 #elif SENTRY_NATIVE_ANDROID
