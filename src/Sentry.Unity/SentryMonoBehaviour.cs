@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -110,5 +111,28 @@ public partial class SentryMonoBehaviour
         // doesn't guarantee its persistence on all platforms i.e. WebGL
         // (see https://github.com/getsentry/sentry-unity/issues/1678 for more details)
         DontDestroyOnLoad(gameObject);
+    }
+}
+
+/// <summary>
+/// A MonoBehaviour that captures screenshots
+/// </summary>
+public partial class SentryMonoBehaviour
+{
+    // Todo: keep track of event ID to not capture double/more than once per frame
+
+    public void CaptureScreenshotForEvent(SentryUnityOptions options, SentryId eventId)
+    {
+        StartCoroutine(CaptureScreenshot(options, eventId));
+    }
+
+    private IEnumerator CaptureScreenshot(SentryUnityOptions options, SentryId eventId)
+    {
+        yield return new WaitForEndOfFrame();
+
+        SentryScreenshot.Capture(options);
+
+        // Todo: figure out how to capture an event with a screenshot attachment from out here
+        var sentryEvent = new SentryEvent(eventId:  eventId);
     }
 }
