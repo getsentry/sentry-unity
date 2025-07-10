@@ -96,8 +96,8 @@ public static class SentryNativeCocoa
     /// <summary>
     /// Closes the native Cocoa support.
     /// </summary>
-    public static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo) =>
-        Close(options, sentryUnityInfo, ApplicationAdapter.Instance.Platform);
+    public static void Close(SentryUnityOptions options) =>
+        Close(options, SentryPlatformServices.UnityInfo, ApplicationAdapter.Instance.Platform);
 
     internal static void Close(SentryUnityOptions options, ISentryUnityInfo? sentryUnityInfo, RuntimePlatform platform)
     {
