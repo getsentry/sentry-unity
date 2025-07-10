@@ -133,6 +133,6 @@ public partial class SentryMonoBehaviour
         SentryScreenshot.Capture(options);
 
         // Todo: figure out how to capture an event with a screenshot attachment from out here
-        var sentryEvent = new SentryEvent(eventId:  eventId);
+        var sentryEvent = new SentryEvent(eventId: eventId);
     }
 }
