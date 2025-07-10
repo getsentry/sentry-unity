@@ -173,7 +173,7 @@ public class StartupTracingIntegrationTests
     [Test]
     public void StartupSequence_CallsInOrder_CreatesAndFinishesTransactionCorrectly()
     {
-        SentrySdk.UseHub(_fixture.Hub);
+        Sentry.SentrySdk.UseHub(_fixture.Hub);
         _fixture.Application.IsEditor = false;
         _fixture.Application.Platform = RuntimePlatform.WindowsPlayer;
         StartupTracingIntegration.Application = _fixture.Application;
