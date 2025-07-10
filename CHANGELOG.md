@@ -4,18 +4,18 @@
 
 ### Breaking Changes
 
+- Removed Unity 2019 support, which reached End of Life in 2022. Minimum supported version now is 2020 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
+
 - **Breaking Change**: The Unity SDK's static API has been simplified moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk`
   to `Sentry.Unity.SentrySdk`. 
   This change enables manual SDK initialization with full functionality, previously only available through auto-initialization.
   The underlying .NET SDK's `SentrySdk` class is now internal, and several previously public classes like `SentryInitialization` 
   and `SentryIntegrations` are now internal.
   
-  **Migration**: Update your using statements from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically 
+  **Migration**: Update your `using` directives from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically 
   import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
   (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
   remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227))
-- Updated Unity support by updating to Unity versions (2020+), removing Unity 2019 which reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
-- Dropped support for Unity 2019. It reached End of Life in 2022 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
 
 ### Features
 
