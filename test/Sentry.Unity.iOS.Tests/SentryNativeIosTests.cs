@@ -17,7 +17,8 @@ public class SentryNativeCocoaTests
     [Test]
     public void Configure_DefaultConfiguration_iOS()
     {
-        SentryPlatformServices.UnityInfo = new TestUnityInfo { IL2CPP = false };;
+        SentryPlatformServices.UnityInfo = new TestUnityInfo { IL2CPP = false };
+        ;
         var options = new SentryUnityOptions();
 
         // Note: can't test iOS - throws because it tries to call SentryCocoaBridgeProxy.Init()
