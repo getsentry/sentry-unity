@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using NUnit.Framework;
+using Sentry.Unity.NativeUtils;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
@@ -66,7 +67,7 @@ public sealed class ContextWriterTests
 
         };
         var context = new MockContextWriter();
-        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+        var options = new SentryUnityOptions(false, _testApplication, SentryPlatformServices.UnityInfo, _sentryMonoBehaviour)
         {
             Dsn = "http://publickey@localhost/12345",
             Enabled = true,
