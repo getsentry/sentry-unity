@@ -315,6 +315,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
         this.AddIntegration(new UnityLogHandlerIntegration(this));
         this.AddIntegration(new UnityApplicationLoggingIntegration());
+        this.AddIntegration(new StartupTracingIntegration());
         this.AddIntegration(new AnrIntegration(behaviour));
         this.AddIntegration(new UnityScopeIntegration(application, unityInfo));
         this.AddIntegration(new UnityBeforeSceneLoadIntegration());

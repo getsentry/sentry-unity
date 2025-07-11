@@ -1572,8 +1572,6 @@ Runtime/Sentry.xml
 Runtime/Sentry.xml.meta
 Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
-Runtime/SentryIntegrations.cs
-Runtime/SentryIntegrations.cs.meta
 Runtime/SentryUserFeedback.cs
 Runtime/SentryUserFeedback.cs.meta
 Samples~/unity-of-bugs/Scenes.meta
