@@ -18,7 +18,7 @@ public class SentryUnitySelfInitializationTests
     {
         if (SentrySdk.IsEnabled)
         {
-            SentryUnity.Close();
+            SentrySdk.Close();
         }
     }
 
@@ -72,7 +72,7 @@ public class SentryUnitySelfInitializationTests
             Dsn = TestDsn
         };
 
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
 
         Assert.IsTrue(SentrySdk.IsEnabled);
     }
@@ -83,7 +83,7 @@ public class SentryUnitySelfInitializationTests
         var options = new SentryUnityOptions();
 
         // Even tho the defaults are set the DSN is missing making the options invalid for initialization
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
 
         Assert.IsFalse(SentrySdk.IsEnabled);
     }
@@ -99,8 +99,8 @@ public class SentryUnitySelfInitializationTests
             DiagnosticLogger = testLogger,
         };
 
-        SentryUnity.Init(options);
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
+        SentrySdk.Init(options);
 
         Assert.IsTrue(testLogger.Logs.Any(log =>
             log.logLevel == SentryLevel.Warning &&
@@ -111,13 +111,13 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WithoutInit_ReturnsUnknown()
     {
         // Make sure SDK is closed
-        SentryUnity.Close();
+        SentrySdk.Close();
 
         // Act
-        var result = SentryUnity.GetLastRunState();
+        var result = SentrySdk.GetLastRunState();
 
         // Assert
-        Assert.AreEqual(SentryUnity.CrashedLastRun.Unknown, result);
+        Assert.AreEqual(SentrySdk.CrashedLastRun.Unknown, result);
     }
 
     [Test]
@@ -131,11 +131,11 @@ public class SentryUnitySelfInitializationTests
         };
 
         // Act
-        SentryUnity.Init(options);
-        var result = SentryUnity.GetLastRunState();
+        SentrySdk.Init(options);
+        var result = SentrySdk.GetLastRunState();
 
         // Assert
-        Assert.AreEqual(SentryUnity.CrashedLastRun.Crashed, result);
+        Assert.AreEqual(SentrySdk.CrashedLastRun.Crashed, result);
     }
 
     [Test]
@@ -149,11 +149,11 @@ public class SentryUnitySelfInitializationTests
         };
 
         // Act
-        SentryUnity.Init(options);
-        var result = SentryUnity.GetLastRunState();
+        SentrySdk.Init(options);
+        var result = SentrySdk.GetLastRunState();
 
         // Assert
-        Assert.AreEqual(SentryUnity.CrashedLastRun.DidNotCrash, result);
+        Assert.AreEqual(SentrySdk.CrashedLastRun.DidNotCrash, result);
     }
 
     [Test]
@@ -167,10 +167,10 @@ public class SentryUnitySelfInitializationTests
         };
 
         // Act
-        SentryUnity.Init(options);
-        var result = SentryUnity.GetLastRunState();
+        SentrySdk.Init(options);
+        var result = SentrySdk.GetLastRunState();
 
         // Assert
-        Assert.AreEqual(SentryUnity.CrashedLastRun.Unknown, result);
+        Assert.AreEqual(SentrySdk.CrashedLastRun.Unknown, result);
     }
 }

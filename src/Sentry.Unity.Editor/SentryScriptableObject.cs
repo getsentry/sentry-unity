@@ -36,7 +36,7 @@ internal static class SentryScriptableObject
         SentryUnityOptions? options = null;
         if (scriptableOptions is not null)
         {
-            options = scriptableOptions.ToSentryUnityOptions(isBuilding: true, unityInfo: null);
+            options = scriptableOptions.ToSentryUnityOptions(isBuilding: true);
 
             // TODO: Move this into `Load` once we remove Runtime- and BuildTimeConfig
             // We're calling `Configure` here and not in `Load` so the new Config does not overwrite the BuildTimeConfig

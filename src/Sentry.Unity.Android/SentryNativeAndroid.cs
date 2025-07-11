@@ -1,6 +1,7 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -19,7 +20,7 @@ public static class SentryNativeAndroid
     /// Configures the native Android support.
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
-    public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
+    public static void Configure(SentryUnityOptions options)
     {
         MainThreadData.CollectData();
 
@@ -105,7 +106,7 @@ public static class SentryNativeAndroid
                 e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
         }
 
-        options.NativeSupportCloseCallback = () => Close(options, sentryUnityInfo);
+        options.NativeSupportCloseCallback = () => Close(options);
 
         options.DiagnosticLogger?.LogDebug("Fetching installation ID");
 
@@ -136,14 +137,11 @@ public static class SentryNativeAndroid
     /// <summary>
     /// Closes the native Android support.
     /// </summary>
-    public static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo) =>
-        Close(options, sentryUnityInfo, ApplicationAdapter.Instance.Platform);
-
-    internal static void Close(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo, RuntimePlatform platform)
+    public static void Close(SentryUnityOptions options)
     {
         options.DiagnosticLogger?.LogInfo("Attempting to close the Android SDK");
 
-        if (!sentryUnityInfo.IsNativeSupportEnabled(options, platform))
+        if (!options.UnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
         {
             options.DiagnosticLogger?.LogDebug("Android Native Support is not enabled. Skipping closing the Android SDK");
             return;

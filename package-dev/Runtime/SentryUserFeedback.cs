@@ -86,7 +86,7 @@ namespace Sentry.Unity
             else
             {
                 // Since there is no screenshot added we can capture the feedback right away
-                SentryUnity.CaptureFeedback(_description.text, _email.text, _name.text, addScreenshot: false);
+                SentrySdk.CaptureFeedback(_description.text, _email.text, _name.text, addScreenshot: false);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Sentry.Unity
             // We're waiting for the EndOfFrame so the FeedbackForm gets updated before capturing the screenshot
             yield return new WaitForEndOfFrame();
 
-            SentryUnity.CaptureFeedback(_description.text, _email.text, _name.text, addScreenshot: true);
+            SentrySdk.CaptureFeedback(_description.text, _email.text, _name.text, addScreenshot: true);
 
             ResetUserFeedback();
         }

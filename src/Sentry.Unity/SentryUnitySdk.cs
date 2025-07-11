@@ -49,7 +49,11 @@ internal class SentryUnitySdk
             }
         }
 
-        unitySdk._dotnetSdk = SentrySdk.Init(options);
+        unitySdk._dotnetSdk = Sentry.SentrySdk.Init(options);
+
+        // We can safely call this during initialization. If the SDK self-initialized we're right on time. If the SDK
+        // was initialized manually, the RuntimeOnLoad attributes already triggered, making this call a no-op.
+        StartupTracingIntegration.StartTracing();
 
         // We can safely call this during initialization. If the SDK self-initialized we're right on time. If the SDK
         // was initialized manually, the RuntimeOnLoad attributes already triggered, making this call a no-op.
@@ -57,7 +61,7 @@ internal class SentryUnitySdk
 
         if (options.NativeContextWriter is { } contextWriter)
         {
-            SentrySdk.ConfigureScope((scope) =>
+            Sentry.SentrySdk.CurrentHub.ConfigureScope((scope) =>
             {
                 var task = Task.Run(() => contextWriter.Write(scope)).ContinueWith(t =>
                 {
@@ -104,18 +108,18 @@ internal class SentryUnitySdk
         }
     }
 
-    public SentryUnity.CrashedLastRun CrashedLastRun()
+    public SentrySdk.CrashedLastRun CrashedLastRun()
     {
         if (_options.CrashedLastRun is null)
         {
             _options.DiagnosticLogger?.LogDebug("The SDK does not have a 'CrashedLastRun' set. " +
                                                 "This might be due to a missing or disabled native integration.");
-            return SentryUnity.CrashedLastRun.Unknown;
+            return SentrySdk.CrashedLastRun.Unknown;
         }
 
         return _options.CrashedLastRun.Invoke()
-            ? SentryUnity.CrashedLastRun.Crashed
-            : SentryUnity.CrashedLastRun.DidNotCrash;
+            ? SentrySdk.CrashedLastRun.Crashed
+            : SentrySdk.CrashedLastRun.DidNotCrash;
     }
 
     public void CaptureFeedback(string message, string? email, string? name, bool addScreenshot)
@@ -135,7 +139,6 @@ internal class SentryUnitySdk
                     "image/jpeg"))
             : null;
 
-
-        SentrySdk.CaptureFeedback(message, email, name, hint: hint);
+        Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
     }
 }

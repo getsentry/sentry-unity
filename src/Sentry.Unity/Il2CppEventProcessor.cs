@@ -17,11 +17,11 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
     private static ISentryUnityInfo UnityInfo = null!; // private static will be initialized in the constructor
     private readonly Il2CppMethods _il2CppMethods;
 
-    public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options, ISentryUnityInfo unityInfo)
+    public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options)
     {
         Options = options;
-        UnityInfo = unityInfo;
-        _il2CppMethods = unityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(unityInfo.Il2CppMethods),
+        UnityInfo = options.UnityInfo;
+        _il2CppMethods = UnityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(UnityInfo.Il2CppMethods),
             "Unity IL2CPP methods are not available.");
 
         Options.SdkIntegrationNames.Add("IL2CPPLineNumbers");

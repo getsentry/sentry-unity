@@ -26,7 +26,7 @@ public class ViewHierarchyEventProcessorTests
     {
         if (SentrySdk.IsEnabled)
         {
-            SentryUnity.Close();
+            SentrySdk.Close();
         }
     }
 

@@ -1,7 +1,7 @@
 using System;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using Sentry;
+using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.Assertions;
 
