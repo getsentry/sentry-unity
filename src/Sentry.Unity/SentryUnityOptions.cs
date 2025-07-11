@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
@@ -294,6 +295,9 @@ public sealed class SentryUnityOptions : SentryOptions
 
     internal List<string> SdkIntegrationNames { get; set; } = new();
 
+    internal ISentryUnityInfo UnityInfo { get; private set; }
+    internal Action<SentryUnityOptions> PlatformConfiguration { get; private set; }
+
     public SentryUnityOptions() : this(false, ApplicationAdapter.Instance) { }
 
     internal SentryUnityOptions(bool isBuilding, IApplication application, ISentryUnityInfo? unityInfo = null) :
@@ -301,8 +305,14 @@ public sealed class SentryUnityOptions : SentryOptions
     { }
 
     // For testing
-    internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding, ISentryUnityInfo? unityInfo = null)
+    private SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding, ISentryUnityInfo? unityInfo)
     {
+        // This should never happen. The PlatformServices are set through the RuntimeLoad attribute in 'SentryInitialization.cs'
+        // and required to be present.
+        UnityInfo = unityInfo ?? SentryPlatformServices.UnityInfo;
+        PlatformConfiguration = SentryPlatformServices.PlatformConfiguration
+                    ?? throw new ArgumentNullException(nameof(SentryPlatformServices.PlatformConfiguration), "PlatformConfiguration is null.");
+
         // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
         DetectStartupTime = StartupTimeDetectionMode.Fast;
 

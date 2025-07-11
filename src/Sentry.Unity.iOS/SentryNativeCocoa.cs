@@ -1,6 +1,5 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -16,13 +15,14 @@ public static class SentryNativeCocoa
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
     public static void Configure(SentryUnityOptions options) =>
-        Configure(options, SentryPlatformServices.UnityInfo, ApplicationAdapter.Instance.Platform);
+        Configure(options, ApplicationAdapter.Instance.Platform);
 
-    internal static void Configure(SentryUnityOptions options, ISentryUnityInfo? sentryUnityInfo, RuntimePlatform platform)
+    // For testing
+    internal static void Configure(SentryUnityOptions options, RuntimePlatform platform)
     {
         options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Cocoa SDK");
 
-        if (!sentryUnityInfo?.IsNativeSupportEnabled(options, platform) ?? false)
+        if (!options.UnityInfo.IsNativeSupportEnabled(options, platform))
         {
             options.DiagnosticLogger?.LogDebug("Native support is disabled for: '{0}'", platform);
             return;
@@ -66,8 +66,8 @@ public static class SentryNativeCocoa
             return crashedLastRun;
         };
 
-        options.NativeSupportCloseCallback += () => Close(options, sentryUnityInfo, platform);
-        if (sentryUnityInfo?.IL2CPP ?? false)
+        options.NativeSupportCloseCallback += () => Close(options);
+        if (options.UnityInfo.IL2CPP)
         {
             options.DefaultUserId = SentryCocoaBridgeProxy.GetInstallationId();
             if (string.IsNullOrEmpty(options.DefaultUserId))
@@ -96,14 +96,11 @@ public static class SentryNativeCocoa
     /// <summary>
     /// Closes the native Cocoa support.
     /// </summary>
-    public static void Close(SentryUnityOptions options) =>
-        Close(options, SentryPlatformServices.UnityInfo, ApplicationAdapter.Instance.Platform);
-
-    internal static void Close(SentryUnityOptions options, ISentryUnityInfo? sentryUnityInfo, RuntimePlatform platform)
+    public static void Close(SentryUnityOptions options)
     {
         options.DiagnosticLogger?.LogInfo("Attempting to close the Cocoa SDK");
 
-        if (!sentryUnityInfo?.IsNativeSupportEnabled(options, platform) ?? false)
+        if (!options.UnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
         {
             options.DiagnosticLogger?.LogDebug("Cocoa Native Support is not enable. Skipping closing the Cocoa SDK");
             return;

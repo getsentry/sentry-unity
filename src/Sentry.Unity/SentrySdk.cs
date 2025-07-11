@@ -36,29 +36,20 @@ public static partial class SentrySdk
             options.LogWarning("The SDK has already been initialized. Skipping initialization.");
         }
 
-        // The SDK expects these to be set from `SentryInitialization.cs` via `RuntimeInitializeOnLoadMethod` attribute
-        // if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is not null)
-        if (SentryPlatformServices.UnityInfo is not null && SentryPlatformServices.PlatformConfiguration is { } platformConfiguration)
+        try
         {
-            try
-            {
-                // Since this mutates the options (i.e. adding scope observer) we have to invoke before initializing the SDK
-                platformConfiguration.Invoke(options);
-            }
-            catch (DllNotFoundException e)
-            {
-                options.LogError(e,
-                    "Sentry native-error capture configuration failed to load a native library. This usually " +
-                    "means the library is missing from the application bundle or the installation directory.");
-            }
-            catch (Exception e)
-            {
-                options.LogError(e, "Sentry native error capture configuration failed.");
-            }
+            // Since this mutates the options (i.e. adding scope observer) we have to invoke before initializing the SDK
+            options.PlatformConfiguration.Invoke(options);
         }
-        else
+        catch (DllNotFoundException e)
         {
-            options.LogWarning("The SDK's Platform Services have not been set up. Native support will be limited.");
+            options.LogError(e,
+                "Sentry native-error capture configuration failed to load a native library. This usually " +
+                "means the library is missing from the application bundle or the installation directory.");
+        }
+        catch (Exception e)
+        {
+            options.LogError(e, "Sentry native error capture configuration failed.");
         }
 
         UnitySdk = SentryUnitySdk.Init(options);

@@ -126,17 +126,17 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
         if (scriptableOptions is not null)
         {
-            return scriptableOptions.ToSentryUnityOptions(false, SentryPlatformServices.UnityInfo);
+            return scriptableOptions.ToSentryUnityOptions(false);
         }
 
         return null;
     }
 
-    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
+    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, IApplication? application = null)
     {
         application ??= ApplicationAdapter.Instance;
 
-        var options = new SentryUnityOptions(isBuilding, application, unityInfo)
+        var options = new SentryUnityOptions(isBuilding, application)
         {
             Enabled = Enabled,
             Dsn = Dsn,
@@ -236,12 +236,12 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             options.AddEventProcessor(new ScreenshotEventProcessor(options));
         }
 
-        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
+        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled)
         {
-            options.AddIl2CppExceptionProcessor(unityInfo);
+            options.AddIl2CppExceptionProcessor();
         }
 
-        HandlePlatformRestrictedOptions(options, unityInfo, application);
+        HandlePlatformRestrictedOptions(options, application);
         HandleExceptionFilter(options);
 
         if (!AnrDetectionEnabled)
@@ -252,9 +252,9 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         return options;
     }
 
-    internal void HandlePlatformRestrictedOptions(SentryUnityOptions options, ISentryUnityInfo? unityInfo, IApplication application)
+    internal void HandlePlatformRestrictedOptions(SentryUnityOptions options, IApplication application)
     {
-        if (unityInfo?.IsKnownPlatform() == false)
+        if (!options.UnityInfo.IsKnownPlatform())
         {
             options.DisableFileWrite = true;
 

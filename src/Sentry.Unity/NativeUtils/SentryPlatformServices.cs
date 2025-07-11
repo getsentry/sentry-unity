@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Sentry.Unity.NativeUtils;
 
@@ -11,10 +10,24 @@ namespace Sentry.Unity.NativeUtils;
 /// <remarks>Consider this <c>internal</c>.</remarks>
 public static class SentryPlatformServices
 {
+    private static ISentryUnityInfo? _unityInfo;
+
     /// <summary>
     /// The UnityInfo holds methods that rely on conditionally compilation, i.e. IL2CPP backend.
     /// </summary>
-    public static ISentryUnityInfo? UnityInfo { get; set; }
+    public static ISentryUnityInfo UnityInfo
+    {
+        get => _unityInfo ?? throw new InvalidOperationException("UnityInfo is null.");
+        set
+        {
+            if (_unityInfo != null)
+            {
+                throw new InvalidOperationException("Should not set twice. lol.");
+            }
+
+            _unityInfo = value;
+        }
+    }
 
     /// <summary>
     /// The PlatformConfiguration callback is responsible for configuring the native SDK and setting up scope sync.

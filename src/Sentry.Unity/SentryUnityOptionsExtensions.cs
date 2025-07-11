@@ -63,16 +63,9 @@ public static class SentryUnityOptionsExtensions
         }
     }
 
-    internal static void AddIl2CppExceptionProcessor(this SentryUnityOptions options, ISentryUnityInfo unityInfo)
+    internal static void AddIl2CppExceptionProcessor(this SentryUnityOptions options)
     {
-        if (unityInfo.Il2CppMethods is not null)
-        {
-            options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options, unityInfo));
-        }
-        else
-        {
-            options.DiagnosticLogger?.LogWarning("Failed to find required IL2CPP methods - Skipping line number support");
-        }
+        options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options));
     }
 
     /// <summary>
