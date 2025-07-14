@@ -1,8 +1,8 @@
 {
-    "name": "io.sentry.unity.dev.editor",
+    "name": "io.sentry.unity.editor",
     "rootNamespace": "",
     "references": [
-        "GUID:c4313ce0d56d44146a17d4dbe2457ecc"
+        "GUID:c18c74693c5844315b1f3cd5ae87afb4"
     ],
     "includePlatforms": [
         "Editor"

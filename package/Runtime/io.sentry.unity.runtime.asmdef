@@ -1,5 +1,6 @@
 {
     "name": "io.sentry.unity.runtime",
+    "rootNamespace": "",
     "references": [],
     "includePlatforms": [
         "Android",
