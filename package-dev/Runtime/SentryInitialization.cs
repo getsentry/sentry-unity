@@ -5,6 +5,8 @@
 #define SENTRY_NATIVE_ANDROID
 #elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
 #define SENTRY_NATIVE
+#elif UNITY_SWITCH
+#define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
@@ -294,6 +296,8 @@ namespace Sentry.Unity
                     return options.MacosNativeSupportEnabled;
                 case RuntimePlatform.LinuxPlayer:
                     return options.LinuxNativeSupportEnabled;
+                case RuntimePlatform.Switch:
+                    return true;
 #if UNITY_2021_3_OR_NEWER
                 case RuntimePlatform.WindowsServer:
                     return options.WindowsNativeSupportEnabled;
