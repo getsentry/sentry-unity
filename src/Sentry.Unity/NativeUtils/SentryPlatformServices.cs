@@ -24,16 +24,7 @@ public static class SentryPlatformServices
         get => _unityInfo ?? throw new InvalidOperationException(
             "The PlatformServices.UnityInfo has not been set. By default, the SDK will configure this via the " +
             "'RuntimeInitializeOnLoadMethod' in 'SentryInitialization.cs'. This needs to be set up before initializing the SDK.");
-        set
-        {
-            if (_unityInfo != null)
-            {
-                throw new InvalidOperationException(
-                    "The PlatformServices.UnityInfo is already set and should not be overwritten.");
-            }
-
-            _unityInfo = value;
-        }
+        set => _unityInfo = value;
     }
 
     /// <summary>
