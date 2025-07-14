@@ -1,4 +1,7 @@
 using UnityEditor;
+using UnityEngine;
+using System;
+using Sentry.Unity;
 using Sentry.Unity.NativeUtils;
 
 namespace Sentry.Unity.Editor
@@ -12,7 +15,14 @@ namespace Sentry.Unity.Editor
         [InitializeOnLoadMethod]
         private static void SetUpUnityInfoInEditor()
         {
-            SentryPlatformServices.UnityInfo = new SentryUnityInfo();
+            try
+            {
+                _ = SentryPlatformServices.UnityInfo;
+            }
+            catch (InvalidOperationException)
+            {
+                SentryPlatformServices.UnityInfo = new SentryUnityInfo();
+            }
         }
     }
 }
