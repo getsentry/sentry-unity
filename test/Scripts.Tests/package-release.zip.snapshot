@@ -1,4 +1,6 @@
 Documentation~/index.md
+Editor/io.sentry.unity.editor.asmdef
+Editor/io.sentry.unity.editor.asmdef.meta
 Editor/iOS.meta
 Editor/sentry-cli.meta
 Editor/Sentry.Microsoft.Extensions.FileSystemGlobbing.dll
