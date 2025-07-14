@@ -39,7 +39,7 @@ public static partial class SentrySdk
         try
         {
             // Since this mutates the options (i.e. adding scope observer) we have to invoke before initializing the SDK
-            options.PlatformConfiguration.Invoke(options);
+            options.PlatformConfiguration?.Invoke(options);
         }
         catch (DllNotFoundException e)
         {

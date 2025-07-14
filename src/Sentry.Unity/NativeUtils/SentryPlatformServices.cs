@@ -15,14 +15,21 @@ public static class SentryPlatformServices
     /// <summary>
     /// The UnityInfo holds methods that rely on conditionally compilation, i.e. IL2CPP backend.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">
+    /// Thrown when <c>UnityInfo</c> was not set. This is expected to be automatically set during the game's startup.
+    /// Thrown when <c>UnityInfo</c> is set twice.
+    /// </exception>
     public static ISentryUnityInfo UnityInfo
     {
-        get => _unityInfo ?? throw new InvalidOperationException("UnityInfo is null.");
+        get => _unityInfo ?? throw new InvalidOperationException(
+            "The PlatformServices.UnityInfo has not been set. By default, the SDK will configure this via the " +
+            "'RuntimeInitializeOnLoadMethod' in 'SentryInitialization.cs'. This needs to be set up before initializing the SDK.");
         set
         {
             if (_unityInfo != null)
             {
-                throw new InvalidOperationException("Should not set twice. lol.");
+                throw new InvalidOperationException(
+                    "The PlatformServices.UnityInfo is already set and should not be overwritten.");
             }
 
             _unityInfo = value;

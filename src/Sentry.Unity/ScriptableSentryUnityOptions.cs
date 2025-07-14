@@ -132,11 +132,11 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         return null;
     }
 
-    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, IApplication? application = null)
+    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
     {
         application ??= ApplicationAdapter.Instance;
 
-        var options = new SentryUnityOptions(isBuilding, application)
+        var options = new SentryUnityOptions(isBuilding, application, unityInfo)
         {
             Enabled = Enabled,
             Dsn = Dsn,
