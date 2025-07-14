@@ -236,7 +236,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             options.AddEventProcessor(new ScreenshotEventProcessor(options));
         }
 
-        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled)
+        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo?.Il2CppMethods != null)
         {
             options.AddIl2CppExceptionProcessor();
         }
