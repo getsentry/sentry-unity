@@ -13,6 +13,8 @@ Editor/Sentry.Mono.Cecil.Rocks.dll
 Editor/Sentry.Mono.Cecil.Rocks.dll.meta
 Editor/Sentry.Unity.Editor.dll
 Editor/Sentry.Unity.Editor.dll.meta
+Editor/SentryEditorPlatformSetUp.cs
+Editor/SentryEditorPlatformSetUp.cs.meta
 Editor/SentryUserFeedbackEditor.cs
 Editor/SentryUserFeedbackEditor.cs.meta
 Editor/iOS/Sentry.Unity.Editor.iOS.dll
