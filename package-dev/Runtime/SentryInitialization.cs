@@ -5,6 +5,8 @@
 #define SENTRY_NATIVE_ANDROID
 #elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
 #define SENTRY_NATIVE
+#elif UNITY_GAMECORE
+#define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
@@ -49,6 +51,10 @@ namespace Sentry.Unity
 #endif
         public static void Init()
         {
+#if IL2CPP_LINENUMBER_SUPPORT
+            Debug.Log("should work now");
+#endif
+
             var unityInfo = new SentryUnityInfo();
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
@@ -79,6 +85,7 @@ namespace Sentry.Unity
 #elif SENTRY_NATIVE_ANDROID
                 SentryNativeAndroid.Configure(options, unityInfo);
 #elif SENTRY_NATIVE
+                options.DiagnosticLogger?.LogDebug("Considering this a native thing!");
                 SentryNative.Configure(options, unityInfo);
 #elif SENTRY_WEBGL
               	SentryWebGL.Configure(options);
@@ -259,7 +266,8 @@ namespace Sentry.Unity
                    	platform == RuntimePlatform.OSXPlayer ||
                    	platform == RuntimePlatform.LinuxEditor ||
                    	platform == RuntimePlatform.LinuxPlayer ||
-					platform == RuntimePlatform.WebGLPlayer
+					platform == RuntimePlatform.WebGLPlayer ||
+                    platform == RuntimePlatform.GameCoreXboxSeries
 #if UNITY_2021_3_OR_NEWER
                    	||
 				   	platform == RuntimePlatform.WindowsServer ||
@@ -294,6 +302,8 @@ namespace Sentry.Unity
                     return options.MacosNativeSupportEnabled;
                 case RuntimePlatform.LinuxPlayer:
                     return options.LinuxNativeSupportEnabled;
+                case RuntimePlatform.GameCoreXboxSeries:
+                    return true;
 #if UNITY_2021_3_OR_NEWER
                 case RuntimePlatform.WindowsServer:
                     return options.WindowsNativeSupportEnabled;
@@ -313,6 +323,7 @@ namespace Sentry.Unity
             return platform == RuntimePlatform.Android
                    || platform == RuntimePlatform.LinuxPlayer
                    || platform == RuntimePlatform.WindowsPlayer
+                   || platform == RuntimePlatform.GameCoreXboxSeries
 #if UNITY_2021_3_OR_NEWER
                    || platform == RuntimePlatform.WindowsServer
                    || platform == RuntimePlatform.OSXServer
@@ -334,6 +345,8 @@ namespace Sentry.Unity
                 case RuntimePlatform.LinuxPlayer:
                     return "elf";
                 case RuntimePlatform.WindowsPlayer:
+                    return "pe";
+                case RuntimePlatform.GameCoreXboxSeries:
                     return "pe";
 #if UNITY_2021_3_OR_NEWER
                 case RuntimePlatform.WindowsServer:

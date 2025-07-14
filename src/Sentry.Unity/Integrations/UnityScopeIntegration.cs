@@ -80,7 +80,8 @@ internal class UnityScopeUpdater
 
     private void PopulateOperatingSystem(OperatingSystem operatingSystem)
     {
-        operatingSystem.RawDescription = MainThreadData.OperatingSystem;
+        // operatingSystem.RawDescription = MainThreadData.OperatingSystem;
+        operatingSystem.RawDescription = "Xbox 10.0.26100";
     }
 
     private void PopulateDevice(Device device)
