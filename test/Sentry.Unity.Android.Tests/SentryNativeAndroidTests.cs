@@ -132,7 +132,9 @@ public class SentryNativeAndroidTests
     {
         var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
         {
-            Debug = true, DiagnosticLevel = SentryLevel.Debug, DiagnosticLogger = _logger
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger
         };
         _testSentryJava.SentryPresent = false;
 
@@ -150,7 +152,9 @@ public class SentryNativeAndroidTests
     {
         var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
         {
-            Debug = true, DiagnosticLevel = SentryLevel.Debug, DiagnosticLogger = _logger
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger
         };
 
         _testSentryJava.Enabled = true;
@@ -169,7 +173,9 @@ public class SentryNativeAndroidTests
     {
         var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
         {
-            Debug = true, DiagnosticLevel = SentryLevel.Debug, DiagnosticLogger = _logger
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger
         };
         _testSentryJava.Enabled = false;
         _testSentryJava.InitSuccessful = false;
