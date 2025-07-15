@@ -27,7 +27,7 @@ public class SessionIntegrationTests
 
     internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
     {
-        SentryUnity.Init(options =>
+        SentrySdk.Init(options =>
         {
             options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
             configure?.Invoke(options);

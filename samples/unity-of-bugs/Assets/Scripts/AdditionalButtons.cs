@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Threading;
-using System.Threading.Tasks;
 using Sentry;
+using Sentry.Unity;
 using UnityEngine;
 
 public class AdditionalButtons : MonoBehaviour

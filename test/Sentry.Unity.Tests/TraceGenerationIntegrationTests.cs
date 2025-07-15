@@ -29,7 +29,7 @@ public class TraceGenerationIntegrationTests
     public void SetUp()
     {
         _fixture.TestHub = new TestHub();
-        SentrySdk.UseHub(_fixture.TestHub);
+        Sentry.SentrySdk.UseHub(_fixture.TestHub);
     }
 
     [Test]
