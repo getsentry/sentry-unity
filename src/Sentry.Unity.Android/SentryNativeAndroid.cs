@@ -20,10 +20,7 @@ public static class SentryNativeAndroid
     /// Configures the native Android support.
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
-    public static void Configure(SentryUnityOptions options) =>
-        Configure(options, SentryPlatformServices.UnityInfo);
-
-    internal static void Configure(SentryUnityOptions options, ISentryUnityInfo? sentryUnityInfo)
+    public static void Configure(SentryUnityOptions options)
     {
         MainThreadData.CollectData();
 
@@ -140,14 +137,11 @@ public static class SentryNativeAndroid
     /// <summary>
     /// Closes the native Android support.
     /// </summary>
-    public static void Close(SentryUnityOptions options) =>
-        Close(options, SentryPlatformServices.UnityInfo, ApplicationAdapter.Instance.Platform);
-
-    internal static void Close(SentryUnityOptions options, ISentryUnityInfo? sentryUnityInfo, RuntimePlatform platform)
+    public static void Close(SentryUnityOptions options)
     {
         options.DiagnosticLogger?.LogInfo("Attempting to close the Android SDK");
 
-        if (!sentryUnityInfo?.IsNativeSupportEnabled(options, platform) ?? false)
+        if (!options.UnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
         {
             options.DiagnosticLogger?.LogDebug("Android Native Support is not enabled. Skipping closing the Android SDK");
             return;

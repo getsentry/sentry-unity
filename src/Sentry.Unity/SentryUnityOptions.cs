@@ -295,14 +295,25 @@ public sealed class SentryUnityOptions : SentryOptions
 
     internal List<string> SdkIntegrationNames { get; set; } = new();
 
-    public SentryUnityOptions() :
-        this(false, ApplicationAdapter.Instance, SentryPlatformServices.UnityInfo, SentryMonoBehaviour.Instance)
+    internal ISentryUnityInfo UnityInfo { get; private set; }
+    internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
+
+    public SentryUnityOptions() : this(false, ApplicationAdapter.Instance) { }
+
+    internal SentryUnityOptions(bool isBuilding, IApplication application, ISentryUnityInfo? unityInfo = null) :
+        this(SentryMonoBehaviour.Instance, application, isBuilding, unityInfo)
     { }
 
     // For testing
     internal SentryUnityOptions(bool isBuilding, IApplication application, ISentryUnityInfo? unityInfo,
         SentryMonoBehaviour behaviour)
     {
+        // NOTE: 'SentryPlatformServices.UnityInfo' throws when the UnityInfo has not been set. This should not happen.
+        // The PlatformServices are set through the RuntimeLoad attribute in 'SentryInitialization.cs' and are required
+        // to be present.
+        UnityInfo = unityInfo ?? SentryPlatformServices.UnityInfo;
+        PlatformConfiguration = SentryPlatformServices.PlatformConfiguration;
+
         // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
         DetectStartupTime = StartupTimeDetectionMode.Fast;
 

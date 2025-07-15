@@ -59,7 +59,7 @@ namespace Sentry.Unity
         {
             // We're setting up `UnityInfo` and the platform specific configure callbacks as the very first thing.
             // These are required to be available during initialization.
-            SetupPlatformServices();
+            SetUpPlatformServices();
 
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
             var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();

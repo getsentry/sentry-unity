@@ -20,12 +20,10 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
     public UnityIl2CppEventExceptionProcessor(SentryUnityOptions options)
     {
         Options = options;
-
+        UnityInfo = options.UnityInfo;
         // We're throwing here but this should never happen. We're validating UnityInfo before adding the processor.
-        UnityInfo = SentryPlatformServices.UnityInfo
-                    ?? throw new ArgumentNullException(nameof(SentryPlatformServices.UnityInfo), "UnityInfo is null");
-        _il2CppMethods = UnityInfo.Il2CppMethods
-                    ?? throw new ArgumentNullException(nameof(UnityInfo.Il2CppMethods), "Unity IL2CPP methods are not available.");
+        _il2CppMethods = UnityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(UnityInfo.Il2CppMethods),
+            "Unity IL2CPP methods are not available.");
 
         Options.SdkIntegrationNames.Add("IL2CPPLineNumbers");
     }

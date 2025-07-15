@@ -9,6 +9,7 @@
 - **Breaking Change**: The Unity SDK's static API has been simplified moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk`
   to `Sentry.Unity.SentrySdk`. 
   This change enables manual SDK initialization with full functionality, previously only available through auto-initialization.
+  This change enables [manual/programatic SDK initialization](https://docs.sentry.io/platforms/unity/configuration/options/programmatic-configuration/) with full functionality, previously only available through auto-initialization.
   The underlying .NET SDK's `SentrySdk` class is now internal, and several previously public classes like `SentryInitialization` 
   and `SentryIntegrations` are now internal.
   
@@ -16,6 +17,7 @@
   import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
   (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
   remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227), [#2239](https://github.com/getsentry/sentry-unity/pull/2239))
+  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227))
 
 ### Features
 

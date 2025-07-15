@@ -126,13 +126,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
         if (scriptableOptions is not null)
         {
-            return scriptableOptions.ToSentryUnityOptions(false, SentryPlatformServices.UnityInfo);
+            return scriptableOptions.ToSentryUnityOptions(false);
         }
 
         return null;
     }
 
-    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
+    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
     {
         application ??= ApplicationAdapter.Instance;
 

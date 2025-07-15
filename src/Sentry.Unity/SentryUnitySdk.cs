@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity;

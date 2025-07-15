@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Sentry.Unity.NativeUtils;
 
@@ -11,10 +10,22 @@ namespace Sentry.Unity.NativeUtils;
 /// <remarks>Consider this <c>internal</c>.</remarks>
 public static class SentryPlatformServices
 {
+    private static ISentryUnityInfo? _unityInfo;
+
     /// <summary>
     /// The UnityInfo holds methods that rely on conditionally compilation, i.e. IL2CPP backend.
     /// </summary>
-    public static ISentryUnityInfo? UnityInfo { get; set; }
+    /// <exception cref="System.InvalidOperationException">
+    /// Thrown when <c>UnityInfo</c> was not set. This is expected to be automatically set during the game's startup.
+    /// Thrown when <c>UnityInfo</c> is set twice.
+    /// </exception>
+    public static ISentryUnityInfo UnityInfo
+    {
+        get => _unityInfo ?? throw new InvalidOperationException(
+            "The PlatformServices.UnityInfo has not been set. By default, the SDK will configure this via the " +
+            "'RuntimeInitializeOnLoadMethod' in 'SentryInitialization.cs'. This needs to be set up before initializing the SDK.");
+        set => _unityInfo = value;
+    }
 
     /// <summary>
     /// The PlatformConfiguration callback is responsible for configuring the native SDK and setting up scope sync.
