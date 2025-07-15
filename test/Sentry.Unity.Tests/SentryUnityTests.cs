@@ -176,10 +176,10 @@ public class SentryUnitySelfInitializationTests
     }
 
     [Test]
-    public void HandlePlatformRestrictedOptions_UnknownPlatform_SetsRestrictedOptions()
+    public void ConfigureUnsupportedPlatformFallbacks()
     {
         var unityInfo = new TestUnityInfo(false);
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(unityInfo)
         {
             DisableFileWrite = false,
             AutoSessionTracking = true
