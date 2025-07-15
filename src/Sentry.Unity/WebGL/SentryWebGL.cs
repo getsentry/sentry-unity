@@ -1,5 +1,4 @@
 using Sentry.Extensibility;
-using Sentry.Unity.NativeUtils;
 using UnityEngine.Analytics;
 
 namespace Sentry.Unity.WebGL;

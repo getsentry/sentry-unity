@@ -189,7 +189,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
         };
 
-        // By default, the cacheDirectoryPath gets set on known platforms. The option is enabled by default
+        // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)
         {
             options.CacheDirectoryPath = null;

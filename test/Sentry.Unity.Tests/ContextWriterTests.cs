@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using NUnit.Framework;
-using Sentry.Unity.NativeUtils;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;

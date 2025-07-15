@@ -1,6 +1,5 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using UnityEngine.Analytics;
 
