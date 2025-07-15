@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 
@@ -294,6 +295,9 @@ public sealed class SentryUnityOptions : SentryOptions
 
     internal List<string> SdkIntegrationNames { get; set; } = new();
 
+    internal ISentryUnityInfo UnityInfo { get; private set; }
+    internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
+
     public SentryUnityOptions() : this(false, ApplicationAdapter.Instance) { }
 
     internal SentryUnityOptions(bool isBuilding, IApplication application, ISentryUnityInfo? unityInfo = null) :
@@ -303,6 +307,12 @@ public sealed class SentryUnityOptions : SentryOptions
     // For testing
     internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding, ISentryUnityInfo? unityInfo = null)
     {
+        // NOTE: 'SentryPlatformServices.UnityInfo' throws when the UnityInfo has not been set. This should not happen.
+        // The PlatformServices are set through the RuntimeLoad attribute in 'SentryInitialization.cs' and are required
+        // to be present.
+        UnityInfo = unityInfo ?? SentryPlatformServices.UnityInfo;
+        PlatformConfiguration = SentryPlatformServices.PlatformConfiguration;
+
         // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
         DetectStartupTime = StartupTimeDetectionMode.Fast;
 
@@ -315,6 +325,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
         this.AddIntegration(new UnityLogHandlerIntegration(this));
         this.AddIntegration(new UnityApplicationLoggingIntegration());
+        this.AddIntegration(new StartupTracingIntegration());
         this.AddIntegration(new AnrIntegration(behaviour));
         this.AddIntegration(new UnityScopeIntegration(application, unityInfo));
         this.AddIntegration(new UnityBeforeSceneLoadIntegration());

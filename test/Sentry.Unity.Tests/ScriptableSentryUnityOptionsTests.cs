@@ -186,14 +186,14 @@ public class ScriptableSentryUnityOptionsTests
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         scriptableOptions.EnableOfflineCaching = true;
 
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(false, _fixture.Application, _fixture.UnityInfo)
         {
             DisableFileWrite = false,
             CacheDirectoryPath = "some/path",
             AutoSessionTracking = true
         };
 
-        scriptableOptions.HandlePlatformRestrictedOptions(options, _fixture.UnityInfo, _fixture.Application);
+        scriptableOptions.HandlePlatformRestrictedOptions(options, _fixture.Application);
 
         Assert.IsTrue(options.DisableFileWrite);
         Assert.IsNull(options.CacheDirectoryPath);
@@ -207,9 +207,9 @@ public class ScriptableSentryUnityOptionsTests
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         scriptableOptions.EnableOfflineCaching = true;
 
-        var options = new SentryUnityOptions();
+        var options = new SentryUnityOptions(false, _fixture.Application, _fixture.UnityInfo);
 
-        scriptableOptions.HandlePlatformRestrictedOptions(options, _fixture.UnityInfo, _fixture.Application);
+        scriptableOptions.HandlePlatformRestrictedOptions(options, _fixture.Application);
 
         Assert.AreEqual(options.CacheDirectoryPath, _fixture.Application.PersistentDataPath);
     }

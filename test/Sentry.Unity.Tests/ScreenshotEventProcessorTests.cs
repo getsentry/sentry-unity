@@ -24,7 +24,7 @@ public class ScreenshotEventProcessorTests
     {
         if (SentrySdk.IsEnabled)
         {
-            SentryUnity.Close();
+            SentrySdk.Close();
         }
     }
 

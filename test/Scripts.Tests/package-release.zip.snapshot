@@ -1,4 +1,6 @@
 Documentation~/index.md
+Editor/io.sentry.unity.editor.asmdef
+Editor/io.sentry.unity.editor.asmdef.meta
 Editor/iOS.meta
 Editor/sentry-cli.meta
 Editor/Sentry.Microsoft.Extensions.FileSystemGlobbing.dll
@@ -13,6 +15,8 @@ Editor/Sentry.Mono.Cecil.Rocks.dll
 Editor/Sentry.Mono.Cecil.Rocks.dll.meta
 Editor/Sentry.Unity.Editor.dll
 Editor/Sentry.Unity.Editor.dll.meta
+Editor/SentryEditorPlatformSetUp.cs
+Editor/SentryEditorPlatformSetUp.cs.meta
 Editor/SentryUserFeedbackEditor.cs
 Editor/SentryUserFeedbackEditor.cs.meta
 Editor/iOS/Sentry.Unity.Editor.iOS.dll
@@ -1572,8 +1576,6 @@ Runtime/Sentry.xml
 Runtime/Sentry.xml.meta
 Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
-Runtime/SentryIntegrations.cs
-Runtime/SentryIntegrations.cs.meta
 Runtime/SentryUserFeedback.cs
 Runtime/SentryUserFeedback.cs.meta
 Samples~/unity-of-bugs/Scenes.meta
