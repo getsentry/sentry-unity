@@ -185,7 +185,7 @@ public class SentryUnitySelfInitializationTests
             AutoSessionTracking = true
         };
 
-        SentryUnitySdk.HandlePlatformRestrictedOptions(options, unityInfo);
+        SentryUnitySdk.ConfigureUnsupportedPlatformFallbacks(options);
 
         Assert.IsTrue(options.DisableFileWrite);
         Assert.IsFalse(options.AutoSessionTracking);

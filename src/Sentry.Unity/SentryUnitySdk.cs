@@ -31,11 +31,12 @@ internal class SentryUnitySdk
 
         MainThreadData.CollectData();
 
-        // Some integrations are controlled through a flag and opt-in. Adding these integrations late so we have the
-        // same behaviour whether we're self or manually initializing
-        HandleLateIntegrations(options);
-        HandlePlatformRestrictedOptions(options, SentryPlatformServices.UnityInfo);
-        HandleWindowsPlayer(unitySdk, options);
+        // Some integrations are controlled through a flag and opt-in. Adding these integrations late so we have equal
+        // behaviour whether the options got created through the ScriptableObject or the SDK gets manually initialized
+        AddIntegrations(options);
+        SetUpWindowsPlayerCaching(unitySdk, options);
+
+        ConfigureUnsupportedPlatformFallbacks(options);
 
         unitySdk._dotnetSdk = Sentry.SentrySdk.Init(options);
 
@@ -126,7 +127,7 @@ internal class SentryUnitySdk
         Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
     }
 
-    internal static void HandleWindowsPlayer(SentryUnitySdk unitySdk, SentryUnityOptions options)
+    internal static void SetUpWindowsPlayerCaching(SentryUnitySdk unitySdk, SentryUnityOptions options)
     {
         // On Windows-Standalone, we disable cache dir in case multiple app instances run over the same path.
         // Note: we cannot use a named Mutex, because Unity doesn't support it. Instead, we create a file with `FileShare.None`.
@@ -151,7 +152,7 @@ internal class SentryUnitySdk
         }
     }
 
-    internal static void HandleLateIntegrations(SentryUnityOptions options)
+    internal static void AddIntegrations(SentryUnityOptions options)
     {
         if (options.AttachViewHierarchy)
         {
@@ -163,10 +164,10 @@ internal class SentryUnitySdk
         }
 
         if (!ApplicationAdapter.Instance.IsEditor &&
-            (SentryPlatformServices.UnityInfo?.IL2CPP ?? false) &&
+            options.UnityInfo.IL2CPP &&
             options.Il2CppLineNumberSupportEnabled)
         {
-            if (SentryPlatformServices.UnityInfo.Il2CppMethods is not null)
+            if (options.UnityInfo.Il2CppMethods is not null)
             {
                 options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options));
             }
@@ -177,9 +178,9 @@ internal class SentryUnitySdk
         }
     }
 
-    internal static void HandlePlatformRestrictedOptions(SentryUnityOptions options, ISentryUnityInfo? unityInfo)
+    internal static void ConfigureUnsupportedPlatformFallbacks(SentryUnityOptions options)
     {
-        if (unityInfo?.IsKnownPlatform() == false)
+        if (!options.UnityInfo.IsKnownPlatform())
         {
             options.DisableFileWrite = true;
 
