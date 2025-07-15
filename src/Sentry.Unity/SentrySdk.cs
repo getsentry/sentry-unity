@@ -1,14 +1,14 @@
 using System;
 using System.ComponentModel;
 using Sentry.Extensibility;
-using UnityEngine;
+using Sentry.Unity.NativeUtils;
 
 namespace Sentry.Unity;
 
 /// <summary>
 /// Sentry Unity initialization class.
 /// </summary>
-public static class SentryUnity
+public static partial class SentrySdk
 {
     private static SentryUnitySdk? UnitySdk;
 
@@ -33,7 +33,23 @@ public static class SentryUnity
     {
         if (UnitySdk is not null)
         {
-            options.DiagnosticLogger?.LogWarning("The SDK has already been initialized.");
+            options.LogWarning("The SDK has already been initialized. Skipping initialization.");
+        }
+
+        try
+        {
+            // Since this mutates the options (i.e. adding scope observer) we have to invoke before initializing the SDK
+            options.PlatformConfiguration?.Invoke(options);
+        }
+        catch (DllNotFoundException e)
+        {
+            options.LogError(e,
+                "Sentry native-error capture configuration failed to load a native library. This usually " +
+                "means the library is missing from the application bundle or the installation directory.");
+        }
+        catch (Exception e)
+        {
+            options.LogError(e, "Sentry native error capture configuration failed.");
         }
 
         UnitySdk = SentryUnitySdk.Init(options);
@@ -50,7 +66,7 @@ public static class SentryUnity
     }
 
     /// <summary>
-    /// Represents the crash state of the games's previous run.
+    /// Represents the crash state of the game's previous run.
     /// Used to determine if the last execution terminated normally or crashed.
     /// </summary>
     public enum CrashedLastRun

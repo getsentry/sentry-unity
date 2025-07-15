@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Android.Tests;
 
@@ -14,7 +15,6 @@ public class SentryNativeAndroidTests
     private TestUnityInfo _sentryUnityInfo = null!;
     private TestSentryJava _testSentryJava = null!;
     private readonly TestLogger _logger = new();
-    private SentryUnityOptions _options = null!;
 
     public SentryNativeAndroidTests()
         => _fakeReinstallSentryNativeBackendStrategy = () => _reinstallCalled = true;
@@ -30,13 +30,6 @@ public class SentryNativeAndroidTests
 
         _testSentryJava = new TestSentryJava();
         SentryNativeAndroid.SentryJava = _testSentryJava;
-
-        _options = new SentryUnityOptions
-        {
-            Debug = true,
-            DiagnosticLevel = SentryLevel.Debug,
-            DiagnosticLogger = _logger
-        };
     }
 
     [TearDown]
@@ -48,38 +41,53 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_DefaultConfiguration_SetsScopeObserver()
     {
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
-        Assert.IsAssignableFrom<AndroidJavaScopeObserver>(_options.ScopeObserver);
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsAssignableFrom<AndroidJavaScopeObserver>(options.ScopeObserver);
     }
 
     [Test]
     public void Configure_DefaultConfiguration_SetsCrashedLastRun()
     {
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
-        Assert.IsNotNull(_options.CrashedLastRun);
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsNotNull(options.CrashedLastRun);
     }
 
     [Test]
     public void Configure_NativeAndroidSupportDisabled_ObserverIsNull()
     {
-        _options.AndroidNativeSupportEnabled = false;
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
-        Assert.Null(_options.ScopeObserver);
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        options.AndroidNativeSupportEnabled = false;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.Null(options.ScopeObserver);
     }
 
     [Test]
     public void Configure_DefaultConfiguration_EnablesScopeSync()
     {
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
-        Assert.True(_options.EnableScopeSync);
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.True(options.EnableScopeSync);
     }
 
     [Test]
     public void Configure_NativeAndroidSupportDisabled_DisabledScopeSync()
     {
-        _options.AndroidNativeSupportEnabled = false;
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
-        Assert.False(_options.EnableScopeSync);
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        options.AndroidNativeSupportEnabled = false;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.False(options.EnableScopeSync);
     }
 
     [Test]
@@ -88,9 +96,11 @@ public class SentryNativeAndroidTests
     public void Configure_IL2CPP_ReInitializesNativeBackend(bool il2cpp, bool expectedReinstall)
     {
         _sentryUnityInfo.IL2CPP = il2cpp;
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+
         Assert.False(_reinstallCalled); // Sanity check
 
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
+        SentryNativeAndroid.Configure(options);
 
         Assert.AreEqual(expectedReinstall, _reinstallCalled);
     }
@@ -98,60 +108,84 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAndroidSupportDisabled_DoesNotReInitializeNativeBackend()
     {
-        _options.AndroidNativeSupportEnabled = false;
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        options.AndroidNativeSupportEnabled = false;
+
+        SentryNativeAndroid.Configure(options);
+
         Assert.False(_reinstallCalled);
     }
 
     [Test]
     public void Configure_NoInstallationIdReturned_SetsNewDefaultUserId()
     {
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
         _testSentryJava.InstallationId = string.Empty;
 
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
-        Assert.False(string.IsNullOrEmpty(_options.DefaultUserId));
+        SentryNativeAndroid.Configure(options);
+
+        Assert.False(string.IsNullOrEmpty(options.DefaultUserId));
     }
 
     [Test]
     public void Configure_DefaultConfigurationSentryJavaNotPresent_LogsErrorAndReturns()
     {
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
+        {
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger
+        };
         _testSentryJava.SentryPresent = false;
 
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
+        SentryNativeAndroid.Configure(options);
 
         Assert.IsTrue(_logger.Logs.Any(log =>
             log.logLevel == SentryLevel.Error &&
             log.message.Contains("Android SDK is missing.")));
 
-        Assert.Null(_options.ScopeObserver);
+        Assert.Null(options.ScopeObserver);
     }
 
     [Test]
     public void Configure_NativeAlreadyInitialized_LogsAndConfigures()
     {
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
+        {
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger
+        };
+
         _testSentryJava.Enabled = true;
 
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
+        SentryNativeAndroid.Configure(options);
 
         Assert.IsTrue(_logger.Logs.Any(log =>
             log.logLevel == SentryLevel.Debug &&
             log.message.Contains("The Android SDK is already initialized")));
 
-        Assert.NotNull(_options.ScopeObserver);
+        Assert.NotNull(options.ScopeObserver);
     }
 
     [Test]
     public void Configure_NativeInitFails_LogsErrorAndReturns()
     {
+        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
+        {
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger
+        };
         _testSentryJava.Enabled = false;
         _testSentryJava.InitSuccessful = false;
 
-        SentryNativeAndroid.Configure(_options, _sentryUnityInfo);
+        SentryNativeAndroid.Configure(options);
 
         Assert.IsTrue(_logger.Logs.Any(log =>
             log.logLevel == SentryLevel.Error &&
             log.message.Contains("Failed to initialize Android Native Support")));
 
-        Assert.Null(_options.ScopeObserver);
+        Assert.Null(options.ScopeObserver);
     }
 }

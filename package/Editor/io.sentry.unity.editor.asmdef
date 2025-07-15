@@ -1,0 +1,18 @@
+{
+    "name": "io.sentry.unity.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c18c74693c5844315b1f3cd5ae87afb4"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

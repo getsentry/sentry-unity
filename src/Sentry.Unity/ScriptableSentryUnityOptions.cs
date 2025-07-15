@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -120,18 +121,18 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     /// <remarks>
     /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
     /// </remarks>
-    public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
+    public static SentryUnityOptions? LoadSentryUnityOptions()
     {
         var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
         if (scriptableOptions is not null)
         {
-            return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
+            return scriptableOptions.ToSentryUnityOptions(false);
         }
 
         return null;
     }
 
-    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
+    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
     {
         application ??= ApplicationAdapter.Instance;
 
@@ -235,12 +236,12 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             options.AddEventProcessor(new ScreenshotEventProcessor(options));
         }
 
-        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
+        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo?.Il2CppMethods != null)
         {
-            options.AddIl2CppExceptionProcessor(unityInfo);
+            options.AddIl2CppExceptionProcessor();
         }
 
-        HandlePlatformRestrictedOptions(options, unityInfo, application);
+        HandlePlatformRestrictedOptions(options, application);
         HandleExceptionFilter(options);
 
         if (!AnrDetectionEnabled)
@@ -251,9 +252,9 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         return options;
     }
 
-    internal void HandlePlatformRestrictedOptions(SentryUnityOptions options, ISentryUnityInfo? unityInfo, IApplication application)
+    internal void HandlePlatformRestrictedOptions(SentryUnityOptions options, IApplication application)
     {
-        if (unityInfo?.IsKnownPlatform() == false)
+        if (!options.UnityInfo.IsKnownPlatform())
         {
             options.DisableFileWrite = true;
 
