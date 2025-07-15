@@ -16,7 +16,7 @@ public sealed class SentryUnityOptionsTests
             persistentDataPath: "test/persistent/data/path");
         public bool IsBuilding { get; set; }
 
-        public SentryUnityOptions GetSut() => new(IsBuilding, Application, UnityInfo, SentryMonoBehaviour.Instance);
+        public SentryUnityOptions GetSut() => new(UnityInfo, Application, isBuilding: IsBuilding);
     }
 
     [SetUp]

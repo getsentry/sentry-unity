@@ -94,7 +94,7 @@ public class ScriptableSentryUnityOptionsTests
         scriptableOptions.DebugOnlyInEditor = false; // Affects Debug otherwise
         scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-        var optionsActual = scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.UnityInfo, _fixture.Application);
+        var optionsActual = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application, isBuilding);
 
         AssertOptions(expectedOptions, optionsActual);
     }
@@ -122,7 +122,7 @@ public class ScriptableSentryUnityOptionsTests
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         scriptableOptions.RuntimeOptionsConfiguration = optionsConfiguration;
 
-        scriptableOptions.ToSentryUnityOptions(isBuilding, _fixture.UnityInfo);
+        scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, isBuilding: isBuilding);
 
         Assert.AreEqual(optionsConfiguration.GotCalled, !isBuilding);
     }
@@ -133,7 +133,7 @@ public class ScriptableSentryUnityOptionsTests
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         _fixture.UnityInfo = new TestUnityInfo(true);
 
-        var options = scriptableOptions.ToSentryUnityOptions(false, _fixture.UnityInfo, _fixture.Application);
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application);
 
         var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
         var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;
@@ -146,7 +146,7 @@ public class ScriptableSentryUnityOptionsTests
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         _fixture.UnityInfo = new TestUnityInfo(true);
 
-        var options = scriptableOptions.ToSentryUnityOptions(false, _fixture.UnityInfo, _fixture.Application);
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application);
 
         var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
         var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;
@@ -159,7 +159,7 @@ public class ScriptableSentryUnityOptionsTests
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         _fixture.UnityInfo = new TestUnityInfo(true);
 
-        var options = scriptableOptions.ToSentryUnityOptions(false, _fixture.UnityInfo, _fixture.Application);
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application);
 
         var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
         var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;

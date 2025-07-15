@@ -79,7 +79,7 @@ namespace Sentry.Unity
             }
         }
 
-        private static void SetupPlatformServices()
+        private static void SetUpPlatformServices()
         {
             SentryPlatformServices.UnityInfo = new SentryUnityInfo();
 

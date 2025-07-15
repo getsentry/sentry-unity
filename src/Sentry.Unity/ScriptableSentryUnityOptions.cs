@@ -115,28 +115,31 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; } = SentryLevel.Warning;
 
     /// <summary>
-    /// Loads the ScriptableSentryUnityOptions from `Resource`.
+    /// Loads the ScriptableSentryUnityOptions from <c>Resource</c>.
     /// </summary>
-    /// <returns>The SentryUnityOptions generated from the ScriptableSentryUnityOptions</returns>
+    /// <returns>The <c>SentryUnityOptions</c> generated from the <c>ScriptableSentryUnityOptions</c></returns>
     /// <remarks>
-    /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
+    /// This gets called from <c>SentryInitialization</c> during the game's startup.
     /// </remarks>
     public static SentryUnityOptions? LoadSentryUnityOptions()
     {
         var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
         if (scriptableOptions is not null)
         {
-            return scriptableOptions.ToSentryUnityOptions(false);
+            return scriptableOptions.ToSentryUnityOptions();
         }
 
         return null;
     }
 
-    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo = null, IApplication? application = null)
+    internal SentryUnityOptions ToSentryUnityOptions(
+        ISentryUnityInfo? unityInfo = null,
+        IApplication? application = null,
+        bool isBuilding = false)
     {
         application ??= ApplicationAdapter.Instance;
 
-        var options = new SentryUnityOptions(isBuilding, application, unityInfo, SentryMonoBehaviour.Instance)
+        var options = new SentryUnityOptions(unityInfo, application, isBuilding: isBuilding)
         {
             Enabled = Enabled,
             Dsn = Dsn,
