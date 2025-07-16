@@ -15,7 +15,7 @@
   **Migration**: Update your `using` directives from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically 
   import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
   (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
-  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227))
+  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227), [#2239](https://github.com/getsentry/sentry-unity/pull/2239))
 
 ### Features
 

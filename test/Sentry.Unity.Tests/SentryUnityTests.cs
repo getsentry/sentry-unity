@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Tests;
 
@@ -172,5 +173,22 @@ public class SentryUnitySelfInitializationTests
 
         // Assert
         Assert.AreEqual(SentrySdk.CrashedLastRun.Unknown, result);
+    }
+
+    [Test]
+    public void ConfigureUnsupportedPlatformFallbacks()
+    {
+        var unityInfo = new TestUnityInfo(false);
+        var options = new SentryUnityOptions(unityInfo)
+        {
+            DisableFileWrite = false,
+            AutoSessionTracking = true
+        };
+
+        SentryUnitySdk.ConfigureUnsupportedPlatformFallbacks(options);
+
+        Assert.IsTrue(options.DisableFileWrite);
+        Assert.IsFalse(options.AutoSessionTracking);
+        Assert.IsTrue(options.BackgroundWorker is WebBackgroundWorker);
     }
 }

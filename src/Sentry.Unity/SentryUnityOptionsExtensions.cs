@@ -63,11 +63,6 @@ public static class SentryUnityOptionsExtensions
         }
     }
 
-    internal static void AddIl2CppExceptionProcessor(this SentryUnityOptions options)
-    {
-        options.AddExceptionProcessor(new UnityIl2CppEventExceptionProcessor(options));
-    }
-
     /// <summary>
     /// Disables the capture of errors through <see cref="UnityLogHandlerIntegration"/>.
     /// </summary>

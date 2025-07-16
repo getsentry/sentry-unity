@@ -66,7 +66,7 @@ public sealed class ContextWriterTests
 
         };
         var context = new MockContextWriter();
-        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+        var options = new SentryUnityOptions(application: _testApplication, behaviour: _sentryMonoBehaviour)
         {
             Dsn = "http://publickey@localhost/12345",
             Enabled = true,
