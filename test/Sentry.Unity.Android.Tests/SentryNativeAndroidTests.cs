@@ -41,7 +41,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_DefaultConfiguration_SetsScopeObserver()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
 
         SentryNativeAndroid.Configure(options);
 
@@ -51,7 +51,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_DefaultConfiguration_SetsCrashedLastRun()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
 
         SentryNativeAndroid.Configure(options);
 
@@ -61,7 +61,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAndroidSupportDisabled_ObserverIsNull()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
         options.AndroidNativeSupportEnabled = false;
 
         SentryNativeAndroid.Configure(options);
@@ -72,7 +72,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_DefaultConfiguration_EnablesScopeSync()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
 
         SentryNativeAndroid.Configure(options);
 
@@ -82,7 +82,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAndroidSupportDisabled_DisabledScopeSync()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
         options.AndroidNativeSupportEnabled = false;
 
         SentryNativeAndroid.Configure(options);
@@ -96,7 +96,7 @@ public class SentryNativeAndroidTests
     public void Configure_IL2CPP_ReInitializesNativeBackend(bool il2cpp, bool expectedReinstall)
     {
         _sentryUnityInfo.IL2CPP = il2cpp;
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
 
         Assert.False(_reinstallCalled); // Sanity check
 
@@ -108,7 +108,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAndroidSupportDisabled_DoesNotReInitializeNativeBackend()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
         options.AndroidNativeSupportEnabled = false;
 
         SentryNativeAndroid.Configure(options);
@@ -119,7 +119,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NoInstallationIdReturned_SetsNewDefaultUserId()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo);
+        var options = new SentryUnityOptions(_sentryUnityInfo);
         _testSentryJava.InstallationId = string.Empty;
 
         SentryNativeAndroid.Configure(options);
@@ -130,7 +130,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_DefaultConfigurationSentryJavaNotPresent_LogsErrorAndReturns()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
+        var options = new SentryUnityOptions(_sentryUnityInfo)
         {
             Debug = true,
             DiagnosticLevel = SentryLevel.Debug,
@@ -150,7 +150,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeAlreadyInitialized_LogsAndConfigures()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
+        var options = new SentryUnityOptions(_sentryUnityInfo)
         {
             Debug = true,
             DiagnosticLevel = SentryLevel.Debug,
@@ -171,7 +171,7 @@ public class SentryNativeAndroidTests
     [Test]
     public void Configure_NativeInitFails_LogsErrorAndReturns()
     {
-        var options = new SentryUnityOptions(false, new TestApplication(), _sentryUnityInfo)
+        var options = new SentryUnityOptions(_sentryUnityInfo)
         {
             Debug = true,
             DiagnosticLevel = SentryLevel.Debug,
