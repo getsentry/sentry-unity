@@ -1,5 +1,8 @@
 using System;
 using System.Collections;
+using Sentry.Extensibility;
+using Sentry.Internal;
+using Sentry.Protocol.Envelopes;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -119,20 +122,45 @@ public partial class SentryMonoBehaviour
 /// </summary>
 public partial class SentryMonoBehaviour
 {
-    // Todo: keep track of event ID to not capture double/more than once per frame
+    private bool _isCapturingScreenshot = false;
 
     public void CaptureScreenshotForEvent(SentryUnityOptions options, SentryId eventId)
     {
-        StartCoroutine(CaptureScreenshot(options, eventId));
+        // Only ever capture one screenshot per frame
+        if (!_isCapturingScreenshot)
+        {
+            _isCapturingScreenshot = true;
+            StartCoroutine(CaptureScreenshotCoroutine(options, eventId));
+        }
     }
 
-    private IEnumerator CaptureScreenshot(SentryUnityOptions options, SentryId eventId)
+    private IEnumerator CaptureScreenshotCoroutine(SentryUnityOptions options, SentryId eventId)
     {
+        options.LogDebug("Screenshot capturing triggered. Waiting for End of Frame.");
+
         yield return new WaitForEndOfFrame();
 
-        SentryScreenshot.Capture(options);
+        try
+        {
+            options.LogDebug("Capturing screenshot.");
+            var screenshotBytes = SentryScreenshot.Capture(options);
+            var attachment = new SentryAttachment(
+                    AttachmentType.Default,
+                    new ByteAttachmentContent(screenshotBytes),
+                    "screenshot.jpg",
+                    "image/jpeg");
 
-        // Todo: figure out how to capture an event with a screenshot attachment from out here
-        var sentryEvent = new SentryEvent(eventId: eventId);
+            Sentry.SentrySdk.CaptureAttachment(eventId, attachment);
+
+            options.LogDebug("Screenshot captured and sent for event {0}", eventId);
+        }
+        catch (Exception e)
+        {
+            options.LogError(e, "Failed to capture screenshot: {0}");
+        }
+        finally
+        {
+            _isCapturingScreenshot = false;
+        }
     }
 }

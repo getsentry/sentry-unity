@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
+using Sentry.Internal;
+using Sentry.Protocol.Envelopes;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -140,5 +143,18 @@ internal class SentryUnitySdk
             : null;
 
         Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
+    }
+
+    internal void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
+    {
+        try
+        {
+            Sentry.SentrySdk.CaptureAttachment(eventId, attachment);
+            _options.DiagnosticLogger?.LogDebug("Attachment captured for event {0}", eventId);
+        }
+        catch (Exception ex)
+        {
+            _options.DiagnosticLogger?.LogError(ex, "Failed to capture attachment for event {0}", eventId);
+        }
     }
 }
