@@ -4,10 +4,9 @@
 
 ### Breaking Changes
 
-- Removed Unity 2019 support, which reached End of Life in 2022. Minimum supported version now is 2020 ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
+- Removed Unity 2019 support, which reached End of Life in 2022. Minimum supported version now is 2020. ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
 
-- **Breaking Change**: The Unity SDK's static API has been simplified moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk`
-  to `Sentry.Unity.SentrySdk`. 
+- **Breaking Change**: The Unity SDK's static API has been moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk` to `Sentry.Unity.SentrySdk`. 
   This change enables [manual/programatic SDK initialization](https://docs.sentry.io/platforms/unity/configuration/options/programmatic-configuration/) with full functionality, previously only available through auto-initialization.
   The underlying .NET SDK's `SentrySdk` class is now internal, and several previously public classes like `SentryInitialization` 
   and `SentryIntegrations` are now internal.
