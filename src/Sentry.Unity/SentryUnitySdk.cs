@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -12,7 +11,7 @@ internal class SentryUnitySdk
 {
     private readonly SentryUnityOptions _options;
     private IDisposable _dotnetSdk = null!;
-    private FileStream? _lockFile;
+    private FileStream? LockFile;
 
     private SentryUnitySdk(SentryUnityOptions options)
     {
@@ -84,7 +83,7 @@ internal class SentryUnitySdk
         try
         {
             // We don't really need to close, Windows would release the lock anyway, but let's be nice.
-            _lockFile?.Close();
+            LockFile?.Close();
         }
         catch (Exception ex)
         {
@@ -140,7 +139,7 @@ internal class SentryUnitySdk
 
         try
         {
-            unitySdk._lockFile = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
+            unitySdk.LockFile = new FileStream(Path.Combine(options.CacheDirectoryPath, "sentry-unity.lock"), FileMode.OpenOrCreate,
                 FileAccess.ReadWrite, FileShare.None);
         }
         catch (Exception ex)
