@@ -21,6 +21,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
     {
         Options = options;
         UnityInfo = options.UnityInfo;
+        // We're throwing here but this should never happen. We're validating UnityInfo before adding the processor.
         _il2CppMethods = UnityInfo.Il2CppMethods ?? throw new ArgumentNullException(nameof(UnityInfo.Il2CppMethods),
             "Unity IL2CPP methods are not available.");
 

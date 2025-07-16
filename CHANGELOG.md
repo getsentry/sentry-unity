@@ -15,7 +15,7 @@
   **Migration**: Update your `using` directives from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically 
   import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
   (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
-  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227))
+  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227), [#2239](https://github.com/getsentry/sentry-unity/pull/2239))
 
 ### Features
 
@@ -31,9 +31,12 @@
 - Bump Native SDK from v0.9.0 to v0.9.1 ([#2217](https://github.com/getsentry/sentry-unity/pull/2217))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#091)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.9.0...0.9.1)
-- Bump CLI from v2.46.0 to v2.47.0 ([#2232](https://github.com/getsentry/sentry-unity/pull/2232))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2470)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.46.0...2.47.0)
+- Bump .NET SDK from v5.11.2 to v5.12.0 ([#2242](https://github.com/getsentry/sentry-unity/pull/2242))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5120)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.11.2...5.12.0)
+- Bump CLI from v2.46.0 to v2.47.1 ([#2232](https://github.com/getsentry/sentry-unity/pull/2232), [#2241](https://github.com/getsentry/sentry-unity/pull/2241))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2471)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.46.0...2.47.1)
 
 ## 3.2.3
 

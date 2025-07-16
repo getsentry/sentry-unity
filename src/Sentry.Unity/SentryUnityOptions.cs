@@ -298,14 +298,14 @@ public sealed class SentryUnityOptions : SentryOptions
     internal ISentryUnityInfo UnityInfo { get; private set; }
     internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
 
-    public SentryUnityOptions() : this(false, ApplicationAdapter.Instance) { }
-
-    internal SentryUnityOptions(bool isBuilding, IApplication application, ISentryUnityInfo? unityInfo = null) :
-        this(SentryMonoBehaviour.Instance, application, isBuilding, unityInfo)
-    { }
+    public SentryUnityOptions() : this(isBuilding: false) { }
 
     // For testing
-    internal SentryUnityOptions(SentryMonoBehaviour behaviour, IApplication application, bool isBuilding, ISentryUnityInfo? unityInfo = null)
+    internal SentryUnityOptions(
+        ISentryUnityInfo? unityInfo = null,
+        IApplication? application = null,
+        SentryMonoBehaviour? behaviour = null,
+        bool isBuilding = false)
     {
         // NOTE: 'SentryPlatformServices.UnityInfo' throws when the UnityInfo has not been set. This should not happen.
         // The PlatformServices are set through the RuntimeLoad attribute in 'SentryInitialization.cs' and are required
@@ -313,30 +313,33 @@ public sealed class SentryUnityOptions : SentryOptions
         UnityInfo = unityInfo ?? SentryPlatformServices.UnityInfo;
         PlatformConfiguration = SentryPlatformServices.PlatformConfiguration;
 
+        application ??= ApplicationAdapter.Instance;
+        behaviour ??= SentryMonoBehaviour.Instance;
+
         // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
         DetectStartupTime = StartupTimeDetectionMode.Fast;
 
-        this.AddInAppExclude("UnityEngine");
-        this.AddInAppExclude("UnityEditor");
+        AddInAppExclude("UnityEngine");
+        AddInAppExclude("UnityEditor");
         var processor = new UnityEventProcessor(this);
-        this.AddEventProcessor(processor);
-        this.AddTransactionProcessor(processor);
-        this.AddExceptionProcessor(new UnityExceptionProcessor());
+        AddEventProcessor(processor);
+        AddTransactionProcessor(processor);
+        AddExceptionProcessor(new UnityExceptionProcessor());
 
-        this.AddIntegration(new UnityLogHandlerIntegration(this));
-        this.AddIntegration(new UnityApplicationLoggingIntegration());
-        this.AddIntegration(new StartupTracingIntegration());
-        this.AddIntegration(new AnrIntegration(behaviour));
-        this.AddIntegration(new UnityScopeIntegration(application, unityInfo));
-        this.AddIntegration(new UnityBeforeSceneLoadIntegration());
-        this.AddIntegration(new SceneManagerIntegration());
-        this.AddIntegration(new SceneManagerTracingIntegration());
-        this.AddIntegration(new SessionIntegration(behaviour));
-        this.AddIntegration(new TraceGenerationIntegration(behaviour));
+        AddIntegration(new UnityLogHandlerIntegration(this));
+        AddIntegration(new UnityApplicationLoggingIntegration());
+        AddIntegration(new StartupTracingIntegration());
+        AddIntegration(new AnrIntegration(behaviour));
+        AddIntegration(new UnityScopeIntegration(application, unityInfo));
+        AddIntegration(new UnityBeforeSceneLoadIntegration());
+        AddIntegration(new SceneManagerIntegration());
+        AddIntegration(new SceneManagerTracingIntegration());
+        AddIntegration(new SessionIntegration(behaviour));
+        AddIntegration(new TraceGenerationIntegration(behaviour));
 
-        this.AddExceptionFilter(new UnityBadGatewayExceptionFilter());
-        this.AddExceptionFilter(new UnityWebExceptionFilter());
-        this.AddExceptionFilter(new UnitySocketExceptionFilter());
+        AddExceptionFilter(new UnityBadGatewayExceptionFilter());
+        AddExceptionFilter(new UnityWebExceptionFilter());
+        AddExceptionFilter(new UnitySocketExceptionFilter());
 
         IsGlobalModeEnabled = true;
 
@@ -373,6 +376,13 @@ public sealed class SentryUnityOptions : SentryOptions
             { LogType.Error, true},
             { LogType.Exception, true},
         };
+
+        // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
+        // implicitly creates a directory and leads to crashes i.e. on the Switch.
+        if (unityInfo?.IsKnownPlatform() ?? false)
+        {
+            CacheDirectoryPath = application.PersistentDataPath;
+        }
     }
 
     public override string ToString()
