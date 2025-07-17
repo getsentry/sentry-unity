@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+- Bump Cocoa SDK from v8.51.0 to v8.53.2 ([#2237](https://github.com/getsentry/sentry-unity/pull/2237))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8532)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.53.2)
+
 ## 4.0.0-beta.0
 
 ### Breaking Changes
