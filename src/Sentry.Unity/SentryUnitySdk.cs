@@ -134,7 +134,11 @@ internal class SentryUnitySdk
             if (Sentry.SentrySdk.CurrentHub is Hub hub)
             {
                 hub.CaptureAttachment(eventId, attachment);
-                _options.DiagnosticLogger?.LogDebug("Attachment captured for event {0}", eventId);
+                _options.LogDebug("Attachment captured for event {0}", eventId);
+            }
+            else
+            {
+                _options.LogError("Capturing the attachment failed due to the current hub.");
             }
         }
         catch (Exception ex)

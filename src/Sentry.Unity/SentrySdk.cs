@@ -20,7 +20,6 @@ public static partial class SentrySdk
         var options = new SentryUnityOptions();
         sentryUnityOptionsConfigure.Invoke(options);
 
-
         Init(options);
     }
 

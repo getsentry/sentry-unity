@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using Sentry.Extensibility;
 using Sentry.Internal;
-using Sentry.Protocol.Envelopes;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -11,6 +10,7 @@ namespace Sentry.Unity;
 internal interface ISentryMonoBehaviour
 {
     event Action? ApplicationResuming;
+    public void CaptureScreenshotForEvent(SentryUnityOptions options, SentryId eventId);
 }
 
 /// <summary>
@@ -120,9 +120,12 @@ public partial class SentryMonoBehaviour
 /// <summary>
 /// A MonoBehaviour that captures screenshots
 /// </summary>
-public partial class SentryMonoBehaviour
+public partial class SentryMonoBehaviour : ISentryMonoBehaviour
 {
-    private bool _isCapturingScreenshot = false;
+    private bool _isCapturingScreenshot;
+    internal Func<SentryUnityOptions, byte[]> ScreenshotCaptureFunction = SentryScreenshot.Capture;
+    internal Action<SentryId, SentryAttachment> AttachmentCaptureFunction = (eventId, attachment) =>
+        ((Hub)Sentry.SentrySdk.CurrentHub).CaptureAttachment(eventId, attachment);
 
     public void CaptureScreenshotForEvent(SentryUnityOptions options, SentryId eventId)
     {
@@ -130,33 +133,32 @@ public partial class SentryMonoBehaviour
         if (!_isCapturingScreenshot)
         {
             _isCapturingScreenshot = true;
-            StartCoroutine(CaptureScreenshotCoroutine(options, eventId));
+            StartCoroutine(CaptureScreenshot(options, eventId));
         }
     }
 
-    private IEnumerator CaptureScreenshotCoroutine(SentryUnityOptions options, SentryId eventId)
+    private IEnumerator CaptureScreenshot(SentryUnityOptions options, SentryId eventId)
     {
-        options.LogDebug("Screenshot capturing triggered. Waiting for End of Frame.");
+        options.LogDebug("Screenshot capture triggered. Waiting for End of Frame.");
 
         yield return new WaitForEndOfFrame();
 
         try
         {
-            options.LogDebug("Capturing screenshot.");
-            var screenshotBytes = SentryScreenshot.Capture(options);
+            var screenshotBytes = ScreenshotCaptureFunction(options);
             var attachment = new SentryAttachment(
                     AttachmentType.Default,
                     new ByteAttachmentContent(screenshotBytes),
                     "screenshot.jpg",
                     "image/jpeg");
 
-            Sentry.SentrySdk.CaptureAttachment(eventId, attachment);
+            options.LogDebug("Screenshot captured for event {0}", eventId);
 
-            options.LogDebug("Screenshot captured and sent for event {0}", eventId);
+            AttachmentCaptureFunction(eventId, attachment);
         }
         catch (Exception e)
         {
-            options.LogError(e, "Failed to capture screenshot: {0}");
+            options.LogError(e, "Failed to capture screenshot.");
         }
         finally
         {
