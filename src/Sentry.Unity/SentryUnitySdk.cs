@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
+using Sentry.Internal;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -130,8 +131,11 @@ internal class SentryUnitySdk
     {
         try
         {
-            Sentry.SentrySdk.CaptureAttachment(eventId, attachment);
-            _options.DiagnosticLogger?.LogDebug("Attachment captured for event {0}", eventId);
+            if (Sentry.SentrySdk.CurrentHub is Hub hub)
+            {
+                hub.CaptureAttachment(eventId, attachment);
+                _options.DiagnosticLogger?.LogDebug("Attachment captured for event {0}", eventId);
+            }
         }
         catch (Exception ex)
         {
