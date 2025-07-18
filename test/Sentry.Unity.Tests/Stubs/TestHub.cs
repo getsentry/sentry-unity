@@ -187,4 +187,9 @@ internal sealed class TestHub : IHub
     {
         throw new NotImplementedException();
     }
+
+    public bool CaptureAttachment(SentryId eventId, SentryAttachment attachment)
+    {
+        throw new NotImplementedException();
+    }
 }

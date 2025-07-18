@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using Sentry.Extensibility;
-using Sentry.Unity.NativeUtils;
 
 namespace Sentry.Unity;
 
