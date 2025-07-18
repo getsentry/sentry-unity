@@ -1,7 +1,5 @@
 using System;
 using System.Collections;
-using Sentry.Extensibility;
-using Sentry.Internal;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -115,12 +113,4 @@ public partial class SentryMonoBehaviour
         // (see https://github.com/getsentry/sentry-unity/issues/1678 for more details)
         DontDestroyOnLoad(gameObject);
     }
-}
-
-/// <summary>
-/// A MonoBehaviour that provides coroutine functionality
-/// </summary>
-public partial class SentryMonoBehaviour : ISentryMonoBehaviour
-{
-    // StartCoroutine is inherited from MonoBehaviour and satisfies the ISentryMonoBehaviour interface
 }
