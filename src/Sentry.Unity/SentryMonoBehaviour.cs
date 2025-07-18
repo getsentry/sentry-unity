@@ -10,7 +10,7 @@ namespace Sentry.Unity;
 internal interface ISentryMonoBehaviour
 {
     event Action? ApplicationResuming;
-    public void CaptureScreenshotForEvent(SentryUnityOptions options, SentryId eventId);
+    public Coroutine StartCoroutine(IEnumerator routine);
 }
 
 /// <summary>
@@ -118,51 +118,9 @@ public partial class SentryMonoBehaviour
 }
 
 /// <summary>
-/// A MonoBehaviour that captures screenshots
+/// A MonoBehaviour that provides coroutine functionality
 /// </summary>
 public partial class SentryMonoBehaviour : ISentryMonoBehaviour
 {
-    private bool _isCapturingScreenshot;
-    internal Func<SentryUnityOptions, byte[]> ScreenshotCaptureFunction = SentryScreenshot.Capture;
-    internal Action<SentryId, SentryAttachment> AttachmentCaptureFunction = (eventId, attachment) =>
-        ((Hub)Sentry.SentrySdk.CurrentHub).CaptureAttachment(eventId, attachment);
-
-    public void CaptureScreenshotForEvent(SentryUnityOptions options, SentryId eventId)
-    {
-        // Only ever capture one screenshot per frame
-        if (!_isCapturingScreenshot)
-        {
-            _isCapturingScreenshot = true;
-            StartCoroutine(CaptureScreenshot(options, eventId));
-        }
-    }
-
-    private IEnumerator CaptureScreenshot(SentryUnityOptions options, SentryId eventId)
-    {
-        options.LogDebug("Screenshot capture triggered. Waiting for End of Frame.");
-
-        yield return new WaitForEndOfFrame();
-
-        try
-        {
-            var screenshotBytes = ScreenshotCaptureFunction(options);
-            var attachment = new SentryAttachment(
-                    AttachmentType.Default,
-                    new ByteAttachmentContent(screenshotBytes),
-                    "screenshot.jpg",
-                    "image/jpeg");
-
-            options.LogDebug("Screenshot captured for event {0}", eventId);
-
-            AttachmentCaptureFunction(eventId, attachment);
-        }
-        catch (Exception e)
-        {
-            options.LogError(e, "Failed to capture screenshot.");
-        }
-        finally
-        {
-            _isCapturingScreenshot = false;
-        }
-    }
+    // StartCoroutine is inherited from MonoBehaviour and satisfies the ISentryMonoBehaviour interface
 }

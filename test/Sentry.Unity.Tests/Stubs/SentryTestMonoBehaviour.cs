@@ -1,13 +1,19 @@
 using System;
+using System.Collections;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests.Stubs;
 
-internal class TestSentryMonoBehaviour : ISentryMonoBehaviour
+internal class TestSentryMonoBehaviour : MonoBehaviour, ISentryMonoBehaviour
 {
-    public event Action? ApplicationResuming;
-    public bool CaptureScreenshotForEventCalled { get; private set; }
-
+    public event System.Action? ApplicationResuming;
     public void ResumeApplication() => ApplicationResuming?.Invoke();
-    public void CaptureScreenshotForEvent(SentryUnityOptions options, SentryId eventId)
-        => CaptureScreenshotForEventCalled = true;
+
+    public bool StartCoroutineCalled { get; private set; }
+
+    public new Coroutine StartCoroutine(IEnumerator routine)
+    {
+        StartCoroutineCalled = true;
+        return base.StartCoroutine(routine);
+    }
 }
