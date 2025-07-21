@@ -38,7 +38,8 @@ public class ScreenshotEventProcessorTests
 
         screenshotProcessor.Process(sentryEvent);
 
-        // Wait for the coroutine to complete
+        // Wait for the coroutine to complete - need to wait for WaitForEndOfFrame plus processing
+        yield return new WaitForEndOfFrame();
         yield return null;
 
         Assert.IsTrue(sentryMonoBehaviour.StartCoroutineCalled);
@@ -73,7 +74,8 @@ public class ScreenshotEventProcessorTests
         screenshotProcessor.Process(new SentryEvent());
         screenshotProcessor.Process(new SentryEvent());
 
-        // Wait for the coroutine to complete
+        // Wait for the coroutine to complete - need to wait for WaitForEndOfFrame plus processing
+        yield return new WaitForEndOfFrame();
         yield return null;
 
         Assert.AreEqual(1, screenshotCaptureCallCount);
