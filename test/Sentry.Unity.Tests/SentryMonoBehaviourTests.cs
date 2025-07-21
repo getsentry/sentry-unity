@@ -1,6 +1,8 @@
+using System.Collections;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests;
 
@@ -78,4 +80,5 @@ public class SentryMonoBehaviourTests
 
         Assert.AreEqual(1, counter);
     }
+
 }

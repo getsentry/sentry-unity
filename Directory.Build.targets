@@ -186,7 +186,7 @@ Expected to exist:
 
   <!-- Downloads and sets up the Cocoa SDK: dotnet msbuild /t:SetupCocoaSDK src/Sentry.Unity -->
   <Target Name="SetupCocoaSDK"
-      Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+      Condition="!$([MSBuild]::IsOSPlatform('Windows')) AND '$(MSBuildProjectName)' == 'Sentry.Unity'
         And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
       BeforeTargets="BeforeBuild">
 
@@ -246,11 +246,11 @@ Expected to exist:
     <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
     <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp sentry/build/libs/sentry*.jar $(SentryAndroidArtifactsDestination)sentry.jar" />
 
-    <Message Importance="High" Text="Reading the sentry-native-ndk version from the 'Config.kt' file." />
+    <Message Importance="High" Text="Reading the sentry-native-ndk version from the 'libs.versions.toml' file." />
 
     <PropertyGroup>
-        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-java/buildSrc/src/main/java/Config.kt"))</PropertiesContent>
-        <NativeVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'sentryNativeNdk\s*=\s*"[^"]+:([^"]+)"').Groups[1].Value)</NativeVersion>
+        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-java/gradle/libs.versions.toml"))</PropertiesContent>
+        <NativeVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'sentry-native-ndk\s*=\s*\{[^}]*version\s*=\s*"([^"]+)"').Groups[1].Value)</NativeVersion>
     </PropertyGroup>
 
     <!-- Clean cache if version does not exist to get rid of old versions -->
@@ -609,7 +609,5 @@ void PrintFailedTests(XElement element)
     <!-- Download overwrites some files that then show up as changed in the IDE, even though there are no changes, e.g. only whitespace -->
     <Message Importance="High" Text="Restoring package-dev/Plugins to the latest git commit" />
     <Exec WorkingDirectory="$(RepoRoot)" Command="git restore package-dev/Plugins" />
-
-
   </Target>
 </Project>

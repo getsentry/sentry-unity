@@ -2,6 +2,7 @@ using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -22,13 +23,13 @@ public static class SentryNative
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
     /// <param name="sentryUnityInfo">Infos about the current Unity environment</param>
-    public static void Configure(SentryUnityOptions options, ISentryUnityInfo sentryUnityInfo)
+    public static void Configure(SentryUnityOptions options)
     {
         Logger = options.DiagnosticLogger;
 
         Logger?.LogInfo("Attempting to configure native support via the Native SDK");
 
-        if (!sentryUnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
+        if (!options.UnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
         {
             Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
             return;
@@ -36,7 +37,7 @@ public static class SentryNative
 
         try
         {
-            if (!SentryNativeBridge.Init(options, sentryUnityInfo))
+            if (!SentryNativeBridge.Init(options))
             {
                 Logger?.LogWarning("Sentry native initialization failed - native crashes are not captured.");
                 return;

@@ -37,7 +37,7 @@ public sealed class UnityEventProcessorThreadingTests
 
         if (SentrySdk.IsEnabled)
         {
-            SentryUnity.Close();
+            SentrySdk.Close();
         }
     }
 
@@ -66,7 +66,7 @@ public sealed class UnityEventProcessorThreadingTests
             Debug = true,
             DiagnosticLogger = _testLogger
         };
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
 
         var sentryEvent = new SentryEvent
         {
@@ -82,7 +82,11 @@ public sealed class UnityEventProcessorThreadingTests
         SentrySdk.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
 
         // assert
-        var logsFound = _testLogger.Logs.Where(log => log.logLevel >= SentryLevel.Warning && log.message != "Cache directory is empty.").ToList();
+        var logsFound = _testLogger.Logs.Where(log =>
+            log.logLevel >= SentryLevel.Warning &&
+                // Ignore expected or harmless warnings
+                log.message != "Cache directory is empty." &&
+                log.message != "The SDK's Platform Services have not been set up. Native support will be limited.").ToList();
 
         Assert.Zero(logsFound.Count, FormatLogs(logsFound));
 
@@ -109,7 +113,7 @@ public sealed class UnityEventProcessorThreadingTests
             RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
             StartTime = new(() => DateTimeOffset.UtcNow),
         };
-        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+        var options = new SentryUnityOptions(new TestUnityInfo { IL2CPP = true }, _testApplication, _sentryMonoBehaviour)
         {
             Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
             Enabled = true,
@@ -123,7 +127,7 @@ public sealed class UnityEventProcessorThreadingTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
 
         // Act
         var @event = new SentryEvent
@@ -430,7 +434,9 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
-    public void UnityProtocol_Assigned()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void UnityProtocol_Assigned(bool isIL2CPP)
     {
         var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
         var systemInfo = new TestSentrySystemInfo
@@ -444,7 +450,7 @@ public sealed class UnityEventProcessorTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, sceneManager);
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, new TestUnityInfo { IL2CPP = isIL2CPP }, sceneManager);
         var scope = new Scope(_sentryOptions);
 
         // act
@@ -459,7 +465,7 @@ public sealed class UnityEventProcessorTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityProtocol.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityProtocol.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityProtocol.RenderingThreadingMode);
-        Assert.AreEqual(sceneManager.GetActiveScene().Name, unityProtocol.ActiveSceneName);
+        Assert.AreEqual(isIL2CPP ? sceneManager.GetActiveScene().Name : null, unityProtocol.ActiveSceneName);
     }
 
     [Test]

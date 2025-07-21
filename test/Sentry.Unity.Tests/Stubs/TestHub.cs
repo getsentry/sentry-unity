@@ -8,9 +8,11 @@ namespace Sentry.Unity.Tests.Stubs;
 internal sealed class TestHub : IHub
 {
     private readonly List<SentryEvent> _capturedEvents = new();
+    private readonly List<SentryTransaction> _capturedTransactions = new();
     private readonly List<Action<Scope>> _configureScopeCalls = new();
 
     public IReadOnlyList<SentryEvent> CapturedEvents => _capturedEvents;
+    public IReadOnlyList<SentryTransaction> CapturedTransactions => _capturedTransactions;
     public IReadOnlyList<Action<Scope>> ConfigureScopeCalls => _configureScopeCalls;
 
     public TestHub(bool isEnabled = true)
@@ -36,18 +38,14 @@ internal sealed class TestHub : IHub
         throw new NotImplementedException();
     }
 
-    public void CaptureTransaction(SentryTransaction transaction)
-    {
-    }
+    public void CaptureTransaction(SentryTransaction transaction) =>
+        _capturedTransactions.Add(transaction);
 
-    public void CaptureTransaction(SentryTransaction transaction, Scope? scope, SentryHint? hint)
-    {
-    }
+    public void CaptureTransaction(SentryTransaction transaction, Scope? scope, SentryHint? hint) =>
+        _capturedTransactions.Add(transaction);
 
-    public void CaptureTransaction(SentryTransaction transaction, SentryHint? hint)
-    {
-        throw new NotImplementedException();
-    }
+    public void CaptureTransaction(SentryTransaction transaction, SentryHint? hint) =>
+        _capturedTransactions.Add(transaction);
 
     public void CaptureSession(SessionUpdate sessionUpdate)
     {
@@ -81,8 +79,22 @@ internal sealed class TestHub : IHub
     }
 
     public void ConfigureScope(Action<Scope> configureScope) => _configureScopeCalls.Add(configureScope);
+    public void ConfigureScope<TArg>(Action<Scope, TArg> configureScope, TArg arg) =>
+        ConfigureScope(scope => configureScope.Invoke(scope, arg));
 
     public Task ConfigureScopeAsync(Func<Scope, Task> configureScope) => Task.CompletedTask;
+    public Task ConfigureScopeAsync<TArg>(Func<Scope, TArg, Task> configureScope, TArg arg) =>
+        ConfigureScopeAsync(scope => configureScope.Invoke(scope, arg));
+
+    public void SetTag(string key, string value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void UnsetTag(string key)
+    {
+        throw new NotImplementedException();
+    }
 
     public void BindClient(ISentryClient client)
     {
@@ -106,10 +118,8 @@ internal sealed class TestHub : IHub
 
     public SentryId LastEventId { get; }
 
-    public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
-    {
-        throw new NotImplementedException();
-    }
+    public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext) =>
+        new TransactionTracer(this, context);
 
     public void BindException(Exception exception, ISpan span)
     {
@@ -169,6 +179,16 @@ internal sealed class TestHub : IHub
     }
 
     public SentryId CaptureEvent(SentryEvent evt, SentryHint? hint, Action<Scope> configureScope)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool CaptureAttachment(SentryId eventId, SentryAttachment attachment)
     {
         throw new NotImplementedException();
     }

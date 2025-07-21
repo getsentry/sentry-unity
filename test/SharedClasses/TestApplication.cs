@@ -27,12 +27,12 @@ public sealed class TestApplication : IApplication
     public event Application.LogCallback? LogMessageReceived;
     public event Action? Quitting;
     public string ActiveSceneName => "TestSceneName";
-    public bool IsEditor { get; }
+    public bool IsEditor { get; set; }
     public string ProductName { get; }
     public string Version { get; }
     public string BuildGUID { get; }
     public string UnityVersion { get; set; }
-    public string PersistentDataPath { get; }
+    public string PersistentDataPath { get; set; }
     public RuntimePlatform Platform { get; set; }
     private void OnQuitting() => Quitting?.Invoke();
 

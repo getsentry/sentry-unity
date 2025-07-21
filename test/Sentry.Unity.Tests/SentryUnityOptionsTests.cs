@@ -7,6 +7,7 @@ public sealed class SentryUnityOptionsTests
 {
     class Fixture
     {
+        public TestUnityInfo UnityInfo { get; set; } = new();
         public TestApplication Application { get; set; } = new(
             productName: "TestApplication",
             version: "0.1.0",
@@ -14,7 +15,7 @@ public sealed class SentryUnityOptionsTests
             persistentDataPath: "test/persistent/data/path");
         public bool IsBuilding { get; set; }
 
-        public SentryUnityOptions GetSut() => new SentryUnityOptions(IsBuilding, Application);
+        public SentryUnityOptions GetSut() => new(UnityInfo, Application, isBuilding: IsBuilding);
     }
 
     [SetUp]
@@ -37,7 +38,17 @@ public sealed class SentryUnityOptionsTests
     }
 
     [Test]
-    public void Ctor_CacheDirectoryPath_IsNull() => Assert.IsNull(_fixture.GetSut().CacheDirectoryPath);
+    [TestCase(true, "some/path", "some/path")]
+    [TestCase(false, "some/path", null)]
+    public void Ctor_IfPlatformIsKnown_SetsCacheDirectoryPath(bool isKnownPlatform, string applicationDataPath, string? expectedCacheDirectoryPath)
+    {
+        _fixture.UnityInfo = new TestUnityInfo(isKnownPlatform: isKnownPlatform);
+        _fixture.Application.PersistentDataPath = applicationDataPath;
+
+        var sut = _fixture.GetSut();
+
+        Assert.AreEqual(sut.CacheDirectoryPath, expectedCacheDirectoryPath);
+    }
 
     [Test]
     public void Ctor_IsGlobalModeEnabled_IsTrue() => Assert.IsTrue(_fixture.GetSut().IsGlobalModeEnabled);

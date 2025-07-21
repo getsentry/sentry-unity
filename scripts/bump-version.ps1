@@ -14,5 +14,5 @@ Replace-TextInFile "$PSScriptRoot/../Directory.Build.props" '(?<=<Version>)(.*?)
 # Version of the UPM package
 Replace-TextInFile "$PSScriptRoot/../package/package.json" '(?<="version": ")(.*?)(?=")' $newVersion
 # Bump the version on the repository README and the UPM's README:
-Replace-TextInFile "$PSScriptRoot/../package/README.md" '(?<=git#)(.+)' $newVersion
-Replace-TextInFile "$PSScriptRoot/../README.md" '(?<=git#)(.+)' $newVersion
+Replace-TextInFile "$PSScriptRoot/../package/README.md" '(?<=append `#)(.+?)(?=` to the URL)' $newVersion
+Replace-TextInFile "$PSScriptRoot/../README.md" '(?<=append `#)(.+?)(?=` to the URL)' $newVersion

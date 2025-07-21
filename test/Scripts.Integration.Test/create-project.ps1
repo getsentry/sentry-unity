@@ -43,4 +43,18 @@ $projectSettings = $projectSettings -replace "AndroidTargetArchitectures: ?[0-9]
 $projectSettings = $projectSettings -replace "iPhoneSdkVersion: ?[0-9]+", "iPhoneSdkVersion: 989"
 $projectSettings | Out-File $projectSettingsPath
 
+# Add Unity UI package to manifest.json if not already present
+# Creating a new project via command line doesn't include the Unity UI package by default while creating it via the Hub does.
+Write-Host -NoNewline "Checking Unity UI package in manifest.json:"
+$manifestPath = "$(GetNewProjectPath)/Packages/manifest.json"
+$manifest = Get-Content $manifestPath | ConvertFrom-Json
+if (-not ($manifest.dependencies.PSObject.Properties.Name -contains "com.unity.ugui")) {
+    Write-Host " Adding Unity UI package"
+    $manifest.dependencies | Add-Member -MemberType NoteProperty -Name "com.unity.ugui" -Value "2.0.0"
+    $manifest | ConvertTo-Json -Depth 10 | Out-File $manifestPath -Encoding utf8
+} else {
+    Write-Host " Unity UI package already exists"
+}
+
+
 Write-Host "`nProject created!!"

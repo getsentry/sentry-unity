@@ -1,12 +1,8 @@
-#if UNITY_2020_3_OR_NEWER
-#define SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
-#endif
-
 using System;
 using System.Collections;
 using NUnit.Framework;
 using Sentry.Unity.Tests;
-using UnityEngine;
+using Sentry.Unity.Tests.Stubs;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
@@ -14,8 +10,7 @@ namespace Sentry.Unity
 {
     public class SentrySceneTracingIntegrationTests
     {
-#if SENTRY_SCENE_MANAGER_TRACING_INTEGRATION
-        private SentryUnityOptions _options;
+        private SentryUnityOptions _options = null!; // Set in Setup
         private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
         private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
 
@@ -31,17 +26,35 @@ namespace Sentry.Unity
             };
         }
 
+        [TearDown]
+        public void TearDown() => SceneManagerAPI.overrideAPI = null;
+
         [UnityTest]
         public IEnumerator SceneManagerTracingIntegration_DuringSceneLoad_CreatesTransaction()
         {
-            SentryIntegrations.Configure(_options);
-            using var _ = SentryIntegrationsTests.InitSentrySdk(_options);
+            // Arrange
+            SentryUnitySdk.Init(_options);
 
+            // Act
             yield return SetupSceneCoroutine("1_Bugfarm");
 
+            // Assert
             var triggeredEvent = _testHttpClientHandler.GetEvent("\"type\":\"transaction\"", _eventReceiveTimeout);
-
             Assert.That(triggeredEvent, Does.Contain(SceneManagerTracingAPI.TransactionOperation));
+        }
+
+        [Test]
+        public void SceneManagerTracingIntegration_SampleRateSetToZero_SkipsAddingIntegration()
+        {
+            // Arrange
+            var sceneManagerTracingIntegration = new SceneManagerTracingIntegration();
+            _options.TracesSampleRate = 0.0f;
+
+            // Act
+            sceneManagerTracingIntegration.Register(new TestHub(), _options);
+
+            // Assert
+            Assert.IsNull(SceneManagerAPI.overrideAPI);
         }
 
         internal static IEnumerator SetupSceneCoroutine(string sceneName)
@@ -52,6 +65,5 @@ namespace Sentry.Unity
             // skip a frame for a Unity to properly load a scene
             yield return null;
         }
-#endif
     }
 }
