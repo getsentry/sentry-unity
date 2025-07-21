@@ -119,7 +119,7 @@ function RunTest([string] $type)
 
         # Relying on ExitCode does not seem reliable. We're looking for the line "SmokeTester is quitting." instead to indicate 
         # a successful shut-down.
-        If ($appLog | Select-String "SmokeTester is quitting.")
+        If ($appLog | Select-String "SmokeTester - Quitting.")
         {
             Write-Host "$type test: PASSED" -ForegroundColor Green
         }

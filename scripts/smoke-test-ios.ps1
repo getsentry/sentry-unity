@@ -153,7 +153,7 @@ function Test
 
             if ("$SuccessString" -eq "")
             {
-                $SuccessString = "$($Name.ToUpper()) TEST: PASS"
+                $SuccessString = "SmokeTester - $($Name.ToUpper()) TEST: PASS"
             }
 
             Write-Host -NoNewline "'$Name' test STATUS: "

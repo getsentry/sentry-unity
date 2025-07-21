@@ -19,14 +19,14 @@ using System.Web;
 
 public class SmokeTester : MonoBehaviour
 {
-    public static string SmokeTesterLoggingPrefix = "Smoke Tester - ";
+    public static string SmokeTesterLoggingPrefix = "SmokeTester - ";
 
     private void Awake()
     {
         Debug.Log(SmokeTesterLoggingPrefix + "Awaken!");
         Application.quitting += () =>
         {
-            // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
+            // We're using this in the run-smoke-test.ps1 and smoke-test-android.ps1 to reliably detect when the tests have finished running.
             Debug.Log(SmokeTesterLoggingPrefix + "Quitting.");
         };
     }
@@ -311,7 +311,7 @@ public class SmokeTester : MonoBehaviour
             if (ExitCode == 0)
             {
                 // On Android we'll grep logcat for this string instead of relying on exit code:
-                Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: PASS");
+                Debug.Log(SmokeTesterLoggingPrefix + $"{_name} TEST: PASS");
 
                 // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
                 ExitCode = 200;
