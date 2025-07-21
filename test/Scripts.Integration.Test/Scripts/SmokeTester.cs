@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -18,26 +19,28 @@ using System.Web;
 
 public class SmokeTester : MonoBehaviour
 {
+    public static string SmokeTesterLoggingPrefix = "Smoke Tester - ";
+
     private void Awake()
     {
-        Debug.Log("SmokeTester, awake!");
+        Debug.Log(SmokeTesterLoggingPrefix + "Awaken!");
         Application.quitting += () =>
         {
             // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
-            Debug.Log("SmokeTester is quitting.");
+            Debug.Log(SmokeTesterLoggingPrefix + "Quitting.");
         };
     }
 
     public void Start()
     {
-        Debug.Log("SmokeTester starting");
+        Debug.Log(SmokeTesterLoggingPrefix + "Starting");
 
         var arg = GetTestArg();
-        Debug.Log($"SmokeTester arg: '{arg}'");
+        Debug.Log(SmokeTesterLoggingPrefix + $"Arguments: '{arg}'");
 
         if (arg == "smoke")
         {
-            SmokeTest();
+            StartCoroutine(SmokeTestCoroutine());
         }
         else if (arg == "hasnt-crashed")
         {
@@ -53,7 +56,7 @@ public class SmokeTester : MonoBehaviour
         }
         else if (arg != null)
         {
-            Debug.Log($"Unknown command line argument: {arg}");
+            Debug.Log(SmokeTesterLoggingPrefix + $"Unknown command line argument: {arg}");
             Application.Quit(-1);
         }
     }
@@ -94,90 +97,109 @@ public class SmokeTester : MonoBehaviour
 
     public static void SmokeTest()
     {
+        // This method is kept for compatibility but should not be used directly
+        // Use SmokeTestCoroutine() instead when called from Start()
+        Debug.LogError("SmokeTest() called directly - this may cause timing issues. Use SmokeTestCoroutine() instead.");
+    }
+
+    private IEnumerator SmokeTestCoroutine()
+    {
         t.Start("SMOKE");
-        try
-        {
+
 #if !UNITY_EDITOR
-            var crashed = CrashedLastRun();
-            t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
+        var crashed = CrashedLastRun();
+        t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
 #endif
-            var currentMessage = 0;
-            t.ExpectMessage(currentMessage, "'type':'session'");
+        var currentMessage = 0;
+        t.ExpectMessage(currentMessage, "'type':'session'");
 
-            // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
-            // because they're also repeated with standard events (in an envelope).
-            Debug.Log("SMOKE TEST: Skipping all session requests");
-            for (; currentMessage < 10; currentMessage++)
-            {
-                if (t.CheckMessage(currentMessage, "'type':'transaction'"))
-                {
-                    break;
-                }
-            }
-            Debug.Log($"SMOKE TEST: Done skipping session requests. Last one was: #{currentMessage}");
-
-            t.ExpectMessage(currentMessage, "'type':'transaction");
-            t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
-#if !UNITY_EDITOR
-            t.ExpectMessage(currentMessage, "'op':'awake','description':'Main Camera.SmokeTester'"); // auto instrumentation
-#endif
-            t.ExpectMessageNot(currentMessage, "'length':0");
-            
-            var guid = Guid.NewGuid().ToString();
-            Debug.LogError($"LogError(GUID)={guid}");
-            currentMessage++;
-
-            t.ExpectMessage(currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
-            // Contexts
-            t.ExpectMessage(currentMessage, "'type':'app',");
-            t.ExpectMessage(currentMessage, "'type':'device',");
-            t.ExpectMessage(currentMessage, "'type':'gpu',");
-            t.ExpectMessage(currentMessage, "'type':'os',");
-            t.ExpectMessage(currentMessage, "'type':'runtime',");
-            t.ExpectMessage(currentMessage, "'type':'unity',");
-            // User
-            t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
-            // Attachment
-            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
-            currentMessage++;
-
-            t.ExpectMessage(currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, $"CaptureMessage(GUID)={guid}");
-            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            var ex = new Exception("Exception & context test");
-            AddContext();
-            SentrySdk.CaptureException(ex);
-            t.ExpectMessage(++currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
-            t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
-            t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
-            t.ExpectMessage(currentMessage, "'tag-key':'tag-value'");
-            t.ExpectMessage(currentMessage, "'user':{'id':'user-id','username':'username','email':'email@example.com','ip_address':'::1','other':{'role':'admin'}}");
-            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            Debug.Log("SMOKE TEST: Finished checking messages.");
-
-            t.Pass();
-        }
-        catch (Exception ex)
+        // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
+        // because they're also repeated with standard events (in an envelope).
+        Debug.Log(SmokeTesterLoggingPrefix + "Skipping all session requests");
+        for (; currentMessage < 10; currentMessage++)
         {
-            if (t.ExitCode == 0)
+            if (t.CheckMessage(currentMessage, "'type':'transaction'"))
             {
-                Debug.Log($"SMOKE TEST: FAILED with exception {ex}");
-                t.Exit(-1);
-            }
-            else
-            {
-                Debug.Log("SMOKE TEST: FAILED");
+                break;
             }
         }
+        Debug.Log(SmokeTesterLoggingPrefix + $"Done skipping session requests. Last one was: #{currentMessage}");
+
+        t.ExpectMessage(currentMessage, "'type':'transaction");
+        t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
+#if !UNITY_EDITOR
+        t.ExpectMessage(currentMessage, "'op':'awake','description':'Main Camera.SmokeTester'"); // auto instrumentation
+#endif
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        var guid = Guid.NewGuid().ToString();
+        Debug.LogError(SmokeTesterLoggingPrefix + $"LogError(GUID)={guid}");
+
+        // Wait for screenshot capture to complete
+        yield return new WaitForEndOfFrame();
+        yield return 0;
+
+        currentMessage++; // The error event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
+        // Contexts
+        t.ExpectMessage(currentMessage, "'type':'app',");
+        t.ExpectMessage(currentMessage, "'type':'device',");
+        t.ExpectMessage(currentMessage, "'type':'gpu',");
+        t.ExpectMessage(currentMessage, "'type':'os',");
+        t.ExpectMessage(currentMessage, "'type':'runtime',");
+        t.ExpectMessage(currentMessage, "'type':'unity',");
+        // User
+        t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
+
+        yield return new WaitForEndOfFrame(); // Wait for screenshot capture to complete
+        yield return 0;
+
+        currentMessage++; // The message event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessage(currentMessage, $"CaptureMessage(GUID)={guid}");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        var ex = new Exception("Exception & context test");
+        AddContext();
+        SentrySdk.CaptureException(ex);
+
+        yield return new WaitForEndOfFrame(); // Wait for screenshot capture to complete
+        yield return 0;
+
+        currentMessage++; // The exception event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
+        t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
+        t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
+        t.ExpectMessage(currentMessage, "'tag-key':'tag-value'");
+        t.ExpectMessage(currentMessage, "'user':{'id':'user-id','username':'username','email':'email@example.com','ip_address':'::1','other':{'role':'admin'}}");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        Debug.Log(SmokeTesterLoggingPrefix + "Finished checking messages.");
+
+        t.Pass();
     }
 
     public static void CrashTest()
@@ -186,11 +208,11 @@ public class SmokeTester : MonoBehaviour
 
         AddContext();
 
-        Debug.Log("CRASH TEST: Issuing a native crash (c++ unhandled exception)");
+        Debug.Log(SmokeTesterLoggingPrefix + "Issuing a native crash (c++ unhandled exception)");
         throw_cpp();
 
         // shouldn't execute because the previous call should have failed
-        Debug.Log("CRASH TEST: FAIL - unexpected code executed...");
+        Debug.Log(SmokeTesterLoggingPrefix + "FAIL - unexpected code executed...");
         Application.Quit(-1);
     }
 
@@ -239,7 +261,7 @@ public class SmokeTester : MonoBehaviour
         private ConcurrentQueue<string> _requests = new ConcurrentQueue<string>();
         private AutoResetEvent _requestReceived = new AutoResetEvent(false);
 
-        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(30); // Increased timeout for async screenshot capture
 
         private int _testNumber = 0;
         public int ExitCode = 0;
@@ -247,7 +269,7 @@ public class SmokeTester : MonoBehaviour
         public void Start(string testName)
         {
             _name = testName;
-            Debug.Log($"{_name} TEST: start");
+            Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: start");
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -262,7 +284,7 @@ public class SmokeTester : MonoBehaviour
             // Setting "Sentry" as tag to prevent the UnityLogHandlerIntegration from capturing this message and
             // adding it as a breadcrumb, which in turn multiplies it on following (intercepted) HTTP requests...
             // Note: remove the prefix once setting breadcrumb log level is possible - https://github.com/getsentry/sentry-unity/issues/60
-            Debug.unityLogger.Log(LogType.Log, "Sentry", $"{_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+            Debug.Log(SmokeTesterLoggingPrefix + $"{_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
             _requests.Enqueue(msgText);
             _requestReceived.Set();
         }
@@ -271,7 +293,7 @@ public class SmokeTester : MonoBehaviour
         {
             if (ExitCode != 0)
             {
-                Debug.Log($"{_name} TEST: Ignoring spurious Exit({code}). Application is already exiting with code {ExitCode}");
+                Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: Ignoring spurious Exit({code}). Application is already exiting with code {ExitCode}");
             }
             else
             {
@@ -289,7 +311,7 @@ public class SmokeTester : MonoBehaviour
             if (ExitCode == 0)
             {
                 // On Android we'll grep logcat for this string instead of relying on exit code:
-                Debug.Log($"{_name} TEST: PASS");
+                Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: PASS");
 
                 // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
                 ExitCode = 200;
@@ -303,10 +325,10 @@ public class SmokeTester : MonoBehaviour
         public void Expect(string message, bool result)
         {
             _testNumber++;
-            Debug.Log($"{_name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
+            Debug.Log(SmokeTesterLoggingPrefix + $"{_name} | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"{_name} TEST: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
+                Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
                 Exit(_testNumber);
             }
         }
@@ -321,7 +343,7 @@ public class SmokeTester : MonoBehaviour
                 }
                 if (!_requestReceived.WaitOne(_receiveTimeout))
                 {
-                    Debug.Log($"{_name} TEST: Failed while waiting for an HTTP request #{index} to come in.");
+                    Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: Failed while waiting for an HTTP request #{index} to come in.");
                     Exit(_testNumber);
                 }
             }

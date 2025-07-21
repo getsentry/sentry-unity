@@ -37,6 +37,17 @@ public class OptionsConfiguration : SentryOptionsConfiguration
             return -2;
         };
 
+        // Filtering the Smoketester logs from the breadcrumbs here
+        options.SetBeforeBreadcrumb(breadcrumb =>
+        {
+            if (breadcrumb.Message.StartsWith(SmokeTester.SmokeTesterLoggingPrefix))
+            {
+                return null;
+            }
+
+            return breadcrumb;
+        });
+
         // If an ANR triggers while the smoke test runs, the test would fail because we expect exact order of events.
         options.DisableAnrIntegration();
 
