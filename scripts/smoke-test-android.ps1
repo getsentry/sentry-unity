@@ -293,7 +293,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         $newLogs = adb -s $device logcat -d --pid=$appPID
         $logCache = ProcessNewLogs -newLogs $newLogs -lastLogCount ([ref]$lastLogCount) -logCache $logCache
 
-        # The SmokeTester logs "SmokeTester - Quitting." in OnApplicationQuit() to reliably inform when tests finish running.
+        # The SmokeTester logs "SmokeTester is quitting." in OnApplicationQuit() to reliably inform when tests finish running.
         # For crash tests, we're checking for `sentry-native` logging "crash has been captured" to reliably inform when tests finished running.
         if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "crash has been captured"))
         {

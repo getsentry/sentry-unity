@@ -21,7 +21,7 @@ public class SmokeTester : MonoBehaviour
 {
     private void Awake()
     {
-        Debug.Log("Awaken!");
+        Debug.Log("SmokeTester, awake!");
         Application.quitting += () =>
         {
             // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
@@ -31,10 +31,10 @@ public class SmokeTester : MonoBehaviour
 
     public void Start()
     {
-        Debug.Log("SmokeTester is starting");
+        Debug.Log("SmokeTester starting");
 
         var arg = GetTestArg();
-        Debug.Log($"Arguments: '{arg}'");
+        Debug.Log($"SmokeTester arg: '{arg}'");
 
         if (arg == "smoke")
         {
