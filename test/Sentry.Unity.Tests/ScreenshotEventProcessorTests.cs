@@ -33,13 +33,16 @@ public class ScreenshotEventProcessorTests
             capturedAttachment = attachment;
         };
 
+        // Replace WaitForEndOfFrame to return immediately
+        screenshotProcessor.WaitForEndOfFrameFunction = () => null!;
+
         var eventId = SentryId.Create();
         var sentryEvent = new SentryEvent(eventId: eventId);
 
         screenshotProcessor.Process(sentryEvent);
 
-        // Wait for the coroutine to complete - need to wait for WaitForEndOfFrame plus processing
-        yield return new WaitForEndOfFrame();
+        // Wait for the coroutine to complete - need to wait for processing
+        yield return null;
         yield return null;
 
         Assert.IsTrue(sentryMonoBehaviour.StartCoroutineCalled);
@@ -69,13 +72,16 @@ public class ScreenshotEventProcessorTests
             attachmentCaptureCallCount++;
         };
 
+        // Replace WaitForEndOfFrame to return immediately
+        screenshotProcessor.WaitForEndOfFrameFunction = () => null!;
+
         // Process multiple events quickly (before any coroutine can complete)
         screenshotProcessor.Process(new SentryEvent());
         screenshotProcessor.Process(new SentryEvent());
         screenshotProcessor.Process(new SentryEvent());
 
-        // Wait for the coroutine to complete - need to wait for WaitForEndOfFrame plus processing
-        yield return new WaitForEndOfFrame();
+        // Wait for the coroutine to complete - need to wait for processing
+        yield return null;
         yield return null;
 
         Assert.AreEqual(1, screenshotCaptureCallCount);

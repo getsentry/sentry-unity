@@ -19,24 +19,22 @@ using System.Web;
 
 public class SmokeTester : MonoBehaviour
 {
-    public static string SmokeTesterLoggingPrefix = "SmokeTester - ";
-
     private void Awake()
     {
-        Debug.Log(SmokeTesterLoggingPrefix + "Awaken!");
+        Debug.Log("Awaken!");
         Application.quitting += () =>
         {
-            // We're using this in the run-smoke-test.ps1 and smoke-test-android.ps1 to reliably detect when the tests have finished running.
-            Debug.Log(SmokeTesterLoggingPrefix + "Quitting.");
+            // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
+            Debug.Log("SmokeTester is quitting.");
         };
     }
 
     public void Start()
     {
-        Debug.Log(SmokeTesterLoggingPrefix + "Starting");
+        Debug.Log("SmokeTester is starting");
 
         var arg = GetTestArg();
-        Debug.Log(SmokeTesterLoggingPrefix + $"Arguments: '{arg}'");
+        Debug.Log($"Arguments: '{arg}'");
 
         if (arg == "smoke")
         {
@@ -56,7 +54,7 @@ public class SmokeTester : MonoBehaviour
         }
         else if (arg != null)
         {
-            Debug.Log(SmokeTesterLoggingPrefix + $"Unknown command line argument: {arg}");
+            Debug.Log($"Unknown command line argument: {arg}");
             Application.Quit(-1);
         }
     }
@@ -115,7 +113,7 @@ public class SmokeTester : MonoBehaviour
 
         // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
         // because they're also repeated with standard events (in an envelope).
-        Debug.Log(SmokeTesterLoggingPrefix + "Skipping all session requests");
+        Debug.Log("Skipping all session requests");
         for (; currentMessage < 10; currentMessage++)
         {
             if (t.CheckMessage(currentMessage, "'type':'transaction'"))
@@ -123,7 +121,7 @@ public class SmokeTester : MonoBehaviour
                 break;
             }
         }
-        Debug.Log(SmokeTesterLoggingPrefix + $"Done skipping session requests. Last one was: #{currentMessage}");
+        Debug.Log($"Done skipping session requests. Last one was: #{currentMessage}");
 
         t.ExpectMessage(currentMessage, "'type':'transaction");
         t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
@@ -133,7 +131,7 @@ public class SmokeTester : MonoBehaviour
         t.ExpectMessageNot(currentMessage, "'length':0");
 
         var guid = Guid.NewGuid().ToString();
-        Debug.LogError(SmokeTesterLoggingPrefix + $"LogError(GUID)={guid}");
+        Debug.LogError($"LogError(GUID)={guid}");
 
         // Wait for screenshot capture to complete
         yield return new WaitForEndOfFrame();
@@ -197,7 +195,7 @@ public class SmokeTester : MonoBehaviour
         t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
         t.ExpectMessageNot(currentMessage, "'length':0");
 
-        Debug.Log(SmokeTesterLoggingPrefix + "Finished checking messages.");
+        Debug.Log("Finished checking messages.");
 
         t.Pass();
     }
@@ -208,11 +206,11 @@ public class SmokeTester : MonoBehaviour
 
         AddContext();
 
-        Debug.Log(SmokeTesterLoggingPrefix + "Issuing a native crash (c++ unhandled exception)");
+        Debug.Log("CRASH TEST: Issuing a native crash (c++ unhandled exception)");
         throw_cpp();
 
         // shouldn't execute because the previous call should have failed
-        Debug.Log(SmokeTesterLoggingPrefix + "FAIL - unexpected code executed...");
+        Debug.Log("CRASH TEST: FAIL - unexpected code executed...");
         Application.Quit(-1);
     }
 
@@ -269,7 +267,7 @@ public class SmokeTester : MonoBehaviour
         public void Start(string testName)
         {
             _name = testName;
-            Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: start");
+            Debug.Log($"{_name} TEST: start");
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -284,7 +282,7 @@ public class SmokeTester : MonoBehaviour
             // Setting "Sentry" as tag to prevent the UnityLogHandlerIntegration from capturing this message and
             // adding it as a breadcrumb, which in turn multiplies it on following (intercepted) HTTP requests...
             // Note: remove the prefix once setting breadcrumb log level is possible - https://github.com/getsentry/sentry-unity/issues/60
-            Debug.Log(SmokeTesterLoggingPrefix + $"{_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
+            Debug.Log($"{_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
             _requests.Enqueue(msgText);
             _requestReceived.Set();
         }
@@ -293,7 +291,7 @@ public class SmokeTester : MonoBehaviour
         {
             if (ExitCode != 0)
             {
-                Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: Ignoring spurious Exit({code}). Application is already exiting with code {ExitCode}");
+                Debug.Log($"{_name}: Ignoring spurious Exit({code}). Application is already exiting with code {ExitCode}");
             }
             else
             {
@@ -311,7 +309,7 @@ public class SmokeTester : MonoBehaviour
             if (ExitCode == 0)
             {
                 // On Android we'll grep logcat for this string instead of relying on exit code:
-                Debug.Log(SmokeTesterLoggingPrefix + $"{_name} TEST: PASS");
+                Debug.Log($"{_name} TEST: PASS");
 
                 // Exit Code 200 to avoid false positive from a graceful exit unrelated to this test run
                 ExitCode = 200;
@@ -325,10 +323,10 @@ public class SmokeTester : MonoBehaviour
         public void Expect(string message, bool result)
         {
             _testNumber++;
-            Debug.Log(SmokeTesterLoggingPrefix + $"{_name} | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
+            Debug.Log($"{_name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
+                Debug.Log($"{_name} TEST: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
                 Exit(_testNumber);
             }
         }
@@ -343,7 +341,7 @@ public class SmokeTester : MonoBehaviour
                 }
                 if (!_requestReceived.WaitOne(_receiveTimeout))
                 {
-                    Debug.Log(SmokeTesterLoggingPrefix + $"{_name}: Failed while waiting for an HTTP request #{index} to come in.");
+                    Debug.Log($"{_name} TEST: Failed while waiting for an HTTP request #{index} to come in.");
                     Exit(_testNumber);
                 }
             }

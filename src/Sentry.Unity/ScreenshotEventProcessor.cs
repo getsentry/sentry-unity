@@ -15,6 +15,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
     internal Func<SentryUnityOptions, byte[]> ScreenshotCaptureFunction = SentryScreenshot.Capture;
     internal Action<SentryId, SentryAttachment> AttachmentCaptureFunction = (eventId, attachment) =>
         ((Hub)Sentry.SentrySdk.CurrentHub).CaptureAttachment(eventId, attachment);
+    internal Func<YieldInstruction> WaitForEndOfFrameFunction = () => new WaitForEndOfFrame();
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
 
@@ -39,7 +40,9 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
     {
         _options.LogDebug("Screenshot capture triggered. Waiting for End of Frame.");
 
-        yield return new WaitForEndOfFrame();
+        // WaitForEndOfFrame does not work in headless mode so we're making it configurable for CI.
+        // See https://docs.unity3d.com/6000.1/Documentation/ScriptReference/WaitForEndOfFrame.html
+        yield return WaitForEndOfFrameFunction();
 
         try
         {
