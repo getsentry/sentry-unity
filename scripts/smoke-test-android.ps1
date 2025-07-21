@@ -295,7 +295,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
         # The SmokeTester logs "SmokeTester - Quitting." in OnApplicationQuit() to reliably inform when tests finish running.
         # For crash tests, we're checking for `sentry-native` logging "crash has been captured" to reliably inform when tests finished running.
-        if (($newLogs | Select-String "SmokeTester - Quitting.") -or ($newLogs | Select-String "crash has been captured"))
+        if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "crash has been captured"))
         {
             Write-Host "Process finished marker detected. Finish waiting for tests to run."
             $processFinished = $true
