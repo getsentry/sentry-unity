@@ -93,13 +93,6 @@ public class SmokeTester : MonoBehaviour
 
     internal static Func<int> CrashedLastRun = () => -1;
 
-    public static void SmokeTest()
-    {
-        // This method is kept for compatibility but should not be used directly
-        // Use SmokeTestCoroutine() instead when called from Start()
-        Debug.LogError("SmokeTest() called directly - this may cause timing issues. Use SmokeTestCoroutine() instead.");
-    }
-
     private IEnumerator SmokeTestCoroutine()
     {
         t.Start("SMOKE");
@@ -259,7 +252,7 @@ public class SmokeTester : MonoBehaviour
         private ConcurrentQueue<string> _requests = new ConcurrentQueue<string>();
         private AutoResetEvent _requestReceived = new AutoResetEvent(false);
 
-        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(30); // Increased timeout for async screenshot capture
+        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
 
         private int _testNumber = 0;
         public int ExitCode = 0;
@@ -279,9 +272,6 @@ public class SmokeTester : MonoBehaviour
         private void Receive(HttpRequestMessage message)
         {
             var msgText = message.Content.ReadAsStringAsync().Result;
-            // Setting "Sentry" as tag to prevent the UnityLogHandlerIntegration from capturing this message and
-            // adding it as a breadcrumb, which in turn multiplies it on following (intercepted) HTTP requests...
-            // Note: remove the prefix once setting breadcrumb log level is possible - https://github.com/getsentry/sentry-unity/issues/60
             Debug.Log($"{_name} TEST: Intercepted HTTP Request #{_requests.Count} = {msgText}");
             _requests.Enqueue(msgText);
             _requestReceived.Set();
@@ -291,7 +281,7 @@ public class SmokeTester : MonoBehaviour
         {
             if (ExitCode != 0)
             {
-                Debug.Log($"{_name}: Ignoring spurious Exit({code}). Application is already exiting with code {ExitCode}");
+                Debug.Log($"{_name} TEST: Ignoring spurious Exit({code}). Application is already exiting with code {ExitCode}");
             }
             else
             {
