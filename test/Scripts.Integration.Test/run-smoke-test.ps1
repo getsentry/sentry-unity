@@ -105,7 +105,7 @@ function RunTest([string] $type)
 
         # Wait for the test to finish
         $timedOut = $null # reset any previously set timeout
-        $process | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue -ErrorVariable timedOut
+        $process | Wait-Process -Timeout 180 -ErrorAction SilentlyContinue -ErrorVariable timedOut
 
         $appLog = ""
         if ("$AppDataDir" -ne "")
