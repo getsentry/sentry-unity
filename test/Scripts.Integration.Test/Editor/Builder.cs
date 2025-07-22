@@ -41,14 +41,6 @@ public class Builder
         PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
 #endif
 
-
-        // This is a workaround for build issues with Unity 2022.3. and newer.
-        // https://discussions.unity.com/t/gradle-build-issues-for-android-api-sdk-35-in-unity-2022-3lts/1502187/10
-#if UNITY_2022_3_OR_NEWER
-        Debug.Log("Builder: Setting Android target API level to 33");
-        PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel33;
-#endif
-
         Debug.Log("Builder: Updating BuildPlayerOptions");
         var buildPlayerOptions = new BuildPlayerOptions
         {
