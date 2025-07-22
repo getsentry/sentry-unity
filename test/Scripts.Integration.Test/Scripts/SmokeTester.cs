@@ -22,6 +22,9 @@ public class SmokeTester : MonoBehaviour
     private void Awake()
     {
         Debug.Log("SmokeTester, awake!");
+        Application.runInBackground = true;
+        Time.timeScale = 1.0f;
+
         Application.quitting += () =>
         {
             // The smoke-test-android.ps1 reads this from console to reliably detect when the tests have finished running.
