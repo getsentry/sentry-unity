@@ -96,7 +96,8 @@ public class SmokeTester : MonoBehaviour
     private IEnumerator SmokeTestCoroutine()
     {
         Debug.Log("Starting the Smoke Test with a little delay.");
-        yield return new WaitForSeconds(5);
+        yield return null;
+        yield return null;
 
         t.Start("SMOKE");
 
@@ -131,7 +132,8 @@ public class SmokeTester : MonoBehaviour
 
         Debug.Log("This is before waiting.");
         // Wait for screenshot capture to complete
-        yield return new WaitForSeconds(1);
+        yield return null;
+        yield return null;
         Debug.Log("This is after waiting.");
 
         currentMessage++; // The error event
@@ -157,7 +159,8 @@ public class SmokeTester : MonoBehaviour
         SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
 
         // Wait for screenshot capture to complete
-        yield return new WaitForSeconds(1);
+        yield return null;
+        yield return null;
 
         currentMessage++; // The message event
 
@@ -175,7 +178,8 @@ public class SmokeTester : MonoBehaviour
         SentrySdk.CaptureException(ex);
 
         // Wait for screenshot capture to complete
-        yield return new WaitForSeconds(1);
+        yield return null;
+        yield return null;
 
         currentMessage++; // The exception event
 
