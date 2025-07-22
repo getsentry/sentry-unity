@@ -22,6 +22,8 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         EditorUserBuildSettings.allowDebugging = false;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
+        // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
+        PlayerSettings.runInBackground = true;
 
         DisableUnityAudio();
         DisableProgressiveLightMapper();
