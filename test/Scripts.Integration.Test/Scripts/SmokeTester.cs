@@ -22,6 +22,9 @@ public class SmokeTester : MonoBehaviour
     private void Awake()
     {
         Debug.Log("SmokeTester, awake!");
+        Application.runInBackground = true;
+        Time.timeScale = 1.0f;
+
         Application.quitting += () =>
         {
             // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
@@ -38,7 +41,7 @@ public class SmokeTester : MonoBehaviour
 
         if (arg == "smoke")
         {
-            StartCoroutine(SmokeTestCoroutine());
+            SentryMonoBehaviour.Instance.StartCoroutine(SmokeTestCoroutine());
         }
         else if (arg == "hasnt-crashed")
         {
