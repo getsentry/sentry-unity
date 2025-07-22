@@ -38,7 +38,7 @@ public class SmokeTester : MonoBehaviour
 
         if (arg == "smoke")
         {
-            SmokeTest();
+            StartCoroutine(SmokeTestCoroutine());
         }
         else if (arg == "hasnt-crashed")
         {
@@ -93,109 +93,108 @@ public class SmokeTester : MonoBehaviour
 
     internal static Func<int> CrashedLastRun = () => -1;
 
-    private static void SmokeTest()
+    private IEnumerator SmokeTestCoroutine()
     {
+        Debug.Log("Starting the Smoke Test with a little delay.");
+        yield return new WaitForSeconds(5);
+
         t.Start("SMOKE");
 
-        try
-        {
 #if !UNITY_EDITOR
-            var crashed = CrashedLastRun();
-            t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
+        var crashed = CrashedLastRun();
+        t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
 #endif
-            var currentMessage = 0;
-            t.ExpectMessage(currentMessage, "'type':'session'");
+        var currentMessage = 0;
+        t.ExpectMessage(currentMessage, "'type':'session'");
 
-            // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
-            // because they're also repeated with standard events (in an envelope).
-            Debug.Log("Skipping all session requests");
-            for (; currentMessage < 10; currentMessage++)
-            {
-                if (t.CheckMessage(currentMessage, "'type':'transaction'"))
-                {
-                    break;
-                }
-            }
-            Debug.Log($"Done skipping session requests. Last one was: #{currentMessage}");
-
-            t.ExpectMessage(currentMessage, "'type':'transaction");
-            t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
-#if !UNITY_EDITOR
-            t.ExpectMessage(currentMessage, "'op':'awake','description':'Main Camera.SmokeTester'"); // auto instrumentation
-#endif
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            var guid = Guid.NewGuid().ToString();
-            Debug.LogError($"LogError(GUID)={guid}");
-
-            currentMessage++; // The error event
-
-            t.ExpectMessage(currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
-            // Contexts
-            t.ExpectMessage(currentMessage, "'type':'app',");
-            t.ExpectMessage(currentMessage, "'type':'device',");
-            t.ExpectMessage(currentMessage, "'type':'gpu',");
-            t.ExpectMessage(currentMessage, "'type':'os',");
-            t.ExpectMessage(currentMessage, "'type':'runtime',");
-            t.ExpectMessage(currentMessage, "'type':'unity',");
-            // User
-            t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            currentMessage++; // The screenshot envelope
-
-            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
-
-            currentMessage++; // The message event
-
-            t.ExpectMessage(currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, $"CaptureMessage(GUID)={guid}");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            currentMessage++; // The screenshot envelope
-
-            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            var ex = new Exception("Exception & context test");
-            AddContext();
-            SentrySdk.CaptureException(ex);
-
-            currentMessage++; // The exception event
-
-            t.ExpectMessage(currentMessage, "'type':'event'");
-            t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
-            t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
-            t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
-            t.ExpectMessage(currentMessage, "'tag-key':'tag-value'");
-            t.ExpectMessage(currentMessage, "'user':{'id':'user-id','username':'username','email':'email@example.com','ip_address':'::1','other':{'role':'admin'}}");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            currentMessage++; // The screenshot envelope
-
-            t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
-            t.ExpectMessageNot(currentMessage, "'length':0");
-
-            Debug.Log("Finished checking messages.");
-
-            t.Pass();
-        }
-        catch (Exception ex)
+        // Skip the session init requests (there may be multiple of them). We can't skip them by a "positive"
+        // because they're also repeated with standard events (in an envelope).
+        Debug.Log("Skipping all session requests");
+        for (; currentMessage < 10; currentMessage++)
         {
-            if (t.ExitCode == 0)
+            if (t.CheckMessage(currentMessage, "'type':'transaction'"))
             {
-                Debug.Log($"SMOKE TEST: FAILED with exception {ex}");
-                t.Exit(-1);
-            }
-            else
-            {
-                Debug.Log("SMOKE TEST: FAILED");
+                break;
             }
         }
+        Debug.Log($"Done skipping session requests. Last one was: #{currentMessage}");
+
+        t.ExpectMessage(currentMessage, "'type':'transaction");
+        t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
+#if !UNITY_EDITOR
+        t.ExpectMessage(currentMessage, "'op':'awake','description':'Main Camera.SmokeTester'"); // auto instrumentation
+#endif
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        var guid = Guid.NewGuid().ToString();
+        Debug.LogError($"LogError(GUID)={guid}");
+
+        Debug.Log("This is before waiting.");
+        // Wait for screenshot capture to complete
+        yield return new WaitForSeconds(1);
+        Debug.Log("This is after waiting.");
+
+        currentMessage++; // The error event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessage(currentMessage, $"LogError(GUID)={guid}");
+        // Contexts
+        t.ExpectMessage(currentMessage, "'type':'app',");
+        t.ExpectMessage(currentMessage, "'type':'device',");
+        t.ExpectMessage(currentMessage, "'type':'gpu',");
+        t.ExpectMessage(currentMessage, "'type':'os',");
+        t.ExpectMessage(currentMessage, "'type':'runtime',");
+        t.ExpectMessage(currentMessage, "'type':'unity',");
+        // User
+        t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
+
+        // Wait for screenshot capture to complete
+        yield return new WaitForSeconds(1);
+
+        currentMessage++; // The message event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessage(currentMessage, $"CaptureMessage(GUID)={guid}");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        var ex = new Exception("Exception & context test");
+        AddContext();
+        SentrySdk.CaptureException(ex);
+
+        // Wait for screenshot capture to complete
+        yield return new WaitForSeconds(1);
+
+        currentMessage++; // The exception event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
+        t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
+        t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
+        t.ExpectMessage(currentMessage, "'tag-key':'tag-value'");
+        t.ExpectMessage(currentMessage, "'user':{'id':'user-id','username':'username','email':'email@example.com','ip_address':'::1','other':{'role':'admin'}}");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        Debug.Log("Finished checking messages.");
+
+        t.Pass();
     }
 
     public static void CrashTest()
@@ -257,7 +256,7 @@ public class SmokeTester : MonoBehaviour
         private ConcurrentQueue<string> _requests = new ConcurrentQueue<string>();
         private AutoResetEvent _requestReceived = new AutoResetEvent(false);
 
-        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(30); // Screenshot capture happens in a coroutine and takes ~10+ seconds
+        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
 
         private int _testNumber = 0;
         public int ExitCode = 0;
