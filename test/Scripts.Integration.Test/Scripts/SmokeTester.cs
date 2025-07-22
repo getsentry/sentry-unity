@@ -257,7 +257,7 @@ public class SmokeTester : MonoBehaviour
         private ConcurrentQueue<string> _requests = new ConcurrentQueue<string>();
         private AutoResetEvent _requestReceived = new AutoResetEvent(false);
 
-        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _receiveTimeout = TimeSpan.FromSeconds(30); // Screenshot capture happens in a coroutine and takes ~10+ seconds
 
         private int _testNumber = 0;
         public int ExitCode = 0;
