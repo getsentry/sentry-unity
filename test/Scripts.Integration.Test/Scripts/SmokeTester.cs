@@ -22,12 +22,9 @@ public class SmokeTester : MonoBehaviour
     private void Awake()
     {
         Debug.Log("SmokeTester, awake!");
-        Application.runInBackground = true;
-        Time.timeScale = 1.0f;
-
         Application.quitting += () =>
         {
-            // We're using this in the smoke-test-android.ps1 script to reliably detect when the tests have finished running.
+            // The smoke-test-android.ps1 reads this from console to reliably detect when the tests have finished running.
             Debug.Log("SmokeTester is quitting.");
         };
     }
@@ -41,6 +38,8 @@ public class SmokeTester : MonoBehaviour
 
         if (arg == "smoke")
         {
+            // Using "this" to start a coroutine causes the game on Linux in CI to freeze and time out on all yields.
+            // I suspect the SentryMonoBehaviour being instantiated outside the scene somehow works around this.
             SentryMonoBehaviour.Instance.StartCoroutine(SmokeTestCoroutine());
         }
         else if (arg == "hasnt-crashed")
@@ -327,7 +326,8 @@ public class SmokeTester : MonoBehaviour
             Debug.Log($"{_name} TEST | {_testNumber}. {message}: {(result ? "PASS" : "FAIL")}");
             if (!result)
             {
-                Debug.Log($"{_name} TEST: FAIL - quitting due to a failed test case #{_testNumber}: '{message}'");
+                // run-smoke-test.ps1 expects this as failure confirmation
+                Debug.Log($"{_name} TEST: FAIL");
                 Exit(_testNumber);
             }
         }
