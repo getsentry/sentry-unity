@@ -126,8 +126,10 @@ public class SmokeTester : MonoBehaviour
         var guid = Guid.NewGuid().ToString();
         Debug.LogError($"LogError(GUID)={guid}");
 
+        Debug.Log("This is before waiting.");
         // Wait for screenshot capture to complete
         yield return new WaitForSeconds(1);
+        Debug.Log("This is after waiting.");
 
         currentMessage++; // The error event
 
