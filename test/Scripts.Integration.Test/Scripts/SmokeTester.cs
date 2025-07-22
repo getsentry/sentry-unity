@@ -43,7 +43,8 @@ public class SmokeTester : MonoBehaviour
         {
             // Using "this" to start a coroutine causes the game on Linux in CI to freeze and time out on all yields.
             // I suspect the SentryMonoBehaviour being instantiated outside the scene somehow works around this.
-            SentryMonoBehaviour.Instance.StartCoroutine(SmokeTestCoroutine());
+            // SentryMonoBehaviour.Instance.StartCoroutine(SmokeTestCoroutine());
+            StartCoroutine(SmokeTestCoroutine());
         }
         else if (arg == "hasnt-crashed")
         {
