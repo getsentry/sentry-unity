@@ -89,8 +89,8 @@ function RunTest([string] $type)
     {
         if ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and (Get-Command "xvfb-run" -ErrorAction SilentlyContinue))
         {
-            Write-Host "Running xvfb-run -ae /dev/stdout $TestAppPath --test $type"
-            $process = Start-Process "xvfb-run" -ArgumentList "-ae", "/dev/stdout", "$TestAppPath", "--test", $type -PassThru
+            Write-Host "Running xvfb-run -ae /dev/stdout $TestAppPath --test $type -force-opengl"
+            $process = Start-Process "xvfb-run" -ArgumentList "-ae", "/dev/stdout", "$TestAppPath", "--test", $type, "-force-opengl" -PassThru
         }
         else
         {
