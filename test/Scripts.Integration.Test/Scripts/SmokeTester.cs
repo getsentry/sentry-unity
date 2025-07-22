@@ -127,11 +127,8 @@ public class SmokeTester : MonoBehaviour
         var guid = Guid.NewGuid().ToString();
         Debug.LogError($"LogError(GUID)={guid}");
 
-        Debug.Log("This is before waiting.");
         // Wait for screenshot capture to complete
         yield return null;
-        yield return null;
-        Debug.Log("This is after waiting.");
 
         currentMessage++; // The error event
 
@@ -157,7 +154,6 @@ public class SmokeTester : MonoBehaviour
 
         // Wait for screenshot capture to complete
         yield return null;
-        yield return null;
 
         currentMessage++; // The message event
 
@@ -175,7 +171,6 @@ public class SmokeTester : MonoBehaviour
         SentrySdk.CaptureException(ex);
 
         // Wait for screenshot capture to complete
-        yield return null;
         yield return null;
 
         currentMessage++; // The exception event
