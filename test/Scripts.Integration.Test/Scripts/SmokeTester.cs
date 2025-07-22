@@ -127,8 +127,7 @@ public class SmokeTester : MonoBehaviour
         Debug.LogError($"LogError(GUID)={guid}");
 
         // Wait for screenshot capture to complete
-        yield return new WaitForEndOfFrame();
-        yield return 0;
+        yield return new WaitForSeconds(1);
 
         currentMessage++; // The error event
 
@@ -152,8 +151,8 @@ public class SmokeTester : MonoBehaviour
 
         SentrySdk.CaptureMessage($"CaptureMessage(GUID)={guid}");
 
-        yield return new WaitForEndOfFrame(); // Wait for screenshot capture to complete
-        yield return 0;
+        // Wait for screenshot capture to complete
+        yield return new WaitForSeconds(1);
 
         currentMessage++; // The message event
 
@@ -170,8 +169,8 @@ public class SmokeTester : MonoBehaviour
         AddContext();
         SentrySdk.CaptureException(ex);
 
-        yield return new WaitForEndOfFrame(); // Wait for screenshot capture to complete
-        yield return 0;
+        // Wait for screenshot capture to complete
+        yield return new WaitForSeconds(1);
 
         currentMessage++; // The exception event
 
