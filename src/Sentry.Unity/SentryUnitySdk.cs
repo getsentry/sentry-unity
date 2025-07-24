@@ -138,7 +138,7 @@ internal class SentryUnitySdk
             }
             else
             {
-                _options.LogError("Capturing the attachment failed due to the current hub.");
+                _options.LogError("Capturing attachment was not possible because the current hub is of type {0}.", Sentry.SentrySdk.CurrentHub?.GetType());
             }
         }
         catch (Exception ex)
