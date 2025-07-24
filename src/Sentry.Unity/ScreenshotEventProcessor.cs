@@ -13,11 +13,6 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
     private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
     private volatile int _isCapturingScreenshot;
 
-    internal Func<SentryUnityOptions, byte[]> ScreenshotCaptureFunction = SentryScreenshot.Capture;
-    internal Action<SentryId, SentryAttachment> AttachmentCaptureFunction = (eventId, attachment) =>
-        (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment);
-    internal Func<YieldInstruction> WaitForEndOfFrameFunction = () => new WaitForEndOfFrame();
-
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
 
     internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, ISentryMonoBehaviour sentryMonoBehaviour)
@@ -43,7 +38,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
 
         // WaitForEndOfFrame does not work in headless mode so we're making it configurable for CI.
         // See https://docs.unity3d.com/6000.1/Documentation/ScriptReference/WaitForEndOfFrame.html
-        yield return WaitForEndOfFrameFunction();
+        yield return WaitForEndOfFrame();
 
         try
         {
@@ -52,7 +47,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
                 yield break;
             }
 
-            var screenshotBytes = ScreenshotCaptureFunction(_options);
+            var screenshotBytes = CaptureScreenshot(_options);
             var attachment = new SentryAttachment(
                     AttachmentType.Default,
                     new ByteAttachmentContent(screenshotBytes),
@@ -61,7 +56,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
 
             _options.LogDebug("Screenshot captured for event {0}", eventId);
 
-            AttachmentCaptureFunction(eventId, attachment);
+            CaptureAttachment(eventId, attachment);
         }
         catch (Exception e)
         {
@@ -72,4 +67,13 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
             Interlocked.Exchange(ref _isCapturingScreenshot, 0);
         }
     }
+
+    internal virtual byte[] CaptureScreenshot(SentryUnityOptions options)
+        => SentryScreenshot.Capture(options);
+
+    internal virtual void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
+        => (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment);
+
+    internal virtual YieldInstruction WaitForEndOfFrame()
+        => new WaitForEndOfFrame();
 }

@@ -43,6 +43,9 @@ public class Builder
         PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
 #endif
 
+        Debug.Log("Builder: Setting application identifier");
+        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "io.sentry.unity.integrationtest");
+
         Debug.Log("Builder: Updating BuildPlayerOptions");
         var buildPlayerOptions = new BuildPlayerOptions
         {

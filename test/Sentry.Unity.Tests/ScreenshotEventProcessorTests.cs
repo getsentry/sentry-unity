@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
@@ -8,11 +9,34 @@ namespace Sentry.Unity.Tests;
 
 public class ScreenshotEventProcessorTests
 {
+    private class TestScreenshotEventProcessor : ScreenshotEventProcessor
+    {
+        public Func<SentryUnityOptions, byte[]> CaptureScreenshotFunc { get; set; }
+        public Action<SentryId, SentryAttachment> CaptureAttachmentAction { get; set; }
+        public Func<YieldInstruction> WaitForEndOfFrameFunc { get; set; }
+
+        public TestScreenshotEventProcessor(SentryUnityOptions options, ISentryMonoBehaviour sentryMonoBehaviour)
+            : base(options, sentryMonoBehaviour)
+        {
+            CaptureScreenshotFunc = _ => [0xFF, 0xD8, 0xFF];
+            CaptureAttachmentAction = (_, _) => { };
+            WaitForEndOfFrameFunc = () => new YieldInstruction();
+        }
+
+        internal override byte[] CaptureScreenshot(SentryUnityOptions options)
+            => CaptureScreenshotFunc.Invoke(options);
+
+        internal override void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
+            => CaptureAttachmentAction(eventId, attachment);
+
+        internal override YieldInstruction WaitForEndOfFrame()
+            => WaitForEndOfFrameFunc!.Invoke();
+    }
     [Test]
     public void Process_FirstCallInAFrame_StartsCoroutine()
     {
         var sentryMonoBehaviour = GetTestMonoBehaviour();
-        var screenshotProcessor = new ScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
 
         screenshotProcessor.Process(new SentryEvent());
 
@@ -23,18 +47,15 @@ public class ScreenshotEventProcessorTests
     public IEnumerator Process_ExecutesCoroutine_CapturesScreenshotAndCapturesAttachment()
     {
         var sentryMonoBehaviour = GetTestMonoBehaviour();
-        var screenshotProcessor = new ScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
 
         var capturedEventId = SentryId.Empty;
         SentryAttachment? capturedAttachment = null;
-        screenshotProcessor.AttachmentCaptureFunction = (eventId, attachment) =>
+        screenshotProcessor.CaptureAttachmentAction = (eventId, attachment) =>
         {
             capturedEventId = eventId;
             capturedAttachment = attachment;
         };
-
-        // Replace WaitForEndOfFrame to return immediately
-        screenshotProcessor.WaitForEndOfFrameFunction = () => null!;
 
         var eventId = SentryId.Create();
         var sentryEvent = new SentryEvent(eventId: eventId);
@@ -57,23 +78,20 @@ public class ScreenshotEventProcessorTests
     public IEnumerator Process_CalledMultipleTimesQuickly_OnlyExecutesScreenshotCaptureOnce()
     {
         var sentryMonoBehaviour = GetTestMonoBehaviour();
-        var screenshotProcessor = new ScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
 
         var screenshotCaptureCallCount = 0;
-        screenshotProcessor.ScreenshotCaptureFunction = _ =>
+        screenshotProcessor.CaptureScreenshotFunc = _ =>
         {
             screenshotCaptureCallCount++;
             return [0];
         };
 
         var attachmentCaptureCallCount = 0;
-        screenshotProcessor.AttachmentCaptureFunction = (_, _) =>
+        screenshotProcessor.CaptureAttachmentAction = (_, _) =>
         {
             attachmentCaptureCallCount++;
         };
-
-        // Replace WaitForEndOfFrame to return immediately
-        screenshotProcessor.WaitForEndOfFrameFunction = () => null!;
 
         // Process multiple events quickly (before any coroutine can complete)
         screenshotProcessor.Process(new SentryEvent());
