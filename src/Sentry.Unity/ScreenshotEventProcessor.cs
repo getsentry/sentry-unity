@@ -9,8 +9,13 @@ namespace Sentry.Unity;
 public class ScreenshotEventProcessor : ISentryEventProcessor
 {
     private readonly SentryUnityOptions _options;
-    private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
-    private bool _isCapturingScreenshot;
+private volatile int _isCapturingScreenshot = 0;
+
+// In Process method:
+if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
+{
+    _sentryMonoBehaviour.StartCoroutine(CaptureScreenshotCoroutine(@event.EventId));
+}
 
     internal Func<SentryUnityOptions, byte[]> ScreenshotCaptureFunction = SentryScreenshot.Capture;
     internal Action<SentryId, SentryAttachment> AttachmentCaptureFunction = (eventId, attachment) =>
