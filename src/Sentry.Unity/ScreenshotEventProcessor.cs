@@ -19,7 +19,7 @@ if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
 
     internal Func<SentryUnityOptions, byte[]> ScreenshotCaptureFunction = SentryScreenshot.Capture;
     internal Action<SentryId, SentryAttachment> AttachmentCaptureFunction = (eventId, attachment) =>
-        ((Hub)Sentry.SentrySdk.CurrentHub).CaptureAttachment(eventId, attachment);
+        (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment) ?? SentryId.Empty;
     internal Func<YieldInstruction> WaitForEndOfFrameFunction = () => new WaitForEndOfFrame();
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
