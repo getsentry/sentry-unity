@@ -43,9 +43,6 @@ public class Builder
         PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
 #endif
 
-        Debug.Log("Builder: Setting application identifier");
-        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "io.sentry.unity.integrationtest");
-
         Debug.Log("Builder: Updating BuildPlayerOptions");
         var buildPlayerOptions = new BuildPlayerOptions
         {
@@ -72,6 +69,9 @@ public class Builder
 
         if (target == BuildTarget.Android)
         {
+            Debug.Log("Builder: Setting application identifier");
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "io.sentry.unity.integrationtest");
+
             // Android does not support appending builds. We make sure the directory is clean
             var outputDir = Path.GetDirectoryName(args["buildPath"]);
             if (Directory.Exists(outputDir))
