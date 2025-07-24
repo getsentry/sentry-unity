@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
-using Sentry.Internal;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -125,26 +124,6 @@ internal class SentryUnitySdk
             : null;
 
         Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
-    }
-
-    internal void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
-    {
-        try
-        {
-            if (Sentry.SentrySdk.CurrentHub is Hub hub)
-            {
-                hub.CaptureAttachment(eventId, attachment);
-                _options.LogDebug("Attachment captured for event {0}", eventId);
-            }
-            else
-            {
-                _options.LogError("Capturing attachment was not possible because the current hub is of type {0}.", Sentry.SentrySdk.CurrentHub?.GetType());
-            }
-        }
-        catch (Exception ex)
-        {
-            _options.DiagnosticLogger?.LogError(ex, "Failed to capture attachment for event {0}", eventId);
-        }
     }
 
     internal static void SetUpWindowsPlayerCaching(SentryUnitySdk unitySdk, SentryUnityOptions options)
