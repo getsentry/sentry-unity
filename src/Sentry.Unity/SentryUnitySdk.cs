@@ -178,7 +178,7 @@ internal class SentryUnitySdk
         {
             options.AddEventProcessor(new ViewHierarchyEventProcessor(options));
         }
-        if (options.AttachScreenshot)
+        if (!ApplicationAdapter.Instance.IsEditor && options.AttachScreenshot)
         {
             options.AddEventProcessor(new ScreenshotEventProcessor(options));
         }

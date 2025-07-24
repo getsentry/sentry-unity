@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading;
 using Sentry.Extensibility;
 using Sentry.Internal;
 using UnityEngine;
@@ -9,17 +10,12 @@ namespace Sentry.Unity;
 public class ScreenshotEventProcessor : ISentryEventProcessor
 {
     private readonly SentryUnityOptions _options;
-private volatile int _isCapturingScreenshot = 0;
-
-// In Process method:
-if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
-{
-    _sentryMonoBehaviour.StartCoroutine(CaptureScreenshotCoroutine(@event.EventId));
-}
+    private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
+    private volatile int _isCapturingScreenshot;
 
     internal Func<SentryUnityOptions, byte[]> ScreenshotCaptureFunction = SentryScreenshot.Capture;
     internal Action<SentryId, SentryAttachment> AttachmentCaptureFunction = (eventId, attachment) =>
-        (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment) ?? SentryId.Empty;
+        (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment);
     internal Func<YieldInstruction> WaitForEndOfFrameFunction = () => new WaitForEndOfFrame();
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
@@ -33,11 +29,11 @@ if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
     public SentryEvent Process(SentryEvent @event)
     {
         // Only ever capture one screenshot per frame
-        if (!_isCapturingScreenshot)
+        if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
         {
-            _isCapturingScreenshot = true;
             _sentryMonoBehaviour.StartCoroutine(CaptureScreenshotCoroutine(@event.EventId));
         }
+
         return @event;
     }
 
@@ -51,6 +47,11 @@ if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
 
         try
         {
+            if (_options.BeforeCaptureScreenshotInternal?.Invoke() is false)
+            {
+                yield break;
+            }
+
             var screenshotBytes = ScreenshotCaptureFunction(_options);
             var attachment = new SentryAttachment(
                     AttachmentType.Default,
@@ -68,7 +69,7 @@ if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
         }
         finally
         {
-            _isCapturingScreenshot = false;
+            Interlocked.Exchange(ref _isCapturingScreenshot, 0);
         }
     }
 }
