@@ -48,6 +48,12 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
             }
 
             var screenshotBytes = CaptureScreenshot(_options);
+            if (screenshotBytes.Length == 0)
+            {
+                _options.LogWarning("Screenshot capture returned empty data for event {0}", eventId);
+                yield break;
+            }
+
             var attachment = new SentryAttachment(
                     AttachmentType.Default,
                     new ByteAttachmentContent(screenshotBytes),

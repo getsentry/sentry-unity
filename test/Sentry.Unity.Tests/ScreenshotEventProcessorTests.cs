@@ -106,6 +106,33 @@ public class ScreenshotEventProcessorTests
         Assert.AreEqual(1, attachmentCaptureCallCount);
     }
 
+    [UnityTest]
+    public IEnumerator Process_EmptyScreenshotData_SkipsAttachmentCapture()
+    {
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
+
+        screenshotProcessor.CaptureScreenshotFunc = _ => [];
+
+        var attachmentCaptureCallCount = 0;
+        screenshotProcessor.CaptureAttachmentAction = (_, _) =>
+        {
+            attachmentCaptureCallCount++;
+        };
+
+        var eventId = SentryId.Create();
+        var sentryEvent = new SentryEvent(eventId: eventId);
+
+        screenshotProcessor.Process(sentryEvent);
+
+        // Wait for the coroutine to complete - need to wait for processing
+        yield return null;
+        yield return null;
+
+        Assert.IsTrue(sentryMonoBehaviour.StartCoroutineCalled);
+        Assert.AreEqual(0, attachmentCaptureCallCount);
+    }
+
     private static TestSentryMonoBehaviour GetTestMonoBehaviour()
     {
         var gameObject = new GameObject("ScreenshotProcessorTest");
