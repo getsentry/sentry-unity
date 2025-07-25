@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/1_Bugfarm.unity
+    path: Assets/Scenes/1_BugFarm.unity
     guid: ea1c53ffa9f3c482287ee84d42ea0db4
   - enabled: 1
     path: Assets/Scenes/2_NativeSupport.unity
@@ -17,4 +17,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/4_ThreadedSamples.unity
     guid: 52dfe3b1eabb64c3db9961011aac82b0
+  - enabled: 1
+    path: Assets/Scenes/5_ForceCrashSamples.unity
+    guid: bebd1540a98b8417cae8c44fa897aebc
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0
