@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ namespace Sentry.Unity;
 internal interface ISentryMonoBehaviour
 {
     event Action? ApplicationResuming;
+    public Coroutine StartCoroutine(IEnumerator routine);
 }
 
 /// <summary>

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK now waits for 'End of Frame' before capturing a screenshot. This should address any blank or malformed
+  screenshots previously attached to events. The SDK now also only captures one screenshot for the first error event in
+  each individual frame. ([#2240](https://github.com/getsentry/sentry-unity/pull/2240))
+
 ### Dependencies
 
 - Bump CLI from v2.47.1 to v2.50.2 ([#2245](https://github.com/getsentry/sentry-unity/pull/2245), [#2250](https://github.com/getsentry/sentry-unity/pull/2250))

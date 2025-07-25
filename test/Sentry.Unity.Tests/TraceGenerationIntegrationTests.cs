@@ -93,11 +93,4 @@ public class TraceGenerationIntegrationTests
 
         Assert.AreNotEqual(initialPropagationContext, scope.PropagationContext);
     }
-
-    internal class TestSentryMonoBehaviour : ISentryMonoBehaviour
-    {
-        public event Action? ApplicationResuming;
-
-        public void ResumeApplication() => ApplicationResuming?.Invoke();
-    }
 }
