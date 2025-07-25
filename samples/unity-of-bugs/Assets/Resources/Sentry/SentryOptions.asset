@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: SentryOptions
   m_EditorClassIdentifier: 
   <Enabled>k__BackingField: 1
-  <Dsn>k__BackingField: https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.us.sentry.io/4504604988538880
+  <Dsn>k__BackingField: 
   <CaptureInEditor>k__BackingField: 1
   <EnableLogDebouncing>k__BackingField: 0
   <DebounceTimeLog>k__BackingField: 1000
   <DebounceTimeWarning>k__BackingField: 1000
   <DebounceTimeError>k__BackingField: 1000
-  <TracesSampleRate>k__BackingField: 1
+  <TracesSampleRate>k__BackingField: 0
   <AutoStartupTraces>k__BackingField: 1
   <AutoSceneLoadTraces>k__BackingField: 1
   <AutoAwakeTraces>k__BackingField: 0
@@ -27,11 +27,11 @@ MonoBehaviour:
   <AutoSessionTrackingInterval>k__BackingField: 30000
   <ReleaseOverride>k__BackingField: 
   <EnvironmentOverride>k__BackingField: 
-  <AttachStacktrace>k__BackingField: 1
-  <AttachScreenshot>k__BackingField: 1
+  <AttachStacktrace>k__BackingField: 0
+  <AttachScreenshot>k__BackingField: 0
   <ScreenshotQuality>k__BackingField: 1
   <ScreenshotCompression>k__BackingField: 75
-  <AttachViewHierarchy>k__BackingField: 1
+  <AttachViewHierarchy>k__BackingField: 0
   <MaxViewHierarchyRootObjects>k__BackingField: 100
   <MaxViewHierarchyObjectChildCount>k__BackingField: 20
   <MaxViewHierarchyDepth>k__BackingField: 10
@@ -69,8 +69,7 @@ MonoBehaviour:
   <Il2CppLineNumberSupportEnabled>k__BackingField: 1
   <RuntimeOptionsConfiguration>k__BackingField: {fileID: 0}
   <BuildTimeOptionsConfiguration>k__BackingField: {fileID: 0}
-  <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: cea63afb7c75f429799422326f926abe,
-    type: 2}
+  <OptionsConfiguration>k__BackingField: {fileID: 0}
   <Debug>k__BackingField: 1
-  <DebugOnlyInEditor>k__BackingField: 0
-  <DiagnosticLevel>k__BackingField: 0
+  <DebugOnlyInEditor>k__BackingField: 1
+  <DiagnosticLevel>k__BackingField: 2
