@@ -175,7 +175,8 @@ jobs:
         run: |
           # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
           rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
+          # Use tar with extended attributes to preserve XCFramework signatures
+          tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build --xattrs --xattrs-include="*"
 
       # Upload runtime initialization build
       - name: Upload test app
@@ -300,7 +301,10 @@ jobs:
           name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}-runtime
 
       - name: Extract test app
-        run: tar -xvzf test-app-runtime.tar.gz
+        shell: bash
+        run: |
+          # Use tar with extended attributes to preserve XCFramework signatures
+          tar -xvzf test-app-runtime.tar.gz --xattrs --xattrs-include="*"
 
       - name: Run (WebGL)
         if: ${{ matrix.platform == 'WebGL' }}

@@ -20,7 +20,13 @@ if (Test-Path -Path "$PackageReleaseOutput")
     Remove-Item -Path "$PackageReleaseOutput" -Recurse
 }
 
-Expand-Archive -LiteralPath "$(ProjectRoot)/$packageFile" -DestinationPath "$PackageReleaseOutput"
+# Use tar to extract and preserve XCFramework signatures and symlinks
+if ($IsLinux -or $IsMacOS) {
+    New-Item -Path "$PackageReleaseOutput" -ItemType Directory -Force
+    bash -c "cd `"$PackageReleaseOutput`" && tar -xzf `"$(ProjectRoot)/$packageFile`" --xattrs --xattrs-include=`"*`""
+} else {
+    Expand-Archive -LiteralPath "$(ProjectRoot)/$packageFile" -DestinationPath "$PackageReleaseOutput"
+}
 Write-Host "OK"
 
 If (-not(Test-Path -Path "$PackageReleaseOutput"))

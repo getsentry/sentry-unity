@@ -31,7 +31,10 @@ jobs:
           name: testapp-ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
 
       - name: Extract app project
-        run: tar -xvzf test-app-${env:INIT_TYPE}.tar.gz
+        shell: bash
+        run: |
+          # Use tar with extended attributes to preserve XCFramework signatures
+          tar -xvzf test-app-${INIT_TYPE}.tar.gz --xattrs --xattrs-include="*"
 
       - name: iOS smoke test
         run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "16.1"
