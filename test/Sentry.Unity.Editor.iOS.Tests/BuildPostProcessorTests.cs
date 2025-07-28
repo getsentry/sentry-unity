@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
+using UnityEditor;
 using UnityEditor.Build;
 
 namespace Sentry.Unity.Editor.iOS.Tests;
@@ -29,7 +30,7 @@ public class BuildPostProcessorTests
 
         // Test setup for output Xcode project
         var testXcodeProjectPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestFiles", "2019_4");
-        SentryFileUtil.CopyDirectory(testXcodeProjectPath, _outputProjectPath);
+        FileUtil.CopyFileOrDirectory(testXcodeProjectPath, _outputProjectPath);
     }
 
     [TearDown]

@@ -215,11 +215,9 @@ Expected to exist:
       Command="unzip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip -d $(SentryCocoaCache)" />
 
     <!-- Set up the iOS support -->
-    <ItemGroup>
-      <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
-      <xcframeworkdPath Include="$(SentryCocoaCache)/Sentry-Dynamic.xcframework/**/*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(xcframeworkdPath)" DestinationFiles="@(xcframeworkdPath->'$(SentryiOSArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <MakeDir Directories="$(SentryiOSArtifactsDestination)" />
+    <!-- Use cp -R to preserve code signatures instead of MSBuild Copy task -->
+    <Exec Command="cp -R &quot;$(SentryCocoaCache)Sentry-Dynamic.xcframework/.&quot; &quot;$(SentryiOSArtifactsDestination)&quot;" />
     <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to set up the iOS SDK." />
 
     <!-- Set up the macOS support -->

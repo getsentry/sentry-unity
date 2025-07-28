@@ -196,7 +196,30 @@ public static class BuildPostProcess
             logger?.LogDebug("Copying from: '{0}' to '{1}'", sourcePath, targetPath);
 
             Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(targetPath)));
-            FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
+
+            // Use cp -R instead of FileUtil.CopyFileOrDirectory to preserve code signatures
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "cp",
+                    Arguments = $"-R \"{sourcePath}\" \"{targetPath}\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                var error = process.StandardError.ReadToEnd();
+                logger?.LogError("Failed to copy framework with cp command: {0}", error);
+                // Fallback to Unity's method if cp fails
+                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
+            }
         }
 
         if (!Directory.Exists(targetPath))
