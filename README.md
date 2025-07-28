@@ -40,11 +40,13 @@ Blog posts:
 
 [![YouTube Video of Setup Sentry SDK with Unity](https://img.youtube.com/vi/YKCRSA7TOc/0.jpg)](https://www.youtube.com/watch?v=-YKCRSA7TOc)
 
-## Legacy SDK
+## Supported Unity Versions
 
-If you are using Unity 5.6 or 2018, these are not supported by this SDK. There are no plans to support versions of Unity older than **2019.4**.
+This SDK is tested with Unity 2020.3 onwards.
 
-Sentry offered a minimalistic but stable SDK called [_sentry-unity-lite_](https://github.com/getsentry/sentry-unity-lite). It's available on a different repository. That SDK is now deprecated but is still compatible with Sentry server.
+If you're using Unity 2019.4, there is compatibility with this SDK up to major version 3. On [4.0.0 it's being dropped](https://github.com/getsentry/sentry-unity/releases/tag/4.0.0-beta.0) making the lowest version 2020.3.
+If you're using Unity 5.6 or 2018, these are not supported by this SDK. Sentry offered a minimalistic but stable SDK called [_sentry-unity-lite_](https://github.com/getsentry/sentry-unity-lite). It's available on a different repository. That SDK is now deprecated but is still compatible with Sentry server.
+
 
 ## Resources
 
