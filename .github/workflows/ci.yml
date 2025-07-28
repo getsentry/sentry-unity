@@ -355,7 +355,7 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "$UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "$env:UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
         env:
           UNITY_SCRIPT_ARG: unity${{ matrix.unity-version }}
 
