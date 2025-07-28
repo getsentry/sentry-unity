@@ -217,8 +217,6 @@ public static class BuildPostProcess
             {
                 var error = process.StandardError.ReadToEnd();
                 logger?.LogError("Failed to copy framework with cp command: {0}", error);
-                // Fallback to Unity's method if cp fails
-                FileUtil.CopyFileOrDirectory(sourcePath, targetPath);
             }
         }
 
