@@ -31,11 +31,11 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "$UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "$env:UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
         env:
           UNITY_SCRIPT_ARG: unity${{ env.UNITY_VERSION }}
 
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
+      - run: echo "::add-mask::\"$LICENSE_SERVER_URL\""
         env:
           LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
