@@ -170,19 +170,15 @@ jobs:
 
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$UNITY_PATH"
-        env:
-          UNITY_PATH: ${{ env.UNITY_PATH }}
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$UNITY_PATH" -Platform "$BUILD_PLATFORM" -CheckSymbols
         env:
-          UNITY_PATH: ${{ env.UNITY_PATH }}
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       - name: Build Project
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UNITY_PATH" -Platform "$BUILD_PLATFORM" -CheckSymbols:$$CHECK_SYMBOLS -UnityVersion "$UNITY_VERSION"
         env:
-          UNITY_PATH: ${{ env.UNITY_PATH }}
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           CHECK_SYMBOLS: ${{ matrix.check_symbols }}
           UNITY_VERSION: ${{ matrix.unity-version }}
@@ -392,8 +388,6 @@ jobs:
 
       - name: Build without Sentry SDK
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UNITY_PATH"
-        env:
-          UNITY_PATH: ${{ env.UNITY_PATH }}
 
       - name: Download UPM package
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -405,18 +399,13 @@ jobs:
 
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$UNITY_PATH"
-        env:
-          UNITY_PATH: ${{ env.UNITY_PATH }}
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$UNITY_PATH" -CheckSymbols
-        env:
-          UNITY_PATH: ${{ env.UNITY_PATH }}
 
       - name: Build with Sentry SDK
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UNITY_PATH" -CheckSymbols -UnityVersion "$UNITY_VERSION"
         env:
-          UNITY_PATH: ${{ env.UNITY_PATH }}
           UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Run Smoke Test
