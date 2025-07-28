@@ -31,9 +31,13 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${env:UNITY_VERSION}")" >> $env:GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "$UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
+        env:
+          UNITY_SCRIPT_ARG: unity${{ env.UNITY_VERSION }}
 
-      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo "::add-mask::$LICENSE_SERVER_URL"
+        env:
+          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
       - name: Restore Unity Packages
         uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
@@ -51,8 +55,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh "${UNITY_VERSION}" 'ios' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'ios' "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
+        env:
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
       - name: Install .NET SDK
         if: runner.os != 'Windows'
@@ -61,7 +67,9 @@ jobs:
           global-json-file: src/sentry-dotnet/global.json
         
       - name: Install Android dotnet workflow
-        run: dotnet workload install android --temp-dir "${env:RUNNER_TEMP}"
+        run: dotnet workload install android --temp-dir "$RUNNER_TEMP"
+        env:
+          RUNNER_TEMP: ${{ env.RUNNER_TEMP }}
 
       - name: Download CLI
         run: ./scripts/download-sentry-cli.ps1

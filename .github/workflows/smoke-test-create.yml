@@ -23,7 +23,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
-    - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+    - run: echo "::add-mask::$LICENSE_SERVER_URL"
+      env:
+        LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
     - name: Docker Login
       uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
@@ -33,11 +35,16 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Start the Unity docker container
-      run: ./scripts/ci-docker.sh "${{ env.UNITY_VERSION }}" 'base' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+      run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'base' "$UNITY_LICENSE_SERVER_CONFIG"
       shell: bash
+      env:
+        UNITY_VERSION: ${{ env.UNITY_VERSION }}
+        UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
     - name: Create new Project
-      run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+      run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "$UNITY_PATH"
+      env:
+        UNITY_PATH: ${{ env.UNITY_PATH }}
 
     # We create tar explicitly because upload-artifact is slow for many files.
     - name: Create archive
