@@ -57,7 +57,8 @@ jobs:
           echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
 
       - name: Get submodule status
-        run: git submodule status --cached "$SUBMODULES" | tee submodules-status
+        run: git submodule status --cached $SUBMODULES | tee submodules-status
+        shell: bash
         env:
           SUBMODULES: ${{ steps.env.outputs.submodules }}
 
