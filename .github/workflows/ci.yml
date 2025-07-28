@@ -177,7 +177,7 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$env:CHECK_SYMBOLS -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$([System.Convert]::ToBoolean($env:CHECK_SYMBOLS)) -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           CHECK_SYMBOLS: ${{ matrix.check_symbols }}
