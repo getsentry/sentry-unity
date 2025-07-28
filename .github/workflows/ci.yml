@@ -357,7 +357,6 @@ jobs:
         id: env
         run: echo "unityVersion=$(./scripts/ci-env.ps1 "$UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
         env:
-          UNITY_VERSION: ${{ matrix.unity-version }}
           UNITY_SCRIPT_ARG: unity${{ matrix.unity-version }}
 
       - name: Setup Unity
