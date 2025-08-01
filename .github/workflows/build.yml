@@ -73,18 +73,11 @@ jobs:
           path: package-dev/Plugins/Android
           wait-timeout: 3600
 
-      - name: Download iOS SDK
+      - name: Download Cocoa SDK
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
-          name: iOS-sdk
-          path: package-dev/Plugins/iOS
-          wait-timeout: 3600
-
-      - name: Download macOS SDK
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
-        with:
-          name: macOS-sdk
-          path: package-dev/Plugins/macOS
+          name: Cocoa-sdk
+          path: package-dev/Plugins
           wait-timeout: 3600
 
       - name: Download Linux SDK
