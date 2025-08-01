@@ -197,34 +197,10 @@ Expected to exist:
 
     <Message Importance="High" Text="Setting up the Cocoa SDK version '$(CocoaVersion)'." />
 
-    <!-- Clean cache if version does not exist to get rid of old versions -->
-    <RemoveDir
-      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')"
-      Directories="$(SentryCocoaCache)" />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/setup-cocoa-sdk.ps1&quot; -RepoRoot &quot;$(RepoRoot)&quot; -CocoaVersion &quot;$(CocoaVersion)&quot; -CocoaCache &quot;$(SentryCocoaCache)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot;" />
 
-    <!-- Create cache directory -->
-    <MakeDir Condition="!Exists('$(SentryCocoaCache)')" Directories="$(SentryCocoaCache)" />
-
-    <!-- Download the Cocoa SDK as pre-built .xcframework -->
-    <Exec
-      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip')"
-      Command="curl -L https://github.com/getsentry/sentry-cocoa/releases/download/$(CocoaVersion)/Sentry-Dynamic.xcframework.zip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip" />
-
-    <Exec
-      Condition="!Exists('$(SentryCocoaCache)Sentry-Dynamic.xcframework')"
-      Command="unzip -o $(SentryCocoaCache)Sentry-Dynamic-$(CocoaVersion).xcframework.zip -d $(SentryCocoaCache)" />
-
-    <!-- Set up the iOS support -->
-    <ItemGroup>
-      <!-- Itemgroup for the output Sentry.framework so we have access to '%(RecursiveDir)' when copying -->
-      <xcframeworkdPath Include="$(SentryCocoaCache)/Sentry-Dynamic.xcframework/**/*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(xcframeworkdPath)" DestinationFiles="@(xcframeworkdPath->'$(SentryiOSArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <!-- Verify the setup was successful -->
     <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to set up the iOS SDK." />
-
-    <!-- Set up the macOS support -->
-    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/Sentry.framework/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib" />
-    <Copy SourceFiles="$(SentryCocoaCache)Sentry-Dynamic.xcframework/macos-arm64_arm64e_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry" DestinationFiles="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" />
     <Error Condition="(!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM'))" Text="Failed to set up the macOS SDK." />
   </Target>
 
@@ -610,4 +586,5 @@ void PrintFailedTests(XElement element)
     <Message Importance="High" Text="Restoring package-dev/Plugins to the latest git commit" />
     <Exec WorkingDirectory="$(RepoRoot)" Command="git restore package-dev/Plugins" />
   </Target>
+
 </Project>
