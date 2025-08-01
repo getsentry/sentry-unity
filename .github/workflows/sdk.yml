@@ -63,6 +63,7 @@ jobs:
           fi
 
       - name: Get submodule status
+        shell: bash
         run: |
           if [[ "${{ steps.env.outputs.submodules }}" != "" ]]; then
             git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
@@ -98,6 +99,7 @@ jobs:
 
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
+        shell: bash
         run: |
           if [[ "${{ steps.env.outputs.submodules }}" != "" ]]; then
             git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
