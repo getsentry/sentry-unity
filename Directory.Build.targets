@@ -185,6 +185,7 @@ Expected to exist:
   </Target>
 
   <!-- Downloads and sets up the Cocoa SDK: dotnet msbuild /t:SetupCocoaSDK src/Sentry.Unity -->
+  <!-- Note: This target is now handled by CI for official builds, but kept for local development -->
   <Target Name="SetupCocoaSDK"
       Condition="!$([MSBuild]::IsOSPlatform('Windows')) AND '$(MSBuildProjectName)' == 'Sentry.Unity'
         And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
@@ -576,6 +577,7 @@ void PrintFailedTests(XElement element)
       <SDK Include="Windows"/>
       <SDK Include="Android"/>
       <SDK Include="Linux"/>
+      <SDK Include="macOS"/>
     </ItemGroup>
     <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
     <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />
