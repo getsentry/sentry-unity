@@ -57,19 +57,13 @@ jobs:
 
           echo "submodulesPath=$submodules" >> $GITHUB_OUTPUT
           if [[ "$submodules" == "" ]]; then
-            echo "submodules=" >> $GITHUB_OUTPUT
+            echo "submodules=src/sentry-dotnet" >> $GITHUB_OUTPUT
           else
             echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
           fi
 
       - name: Get submodule status
-        shell: bash
-        run: |
-          if [[ "${{ steps.env.outputs.submodules }}" != "" ]]; then
-            git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
-          else
-            echo "No submodules required for ${{ env.TARGET }}" | tee submodules-status
-          fi
+        run: git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
 
       - run: |
           if [[ "${{ env.TARGET }}" == "Cocoa" ]]; then
@@ -103,17 +97,11 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
 
-      - name: Update submodules
-        if: steps.cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          if [[ "${{ steps.env.outputs.submodules }}" != "" ]]; then
-            git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
-          fi
-
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: |
+          git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
+          dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload build logs on failure
         if: ${{ failure() }}
