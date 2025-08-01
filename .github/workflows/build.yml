@@ -91,7 +91,7 @@ jobs:
         run: docker exec unity dotnet build -c Release
 
       - name: Install assemblyalias
-        run: docker exec unity dotnet tool install --global Alias --version 0.4.3
+        run: docker exec unity dotnet tool install --global Alias --version 0.4.3 --allow-roll-forward
 
       - name: Alias editor assemblies
         run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;Mono.Cecil*"
