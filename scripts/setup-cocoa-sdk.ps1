@@ -49,7 +49,7 @@ if (-not (Test-Path $xcframeworkPath)) {
 
 Write-Host "Setting up iOS frameworks..." -ForegroundColor Yellow
 
-$iOSFrameworks = Get-ChildItem -Path $xcframeworkPath -Directory | Where-Object { $_.Name -like "ios-*" }
+$iOSFrameworks = Get-ChildItem -Path $xcframeworkPath -Directory | Where-Object { $_.Name -like "ios-*" -and $_.Name -notlike "*maccatalyst*" }
 if ($iOSFrameworks.Count -eq 0) {
     Write-Error "No iOS frameworks found in xcframework at: $xcframeworkPath"
     exit 1
