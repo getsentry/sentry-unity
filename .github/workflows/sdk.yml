@@ -105,9 +105,9 @@ jobs:
             git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           fi
           if [[ "${TARGET}" == "macOS" ]]; then
-            dotnet msbuild /t:SetupCocoaSDK /p:Configuration=Release src/Sentry.Unity
+            dotnet msbuild '/t:SetupCocoaSDK' '/p:Configuration=Release' src/Sentry.Unity
           else
-            dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+            dotnet msbuild "/t:Build${{ env.TARGET }}SDK" '/p:Configuration=Release' '/p:OutDir=other' src/Sentry.Unity
           fi
 
       - name: Upload build logs on failure
