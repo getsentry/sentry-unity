@@ -97,18 +97,22 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
 
-      - name: Build
+      - name: Update submodules
         if: steps.cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           if [[ "${{ steps.env.outputs.submodules }}" != "" ]]; then
             git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           fi
-          if [[ "${TARGET}" == "macOS" ]]; then
-            dotnet msbuild '/t:SetupCocoaSDK' '/p:Configuration=Release' src/Sentry.Unity
-          else
-            dotnet msbuild "/t:Build${{ env.TARGET }}SDK" '/p:Configuration=Release' '/p:OutDir=other' src/Sentry.Unity
-          fi
+
+      - name: Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          if ("${{ env.TARGET }}" -eq "macOS") {
+            dotnet msbuild /t:SetupCocoaSDK /p:Configuration=Release src/Sentry.Unity
+          } else {
+            dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          }
 
       - name: Upload build logs on failure
         if: ${{ failure() }}
