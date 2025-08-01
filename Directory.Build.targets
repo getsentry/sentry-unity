@@ -199,7 +199,6 @@ Expected to exist:
 
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/setup-cocoa-sdk.ps1&quot; -RepoRoot &quot;$(RepoRoot)&quot; -CocoaVersion &quot;$(CocoaVersion)&quot; -CocoaCache &quot;$(SentryCocoaCache)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot;" />
 
-    <!-- Verify the setup was successful -->
     <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to set up the iOS SDK." />
     <Error Condition="(!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM'))" Text="Failed to set up the macOS SDK." />
   </Target>
@@ -586,5 +585,4 @@ void PrintFailedTests(XElement element)
     <Message Importance="High" Text="Restoring package-dev/Plugins to the latest git commit" />
     <Exec WorkingDirectory="$(RepoRoot)" Command="git restore package-dev/Plugins" />
   </Target>
-
 </Project>
