@@ -56,7 +56,11 @@ jobs:
           fi
 
           echo "submodulesPath=$submodules" >> $GITHUB_OUTPUT
-          echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
+          if [[ "${TARGET}" == "macOS" ]]; then
+            echo "submodules=" >> $GITHUB_OUTPUT
+          else
+            echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get submodule status
         run: |
