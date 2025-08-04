@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+### Fixes
+
+- For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
+
 ### Dependencies
 
-- Bump .NET SDK from v5.12.0-14-g25a894dd to v5.13.0 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259))
+- Bump .NET SDK from v5.12.0 to v5.13.0 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5130)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.13.0)
 
