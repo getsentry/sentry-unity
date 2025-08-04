@@ -49,17 +49,27 @@ jobs:
         run: |
           if [[ "${TARGET}" == "Android" ]]; then
             submodules="modules/sentry-java"
+          elif [[ "${TARGET}" == "Cocoa" ]]; then
+            submodules=""
           else
             submodules="modules/sentry-native"
           fi
-
           echo "submodulesPath=$submodules" >> $GITHUB_OUTPUT
-          echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
-
+          if [[ "$submodules" == "" ]]; then
+            echo "submodules=src/sentry-dotnet" >> $GITHUB_OUTPUT
+          else
+            echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
+          fi
       - name: Get submodule status
         run: git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
 
-      - run: cp -r package-dev/Plugins/${{ env.TARGET }} sdk-static || echo "never mind, no files checked in..."
+      - run: |
+          if [[ "${{ env.TARGET }}" == "Cocoa" ]]; then
+            cp -r package-dev/Plugins/iOS sdk-static/ || echo "never mind, no iOS files checked in..."
+            cp -r package-dev/Plugins/macOS sdk-static/ || echo "never mind, no macOS files checked in..."
+          else
+            cp -r package-dev/Plugins/${{ env.TARGET }} sdk-static || echo "never mind, no files checked in..."
+          fi
         shell: bash
 
       - name: Restore from cache
@@ -102,6 +112,8 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ env.TARGET }}-sdk
-          path: package-dev/Plugins/${{ env.TARGET }}
+          path: |
+            ${{ env.TARGET == 'Cocoa' && 'package-dev/Plugins/iOS' || format('package-dev/Plugins/{0}', env.TARGET) }}
+            ${{ env.TARGET == 'Cocoa' && 'package-dev/Plugins/macOS' || '' }}
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
