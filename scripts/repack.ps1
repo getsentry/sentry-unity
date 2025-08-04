@@ -1,12 +1,10 @@
 # Clean up previous release artifacts
 if (Test-Path "package-release") {
     Remove-Item -Path "package-release" -Recurse -Force
-    Write-Host "Removed package-release directory"
 }
 
 if (Test-Path "package-release.zip") {
     Remove-Item -Path "package-release.zip" -Force
-    Write-Host "Removed package-release.zip file"
 }
 
 assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
