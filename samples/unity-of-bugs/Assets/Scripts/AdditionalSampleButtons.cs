@@ -3,7 +3,7 @@ using Sentry;
 using Sentry.Unity;
 using UnityEngine;
 
-public class AdditionalSamplesButtons : MonoBehaviour
+public class AdditionalSampleButtons : MonoBehaviour
 {
     public void SetUser()
     {
