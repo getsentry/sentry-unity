@@ -4,6 +4,7 @@
 *.user
 .idea/
 .DS_Store
+.claude
 obj/
 bin/
 sentry-unity/build:*
