@@ -11,7 +11,7 @@ internal static class NativeOptions
     {
         var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
         var nativeOptions = $@"#import <Foundation/Foundation.h>
-#import <Sentry/SentryOptions+HybridSDKs.h>
+#import <Sentry/SentryOptionsInternal.h>
 #import <Sentry/PrivateSentrySDKOnly.h>
 
 // IMPORTANT: Changes to this file will be lost!
@@ -41,7 +41,7 @@ static SentryOptions* getSentryOptions()
     }};
 
     NSError *error = nil;
-    SentryOptions* options = [[SentryOptions alloc] initWithDict:optionsDictionary didFailWithError:&error];
+    SentryOptions *options = [SentryOptionsInternal initWithDict:optionsDictionary didFailWithError:&error];
     if (error != nil)
     {{
         NSLog(@""%@"",[error localizedDescription]);
