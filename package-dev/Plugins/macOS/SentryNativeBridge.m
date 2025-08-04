@@ -90,7 +90,7 @@ int SentryNativeBridgeStartWithOptions(const void *options)
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
     NSError *error = nil;
 
-    id sentryOptions = [[SentryOptionsInternal alloc]
+    id sentryOptions = [SentryOptionsInternal
         performSelector:@selector(initWithDict:didFailWithError:)
         withObject:dictOptions withObject:&error];
 
