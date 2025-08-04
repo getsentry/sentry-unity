@@ -111,8 +111,19 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ env.TARGET == 'Cocoa' }}
         with:
           name: ${{ env.TARGET }}-sdk
-          path: package-dev/Plugins/
+          path: |
+            package-dev/Plugins/iOS
+            package-dev/Plugins/macOS
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ env.TARGET != 'Cocoa' }}
+        with:
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/${{ env.TARGET }}
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
