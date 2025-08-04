@@ -95,7 +95,7 @@ try {
 }
 
 Write-Host "Appending '~' for Unity to ignore the framework"
-Move-Item -Path $xcframeworkDestination -Destination $iOSDestination
+Move-Item -Path $xcframeworkDestination -Destination $iOSDestination -Force
 
 $iOSInfoPlist = Join-Path $iOSDestination "Info.plist"
 if (-not (Test-Path $iOSDestination) -or -not (Test-Path $iOSInfoPlist)) {
