@@ -102,7 +102,8 @@ jobs:
           dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload build logs on failure
-        if: ${{ failure() }}
+        # No build logs for Cocoa SDK as we assemble the xcframework from a downloaded release artifact
+        if: ${{ failure() && env.TARGET != 'Cocoa' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           path: ${{ steps.env.outputs.submodulesPath }}/build.log
@@ -112,8 +113,6 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ env.TARGET }}-sdk
-          path: |
-            ${{ env.TARGET == 'Cocoa' && 'package-dev/Plugins/iOS' || format('package-dev/Plugins/{0}', env.TARGET) }}
-            ${{ env.TARGET == 'Cocoa' && 'package-dev/Plugins/macOS' || '' }}
+          path: package-dev/Plugins/
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
