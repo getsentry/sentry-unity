@@ -95,7 +95,7 @@ jobs:
           wait-timeout: 3600
 
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build -c Release
+        run: docker exec unity dotnet build -c Release -v:d
 
       - name: Install assemblyalias
         run: docker exec unity dotnet tool install --global Alias --version 0.4.3 --allow-roll-forward
