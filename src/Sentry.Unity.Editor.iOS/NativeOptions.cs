@@ -41,7 +41,7 @@ static SentryOptions* getSentryOptions()
     }};
 
     NSError *error = nil;
-    SentryOptions *sentryOptions = [SentryOptionsInternal alloc initWithDict:optionsDictionary didFailWithError:&error];
+    SentryOptions *sentryOptions = [SentryOptionsInternal initWithDict:optionsDictionary didFailWithError:&error];
     if (error != nil)
     {{
         NSLog(@""%@"",[error localizedDescription]);
