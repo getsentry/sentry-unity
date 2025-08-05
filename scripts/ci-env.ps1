@@ -16,10 +16,10 @@ switch ($name) {
     "unity2023" {
         return "2023.2.20f1"
     }
-    "unity6000" {
+    "unity6000.0" {
         return "6000.0.54f1"
     }
-    "unity6100" {
+    "unity6000.1" {
         return "6000.1.12f1"
     }
     Default {
