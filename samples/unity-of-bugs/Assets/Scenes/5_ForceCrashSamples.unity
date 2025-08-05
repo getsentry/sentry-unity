@@ -884,7 +884,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 253040317}
-        m_TargetAssemblyTypeName: UnityForceCrash, Assembly-CSharp
+        m_TargetAssemblyTypeName: ForceCrashButtons, Assembly-CSharp
         m_MethodName: FatalError
         m_Mode: 1
         m_Arguments:
@@ -1254,7 +1254,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 253040317}
-        m_TargetAssemblyTypeName: UnityForceCrash, Assembly-CSharp
+        m_TargetAssemblyTypeName: ForceCrashButtons, Assembly-CSharp
         m_MethodName: PureVirtualFunction
         m_Mode: 1
         m_Arguments:
@@ -1387,7 +1387,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 253040317}
-        m_TargetAssemblyTypeName: UnityForceCrash, Assembly-CSharp
+        m_TargetAssemblyTypeName: ForceCrashButtons, Assembly-CSharp
         m_MethodName: AccessViolation
         m_Mode: 1
         m_Arguments:
@@ -1599,7 +1599,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 253040317}
-        m_TargetAssemblyTypeName: UnityForceCrash, Assembly-CSharp
+        m_TargetAssemblyTypeName: ForceCrashButtons, Assembly-CSharp
         m_MethodName: MonoAbort
         m_Mode: 1
         m_Arguments:
@@ -1732,7 +1732,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 253040317}
-        m_TargetAssemblyTypeName: UnityForceCrash, Assembly-CSharp
+        m_TargetAssemblyTypeName: ForceCrashButtons, Assembly-CSharp
         m_MethodName: Abort
         m_Mode: 1
         m_Arguments:
