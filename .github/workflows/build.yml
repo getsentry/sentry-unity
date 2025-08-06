@@ -73,6 +73,13 @@ jobs:
           path: package-dev/Plugins/Android
           wait-timeout: 3600
 
+      - name: Download Cocoa SDK
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
+        with:
+          name: Cocoa-sdk
+          path: package-dev/Plugins
+          wait-timeout: 3600
+
       - name: Download Linux SDK
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
@@ -88,7 +95,7 @@ jobs:
           wait-timeout: 3600
 
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build -c Release
+        run: docker exec unity dotnet build -c Release -v:d
 
       - name: Install assemblyalias
         run: docker exec unity dotnet tool install --global Alias --version 0.4.3 --allow-roll-forward
