@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-prefix: ['2020', '2021', '2022', '6000']
+        unity-prefix: ['2020.3', '2021.3', '2022.3', '6000.0', '6000.1']
     steps:
       - name: Find the latest Unity version
         id: version-select
@@ -61,7 +61,7 @@ jobs:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Update sample ProjectVersion.txt
-        if: ${{ matrix.unity-prefix == '2020' }}
+        if: ${{ matrix.unity-prefix == '2020.3' }}
         run: |
           "m_EditorVersion: ${{ steps.version-select.outputs.version }}`nm_EditorVersionWithRevision: ${{ steps.version-select.outputs.version }} (${{ steps.version-select.outputs.changeset }})" `
             | Out-File "samples\unity-of-bugs\ProjectSettings\ProjectVersion.txt"
@@ -69,7 +69,7 @@ jobs:
       - name: Update ci-env.ps1
         run: |
           $file = "scripts/ci-env.ps1"
-          $regexVersion = '${{ matrix.unity-prefix }}' + "[0-9.a-z]+"
+          $regexVersion = '${{ matrix.unity-prefix }}' + "\.[0-9]+[a-z][0-9]+"
           echo "Regex: $regexVersion"
           (Get-Content $file) -replace $regexVersion, '${{ steps.version-select.outputs.version }}' | Out-File $file
 
