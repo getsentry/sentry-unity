@@ -8,6 +8,7 @@ static Class SentryScope;
 static Class SentryBreadcrumb;
 static Class SentryUser;
 static Class SentryOptions;
+static Class SentryOptionsInternal;
 static Class SentryId;
 static Class SentrySpanId;
 static Class PrivateSentrySDKOnly;
@@ -44,11 +45,12 @@ int SentryNativeBridgeLoadLibrary()
                 }
             }
 
-            LOAD_CLASS_OR_BREAK(SentrySDK)
+            LOAD_SWIFT_CLASS_OR_BREAK(SentrySDK, _TtC6Sentry9SentrySDK)
             LOAD_CLASS_OR_BREAK(SentryScope)
             LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
             LOAD_CLASS_OR_BREAK(SentryUser)
             LOAD_CLASS_OR_BREAK(SentryOptions)
+            LOAD_CLASS_OR_BREAK(SentryOptionsInternal)
             LOAD_SWIFT_CLASS_OR_BREAK(SentryId, _TtC6Sentry8SentryId)
             LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
@@ -88,7 +90,7 @@ int SentryNativeBridgeStartWithOptions(const void *options)
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
     NSError *error = nil;
 
-    id sentryOptions = [[SentryOptions alloc]
+    id sentryOptions = [SentryOptionsInternal
         performSelector:@selector(initWithDict:didFailWithError:)
         withObject:dictOptions withObject:&error];
 

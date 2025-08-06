@@ -184,8 +184,8 @@ Expected to exist:
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-sentry-cli.ps1&quot;"></Exec>
   </Target>
 
-  <!-- Downloads and sets up the Cocoa SDK: dotnet msbuild /t:SetupCocoaSDK src/Sentry.Unity -->
-  <!-- Note: This target is now handled by CI for official builds, but kept for local development -->
+  <!-- Build the Cocoa SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
+  <!-- Note: Not actually building the Cocoa SDK - yet. We're downloading the release artifact and extract for iOS and macOS -->
   <Target Name="BuildCocoaSDK"
       Condition="!$([MSBuild]::IsOSPlatform('Windows')) AND '$(MSBuildProjectName)' == 'Sentry.Unity'
         And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
@@ -205,9 +205,9 @@ Expected to exist:
   </Target>
 
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
-  <Target Name="BuildAndroidSDK" 
+  <Target Name="BuildAndroidSDK"
           DependsOnTargets="DownloadCLI"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And !Exists('$(SentryAndroidArtifactsDestination)')" 
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And !Exists('$(SentryAndroidArtifactsDestination)')"
           BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)." />
     <Message Importance="High" Text="Building Sentry Android SDK." />

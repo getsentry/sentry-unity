@@ -1,4 +1,6 @@
-#include <Sentry/Sentry.h>
+#import <UIKit/UIKit.h>
+#import <MetricKit/MetricKit.h>
+#import <Sentry/Sentry-Swift.h>
 #include "SentryOptions.m"
 #include <UnityFramework/UnityFramework.h>
 

@@ -1,6 +1,8 @@
-#import <Sentry/PrivateSentrySDKOnly.h>
-#import <Sentry/SentryOptions+HybridSDKs.h>
 #import <Sentry/Sentry.h>
+#import <MetricKit/MetricKit.h>
+#import <Sentry/Sentry-Swift.h>
+#import <Sentry/PrivateSentrySDKOnly.h>
+#import <Sentry/SentryOptionsInternal.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,7 +38,7 @@ int SentryNativeBridgeStartWithOptions(const void *options)
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
     NSError *error = nil;
 
-    SentryOptions *sentryOptions = [[SentryOptions alloc] initWithDict:dictOptions didFailWithError:&error];
+    SentryOptions *sentryOptions = [SentryOptionsInternal initWithDict:dictOptions didFailWithError:&error];
     if (error != nil)
     {
         return 0;
