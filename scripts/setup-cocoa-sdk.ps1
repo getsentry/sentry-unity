@@ -19,6 +19,10 @@ param(
     [switch]$iOSOnly
 )
 
+Set-StrictMode -Version latest
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
+
 # Clean cache if version does not exist to get rid of old versions
 $zipFile = Join-Path $CocoaCache "Sentry-Dynamic-$CocoaVersion.xcframework.zip"
 if (-not (Test-Path $zipFile)) {
