@@ -7,6 +7,7 @@ public class SceneButtons : MonoBehaviour
     public void LoadNativeSupport() => SceneManager.LoadScene("2_NativeSupport");
     public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
     public void LoadThreadedSamples() => SceneManager.LoadScene("4_ThreadedSamples");
+    public void LoadForceCrashSamples() => SceneManager.LoadScene("5_ForceCrashSamples");
 
     public void CloseGame()
     {
