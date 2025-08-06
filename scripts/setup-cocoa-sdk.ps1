@@ -19,6 +19,10 @@ param(
     [switch]$iOSOnly
 )
 
+Set-StrictMode -Version latest
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
+
 # Clean cache if version does not exist to get rid of old versions
 $zipFile = Join-Path $CocoaCache "Sentry-Dynamic-$CocoaVersion.xcframework.zip"
 if (-not (Test-Path $zipFile)) {
@@ -95,7 +99,7 @@ try {
 }
 
 Write-Host "Appending '~' for Unity to ignore the framework"
-Move-Item -Path $xcframeworkDestination -Destination $iOSDestination
+Move-Item -Path $xcframeworkDestination -Destination $iOSDestination -Force
 
 $iOSInfoPlist = Join-Path $iOSDestination "Info.plist"
 if (-not (Test-Path $iOSDestination) -or -not (Test-Path $iOSInfoPlist)) {

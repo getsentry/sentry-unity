@@ -11,7 +11,7 @@ on:
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
-  LOWEST_SUPPORTED_UNITY_VERSION: 2020
+  LOWEST_SUPPORTED_UNITY_VERSION: 2020.3
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
 
@@ -56,7 +56,7 @@ jobs:
       fail-fast: false
       matrix:
         # Building the SDK with Unity 2022 and newer requires ns2.1 - skipping for now
-        unity-version: ["2020", "2021"]
+        unity-version: ["2020.3", "2021.3"]
     uses: ./.github/workflows/build.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -89,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
     uses: ./.github/workflows/smoke-test-create.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -103,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         platform: ["WebGL", "Linux"]
         include:
           - platform: WebGL
@@ -207,7 +207,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
     uses: ./.github/workflows/smoke-test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -226,7 +226,7 @@ jobs:
       matrix:
         api-level: [30, 31, 34] # last updated January 2025
         init-type: ["runtime", "buildtime"]
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
 
   smoke-test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
@@ -236,7 +236,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
     uses: ./.github/workflows/smoke-test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -249,7 +249,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         init-type: ["runtime", "buildtime"]
     uses: ./.github/workflows/smoke-test-compile-ios.yml
     with:
@@ -268,7 +268,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
         # - `iOS 17`: 86 %
@@ -289,7 +289,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         platform: ["WebGL", "Linux"]
     steps:
       - name: Checkout
@@ -327,7 +327,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2020", "2022", "6000", "6100"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         # os: ["windows", "macos"]
         os: ["windows"]
         include:
