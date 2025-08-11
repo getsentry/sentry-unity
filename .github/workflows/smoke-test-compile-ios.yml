@@ -16,7 +16,7 @@ defaults:
 jobs:
   compile:
     name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
-    runs-on: 'macos-latest'
+    runs-on: 'macos-14' # Pinning to get the oldest, supported version of iOS simulator
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       INIT_TYPE: ${{ inputs.init-type }}
