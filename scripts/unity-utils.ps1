@@ -60,9 +60,9 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         {
             Write-Host "::endgroup::"
         }
-        if ($stdout -match "No valid Unity Editor license found. Please activate your license.")
+        if ($stdout -match "No valid Unity Editor license found. Please activate your license." -or $stdout -match "Error building player because build target was unsupported")
         {
-            $msg = "Unity failed because it couldn't acquire a license."
+            $msg = if ($stdout -match "No valid Unity Editor license found") { "Unity failed because it couldn't acquire a license." } else { "Unity failed because build target was unsupported." }
             $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatchTotal.Elapsed.TotalSeconds
             $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
             if ($timeToSleep -gt 0)
