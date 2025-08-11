@@ -7,7 +7,9 @@ namespace Sentry.Unity.Editor.iOS;
 
 internal static class NativeMain
 {
-    public const string Include = @"#include <Sentry/Sentry.h>
+    public const string Include = @"#import <UIKit/UIKit.h>
+#import <MetricKit/MetricKit.h>
+#import <Sentry/Sentry-Swift.h>
 #include ""SentryOptions.m""
 ";
     private const string Init = @"
@@ -20,9 +22,11 @@ internal static class NativeMain
 
     public static void AddSentry(string pathToMain, IDiagnosticLogger? logger)
     {
+        logger?.LogInfo("Adding Sentry to 'main'.");
+
         if (!File.Exists(pathToMain))
         {
-            throw new FileNotFoundException("Could not find main.", pathToMain);
+            throw new FileNotFoundException("Could not find 'main'.", pathToMain);
         }
 
         var main = File.ReadAllText(pathToMain);
@@ -33,6 +37,8 @@ internal static class NativeMain
 
         var sentryMain = AddSentryToMain(main);
         File.WriteAllText(pathToMain, sentryMain);
+
+        logger?.LogDebug("Successfully added Sentry to 'main'. ");
     }
 
     internal static bool ContainsSentry(string main, IDiagnosticLogger? logger)

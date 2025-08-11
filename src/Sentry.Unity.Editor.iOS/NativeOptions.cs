@@ -11,7 +11,7 @@ internal static class NativeOptions
     {
         var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
         var nativeOptions = $@"#import <Foundation/Foundation.h>
-#import <Sentry/SentryOptions+HybridSDKs.h>
+#import <Sentry/SentryOptionsInternal.h>
 #import <Sentry/PrivateSentrySDKOnly.h>
 
 // IMPORTANT: Changes to this file will be lost!
@@ -41,19 +41,19 @@ static SentryOptions* getSentryOptions()
     }};
 
     NSError *error = nil;
-    SentryOptions* options = [[SentryOptions alloc] initWithDict:optionsDictionary didFailWithError:&error];
+    SentryOptions *sentryOptions = [SentryOptionsInternal initWithDict:optionsDictionary didFailWithError:&error];
     if (error != nil)
     {{
         NSLog(@""%@"",[error localizedDescription]);
         return nil;
     }}
 
-    {(options.FilterBadGatewayExceptions ? @"options.beforeSend = ^SentryEvent * _Nullable(SentryEvent * _Nonnull event) {
+    {(options.FilterBadGatewayExceptions ? @"sentryOptions.beforeSend = ^SentryEvent * _Nullable(SentryEvent * _Nonnull event) {
         if ([event.request.url containsString:@""operate-sdk-telemetry.unity3d.com""]) return nil;
         return event;
     };" : "")}
 
-    return options;
+    return sentryOptions;
 }}";
 
         return nativeOptions;

@@ -53,7 +53,7 @@ public class NativeMainTests
         var pathToMain = "Path/That/Does/Not/Exist";
 
         var assert = Assert.Throws<FileNotFoundException>(() => NativeMain.AddSentry(pathToMain, null));
-        StringAssert.Contains("Could not find main.", assert.Message);
+        StringAssert.Contains("Could not find 'main'.", assert.Message);
     }
 
     [Test]
