@@ -34,7 +34,7 @@ jobs:
         run: tar -xvzf test-app-${env:INIT_TYPE}.tar.gz
 
       - name: iOS smoke test
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "16.1"
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
         timeout-minutes: 20
     
       - name: Upload integration-test project on failure
