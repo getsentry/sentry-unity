@@ -67,7 +67,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         
         if ($hasLicenseError -or $hasUnsupportedTargetError)
         {
-            $msg = if ($hasLicenseError) { "Unity failed because it couldn't acquire a license." } else { "Unity failed because build target was unsupported." }
+            $msg = if ($hasLicenseError) { "Unity failed because it couldn't acquire a license." } else { "Unity failed because build target was unsupported but it's probably a license issue." }
             $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatchTotal.Elapsed.TotalSeconds
             $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
             if ($timeToSleep -gt 0)
