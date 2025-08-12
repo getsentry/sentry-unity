@@ -50,7 +50,7 @@ jobs:
         id: version-select
         run: |
           $ProgressPreference = 'SilentlyContinue'
-          $json = Invoke-WebRequest -UseBasicParsing 'https://services.api.unity.com/unity/editor/release/v1/releases?stream=LTS&limit=1&offset=0&platform=WINDOWS&version=${{ matrix.unity-prefix }}'
+          $json = Invoke-WebRequest -UseBasicParsing 'https://services.api.unity.com/unity/editor/release/v1/releases?limit=1&offset=0&platform=WINDOWS&version=${{ matrix.unity-prefix }}'
           $latest = ($json.Content | ConvertFrom-Json).results[0]
           echo "Latest version: $latest"
           "version=$($latest.version)" >> $env:GITHUB_OUTPUT
