@@ -22,8 +22,6 @@ public static class SentryNativeAndroid
     /// <param name="options">The Sentry Unity options to use.</param>
     public static void Configure(SentryUnityOptions options)
     {
-        MainThreadData.CollectData();
-
         options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Android SDK");
 
         if (!options.AndroidNativeSupportEnabled)

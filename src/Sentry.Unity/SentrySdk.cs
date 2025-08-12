@@ -36,6 +36,9 @@ public static partial class SentrySdk
             options.LogWarning("The SDK has already been initialized. Skipping initialization.");
         }
 
+        // Some native SDKs (i.e. Android) rely on `MainThreadData` to be collected
+        MainThreadData.CollectData();
+
         try
         {
             // Since this mutates the options (i.e. adding scope observer) we have to invoke before initializing the SDK
