@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Sentry.Protocol.Envelopes;
 
@@ -17,6 +18,9 @@ internal sealed class TestHub : IHub
 
     public TestHub(bool isEnabled = true)
     {
+#pragma warning disable SENTRY0001
+        Logger = null!;
+#pragma warning restore SENTRY0001
         IsEnabled = isEnabled;
     }
     public bool IsEnabled { get; }
@@ -117,6 +121,10 @@ internal sealed class TestHub : IHub
     }
 
     public SentryId LastEventId { get; }
+
+#pragma warning disable SENTRY0001
+    public SentryStructuredLogger Logger { get; }
+#pragma warning restore SENTRY0001
 
     public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext) =>
         new TransactionTracer(this, context);
