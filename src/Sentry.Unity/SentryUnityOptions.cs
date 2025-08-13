@@ -322,6 +322,7 @@ public sealed class SentryUnityOptions : SentryOptions
         AddInAppExclude("UnityEngine");
         AddInAppExclude("UnityEditor");
         AddInAppExclude("Cysharp");
+        AddInAppExclude("DG.Tweening");
 
         var processor = new UnityEventProcessor(this);
         AddEventProcessor(processor);
