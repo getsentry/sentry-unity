@@ -321,6 +321,8 @@ public sealed class SentryUnityOptions : SentryOptions
 
         AddInAppExclude("UnityEngine");
         AddInAppExclude("UnityEditor");
+        AddInAppExclude("Cysharp");
+
         var processor = new UnityEventProcessor(this);
         AddEventProcessor(processor);
         AddTransactionProcessor(processor);
