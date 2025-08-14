@@ -2,11 +2,30 @@
 
 ## Unreleased
 
+### Fixes
+
+- For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
+
 ### Dependencies
 
-- Bump .NET SDK from v5.12.0-14-g25a894dd to v5.13.0 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5130)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.13.0)
+- Bump .NET SDK from v5.12.0 to v5.14.0 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259), [#2274](https://github.com/getsentry/sentry-unity/pull/2274))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5140)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.14.0)
+- Bump Cocoa SDK from v8.51.0 to v8.54.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265))
+    - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
+    - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.54.0)
+- Bump Java SDK from v8.17.0 to v8.19.1 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8191)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.19.1)
+- Bump Native SDK from v0.9.1 to v0.10.0 ([#2275](https://github.com/getsentry/sentry-unity/pull/2275))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0100)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.9.1...0.10.0)
+- Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#2287](https://github.com/getsentry/sentry-unity/pull/2287))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8550)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.54.0...8.55.0)
+- Bump CLI from v2.50.2 to v2.52.0 ([#2276](https://github.com/getsentry/sentry-unity/pull/2276), [#2288](https://github.com/getsentry/sentry-unity/pull/2288))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2520)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.2...2.52.0)
 
 ## 4.0.0-beta.1
 
