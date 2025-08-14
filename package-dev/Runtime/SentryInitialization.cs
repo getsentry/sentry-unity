@@ -57,8 +57,8 @@ namespace Sentry.Unity
 #endif
         private static void Init()
         {
-            // We're setting up `UnityInfo` and the platform specific configure callbacks as the very first thing.
-            // These are required to be available during initialization.
+            // We're setting up platform specific configuration as the very first thing.
+            // These are required to be available during initialization, i.e. UnityInfo and MainThreadData.
             SetUpPlatformServices();
 
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
@@ -81,6 +81,7 @@ namespace Sentry.Unity
 
         private static void SetUpPlatformServices()
         {
+            SentryPlatformServices.CollectMainThreadData();
             SentryPlatformServices.UnityInfo = new SentryUnityInfo();
 
 #if SENTRY_NATIVE_COCOA

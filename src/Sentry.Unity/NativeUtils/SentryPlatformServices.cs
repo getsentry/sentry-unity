@@ -4,8 +4,9 @@ namespace Sentry.Unity.NativeUtils;
 
 /// <summary>
 /// These are SDK's services that are only available at runtime and cannot be baked into the SDK. The
-/// <c>SentryInitialization.cs</c> is provided as <c>.cs</c> and gets compiled with the game. It sets <c>IUnityInfo</c>
-/// and the <c>PlatformConfiguration</c> callback during the game's startup so that they are available during initializtion.
+/// <c>SentryInitialization.cs</c> is provided as <c>.cs</c> and gets compiled with the game.
+/// It sets <c>IUnityInfo</c> and the <c>PlatformConfiguration</c> callback during the game's startup, as well as collecting
+/// the MainThreadData. These are then available during both auto and manual initialization.
 /// </summary>
 /// <remarks>Consider this <c>internal</c>.</remarks>
 public static class SentryPlatformServices
@@ -31,4 +32,10 @@ public static class SentryPlatformServices
     /// The PlatformConfiguration callback is responsible for configuring the native SDK and setting up scope sync.
     /// </summary>
     public static Action<SentryUnityOptions>? PlatformConfiguration { get; set; }
+
+    /// <summary>
+    /// Collects comprehensive system and device information that must be accessed on Unity's main thread.
+    /// This includes hardware specs (CPU, GPU, memory), device details, graphics capabilities,
+    /// </summary>
+    public static void CollectMainThreadData() => MainThreadData.CollectData();
 }

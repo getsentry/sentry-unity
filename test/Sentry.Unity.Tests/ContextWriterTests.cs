@@ -63,7 +63,6 @@ public sealed class ContextWriterTests
             CopyTextureSupport = new(() => "CopyTextureSupport"),
             RenderingThreadingMode = new(() => "RenderingThreadingMode"),
             StartTime = new(() => DateTimeOffset.UtcNow),
-
         };
         var context = new MockContextWriter();
         var options = new SentryUnityOptions(application: _testApplication, behaviour: _sentryMonoBehaviour)
@@ -79,6 +78,8 @@ public sealed class ContextWriterTests
 
         // act
         MainThreadData.SentrySystemInfo = sysInfo;
+        MainThreadData.CollectData(); // In an actual game, this happens outside and before Init()
+
         SentrySdk.Init(options);
         Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
