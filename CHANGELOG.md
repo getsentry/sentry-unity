@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now automatically marks stack frames from `Cysharp` and `DG.Tweening` as non in-app. 
+  This highly improves the resulting stack trace quality in the issues details. ([#2285](https://github.com/getsentry/sentry-unity/pull/2285))
+
 ### Fixes
 
 - For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
