@@ -11,7 +11,7 @@ on:
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
-  LOWEST_SUPPORTED_UNITY_VERSION: 2019
+  LOWEST_SUPPORTED_UNITY_VERSION: 2020.3
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
 
@@ -41,6 +41,8 @@ jobs:
             host: ubuntu-latest
           - target: Windows
             host: windows-latest
+          - target: Cocoa
+            host: macos-latest
     uses: ./.github/workflows/sdk.yml
     with:
       target: ${{ matrix.target }}
@@ -54,7 +56,7 @@ jobs:
       fail-fast: false
       matrix:
         # Building the SDK with Unity 2022 and newer requires ns2.1 - skipping for now
-        unity-version: ["2019", "2020", "2021"]
+        unity-version: ["2020.3", "2021.3"]
     uses: ./.github/workflows/build.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -87,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
     uses: ./.github/workflows/smoke-test-create.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -101,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         platform: ["WebGL", "Linux"]
         include:
           - platform: WebGL
@@ -139,14 +141,6 @@ jobs:
       - name: Start the Unity docker container
         run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
         shell: bash
-
-      # Workaround for missing libMonoPosixHelper.so
-      # See https://github.com/getsentry/sentry-unity/pull/1295
-      - name: Install mono-devel
-        if: ${{ matrix.unity-version == '2019' }}
-        run: |
-          docker exec --user root unity apt-get update
-          docker exec --user root unity apt-get -y -q install mono-devel
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -213,7 +207,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
     uses: ./.github/workflows/smoke-test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -232,7 +226,7 @@ jobs:
       matrix:
         api-level: [30, 31, 34] # last updated January 2025
         init-type: ["runtime", "buildtime"]
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
 
   smoke-test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
@@ -242,7 +236,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
     uses: ./.github/workflows/smoke-test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -255,7 +249,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         init-type: ["runtime", "buildtime"]
     uses: ./.github/workflows/smoke-test-compile-ios.yml
     with:
@@ -274,17 +268,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
-        # - `iOS 17`: 86 %
-        # - `iOS 16`: 11 %
-        # - the rest:  3 %
-        # as of October, 2024. Therefore, let's stick to testing iOS 16 and `latest` for now.
+        # - `iOS 18`: 88 %
+        # - `iOS 17`: 17 %
+        # - the rest:  4 %
+        # as of August, 2025. Therefore, let's stick to testing iOS 17 and `latest` for now.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
-        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md
-        ios-version: ["16.1", latest] # last updated October 2024
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
+        ios-version: ["17.0", latest] # updated August 2025 to match available simulators
         init-type: ["runtime", "buildtime"]
 
   smoke-test-run:
@@ -295,7 +289,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         platform: ["WebGL", "Linux"]
     steps:
       - name: Checkout
@@ -333,7 +327,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2019", "2022", "6000"]
+        unity-version: ["2020.3", "2022.3", "6000.0", "6000.1"]
         # os: ["windows", "macos"]
         os: ["windows"]
         include:

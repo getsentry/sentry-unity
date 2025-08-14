@@ -22,6 +22,8 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         EditorUserBuildSettings.allowDebugging = false;
         PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
+        // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
+        PlayerSettings.runInBackground = true;
 
         DisableUnityAudio();
         DisableProgressiveLightMapper();
@@ -39,14 +41,6 @@ public class Builder
         PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.High);
 #elif UNITY_2019_1_OR_NEWER
         PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
-#endif
-
-
-        // This is a workaround for build issues with Unity 2022.3. and newer.
-        // https://discussions.unity.com/t/gradle-build-issues-for-android-api-sdk-35-in-unity-2022-3lts/1502187/10
-#if UNITY_2022_3_OR_NEWER
-        Debug.Log("Builder: Setting Android target API level to 33");
-        PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel33;
 #endif
 
         Debug.Log("Builder: Updating BuildPlayerOptions");
@@ -75,6 +69,9 @@ public class Builder
 
         if (target == BuildTarget.Android)
         {
+            Debug.Log("Builder: Setting application identifier");
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "io.sentry.unity.integrationtest");
+
             // Android does not support appending builds. We make sure the directory is clean
             var outputDir = Path.GetDirectoryName(args["buildPath"]);
             if (Directory.Exists(outputDir))
@@ -86,11 +83,12 @@ public class Builder
             Debug.Log($"Builder: Creating output directory at '{outputDir}'");
             Directory.CreateDirectory(outputDir);
 
-#if !UNITY_2020_1_OR_NEWER
+#if UNITY_2020_3
+            // The default for 2020.3 is 19. There will be no further updates to 2020.3.
             Debug.Log("Builder: Raising the minSdkVersion to 21");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel21;
 #endif
-
+            
             Debug.Log("Builder: Enabling minify");
 #if UNITY_2020_1_OR_NEWER
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;

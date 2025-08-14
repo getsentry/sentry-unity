@@ -66,7 +66,7 @@ public sealed class ContextWriterTests
 
         };
         var context = new MockContextWriter();
-        var options = new SentryUnityOptions(_sentryMonoBehaviour, _testApplication, false)
+        var options = new SentryUnityOptions(application: _testApplication, behaviour: _sentryMonoBehaviour)
         {
             Dsn = "http://publickey@localhost/12345",
             Enabled = true,
@@ -79,7 +79,7 @@ public sealed class ContextWriterTests
 
         // act
         MainThreadData.SentrySystemInfo = sysInfo;
-        SentryUnity.Init(options);
+        SentrySdk.Init(options);
         Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
         // assert

@@ -15,7 +15,9 @@
 #endif
 
 using System;
+using Sentry.Unity;
 using Sentry.Extensibility;
+using Sentry.Unity.NativeUtils;
 #if UNITY_2020_3_OR_NEWER
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -39,91 +41,56 @@ using Sentry.Unity.Default;
 
 namespace Sentry.Unity
 {
-    public static class SentryInitialization
+    internal static class SentryInitialization
     {
-        public const string StartupTransactionOperation = "app.start";
-        public static ISpan InitSpan;
-        private const string InitSpanOperation = "runtime.init";
-        public static ISpan SubSystemRegistrationSpan;
-        private const string SubSystemSpanOperation = "runtime.init.subsystem";
-
+        /// <summary>
+        /// This is intended for internal use only.
+        /// The SDK relies on <c>SetupPlatformServices</c> getting called as the very first thing during the game's
+        /// startup. This ensures that features like line number and native support are set up and configured properly.
+        /// This is also the case when initializing manually from code.
+        /// </summary>
 #if SENTRY_WEBGL
         // On WebGL SubsystemRegistration is too early for the UnityWebRequestTransport and errors with 'URI empty'
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 #else
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 #endif
-        public static void Init()
+        private static void Init()
         {
-            var unityInfo = new SentryUnityInfo();
+            // We're setting up `UnityInfo` and the platform specific configure callbacks as the very first thing.
+            // These are required to be available during initialization.
+            SetUpPlatformServices();
+
             // Loading the options invokes the ScriptableOption`Configure` callback. Users can disable the SDK via code.
-            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions(unityInfo);
+            var options = ScriptableSentryUnityOptions.LoadSentryUnityOptions();
             if (options != null && options.ShouldInitializeSdk())
             {
-                // Certain integrations require access to preprocessor directives so we provide them as `.cs` and
-                // compile them with the game instead of precompiling them with the rest of the SDK.
-                // i.e. SceneManagerAPI requires UNITY_2020_3_OR_NEWER
-                SentryIntegrations.Configure(options);
-                // Configures scope sync and (by default) initializes the native SDK.
-                SetupNativeSdk(options, unityInfo);
-                SentryUnity.Init(options);
-                SetupStartupTracing(options);
+                SentrySdk.Init(options);
             }
             else
             {
                 // If the SDK is not `enabled` we're closing down the native layer as well. This is especially relevant
                 // in a `built-time-initialization` scenario where the native SDKs self-initialize.
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Close(options, unityInfo);
+                SentryNativeCocoa.Close(options);
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Close(options, unityInfo);
+                SentryNativeAndroid.Close(options);
 #endif
             }
         }
 
-        private static void SetupNativeSdk(SentryUnityOptions options, SentryUnityInfo unityInfo)
+        private static void SetUpPlatformServices()
         {
-            try
-            {
+            SentryPlatformServices.UnityInfo = new SentryUnityInfo();
+
 #if SENTRY_NATIVE_COCOA
-                SentryNativeCocoa.Configure(options, unityInfo);
+            SentryPlatformServices.PlatformConfiguration = SentryNativeCocoa.Configure;
 #elif SENTRY_NATIVE_ANDROID
-                SentryNativeAndroid.Configure(options, unityInfo);
+            SentryPlatformServices.PlatformConfiguration = SentryNativeAndroid.Configure;
 #elif SENTRY_NATIVE
-                SentryNative.Configure(options, unityInfo);
+            SentryPlatformServices.PlatformConfiguration = SentryNative.Configure;
 #elif SENTRY_WEBGL
-              SentryWebGL.Configure(options);
-#endif
-            }
-            catch (DllNotFoundException e)
-            {
-                options.DiagnosticLogger?.LogError(e,
-                    "Sentry native-error capture configuration failed to load a native library. This usually " +
-                    "means the library is missing from the application bundle or the installation directory.");
-            }
-            catch (Exception e)
-            {
-                options.DiagnosticLogger?.LogError(e, "Sentry native error capture configuration failed.");
-            }
-        }
-
-        private static void SetupStartupTracing(SentryUnityOptions options)
-        {
-#if !SENTRY_WEBGL
-            if (options.TracesSampleRate > 0.0f && options.AutoStartupTraces)
-            {
-                options.DiagnosticLogger?.LogInfo("Creating '{0}' transaction for runtime initialization.",
-                    StartupTransactionOperation);
-
-                var runtimeStartTransaction =
-                    SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
-                SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
-
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
-                InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
-                options.DiagnosticLogger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
-                SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
-            }
+            SentryPlatformServices.PlatformConfiguration = SentryWebGL.Configure;
 #endif
         }
     }

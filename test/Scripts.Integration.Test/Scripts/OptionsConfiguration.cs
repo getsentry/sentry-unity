@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Sentry;
 using Sentry.Unity;
 using UnityEngine;
@@ -35,6 +36,16 @@ public class OptionsConfiguration : SentryOptionsConfiguration
                 return options.CrashedLastRun() ? 1 : 0;
             }
             return -2;
+        };
+
+        // Filtering the SmokeTester logs from the breadcrumbs here
+        options.AddBreadcrumbsForLogType = new Dictionary<LogType, bool>
+        {
+            { LogType.Error, true},
+            { LogType.Assert, true},
+            { LogType.Warning, true},
+            { LogType.Log, false}, // No breadcrumbs for Debug.Log
+            { LogType.Exception, true},
         };
 
         // If an ANR triggers while the smoke test runs, the test would fail because we expect exact order of events.

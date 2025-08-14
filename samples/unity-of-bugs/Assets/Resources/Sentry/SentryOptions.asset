@@ -19,7 +19,7 @@ MonoBehaviour:
   <DebounceTimeLog>k__BackingField: 1000
   <DebounceTimeWarning>k__BackingField: 1000
   <DebounceTimeError>k__BackingField: 1000
-  <TracesSampleRate>k__BackingField: 0
+  <TracesSampleRate>k__BackingField: 1
   <AutoStartupTraces>k__BackingField: 1
   <AutoSceneLoadTraces>k__BackingField: 1
   <AutoAwakeTraces>k__BackingField: 0
@@ -28,10 +28,10 @@ MonoBehaviour:
   <ReleaseOverride>k__BackingField: 
   <EnvironmentOverride>k__BackingField: 
   <AttachStacktrace>k__BackingField: 1
-  <AttachScreenshot>k__BackingField: 0
+  <AttachScreenshot>k__BackingField: 1
   <ScreenshotQuality>k__BackingField: 1
   <ScreenshotCompression>k__BackingField: 75
-  <AttachViewHierarchy>k__BackingField: 0
+  <AttachViewHierarchy>k__BackingField: 1
   <MaxViewHierarchyRootObjects>k__BackingField: 100
   <MaxViewHierarchyObjectChildCount>k__BackingField: 20
   <MaxViewHierarchyDepth>k__BackingField: 10
@@ -40,6 +40,7 @@ MonoBehaviour:
   <BreadcrumbsForAsserts>k__BackingField: 1
   <BreadcrumbsForErrors>k__BackingField: 1
   <BreadcrumbsForExceptions>k__BackingField: 1
+  <CaptureLogErrorEvents>k__BackingField: 1
   <MaxBreadcrumbs>k__BackingField: 100
   <ReportAssembliesMode>k__BackingField: 1
   <SendDefaultPii>k__BackingField: 0

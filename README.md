@@ -15,10 +15,15 @@ Sentry SDK for Unity
 [![build](https://github.com/getsentry/sentry-unity/workflows/CI/badge.svg?branch=main)](https://github.com/getsentry/sentry-unity/actions?query=branch%3Amain)
 [![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/PXa5Apfe7K)
 
-Install it via `UPM`:
+## Install
+
+Install the package via the Unity Package Manager using a Git URL to Sentry's SDK repository:
+
 ```
-https://github.com/getsentry/unity.git#3.2.3
+https://github.com/getsentry/unity.git
 ```
+
+To use this specific version of the SDK, append `#4.0.0-beta.1` to the URL, but note that this will stop Unity from suggesting version updates automatically.
 
 ## Documentation
 
@@ -33,13 +38,15 @@ Blog posts:
 
 ## Setup Sentry SDK with Unity
 
-[![YouTube Video of Setup Sentry SDK with Unity](https://img.youtube.com/vi/P0E9upOSznE/0.jpg)](https://www.youtube.com/watch?v=P0E9upOSznE)
+[![YouTube Video of Setup Sentry SDK with Unity](https://img.youtube.com/vi/YKCRSA7TOc/0.jpg)](https://www.youtube.com/watch?v=-YKCRSA7TOc)
 
-## Legacy SDK
+## Supported Unity Versions
 
-If you are using Unity 5.6 or 2018, these are not supported by this SDK. There are no plans to support versions of Unity older than **2019.4**.
+This SDK is tested with Unity 2020.3 onwards.
 
-Sentry offered a minimalistic but stable SDK called [_sentry-unity-lite_](https://github.com/getsentry/sentry-unity-lite). It's available on a different repository. That SDK is now deprecated but is still compatible with Sentry server.
+If you're using Unity 2019.4, there is compatibility with this SDK up to major version 3. On [4.0.0 it's being dropped](https://github.com/getsentry/sentry-unity/releases/tag/4.0.0-beta.0) making the lowest version 2020.3.
+If you're using Unity 5.6 or 2018, these are not supported by this SDK. Sentry offered a minimalistic but stable SDK called [_sentry-unity-lite_](https://github.com/getsentry/sentry-unity-lite). It's available on a different repository. That SDK is now deprecated but is still compatible with Sentry server.
+
 
 ## Resources
 

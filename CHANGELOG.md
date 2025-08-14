@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+### Fixes
+
+- For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
+
+### Dependencies
+
+- Bump .NET SDK from v5.12.0 to v5.14.0 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259), [#2274](https://github.com/getsentry/sentry-unity/pull/2274))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5140)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.14.0)
+- Bump Cocoa SDK from v8.51.0 to v8.54.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265))
+    - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
+    - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.54.0)
+- Bump Java SDK from v8.17.0 to v8.19.1 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8191)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.19.1)
+- Bump Native SDK from v0.9.1 to v0.10.0 ([#2275](https://github.com/getsentry/sentry-unity/pull/2275))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0100)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.9.1...0.10.0)
+- Bump Cocoa SDK from v8.54.0 to v8.55.0 ([#2287](https://github.com/getsentry/sentry-unity/pull/2287))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8550)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.54.0...8.55.0)
+- Bump CLI from v2.50.2 to v2.52.0 ([#2276](https://github.com/getsentry/sentry-unity/pull/2276), [#2288](https://github.com/getsentry/sentry-unity/pull/2288))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2520)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.2...2.52.0)
+
+## 4.0.0-beta.1
+
+### Fixes
+
+- The SDK now waits for 'End of Frame' before capturing a screenshot. This should address any blank or malformed
+  screenshots previously attached to events. The SDK now also only captures one screenshot for the first error event in
+  each individual frame. ([#2240](https://github.com/getsentry/sentry-unity/pull/2240))
+
+### Dependencies
+
+- Bump CLI from v2.47.1 to v2.50.2 ([#2245](https://github.com/getsentry/sentry-unity/pull/2245), [#2250](https://github.com/getsentry/sentry-unity/pull/2250))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2502)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.47.1...2.50.2)
+
+## 4.0.0-beta.0
+
+### Breaking Changes
+
+- Removed Unity 2019 support, which reached End of Life in 2022. Minimum supported version now is 2020. ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
+
+- **Breaking Change**: The Unity SDK's static API has been moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk` to `Sentry.Unity.SentrySdk`. 
+  This change enables [manual/programatic SDK initialization](https://docs.sentry.io/platforms/unity/configuration/options/programmatic-configuration/) with full functionality, previously only available through auto-initialization.
+  The underlying .NET SDK's `SentrySdk` class is now internal, and several previously public classes like `SentryInitialization` 
+  and `SentryIntegrations` are now internal.
+  
+  **Migration**: Update your `using` directives from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically 
+  import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` 
+  (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` 
+  remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227), [#2239](https://github.com/getsentry/sentry-unity/pull/2239))
+
 ### Features
 
 - The SDK now comes with a `SentryUserFeedback` prefab ready to be used. You can drag and drop it into your scene or 
@@ -10,12 +65,18 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.14.0 to v8.16.0 ([#2218](https://github.com/getsentry/sentry-unity/pull/2218), [#2223](https://github.com/getsentry/sentry-unity/pull/2223))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8160)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.14.0...8.16.0)
+- Bump Java SDK from v8.14.0 to v8.17.0 ([#2218](https://github.com/getsentry/sentry-unity/pull/2218), [#2223](https://github.com/getsentry/sentry-unity/pull/2223), [#2238](https://github.com/getsentry/sentry-unity/pull/2238))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8170)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.14.0...8.17.0)
 - Bump Native SDK from v0.9.0 to v0.9.1 ([#2217](https://github.com/getsentry/sentry-unity/pull/2217))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#091)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.9.0...0.9.1)
+- Bump .NET SDK from v5.11.2 to v5.12.0 ([#2242](https://github.com/getsentry/sentry-unity/pull/2242))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5120)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.11.2...5.12.0)
+- Bump CLI from v2.46.0 to v2.47.1 ([#2232](https://github.com/getsentry/sentry-unity/pull/2232), [#2241](https://github.com/getsentry/sentry-unity/pull/2241))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2471)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.46.0...2.47.1)
 
 ## 3.2.3
 

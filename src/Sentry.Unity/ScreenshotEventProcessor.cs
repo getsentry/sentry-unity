@@ -1,64 +1,85 @@
+using System;
+using System.Collections;
+using System.Threading;
 using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
+using Sentry.Internal;
 using UnityEngine;
 
 namespace Sentry.Unity;
 
-public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
+public class ScreenshotEventProcessor : ISentryEventProcessor
 {
     private readonly SentryUnityOptions _options;
-    private readonly IApplication _application;
-    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, null) { }
+    private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
+    private volatile int _isCapturingScreenshot;
 
-    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, IApplication? application)
+    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
+
+    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, ISentryMonoBehaviour sentryMonoBehaviour)
     {
         _options = sentryOptions;
-        _application = application ?? ApplicationAdapter.Instance;
+        _sentryMonoBehaviour = sentryMonoBehaviour;
     }
 
-    public SentryEvent? Process(SentryEvent @event)
+    public SentryEvent Process(SentryEvent @event)
     {
-        return @event;
-    }
-
-    public SentryEvent? Process(SentryEvent @event, SentryHint hint)
-    {
-        // save event id
-        // wait for end of frame
-        // check if last id is event it
-        // send screenshot
-
-        // add workitem: screentshot for ID xxx
-        // sdk integration checking for work: if ID got sent, follow up with screenshot
-
-        if (!MainThreadData.IsMainThread())
+        // Only ever capture one screenshot per frame
+        if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
         {
-            _options.DiagnosticLogger?.LogDebug("Screenshot capture skipped. Can't capture screenshots on other than the main thread.");
-            return @event;
-        }
-
-        if (_options.BeforeCaptureScreenshotInternal?.Invoke() is not false)
-        {
-            if (_application.IsEditor)
-            {
-                _options.DiagnosticLogger?.LogInfo("Screenshot capture skipped. Capturing screenshots it not supported in the Editor");
-                return @event;
-            }
-
-            if (Screen.width == 0 || Screen.height == 0)
-            {
-                _options.DiagnosticLogger?.LogWarning("Can't capture screenshots on a screen with a resolution of '{0}x{1}'.", Screen.width, Screen.height);
-            }
-            else
-            {
-                hint.AddAttachment(SentryScreenshot.Capture(_options), "screenshot.jpg", contentType: "image/jpeg");
-            }
-        }
-        else
-        {
-            _options.DiagnosticLogger?.LogInfo("Screenshot capture skipped by BeforeAttachScreenshot callback.");
+            _sentryMonoBehaviour.StartCoroutine(CaptureScreenshotCoroutine(@event.EventId));
         }
 
         return @event;
     }
+
+    internal IEnumerator CaptureScreenshotCoroutine(SentryId eventId)
+    {
+        _options.LogDebug("Screenshot capture triggered. Waiting for End of Frame.");
+
+        // WaitForEndOfFrame does not work in headless mode so we're making it configurable for CI.
+        // See https://docs.unity3d.com/6000.1/Documentation/ScriptReference/WaitForEndOfFrame.html
+        yield return WaitForEndOfFrame();
+
+        try
+        {
+            if (_options.BeforeCaptureScreenshotInternal?.Invoke() is false)
+            {
+                yield break;
+            }
+
+            var screenshotBytes = CaptureScreenshot(_options);
+            if (screenshotBytes.Length == 0)
+            {
+                _options.LogWarning("Screenshot capture returned empty data for event {0}", eventId);
+                yield break;
+            }
+
+            var attachment = new SentryAttachment(
+                    AttachmentType.Default,
+                    new ByteAttachmentContent(screenshotBytes),
+                    "screenshot.jpg",
+                    "image/jpeg");
+
+            _options.LogDebug("Screenshot captured for event {0}", eventId);
+
+            CaptureAttachment(eventId, attachment);
+        }
+        catch (Exception e)
+        {
+            _options.LogError(e, "Failed to capture screenshot.");
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _isCapturingScreenshot, 0);
+        }
+    }
+
+    internal virtual byte[] CaptureScreenshot(SentryUnityOptions options)
+        => SentryScreenshot.Capture(options);
+
+    internal virtual void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
+        => (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment);
+
+    internal virtual YieldInstruction WaitForEndOfFrame()
+        => new WaitForEndOfFrame();
 }

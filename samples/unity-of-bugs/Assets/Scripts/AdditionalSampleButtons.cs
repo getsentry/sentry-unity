@@ -1,13 +1,13 @@
-﻿using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using Sentry;
+using Sentry.Unity;
 using UnityEngine;
 
-public class AdditionalButtons : MonoBehaviour
+public class AdditionalSampleButtons : MonoBehaviour
 {
     public void SetUser()
     {
+        // Setting the user on the scope makes sure the user is set on the context of all future events
         SentrySdk.ConfigureScope(s =>
         {
             s.User = new SentryUser
@@ -20,7 +20,7 @@ public class AdditionalButtons : MonoBehaviour
         Debug.Log("User set: ant");
     }
 
-    class PlayerCharacter
+    private class PlayerCharacter
     {
         public string Name { get; set; }
         public int Age { get; set; }
@@ -29,7 +29,9 @@ public class AdditionalButtons : MonoBehaviour
 
     public void CaptureMessageWithContext()
     {
-        SentrySdk.ConfigureScope(scope =>
+        // The context is freely customizable and allows you to add data specific to your game.
+        // The SDKs capture methods provide an optional scope that is only getting applied for that one specific event
+        SentrySdk.CaptureMessage("Capturing with player character context.", scope =>
         {
             scope.Contexts["character"] = new PlayerCharacter
             {
@@ -38,12 +40,7 @@ public class AdditionalButtons : MonoBehaviour
                 AttackType = "melee"
             };
         });
-
-        SentrySdk.CaptureMessage("Capturing with player character context.");
-        SentrySdk.ConfigureScope(scope => scope.Contexts = null);
     }
-
-    public void CaptureMessageWithScreenshot() => StartCoroutine(CaptureScreenshot());
 
     public void ApplicationNotResponding()
     {
@@ -52,16 +49,5 @@ public class AdditionalButtons : MonoBehaviour
         Debug.Log("Thread.Sleep() finished.");
     }
 
-    private IEnumerator CaptureScreenshot()
-    {
-        yield return new WaitForEndOfFrame();
-        SentrySdk.ConfigureScope(s =>
-        {
-            var screenshot = ScreenCapture.CaptureScreenshotAsTexture();
-            s.AddAttachment(screenshot.EncodeToJPG(), "screenshot.jpg");
-        });
-
-        SentrySdk.CaptureMessage("Captured a message with a screenshot attachment");
-        SentrySdk.ConfigureScope(scope => scope.ClearAttachments());
-    }
+    public void Assert() => UnityEngine.Assertions.Assert.IsTrue(false);
 }

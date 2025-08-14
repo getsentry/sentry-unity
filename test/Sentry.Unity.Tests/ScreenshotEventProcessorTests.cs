@@ -1,93 +1,142 @@
-using System.Threading;
+using System;
+using System.Collections;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests;
 
 public class ScreenshotEventProcessorTests
 {
-    private class Fixture
+    private class TestScreenshotEventProcessor : ScreenshotEventProcessor
     {
-        public SentryUnityOptions Options = new() { AttachScreenshot = true };
-        public TestApplication TestApplication = new();
+        public Func<SentryUnityOptions, byte[]> CaptureScreenshotFunc { get; set; }
+        public Action<SentryId, SentryAttachment> CaptureAttachmentAction { get; set; }
+        public Func<YieldInstruction> WaitForEndOfFrameFunc { get; set; }
 
-        public ScreenshotEventProcessor GetSut() => new(Options, TestApplication);
-    }
-
-    private Fixture _fixture = null!;
-
-    [SetUp]
-    public void SetUp() => _fixture = new Fixture();
-
-    [TearDown]
-    public void TearDown()
-    {
-        if (SentrySdk.IsEnabled)
+        public TestScreenshotEventProcessor(SentryUnityOptions options, ISentryMonoBehaviour sentryMonoBehaviour)
+            : base(options, sentryMonoBehaviour)
         {
-            SentryUnity.Close();
+            CaptureScreenshotFunc = _ => [0xFF, 0xD8, 0xFF];
+            CaptureAttachmentAction = (_, _) => { };
+            WaitForEndOfFrameFunc = () => new YieldInstruction();
         }
+
+        internal override byte[] CaptureScreenshot(SentryUnityOptions options)
+            => CaptureScreenshotFunc.Invoke(options);
+
+        internal override void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
+            => CaptureAttachmentAction(eventId, attachment);
+
+        internal override YieldInstruction WaitForEndOfFrame()
+            => WaitForEndOfFrameFunc!.Invoke();
+    }
+    [Test]
+    public void Process_FirstCallInAFrame_StartsCoroutine()
+    {
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
+
+        screenshotProcessor.Process(new SentryEvent());
+
+        Assert.IsTrue(sentryMonoBehaviour.StartCoroutineCalled);
     }
 
-    [Test]
-    public void Process_IsMainThread_AddsScreenshotToHint()
+    [UnityTest]
+    public IEnumerator Process_ExecutesCoroutine_CapturesScreenshotAndCapturesAttachment()
     {
-        _fixture.TestApplication.IsEditor = false;
-        var sut = _fixture.GetSut();
-        var sentryEvent = new SentryEvent();
-        var hint = new SentryHint();
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
 
-        sut.Process(sentryEvent, hint);
-
-        Assert.AreEqual(1, hint.Attachments.Count);
-    }
-
-    [Test]
-    public void Process_IsNonMainThread_DoesNotAddScreenshotToHint()
-    {
-        var sut = _fixture.GetSut();
-        var sentryEvent = new SentryEvent();
-        var hint = new SentryHint();
-
-        new Thread(() =>
+        var capturedEventId = SentryId.Empty;
+        SentryAttachment? capturedAttachment = null;
+        screenshotProcessor.CaptureAttachmentAction = (eventId, attachment) =>
         {
-            Thread.CurrentThread.IsBackground = true;
-            var stream = sut.Process(sentryEvent, hint);
+            capturedEventId = eventId;
+            capturedAttachment = attachment;
+        };
 
-            Assert.AreEqual(0, hint.Attachments.Count);
-        }).Start();
+        var eventId = SentryId.Create();
+        var sentryEvent = new SentryEvent(eventId: eventId);
+
+        screenshotProcessor.Process(sentryEvent);
+
+        // Wait for the coroutine to complete - need to wait for processing
+        yield return null;
+        yield return null;
+
+        Assert.IsTrue(sentryMonoBehaviour.StartCoroutineCalled);
+        Assert.AreEqual(eventId, capturedEventId);
+        Assert.NotNull(capturedAttachment); // Sanity check
+        Assert.AreEqual("screenshot.jpg", capturedAttachment!.FileName);
+        Assert.AreEqual("image/jpeg", capturedAttachment.ContentType);
+        Assert.AreEqual(AttachmentType.Default, capturedAttachment.Type);
     }
 
-    [Test]
-    [TestCase(true)]
-    [TestCase(false)]
-    public void Process_BeforeCaptureScreenshotCallbackProvided_RespectsScreenshotCaptureDecision(bool captureScreenshot)
+    [UnityTest]
+    public IEnumerator Process_CalledMultipleTimesQuickly_OnlyExecutesScreenshotCaptureOnce()
     {
-        _fixture.TestApplication.IsEditor = false;
-        _fixture.Options.SetBeforeCaptureScreenshot(() => captureScreenshot);
-        var sut = _fixture.GetSut();
-        var sentryEvent = new SentryEvent();
-        var hint = new SentryHint();
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
 
-        sut.Process(sentryEvent, hint);
+        var screenshotCaptureCallCount = 0;
+        screenshotProcessor.CaptureScreenshotFunc = _ =>
+        {
+            screenshotCaptureCallCount++;
+            return [0];
+        };
 
-        Assert.AreEqual(captureScreenshot ? 1 : 0, hint.Attachments.Count);
+        var attachmentCaptureCallCount = 0;
+        screenshotProcessor.CaptureAttachmentAction = (_, _) =>
+        {
+            attachmentCaptureCallCount++;
+        };
+
+        // Process multiple events quickly (before any coroutine can complete)
+        screenshotProcessor.Process(new SentryEvent());
+        screenshotProcessor.Process(new SentryEvent());
+        screenshotProcessor.Process(new SentryEvent());
+
+        // Wait for the coroutine to complete - need to wait for processing
+        yield return null;
+        yield return null;
+
+        Assert.AreEqual(1, screenshotCaptureCallCount);
+        Assert.AreEqual(1, attachmentCaptureCallCount);
     }
 
-    [Test]
-    [TestCase(true, 0)]
-    [TestCase(false, 1)]
-    public void Process_InEditorEnvironment_DoesNotCaptureScreenshot(bool isEditor, int expectedAttachmentCount)
+    [UnityTest]
+    public IEnumerator Process_EmptyScreenshotData_SkipsAttachmentCapture()
     {
-        // Arrange
-        _fixture.TestApplication.IsEditor = isEditor;
-        var sut = _fixture.GetSut();
-        var sentryEvent = new SentryEvent();
-        var hint = new SentryHint();
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
 
-        // Act
-        sut.Process(sentryEvent, hint);
+        screenshotProcessor.CaptureScreenshotFunc = _ => [];
 
-        // Assert
-        Assert.AreEqual(expectedAttachmentCount, hint.Attachments.Count);
+        var attachmentCaptureCallCount = 0;
+        screenshotProcessor.CaptureAttachmentAction = (_, _) =>
+        {
+            attachmentCaptureCallCount++;
+        };
+
+        var eventId = SentryId.Create();
+        var sentryEvent = new SentryEvent(eventId: eventId);
+
+        screenshotProcessor.Process(sentryEvent);
+
+        // Wait for the coroutine to complete - need to wait for processing
+        yield return null;
+        yield return null;
+
+        Assert.IsTrue(sentryMonoBehaviour.StartCoroutineCalled);
+        Assert.AreEqual(0, attachmentCaptureCallCount);
+    }
+
+    private static TestSentryMonoBehaviour GetTestMonoBehaviour()
+    {
+        var gameObject = new GameObject("ScreenshotProcessorTest");
+        var behaviour = gameObject.AddComponent<TestSentryMonoBehaviour>();
+        return behaviour;
     }
 }

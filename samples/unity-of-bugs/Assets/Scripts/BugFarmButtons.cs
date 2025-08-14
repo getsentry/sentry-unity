@@ -1,35 +1,35 @@
 using System;
-using System.Globalization;
 using System.Runtime.CompilerServices;
-using Sentry;
+using Sentry.Unity;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public class BugFarmButtons : MonoBehaviour
 {
     private void Awake()
     {
-        Debug.Log("Sample 🐛");
+        Debug.Log("The 🐛s awaken!");
     }
 
     private void Start()
     {
-        Debug.Log("Sample Start 🦋");
+        // Log messages are getting captured as breadcrumbs
+        Debug.Log("Starting the 🦋-Farm");
         Debug.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
     }
 
-    public void AssertFalse() => Assert.AreEqual(true, false);
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public void ThrowNull() => throw new NullReferenceException();
-
-    public void ThrowExceptionAndCatch()
+    public void ThrowUnhandledException()
     {
-        Debug.Log("Throwing an instance of 🐛 CustomException!");
+        Debug.Log("Throwing a unhandled 🕷 exception!");
+        DoSomeWorkHere();
+    }
+
+    public void ThrowExceptionButCatch()
+    {
+        Debug.Log("Throwing an exception but catching it! 🐜");
 
         try
         {
-            throw new CustomException("Custom bugs 🐛🐛🐛🐛.");
+            DoSomeWorkHere();
         }
         catch (Exception e)
         {
@@ -37,59 +37,62 @@ public class BugFarmButtons : MonoBehaviour
         }
     }
 
-    public void ThrowNullAndCatch()
+    private void DoSomeWorkHere()
     {
-        Debug.Log("Throwing 'null' and catching 🐜🐜🐜 it!");
-
-        try
+        if (CheckSomeFakeWork())
         {
-            ThrowNull();
-        }
-        catch (Exception e)
-        {
-            SentrySdk.CaptureException(e);
+            DoSomeWorkThere();
         }
     }
 
-    public void CaptureMessage() => SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
-
-    // IL2CPP inlines this anyway :( - so we're adding some fake work to prevent the compiler from optimizing too much
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StackTraceExampleB()
+    private void DoSomeWorkThere()
     {
-        var someWork = DateTime.Now.ToString();
-        if (someWork.Length > 0)  // This condition will always be true but compiler can't be certain
+        if (CheckSomeFakeWork())
         {
-            throw new InvalidOperationException("Exception from a lady beetle 🐞");
+            throw new CustomException("Exception from an exceptional lady beetle 🐞!");
         }
     }
 
-    // IL2CPP inlines this anyway :( - so we're adding some fake work to prevent the compiler from optimizing too much
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    public void StackTraceExampleA()
+    public void CaptureMessage()
     {
-        var someWork = DateTime.Now.ToString();
-        if (someWork.Length > 0)  // This condition will always be true but compiler can't be certain
+        if (CheckSomeFakeWork())
         {
-            StackTraceExampleB();
+            // Messages do not have a stacktrace attached by default. This is an opt-in feature.
+            // Note: That stack traces generated for message events are provided without line numbers. See known limitations
+            // https://docs.sentry.io/platforms/unity/troubleshooting/known-limitations/#line-numbers-missing-in-events-captured-through-debuglogerror-or-sentrysdkcapturemessage
+            SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
         }
     }
 
-    // IL2CPP inlines this anyway :( - so we're adding some fake work to prevent the compiler from optimizing too much
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public void LogError()
     {
-        var someWork = DateTime.Now.ToString();
-        if (someWork.Length > 0)  // This condition will always be true but compiler can't be certain
+        if (CheckSomeFakeWork())
         {
+            // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
+            // Note: That stack traces generated for message events are provided without line numbers. See known limitations
+            // https://docs.sentry.io/platforms/unity/troubleshooting/known-limitations/#line-numbers-missing-in-events-captured-through-debuglogerror-or-sentrysdkcapturemessage
             Debug.LogError("Debug.LogError() called");
         }
     }
-}
 
-public class CustomException : Exception
-{
-    public CustomException(string message) : base(message)
+    public void LogException()
     {
+        if (CheckSomeFakeWork())
+        {
+            // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
+            Debug.LogException(new NullReferenceException("Some bugs are harder to catch than others. 🦋"));
+        }
+    }
+
+    // NoInlining ends up being inlined through L2CPP anyway. :(
+    // We're checking some fake work here to prevent too aggressive optimization. That way, we can show off some proper
+    // stack traces that are closer to real-world bugs and events.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool CheckSomeFakeWork() => DateTime.Now.Ticks > 0; // Always true but not optimizable
+
+    private class CustomException : Exception
+    {
+        public CustomException(string message) : base(message)
+        { }
     }
 }

@@ -24,7 +24,7 @@ Write-Host "#####################################################"
 
 $BuildDir = $(GetNewProjectBuildPath)
 $ApkFileName = "test.apk"
-$ProcessName = "com.DefaultCompany.$(GetNewProjectName)"
+$ProcessName = "io.sentry.unity.integrationtest"
 $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
 $FallBackTestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
 

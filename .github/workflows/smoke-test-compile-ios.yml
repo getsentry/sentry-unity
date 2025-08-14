@@ -16,7 +16,7 @@ defaults:
 jobs:
   compile:
     name: ${{ inputs.unity-version }} ${{ inputs.init-type }}
-    runs-on: 'macos-latest'
+    runs-on: 'macos-14' # Pinning to get the oldest, supported version of iOS simulator
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       INIT_TYPE: ${{ inputs.init-type }}
@@ -34,7 +34,7 @@ jobs:
         run: tar -xvzf test-app-${env:INIT_TYPE}.tar.gz
 
       - name: iOS smoke test
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "16.1"
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
         timeout-minutes: 20
     
       - name: Upload integration-test project on failure

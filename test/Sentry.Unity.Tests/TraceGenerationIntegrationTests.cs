@@ -29,7 +29,7 @@ public class TraceGenerationIntegrationTests
     public void SetUp()
     {
         _fixture.TestHub = new TestHub();
-        SentrySdk.UseHub(_fixture.TestHub);
+        Sentry.SentrySdk.UseHub(_fixture.TestHub);
     }
 
     [Test]
@@ -92,12 +92,5 @@ public class TraceGenerationIntegrationTests
         configureScope(scope);
 
         Assert.AreNotEqual(initialPropagationContext, scope.PropagationContext);
-    }
-
-    internal class TestSentryMonoBehaviour : ISentryMonoBehaviour
-    {
-        public event Action? ApplicationResuming;
-
-        public void ResumeApplication() => ApplicationResuming?.Invoke();
     }
 }

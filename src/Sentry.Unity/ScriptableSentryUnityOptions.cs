@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -114,28 +115,31 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public SentryLevel DiagnosticLevel { get; set; } = SentryLevel.Warning;
 
     /// <summary>
-    /// Loads the ScriptableSentryUnityOptions from `Resource`.
+    /// Loads the ScriptableSentryUnityOptions from <c>Resource</c>.
     /// </summary>
-    /// <returns>The SentryUnityOptions generated from the ScriptableSentryUnityOptions</returns>
+    /// <returns>The <c>SentryUnityOptions</c> generated from the <c>ScriptableSentryUnityOptions</c></returns>
     /// <remarks>
-    /// Used for loading the SentryUnityOptions from the ScriptableSentryUnityOptions during runtime.
+    /// This gets called from <c>SentryInitialization</c> during the game's startup.
     /// </remarks>
-    public static SentryUnityOptions? LoadSentryUnityOptions(ISentryUnityInfo unityInfo)
+    public static SentryUnityOptions? LoadSentryUnityOptions()
     {
         var scriptableOptions = Resources.Load<ScriptableSentryUnityOptions>($"{ConfigRootFolder}/{ConfigName}");
         if (scriptableOptions is not null)
         {
-            return scriptableOptions.ToSentryUnityOptions(false, unityInfo);
+            return scriptableOptions.ToSentryUnityOptions();
         }
 
         return null;
     }
 
-    internal SentryUnityOptions ToSentryUnityOptions(bool isBuilding, ISentryUnityInfo? unityInfo, IApplication? application = null)
+    internal SentryUnityOptions ToSentryUnityOptions(
+        ISentryUnityInfo? unityInfo = null,
+        IApplication? application = null,
+        bool isBuilding = false)
     {
         application ??= ApplicationAdapter.Instance;
 
-        var options = new SentryUnityOptions(isBuilding, application, unityInfo)
+        var options = new SentryUnityOptions(unityInfo, application, isBuilding: isBuilding)
         {
             Enabled = Enabled,
             Dsn = Dsn,
@@ -185,6 +189,12 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
         };
 
+        // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
+        if (!EnableOfflineCaching)
+        {
+            options.CacheDirectoryPath = null;
+        }
+
         if (!string.IsNullOrWhiteSpace(ReleaseOverride))
         {
             options.Release = ReleaseOverride;
@@ -226,64 +236,17 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         // Without setting up here we might miss out on logs between option-loading (now) and Init - i.e. native configuration
         options.SetupUnityLogging();
 
-        if (options.AttachViewHierarchy)
-        {
-            options.AddEventProcessor(new ViewHierarchyEventProcessor(options));
-        }
-        if (options.AttachScreenshot)
-        {
-            options.AddEventProcessor(new ScreenshotEventProcessor(options));
-        }
-
-        if (!application.IsEditor && options.Il2CppLineNumberSupportEnabled && unityInfo is not null)
-        {
-            options.AddIl2CppExceptionProcessor(unityInfo);
-        }
-
-        HandlePlatformRestrictedOptions(options, unityInfo, application);
+        // ExceptionFilters are added by default to the options.
         HandleExceptionFilter(options);
 
+        // The AnrDetectionIntegration is added by default. Since it is a ScriptableUnityOptions-only property we have to
+        // remove the integration when creating the options through here
         if (!AnrDetectionEnabled)
         {
             options.DisableAnrIntegration();
         }
 
         return options;
-    }
-
-    internal void HandlePlatformRestrictedOptions(SentryUnityOptions options, ISentryUnityInfo? unityInfo, IApplication application)
-    {
-        if (unityInfo?.IsKnownPlatform() == false)
-        {
-            options.DisableFileWrite = true;
-
-            // This is only provided on a best-effort basis for other than the explicitly supported platforms.
-            if (options.BackgroundWorker is null)
-            {
-                options.DiagnosticLogger?.LogDebug("Platform support for background thread execution is unknown: using WebBackgroundWorker.");
-                options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
-            }
-
-            // Disable offline caching regardless whether it was enabled or not.
-            options.CacheDirectoryPath = null;
-            if (EnableOfflineCaching)
-            {
-                options.DiagnosticLogger?.LogDebug("Platform support for offline caching is unknown: disabling.");
-            }
-
-            // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
-            if (options.AutoSessionTracking)
-            {
-                options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
-                options.AutoSessionTracking = false;
-            }
-
-            return;
-        }
-
-        // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
-        // implicitly creates a directory and leads to crashes i.e. on the Switch.
-        options.CacheDirectoryPath = EnableOfflineCaching ? application.PersistentDataPath : null;
     }
 
     private void HandleExceptionFilter(SentryUnityOptions options)
