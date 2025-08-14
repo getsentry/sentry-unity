@@ -17,12 +17,12 @@ public class ThirdPartySampleButtons : MonoBehaviour
 
     private void Awake()
     {
-#if SENTRY_HAS_DOTWEEN
+#if !SENTRY_HAS_DOTWEEN
         _doTweenButton.interactable = false;
         _doTweenButton.GetComponentInChildren<Text>().text = "Requires DOTween";
 #endif
 
-#if SENTRY_HAS_UNITASK
+#if !SENTRY_HAS_UNITASK
         _uniTaskThrowButton.interactable = false;
         _uniTaskThrowButton.GetComponentInChildren<Text>().text = "Requires UniTask";
         _uniTaskThrowAndCatchButton.interactable = false;
