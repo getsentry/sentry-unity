@@ -31,7 +31,7 @@ jobs:
           name: testapp-ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
 
       - name: Extract app project
-        run: tar -xvzf test-app-${env:INIT_TYPE}.tar.gz
+        run: tar -xvzf "test-app-$env:INIT_TYPE.tar.gz"
 
       - name: iOS smoke test
         run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
