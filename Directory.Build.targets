@@ -577,7 +577,6 @@ void PrintFailedTests(XElement element)
       <SDK Include="Windows"/>
       <SDK Include="Android"/>
       <SDK Include="Linux"/>
-      <SDK Include="Cocoa"/>
     </ItemGroup>
     <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
     <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />
