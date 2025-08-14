@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now has a dedicated sample scene for third party plugins like Cysharp, or DOTween. ([#2289](https://github.com/getsentry/sentry-unity/pull/2289))
+
 ### Fixes
 
 - For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
