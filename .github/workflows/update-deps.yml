@@ -7,6 +7,11 @@ on:
   # Allow a manual trigger to be able to run the update when there are new dependencies or after a PR merge to resolve CHANGELOG conflicts.
   workflow_dispatch:
 
+permissions:
+  contents: write # needed to add commits to branches
+  pull-requests: write
+  actions: write # needed for cancelling workflow runs
+
 jobs:
   deps:
     name: ${{ matrix.name }}
