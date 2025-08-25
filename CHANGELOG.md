@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now automatically marks stack frames from `Cysharp` and `DG.Tweening` as non in-app. 
+  This highly improves the resulting stack trace quality in the issues details. ([#2285](https://github.com/getsentry/sentry-unity/pull/2285))
+
 ### Fixes
 
 - The check used to verify whether the current thread is the main-thread now includes `JobsUtility.IsExecutingJob` to support running in Burst. ([#2226](https://github.com/getsentry/sentry-unity/pull/2226))
