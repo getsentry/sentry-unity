@@ -28,8 +28,6 @@ internal class SentryUnitySdk
             return null;
         }
 
-        MainThreadData.CollectData();
-
         // Some integrations are controlled through a flag and opt-in. Adding these integrations late so we have equal
         // behaviour whether the options got created through the ScriptableObject or the SDK gets manually initialized
         AddIntegrations(options);
