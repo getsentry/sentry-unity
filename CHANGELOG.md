@@ -5,9 +5,12 @@
 ### Features
 
 - The SDK now has a dedicated sample scene for third party plugins like Cysharp, or DOTween. ([#2289](https://github.com/getsentry/sentry-unity/pull/2289))
+- The SDK now automatically marks stack frames from `Cysharp` and `DG.Tweening` as non in-app. 
+  This highly improves the resulting stack trace quality in the issues details. ([#2285](https://github.com/getsentry/sentry-unity/pull/2285))
 
 ### Fixes
 
+- The check used to verify whether the current thread is the main-thread now includes `JobsUtility.IsExecutingJob` to support running in Burst. ([#2226](https://github.com/getsentry/sentry-unity/pull/2226))
 - For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
 
 ### Dependencies
@@ -18,15 +21,15 @@
 - Bump Cocoa SDK from v8.51.0 to v8.54.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265))
     - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
     - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.54.0)
-- Bump Java SDK from v8.17.0 to v8.19.0 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8190)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.19.0)
+- Bump Java SDK from v8.17.0 to v8.19.1 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8191)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.19.1)
 - Bump Native SDK from v0.9.1 to v0.10.0 ([#2275](https://github.com/getsentry/sentry-unity/pull/2275))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0100)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.9.1...0.10.0)
-- Bump CLI from v2.50.2 to v2.51.1 ([#2276](https://github.com/getsentry/sentry-unity/pull/2276))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2511)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.2...2.51.1)
+- Bump CLI from v2.50.2 to v2.52.0 ([#2276](https://github.com/getsentry/sentry-unity/pull/2276), [#2288](https://github.com/getsentry/sentry-unity/pull/2288))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2520)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.50.2...2.52.0)
 
 ## 4.0.0-beta.1
 
