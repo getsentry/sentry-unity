@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -70,7 +71,7 @@ internal static class MainThreadData
     public static DateTimeOffset? StartTime { get; set; }
 
     public static bool IsMainThread()
-        => MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
+        => !JobsUtility.IsExecutingJob && MainThreadId.HasValue && Thread.CurrentThread.ManagedThreadId == MainThreadId;
 
     // For testing
     internal static ISentrySystemInfo? SentrySystemInfo { get; set; }
