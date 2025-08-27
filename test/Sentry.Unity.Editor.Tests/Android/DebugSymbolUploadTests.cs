@@ -232,7 +232,7 @@ public class DebugSymbolUploadTests
         // Add and remove multiple times to simulate consecutive builds
         for (var i = 0; i < 3; i++)
         {
-            var gradleFile  = File.ReadAllText(GetGradleFilePath());
+            var gradleFile = File.ReadAllText(GetGradleFilePath());
             StringAssert.DoesNotContain("task sentryUploadSymbols", gradleFile);
 
             sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
