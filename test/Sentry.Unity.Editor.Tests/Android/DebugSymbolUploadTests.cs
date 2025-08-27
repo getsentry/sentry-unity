@@ -126,8 +126,8 @@ public class DebugSymbolUploadTests
     public void AppendUploadToGradleFile_TaskAlreadyExists_ThrowsInvalidOperationException()
     {
         var sut = _fixture.GetSut();
-        sut.AppendUploadToGradleFile(_fixture.SentryCliPath); // First append, creates the task
-        // Second append should cause the exception because task already exists
+        sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
+
         var ex = Assert.Throws<InvalidOperationException>(() => sut.AppendUploadToGradleFile(_fixture.SentryCliPath));
         StringAssert.Contains("Task already exists in gradle file", ex.Message);
     }
