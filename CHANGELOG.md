@@ -4,6 +4,7 @@
 
 ### Features
 
+- The SDK now has a dedicated sample scene for third party plugins like Cysharp, or DOTween. ([#2289](https://github.com/getsentry/sentry-unity/pull/2289))
 - The SDK now automatically marks stack frames from `Cysharp` and `DG.Tweening` as non in-app. 
   This highly improves the resulting stack trace quality in the issues details. ([#2285](https://github.com/getsentry/sentry-unity/pull/2285))
 
@@ -16,15 +17,15 @@
 
 ### Dependencies
 
-- Bump .NET SDK from v5.12.0 to v5.14.0 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259), [#2274](https://github.com/getsentry/sentry-unity/pull/2274))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5140)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.14.0)
+- Bump .NET SDK from v5.12.0 to v5.14.1 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259), [#2274](https://github.com/getsentry/sentry-unity/pull/2274), [#2291](https://github.com/getsentry/sentry-unity/pull/2291))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5141)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.14.1)
 - Bump Cocoa SDK from v8.51.0 to v8.54.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265))
     - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
     - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.54.0)
-- Bump Java SDK from v8.17.0 to v8.19.1 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8191)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.19.1)
+- Bump Java SDK from v8.17.0 to v8.20.0 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283), [#2299](https://github.com/getsentry/sentry-unity/pull/2299))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8200)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.20.0)
 - Bump Native SDK from v0.9.1 to v0.10.0 ([#2275](https://github.com/getsentry/sentry-unity/pull/2275))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0100)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.9.1...0.10.0)

@@ -311,10 +311,13 @@ Samples~/unity-of-bugs/Scenes/4_ThreadedSamples.unity
 Samples~/unity-of-bugs/Scenes/4_ThreadedSamples.unity.meta
 Samples~/unity-of-bugs/Scenes/5_ForceCrashSamples.unity
 Samples~/unity-of-bugs/Scenes/5_ForceCrashSamples.unity.meta
+Samples~/unity-of-bugs/Scenes/6_ThirdPartySamples.unity
+Samples~/unity-of-bugs/Scenes/6_ThirdPartySamples.unity.meta
 Samples~/unity-of-bugs/Scripts/AdditionalSampleButtons.cs
 Samples~/unity-of-bugs/Scripts/AdditionalSampleButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs
 Samples~/unity-of-bugs/Scripts/BugFarmButtons.cs.meta
+Samples~/unity-of-bugs/Scripts/Editor.meta
 Samples~/unity-of-bugs/Scripts/ForceCrashButtons.cs
 Samples~/unity-of-bugs/Scripts/ForceCrashButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport.meta
@@ -324,6 +327,8 @@ Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs
 Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/SentryOptionConfiguration.cs
 Samples~/unity-of-bugs/Scripts/SentryOptionConfiguration.cs.meta
+Samples~/unity-of-bugs/Scripts/ThirdPartySampleButtons.cs
+Samples~/unity-of-bugs/Scripts/ThirdPartySampleButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs
 Samples~/unity-of-bugs/Scripts/ThreadingSamples.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/AndroidButtons.cs
@@ -346,6 +351,8 @@ Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m
 Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs
 Samples~/unity-of-bugs/Scripts/NativeSupport/WebGLButtons.cs.meta
+Samples~/unity-of-bugs/Scripts/Editor/ThirdPartyDefineSetup.cs
+Samples~/unity-of-bugs/Scripts/Editor/ThirdPartyDefineSetup.cs.meta
 Textures/Logo.png
 Textures/Logo.png.meta
 Textures/Megaphone.png
