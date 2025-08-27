@@ -4,6 +4,7 @@
 
 ### Features
 
+- The SDK now has a dedicated sample scene for third party plugins like Cysharp, or DOTween. ([#2289](https://github.com/getsentry/sentry-unity/pull/2289))
 - The SDK now automatically marks stack frames from `Cysharp` and `DG.Tweening` as non in-app. 
   This highly improves the resulting stack trace quality in the issues details. ([#2285](https://github.com/getsentry/sentry-unity/pull/2285))
 

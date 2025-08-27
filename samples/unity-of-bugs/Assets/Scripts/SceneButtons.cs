@@ -8,6 +8,7 @@ public class SceneButtons : MonoBehaviour
     public void LoadAdditionalSamples() => SceneManager.LoadScene("3_AdditionalSamples");
     public void LoadThreadedSamples() => SceneManager.LoadScene("4_ThreadedSamples");
     public void LoadForceCrashSamples() => SceneManager.LoadScene("5_ForceCrashSamples");
+    public void LoadThirdPartySamples() => SceneManager.LoadScene("6_ThirdPartySamples");
 
     public void CloseGame()
     {
