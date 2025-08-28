@@ -1,6 +1,5 @@
 using Sentry.Extensibility;
 using Sentry.Integrations;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity;
@@ -35,7 +34,7 @@ public class SceneManagerTracingAPI : SceneManagerAPI
     public SceneManagerTracingAPI(IDiagnosticLogger? logger) =>
         _logger = logger;
 
-    protected override AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
+    protected override UnityEngine.AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
     {
         _logger?.LogInfo("Creating '{0}' transaction for '{1}'.", TransactionOperation, sceneName);
 
