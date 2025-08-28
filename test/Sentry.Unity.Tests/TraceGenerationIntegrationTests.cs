@@ -16,9 +16,9 @@ public class TraceGenerationIntegrationTests
         public TestSentryMonoBehaviour SentryMonoBehaviour { get; set; } = new();
         public TestHub TestHub { get; set; } = new();
         public TestLogger Logger { get; set; } = new();
-        public SentryOptions SentryOptions { get; set; }
+        public SentryUnityOptions SentryOptions { get; set; }
 
-        public Fixture() => SentryOptions = new SentryOptions { DiagnosticLogger = Logger };
+        public Fixture() => SentryOptions = new SentryUnityOptions { DiagnosticLogger = Logger };
 
         public TraceGenerationIntegration GetSut() => new(SentryMonoBehaviour, SceneManager);
     }
@@ -33,9 +33,11 @@ public class TraceGenerationIntegrationTests
     }
 
     [Test]
-    public void TraceGeneration_OnRegister_GeneratesInitialTrace()
+    public void TraceGeneration_AutoStartupTracesFalse_OnRegisterGeneratesInitialTrace()
     {
         // Arrange
+        _fixture.SentryOptions.TracesSampleRate = 0.0f;
+        _fixture.SentryOptions.AutoStartupTraces = false;
         var sut = _fixture.GetSut();
 
         // Act
@@ -48,6 +50,21 @@ public class TraceGenerationIntegrationTests
         configureScope(scope);
 
         Assert.AreNotEqual(initialPropagationContext, scope.PropagationContext);
+    }
+
+    [Test]
+    public void TraceGeneration_AutoStartupTracesTrue_OnRegisterDoesNotGenerateInitialTrace()
+    {
+        // Arrange
+        _fixture.SentryOptions.TracesSampleRate = 0.0f;
+        _fixture.SentryOptions.AutoStartupTraces = true;
+        var sut = _fixture.GetSut();
+
+        // Act
+        sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+
+        // Assert
+        Assert.IsEmpty(_fixture.TestHub.ConfigureScopeCalls);
     }
 
     [Test]
@@ -73,9 +90,29 @@ public class TraceGenerationIntegrationTests
     }
 
     [Test]
-    public void TraceGeneration_OnActiveSceneChange_GeneratesNewTrace()
+    public void TraceGeneration_AutoSceneLoadTracesTrue_OnActiveSceneChangeDoesNotGenerateNewTrace()
     {
         // Arrange
+        _fixture.SentryOptions.TracesSampleRate = 0.0f;
+        _fixture.SentryOptions.AutoSceneLoadTraces = true;
+
+        var sut = _fixture.GetSut();
+        sut.Register(_fixture.TestHub, _fixture.SentryOptions);
+
+        // Act
+        _fixture.SceneManager.OnActiveSceneChanged(new SceneAdapter("from scene name"), new SceneAdapter("to scene name"));
+
+        // Assert
+        Assert.IsEmpty(_fixture.TestHub.ConfigureScopeCalls);
+    }
+
+    [Test]
+    public void TraceGeneration_AutoSceneLoadTracesFalse_OnActiveSceneChangeGeneratesNewTrace()
+    {
+        // Arrange
+        _fixture.SentryOptions.TracesSampleRate = 0.0f;
+        _fixture.SentryOptions.AutoSceneLoadTraces = false;
+
         var sut = _fixture.GetSut();
         sut.Register(_fixture.TestHub, _fixture.SentryOptions);
         var initialCallsCount = _fixture.TestHub.ConfigureScopeCalls.Count;
@@ -84,13 +121,11 @@ public class TraceGenerationIntegrationTests
         _fixture.SceneManager.OnActiveSceneChanged(new SceneAdapter("from scene name"), new SceneAdapter("to scene name"));
 
         // Assert
-        // Calling 'Register' already generated a trace, so we expect 1+1 calls to ConfigureScope
         Assert.AreEqual(initialCallsCount + 1, _fixture.TestHub.ConfigureScopeCalls.Count);
         var configureScope = _fixture.TestHub.ConfigureScopeCalls.Last();
         var scope = new Scope(_fixture.SentryOptions);
         var initialPropagationContext = scope.PropagationContext;
         configureScope(scope);
-
         Assert.AreNotEqual(initialPropagationContext, scope.PropagationContext);
     }
 }
