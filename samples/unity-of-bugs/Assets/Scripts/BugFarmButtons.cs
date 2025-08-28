@@ -19,7 +19,7 @@ public class BugFarmButtons : MonoBehaviour
 
     public void ThrowUnhandledException()
     {
-        Debug.Log("Throwing a unhandled 🕷 exception!");
+        Debug.Log("Throwing an unhandled 🕷 exception!");
         DoSomeWorkHere();
     }
 

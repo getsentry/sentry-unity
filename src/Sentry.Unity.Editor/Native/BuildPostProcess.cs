@@ -122,106 +122,44 @@ public static class BuildPostProcess
 
         logger.LogInfo("Uploading debugging information using sentry-cli in {0}", buildOutputDir);
 
-        var paths = "";
-        Func<string, bool> addPath = (string name) =>
-        {
-            var fullPath = Path.Combine(buildOutputDir, name);
-            if (fullPath.Contains("*") || Directory.Exists(fullPath) || File.Exists(fullPath))
-            {
-                paths += $" \"{name}\"";
-                logger.LogDebug($"Adding '{name}' to the debug-info upload");
-                return true;
-            }
-            else
-            {
-                logger.LogWarning($"Couldn't find '{name}' - debug symbol upload will be incomplete");
-                return false;
-            }
-        };
-
-        Action<string, string[]> addFilesMatching = (string directory, string[] includePatterns) =>
-        {
-            Matcher matcher = new();
-            matcher.AddIncludePatterns(includePatterns);
-            foreach (string file in matcher.GetResultsInFullPath(directory))
-            {
-                addPath(file);
-            }
-        };
-
-        addPath(executableName);
+        // Setting the `buildOutputDir` as the root for debug symbol upload. This will make sure we pick up
+        // `BurstDebugInformation` and`_DoNotShip` as well
+        var paths = $" \"{buildOutputDir}\"";
 
         switch (target)
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                addPath("UnityPlayer.dll");
-                addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/Plugins/x86_64/sentry.dll");
-                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"));
-
-                if (isMono)
+                var windowsSentryPdb = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb");
+                if (File.Exists(windowsSentryPdb))
                 {
-                    addPath("MonoBleedingEdge/EmbedRuntime");
-                    addFilesMatching(buildOutputDir, new[] { "*.pdb" });
-
-                    // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
-                    // './Temp/ManagedSymbols/'. We want the one in 'Temp/ManagedSymbols/' specifically.
-                    var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
-                    if (Directory.Exists(managedSymbolsDirectory))
-                    {
-                        addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
-                    }
-                }
-                else // IL2CPP
-                {
-                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
-                    addPath("GameAssembly.dll");
+                    paths += $" \"{windowsSentryPdb}\"";
                 }
                 break;
             case BuildTarget.StandaloneLinux64:
-                addPath("GameAssembly.so");
-                addPath("UnityPlayer.so");
-                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"));
-
-                if (isMono)
+                var linuxSentryDbg = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so");
+                if (File.Exists(linuxSentryDbg))
                 {
-                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_Data/MonoBleedingEdge/x86_64");
-                    addFilesMatching(buildOutputDir, new[] { "*.debug" });
-
-                    var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
-                    if (Directory.Exists(managedSymbolsDirectory))
-                    {
-                        addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
-                    }
-                }
-                else // IL2CPP
-                {
-                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                    paths += $" \"{linuxSentryDbg}\"";
                 }
                 break;
             case BuildTarget.StandaloneOSX:
-                addPath(Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"));
-
-                if (isMono)
+                var macOSSentryDsym = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM");
+                if (Directory.Exists(macOSSentryDsym))
                 {
-                    addFilesMatching(buildOutputDir, new[] { "*.pdb" });
-
-                    // Unity stores the .pdb files in './Library/ScriptAssemblies/' and starting with 2020 in
-                    // './Temp/ManagedSymbols/'. We want the one in 'Temp/ManagedSymbols/' specifically.
-                    var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
-                    if (Directory.Exists(managedSymbolsDirectory))
-                    {
-                        addFilesMatching(managedSymbolsDirectory, new[] { "*.pdb" });
-                    }
-                }
-                else // IL2CPP
-                {
-                    addPath(Path.GetFileNameWithoutExtension(executableName) + "_BackUpThisFolder_ButDontShipItWithYourGame");
+                    paths += $" \"{macOSSentryDsym}\"";
                 }
                 break;
             default:
                 logger.LogError($"Symbol upload for '{target}' is currently not supported.");
-                break;
+                return;
+        }
+
+        // Unity stores the .pdb files for script assemblies in `./Temp/ManagedSymbols/`
+        var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
+        if (Directory.Exists(managedSymbolsDirectory))
+        {
+            paths += $" \"{managedSymbolsDirectory}\"";
         }
 
         var cliArgs = "debug-files upload ";
