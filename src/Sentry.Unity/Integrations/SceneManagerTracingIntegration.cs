@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity;
@@ -39,7 +40,19 @@ public class SceneManagerTracingAPI : SceneManagerAPI
         _logger?.LogInfo("Creating '{0}' transaction for '{1}'.", TransactionOperation, sceneName);
 
         var transaction = SentrySdk.StartTransaction("scene.loading", TransactionOperation);
-        SentrySdk.ConfigureScope(scope => scope.Transaction = transaction);
+        SentrySdk.ConfigureScope(scope =>
+        {
+            if (scope.Transaction is not null)
+            {
+                Debug.Log("HUEHUEHUE");
+            }
+            else
+            {
+                Debug.Log("SADADADADAD");
+            }
+
+            scope.Transaction = transaction;
+        });
 
         _logger?.LogDebug("Creating '{0}' span.", SpanOperation);
         var span = SentrySdk.GetSpan()?.StartChild(SpanOperation, sceneName ?? $"buildIndex:{sceneBuildIndex}");

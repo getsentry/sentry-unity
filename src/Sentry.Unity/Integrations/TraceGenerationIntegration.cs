@@ -19,19 +19,32 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions options)
     {
-        hub.ConfigureScope(UpdatePropagationContext);
-
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
             options.DiagnosticLogger?.LogDebug("Application resumed. Creating new Trace.");
             hub.ConfigureScope(UpdatePropagationContext);
         };
 
-        _sceneManager.ActiveSceneChanged += (_, _) =>
+        if (options is not SentryUnityOptions unityOptions || unityOptions.TracesSampleRate > 0)
         {
-            options.DiagnosticLogger?.LogDebug("Active Scene changed. Creating new Trace.");
+            return;
+        }
+
+        if (!unityOptions.AutoStartupTraces)
+        {
+            // The generated trace would immediately get overwritten by the StartupTracingIntegration
             hub.ConfigureScope(UpdatePropagationContext);
-        };
+        }
+
+        if (!unityOptions.AutoSceneLoadTraces)
+        {
+            // The generated trace would immediately get overwritten by the SceneManagerTracingIntegration
+            _sceneManager.ActiveSceneChanged += (_, _) =>
+            {
+                options.DiagnosticLogger?.LogDebug("Active Scene changed. Creating new Trace.");
+                hub.ConfigureScope(UpdatePropagationContext);
+            };
+        }
     }
 
     private static void UpdatePropagationContext(Scope scope) =>
