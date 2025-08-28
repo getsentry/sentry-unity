@@ -304,7 +304,7 @@ public class AndroidManifestConfiguration
         {
             symbolsUpload.RemoveUploadFromGradleFile();
 
-            if (_options is { Il2CppLineNumberSupportEnabled: true })
+            if (_options is { Enabled: true, Il2CppLineNumberSupportEnabled: true })
             {
                 _logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
             }
@@ -327,6 +327,9 @@ public class AndroidManifestConfiguration
             SentryCli.CreateSentryProperties(launcherDirectory, _sentryCliOptions!, _options!);
 
             symbolsUpload.TryCopySymbolsToGradleProject();
+            // We need to remove the old upload task first as the project persists across consecutive builds and the
+            // cli options might have changed
+            symbolsUpload.RemoveUploadFromGradleFile();
             symbolsUpload.AppendUploadToGradleFile(sentryCliPath);
         }
         catch (Exception e)

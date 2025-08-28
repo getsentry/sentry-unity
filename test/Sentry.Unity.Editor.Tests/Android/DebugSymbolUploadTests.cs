@@ -123,6 +123,16 @@ public class DebugSymbolUploadTests
     }
 
     [Test]
+    public void AppendUploadToGradleFile_TaskAlreadyExists_ThrowsInvalidOperationException()
+    {
+        var sut = _fixture.GetSut();
+        sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => sut.AppendUploadToGradleFile(_fixture.SentryCliPath));
+        StringAssert.Contains("Task already exists in gradle file", ex.Message);
+    }
+
+    [Test]
     [TestCase(false, false, false)]
     [TestCase(true, false, false)]
     [TestCase(true, true, false)]
@@ -212,6 +222,29 @@ public class DebugSymbolUploadTests
 
         actualFileContent = File.ReadAllText(GetGradleFilePath());
         StringAssert.DoesNotContain("sentry.properties", actualFileContent);
+    }
+
+    [Test]
+    public void RemoveUploadTaskFromGradleFile_MultipleConsecutiveRemovals_HandlesCorrectly()
+    {
+        var sut = _fixture.GetSut();
+
+        // Add and remove multiple times to simulate consecutive builds
+        for (var i = 0; i < 3; i++)
+        {
+            var gradleFile = File.ReadAllText(GetGradleFilePath());
+            StringAssert.DoesNotContain("task sentryUploadSymbols", gradleFile);
+
+            sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
+
+            gradleFile = File.ReadAllText(GetGradleFilePath());
+            StringAssert.Contains("task sentryUploadSymbols", gradleFile);
+
+            sut.RemoveUploadFromGradleFile();
+
+            gradleFile = File.ReadAllText(GetGradleFilePath());
+            StringAssert.DoesNotContain("task sentryUploadSymbols", gradleFile);
+        }
     }
 
     [Test]
