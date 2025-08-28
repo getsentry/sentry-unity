@@ -194,7 +194,7 @@ internal class DebugSymbolUpload
             return;
         }
 
-        var pattern = Regex.Escape(SymbolUploadTaskStartComment) + @"\r?\n.*?\r?\n" + Regex.Escape(SymbolUploadTaskEndComment);
+        var pattern = Regex.Escape(SymbolUploadTaskStartComment) + @"\r?\n.*?\r?\n" + Regex.Escape(SymbolUploadTaskEndComment) + @"\r?\n";
         var regex = new Regex(pattern, RegexOptions.Singleline);
         gradleBuildFile = regex.Replace(gradleBuildFile, "");
 
