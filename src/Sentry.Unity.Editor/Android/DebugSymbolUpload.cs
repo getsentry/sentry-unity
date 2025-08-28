@@ -37,6 +37,8 @@ internal class DebugSymbolUpload
     private const string UploadArgsMarker = "UPLOAD_ARGS";
     private const string ProguardArgsMarker = "PROGUARD_ARGS";
 
+    private const string RaiseIssuePrompt = "\nPlease raise an issue over at https://github.com/getsentry/sentry-unity/issues";
+
     private string SymbolUploadTaskFormat
     {
         get
@@ -108,7 +110,7 @@ internal class DebugSymbolUpload
         sentryCliPath = ConvertSlashes(sentryCliPath);
         if (!File.Exists(sentryCliPath))
         {
-            throw new FileNotFoundException("Failed to find sentry-cli", sentryCliPath);
+            throw new FileNotFoundException($"Failed to find sentry-cli{RaiseIssuePrompt}", sentryCliPath);
         }
 
         var uploadDifArguments = ", '--il2cpp-mapping'";
@@ -142,7 +144,7 @@ internal class DebugSymbolUpload
                 }
                 else
                 {
-                    throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolUploadPath}");
+                    throw new DirectoryNotFoundException($"Failed to find the symbols directory at {symbolUploadPath}{RaiseIssuePrompt}");
                 }
             }
         }
@@ -162,9 +164,9 @@ internal class DebugSymbolUpload
         symbolUploadText = symbolUploadText.Replace(ProguardArgsMarker, uploadProguardArguments);
 
         var gradleBuildFile = LoadGradleScript();
-        if (gradleBuildFile.Contains(SymbolUploadTaskStartComment))
+        if (gradleBuildFile.Contains(SymbolUploadTaskStartComment) || gradleBuildFile.Contains("task sentryUploadSymbols"))
         {
-            throw new InvalidOperationException("Failed to create Debug Symbol Upload Task. Task already exists in gradle file. Consider creating a clean build.");
+            throw new InvalidOperationException($"Failed to create Debug Symbol Upload Task. Task already exists in gradle file. A clean build should resolve this.{RaiseIssuePrompt}");
         }
 
         var stringBuilder = new StringBuilder(gradleBuildFile);
@@ -178,7 +180,7 @@ internal class DebugSymbolUpload
     {
         if (!File.Exists(_gradleScriptPath))
         {
-            throw new FileNotFoundException($"Failed to find the gradle config.", _gradleScriptPath);
+            throw new FileNotFoundException($"Failed to find the gradle config.{RaiseIssuePrompt}", _gradleScriptPath);
         }
 
         return File.ReadAllText(_gradleScriptPath);
@@ -194,9 +196,16 @@ internal class DebugSymbolUpload
             return;
         }
 
-        var pattern = Regex.Escape(SymbolUploadTaskStartComment) + @"\r?\n.*?\r?\n" + Regex.Escape(SymbolUploadTaskEndComment) + @"\r?\n";
+        var pattern = Regex.Escape(SymbolUploadTaskStartComment) + @"\r?\n.*?\r?\n" + Regex.Escape(SymbolUploadTaskEndComment);
         var regex = new Regex(pattern, RegexOptions.Singleline);
         gradleBuildFile = regex.Replace(gradleBuildFile, "");
+
+        if (gradleBuildFile.Contains(SymbolUploadTaskStartComment) ||
+            gradleBuildFile.Contains("task sentryUploadSymbols") ||
+            gradleBuildFile.Contains(SymbolUploadTaskEndComment))
+        {
+            throw new InvalidOperationException($"Failed to remove Debug Symbol Upload Task from gradle file. A clean build should resolve this.{RaiseIssuePrompt}");
+        }
 
         using var streamWriter = File.CreateText(_gradleScriptPath);
         streamWriter.Write(gradleBuildFile);
