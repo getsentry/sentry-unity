@@ -162,7 +162,7 @@ internal class DebugSymbolUpload
         symbolUploadText = symbolUploadText.Replace(ProguardArgsMarker, uploadProguardArguments);
 
         var gradleBuildFile = LoadGradleScript();
-        if (gradleBuildFile.Contains("task sentryUploadSymbols"))
+        if (gradleBuildFile.Contains(SymbolUploadTaskStartComment))
         {
             throw new InvalidOperationException("Failed to create Debug Symbol Upload Task. Task already exists in gradle file. Consider creating a clean build.");
         }
