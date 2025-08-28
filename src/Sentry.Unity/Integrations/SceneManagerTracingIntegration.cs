@@ -35,24 +35,12 @@ public class SceneManagerTracingAPI : SceneManagerAPI
     public SceneManagerTracingAPI(IDiagnosticLogger? logger) =>
         _logger = logger;
 
-    protected override UnityEngine.AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
+    protected override AsyncOperation LoadSceneAsyncByNameOrIndex(string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame)
     {
         _logger?.LogInfo("Creating '{0}' transaction for '{1}'.", TransactionOperation, sceneName);
 
         var transaction = SentrySdk.StartTransaction("scene.loading", TransactionOperation);
-        SentrySdk.ConfigureScope(scope =>
-        {
-            if (scope.Transaction is not null)
-            {
-                Debug.Log("HUEHUEHUE");
-            }
-            else
-            {
-                Debug.Log("SADADADADAD");
-            }
-
-            scope.Transaction = transaction;
-        });
+        SentrySdk.ConfigureScope(scope => scope.Transaction = transaction);
 
         _logger?.LogDebug("Creating '{0}' span.", SpanOperation);
         var span = SentrySdk.GetSpan()?.StartChild(SpanOperation, sceneName ?? $"buildIndex:{sceneBuildIndex}");
