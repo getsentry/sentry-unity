@@ -10,6 +10,8 @@
 
 ### Fixes
 
+- The SDK now properly deduplicates trace generation during startup and scene loading ([#2300](https://github.com/getsentry/sentry-unity/pull/2300))
+- The SDK no longer appends multiple upload tasks when building for Android ([#2300](https://github.com/getsentry/sentry-unity/pull/2300))
 - The check used to verify whether the current thread is the main-thread now includes `JobsUtility.IsExecutingJob` to support running in Burst. ([#2226](https://github.com/getsentry/sentry-unity/pull/2226))
 - For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
 
