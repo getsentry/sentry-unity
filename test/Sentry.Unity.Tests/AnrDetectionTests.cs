@@ -146,4 +146,56 @@ public class AnrDetectionTests
 
         Assert.IsNull(anr);
     }
+
+    [UnityTest]
+    public IEnumerator SingleThreaded_HandlesCoroutinePauseResume()
+    {
+        // Arrange
+        ApplicationNotRespondingException? anr = null;
+        _sut = CreateWatchDog(false);
+        _sut.OnApplicationNotResponding += (_, e) => anr = e;
+
+        // Verify that ANR detection works
+        Thread.Sleep(TimeSpan.FromTicks(_timeout.Ticks * 2));
+
+        // Let single-threaded watchdog detect the ANR
+        var watch = Stopwatch.StartNew();
+        while (watch.Elapsed < _timeout && anr is null)
+        {
+            yield return null;
+        }
+
+        Assert.IsNotNull(anr); // Sanity Check
+
+        anr = null;
+
+        // Act
+        _monoBehaviour.UpdatePauseStatus(true);
+        yield return null;
+
+        Thread.Sleep(TimeSpan.FromTicks(_timeout.Ticks * 2));
+
+        _monoBehaviour.UpdatePauseStatus(false);
+        yield return null;
+
+        // Assert
+        watch.Restart();
+        while (watch.Elapsed < _timeout && anr is null)
+        {
+            yield return null;
+        }
+
+        Assert.IsNull(anr);
+
+        // Verify ANR detection works
+        Thread.Sleep(TimeSpan.FromTicks(_timeout.Ticks * 2));
+
+        watch.Restart();
+        while (watch.Elapsed < _timeout && anr is null)
+        {
+            yield return null;
+        }
+
+        Assert.IsNotNull(anr); // Sanity Check
+    }
 }

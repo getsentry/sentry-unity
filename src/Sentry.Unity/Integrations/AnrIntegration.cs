@@ -174,14 +174,31 @@ internal class AnrWatchDogSingleThreaded : AnrWatchDog
     private readonly Stopwatch _watch = new();
     private bool _stop;
 
+    private Coroutine _updateUiStatusCoroutine;
+
     internal AnrWatchDogSingleThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, TimeSpan detectionTimeout)
         : base(logger, monoBehaviour, detectionTimeout)
     {
-        // Check the UI status periodically by running a coroutine on the UI thread and checking the elapsed time.
-        // On WebGL, the coroutine keeps executing even after `ApplicationPausing` got invoked. The pause check in
-        // `Report` prevents ANR events from being reported from paused/inactive games.
+        Logger?.LogInfo("Starting an ANR Watchdog - Detection timeout: {0} ms, check every {1} ms", DetectionTimeoutMs, SleepIntervalMs);
+
+        // Check the UI status periodically by running a coroutine on the UI thread and checking the elapsed time
         _watch.Start();
-        MonoBehaviour.StartCoroutine(UpdateUiStatus());
+        _updateUiStatusCoroutine = MonoBehaviour.StartCoroutine(UpdateUiStatus());
+
+        // We're stuck on the main thread, and we're using timestamps: We have to reset the coroutine when the app
+        // loses and regains focus to avoid reporting false positives.
+        MonoBehaviour.ApplicationPausing += () =>
+        {
+            logger?.LogDebug("Stopping ANR detection coroutine.");
+            _watch.Stop();
+            MonoBehaviour.StopCoroutine(_updateUiStatusCoroutine);
+        };
+        MonoBehaviour.ApplicationResuming += () =>
+        {
+            logger?.LogDebug("Starting ANR detection coroutine.");
+            _watch.Restart();
+            _updateUiStatusCoroutine = MonoBehaviour.StartCoroutine(UpdateUiStatus());
+        };
     }
 
     internal override void Stop(bool wait = false) => _stop = true;
