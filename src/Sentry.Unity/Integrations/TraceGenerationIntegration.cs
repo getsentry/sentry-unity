@@ -3,6 +3,9 @@ using Sentry.Integrations;
 
 namespace Sentry.Unity.Integrations;
 
+/// <summary>
+/// The TraceGenerationIntegration is used in case of
+/// </summary>
 internal sealed class TraceGenerationIntegration : ISdkIntegration
 {
     private readonly ISceneManager _sceneManager;
@@ -21,32 +24,32 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
     {
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
-            options.DiagnosticLogger?.LogDebug("Application resumed. Creating new Trace.");
-            hub.ConfigureScope(UpdatePropagationContext);
+            options.DiagnosticLogger?.LogDebug("Game resuming. Creating new Trace.");
+            hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));;
         };
 
-        if (options is not SentryUnityOptions unityOptions || unityOptions.TracesSampleRate > 0)
+        if (options is not SentryUnityOptions unityOptions)
         {
             return;
         }
 
-        // The generated trace context would immediately get overwritten by the StartupTracingIntegration
-        if (!unityOptions.AutoStartupTraces)
+        var isTracingEnabled = unityOptions.TracesSampleRate > 0.0f;
+
+        // Create initial trace context if tracing is disabled or startup tracing is disabled
+        if (!isTracingEnabled || !unityOptions.AutoStartupTraces)
         {
-            hub.ConfigureScope(UpdatePropagationContext);
+            options.DiagnosticLogger?.LogDebug("Startup. Creating new Trace.");
+            hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
         }
 
-        // The generated trace context would immediately get overwritten by the SceneManagerTracingIntegration
-        if (!unityOptions.AutoSceneLoadTraces)
+        // Set up scene change handling if tracing is disabled or auto scene load traces are disabled
+        if (!isTracingEnabled || !unityOptions.AutoSceneLoadTraces)
         {
             _sceneManager.ActiveSceneChanged += (_, _) =>
             {
                 options.DiagnosticLogger?.LogDebug("Active Scene changed. Creating new Trace.");
-                hub.ConfigureScope(UpdatePropagationContext);
+                hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
             };
         }
     }
-
-    private static void UpdatePropagationContext(Scope scope) =>
-        scope.SetPropagationContext(new SentryPropagationContext());
 }
