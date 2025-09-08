@@ -30,15 +30,15 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
             return;
         }
 
+        // The generated trace context would immediately get overwritten by the StartupTracingIntegration
         if (!unityOptions.AutoStartupTraces)
         {
-            // The generated trace would immediately get overwritten by the StartupTracingIntegration
             hub.ConfigureScope(UpdatePropagationContext);
         }
 
+        // The generated trace context would immediately get overwritten by the SceneManagerTracingIntegration
         if (!unityOptions.AutoSceneLoadTraces)
         {
-            // The generated trace would immediately get overwritten by the SceneManagerTracingIntegration
             _sceneManager.ActiveSceneChanged += (_, _) =>
             {
                 options.DiagnosticLogger?.LogDebug("Active Scene changed. Creating new Trace.");
