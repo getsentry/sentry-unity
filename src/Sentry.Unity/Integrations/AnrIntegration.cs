@@ -177,7 +177,9 @@ internal class AnrWatchDogSingleThreaded : AnrWatchDog
     internal AnrWatchDogSingleThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, TimeSpan detectionTimeout)
         : base(logger, monoBehaviour, detectionTimeout)
     {
-        // Check the UI status periodically by running a coroutine on the UI thread and checking the elapsed time
+        // Check the UI status periodically by running a coroutine on the UI thread and checking the elapsed time.
+        // On WebGL, the coroutine keeps executing even after `ApplicationPausing` got invoked. The pause check in
+        // `Report` prevents ANR events from being reported from paused/inactive games.
         _watch.Start();
         MonoBehaviour.StartCoroutine(UpdateUiStatus());
     }
