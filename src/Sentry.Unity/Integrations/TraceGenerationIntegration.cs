@@ -25,7 +25,8 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
             options.DiagnosticLogger?.LogDebug("Game resuming. Creating new Trace.");
-            hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));;
+            hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
+            ;
         };
 
         if (options is not SentryUnityOptions unityOptions)
