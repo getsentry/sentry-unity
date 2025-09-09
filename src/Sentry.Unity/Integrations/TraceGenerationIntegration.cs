@@ -4,8 +4,8 @@ using Sentry.Integrations;
 namespace Sentry.Unity.Integrations;
 
 /// <summary>
-/// The TraceGenerationIntegration is used in case of
-/// </summary>
+/// The TraceGenerationIntegration is used to generate new trace propagation contexts
+/// /// </summary>
 internal sealed class TraceGenerationIntegration : ISdkIntegration
 {
     private readonly ISceneManager _sceneManager;
