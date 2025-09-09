@@ -1,27 +1,13 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 
 namespace Sentry.Unity;
 
-/// <summary>
-/// Provides game-specific installation IDs with robust fallback strategies for different Unity platforms.
-/// Ensures no cross-app tracking while maintaining persistence across app restarts where possible.
-/// Automatically avoids disk writes on platforms with restricted file access (consoles, WebGL, tvOS).
-/// </summary>
 internal static class SentryInstallationIdProvider
 {
-    private static string? SessionInstallationId;
-
-    /// <summary>
-    /// Gets a game-specific installation ID using a multi-tier approach:
-    /// 1. Persistent file storage (most platforms)
-    /// 2. PlayerPrefs (restricted platforms like Nintendo Switch)
-    /// 3. Session-only GUID (final fallback)
-    /// </summary>
-    /// <param name="options">Sentry options for file system access and settings</param>
-    /// <returns>A game-specific installation ID, or null if all methods fail</returns>
     public static string? GetInstallationId(SentryUnityOptions options)
     {
         if (!IsPlatformWithRestrictedFileAccess())
@@ -33,41 +19,41 @@ internal static class SentryInstallationIdProvider
             }
         }
 
-        // Fallback to PlayerPrefs for restricted platforms
         var prefsId = TryGetPlayerPrefsId(options.DiagnosticLogger);
         if (!string.IsNullOrEmpty(prefsId))
         {
             return prefsId;
         }
 
-        // Final fallback: session-only GUID
-        return TryGetSessionId(options.DiagnosticLogger);
+        options.DiagnosticLogger?.LogDebug("Falling back to session-only installation ID (will not persist across restarts).");
+        return Guid.NewGuid().ToString();
     }
 
     private static string? TryGetPersistentFileId(SentryUnityOptions options)
     {
-        // Check if file writes are disabled via options
         if (options.DisableFileWrite)
         {
-            options.DiagnosticLogger?.LogDebug("File write has been disabled via options. Skipping persistent installation ID.");
+            options.DiagnosticLogger?.LogDebug("File write has been disabled via options. Skipping persisting installation ID.");
+            return null;
+        }
+
+        var directoryPath = options.TryGetDsnSpecificCacheDirectoryPath();
+        if (string.IsNullOrWhiteSpace(directoryPath))
+        {
+            options.DiagnosticLogger?.LogDebug("Cache directory path is not available. Skipping persisting installation ID.");
             return null;
         }
 
         try
         {
-            var directoryPath = Application.persistentDataPath;
             var fileSystem = options.FileSystem;
-
-            // Ensure directory exists
-            if (!fileSystem.CreateDirectory(directoryPath))
+            if (!fileSystem.CreateDirectory(directoryPath!))
             {
-                options.DiagnosticLogger?.LogDebug("Failed to create directory for installation ID file ({0}).", directoryPath);
+                options.DiagnosticLogger?.LogDebug("Failed to create Sentry cache directory for installation ID file ({0}).", directoryPath);
                 return null;
             }
 
-            var filePath = Path.Combine(directoryPath, ".sentry-installation-id");
-
-            // Read existing installation ID if it exists
+            var filePath = Path.Combine(directoryPath, ".installation");
             if (fileSystem.FileExists(filePath))
             {
                 var existingId = fileSystem.ReadAllTextFromFile(filePath)?.Trim();
@@ -78,7 +64,6 @@ internal static class SentryInstallationIdProvider
                 }
             }
 
-            // Generate new game-specific installation ID
             var newId = Guid.NewGuid().ToString();
             if (!fileSystem.WriteAllTextToFile(filePath, newId))
             {
@@ -96,52 +81,11 @@ internal static class SentryInstallationIdProvider
         }
     }
 
-    /// <summary>
-    /// Determines if the current platform has restricted file access where disk writes should be avoided.
-    /// </summary>
-    /// <returns>True if the platform has restricted file access</returns>
-    private static bool IsPlatformWithRestrictedFileAccess()
-    {
-        switch (Application.platform)
-        {
-            // Gaming consoles with restricted file systems
-            case RuntimePlatform.Switch:
-            case RuntimePlatform.PS4:
-            case RuntimePlatform.PS5:
-            case RuntimePlatform.XboxOne:
-            case RuntimePlatform.GameCoreXboxSeries:
-            case RuntimePlatform.GameCoreXboxOne:
-                return true;
-
-            // WebGL runs in browser with limited file system access
-            case RuntimePlatform.WebGLPlayer:
-                return true;
-
-            // tvOS and other restricted Apple platforms
-            case RuntimePlatform.tvOS:
-                return true;
-
-            // Platforms where file operations are generally reliable
-            case RuntimePlatform.WindowsPlayer:
-            case RuntimePlatform.WindowsEditor:
-            case RuntimePlatform.OSXPlayer:
-            case RuntimePlatform.OSXEditor:
-            case RuntimePlatform.LinuxPlayer:
-            case RuntimePlatform.LinuxEditor:
-            case RuntimePlatform.Android:
-            case RuntimePlatform.IPhonePlayer:
-            default:
-                return false;
-        }
-    }
-
     private static string? TryGetPlayerPrefsId(IDiagnosticLogger? logger)
     {
         try
         {
-            // Use Application.identifier to ensure game-specific key
             var prefsKey = $"sentry_installation_id_{Application.identifier}";
-
             if (PlayerPrefs.HasKey(prefsKey))
             {
                 var existingId = PlayerPrefs.GetString(prefsKey);
@@ -165,22 +109,30 @@ internal static class SentryInstallationIdProvider
         }
     }
 
-    private static string? TryGetSessionId(IDiagnosticLogger? logger)
+    private static bool IsPlatformWithRestrictedFileAccess(IApplication? application = null)
     {
-        try
+        application ??= ApplicationAdapter.Instance;
+        switch (application.Platform)
         {
-            // Cache in static field for session persistence
-            if (string.IsNullOrEmpty(SessionInstallationId))
-            {
-                SessionInstallationId = Guid.NewGuid().ToString();
-                logger?.LogDebug("Generated session-only installation ID (will not persist across restarts).");
-            }
-            return SessionInstallationId;
-        }
-        catch (Exception e)
-        {
-            logger?.LogError(e, "Failed to generate session installation ID.");
-            return null;
+            case RuntimePlatform.Switch:
+            case RuntimePlatform.PS4:
+            case RuntimePlatform.PS5:
+            case RuntimePlatform.XboxOne:
+            case RuntimePlatform.GameCoreXboxSeries:
+            case RuntimePlatform.GameCoreXboxOne:
+            case RuntimePlatform.WebGLPlayer:
+                return true;
+
+            case RuntimePlatform.WindowsPlayer:
+            case RuntimePlatform.WindowsEditor:
+            case RuntimePlatform.OSXPlayer:
+            case RuntimePlatform.OSXEditor:
+            case RuntimePlatform.LinuxPlayer:
+            case RuntimePlatform.LinuxEditor:
+            case RuntimePlatform.Android:
+            case RuntimePlatform.IPhonePlayer:
+            default:
+                return false;
         }
     }
 }
