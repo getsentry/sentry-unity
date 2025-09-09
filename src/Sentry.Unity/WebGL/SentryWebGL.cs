@@ -38,8 +38,7 @@ public static class SentryWebGL
                                                  "it currently produces blank screenshots mid-frame.");
         }
 
-        // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
-        options.DefaultUserId = AnalyticsSessionInfo.userId;
+        options.DefaultUserId = SentryInstallationIdProvider.GetInstallationId(options);
 
         // Indicate that this platform doesn't support running background threads.
         options.MultiThreading = false;

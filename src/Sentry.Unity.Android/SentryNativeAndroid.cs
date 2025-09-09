@@ -77,8 +77,7 @@ public static class SentryNativeAndroid
             if (crashedLastRun is null)
             {
                 // Could happen if the Android SDK wasn't initialized before the .NET layer.
-                options.DiagnosticLogger?
-                    .LogWarning(
+                options.DiagnosticLogger?.LogWarning(
                         "Unclear from the native SDK if the previous run was a crash. Assuming it was not.");
                 crashedLastRun = false;
             }
@@ -115,10 +114,7 @@ public static class SentryNativeAndroid
             options.DiagnosticLogger?.LogDebug(
                 "Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
 
-            // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
-            // It's a randomly generated GUID that gets created immediately after installation helping
-            // to identify the same instance of the game
-            options.DefaultUserId = AnalyticsSessionInfo.userId;
+            options.DefaultUserId = SentryInstallationIdProvider.GetInstallationId(options);
             if (options.DefaultUserId is not null)
             {
                 options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });

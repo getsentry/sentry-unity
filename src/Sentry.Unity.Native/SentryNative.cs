@@ -58,8 +58,7 @@ public static class SentryNative
         options.EnableScopeSync = true;
         options.NativeContextWriter = new NativeContextWriter();
 
-        // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
-        options.DefaultUserId = AnalyticsSessionInfo.userId;
+        options.DefaultUserId = SentryInstallationIdProvider.GetInstallationId(options);
         if (options.DefaultUserId is not null)
         {
             options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
