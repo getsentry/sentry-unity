@@ -22,17 +22,16 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions options)
     {
-        _sentryMonoBehaviour.ApplicationResuming += () =>
-        {
-            options.DiagnosticLogger?.LogDebug("Game resuming. Creating new Trace.");
-            hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
-            ;
-        };
-
         if (options is not SentryUnityOptions unityOptions)
         {
             return;
         }
+
+        _sentryMonoBehaviour.ApplicationResuming += () =>
+        {
+            options.DiagnosticLogger?.LogDebug("Game resuming. Creating new Trace.");
+            hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
+        };
 
         var isTracingEnabled = unityOptions.TracesSampleRate > 0.0f;
 
