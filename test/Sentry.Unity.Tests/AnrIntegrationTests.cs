@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using UnityEngine;
@@ -12,7 +13,7 @@ using Sentry.Unity.Tests.SharedClasses;
 
 namespace Sentry.Unity.Tests;
 
-public class AnrDetectionTests
+public class AnrIntegrationTests
 {
     private readonly TimeSpan _timeout = TimeSpan.FromSeconds(0.5);
     private readonly IDiagnosticLogger _logger = new TestLogger(forwardToUnityLog: true);
@@ -169,16 +170,17 @@ public class AnrDetectionTests
 
         anr = null;
 
-        // Act
+        // Act - Pause should stop the coroutine and set it to null
         _monoBehaviour.UpdatePauseStatus(true);
         yield return null;
 
         Thread.Sleep(TimeSpan.FromTicks(_timeout.Ticks * 2));
 
+        // Resume should defensively restart only if coroutine is null
         _monoBehaviour.UpdatePauseStatus(false);
         yield return null;
 
-        // Assert
+        // Assert - No ANR should be detected while paused
         watch.Restart();
         while (watch.Elapsed < _timeout && anr is null)
         {
@@ -187,7 +189,7 @@ public class AnrDetectionTests
 
         Assert.IsNull(anr);
 
-        // Verify ANR detection works
+        // Verify ANR detection works after resume
         Thread.Sleep(TimeSpan.FromTicks(_timeout.Ticks * 2));
 
         watch.Restart();
