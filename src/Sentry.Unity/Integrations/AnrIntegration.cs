@@ -6,6 +6,7 @@ using Sentry.Extensibility;
 using Sentry.Integrations;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Sentry.Unity;
 
@@ -174,7 +175,7 @@ internal class AnrWatchDogSingleThreaded : AnrWatchDog
     private readonly Stopwatch _watch = new();
     private bool _stop;
 
-    private Coroutine _updateUiStatusCoroutine;
+    private Coroutine? _updateUiStatusCoroutine;
 
     internal AnrWatchDogSingleThreaded(IDiagnosticLogger? logger, SentryMonoBehaviour monoBehaviour, TimeSpan detectionTimeout)
         : base(logger, monoBehaviour, detectionTimeout)
@@ -191,20 +192,39 @@ internal class AnrWatchDogSingleThreaded : AnrWatchDog
         {
             logger?.LogDebug("Stopping ANR detection coroutine.");
             _watch.Stop();
+
             MonoBehaviour.StopCoroutine(_updateUiStatusCoroutine);
+            _updateUiStatusCoroutine = null;
         };
         MonoBehaviour.ApplicationResuming += () =>
         {
-            logger?.LogDebug("Starting ANR detection coroutine.");
+            logger?.LogDebug("Restarting ANR detection coroutine.");
+
             _watch.Restart();
-            _updateUiStatusCoroutine = MonoBehaviour.StartCoroutine(UpdateUiStatus());
+            if (_updateUiStatusCoroutine is null)
+            {
+                _updateUiStatusCoroutine = MonoBehaviour.StartCoroutine(UpdateUiStatus());
+            }
+            else
+            {
+                logger?.LogError("Attempted to restart the ANR detection but it was not stopped.");
+            }
         };
     }
 
-    internal override void Stop(bool wait = false) => _stop = true;
+    internal override void Stop(bool wait = false)
+    {
+        _stop = true;
+        if (_updateUiStatusCoroutine != null)
+        {
+            MonoBehaviour.StopCoroutine(_updateUiStatusCoroutine);
+            _updateUiStatusCoroutine = null;
+        }
+    }
 
     private IEnumerator UpdateUiStatus()
     {
+        _watch.Start();
         var waitForSeconds = new WaitForSecondsRealtime((float)SleepIntervalMs / 1000);
         while (!_stop)
         {
