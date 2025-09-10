@@ -10,6 +10,7 @@
 
 ### Fixes
 
+- The SDK no longer appends multiple upload tasks when building for Android ([#2300](https://github.com/getsentry/sentry-unity/pull/2300))
 - Fixed false positive ANR events on `WebGL`, i.e. when switching tabs, or unfocusing the player ([#2306](https://github.com/getsentry/sentry-unity/pull/2306))
 - The SDK now automatically picks up previously missing debug symbols - i.e. `BurstDebugInformation`, by passing the 
   target directory path to Sentry CLI. Sentry CLI then automatically and recursively picks up any not yet uploaded symbols. ([#2298](https://github.com/getsentry/sentry-unity/pull/2298))
