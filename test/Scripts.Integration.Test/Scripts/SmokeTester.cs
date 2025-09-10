@@ -217,6 +217,10 @@ public class SmokeTester : MonoBehaviour
         t.Start("HASNT-CRASHED");
         var crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
+
+        var lastRunState = SentrySdk.GetLastRunState();
+        t.Expect($"SentrySdk.GetLastRunState() ({lastRunState}) is 'DidNotCrash'", lastRunState == CrashedLastRun.DidNotCrash);
+
         t.Pass();
     }
 
@@ -225,6 +229,10 @@ public class SmokeTester : MonoBehaviour
         t.Start("HAS-CRASHED");
         var crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == true (1)", crashed == 1);
+        
+        var lastRunState = SentrySdk.GetLastRunState();
+        t.Expect($"SentrySdk.GetLastRunState() ({lastRunState}) is 'Crashed'", lastRunState == CrashedLastRun.Crashed);
+        
         t.Pass();
     }
 
