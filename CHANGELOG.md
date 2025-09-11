@@ -10,6 +10,7 @@
 
 ### Fixes
 
+- The SDK no longer accesses `AnalyticsSessionInfo.userId` when targeting console platforms. This was leading to crashes during launch. ([#2309](https://github.com/getsentry/sentry-unity/pull/2309))
 - The SDK now automatically picks up previously missing debug symbols - i.e. `BurstDebugInformation`, by passing the 
   target directory path to Sentry CLI. Sentry CLI then automatically and recursively picks up any not yet uploaded symbols. ([#2298](https://github.com/getsentry/sentry-unity/pull/2298))
 - The check used to verify whether the current thread is the main-thread now includes `JobsUtility.IsExecutingJob` to support running in Burst. ([#2226](https://github.com/getsentry/sentry-unity/pull/2226))
