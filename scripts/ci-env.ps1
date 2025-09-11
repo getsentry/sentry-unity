@@ -4,11 +4,8 @@ param (
 )
 
 switch ($name) {
-    "unity2020.3" {
-        return "2020.3.48f1"
-    }
     "unity2021.3" {
-        return "2021.3.45f1"
+        return "2021.3.56f1"
     }
     "unity2022.3" {
         return "2022.3.62f1"

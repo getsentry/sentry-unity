@@ -5,12 +5,14 @@
 #define SENTRY_NATIVE_ANDROID
 #elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
 #define SENTRY_NATIVE
+#elif UNITY_GAMECORE
+#define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
 #endif
 
-#if ENABLE_IL2CPP && UNITY_2020_3_OR_NEWER && (SENTRY_NATIVE_COCOA || SENTRY_NATIVE_ANDROID || SENTRY_NATIVE)
+#if ENABLE_IL2CPP && (SENTRY_NATIVE_COCOA || SENTRY_NATIVE_ANDROID || SENTRY_NATIVE)
 #define IL2CPP_LINENUMBER_SUPPORT
 #endif
 
@@ -18,10 +20,8 @@ using System;
 using Sentry.Unity;
 using Sentry.Extensibility;
 using Sentry.Unity.NativeUtils;
-#if UNITY_2020_3_OR_NEWER
 using System.Buffers;
 using System.Runtime.InteropServices;
-#endif
 using UnityEngine;
 using UnityEngine.Scripting;
 
@@ -186,7 +186,6 @@ namespace Sentry.Unity
         [DllImport("__Internal")]
         private static extern void il2cpp_free(IntPtr ptr);
 
-#if UNITY_2021_3_OR_NEWER
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
         {
             var uuidBuffer = IntPtr.Zero;
@@ -209,40 +208,7 @@ namespace Sentry.Unity
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
         [DllImport("__Internal")]
         private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out IntPtr imageUUID, out IntPtr imageName);
-#else
-        private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
-        {
-            imageName = null;
-            // Unity 2020 does not *return* a newly allocated string as out-parameter,
-            // but rather expects a pre-allocated buffer it writes into.
-            // That buffer needs to have space for either:
-            // - A hex-encoded `LC_UUID` on MacOS (32)
-            // - A hex-encoded GUID + Age on Windows (40)
-            // - A hex-encoded `NT_GNU_BUILD_ID` on ELF (Android/Linux) (40)
-            // plus a terminating nul-byte.
-            var uuidBuffer = il2cpp_alloc(40 + 1);
-            il2cpp_native_stack_trace(exc, out addresses, out numFrames, uuidBuffer);
 
-            try
-            {
-                imageUUID = SanitizeDebugId(uuidBuffer);
-            }
-            finally
-            {
-                il2cpp_free(uuidBuffer);
-            }
-        }
-
-        // Available in Unity `2020.3` (possibly even sooner)
-        // void* il2cpp_alloc(size_t size)
-        [DllImport("__Internal")]
-        private static extern IntPtr il2cpp_alloc(uint size);
-
-        // Definition from Unity `2020.3`:
-        // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char* imageUUID)
-        [DllImport("__Internal")]
-        private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, IntPtr imageUUID);
-#endif
 #pragma warning restore 8632
 #endif
 
@@ -258,26 +224,21 @@ namespace Sentry.Unity
                    	platform == RuntimePlatform.OSXPlayer ||
                    	platform == RuntimePlatform.LinuxEditor ||
                    	platform == RuntimePlatform.LinuxPlayer ||
-					platform == RuntimePlatform.WebGLPlayer
-#if UNITY_2021_3_OR_NEWER
-                   	||
+                    platform == RuntimePlatform.Switch ||
+                    platform == RuntimePlatform.PS4 ||
+                    platform == RuntimePlatform.PS5 ||
+                    platform == RuntimePlatform.XboxOne ||
+                    platform == RuntimePlatform.GameCoreXboxSeries ||
+                    platform == RuntimePlatform.GameCoreXboxOne ||
+					platform == RuntimePlatform.WebGLPlayer ||
 				   	platform == RuntimePlatform.WindowsServer ||
 					platform == RuntimePlatform.OSXServer ||
                    	platform == RuntimePlatform.LinuxServer
-#endif
                 ;
         }
 
-        public bool IsLinux()
-        {
-            var platform = Application.platform;
-            return
-                platform == RuntimePlatform.LinuxPlayer
-#if UNITY_2021_3_OR_NEWER
-                   	|| platform == RuntimePlatform.LinuxServer
-#endif
-                ;
-        }
+        public bool IsLinux() =>
+            Application.platform == RuntimePlatform.LinuxPlayer || Application.platform == RuntimePlatform.LinuxServer;
 
 		public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform)
 		{
@@ -293,30 +254,25 @@ namespace Sentry.Unity
                     return options.MacosNativeSupportEnabled;
                 case RuntimePlatform.LinuxPlayer:
                     return options.LinuxNativeSupportEnabled;
-#if UNITY_2021_3_OR_NEWER
                 case RuntimePlatform.WindowsServer:
                     return options.WindowsNativeSupportEnabled;
                 case RuntimePlatform.OSXServer:
                     return options.MacosNativeSupportEnabled;
                 case RuntimePlatform.LinuxServer:
                     return options.LinuxNativeSupportEnabled;
-#endif
                 default:
                     return false;
             }
         }
-
 
         public bool IsSupportedBySentryNative(RuntimePlatform platform)
         {
             return platform == RuntimePlatform.Android
                    || platform == RuntimePlatform.LinuxPlayer
                    || platform == RuntimePlatform.WindowsPlayer
-#if UNITY_2021_3_OR_NEWER
                    || platform == RuntimePlatform.WindowsServer
                    || platform == RuntimePlatform.OSXServer
                    || platform == RuntimePlatform.LinuxServer
-#endif
                 ;
         }
 
@@ -334,14 +290,12 @@ namespace Sentry.Unity
                     return "elf";
                 case RuntimePlatform.WindowsPlayer:
                     return "pe";
-#if UNITY_2021_3_OR_NEWER
                 case RuntimePlatform.WindowsServer:
                     return "pe";
                 case RuntimePlatform.OSXServer:
                     return "macho";
                 case RuntimePlatform.LinuxServer:
                     return "elf";
-#endif
                 default:
                     return "unknown";
             }
