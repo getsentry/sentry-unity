@@ -11,7 +11,7 @@ public class OptionsConfiguration : SentryOptionsConfiguration
 
         string host;
         
-#if UNITY_EDITOR        
+#if UNITY_6000_0 && UNITY_EDITOR        
         // Workaround for an issue specific to Unity 6.0 where in CI, `UNITY_ANDROID` would resolve to `false` during the build
         if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.Android)
         {
