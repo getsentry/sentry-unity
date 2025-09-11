@@ -177,7 +177,7 @@ internal class SentryUnitySdk
 
     internal static void ConfigureUnsupportedPlatformFallbacks(SentryUnityOptions options)
     {
-        if (!options.UnityInfo.IsKnownPlatform())
+        if (!SentryUnityOptions.IsKnownPlatform())
         {
             options.DisableFileWrite = true;
 

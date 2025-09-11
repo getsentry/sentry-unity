@@ -382,10 +382,28 @@ public sealed class SentryUnityOptions : SentryOptions
 
         // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
         // implicitly creates a directory and leads to crashes i.e. on the Switch.
-        if (unityInfo?.IsKnownPlatform() ?? false)
+        if (!IsKnownPlatform())
         {
             CacheDirectoryPath = application.PersistentDataPath;
         }
+    }
+
+    internal static bool IsKnownPlatform(IApplication? application = null)
+    {
+        application ??= ApplicationAdapter.Instance;
+        return application.Platform
+            is RuntimePlatform.Android
+            or RuntimePlatform.IPhonePlayer
+            or RuntimePlatform.WindowsEditor
+            or RuntimePlatform.WindowsPlayer
+            or RuntimePlatform.OSXEditor
+            or RuntimePlatform.OSXPlayer
+            or RuntimePlatform.LinuxEditor
+            or RuntimePlatform.LinuxPlayer
+            or RuntimePlatform.WebGLPlayer
+            or RuntimePlatform.WindowsServer
+            or RuntimePlatform.OSXServer
+            or RuntimePlatform.LinuxServer;
     }
 
     public override string ToString()
