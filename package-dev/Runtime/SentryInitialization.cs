@@ -5,6 +5,8 @@
 #define SENTRY_NATIVE_ANDROID
 #elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
 #define SENTRY_NATIVE
+#elif UNITY_GAMECORE
+#define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
@@ -209,5 +211,4 @@ namespace Sentry.Unity
 
 #pragma warning restore 8632
 #endif
-    }
 }
