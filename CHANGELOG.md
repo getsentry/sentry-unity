@@ -11,6 +11,8 @@
 ### Fixes
 
 - The SDK no longer accesses `AnalyticsSessionInfo.userId` when targeting console platforms. This was leading to crashes during launch. ([#2309](https://github.com/getsentry/sentry-unity/pull/2309))
+- The SDK no longer appends multiple upload tasks when building for Android ([#2300](https://github.com/getsentry/sentry-unity/pull/2300))
+- Fixed false positive ANR events on `WebGL`, i.e. when switching tabs, or unfocusing the player ([#2306](https://github.com/getsentry/sentry-unity/pull/2306))
 - The SDK now automatically picks up previously missing debug symbols - i.e. `BurstDebugInformation`, by passing the 
   target directory path to Sentry CLI. Sentry CLI then automatically and recursively picks up any not yet uploaded symbols. ([#2298](https://github.com/getsentry/sentry-unity/pull/2298))
 - The check used to verify whether the current thread is the main-thread now includes `JobsUtility.IsExecutingJob` to support running in Burst. ([#2226](https://github.com/getsentry/sentry-unity/pull/2226))
@@ -24,9 +26,9 @@
 - Bump Cocoa SDK from v8.51.0 to v8.54.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265))
     - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
     - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.54.0)
-- Bump Java SDK from v8.17.0 to v8.20.0 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283), [#2299](https://github.com/getsentry/sentry-unity/pull/2299))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8200)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.20.0)
+- Bump Java SDK from v8.17.0 to v8.21.1 ([#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283), [#2299](https://github.com/getsentry/sentry-unity/pull/2299), [#2308](https://github.com/getsentry/sentry-unity/pull/2308), [#2311](https://github.com/getsentry/sentry-unity/pull/2311))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8211)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.17.0...8.21.1)
 - Bump Native SDK from v0.9.1 to v0.10.1 ([#2275](https://github.com/getsentry/sentry-unity/pull/2275), [#2303](https://github.com/getsentry/sentry-unity/pull/2303))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0101)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.9.1...0.10.1)
