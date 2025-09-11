@@ -9,15 +9,34 @@ public class OptionsConfiguration : SentryOptionsConfiguration
     {
         Debug.Log("Sentry: OptionsConfig::Configure() called");
 
-        options.Dsn = "http://publickey@"
-#if UNITY_ANDROID
-            + "10.0.2.2"
-#elif UNITY_WEBGL
-            + "127.0.0.1"
+        string host;
+        
+#if UNITY_6000_0 && UNITY_EDITOR        
+        // Workaround for an issue specific to Unity 6.0 where in CI, `UNITY_ANDROID` would resolve to `false` during the build
+        if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.Android)
+        {
+            host = "10.0.2.2";
+        }
+        else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.WebGL)
+        {
+            host = "127.0.0.1";
+        }
+        else
+        {
+            host = "localhost";
+        }
 #else
-            + "localhost"
+
+#if UNITY_ANDROID
+        host = "10.0.2.2";
+#elif UNITY_WEBGL
+        host = "127.0.0.1";
+#else
+        host = "localhost";
 #endif
-            + ":8000/12345";
+#endif
+
+        options.Dsn = $"http://publickey@{host}:8000/12345";
 
         Debug.LogFormat("Sentry: Setting options.Dsn = {0}", options.Dsn);
 
