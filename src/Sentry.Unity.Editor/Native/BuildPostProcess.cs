@@ -18,7 +18,7 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-        if (targetGroup is not BuildTargetGroup.Standalone)
+        if (targetGroup is not BuildTargetGroup.Standalone and not BuildTargetGroup.GameCoreXboxSeries)
         {
             return;
         }
@@ -77,6 +77,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
         BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
+        BuildTarget.GameCoreXboxSeries => options.XboxNativeSupportEnabled,
         _ => false,
     };
 
@@ -93,6 +94,9 @@ public static class BuildPostProcess
             case BuildTarget.StandaloneLinux64:
             case BuildTarget.StandaloneOSX:
                 // No standalone crash handler for Linux/macOS - uses built-in handlers.
+                return;
+            case BuildTarget.GameCoreXboxOne:
+                // TODO: Figure out if we need to ship with a crash handler
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");

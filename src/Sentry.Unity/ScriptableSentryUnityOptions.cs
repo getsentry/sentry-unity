@@ -103,7 +103,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
-
+    [field: SerializeField] public bool XboxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
 
     [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
@@ -185,6 +185,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
             MacosNativeSupportEnabled = MacosNativeSupportEnabled,
             LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
+            XboxNativeSupportEnabled = XboxNativeSupportEnabled,
             Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
         };

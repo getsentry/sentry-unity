@@ -210,6 +210,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool LinuxNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should add native support for Xbox
+    /// </summary>
+    public bool XboxNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should add IL2CPP line number support
     /// </summary>
     /// <remarks>
@@ -402,7 +407,8 @@ public sealed class SentryUnityOptions : SentryOptions
             or RuntimePlatform.WebGLPlayer
             or RuntimePlatform.WindowsServer
             or RuntimePlatform.OSXServer
-            or RuntimePlatform.LinuxServer;
+            or RuntimePlatform.LinuxServer
+            or RuntimePlatform.GameCoreXboxSeries;
     }
 
     public override string ToString()
