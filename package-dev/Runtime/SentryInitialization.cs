@@ -211,4 +211,5 @@ namespace Sentry.Unity
 
 #pragma warning restore 8632
 #endif
+    }
 }
