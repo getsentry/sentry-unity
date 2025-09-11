@@ -224,12 +224,6 @@ namespace Sentry.Unity
                    	platform == RuntimePlatform.OSXPlayer ||
                    	platform == RuntimePlatform.LinuxEditor ||
                    	platform == RuntimePlatform.LinuxPlayer ||
-                    platform == RuntimePlatform.Switch ||
-                    platform == RuntimePlatform.PS4 ||
-                    platform == RuntimePlatform.PS5 ||
-                    platform == RuntimePlatform.XboxOne ||
-                    platform == RuntimePlatform.GameCoreXboxSeries ||
-                    platform == RuntimePlatform.GameCoreXboxOne ||
 					platform == RuntimePlatform.WebGLPlayer ||
 				   	platform == RuntimePlatform.WindowsServer ||
 					platform == RuntimePlatform.OSXServer ||
