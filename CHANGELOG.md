@@ -4,7 +4,7 @@
 
 ### Breaking Changes
 
-- Removed Unity 2020 support, which reached End of Life in 2023. Minimum supported version now is 2021. ([#2231](https://github.com/getsentry/sentry-unity/pull/2231))
+- Removed Unity 2020 support, which reached End of Life in 2023. Minimum supported version now is 2021. ([#2313](https://github.com/getsentry/sentry-unity/pull/2313))
 
 ### Features
 
