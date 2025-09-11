@@ -22,13 +22,17 @@ public static class SentryNative
     /// Configures the native SDK.
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
-    public static void Configure(SentryUnityOptions options)
+    public static void Configure(SentryUnityOptions options) =>
+        Configure(options, ApplicationAdapter.Instance.Platform);
+
+    // For testing
+    internal static void Configure(SentryUnityOptions options, RuntimePlatform platform)
     {
         Logger = options.DiagnosticLogger;
 
         Logger?.LogInfo("Attempting to configure native support via the Native SDK");
 
-        if (options.IsNativeSupportEnabled())
+        if (!options.IsNativeSupportEnabled(platform))
         {
             Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
             return;

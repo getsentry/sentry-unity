@@ -143,7 +143,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
                     mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
                     mainLibImage ??= new DebugImage
                     {
-                        Type = GetDebugImageType(Application.platform),
+                        Type = GetPlatformDebugImageType(),
                         // NOTE: il2cpp in some circumstances does not return a correct `ImageName`.
                         // A null/missing `CodeFile` however would lead to a processing error in sentry.
                         // Since the code file is not strictly necessary for processing, we just fall back to
@@ -230,7 +230,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
         var result = new List<DebugImageInfo>();
 
         // Only on platforms where we actually use sentry-native.
-        if (IsSupportedBySentryNative(Application.platform) && Options.IsNativeSupportEnabled())
+        if (IsPlatformSupportedBySentryNative() && Options.IsNativeSupportEnabled())
         {
             var nativeDebugImages = C.DebugImages.Value;
             foreach (var image in nativeDebugImages)
@@ -353,16 +353,20 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
         }
     }
 
-    private static bool IsSupportedBySentryNative(RuntimePlatform platform) =>
-        platform
+    private static bool IsPlatformSupportedBySentryNative(RuntimePlatform? platform = null)
+    {
+        platform ??= ApplicationAdapter.Instance.Platform;
+        return platform
             is RuntimePlatform.Android
             or RuntimePlatform.LinuxPlayer
             or RuntimePlatform.LinuxServer
             or RuntimePlatform.WindowsPlayer
             or RuntimePlatform.WindowsServer;
+    }
 
-    private string GetDebugImageType(RuntimePlatform platform)
+    private string GetPlatformDebugImageType(RuntimePlatform? platform = null)
     {
+        platform ??= ApplicationAdapter.Instance.Platform;
         switch (platform)
         {
             case RuntimePlatform.Android:

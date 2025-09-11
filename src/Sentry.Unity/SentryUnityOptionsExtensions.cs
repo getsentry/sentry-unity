@@ -48,27 +48,18 @@ public static class SentryUnityOptionsExtensions
         return true;
     }
 
-    internal static bool IsNativeSupportEnabled(this SentryUnityOptions options, IApplication? application = null)
+    internal static bool IsNativeSupportEnabled(this SentryUnityOptions options, RuntimePlatform? platform = null)
     {
-        application ??= ApplicationAdapter.Instance;
-        switch (application.Platform)
+        platform ??= ApplicationAdapter.Instance.Platform;
+        return platform switch
         {
-            case RuntimePlatform.Android:
-                return options.AndroidNativeSupportEnabled;
-            case RuntimePlatform.IPhonePlayer:
-                return options.IosNativeSupportEnabled;
-            case RuntimePlatform.WindowsPlayer:
-            case RuntimePlatform.WindowsServer:
-                return options.WindowsNativeSupportEnabled;
-            case RuntimePlatform.OSXPlayer:
-            case RuntimePlatform.OSXServer:
-                return options.MacosNativeSupportEnabled;
-            case RuntimePlatform.LinuxPlayer:
-            case RuntimePlatform.LinuxServer:
-                return options.LinuxNativeSupportEnabled;
-            default:
-                return false;
-        }
+            RuntimePlatform.Android => options.AndroidNativeSupportEnabled,
+            RuntimePlatform.IPhonePlayer => options.IosNativeSupportEnabled,
+            RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer => options.WindowsNativeSupportEnabled,
+            RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer => options.MacosNativeSupportEnabled,
+            RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer => options.LinuxNativeSupportEnabled,
+            _ => false
+        };
     }
 
     internal static void SetupUnityLogging(this SentryUnityOptions options)
