@@ -113,7 +113,7 @@ public sealed class UnityEventProcessorThreadingTests
             RenderingThreadingMode = new Lazy<string>(() => "MultiThreaded"),
             StartTime = new(() => DateTimeOffset.UtcNow),
         };
-        var options = new SentryUnityOptions(new TestUnityInfo { IL2CPP = true }, _testApplication, _sentryMonoBehaviour)
+        var options = new SentryUnityOptions(_testApplication, _sentryMonoBehaviour, new TestUnityInfo {IL2CPP = true})
         {
             Dsn = "https://b8fd848b31444e80aa102e96d2a6a648@o510466.ingest.sentry.io/5606182",
             Enabled = true,

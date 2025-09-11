@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests;
 
@@ -7,7 +8,6 @@ public sealed class SentryUnityOptionsTests
 {
     class Fixture
     {
-        public TestUnityInfo UnityInfo { get; set; } = new();
         public TestApplication Application { get; set; } = new(
             productName: "TestApplication",
             version: "0.1.0",
@@ -15,7 +15,7 @@ public sealed class SentryUnityOptionsTests
             persistentDataPath: "test/persistent/data/path");
         public bool IsBuilding { get; set; }
 
-        public SentryUnityOptions GetSut() => new(UnityInfo, Application, isBuilding: IsBuilding);
+        public SentryUnityOptions GetSut() => new(Application, isBuilding: IsBuilding);
     }
 
     [SetUp]
@@ -42,7 +42,8 @@ public sealed class SentryUnityOptionsTests
     [TestCase(false, "some/path", null)]
     public void Ctor_IfPlatformIsKnown_SetsCacheDirectoryPath(bool isKnownPlatform, string applicationDataPath, string? expectedCacheDirectoryPath)
     {
-        _fixture.UnityInfo = new TestUnityInfo(isKnownPlatform: isKnownPlatform);
+        // Picking a platform based on whether it is supported or not
+        _fixture.Application.Platform = isKnownPlatform ? RuntimePlatform.LinuxPlayer : RuntimePlatform.CloudRendering;
         _fixture.Application.PersistentDataPath = applicationDataPath;
 
         var sut = _fixture.GetSut();
