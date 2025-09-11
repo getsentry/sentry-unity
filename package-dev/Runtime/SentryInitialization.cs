@@ -5,6 +5,8 @@
 #define SENTRY_NATIVE_ANDROID
 #elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
 #define SENTRY_NATIVE
+#elif UNITY_GAMECORE
+#define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
@@ -258,6 +260,12 @@ namespace Sentry.Unity
                    	platform == RuntimePlatform.OSXPlayer ||
                    	platform == RuntimePlatform.LinuxEditor ||
                    	platform == RuntimePlatform.LinuxPlayer ||
+                    platform == RuntimePlatform.Switch ||
+                    platform == RuntimePlatform.PS4 ||
+                    platform == RuntimePlatform.PS5 ||
+                    platform == RuntimePlatform.XboxOne ||
+                    platform == RuntimePlatform.GameCoreXboxSeries ||
+                    platform == RuntimePlatform.GameCoreXboxOne ||
 					platform == RuntimePlatform.WebGLPlayer
 #if UNITY_2021_3_OR_NEWER
                    	||
