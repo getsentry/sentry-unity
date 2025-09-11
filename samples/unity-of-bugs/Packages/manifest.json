@@ -11,7 +11,7 @@
     "com.unity.timeline": "1.6.5",
     "com.unity.ugui": "1.0.0",
     "com.unity.visualscripting": "1.9.8",
-    "io.sentry.unity.dev": "file:/Users/bitfox/Workspace/sentry-unity/package-dev",
+    "io.sentry.unity.dev": "file:../../../package-dev",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
