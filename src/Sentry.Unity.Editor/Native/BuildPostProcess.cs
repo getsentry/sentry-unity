@@ -77,7 +77,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneWindows64 => options.WindowsNativeSupportEnabled,
         BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
-        BuildTarget.GameCoreXboxSeries => options.XboxNativeSupportEnabled,
+        BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
         _ => false,
     };
 
@@ -95,6 +95,7 @@ public static class BuildPostProcess
             case BuildTarget.StandaloneOSX:
                 // No standalone crash handler for Linux/macOS - uses built-in handlers.
                 return;
+            case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
                 // TODO: Figure out if we need to ship with a crash handler
                 return;
