@@ -362,7 +362,8 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             or RuntimePlatform.LinuxServer
             or RuntimePlatform.WindowsPlayer
             or RuntimePlatform.WindowsServer
-            or RuntimePlatform.GameCoreXboxSeries;
+            or RuntimePlatform.GameCoreXboxSeries
+            or RuntimePlatform.GameCoreXboxOne;
     }
 
     private string GetPlatformDebugImageType(RuntimePlatform? platform = null)
@@ -381,6 +382,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             case RuntimePlatform.WindowsPlayer:
             case RuntimePlatform.WindowsServer:
             case RuntimePlatform.GameCoreXboxSeries:
+            case RuntimePlatform.GameCoreXboxOne:
                 return "pe";
             default:
                 return "unknown";

@@ -408,7 +408,8 @@ public sealed class SentryUnityOptions : SentryOptions
             or RuntimePlatform.WindowsServer
             or RuntimePlatform.OSXServer
             or RuntimePlatform.LinuxServer
-            or RuntimePlatform.GameCoreXboxSeries;
+            or RuntimePlatform.GameCoreXboxSeries
+            or RuntimePlatform.GameCoreXboxOne;
     }
 
     public override string ToString()
