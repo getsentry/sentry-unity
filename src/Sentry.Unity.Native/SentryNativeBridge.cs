@@ -16,7 +16,7 @@ internal static class SentryNativeBridge
 {
     public static bool Init(SentryUnityOptions options)
     {
-        _isLinux = options.UnityInfo.IsLinux();
+        _isLinux = Application.platform is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer;
 
         var cOptions = sentry_options_new();
 

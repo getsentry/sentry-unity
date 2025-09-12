@@ -22,7 +22,7 @@ public static class SentryNativeCocoa
     {
         options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Cocoa SDK");
 
-        if (!options.UnityInfo.IsNativeSupportEnabled(options, platform))
+        if (!options.IsNativeSupportEnabled(platform))
         {
             options.DiagnosticLogger?.LogDebug("Native support is disabled for: '{0}'", platform);
             return;
@@ -100,7 +100,7 @@ public static class SentryNativeCocoa
     {
         options.DiagnosticLogger?.LogInfo("Attempting to close the Cocoa SDK");
 
-        if (!options.UnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
+        if (!options.IsNativeSupportEnabled())
         {
             options.DiagnosticLogger?.LogDebug("Cocoa Native Support is not enable. Skipping closing the Cocoa SDK");
             return;

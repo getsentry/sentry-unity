@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity;
 
@@ -45,6 +46,20 @@ public static class SentryUnityOptionsExtensions
         }
 
         return true;
+    }
+
+    internal static bool IsNativeSupportEnabled(this SentryUnityOptions options, RuntimePlatform? platform = null)
+    {
+        platform ??= ApplicationAdapter.Instance.Platform;
+        return platform switch
+        {
+            RuntimePlatform.Android => options.AndroidNativeSupportEnabled,
+            RuntimePlatform.IPhonePlayer => options.IosNativeSupportEnabled,
+            RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer => options.WindowsNativeSupportEnabled,
+            RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer => options.MacosNativeSupportEnabled,
+            RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer => options.LinuxNativeSupportEnabled,
+            _ => false
+        };
     }
 
     internal static void SetupUnityLogging(this SentryUnityOptions options)
