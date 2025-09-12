@@ -33,11 +33,6 @@ public class SmokeTester : MonoBehaviour
     {
         Debug.Log("SmokeTester starting");
 
-        // Access Application.internetReachability to trigger Unity's automatic addition of ACCESS_NETWORK_STATE permission
-        // This is required by the Sentry Android SDK to check network status before sending crash events
-        var networkReachability = Application.internetReachability;
-        Debug.Log($"Network reachability: {networkReachability}");
-
         var arg = GetTestArg();
         Debug.Log($"SmokeTester arg: '{arg}'");
 
