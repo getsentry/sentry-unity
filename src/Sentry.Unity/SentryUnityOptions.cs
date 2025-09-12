@@ -398,16 +398,16 @@ public sealed class SentryUnityOptions : SentryOptions
         return platform
             is RuntimePlatform.Android
             or RuntimePlatform.IPhonePlayer
-            or RuntimePlatform.WindowsEditor
-            or RuntimePlatform.WindowsPlayer
             or RuntimePlatform.OSXEditor
             or RuntimePlatform.OSXPlayer
+            or RuntimePlatform.OSXServer
+            or RuntimePlatform.WindowsEditor
+            or RuntimePlatform.WindowsPlayer
+            or RuntimePlatform.WindowsServer
             or RuntimePlatform.LinuxEditor
             or RuntimePlatform.LinuxPlayer
-            or RuntimePlatform.WebGLPlayer
-            or RuntimePlatform.WindowsServer
-            or RuntimePlatform.OSXServer
             or RuntimePlatform.LinuxServer
+            or RuntimePlatform.WebGLPlayer
             or RuntimePlatform.GameCoreXboxSeries
             or RuntimePlatform.GameCoreXboxOne;
     }
