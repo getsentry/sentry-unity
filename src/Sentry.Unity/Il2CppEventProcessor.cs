@@ -364,6 +364,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             or RuntimePlatform.WindowsServer
             or RuntimePlatform.GameCoreXboxSeries
             or RuntimePlatform.GameCoreXboxOne;
+            or RuntimePlatform.WindowsServer;
     }
 
     private string GetPlatformDebugImageType(RuntimePlatform? platform = null)
