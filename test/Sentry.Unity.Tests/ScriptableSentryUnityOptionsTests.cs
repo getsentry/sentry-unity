@@ -22,8 +22,6 @@ public class ScriptableSentryUnityOptionsTests
             productName: "TestApplication",
             version: "0.1.0",
             persistentDataPath: "test/persistent/data/path");
-
-        public TestUnityInfo UnityInfo { get; set; } = new();
     }
 
     class TestOptionsConfiguration : SentryRuntimeOptionsConfiguration
@@ -94,7 +92,7 @@ public class ScriptableSentryUnityOptionsTests
         scriptableOptions.DebugOnlyInEditor = false; // Affects Debug otherwise
         scriptableOptions.DiagnosticLevel = expectedOptions.DiagnosticLevel;
 
-        var optionsActual = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application, isBuilding);
+        var optionsActual = scriptableOptions.ToSentryUnityOptions(application: _fixture.Application, isBuilding: isBuilding);
 
         AssertOptions(expectedOptions, optionsActual);
     }
@@ -122,7 +120,7 @@ public class ScriptableSentryUnityOptionsTests
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         scriptableOptions.RuntimeOptionsConfiguration = optionsConfiguration;
 
-        scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, isBuilding: isBuilding);
+        scriptableOptions.ToSentryUnityOptions(isBuilding: isBuilding);
 
         Assert.AreEqual(optionsConfiguration.GotCalled, !isBuilding);
     }
@@ -131,9 +129,8 @@ public class ScriptableSentryUnityOptionsTests
     public void ToSentryUnityOptions_WebExceptionFilterAdded()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-        _fixture.UnityInfo = new TestUnityInfo(true);
 
-        var options = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application);
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
 
         var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
         var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;
@@ -144,9 +141,8 @@ public class ScriptableSentryUnityOptionsTests
     public void ToSentryUnityOptions_UnitySocketExceptionFilterAdded()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-        _fixture.UnityInfo = new TestUnityInfo(true);
 
-        var options = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application);
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
 
         var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
         var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;
@@ -157,9 +153,8 @@ public class ScriptableSentryUnityOptionsTests
     public void ToSentryUnityOptions_UnityBadGatewayExceptionFilterAdded()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-        _fixture.UnityInfo = new TestUnityInfo(true);
 
-        var options = scriptableOptions.ToSentryUnityOptions(_fixture.UnityInfo, _fixture.Application);
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
 
         var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
         var filters = exceptionFiltersPropertyInfo.GetValue(options) as List<IExceptionFilter>;

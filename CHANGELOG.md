@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Removed Unity 2020 support, which reached End of Life in 2023. Minimum supported version now is 2021. ([#2313](https://github.com/getsentry/sentry-unity/pull/2313))
+
 ### Features
 
 - The SDK now has a dedicated sample scene for third party plugins like Cysharp, or DOTween. ([#2289](https://github.com/getsentry/sentry-unity/pull/2289))

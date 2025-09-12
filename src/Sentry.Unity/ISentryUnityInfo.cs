@@ -7,11 +7,6 @@ public interface ISentryUnityInfo
 {
     public bool IL2CPP { get; }
     public Il2CppMethods? Il2CppMethods { get; }
-    public bool IsKnownPlatform();
-    public bool IsLinux();
-    public bool IsNativeSupportEnabled(SentryUnityOptions options, RuntimePlatform platform);
-    public bool IsSupportedBySentryNative(RuntimePlatform platform);
-    public string GetDebugImageType(RuntimePlatform platform);
 }
 
 public class Il2CppMethods

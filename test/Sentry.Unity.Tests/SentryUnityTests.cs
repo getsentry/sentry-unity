@@ -7,6 +7,7 @@ using Debug = UnityEngine.Debug;
 using Sentry.Extensibility;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests;
 
@@ -178,14 +179,14 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void ConfigureUnsupportedPlatformFallbacks()
     {
-        var unityInfo = new TestUnityInfo(false);
-        var options = new SentryUnityOptions(unityInfo)
+        var options = new SentryUnityOptions
         {
             DisableFileWrite = false,
             AutoSessionTracking = true
         };
+        const RuntimePlatform unsupportedPlatform = RuntimePlatform.CloudRendering;
 
-        SentryUnitySdk.ConfigureUnsupportedPlatformFallbacks(options);
+        SentryUnitySdk.ConfigureUnsupportedPlatformFallbacks(options, unsupportedPlatform);
 
         Assert.IsTrue(options.DisableFileWrite);
         Assert.IsFalse(options.AutoSessionTracking);

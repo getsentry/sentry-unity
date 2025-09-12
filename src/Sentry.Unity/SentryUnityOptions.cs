@@ -301,10 +301,9 @@ public sealed class SentryUnityOptions : SentryOptions
     public SentryUnityOptions() : this(isBuilding: false) { }
 
     // For testing
-    internal SentryUnityOptions(
-        ISentryUnityInfo? unityInfo = null,
-        IApplication? application = null,
+    internal SentryUnityOptions(IApplication? application = null,
         SentryMonoBehaviour? behaviour = null,
+        ISentryUnityInfo? unityInfo = null,
         bool isBuilding = false)
     {
         // NOTE: 'SentryPlatformServices.UnityInfo' throws when the UnityInfo has not been set. This should not happen.
@@ -382,10 +381,28 @@ public sealed class SentryUnityOptions : SentryOptions
 
         // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
         // implicitly creates a directory and leads to crashes i.e. on the Switch.
-        if (unityInfo?.IsKnownPlatform() ?? false)
+        if (IsKnownPlatform(application.Platform))
         {
             CacheDirectoryPath = application.PersistentDataPath;
         }
+    }
+
+    internal static bool IsKnownPlatform(RuntimePlatform? platform = null)
+    {
+        platform ??= ApplicationAdapter.Instance.Platform;
+        return platform
+            is RuntimePlatform.Android
+            or RuntimePlatform.IPhonePlayer
+            or RuntimePlatform.WindowsEditor
+            or RuntimePlatform.WindowsPlayer
+            or RuntimePlatform.OSXEditor
+            or RuntimePlatform.OSXPlayer
+            or RuntimePlatform.LinuxEditor
+            or RuntimePlatform.LinuxPlayer
+            or RuntimePlatform.WebGLPlayer
+            or RuntimePlatform.WindowsServer
+            or RuntimePlatform.OSXServer
+            or RuntimePlatform.LinuxServer;
     }
 
     public override string ToString()
