@@ -22,14 +22,17 @@ public static class SentryNative
     /// Configures the native SDK.
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
-    /// <param name="sentryUnityInfo">Infos about the current Unity environment</param>
-    public static void Configure(SentryUnityOptions options)
+    public static void Configure(SentryUnityOptions options) =>
+        Configure(options, ApplicationAdapter.Instance.Platform);
+
+    // For testing
+    internal static void Configure(SentryUnityOptions options, RuntimePlatform platform)
     {
         Logger = options.DiagnosticLogger;
 
         Logger?.LogInfo("Attempting to configure native support via the Native SDK");
 
-        if (!options.UnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
+        if (!options.IsNativeSupportEnabled(platform))
         {
             Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
             return;
@@ -58,8 +61,7 @@ public static class SentryNative
         options.EnableScopeSync = true;
         options.NativeContextWriter = new NativeContextWriter();
 
-        // Use AnalyticsSessionInfo.userId as the default UserID in native & dotnet
-        options.DefaultUserId = AnalyticsSessionInfo.userId;
+        options.DefaultUserId = GetInstallationId();
         if (options.DefaultUserId is not null)
         {
             options.ScopeObserver.SetUser(new SentryUser { Id = options.DefaultUserId });
@@ -113,6 +115,31 @@ public static class SentryNative
         catch (EntryPointNotFoundException e)
         {
             Logger?.LogError(e, "Native dependency not found. Did you delete sentry.dll or move files around?");
+        }
+    }
+
+    private static string? GetInstallationId(IApplication? application = null)
+    {
+        application ??= ApplicationAdapter.Instance;
+        switch (application.Platform)
+        {
+            case RuntimePlatform.Switch:
+            case RuntimePlatform.PS4:
+            case RuntimePlatform.PS5:
+            case RuntimePlatform.XboxOne:
+            case RuntimePlatform.GameCoreXboxSeries:
+            case RuntimePlatform.GameCoreXboxOne:
+                // TODO: Fetch the installation ID from sentry-native
+                // See https://github.com/getsentry/sentry-native/issues/1324
+                return null;
+
+            case RuntimePlatform.WindowsPlayer:
+            case RuntimePlatform.WindowsEditor:
+            case RuntimePlatform.LinuxPlayer:
+            case RuntimePlatform.LinuxEditor:
+                return AnalyticsSessionInfo.userId;
+            default:
+                return null;
         }
     }
 }
