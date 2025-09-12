@@ -184,7 +184,7 @@ public class SentryUnitySelfInitializationTests
             DisableFileWrite = false,
             AutoSessionTracking = true
         };
-        const RuntimePlatform unsupportedPlatform = RuntimePlatform.CloudRendering;
+        const RuntimePlatform unsupportedPlatform = RuntimePlatform.EmbeddedLinuxArm64; // Unsupported platform
 
         SentryUnitySdk.ConfigureUnsupportedPlatformFallbacks(options, unsupportedPlatform);
 
