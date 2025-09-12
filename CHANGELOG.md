@@ -11,6 +11,7 @@
 ### Fixes
 
 - The SDK no longer accesses `AnalyticsSessionInfo.userId` when targeting console platforms. This was leading to crashes during launch. ([#2309](https://github.com/getsentry/sentry-unity/pull/2309))
+- The SDK now deduplicates trace generation during startup and scene loading ([#2301](https://github.com/getsentry/sentry-unity/pull/2301))
 - The SDK no longer appends multiple upload tasks when building for Android ([#2300](https://github.com/getsentry/sentry-unity/pull/2300))
 - Fixed false positive ANR events on `WebGL`, i.e. when switching tabs, or unfocusing the player ([#2306](https://github.com/getsentry/sentry-unity/pull/2306))
 - The SDK now automatically picks up previously missing debug symbols - i.e. `BurstDebugInformation`, by passing the 
