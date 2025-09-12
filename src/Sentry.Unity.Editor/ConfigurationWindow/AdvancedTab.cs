@@ -91,6 +91,8 @@ internal static class AdvancedTab
         EditorGUI.indentLevel++;
         if (UnfoldNativeOptions)
         {
+            GUILayout.Label("Desktop", EditorStyles.boldLabel);
+
             options.WindowsNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("Windows", "Whether to enable native crashes support on Windows."),
                 options.WindowsNativeSupportEnabled);
@@ -102,6 +104,8 @@ internal static class AdvancedTab
             options.LinuxNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("Linux", "Whether to enable native crashes support on Linux."),
                 options.LinuxNativeSupportEnabled);
+
+            GUILayout.Label("Mobile", EditorStyles.boldLabel);
 
             options.IosNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("iOS", "Whether to enable Native iOS support to capture" +
@@ -133,6 +137,12 @@ internal static class AdvancedTab
             EditorGUI.EndDisabledGroup();
             EditorGUI.EndDisabledGroup();
             EditorGUI.indentLevel--;
+
+            GUILayout.Label("Console", EditorStyles.boldLabel);
+
+            options.XboxNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Xbox", "Whether to enable native crashes support on Xbox."),
+                options.XboxNativeSupportEnabled);
         }
 
         EditorGUI.indentLevel--;

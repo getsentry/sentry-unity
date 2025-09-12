@@ -210,6 +210,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool LinuxNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should add native support for Xbox
+    /// </summary>
+    public bool XboxNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should add IL2CPP line number support
     /// </summary>
     /// <remarks>
@@ -393,16 +398,18 @@ public sealed class SentryUnityOptions : SentryOptions
         return platform
             is RuntimePlatform.Android
             or RuntimePlatform.IPhonePlayer
-            or RuntimePlatform.WindowsEditor
-            or RuntimePlatform.WindowsPlayer
             or RuntimePlatform.OSXEditor
             or RuntimePlatform.OSXPlayer
+            or RuntimePlatform.OSXServer
+            or RuntimePlatform.WindowsEditor
+            or RuntimePlatform.WindowsPlayer
+            or RuntimePlatform.WindowsServer
             or RuntimePlatform.LinuxEditor
             or RuntimePlatform.LinuxPlayer
+            or RuntimePlatform.LinuxServer
             or RuntimePlatform.WebGLPlayer
-            or RuntimePlatform.WindowsServer
-            or RuntimePlatform.OSXServer
-            or RuntimePlatform.LinuxServer;
+            or RuntimePlatform.GameCoreXboxSeries
+            or RuntimePlatform.GameCoreXboxOne;
     }
 
     public override string ToString()
