@@ -184,7 +184,10 @@ public class SentryUnitySelfInitializationTests
             DisableFileWrite = false,
             AutoSessionTracking = true
         };
-        const RuntimePlatform unsupportedPlatform = RuntimePlatform.EmbeddedLinuxArm64; // Unsupported platform
+        // Picking obsolete CloudRendering because it won't accidentally be supported
+#pragma warning disable CS0618 // CloudRendering obsolete
+        const RuntimePlatform unsupportedPlatform = RuntimePlatform.CloudRendering;
+#pragma warning restore CS0618 // CloudRendering is obsolete
 
         SentryUnitySdk.ConfigureUnsupportedPlatformFallbacks(options, unsupportedPlatform);
 

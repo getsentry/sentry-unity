@@ -42,8 +42,10 @@ public sealed class SentryUnityOptionsTests
     [TestCase(false, "some/path", null)]
     public void Ctor_IfPlatformIsKnown_SetsCacheDirectoryPath(bool isKnownPlatform, string applicationDataPath, string? expectedCacheDirectoryPath)
     {
-        // Picking a platform based on whether it is supported or not
-        _fixture.Application.Platform = isKnownPlatform ? RuntimePlatform.LinuxPlayer : RuntimePlatform.EmbeddedLinuxArm64;
+        // Picking obsolete CloudRendering because it won't accidentally be supported
+#pragma warning disable CS0618 // CloudRendering obsolete
+        _fixture.Application.Platform = isKnownPlatform ? RuntimePlatform.LinuxPlayer : RuntimePlatform.CloudRendering;
+#pragma warning restore CS0618 // CloudRendering is obsolete
         _fixture.Application.PersistentDataPath = applicationDataPath;
 
         var sut = _fixture.GetSut();
