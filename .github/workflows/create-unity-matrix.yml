@@ -54,8 +54,8 @@ jobs:
           echo "matrix={\"unity-version\":$versions}" >> $GITHUB_OUTPUT
           
           # Build matrix with platforms
-          cat << EOF >> $GITHUB_OUTPUT
-          build-matrix={
+          build_matrix=$(cat <<-JSON
+          {
             "unity-version": $versions,
             "platform": ["WebGL", "Linux"],
             "include": [
@@ -72,29 +72,35 @@ jobs:
               }
             ]
           }
-          EOF
+          JSON
+          )
+          echo "build-matrix=$(echo "$build_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
           
           # Android matrix with API levels and init types
-          cat << EOF >> $GITHUB_OUTPUT
-          android-matrix={
+          android_matrix=$(cat <<-JSON
+          {
             "api-level": [30, 31, 34],
             "init-type": ["runtime", "buildtime"],
             "unity-version": $versions
           }
-          EOF
+          JSON
+          )
+          echo "android-matrix=$(echo "$android_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
           
           # iOS matrix with iOS versions and init types
-          cat << EOF >> $GITHUB_OUTPUT
-          ios-matrix={
+          ios_matrix=$(cat <<-JSON
+          {
             "unity-version": $versions,
             "ios-version": ["17.0", "latest"],
             "init-type": ["runtime", "buildtime"]
           }
-          EOF
+          JSON
+          )
+          echo "ios-matrix=$(echo "$ios_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
           
           # Desktop matrix with OS
-          cat << EOF >> $GITHUB_OUTPUT
-          desktop-matrix={
+          desktop_matrix=$(cat <<-JSON
+          {
             "unity-version": $versions,
             "os": ["windows"],
             "include": [
@@ -105,4 +111,6 @@ jobs:
               }
             ]
           }
-          EOF
+          JSON
+          )
+          echo "desktop-matrix=$(echo "$desktop_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
