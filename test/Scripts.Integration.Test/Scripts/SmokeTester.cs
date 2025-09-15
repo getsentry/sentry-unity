@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Sentry;
 using Sentry.Unity;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 using Debug = UnityEngine.Debug;
 
 #if UNITY_WEBGL
@@ -200,7 +201,7 @@ public class SmokeTester : MonoBehaviour
         AddContext();
 
         Debug.Log("CRASH TEST: Issuing a native crash (c++ unhandled exception)");
-        throw_cpp();
+        Utils.ForceCrash(ForcedCrashCategory.FatalError);
 
         // shouldn't execute because the previous call should have failed
         Debug.Log("CRASH TEST: FAIL - unexpected code executed...");
@@ -212,6 +213,10 @@ public class SmokeTester : MonoBehaviour
         t.Start("HASNT-CRASHED");
         var crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
+
+        var lastRunState = SentrySdk.GetLastRunState();
+        t.Expect($"SentrySdk.GetLastRunState() ({lastRunState}) is 'DidNotCrash'", lastRunState == SentrySdk.CrashedLastRun.DidNotCrash);
+
         t.Pass();
     }
 
@@ -220,6 +225,10 @@ public class SmokeTester : MonoBehaviour
         t.Start("HAS-CRASHED");
         var crashed = CrashedLastRun();
         t.Expect($"options.CrashedLastRun ({crashed}) == true (1)", crashed == 1);
+
+        var lastRunState = SentrySdk.GetLastRunState();
+        t.Expect($"SentrySdk.GetLastRunState() ({lastRunState}) is 'Crashed'", lastRunState == SentrySdk.CrashedLastRun.Crashed);
+
         t.Pass();
     }
 
