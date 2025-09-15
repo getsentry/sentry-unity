@@ -43,6 +43,7 @@ jobs:
     steps:
       - name: Set Unity version matrices based on event type
         id: set-matrix
+        shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             versions='${{ env.PR_UNITY_VERSIONS }}'
