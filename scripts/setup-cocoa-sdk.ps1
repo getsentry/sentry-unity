@@ -113,8 +113,8 @@ if (-not (Test-Path $iOSDestination) -or -not (Test-Path $iOSInfoPlist)) {
 if (-not $iOSOnly) {
     Write-Host "Setting up macOS support..." -ForegroundColor Yellow
     
-    $macOSFrameworkPath = Join-Path $xcframeworkPath "macos-arm64_arm64e_x86_64/Sentry.framework/Sentry"
-    $macOSdSYMPath = Join-Path $xcframeworkPath "macos-arm64_arm64e_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry"
+    $macOSFrameworkPath = Join-Path $xcframeworkPath "macos-arm64_x86_64/Sentry.framework/Versions/A/Sentry"
+    $macOSdSYMPath = Join-Path $xcframeworkPath "macos-arm64_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry"
     
     $macOSDestDir = Split-Path $macOSDestination -Parent
     if (-not (Test-Path $macOSDestDir)) {

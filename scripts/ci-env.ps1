@@ -4,9 +4,6 @@ param (
 )
 
 switch ($name) {
-    "unity2020.3" {
-        return "2020.3.48f1"
-    }
     "unity2021.3" {
         return "2021.3.45f1"
     }
@@ -14,10 +11,10 @@ switch ($name) {
         return "2022.3.62f1"
     }
     "unity6000.0" {
-        return "6000.0.55f1"
+        return "6000.0.57f1"
     }
     "unity6000.1" {
-        return "6000.1.15f1"
+        return "6000.1.16f1"
     }
     Default {
         throw "Unkown variable '$name'"

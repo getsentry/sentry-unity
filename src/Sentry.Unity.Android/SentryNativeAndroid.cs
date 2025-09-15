@@ -22,8 +22,6 @@ public static class SentryNativeAndroid
     /// <param name="options">The Sentry Unity options to use.</param>
     public static void Configure(SentryUnityOptions options)
     {
-        MainThreadData.CollectData();
-
         options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Android SDK");
 
         if (!options.AndroidNativeSupportEnabled)
@@ -141,7 +139,7 @@ public static class SentryNativeAndroid
     {
         options.DiagnosticLogger?.LogInfo("Attempting to close the Android SDK");
 
-        if (!options.UnityInfo.IsNativeSupportEnabled(options, ApplicationAdapter.Instance.Platform))
+        if (!options.IsNativeSupportEnabled())
         {
             options.DiagnosticLogger?.LogDebug("Android Native Support is not enabled. Skipping closing the Android SDK");
             return;

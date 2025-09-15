@@ -84,7 +84,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
+          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
 
       - name: Installing Linux Dependencies
         if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
@@ -118,8 +118,8 @@ jobs:
         with:
           name: ${{ env.TARGET }}-sdk
           path: |
-            package-dev/Plugins/iOS
-            package-dev/Plugins/macOS
+            package-dev/Plugins/iOS/Sentry.xcframework~
+            package-dev/Plugins/macOS/Sentry
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 

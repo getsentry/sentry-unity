@@ -114,3 +114,9 @@ The SDK includes Sentry CLI integration for automatic debug symbol upload during
 - Unity-specific exception filters prevent SDK errors from affecting the game
 - Extensive logging helps debug integration issues
 - Fallback mechanisms ensure core functionality works even if platform specific features fail
+
+## Git Commit Guidelines
+
+### Commit Messages
+- Use simple, direct commit messages without prefixes like "chore:" or "feat:"
+- Messages start with a capital letter

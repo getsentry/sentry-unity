@@ -20,4 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/5_ForceCrashSamples.unity
     guid: bebd1540a98b8417cae8c44fa897aebc
+  - enabled: 1
+    path: Assets/Scenes/6_ThirdPartySamples.unity
+    guid: 6e37b94f03cfa43b284854db929d98b2
   m_configObjects: {}

@@ -28,8 +28,6 @@ internal class SentryUnitySdk
             return null;
         }
 
-        MainThreadData.CollectData();
-
         // Some integrations are controlled through a flag and opt-in. Adding these integrations late so we have equal
         // behaviour whether the options got created through the ScriptableObject or the SDK gets manually initialized
         AddIntegrations(options);
@@ -177,9 +175,10 @@ internal class SentryUnitySdk
         }
     }
 
-    internal static void ConfigureUnsupportedPlatformFallbacks(SentryUnityOptions options)
+    internal static void ConfigureUnsupportedPlatformFallbacks(SentryUnityOptions options, RuntimePlatform? platform = null)
     {
-        if (!options.UnityInfo.IsKnownPlatform())
+        platform ??= ApplicationAdapter.Instance.Platform;
+        if (!SentryUnityOptions.IsKnownPlatform(platform))
         {
             options.DisableFileWrite = true;
 
