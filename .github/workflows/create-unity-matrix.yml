@@ -9,7 +9,7 @@ on:
         type: string
     outputs:
       unity-matrix:
-        description: 'Simple Unity version matrix'
+        description: 'Base Unity version matrix'
         value: ${{ jobs.create-unity-matrix.outputs.unity-matrix }}
       build-matrix:
         description: 'Build matrix with platforms'
@@ -50,7 +50,7 @@ jobs:
             versions='${{ env.FULL_UNITY_VERSIONS }}'
           fi
           
-          # Simple unity-version only matrix
+          # Base unity-version only matrix
           echo "matrix={\"unity-version\":$versions}" >> $GITHUB_OUTPUT
           
           # Build matrix with platforms
@@ -79,9 +79,9 @@ jobs:
           # Android matrix with API levels and init types
           android_matrix=$(cat <<-JSON
           {
+            "unity-version": $versions,
             "api-level": [30, 31, 34],
-            "init-type": ["runtime", "buildtime"],
-            "unity-version": $versions
+            "init-type": ["runtime", "buildtime"]
           }
           JSON
           )
