@@ -106,7 +106,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.build-matrix) }}            
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        platform: ["WebGL", "Linux"]
+        include:
+          - platform: WebGL
+            check_symbols: true
+            build_platform: WebGL
+          - platform: Linux
+            image-suffix: "-il2cpp"
+            check_symbols: true
+            build_platform: Linux            
     env:
       UNITY_PATH: docker exec unity unity-editor
     steps:
@@ -216,7 +226,10 @@ jobs:
       init-type: ${{ matrix.init-type }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.android-matrix) }}
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        api-level: [30, 31, 34]
+        init-type: ["runtime", "buildtime"]
 
   smoke-test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
@@ -256,7 +269,10 @@ jobs:
       init-type: ${{ matrix.init-type }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.ios-matrix) }}
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        ios-version: ["17.0", "latest"]
+        init-type: ["runtime", "buildtime"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
         # - `iOS 18`: 88 %
@@ -312,7 +328,13 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.desktop-matrix) }}
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        os: ["windows"]
+        include:
+          - os: windows
+            unity-modules: "windows-il2cpp"
+            unity-config-path: "C:/ProgramData/Unity/config/"
         # os: ["windows", "macos"]
         # include:
           # - os: macos

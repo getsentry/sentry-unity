@@ -9,20 +9,8 @@ on:
         type: string
     outputs:
       unity-matrix:
-        description: 'Base Unity version matrix'
+        description: 'Unity version matrix'
         value: ${{ jobs.create-unity-matrix.outputs.unity-matrix }}
-      build-matrix:
-        description: 'Build matrix with platforms'
-        value: ${{ jobs.create-unity-matrix.outputs.build-matrix }}
-      android-matrix:
-        description: 'Android matrix with API levels and init types'
-        value: ${{ jobs.create-unity-matrix.outputs.android-matrix }}
-      ios-matrix:
-        description: 'iOS matrix with iOS versions and init types'
-        value: ${{ jobs.create-unity-matrix.outputs.ios-matrix }}
-      desktop-matrix:
-        description: 'Desktop matrix with OS configurations'
-        value: ${{ jobs.create-unity-matrix.outputs.desktop-matrix }}
 
 env:
   # Unity versions used in PRs
@@ -35,10 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       unity-matrix: ${{ steps.set-matrix.outputs.matrix }}
-      build-matrix: ${{ steps.set-matrix.outputs.build-matrix }}
-      android-matrix: ${{ steps.set-matrix.outputs.android-matrix }}
-      ios-matrix: ${{ steps.set-matrix.outputs.ios-matrix }}
-      desktop-matrix: ${{ steps.set-matrix.outputs.desktop-matrix }}
     steps:
       - name: Set Unity version matrices based on event type
         id: set-matrix
@@ -50,67 +34,5 @@ jobs:
             versions='${{ env.FULL_UNITY_VERSIONS }}'
           fi
           
-          # Base unity-version only matrix
+          # Unity version matrix
           echo "matrix={\"unity-version\":$versions}" >> $GITHUB_OUTPUT
-          
-          # Build matrix with platforms
-          build_matrix=$(cat <<-JSON
-          {
-            "unity-version": $versions,
-            "platform": ["WebGL", "Linux"],
-            "include": [
-              {
-                "platform": "WebGL",
-                "check_symbols": true,
-                "build_platform": "WebGL"
-              },
-              {
-                "platform": "Linux", 
-                "image-suffix": "-il2cpp",
-                "check_symbols": true,
-                "build_platform": "Linux"
-              }
-            ]
-          }
-          JSON
-          )
-          echo "build-matrix=$(echo "$build_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
-          
-          # Android matrix with API levels and init types
-          android_matrix=$(cat <<-JSON
-          {
-            "unity-version": $versions,
-            "api-level": [30, 31, 34],
-            "init-type": ["runtime", "buildtime"]
-          }
-          JSON
-          )
-          echo "android-matrix=$(echo "$android_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
-          
-          # iOS matrix with iOS versions and init types
-          ios_matrix=$(cat <<-JSON
-          {
-            "unity-version": $versions,
-            "ios-version": ["17.0", "latest"],
-            "init-type": ["runtime", "buildtime"]
-          }
-          JSON
-          )
-          echo "ios-matrix=$(echo "$ios_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
-          
-          # Desktop matrix with OS
-          desktop_matrix=$(cat <<-JSON
-          {
-            "unity-version": $versions,
-            "os": ["windows"],
-            "include": [
-              {
-                "os": "windows",
-                "unity-modules": "windows-il2cpp", 
-                "unity-config-path": "C:/ProgramData/Unity/config/"
-              }
-            ]
-          }
-          JSON
-          )
-          echo "desktop-matrix=$(echo "$desktop_matrix" | tr -d '\n' | tr -s ' ')" >> $GITHUB_OUTPUT
