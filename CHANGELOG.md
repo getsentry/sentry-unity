@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes 
+
+- Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
+
 ## 4.0.0-beta.2
 
 ### Breaking Changes
