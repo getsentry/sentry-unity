@@ -11,7 +11,6 @@ on:
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
 
 env:
-  LOWEST_SUPPORTED_UNITY_VERSION: 2021.3
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
 
@@ -27,6 +26,11 @@ jobs:
         uses: styfle/cancel-workflow-action@b173b6ec0100793626c2d9e6b90435061f4fc3e5 # pin@0.11.0
         with:
           access_token: ${{ github.token }}
+
+  create-unity-matrix:
+    uses: ./.github/workflows/create-unity-matrix.yml
+    with:
+      event-name: ${{ github.event_name }}
 
   sdk:
     strategy:
@@ -85,11 +89,11 @@ jobs:
   smoke-test-create:
     name: Create ${{ matrix.unity-version }} Smoke Test Project
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
-      matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
+      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
     uses: ./.github/workflows/smoke-test-create.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -98,12 +102,12 @@ jobs:
   smoke-test-build:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create]
+    needs: [smoke-test-create, create-unity-matrix]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         platform: ["WebGL", "Linux"]
         include:
           - platform: WebGL
@@ -202,12 +206,11 @@ jobs:
   smoke-test-build-android:
     name: Build Android ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create]
+    needs: [smoke-test-create, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
-      matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
+      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
     uses: ./.github/workflows/smoke-test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -215,7 +218,7 @@ jobs:
   smoke-test-run-android:
     name: Run Android ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-android]
+    needs: [smoke-test-build-android, create-unity-matrix]
     uses: ./.github/workflows/smoke-test-run-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -224,19 +227,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [30, 31, 34] # last updated January 2025
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        api-level: [30, 31, 34]
         init-type: ["runtime", "buildtime"]
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
 
   smoke-test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create]
+    needs: [smoke-test-create, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
-      matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
+      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
     uses: ./.github/workflows/smoke-test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -244,12 +246,12 @@ jobs:
   smoke-test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-ios]
+    needs: [smoke-test-build-ios, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         init-type: ["runtime", "buildtime"]
     uses: ./.github/workflows/smoke-test-compile-ios.yml
     with:
@@ -259,7 +261,7 @@ jobs:
   smoke-test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-compile-ios]
+    needs: [smoke-test-compile-ios, create-unity-matrix]
     uses: ./.github/workflows/smoke-test-run-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -268,7 +270,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        ios-version: ["17.0", "latest"]
+        init-type: ["runtime", "buildtime"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
         # - `iOS 18`: 88 %
@@ -278,18 +282,16 @@ jobs:
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
-        ios-version: ["17.0", latest] # updated August 2025 to match available simulators
-        init-type: ["runtime", "buildtime"]
 
   smoke-test-run:
     name: Run ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build]
+    needs: [smoke-test-build, create-unity-matrix]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         platform: ["WebGL", "Linux"]
     steps:
       - name: Checkout
@@ -322,18 +324,19 @@ jobs:
   desktop-smoke-test:
     name: Run ${{ matrix.os }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create]
+    needs: [smoke-test-create, create-unity-matrix]
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3", "2022.3", "6000.0", "6000.1"]
-        # os: ["windows", "macos"]
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         os: ["windows"]
         include:
           - os: windows
-            unity-modules: windows-il2cpp
-            unity-config-path: C:/ProgramData/Unity/config/
+            unity-modules: "windows-il2cpp"
+            unity-config-path: "C:/ProgramData/Unity/config/"
+        # os: ["windows", "macos"]
+        # include:
           # - os: macos
           #   unity-modules: mac-il2cpp
           #   unity-config-path: /Library/Application Support/Unity/config/
