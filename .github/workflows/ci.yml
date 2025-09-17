@@ -129,7 +129,7 @@ jobs:
           docker-images: false
           swap-storage: true
 
-      - run: echo "::add-mask::\"$LICENSE_SERVER_URL\""
+      - run: echo "::add-mask::$LICENSE_SERVER_URL"
         env:
           LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
@@ -367,7 +367,7 @@ jobs:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: ${{ matrix.unity-modules }}
 
-      - run: echo "::add-mask::\"$LICENSE_SERVER_URL\""
+      - run: echo "::add-mask::$LICENSE_SERVER_URL"
         env:
           LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
