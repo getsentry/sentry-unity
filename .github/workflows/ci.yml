@@ -133,7 +133,9 @@ jobs:
           docker-images: false
           swap-storage: true
 
-      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo "::add-mask::$LICENSE_SERVER_URL"
+        env:
+          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
       - name: Docker Login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
@@ -143,8 +145,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh '${{ matrix.unity-version }}' '${{ matrix.platform }}${{ matrix.image-suffix }}' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" "$PLATFORM_WITH_SUFFIX" "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+          PLATFORM: ${{ matrix.platform }}
+          IMAGE_SUFFIX: ${{ matrix.image-suffix }}
+          PLATFORM_WITH_SUFFIX: ${{ matrix.platform }}${{ matrix.image-suffix }}
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -167,13 +175,19 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform ${{ matrix.build_platform }} -CheckSymbols:$${{ matrix.check_symbols }} -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$([System.Convert]::ToBoolean($env:CHECK_SYMBOLS)) -UnityVersion "$env:UNITY_VERSION"
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
+          CHECK_SYMBOLS: ${{ matrix.check_symbols }}
+          UNITY_VERSION: ${{ matrix.unity-version }}
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -346,7 +360,9 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity${{ matrix.unity-version }}")" >> $env:GITHUB_OUTPUT
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "$env:UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
+        env:
+          UNITY_SCRIPT_ARG: unity${{ matrix.unity-version }}
 
       - name: Setup Unity
         uses: getsentry/setup-unity@3bdc8c022b6d30ecf2d21d12a564bfa55a54fa2e
@@ -354,12 +370,17 @@ jobs:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: ${{ matrix.unity-modules }}
 
-      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo "::add-mask::$LICENSE_SERVER_URL"
+        env:
+          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
       - name: Create Unity license config
         run: |
-          New-Item -Path '${{ matrix.unity-config-path }}' -ItemType Directory
-          Set-Content -Path '${{ matrix.unity-config-path }}services-config.json' -Value '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+          New-Item -Path "$env:UNITY_CONFIG_PATH" -ItemType Directory
+          Set-Content -Path "$env:UNITY_CONFIG_PATH/services-config.json" -Value "$env:UNITY_LICENSE_SERVER_CONFIG"
+        env:
+          UNITY_CONFIG_PATH: ${{ matrix.unity-config-path }}
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -370,7 +391,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH"
 
       - name: Download UPM package
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -381,13 +402,15 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}"
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -CheckSymbols
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -CheckSymbols -UnityVersion "${{ matrix.unity-version }}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -CheckSymbols -UnityVersion "$env:UNITY_VERSION"
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
