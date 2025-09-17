@@ -7,7 +7,6 @@ on:
         type: string
 
 env:
-  LOWEST_SUPPORTED_UNITY_VERSION: 2021.3
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
   GITHUB_ACTOR: ${{ github.actor }}
@@ -115,14 +114,12 @@ jobs:
         run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
 
       - name: Package for release
-        if: ${{ env.UNITY_VERSION == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         run: |
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           ./scripts/pack.ps1
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: ${{ env.UNITY_VERSION == env.LOWEST_SUPPORTED_UNITY_VERSION }}
         with:
           name: ${{ env.GITHUB_SHA }}
           if-no-files-found: error
