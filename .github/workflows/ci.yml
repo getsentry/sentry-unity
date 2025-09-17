@@ -374,7 +374,7 @@ jobs:
       - name: Create Unity license config
         run: |
           New-Item -Path "$env:UNITY_CONFIG_PATH" -ItemType Directory
-          Set-Content -Path "$UNITY_CONFIG_PATH\services-config.json" -Value "$env:UNITY_LICENSE_SERVER_CONFIG"
+          Set-Content -Path "$env:UNITY_CONFIG_PATH/services-config.json" -Value "$env:UNITY_LICENSE_SERVER_CONFIG"
         env:
           UNITY_CONFIG_PATH: ${{ matrix.unity-config-path }}
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
