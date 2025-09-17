@@ -34,7 +34,7 @@ jobs:
         env:
           UNITY_SCRIPT_ARG: unity${{ env.UNITY_VERSION }}
 
-      - run: echo "::add-mask::\"$LICENSE_SERVER_URL\""
+      - run: echo "::add-mask::$LICENSE_SERVER_URL"
         env:
           LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
