@@ -22,6 +22,7 @@
   target directory path to Sentry CLI. Sentry CLI then automatically and recursively picks up any not yet uploaded symbols. ([#2298](https://github.com/getsentry/sentry-unity/pull/2298))
 - The check used to verify whether the current thread is the main-thread now includes `JobsUtility.IsExecutingJob` to support running in Burst. ([#2226](https://github.com/getsentry/sentry-unity/pull/2226))
 - For targeting iOS, the Unity SDK now brings an iOS-only `.xcframework`, reducing package size. ([#2264](https://github.com/getsentry/sentry-unity/pull/2264))
+- Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
 
 ### Dependencies
 
