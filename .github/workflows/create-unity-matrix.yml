@@ -1,0 +1,38 @@
+name: Create Unity Version Matrix
+
+on:
+  workflow_call:
+    inputs:
+      event-name:
+        description: 'Event name (pull_request, push, etc.)'
+        required: true
+        type: string
+    outputs:
+      unity-matrix:
+        description: 'Unity version matrix'
+        value: ${{ jobs.create-unity-matrix.outputs.unity-matrix }}
+
+env:
+  # Unity versions used in PRs
+  PR_UNITY_VERSIONS: '["2022.3", "6000.0"]'
+  # Unity versions used on main branch
+  FULL_UNITY_VERSIONS: '["2021.3", "2022.3", "6000.0", "6000.1"]'
+
+jobs:
+  create-unity-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      unity-matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set Unity version matrices based on event type
+        id: set-matrix
+        shell: bash
+        run: |
+          if [[ "${{ inputs.event-name }}" == "pull_request" ]]; then
+            versions='${{ env.PR_UNITY_VERSIONS }}'
+          else
+            versions='${{ env.FULL_UNITY_VERSIONS }}'
+          fi
+          
+          # Unity version matrix
+          echo "matrix={\"unity-version\":$versions}" >> $GITHUB_OUTPUT
