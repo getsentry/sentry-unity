@@ -1,7 +1,8 @@
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+using UnityEngine.InputSystem.UI;
+#elif !ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.EventSystems;
-#if UNITY_EDITOR
-using UnityEditor;
 #endif
 
 namespace Sentry.Unity.Samples
@@ -20,7 +21,7 @@ namespace Sentry.Unity.Samples
 #elif !ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER
             gameObject.AddComponent<StandaloneInputModule>();
 #else
-            gameObject.AddComponent<StandaloneInputModule>();
+            Debug.LogError("Failed to detect input system. Sample scene might be unresponsive.");
 #endif
         }
     }
