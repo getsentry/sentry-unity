@@ -15,16 +15,18 @@ jobs:
     name: ${{ inputs.unity-version }}
     runs-on: ubuntu-latest-4-cores
     env:
-      UNITY_PATH: docker exec unity unity-editor
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_SHA: ${{ github.sha }}
+      UNITY_PATH: docker exec unity unity-editor
       UNITY_VERSION: ${{ inputs.unity-version }}
     
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
-      - run: echo "::add-mask::${{ secrets.LICENSE_SERVER_URL }}"
+      - run: echo "::add-mask::$LICENSE_SERVER_URL"
+        env:
+          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
       - name: Docker Login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
@@ -34,8 +36,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh "${UNITY_VERSION}" 'android' '${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}'
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'android' "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
+        env:
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -55,13 +59,13 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "${env:UNITY_PATH}"
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols
 
       - name: Export APK - Runtime Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${env:UNITY_VERSION}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$true -UnityVersion "$env:UNITY_VERSION"
 
       - name: Upload .apk
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -78,7 +82,7 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Export APK - Build-Time Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${env:UNITY_PATH}" -Platform "Android" -CheckSymbols:$true -UnityVersion "${env:UNITY_VERSION}"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$true -UnityVersion "$env:UNITY_VERSION"
 
       - name: Upload .apk
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
