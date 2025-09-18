@@ -99,6 +99,13 @@ internal class SentryUnitySdk
             return SentrySdk.CrashedLastRun.Unknown;
         }
 
+        if (ApplicationAdapter.Instance.Platform == RuntimePlatform.WebGLPlayer)
+        {
+            _options.DiagnosticLogger?.LogDebug("Currently, the Sentry SDK for Unity provides no native support for WebGL." +
+                                                "LastRunState is `Unknown`.");
+            return SentrySdk.CrashedLastRun.Unknown;
+        }
+
         return _options.CrashedLastRun.Invoke()
             ? SentrySdk.CrashedLastRun.Crashed
             : SentrySdk.CrashedLastRun.DidNotCrash;

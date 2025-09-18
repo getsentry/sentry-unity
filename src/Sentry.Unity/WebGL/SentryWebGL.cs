@@ -38,6 +38,13 @@ public static class SentryWebGL
                                                  "it currently produces blank screenshots mid-frame.");
         }
 
+        // On WebGL, the IL2CPP backend does not provide the API required to make the IL2CPP Event Processor work
+        if (options.Il2CppLineNumberSupportEnabled)
+        {
+            options.Il2CppLineNumberSupportEnabled = false;
+            options.DiagnosticLogger?.LogWarning("No IL2CPP line number support on WebGL.");
+        }
+
         // Use AnalyticsSessionInfo.userId as the default UserID
         options.DefaultUserId = AnalyticsSessionInfo.userId;
 
