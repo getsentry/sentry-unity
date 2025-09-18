@@ -2,14 +2,19 @@
 
 ## Unreleased
 
-### Dependencies
+### Features
 
-- Bump Cocoa SDK from v8.55.1 to v8.56.0 ([#2318](https://github.com/getsentry/sentry-unity/pull/2318))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
+- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314))
+
 ### Fixes 
 
 - Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
+
+### Dependencies
+
+- Bump Cocoa SDK from v8.55.1 to v8.56.0 ([#2318](https://github.com/getsentry/sentry-unity/pull/2318))
+    - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
+    - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
 
 ## 4.0.0-beta.2
 
@@ -19,7 +24,6 @@
 
 ### Features
 
-- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314))
 - The SDK now has a dedicated sample scene for third party plugins like Cysharp, or DOTween. ([#2289](https://github.com/getsentry/sentry-unity/pull/2289))
 - The SDK now automatically marks stack frames from `Cysharp` and `DG.Tweening` as non in-app. 
   This highly improves the resulting stack trace quality in the issues details. ([#2285](https://github.com/getsentry/sentry-unity/pull/2285))
