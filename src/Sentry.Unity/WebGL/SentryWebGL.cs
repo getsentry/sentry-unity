@@ -34,15 +34,15 @@ public static class SentryWebGL
         if (options.AttachScreenshot)
         {
             options.AttachScreenshot = false;
-            options.DiagnosticLogger?.LogWarning("Attaching screenshots on WebGL is disabled - " +
-                                                 "it currently produces blank screenshots mid-frame.");
+            options.DiagnosticLogger?.LogWarning("Attaching screenshots is unsupported on WebGL - disabling. " +
+                                                 "Currently, it produces blank screenshots mid-frame.");
         }
 
         // On WebGL, the IL2CPP backend does not provide the API required to make the IL2CPP Event Processor work
         if (options.Il2CppLineNumberSupportEnabled)
         {
             options.Il2CppLineNumberSupportEnabled = false;
-            options.DiagnosticLogger?.LogWarning("No IL2CPP line number support on WebGL.");
+            options.DiagnosticLogger?.LogWarning("IL2CPP line number support is unsupported on WebGL - disabling.");
         }
 
         // Use AnalyticsSessionInfo.userId as the default UserID
