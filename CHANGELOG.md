@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.55.1 to v8.56.0 ([#2318](https://github.com/getsentry/sentry-unity/pull/2318))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
+### Fixes 
+
+- Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
+
+## 4.0.0-beta.2
+
 ### Breaking Changes
 
 - Removed Unity 2020 support, which reached End of Life in 2023. Minimum supported version now is 2021. ([#2313](https://github.com/getsentry/sentry-unity/pull/2313))
@@ -26,9 +37,9 @@
 
 ### Dependencies
 
-- Bump .NET SDK from v5.12.0 to v5.14.1 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259), [#2274](https://github.com/getsentry/sentry-unity/pull/2274), [#2291](https://github.com/getsentry/sentry-unity/pull/2291))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5141)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.14.1)
+- Bump .NET SDK from v5.12.0 to v5.15.0 ([#2259](https://github.com/getsentry/sentry-unity/pull/2259), [#2274](https://github.com/getsentry/sentry-unity/pull/2274), [#2291](https://github.com/getsentry/sentry-unity/pull/2291), [#2315](https://github.com/getsentry/sentry-unity/pull/2315))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5150)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.12.0-14-g25a894dd...5.15.0)
 - Bump Cocoa SDK from v8.51.0 to v8.54.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265))
     - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8540)
     - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.54.0)

@@ -61,7 +61,10 @@ jobs:
             echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
           fi
       - name: Get submodule status
-        run: git submodule status --cached ${{ steps.env.outputs.submodules }} | tee submodules-status
+        run: git submodule status --cached $SUBMODULES | tee submodules-status
+        shell: bash
+        env:
+          SUBMODULES: ${{ steps.env.outputs.submodules }}
 
       - run: |
           if [[ "${{ env.TARGET }}" == "Cocoa" ]]; then
@@ -81,7 +84,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
+          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
 
       - name: Installing Linux Dependencies
         if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
