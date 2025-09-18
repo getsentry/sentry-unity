@@ -3,6 +3,7 @@ using Sentry.Protocol;
 using Sentry.Reflection;
 using Sentry.Integrations;
 using Sentry.Unity.Integrations;
+using UnityEngine;
 using OperatingSystem = Sentry.Protocol.OperatingSystem;
 
 namespace Sentry.Unity;
@@ -78,9 +79,18 @@ internal class UnityScopeUpdater
         app.BuildType = isDebugBuild is null ? null : (isDebugBuild.Value ? "debug" : "release");
     }
 
-    private void PopulateOperatingSystem(OperatingSystem operatingSystem)
+    private void PopulateOperatingSystem(OperatingSystem operatingSystemContext)
     {
-        operatingSystem.RawDescription = MainThreadData.OperatingSystem;
+        if (ApplicationAdapter.Instance.Platform
+            is RuntimePlatform.GameCoreXboxSeries
+            or RuntimePlatform.GameCoreXboxOne)
+        {
+            operatingSystemContext.Name = "Xbox";
+        }
+        else
+        {
+            operatingSystemContext.RawDescription = MainThreadData.OperatingSystem;
+        }
     }
 
     private void PopulateDevice(Device device)

@@ -58,6 +58,7 @@ public static class SentryUnityOptionsExtensions
             RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer => options.WindowsNativeSupportEnabled,
             RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer => options.MacosNativeSupportEnabled,
             RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer => options.LinuxNativeSupportEnabled,
+            RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne => options.XboxNativeSupportEnabled,
             _ => false
         };
     }
