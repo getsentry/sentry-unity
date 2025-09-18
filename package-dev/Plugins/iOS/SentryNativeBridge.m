@@ -64,24 +64,46 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
+    // Convert all C strings to NSStrings before entering the scope block to reduce the risk
+    // of the const char * being freed before the scope block is executed.
+    NSString *timestampString = nil;
+    if (timestamp != NULL) {
+        timestampString = [NSString stringWithUTF8String:timestamp];
+    }
+
+    NSString *messageString = nil;
+    if (message != NULL) {
+        messageString = [NSString stringWithUTF8String:message];
+    }
+
+    NSString *typeString = nil;
+    if (type != NULL) {
+        typeString = [NSString stringWithUTF8String:type];
+    }
+
+    NSString *categoryString = nil;
+    if (category != NULL) {
+        categoryString = [NSString stringWithUTF8String:category];
+    }
+
     [SentrySDK configureScope:^(SentryScope *scope) {
+
         SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc]
             initWithLevel:level
-                 category:(category ? [NSString stringWithUTF8String:category] : nil)];
+                 category:categoryString];
 
-        if (timestamp != NULL) {
+        if (timestampString != nil && timestampString.length > 0) {
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
-            breadcrumb.timestamp =
-                [dateFormatter dateFromString:[NSString stringWithUTF8String:timestamp]];
+            breadcrumb.timestamp = [dateFormatter dateFromString:timestampString];
         }
 
-        if (message != NULL) {
-            breadcrumb.message = [NSString stringWithUTF8String:message];
+        if (messageString != nil) {
+            breadcrumb.message = messageString;
         }
 
-        if (type != NULL) {
-            breadcrumb.type = [NSString stringWithUTF8String:type];
+        if (typeString != nil) {
+            breadcrumb.type = typeString;
         }
 
         [scope addBreadcrumb:breadcrumb];
@@ -184,15 +206,15 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 
     NSString *traceIdStr = [NSString stringWithUTF8String:traceId];
     NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
-    
+
     // This is a workaround to deal with SentryId living inside the Swift header
     Class sentryIdClass = NSClassFromString(@"_TtC6Sentry8SentryId");
     Class sentrySpanIdClass = NSClassFromString(@"SentrySpanId");
-    
+
     if (sentryIdClass && sentrySpanIdClass) {
         id sentryTraceId = [[sentryIdClass alloc] initWithUUIDString:traceIdStr];
         id sentrySpanId = [[sentrySpanIdClass alloc] initWithValue:spanIdStr];
-        
+
         if (sentryTraceId && sentrySpanId) {
             [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
         }
