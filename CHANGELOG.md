@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Dependencies
+
+- Bump Cocoa SDK from v8.55.1 to v8.56.0 ([#2318](https://github.com/getsentry/sentry-unity/pull/2318))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
 ### Fixes 
 
 - Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
