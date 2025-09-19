@@ -1120,7 +1120,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 582054325}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c8b4d2a1e3f5a94b8c6d9e2f7a1b3c5, type: 3}
+  m_Script: {fileID: 11500000, guid: 3cdab87e75cda478bb4a0f87edba9abd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sentry.Unity.Samples.AutoInputModuleManager
 --- !u!1 &655484390
