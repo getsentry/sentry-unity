@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEngine.Analytics;
 
 namespace Sentry.Unity.WebGL;
@@ -15,6 +16,9 @@ public static class SentryWebGL
     public static void Configure(SentryUnityOptions options)
     {
         options.DiagnosticLogger?.LogDebug("Updating configuration for Unity WebGL.");
+
+        // Due to special exception handling on WebGL we capture these through `LogMessageReceived` too
+        options.AddIntegration(new UnityApplicationLoggingIntegration(captureExceptions: true));
 
         // Note: we need to use a custom background worker which actually doesn't work in the background
         // because Unity doesn't support async (multithreading) yet. This may change in the future so let's watch
