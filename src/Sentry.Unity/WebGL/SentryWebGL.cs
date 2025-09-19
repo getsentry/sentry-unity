@@ -1,4 +1,5 @@
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEngine.Analytics;
 
 namespace Sentry.Unity.WebGL;
@@ -16,6 +17,9 @@ public static class SentryWebGL
     {
         options.DiagnosticLogger?.LogDebug("Updating configuration for Unity WebGL.");
 
+        // Due to special exception handling on WebGL we capture these through `LogMessageReceived` too
+        options.AddIntegration(new UnityApplicationLoggingIntegration(captureExceptions: true));
+
         // Note: we need to use a custom background worker which actually doesn't work in the background
         // because Unity doesn't support async (multithreading) yet. This may change in the future so let's watch
         // https://docs.unity3d.com/2019.4/Documentation/ScriptReference/PlayerSettings.WebGL-threadsSupport.html
@@ -26,7 +30,7 @@ public static class SentryWebGL
         //    "An abnormal situation has occurred: the PlayerLoop internal function has been called recursively.
         //     Please contact Customer Support with a sample project so that we can reproduce the problem and troubleshoot it."
         // Maybe we could write a file when this error occurs and recognize it on the next start. Like unity-native.
-        options.CrashedLastRun = () => false;
+        options.CrashedLastRun = null;
 
         // Disable async when accessing files (e.g. FileStream(useAsync: true)) because it throws on WebGL.
         options.UseAsyncFileIO = false;
@@ -34,8 +38,15 @@ public static class SentryWebGL
         if (options.AttachScreenshot)
         {
             options.AttachScreenshot = false;
-            options.DiagnosticLogger?.LogWarning("Attaching screenshots on WebGL is disabled - " +
-                                                 "it currently produces blank screenshots mid-frame.");
+            options.DiagnosticLogger?.LogWarning("Attaching screenshots is unsupported on WebGL - disabling. " +
+                                                 "Currently, it produces blank screenshots mid-frame.");
+        }
+
+        // On WebGL, the IL2CPP backend does not provide the API required to make the IL2CPP Event Processor work
+        if (options.Il2CppLineNumberSupportEnabled)
+        {
+            options.Il2CppLineNumberSupportEnabled = false;
+            options.DiagnosticLogger?.LogWarning("IL2CPP line number support is unsupported on WebGL - disabling.");
         }
 
         // Use AnalyticsSessionInfo.userId as the default UserID

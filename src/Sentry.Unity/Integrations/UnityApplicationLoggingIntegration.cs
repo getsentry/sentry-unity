@@ -1,4 +1,6 @@
+using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations;
@@ -6,6 +8,7 @@ namespace Sentry.Unity.Integrations;
 internal class UnityApplicationLoggingIntegration : ISdkIntegration
 {
     private readonly IApplication _application;
+    private readonly bool _captureExceptions;
     private ErrorTimeDebounce? _errorTimeDebounce;
     private LogTimeDebounce? _logTimeDebounce;
     private WarningTimeDebounce? _warningTimeDebounce;
@@ -13,8 +16,9 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     private IHub? _hub;
     private SentryUnityOptions? _options;
 
-    internal UnityApplicationLoggingIntegration(IApplication? application = null)
+    internal UnityApplicationLoggingIntegration(bool captureExceptions = false, IApplication? application = null)
     {
+        _captureExceptions = captureExceptions;
         _application = application ?? ApplicationAdapter.Instance;
     }
 
@@ -49,7 +53,8 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         }
 
         // LogType.Exception are getting handled by the UnityLogHandlerIntegration
-        if (logType is LogType.Exception)
+        // Unless we're configured to handle them - i.e. WebGL
+        if (logType is LogType.Exception && !_captureExceptions)
         {
             return;
         }
@@ -58,6 +63,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         {
             var debounced = logType switch
             {
+                LogType.Exception => _errorTimeDebounce?.Debounced(),
                 LogType.Error or LogType.Assert => _errorTimeDebounce?.Debounced(),
                 LogType.Log => _logTimeDebounce?.Debounced(),
                 LogType.Warning => _warningTimeDebounce?.Debounced(),
@@ -70,14 +76,19 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             }
         }
 
-        if (logType is LogType.Error && _options?.CaptureLogErrorEvents is true)
+        if (logType is LogType.Exception)
+        {
+            var ule = new UnityErrorLogException(message, stacktrace, _options);
+            _hub.CaptureException(ule);
+        }
+        else if (logType is LogType.Error && _options?.CaptureLogErrorEvents is true)
         {
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {
                 var ule = new UnityErrorLogException(message, stacktrace, _options);
-                var evt = new SentryEvent(ule) { Level = SentryLevel.Error };
+                var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
 
-                _hub.CaptureEvent(evt);
+                _hub.CaptureEvent(sentryEvent);
             }
             else
             {
