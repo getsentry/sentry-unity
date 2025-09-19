@@ -26,7 +26,7 @@ public static class SentryWebGL
         //    "An abnormal situation has occurred: the PlayerLoop internal function has been called recursively.
         //     Please contact Customer Support with a sample project so that we can reproduce the problem and troubleshoot it."
         // Maybe we could write a file when this error occurs and recognize it on the next start. Like unity-native.
-        options.CrashedLastRun = () => false;
+        options.CrashedLastRun = null;
 
         // Disable async when accessing files (e.g. FileStream(useAsync: true)) because it throws on WebGL.
         options.UseAsyncFileIO = false;

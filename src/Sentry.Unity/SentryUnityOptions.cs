@@ -328,8 +328,17 @@ public sealed class SentryUnityOptions : SentryOptions
         AddTransactionProcessor(processor);
         AddExceptionProcessor(new UnityExceptionProcessor());
 
-        AddIntegration(new UnityLogHandlerIntegration(this));
-        AddIntegration(new UnityApplicationLoggingIntegration());
+        if (application.Platform == RuntimePlatform.WebGLPlayer)
+        {
+            // The SDK cannot make use of the `UnityLogHandlerIntegration` due to special exception handling on WebGL
+            // We're treat exceptions like error logs instead and parse the stack trace based on the string provided
+            AddIntegration(new UnityApplicationLoggingIntegration(captureExceptions: true));
+        }
+        else
+        {
+            AddIntegration(new UnityLogHandlerIntegration(this));
+            AddIntegration(new UnityApplicationLoggingIntegration());
+        }
         AddIntegration(new StartupTracingIntegration());
         AddIntegration(new AnrIntegration(behaviour));
         AddIntegration(new UnityScopeIntegration(application, unityInfo));
