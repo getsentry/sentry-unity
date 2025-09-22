@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-### Fixes 
+### Features
+
+- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314))
+
+### Fixes
 
 - Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
 
