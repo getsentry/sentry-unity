@@ -64,25 +64,11 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
-    NSString *timestampString = nil;
-    if (timestamp != NULL) {
-        timestampString = [NSString stringWithUTF8String:timestamp];
-    }
-
-    NSString *messageString = nil;
-    if (message != NULL) {
-        messageString = [NSString stringWithUTF8String:message];
-    }
-
-    NSString *typeString = nil;
-    if (type != NULL) {
-        typeString = [NSString stringWithUTF8String:type];
-    }
-
-    NSString *categoryString = nil;
-    if (category != NULL) {
-        categoryString = [NSString stringWithUTF8String:category];
-    }
+    // Convert C strings to NSStrings, handling invalid UTF-8 gracefully
+    NSString *timestampString = (timestamp != NULL) ? [NSString stringWithUTF8String:timestamp] : nil;
+    NSString *messageString = (message != NULL) ? [NSString stringWithUTF8String:message] : nil;
+    NSString *typeString = (type != NULL) ? [NSString stringWithUTF8String:type] : nil;
+    NSString *categoryString = (category != NULL) ? [NSString stringWithUTF8String:category] : nil;
 
     [SentrySDK configureScope:^(SentryScope *scope) {
 
@@ -91,9 +77,9 @@ void SentryNativeBridgeAddBreadcrumb(
                  category:categoryString];
 
         if (timestampString != nil && timestampString.length > 0) {
-            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-            [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
-            breadcrumb.timestamp = [dateFormatter dateFromString:timestampString];
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            formatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
+            breadcrumb.timestamp = [formatter dateFromString:timestampString];
         }
 
         if (messageString != nil) {
