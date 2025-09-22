@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314))
+
 ### Fixes
 
 - The SDK now captures exceptions on WebGL through the logging integration instead of the incompatible log handler, providing better stack trace support . ([#2322](https://github.com/getsentry/sentry-unity/pull/2322))
@@ -18,6 +22,9 @@
 - Bump CLI from v2.53.0 to v2.54.0 ([#2324](https://github.com/getsentry/sentry-unity/pull/2324))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2540)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.53.0...2.54.0)
+- Bump .NET SDK from v5.15.0 to v5.15.1 ([#2326](https://github.com/getsentry/sentry-unity/pull/2326))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5151)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.15.0...5.15.1)
 
 ## 4.0.0-beta.2
 
