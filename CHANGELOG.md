@@ -22,12 +22,6 @@
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2540)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.53.0...2.54.0)
 
-### Dependencies
-
-- Bump Cocoa SDK from v8.55.1 to v8.56.0 ([#2318](https://github.com/getsentry/sentry-unity/pull/2318))
-    - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8560)
-    - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.0)
-
 ## 4.0.0-beta.2
 
 ### Breaking Changes
