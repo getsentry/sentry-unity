@@ -116,12 +116,18 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
         return;
     }
 
+    // Convert C strings to NSStrings before entering the scope block
+    NSString *keyString = [NSString stringWithUTF8String:key];
+    NSString *valueString = nil;
+    if (value != NULL) {
+        valueString = [NSString stringWithUTF8String:value];
+    }
+
     [SentrySDK configureScope:^(SentryScope *scope) {
-        if (value != NULL) {
-            [scope setExtraValue:[NSString stringWithUTF8String:value]
-                          forKey:[NSString stringWithUTF8String:key]];
+        if (valueString != nil) {
+            [scope setExtraValue:valueString forKey:keyString];
         } else {
-            [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
+            [scope removeExtraForKey:keyString];
         }
     }];
 }
@@ -132,12 +138,18 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
         return;
     }
 
+    // Convert C strings to NSStrings before entering the scope block
+    NSString *keyString = [NSString stringWithUTF8String:key];
+    NSString *valueString = nil;
+    if (value != NULL) {
+        valueString = [NSString stringWithUTF8String:value];
+    }
+
     [SentrySDK configureScope:^(SentryScope *scope) {
-        if (value != NULL) {
-            [scope setTagValue:[NSString stringWithUTF8String:value]
-                        forKey:[NSString stringWithUTF8String:key]];
+        if (valueString != nil) {
+            [scope setTagValue:valueString forKey:keyString];
         } else {
-            [scope removeTagForKey:[NSString stringWithUTF8String:key]];
+            [scope removeTagForKey:keyString];
         }
     }];
 }
@@ -148,8 +160,12 @@ void SentryNativeBridgeUnsetTag(const char *key)
         return;
     }
 
-    [SentrySDK configureScope:^(
-        SentryScope *scope) { [scope removeTagForKey:[NSString stringWithUTF8String:key]]; }];
+    // Convert C string to NSString before entering the scope block
+    NSString *keyString = [NSString stringWithUTF8String:key];
+
+    [SentrySDK configureScope:^(SentryScope *scope) {
+        [scope removeTagForKey:keyString];
+    }];
 }
 
 void SentryNativeBridgeSetUser(
@@ -159,23 +175,44 @@ void SentryNativeBridgeSetUser(
         return;
     }
 
+    // Convert C strings to NSStrings before entering the scope block
+    NSString *emailString = nil;
+    if (email != NULL) {
+        emailString = [NSString stringWithUTF8String:email];
+    }
+
+    NSString *userIdString = nil;
+    if (userId != NULL) {
+        userIdString = [NSString stringWithUTF8String:userId];
+    }
+
+    NSString *ipAddressString = nil;
+    if (ipAddress != NULL) {
+        ipAddressString = [NSString stringWithUTF8String:ipAddress];
+    }
+
+    NSString *usernameString = nil;
+    if (username != NULL) {
+        usernameString = [NSString stringWithUTF8String:username];
+    }
+
     [SentrySDK configureScope:^(SentryScope *scope) {
         SentryUser *user = [[SentryUser alloc] init];
 
-        if (email != NULL) {
-            user.email = [NSString stringWithUTF8String:email];
+        if (emailString != nil) {
+            user.email = emailString;
         }
 
-        if (userId != NULL) {
-            user.userId = [NSString stringWithUTF8String:userId];
+        if (userIdString != nil) {
+            user.userId = userIdString;
         }
 
-        if (ipAddress != NULL) {
-            user.ipAddress = [NSString stringWithUTF8String:ipAddress];
+        if (ipAddressString != nil) {
+            user.ipAddress = ipAddressString;
         }
 
-        if (username != NULL) {
-            user.username = [NSString stringWithUTF8String:username];
+        if (usernameString != nil) {
+            user.username = usernameString;
         }
 
         [scope setUser:user];

@@ -156,27 +156,47 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
+    // Convert all C strings to NSStrings before entering the scope block to reduce the risk
+    // of the const char * being freed before the scope block is executed.
+    NSString *timestampString = nil;
+    if (timestamp != NULL) {
+        timestampString = [NSString stringWithUTF8String:timestamp];
+    }
+
+    NSString *messageString = nil;
+    if (message != NULL) {
+        messageString = [NSString stringWithUTF8String:message];
+    }
+
+    NSString *typeString = nil;
+    if (type != NULL) {
+        typeString = [NSString stringWithUTF8String:type];
+    }
+
+    NSString *categoryString = nil;
+    if (category != NULL) {
+        categoryString = [NSString stringWithUTF8String:category];
+    }
+
     SentryConfigureScope(^(id scope) {
         id breadcrumb = [[SentryBreadcrumb alloc] init];
 
-        if (timestamp != NULL) {
+        if (timestampString != nil && timestampString.length > 0) {
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
-            [breadcrumb
-                setValue:[dateFormatter dateFromString:[NSString stringWithUTF8String:timestamp]]
-                  forKey:@"timestamp"];
+            [breadcrumb setValue:[dateFormatter dateFromString:timestampString] forKey:@"timestamp"];
         }
 
-        if (message != NULL) {
-            [breadcrumb setValue:[NSString stringWithUTF8String:message] forKey:@"message"];
+        if (messageString != nil) {
+            [breadcrumb setValue:messageString forKey:@"message"];
         }
 
-        if (type != NULL) {
-            [breadcrumb setValue:[NSString stringWithUTF8String:type] forKey:@"type"];
+        if (typeString != nil) {
+            [breadcrumb setValue:typeString forKey:@"type"];
         }
 
-        if (category != NULL) {
-            [breadcrumb setValue:[NSString stringWithUTF8String:category] forKey:@"category"];
+        if (categoryString != nil) {
+            [breadcrumb setValue:categoryString forKey:@"category"];
         }
 
         [breadcrumb setValue:[NSNumber numberWithInt:level] forKey:@"level"];
@@ -191,14 +211,21 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
         return;
     }
 
+    // Convert C strings to NSStrings before entering the scope block
+    NSString *keyString = [NSString stringWithUTF8String:key];
+    NSString *valueString = nil;
+    if (value != NULL) {
+        valueString = [NSString stringWithUTF8String:value];
+    }
+
     SentryConfigureScope(^(id scope) {
-        if (value != NULL) {
+        if (valueString != nil) {
             [scope performSelector:@selector(setExtraValue:forKey:)
-                        withObject:[NSString stringWithUTF8String:value]
-                        withObject:[NSString stringWithUTF8String:key]];
+                        withObject:valueString
+                        withObject:keyString];
         } else {
             [scope performSelector:@selector(removeExtraForKey:)
-                        withObject:[NSString stringWithUTF8String:key]];
+                        withObject:keyString];
         }
     });
 }
@@ -209,14 +236,21 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
         return;
     }
 
+    // Convert C strings to NSStrings before entering the scope block
+    NSString *keyString = [NSString stringWithUTF8String:key];
+    NSString *valueString = nil;
+    if (value != NULL) {
+        valueString = [NSString stringWithUTF8String:value];
+    }
+
     SentryConfigureScope(^(id scope) {
-        if (value != NULL) {
+        if (valueString != nil) {
             [scope performSelector:@selector(setTagValue:forKey:)
-                        withObject:[NSString stringWithUTF8String:value]
-                        withObject:[NSString stringWithUTF8String:key]];
+                        withObject:valueString
+                        withObject:keyString];
         } else {
             [scope performSelector:@selector(removeTagForKey:)
-                        withObject:[NSString stringWithUTF8String:key]];
+                        withObject:keyString];
         }
     });
 }
@@ -227,9 +261,11 @@ void SentryNativeBridgeUnsetTag(const char *key)
         return;
     }
 
+    // Convert C string to NSString before entering the scope block
+    NSString *keyString = [NSString stringWithUTF8String:key];
+
     SentryConfigureScope(^(id scope) {
-        [scope performSelector:@selector(removeTagForKey:)
-                    withObject:[NSString stringWithUTF8String:key]];
+        [scope performSelector:@selector(removeTagForKey:) withObject:keyString];
     });
 }
 
@@ -240,23 +276,44 @@ void SentryNativeBridgeSetUser(
         return;
     }
 
+    // Convert C strings to NSStrings before entering the scope block
+    NSString *emailString = nil;
+    if (email != NULL) {
+        emailString = [NSString stringWithUTF8String:email];
+    }
+
+    NSString *userIdString = nil;
+    if (userId != NULL) {
+        userIdString = [NSString stringWithUTF8String:userId];
+    }
+
+    NSString *ipAddressString = nil;
+    if (ipAddress != NULL) {
+        ipAddressString = [NSString stringWithUTF8String:ipAddress];
+    }
+
+    NSString *usernameString = nil;
+    if (username != NULL) {
+        usernameString = [NSString stringWithUTF8String:username];
+    }
+
     SentryConfigureScope(^(id scope) {
         id user = [[SentryUser alloc] init];
 
-        if (email != NULL) {
-            [user setValue:[NSString stringWithUTF8String:email] forKey:@"email"];
+        if (emailString != nil) {
+            [user setValue:emailString forKey:@"email"];
         }
 
-        if (userId != NULL) {
-            [user setValue:[NSString stringWithUTF8String:userId] forKey:@"userId"];
+        if (userIdString != nil) {
+            [user setValue:userIdString forKey:@"userId"];
         }
 
-        if (ipAddress != NULL) {
-            [user setValue:[NSString stringWithUTF8String:ipAddress] forKey:@"ipAddress"];
+        if (ipAddressString != nil) {
+            [user setValue:ipAddressString forKey:@"ipAddress"];
         }
 
-        if (username != NULL) {
-            [user setValue:[NSString stringWithUTF8String:username] forKey:@"username"];
+        if (usernameString != nil) {
+            [user setValue:usernameString forKey:@"username"];
         }
 
         [scope performSelector:@selector(setUser:) withObject:user];
