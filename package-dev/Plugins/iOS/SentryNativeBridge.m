@@ -64,8 +64,6 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
-    // Convert all C strings to NSStrings before entering the scope block to reduce the risk
-    // of the const char * being freed before the scope block is executed.
     NSString *timestampString = nil;
     if (timestamp != NULL) {
         timestampString = [NSString stringWithUTF8String:timestamp];
@@ -116,7 +114,6 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
         return;
     }
 
-    // Convert C strings to NSStrings before entering the scope block
     NSString *keyString = [NSString stringWithUTF8String:key];
     NSString *valueString = nil;
     if (value != NULL) {
@@ -138,7 +135,6 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
         return;
     }
 
-    // Convert C strings to NSStrings before entering the scope block
     NSString *keyString = [NSString stringWithUTF8String:key];
     NSString *valueString = nil;
     if (value != NULL) {
@@ -160,7 +156,6 @@ void SentryNativeBridgeUnsetTag(const char *key)
         return;
     }
 
-    // Convert C string to NSString before entering the scope block
     NSString *keyString = [NSString stringWithUTF8String:key];
 
     [SentrySDK configureScope:^(SentryScope *scope) {
@@ -175,7 +170,6 @@ void SentryNativeBridgeSetUser(
         return;
     }
 
-    // Convert C strings to NSStrings before entering the scope block
     NSString *emailString = nil;
     if (email != NULL) {
         emailString = [NSString stringWithUTF8String:email];
