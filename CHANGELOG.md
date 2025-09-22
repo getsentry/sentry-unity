@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- Fixed crashes when adding breadcrumbs on iOS/macOS. This was caused by invalid date parsing and corrupted string data in the native bridge responsible for scope sync ([#2327](https://github.com/getsentry/sentry-unity/pull/2327))
 - Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
 
 ### Dependencies
