@@ -101,7 +101,13 @@ public class SmokeTester : MonoBehaviour
 
 #if !UNITY_EDITOR
         var crashed = CrashedLastRun();
+
+#if !UNITY_WEBGL
         t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == 0);
+#else
+        // On WebGL CrashedLastRun returns `Unknown`
+        t.Expect($"options.CrashedLastRun ({crashed}) == false (0)", crashed == -2);
+#endif
 #endif
         var currentMessage = 0;
         t.ExpectMessage(currentMessage, "'type':'session'");
