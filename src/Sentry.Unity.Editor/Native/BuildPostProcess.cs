@@ -18,8 +18,9 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-        // BuildTargetGroup is different from Platform: Scarlett & XSX are in one
-        if (targetGroup is not BuildTargetGroup.Standalone and not BuildTargetGroup.GameCoreXboxSeries)
+        if (targetGroup is not BuildTargetGroup.Standalone
+            and not BuildTargetGroup.GameCoreXboxSeries
+            and not  BuildTarget.GameCoreXboxOne)
         {
             return;
         }
