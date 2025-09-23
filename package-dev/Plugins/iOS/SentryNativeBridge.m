@@ -18,6 +18,27 @@ static NSDateFormatter *_Nullable cachedISO8601Formatter(void) {
     return formatter;
 }
 
+static inline NSString *_NSStringOrNil(const char *value)
+{
+    return value ? [NSString stringWithUTF8String:value] : nil;
+}
+
+static inline NSNumber *_NSNumberOrNil(int32_t value)
+{
+    return value == 0 ? nil : @(value);
+}
+
+static inline NSNumber *_NSBoolOrNil(int8_t value)
+{
+    if (value == 0) {
+        return @NO;
+    }
+    if (value == 1) {
+        return @YES;
+    }
+    return nil;
+}
+
 // macOS only
 // On iOS, the SDK is linked statically so we don't need to dlopen() it.
 int SentryNativeBridgeLoadLibrary() { return 1; }
@@ -229,27 +250,6 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
             [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
         }
     }
-}
-
-static inline NSString *_NSStringOrNil(const char *value)
-{
-    return value ? [NSString stringWithUTF8String:value] : nil;
-}
-
-static inline NSNumber *_NSNumberOrNil(int32_t value)
-{
-    return value == 0 ? nil : @(value);
-}
-
-static inline NSNumber *_NSBoolOrNil(int8_t value)
-{
-    if (value == 0) {
-        return @NO;
-    }
-    if (value == 1) {
-        return @YES;
-    }
-    return nil;
 }
 
 void SentryNativeBridgeWriteScope( // clang-format off

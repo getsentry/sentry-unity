@@ -13,6 +13,27 @@ static NSDateFormatter *_Nullable cachedISO8601Formatter(void) {
     return formatter;
 }
 
+static inline NSString *_NSStringOrNil(const char *value)
+{
+    return value ? [NSString stringWithUTF8String:value] : nil;
+}
+
+static inline NSString *_NSNumberOrNil(int32_t value)
+{
+    return value == 0 ? nil : @(value);
+}
+
+static inline NSNumber *_NSBoolOrNil(int8_t value)
+{
+    if (value == 0) {
+        return @NO;
+    }
+    if (value == 1) {
+        return @YES;
+    }
+    return nil;
+}
+
 static int loadStatus = -1; // unitialized
 
 static Class SentrySDK;
@@ -327,27 +348,6 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
         performSelector:@selector(setTrace:spanId:) 
         withObject:sentryTraceId 
         withObject:sentrySpanId];
-}
-
-static inline NSString *_NSStringOrNil(const char *value)
-{
-    return value ? [NSString stringWithUTF8String:value] : nil;
-}
-
-static inline NSString *_NSNumberOrNil(int32_t value)
-{
-    return value == 0 ? nil : @(value);
-}
-
-static inline NSNumber *_NSBoolOrNil(int8_t value)
-{
-    if (value == 0) {
-        return @NO;
-    }
-    if (value == 1) {
-        return @YES;
-    }
-    return nil;
 }
 
 void SentryNativeBridgeWriteScope( // clang-format off
