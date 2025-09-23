@@ -6,6 +6,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSDateFormatter *_Nullable cachedISO8601Formatter(void) {
+    static NSDateFormatter *formatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
+        formatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
+        formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    });
+    return formatter;
+}
+
 // macOS only
 // On iOS, the SDK is linked statically so we don't need to dlopen() it.
 int SentryNativeBridgeLoadLibrary() { return 1; }
@@ -64,10 +76,10 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
-    NSString *timestampString = (timestamp != NULL) ? [NSString stringWithUTF8String:timestamp] : nil;
-    NSString *messageString = (message != NULL) ? [NSString stringWithUTF8String:message] : nil;
-    NSString *typeString = (type != NULL) ? [NSString stringWithUTF8String:type] : nil;
-    NSString *categoryString = (category != NULL) ? [NSString stringWithUTF8String:category] : nil;
+    NSString *timestampString = _NSStringOrNil(timestamp);
+    NSString *messageString = _NSStringOrNil(message);
+    NSString *typeString = _NSStringOrNil(type);
+    NSString *categoryString = _NSStringOrNil(category) ?: @"default"; // Category cannot be nil
 
     [SentrySDK configureScope:^(SentryScope *scope) {
         SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc]
@@ -75,9 +87,7 @@ void SentryNativeBridgeAddBreadcrumb(
                  category:categoryString];
 
         if (timestampString != nil && timestampString.length > 0) {
-            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-            formatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
-            breadcrumb.timestamp = [formatter dateFromString:timestampString];
+            breadcrumb.timestamp = [cachedISO8601Formatter() dateFromString:timestampString];
         }
 
         if (messageString != nil) {
@@ -154,26 +164,11 @@ void SentryNativeBridgeSetUser(
         return;
     }
 
-    NSString *emailString = nil;
-    if (email != NULL) {
-        emailString = [NSString stringWithUTF8String:email];
-    }
-
-    NSString *userIdString = nil;
-    if (userId != NULL) {
-        userIdString = [NSString stringWithUTF8String:userId];
-    }
-
-    NSString *ipAddressString = nil;
-    if (ipAddress != NULL) {
-        ipAddressString = [NSString stringWithUTF8String:ipAddress];
-    }
-
-    NSString *usernameString = nil;
-    if (username != NULL) {
-        usernameString = [NSString stringWithUTF8String:username];
-    }
-
+    NSString *emailString = (email != NULL) ? [NSString stringWithUTF8String:email] : nil;
+    NSString *userIdString = (userId != NULL) ? [NSString stringWithUTF8String:userId] : nil;
+    NSString *ipAddressString = (ipAddress != NULL) ? [NSString stringWithUTF8String:ipAddress] : nil;
+    NSString *usernameString = (username != NULL) ? [NSString stringWithUTF8String:username] : nil;
+    
     [SentrySDK configureScope:^(SentryScope *scope) {
         SentryUser *user = [[SentryUser alloc] init];
 
