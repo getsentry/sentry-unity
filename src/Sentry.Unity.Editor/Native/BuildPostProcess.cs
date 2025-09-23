@@ -20,7 +20,7 @@ public static class BuildPostProcess
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         if (targetGroup is not BuildTargetGroup.Standalone
             and not BuildTargetGroup.GameCoreXboxSeries
-            and not  BuildTarget.GameCoreXboxOne)
+            and not BuildTarget.GameCoreXboxOne)
         {
             return;
         }
