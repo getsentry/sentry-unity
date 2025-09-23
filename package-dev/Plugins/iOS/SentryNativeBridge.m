@@ -64,14 +64,12 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
-    // Convert C strings to NSStrings, handling invalid UTF-8 gracefully
     NSString *timestampString = (timestamp != NULL) ? [NSString stringWithUTF8String:timestamp] : nil;
     NSString *messageString = (message != NULL) ? [NSString stringWithUTF8String:message] : nil;
     NSString *typeString = (type != NULL) ? [NSString stringWithUTF8String:type] : nil;
     NSString *categoryString = (category != NULL) ? [NSString stringWithUTF8String:category] : nil;
 
     [SentrySDK configureScope:^(SentryScope *scope) {
-
         SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc]
             initWithLevel:level
                  category:categoryString];
