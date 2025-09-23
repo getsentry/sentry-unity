@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 #include <dlfcn.h>
 
-static NSDateFormatter *_Nullable cachedISO8601Formatter(void) {
+static NSDateFormatter *_Nullable sentry_cachedISO8601Formatter(void) {
     static NSDateFormatter *formatter = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -198,7 +198,7 @@ void SentryNativeBridgeAddBreadcrumb(
         id breadcrumb = [[SentryBreadcrumb alloc] init];
 
         if (timestampString != nil && timestampString.length > 0) {
-            NSDate *date = [cachedISO8601Formatter() dateFromString:timestampString];
+            NSDate *date = [sentry_cachedISO8601Formatter() dateFromString:timestampString];
             if (date != nil) {
                 [breadcrumb setValue:date forKey:@"timestamp"];
             }
@@ -232,14 +232,9 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
     NSString *valueString = _NSStringOrNil(value);
 
     SentryConfigureScope(^(id scope) {
-        if (valueString != nil) {
-            [scope performSelector:@selector(setExtraValue:forKey:)
+        [scope performSelector:@selector(setExtraValue:forKey:)
                         withObject:valueString
                         withObject:keyString];
-        } else {
-            [scope performSelector:@selector(removeExtraForKey:)
-                        withObject:keyString];
-        }
     });
 }
 
@@ -253,14 +248,9 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
     NSString *valueString = _NSStringOrNil(value);
 
     SentryConfigureScope(^(id scope) {
-        if (valueString != nil) {
-            [scope performSelector:@selector(setTagValue:forKey:)
+        [scope performSelector:@selector(setTagValue:forKey:)
                         withObject:valueString
                         withObject:keyString];
-        } else {
-            [scope performSelector:@selector(removeTagForKey:)
-                        withObject:keyString];
-        }
     });
 }
 
@@ -280,10 +270,6 @@ void SentryNativeBridgeUnsetTag(const char *key)
 void SentryNativeBridgeSetUser(
     const char *email, const char *userId, const char *ipAddress, const char *username)
 {
-    if (email == NULL && userId == NULL && ipAddress == NULL && username == NULL) {
-        return;
-    }
-
     NSString *emailString _NSStringOrNil(email);
     NSString *userIdString = _NSStringOrNil(userId);
     NSString *ipAddressString = _NSStringOrNil(ipAddress);
@@ -292,22 +278,11 @@ void SentryNativeBridgeSetUser(
     SentryConfigureScope(^(id scope) {
         id user = [[SentryUser alloc] init];
 
-        if (emailString != nil) {
-            [user setValue:emailString forKey:@"email"];
-        }
-
-        if (userIdString != nil) {
-            [user setValue:userIdString forKey:@"userId"];
-        }
-
-        if (ipAddressString != nil) {
-            [user setValue:ipAddressString forKey:@"ipAddress"];
-        }
-
-        if (usernameString != nil) {
-            [user setValue:usernameString forKey:@"username"];
-        }
-
+        [user setValue:emailString forKey:@"email"];
+        [user setValue:userIdString forKey:@"userId"];
+        [user setValue:ipAddressString forKey:@"ipAddress"];
+        [user setValue:usernameString forKey:@"username"];
+        
         [scope performSelector:@selector(setUser:) withObject:user];
     });
 }
