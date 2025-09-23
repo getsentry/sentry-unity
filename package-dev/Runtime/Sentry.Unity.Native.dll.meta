@@ -90,7 +90,19 @@ PluginImporter:
       settings:
         CPU: AnyCPU
         CompileFlags: 
-        FrameworkDependencies: 
+        FrameworkDependencies:
+  - first:
+      GameCoreScarlett: GameCoreScarlett
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
+  - first:
+      GameCoreXboxOne: GameCoreXboxOne
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
   userData: 
   assetBundleName: 
   assetBundleVariant: 

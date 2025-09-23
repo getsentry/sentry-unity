@@ -18,6 +18,7 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
+        // BuildTargetGroup is different from Platform: Scarlett & XSX are in one
         if (targetGroup is not BuildTargetGroup.Standalone and not BuildTargetGroup.GameCoreXboxSeries)
         {
             return;
@@ -97,7 +98,7 @@ public static class BuildPostProcess
                 return;
             case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
-                // TODO: Figure out if we need to ship with a crash handler
+                // No standalone crash handler for Xbox - comes with Breakpad
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
@@ -135,6 +136,8 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
+            case BuildTarget.GameCoreXboxSeries:
+            case BuildTarget.GameCoreXboxOne:
                 var windowsSentryPdb = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb");
                 if (File.Exists(windowsSentryPdb))
                 {
