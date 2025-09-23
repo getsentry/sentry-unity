@@ -13,10 +13,12 @@ namespace Sentry.Unity.Tests
             public TestHub Hub { get; set; } = null!;
             public SentryUnityOptions SentryOptions { get; set; } = null!;
 
+            public bool CaptureExceptions { get; set; } = false;
+
             public UnityApplicationLoggingIntegration GetSut()
             {
                 var application = new TestApplication();
-                var integration = new UnityApplicationLoggingIntegration(application);
+                var integration = new UnityApplicationLoggingIntegration(CaptureExceptions, application);
                 integration.Register(Hub, SentryOptions);
                 return integration;
             }
@@ -160,6 +162,18 @@ namespace Sentry.Unity.Tests
             sut.OnLogMessageReceived(message, string.Empty, unityLogType);
 
             Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
+        }
+
+        [Test]
+        public void OnLogMessageReceived_LogTypeException_CaptureExceptionsEnabled_EventCaptured()
+        {
+            _fixture.CaptureExceptions = true;
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+
+            sut.OnLogMessageReceived(message, "stacktrace", LogType.Exception);
+
+            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
         }
     }
 }

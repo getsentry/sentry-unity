@@ -8,7 +8,8 @@
 
 ### Fixes
 
-- Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
+- The SDK now captures exceptions on WebGL through the logging integration instead of the incompatible log handler, providing better stack trace support . ([#2322](https://github.com/getsentry/sentry-unity/pull/2322))
+- Fixed input handling in samples to work with old and new input system. ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
 
 ### Dependencies
 
