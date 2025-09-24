@@ -333,8 +333,13 @@ public sealed class SentryUnityOptions : SentryOptions
         AddTransactionProcessor(processor);
         AddExceptionProcessor(new UnityExceptionProcessor());
 
-        AddIntegration(new UnityLogHandlerIntegration(this));
-        AddIntegration(new UnityApplicationLoggingIntegration());
+        // UnityLogHandlerIntegration is not compatible with WebGL, so it's added conditionally
+        if (application.Platform != RuntimePlatform.WebGLPlayer)
+        {
+            AddIntegration(new UnityLogHandlerIntegration(this));
+            AddIntegration(new UnityApplicationLoggingIntegration());
+        }
+
         AddIntegration(new StartupTracingIntegration());
         AddIntegration(new AnrIntegration(behaviour));
         AddIntegration(new UnityScopeIntegration(application, unityInfo));
