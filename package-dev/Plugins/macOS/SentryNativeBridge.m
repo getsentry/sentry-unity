@@ -189,8 +189,8 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
-    NSString *timestampString = _NSStringOrNil(timestamp):
-    NSString *messageString = _NSStringOrNil(message):
+    NSString *timestampString = _NSStringOrNil(timestamp);
+    NSString *messageString = _NSStringOrNil(message);
     NSString *typeString = _NSStringOrNil(type);
     NSString *categoryString = _NSStringOrNil(category) ?: @"default"; // Category cannot be nil
 
@@ -270,7 +270,7 @@ void SentryNativeBridgeUnsetTag(const char *key)
 void SentryNativeBridgeSetUser(
     const char *email, const char *userId, const char *ipAddress, const char *username)
 {
-    NSString *emailString _NSStringOrNil(email);
+    NSString *emailString = _NSStringOrNil(email);
     NSString *userIdString = _NSStringOrNil(userId);
     NSString *ipAddressString = _NSStringOrNil(ipAddress);
     NSString *usernameString = _NSStringOrNil(username);
