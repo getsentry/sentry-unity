@@ -189,6 +189,26 @@ public class SmokeTester : MonoBehaviour
         t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
         t.ExpectMessageNot(currentMessage, "'length':0");
 
+        var ex = new Exception("Exception & removed context test");
+        RemoveContext();
+        SentrySdk.CaptureException(ex);
+
+        // Wait for screenshot capture to complete
+        yield return null;
+
+        currentMessage++; // The exception event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessageNot(currentMessage, "'extra':{'extra-key':42}");
+        t.ExpectMessageNot(currentMessage, "'tag-key':'tag-value'");
+        t.ExpectMessageNot(currentMessage, "'user':{");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+        
         Debug.Log("Finished checking messages.");
 
         t.Pass();
@@ -247,6 +267,22 @@ public class SmokeTester : MonoBehaviour
                 IpAddress = "::1",
                 Id = "user-id",
                 Other = new Dictionary<string, string>() { { "role", "admin" } }
+            };
+        });
+    }
+
+    private static void RemoveContext()
+    {
+        SentrySdk.ConfigureScope((Scope scope) =>
+        {
+            scope.SetExtra("extra-key", null);
+            scope.UnsetTag("tag-key");
+            scope.User = new SentryUser
+            {
+                Username = null,
+                Email = null,
+                IpAddress = null,
+                Id = null,
             };
         });
     }
