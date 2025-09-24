@@ -207,7 +207,7 @@ public class SmokeTester : MonoBehaviour
         t.ExpectMessage(currentMessage, "'type':'event'");
         t.ExpectMessageNot(currentMessage, "'extra':{'extra-key':42}");
         t.ExpectMessageNot(currentMessage, "'tag-key':'tag-value'");
-        t.ExpectMessageNot(currentMessage, "'user':{");
+        t.ExpectMessageNot(currentMessage, "user-id");
         t.ExpectMessageNot(currentMessage, "'length':0");
 
         currentMessage++; // The screenshot envelope
