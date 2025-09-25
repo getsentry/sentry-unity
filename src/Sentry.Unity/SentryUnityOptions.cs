@@ -386,7 +386,6 @@ public sealed class SentryUnityOptions : SentryOptions
             { LogType.Warning, true},
             { LogType.Assert, true},
             { LogType.Error, true},
-            { LogType.Exception, true},
         };
 
         // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`

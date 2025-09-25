@@ -75,12 +75,6 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         exception.Data[Mechanism.HandledKey] = false;
         exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
         _ = _hub.CaptureException(exception);
-
-        if (_sentryOptions?.AddBreadcrumbsForLogType[LogType.Exception] is true)
-        {
-            // So the next event includes this error as a breadcrumb
-            _hub.AddBreadcrumb(message: $"{exception.GetType()}: {exception.Message}", category: "unity.logger", level: BreadcrumbLevel.Error);
-        }
     }
 
     public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)

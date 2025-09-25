@@ -49,7 +49,6 @@ namespace Sentry.Unity.Integrations
             return new SentryException
             {
                 Stacktrace = stacktrace,
-                Type = ExceptionType,
                 Value = _logString,
                 Mechanism = new Mechanism
                 {

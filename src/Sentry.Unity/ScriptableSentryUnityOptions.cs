@@ -63,7 +63,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForErrors { get; set; } = true;
-    [field: SerializeField] public bool BreadcrumbsForExceptions { get; set; } = true;
     [field: SerializeField] public bool CaptureLogErrorEvents { get; set; } = true;
 
     [field: SerializeField] public int MaxBreadcrumbs { get; set; } = SentryConstants.DefaultMaxBreadcrumbs;
@@ -210,7 +209,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         options.AddBreadcrumbsForLogType[LogType.Warning] = BreadcrumbsForWarnings;
         options.AddBreadcrumbsForLogType[LogType.Assert] = BreadcrumbsForAsserts;
         options.AddBreadcrumbsForLogType[LogType.Error] = BreadcrumbsForErrors;
-        options.AddBreadcrumbsForLogType[LogType.Exception] = BreadcrumbsForExceptions;
 
         options.FailedRequestStatusCodes = new List<HttpStatusCodeRange>();
         for (var i = 0; i < FailedRequestStatusCodes.Count; i += 2)
