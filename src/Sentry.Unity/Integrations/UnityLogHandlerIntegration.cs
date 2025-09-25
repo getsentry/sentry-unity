@@ -6,10 +6,12 @@ using UnityEngine;
 
 namespace Sentry.Unity.Integrations;
 
+/// <summary>
+/// Intercepts Unity's log handler to capture `Debug.LogException` calls with actual exception objects.
+/// Other log types are handled by ApplicationLoggingIntegration.
+/// </summary>
 internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 {
-
-
     private readonly IApplication _application;
 
     private IHub? _hub;
