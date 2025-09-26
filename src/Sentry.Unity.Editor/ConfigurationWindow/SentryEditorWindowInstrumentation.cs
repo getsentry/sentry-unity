@@ -32,20 +32,7 @@ public static class SentryEditorWindowInstrumentation
         }
         Debug.LogFormat("{0}: Found SentryOptions", functionName);
 
-        var value = "";
-        if (args.TryGetValue("deprecatedRuntimeOptionsScript", out value))
-        {
-            Debug.LogFormat("{0}: Configuring Runtime Options Script to {1}", functionName, value);
-            OptionsConfigurationItem.SetScript(value);
-        }
-
-        if (args.TryGetValue("deprecatedBuildTimeOptionsScript", out value))
-        {
-            Debug.LogFormat("{0}: Configuring Build Time Options Script to {1}", functionName, value);
-            OptionsConfigurationItem.SetScript(value);
-        }
-
-        if (args.TryGetValue("optionsScript", out value))
+        if (args.TryGetValue("optionsScript", out var value))
         {
             Debug.LogFormat("{0}: Configuring Build Time Options Script to {1}", functionName, value);
             OptionsConfigurationItem.SetScript(value);

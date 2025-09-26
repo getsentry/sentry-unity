@@ -16,8 +16,6 @@ $UnityPath = FormatUnityPath $UnityPath
 $unityArgs = @( `
         "-quit", "-batchmode", "-nographics", "-disable-assembly-updater", "-projectPath ", $(GetNewProjectPath), `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
-        "-deprecatedBuildTimeOptionsScript", "BuildTimeOptions", `
-        "-deprecatedRuntimeOptionsScript", "RuntimeOptions", `
         "-optionsScript", "OptionsConfiguration", `
         "-cliOptionsScript", "CliConfiguration", `
         "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
@@ -33,6 +31,4 @@ function AssertPathExists([string] $Path)
 }
 
 AssertPathExists "$(GetNewProjectAssetsPath)/Plugins/Sentry/SentryCliOptions.asset"
-AssertPathExists "$(GetNewProjectAssetsPath)/Resources/Sentry/BuildTimeOptions.asset"
 AssertPathExists "$(GetNewProjectAssetsPath)/Resources/Sentry/SentryOptions.asset"
-AssertPathExists "$(GetNewProjectAssetsPath)/Resources/Sentry/RuntimeOptions.asset"
