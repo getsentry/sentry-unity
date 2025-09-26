@@ -24,37 +24,17 @@ internal static class SentryScriptableObject
 
     internal static T? Load<T>(string path) where T : ScriptableObject => AssetDatabase.LoadAssetAtPath<T>(path);
 
-    private static SentryCliOptions? LoadCliOptions() => Load<SentryCliOptions>(SentryCliOptions.GetConfigPath());
-    internal static ScriptableSentryUnityOptions? LoadOptions() =>
-        Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
-
-    internal static (SentryUnityOptions?, SentryCliOptions?) ConfiguredBuildTimeOptions()
+    public static SentryCliOptions? LoadCliOptions()
     {
-        var scriptableOptions = LoadOptions();
-        var cliOptions = LoadCliOptions();
-
-        SentryUnityOptions? options = null;
-        if (scriptableOptions is not null)
-        {
-            options = scriptableOptions.ToSentryUnityOptions(isBuilding: true);
-
-            // TODO: Move this into `Load` once we remove Runtime- and BuildTimeConfig
-            // We're calling `Configure` here and not in `Load` so the new Config does not overwrite the BuildTimeConfig
-            cliOptions?.CliOptionsConfiguration?.Configure(cliOptions);
-            // Must be non-nullable in the interface otherwise Unity script compilation fails...
-            cliOptions ??= ScriptableObject.CreateInstance<SentryCliOptions>();
-
-            var deprecatedConfiguration = scriptableOptions.BuildTimeOptionsConfiguration;
-            if (deprecatedConfiguration != null)
-            {
-                deprecatedConfiguration.Configure(options, cliOptions);
-            }
-        }
-
-        // TODO: Move this into `Load` once we remove Runtime- and BuildTimeConfig
-        // We're calling `Configure` here and not in `Load` so the new Config does not overwrite the BuildTimeConfig
+        var cliOptions = Load<SentryCliOptions>(SentryCliOptions.GetConfigPath());
         cliOptions?.CliOptionsConfiguration?.Configure(cliOptions);
 
-        return (options, cliOptions);
+        return cliOptions;
+    }
+
+    public static SentryUnityOptions? LoadOptions(bool isBuilding = false)
+    {
+        var scriptableOptions = Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
+        return scriptableOptions?.ToSentryUnityOptions(isBuilding: true);
     }
 }

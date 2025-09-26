@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -105,9 +104,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool XboxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
-
-    [field: SerializeField] public SentryRuntimeOptionsConfiguration? RuntimeOptionsConfiguration { get; set; }
-    [field: SerializeField] public SentryBuildTimeOptionsConfiguration? BuildTimeOptionsConfiguration { get; set; }
     [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
     [field: SerializeField] public bool Debug { get; set; } = true;
@@ -182,6 +178,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             AndroidNativeSupportEnabled = AndroidNativeSupportEnabled,
             NdkIntegrationEnabled = NdkIntegrationEnabled,
             NdkScopeSyncEnabled = NdkScopeSyncEnabled,
+            PostGenerateGradleProjectCallbackOrder = PostGenerateGradleProjectCallbackOrder,
             WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
             MacosNativeSupportEnabled = MacosNativeSupportEnabled,
             LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
@@ -223,14 +220,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         {
             options.DiagnosticLogger?.LogDebug("OptionsConfiguration found. Calling configure.");
             OptionsConfiguration.Configure(options);
-        }
-
-        // TODO: Deprecated and to be removed in the next major
-        // This has to happen in between options object creation and updating the options based on programmatic changes
-        if (RuntimeOptionsConfiguration != null && !isBuilding)
-        {
-            options.DiagnosticLogger?.LogDebug("RuntimeOptionsConfiguration found. Calling configure.");
-            RuntimeOptionsConfiguration.Configure(options);
         }
 
         // We need to set up logging here because the configure callback might have changed the debug options.
