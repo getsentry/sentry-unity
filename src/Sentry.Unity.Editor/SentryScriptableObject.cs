@@ -35,6 +35,6 @@ internal static class SentryScriptableObject
     public static SentryUnityOptions? LoadOptions(bool isBuilding = false)
     {
         var scriptableOptions = Load<ScriptableSentryUnityOptions>(ScriptableSentryUnityOptions.GetConfigPath());
-        return scriptableOptions?.ToSentryUnityOptions(isBuilding: true);
+        return scriptableOptions?.ToSentryUnityOptions(isBuilding: isBuilding);
     }
 }
