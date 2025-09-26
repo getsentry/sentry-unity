@@ -108,7 +108,10 @@ void SentryNativeBridgeAddBreadcrumb(
                  category:categoryString];
 
         if (timestampString != nil && timestampString.length > 0) {
-            breadcrumb.timestamp = [sentry_cachedISO8601Formatter() dateFromString:timestampString];
+            NSDate *date = [sentry_cachedISO8601Formatter() dateFromString:timestampString];
+            if (date != nil) {
+                breadcrumb.timestamp = date;
+            }
         }
 
         if (messageString != nil) {
