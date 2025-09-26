@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314))
+- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314), [#2329](https://github.com/getsentry/sentry-unity/pull/2329))
 
 ### Fixes
 
