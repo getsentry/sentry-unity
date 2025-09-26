@@ -50,6 +50,7 @@ namespace Sentry.Unity.Integrations
             {
                 Stacktrace = stacktrace,
                 Value = _logString,
+                Type = ExceptionType,
                 Mechanism = new Mechanism
                 {
                     Handled = true,
