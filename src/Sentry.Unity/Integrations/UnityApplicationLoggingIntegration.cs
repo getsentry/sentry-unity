@@ -1,10 +1,13 @@
-using Sentry.Extensibility;
 using Sentry.Integrations;
-using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations;
 
+/// <summary>
+/// Hooks into Unity's `Application.LogMessageReceived` to capture breadcrumbs for Debug log methods
+/// and optionally capture LogError events. Does not handle `Debug.LogException` since it lacks the
+/// actual exception object needed for IL2CPP processing, except on WebGL where it's treated as a log message.
+/// </summary>
 internal class UnityApplicationLoggingIntegration : ISdkIntegration
 {
     private readonly IApplication _application;
@@ -80,8 +83,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         {
             var ule = new UnityErrorLogException(message, stacktrace, _options);
             _hub.CaptureException(ule);
+
+            // We don't capture breadcrumbs for exceptions - the .NET SDK handles this
+            return;
         }
-        else if (logType is LogType.Error && _options?.CaptureLogErrorEvents is true)
+
+        if (logType is LogType.Error && _options?.CaptureLogErrorEvents is true)
         {
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {
