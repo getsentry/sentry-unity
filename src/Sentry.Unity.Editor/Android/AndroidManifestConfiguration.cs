@@ -49,7 +49,8 @@ public class AndroidManifestConfiguration
 
     public AndroidManifestConfiguration()
         : this(
-            SentryScriptableObject.ConfiguredBuildTimeOptions,
+            SentryScriptableObject.LoadOptions,
+            SentryScriptableObject.LoadCliOptions,
             isDevelopmentBuild: EditorUserBuildSettings.development,
 #pragma warning disable CS0618
             scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
@@ -58,12 +59,14 @@ public class AndroidManifestConfiguration
 
     // Testing
     internal AndroidManifestConfiguration(
-        Func<(SentryUnityOptions?, SentryCliOptions?)> getOptions,
+        Func<bool, SentryUnityOptions?> getOptions,
+        Func<SentryCliOptions?> getCliOptions,
         bool isDevelopmentBuild,
         ScriptingImplementation scriptingImplementation,
         ILogger? logger = null)
     {
-        (_options, _sentryCliOptions) = getOptions();
+        _options = getOptions(true);
+        _sentryCliOptions = getCliOptions();
         _logger = _options?.DiagnosticLogger ?? new UnityLogger(_options ?? new SentryUnityOptions(), logger);
 
         _isDevelopmentBuild = isDevelopmentBuild;

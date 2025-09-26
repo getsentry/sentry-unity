@@ -15,7 +15,7 @@ public class SentryPerformanceAutoInstrumentation : IPostBuildPlayerScriptDLLs
     public int callbackOrder { get; }
     public void OnPostBuildPlayerScriptDLLs(BuildReport report)
     {
-        var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
+        var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         if (options == null)
         {
             return;

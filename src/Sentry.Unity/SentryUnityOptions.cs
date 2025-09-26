@@ -194,6 +194,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public bool NdkScopeSyncEnabled { get; set; } = true;
 
+    public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
+
     /// <summary>
     /// Whether the SDK should add native support for Windows
     /// </summary>

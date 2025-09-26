@@ -23,7 +23,7 @@ public static class BuildPostProcess
             return;
         }
 
-        var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
+        var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
 
         if (options is null)
@@ -52,7 +52,7 @@ public static class BuildPostProcess
             return;
         }
 
-        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, isMono);
 
         if (!IsEnabledForPlatform(target, options))
         {
@@ -112,9 +112,11 @@ public static class BuildPostProcess
         File.Copy(fullHandlerPath, targetHandlerPath, true);
     }
 
-    private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+    private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName, SentryUnityOptions options, bool isMono)
     {
         var projectDir = Directory.GetParent(Application.dataPath).FullName;
+
+        var cliOptions = SentryScriptableObject.LoadCliOptions();
         if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
         {
             if (options.Il2CppLineNumberSupportEnabled)

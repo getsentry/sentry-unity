@@ -25,12 +25,7 @@ internal static class OptionsConfigurationItem
         if (GUILayout.Button("New", GUILayout.ExpandWidth(false)))
         {
             var t = typeof(T);
-            if (t == typeof(SentryRuntimeOptionsConfiguration) || t == typeof(SentryBuildTimeOptionsConfiguration))
-            {
-                Debug.LogWarning("Runtime/BuildTime scriptable objects have been deprecated and will be removed in a future version." +
-                                 "Please use the 'Option Config Script' below.");
-            }
-            else if (t == typeof(SentryOptionsConfiguration))
+            if (t == typeof(SentryOptionsConfiguration))
             {
                 CreateConfigurationScript(fieldName, SentryOptionsConfiguration.Template, scriptName);
             }
@@ -109,16 +104,6 @@ internal static class OptionsConfigurationItem
 
         switch (optionsConfigurationObject)
         {
-            case SentryRuntimeOptionsConfiguration runtimeConfiguration:
-                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
-                AssetDatabase.Refresh();
-                options.RuntimeOptionsConfiguration ??= runtimeConfiguration; // Don't overwrite if already set
-                break;
-            case SentryBuildTimeOptionsConfiguration buildTimeConfiguration:
-                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryAssetPath(scriptNameWithoutExtension));
-                AssetDatabase.Refresh();
-                options.BuildTimeOptionsConfiguration ??= buildTimeConfiguration; // Don't overwrite if already set
-                break;
             case SentryOptionsConfiguration configuration:
                 AssetDatabase.CreateAsset(optionsConfigurationObject, SentryOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
                 AssetDatabase.Refresh();

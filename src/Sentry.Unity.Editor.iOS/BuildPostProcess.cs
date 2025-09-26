@@ -19,7 +19,8 @@ public static class BuildPostProcess
             return;
         }
 
-        var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
+        var cliOptions = SentryScriptableObject.LoadCliOptions();
+        var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
         AddSentryToXcodeProject(options, cliOptions, logger, pathToProject);

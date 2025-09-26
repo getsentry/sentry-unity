@@ -92,10 +92,8 @@ public class ScriptableSentryUnityOptionsEditor : UnityEditor.Editor
         EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Options Configuration", EditorStyles.boldLabel);
-        EditorGUILayout.ObjectField("Runtime Configuration", options.RuntimeOptionsConfiguration,
-            typeof(SentryRuntimeOptionsConfiguration), false);
-        EditorGUILayout.ObjectField("Build Time Configuration", options.BuildTimeOptionsConfiguration,
-            typeof(SentryBuildTimeOptionsConfiguration), false);
+        EditorGUILayout.ObjectField("Options Configuration", options.OptionsConfiguration,
+            typeof(SentryOptionsConfiguration), false);
 
         EditorGUILayout.Space();
         EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);

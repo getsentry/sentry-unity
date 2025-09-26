@@ -22,7 +22,7 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
         }
 
 
-        var (options, cliOptions) = SentryScriptableObject.ConfiguredBuildTimeOptions();
+        var options = SentryScriptableObject.LoadOptions(isBuilding: true);
 
         if (options is null)
         {
