@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- The SDK will now always add a breadcrumb when capturing an exception. The option to opt-out of this has been removed. ([#2335](https://github.com/getsentry/sentry-unity/pull/2335))
+
 ### Features
 
 - Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314))
