@@ -8,20 +8,20 @@
 
 ### Features
 
-- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314))
+- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314), [#2329](https://github.com/getsentry/sentry-unity/pull/2329))
 
 ### Fixes
 
-- Fixed crashes when adding breadcrumbs on iOS/macOS. This was caused by invalid date parsing and corrupted string data in the native bridge responsible for scope sync ([#2327](https://github.com/getsentry/sentry-unity/pull/2327))
+- Fixed crashes when adding breadcrumbs on iOS/macOS. This was caused by invalid date parsing and corrupted string data in the native bridge responsible for scope sync ([#2327](https://github.com/getsentry/sentry-unity/pull/2327), [#2338](https://github.com/getsentry/sentry-unity/pull/2338))
 - Fixed input handling in samples to work with old and new input system ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
 - The SDK now captures exceptions on WebGL through the logging integration instead of the incompatible log handler, providing better stack trace support . ([#2322](https://github.com/getsentry/sentry-unity/pull/2322))
 - Fixed input handling in samples to work with old and new input system. ([#2319](https://github.com/getsentry/sentry-unity/pull/2319))
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.55.1 to v8.56.1 ([#2318](https://github.com/getsentry/sentry-unity/pull/2318), [#2331](https://github.com/getsentry/sentry-unity/pull/2331))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8561)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.1)
+- Bump Cocoa SDK from v8.55.1 to v8.56.2 ([#2318](https://github.com/getsentry/sentry-unity/pull/2318), [#2331](https://github.com/getsentry/sentry-unity/pull/2331), [#2340](https://github.com/getsentry/sentry-unity/pull/2340))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8562)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.55.1...8.56.2)
 - Bump Native SDK from v0.10.1 to v0.11.1 ([#2323](https://github.com/getsentry/sentry-unity/pull/2323), [#2332](https://github.com/getsentry/sentry-unity/pull/2332))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0111)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.10.1...0.11.1)
