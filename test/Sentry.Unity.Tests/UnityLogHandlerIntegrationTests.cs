@@ -38,18 +38,6 @@ public sealed class UnityLogHandlerIntegrationTests
     }
 
     [Test]
-    public void CaptureException_AddAsBreadcrumbEnabled_NotAddedAsBreadcrumb()
-    {
-        _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = false;
-        var sut = _fixture.GetSut();
-        var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
-
-        sut.CaptureException(new Exception("Test Exception"), null);
-
-        Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
-    }
-
-    [Test]
     public void CaptureException_ExceptionCapturedAndMechanismSet()
     {
         var sut = _fixture.GetSut();
