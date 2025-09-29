@@ -23,6 +23,7 @@ public static class BuildPostProcess
             return;
         }
 
+        var cliOptions = SentryScriptableObject.LoadCliOptions();
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
 
@@ -123,8 +124,6 @@ public static class BuildPostProcess
     private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
     {
         var projectDir = Directory.GetParent(Application.dataPath).FullName;
-
-        var cliOptions = SentryScriptableObject.LoadCliOptions();
         if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
         {
             if (options.Il2CppLineNumberSupportEnabled)
