@@ -27,6 +27,9 @@ jobs:
         with:
           global-json-file: src/sentry-dotnet/global.json
 
+      - name: Restore .NET Workload
+        run: dotnet workload restore
+
       - name: Format C# Code Whitespace
         run: dotnet format whitespace Sentry.Unity.sln --exclude src/sentry-dotnet --verbosity diag
 
