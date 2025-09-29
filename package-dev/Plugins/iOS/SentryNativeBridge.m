@@ -6,6 +6,39 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSDateFormatter *_Nullable sentry_cachedISO8601Formatter(void) {
+    static NSDateFormatter *formatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
+        formatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"UTC"];
+        formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    });
+    return formatter;
+}
+
+static inline NSString *_NSStringOrNil(const char *value)
+{
+    return value ? [NSString stringWithUTF8String:value] : nil;
+}
+
+static inline NSNumber *_NSNumberOrNil(int32_t value)
+{
+    return value == 0 ? nil : @(value);
+}
+
+static inline NSNumber *_NSBoolOrNil(int8_t value)
+{
+    if (value == 0) {
+        return @NO;
+    }
+    if (value == 1) {
+        return @YES;
+    }
+    return nil;
+}
+
 // macOS only
 // On iOS, the SDK is linked statically so we don't need to dlopen() it.
 int SentryNativeBridgeLoadLibrary() { return 1; }
@@ -64,24 +97,29 @@ void SentryNativeBridgeAddBreadcrumb(
         return;
     }
 
+    NSString *timestampString = _NSStringOrNil(timestamp);
+    NSString *messageString = _NSStringOrNil(message);
+    NSString *typeString = _NSStringOrNil(type);
+    NSString *categoryString = _NSStringOrNil(category) ?: @"default"; // Category cannot be nil
+
     [SentrySDK configureScope:^(SentryScope *scope) {
         SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc]
             initWithLevel:level
-                 category:(category ? [NSString stringWithUTF8String:category] : nil)];
+                 category:categoryString];
 
-        if (timestamp != NULL) {
-            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-            [dateFormatter setDateFormat:NSCalendarIdentifierISO8601];
-            breadcrumb.timestamp =
-                [dateFormatter dateFromString:[NSString stringWithUTF8String:timestamp]];
+        if (timestampString != nil && timestampString.length > 0) {
+            NSDate *date = [sentry_cachedISO8601Formatter() dateFromString:timestampString];
+            if (date != nil) {
+                breadcrumb.timestamp = date;
+            }
         }
 
-        if (message != NULL) {
-            breadcrumb.message = [NSString stringWithUTF8String:message];
+        if (messageString != nil) {
+            breadcrumb.message = messageString;
         }
 
-        if (type != NULL) {
-            breadcrumb.type = [NSString stringWithUTF8String:type];
+        if (typeString != nil) {
+            breadcrumb.type = typeString;
         }
 
         [scope addBreadcrumb:breadcrumb];
@@ -94,13 +132,11 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
         return;
     }
 
+    NSString *keyString = [NSString stringWithUTF8String:key];
+    NSString *valueString = _NSStringOrNil(value);
+
     [SentrySDK configureScope:^(SentryScope *scope) {
-        if (value != NULL) {
-            [scope setExtraValue:[NSString stringWithUTF8String:value]
-                          forKey:[NSString stringWithUTF8String:key]];
-        } else {
-            [scope removeExtraForKey:[NSString stringWithUTF8String:key]];
-        }
+        [scope setExtraValue:valueString forKey:keyString];
     }];
 }
 
@@ -110,13 +146,11 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
         return;
     }
 
+    NSString *keyString = [NSString stringWithUTF8String:key];
+    NSString *valueString = _NSStringOrNil(value);
+
     [SentrySDK configureScope:^(SentryScope *scope) {
-        if (value != NULL) {
-            [scope setTagValue:[NSString stringWithUTF8String:value]
-                        forKey:[NSString stringWithUTF8String:key]];
-        } else {
-            [scope removeTagForKey:[NSString stringWithUTF8String:key]];
-        }
+        [scope setTagValue:valueString forKey:keyString];
     }];
 }
 
@@ -126,35 +160,28 @@ void SentryNativeBridgeUnsetTag(const char *key)
         return;
     }
 
-    [SentrySDK configureScope:^(
-        SentryScope *scope) { [scope removeTagForKey:[NSString stringWithUTF8String:key]]; }];
+    NSString *keyString = [NSString stringWithUTF8String:key];
+
+    [SentrySDK configureScope:^(SentryScope *scope) {
+        [scope removeTagForKey:keyString];
+    }];
 }
 
 void SentryNativeBridgeSetUser(
     const char *email, const char *userId, const char *ipAddress, const char *username)
 {
-    if (email == NULL && userId == NULL && ipAddress == NULL && username == NULL) {
-        return;
-    }
-
+    NSString *emailString = _NSStringOrNil(email);
+    NSString *userIdString = _NSStringOrNil(userId);
+    NSString *ipAddressString = _NSStringOrNil(ipAddress);
+    NSString *usernameString = _NSStringOrNil(username);
+    
     [SentrySDK configureScope:^(SentryScope *scope) {
         SentryUser *user = [[SentryUser alloc] init];
 
-        if (email != NULL) {
-            user.email = [NSString stringWithUTF8String:email];
-        }
-
-        if (userId != NULL) {
-            user.userId = [NSString stringWithUTF8String:userId];
-        }
-
-        if (ipAddress != NULL) {
-            user.ipAddress = [NSString stringWithUTF8String:ipAddress];
-        }
-
-        if (username != NULL) {
-            user.username = [NSString stringWithUTF8String:username];
-        }
+        user.email = emailString;
+        user.userId = userIdString;
+        user.ipAddress = ipAddressString;
+        user.username = usernameString;
 
         [scope setUser:user];
     }];
@@ -184,40 +211,19 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 
     NSString *traceIdStr = [NSString stringWithUTF8String:traceId];
     NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
-    
+
     // This is a workaround to deal with SentryId living inside the Swift header
     Class sentryIdClass = NSClassFromString(@"_TtC6Sentry8SentryId");
     Class sentrySpanIdClass = NSClassFromString(@"SentrySpanId");
-    
+
     if (sentryIdClass && sentrySpanIdClass) {
         id sentryTraceId = [[sentryIdClass alloc] initWithUUIDString:traceIdStr];
         id sentrySpanId = [[sentrySpanIdClass alloc] initWithValue:spanIdStr];
-        
+
         if (sentryTraceId && sentrySpanId) {
             [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
         }
     }
-}
-
-static inline NSString *_NSStringOrNil(const char *value)
-{
-    return value ? [NSString stringWithUTF8String:value] : nil;
-}
-
-static inline NSNumber *_NSNumberOrNil(int32_t value)
-{
-    return value == 0 ? nil : @(value);
-}
-
-static inline NSNumber *_NSBoolOrNil(int8_t value)
-{
-    if (value == 0) {
-        return @NO;
-    }
-    if (value == 1) {
-        return @YES;
-    }
-    return nil;
 }
 
 void SentryNativeBridgeWriteScope( // clang-format off

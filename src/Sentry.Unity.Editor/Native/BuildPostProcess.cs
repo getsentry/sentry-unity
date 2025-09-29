@@ -43,8 +43,16 @@ public static class BuildPostProcess
         var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
 #pragma warning restore CS0618
 
-        var executableName = Path.GetFileName(executablePath);
-        var buildOutputDir = Path.GetDirectoryName(executablePath);
+        // The executable path resolves to the following when pointing Unity into a `build/platform/` directory:
+        // - Desktop: `./samples/unity-of-bugs/builds/windows/unityofbugs.exe`
+        // - Xbox: `./samples/unity-of-bugs/builds/xsx/`
+        var buildOutputDir = targetGroup switch
+        {
+            BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),
+            BuildTargetGroup.GameCoreXboxSeries => executablePath,
+            _ => string.Empty
+        };
+
         if (string.IsNullOrEmpty(buildOutputDir))
         {
             logger.LogError("Failed to find build output directory based on the executable path '{0}'." +
@@ -52,7 +60,7 @@ public static class BuildPostProcess
             return;
         }
 
-        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+        UploadDebugSymbols(logger, target, buildOutputDir, options, cliOptions, isMono);
 
         if (!IsEnabledForPlatform(target, options))
         {
@@ -62,7 +70,7 @@ public static class BuildPostProcess
 
         try
         {
-            AddCrashHandler(logger, target, buildOutputDir, executableName);
+            AddCrashHandler(logger, target, buildOutputDir);
         }
         catch (Exception e)
         {
@@ -81,7 +89,7 @@ public static class BuildPostProcess
         _ => false,
     };
 
-    private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName)
+    private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir)
     {
         switch (target)
         {
@@ -97,7 +105,7 @@ public static class BuildPostProcess
                 return;
             case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
-                // TODO: Figure out if we need to ship with a crash handler
+                // No standalone crash handler for Xbox - comes with Breakpad
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
@@ -112,7 +120,7 @@ public static class BuildPostProcess
         File.Copy(fullHandlerPath, targetHandlerPath, true);
     }
 
-    private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+    private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
     {
         var projectDir = Directory.GetParent(Application.dataPath).FullName;
         if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
@@ -135,6 +143,8 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
+            case BuildTarget.GameCoreXboxSeries:
+            case BuildTarget.GameCoreXboxOne:
                 var windowsSentryPdb = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb");
                 if (File.Exists(windowsSentryPdb))
                 {
