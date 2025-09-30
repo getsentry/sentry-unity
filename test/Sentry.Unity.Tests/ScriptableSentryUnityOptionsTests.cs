@@ -24,7 +24,7 @@ public class ScriptableSentryUnityOptionsTests
             persistentDataPath: "test/persistent/data/path");
     }
 
-    class TestOptionsConfiguration : SentryRuntimeOptionsConfiguration
+    class TestOptionsConfiguration : SentryOptionsConfiguration
     {
         public bool GotCalled;
         public override void Configure(SentryUnityOptions options) => GotCalled = true;
@@ -118,11 +118,11 @@ public class ScriptableSentryUnityOptionsTests
     {
         var optionsConfiguration = ScriptableObject.CreateInstance<TestOptionsConfiguration>();
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-        scriptableOptions.RuntimeOptionsConfiguration = optionsConfiguration;
+        scriptableOptions.OptionsConfiguration = optionsConfiguration;
 
         scriptableOptions.ToSentryUnityOptions(isBuilding: isBuilding);
 
-        Assert.AreEqual(optionsConfiguration.GotCalled, !isBuilding);
+        Assert.True(optionsConfiguration.GotCalled);
     }
 
     [Test]

@@ -18,7 +18,7 @@ internal class BuildPreProcess : IPreprocessBuildWithReport
             return;
         }
 
-        var (options, _) = SentryScriptableObject.ConfiguredBuildTimeOptions();
+        var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         if (options?.Enabled is not true)
         {
             return;
