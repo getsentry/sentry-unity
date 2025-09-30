@@ -66,9 +66,6 @@ internal static class LoggingTab
             options.BreadcrumbsForErrors = EditorGUILayout.Toggle(
                 new GUIContent("Debug.Error", "Whether the SDK automatically adds breadcrumbs for 'Debug.LogError'."),
                 options.BreadcrumbsForErrors);
-            options.BreadcrumbsForExceptions = EditorGUILayout.Toggle(
-                new GUIContent("Debug.Exception", "Whether the SDK automatically adds breadcrumbs for exceptions and 'Debug.LogException'."),
-                options.BreadcrumbsForExceptions);
 
             EditorGUI.indentLevel--;
         }

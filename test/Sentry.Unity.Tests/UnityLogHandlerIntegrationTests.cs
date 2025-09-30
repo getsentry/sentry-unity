@@ -38,34 +38,6 @@ public sealed class UnityLogHandlerIntegrationTests
     }
 
     [Test]
-    public void CaptureException_AddAsBreadcrumbEnabled_AddedAsBreadcrumb()
-    {
-        _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = true;
-        var sut = _fixture.GetSut();
-        var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
-
-        sut.CaptureException(new Exception(message), null);
-
-        var scope = new Scope(_fixture.SentryOptions);
-        _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
-        var breadcrumb = scope.Breadcrumbs.Single();
-
-        StringAssert.Contains(message, breadcrumb.Message);
-    }
-
-    [Test]
-    public void CaptureException_AddAsBreadcrumbEnabled_NotAddedAsBreadcrumb()
-    {
-        _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = false;
-        var sut = _fixture.GetSut();
-        var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
-
-        sut.CaptureException(new Exception("Test Exception"), null);
-
-        Assert.IsFalse(_fixture.Hub.ConfigureScopeCalls.Count > 0);
-    }
-
-    [Test]
     public void CaptureException_ExceptionCapturedAndMechanismSet()
     {
         var sut = _fixture.GetSut();
@@ -86,26 +58,6 @@ public sealed class UnityLogHandlerIntegrationTests
 
         Assert.IsTrue(capturedEvent.Exception!.Data.Contains(Mechanism.MechanismKey));
         Assert.AreEqual("Unity.LogException", (string)capturedEvent.Exception!.Data[Mechanism.MechanismKey]);
-    }
-
-    [Test]
-    public void CaptureException_CapturedExceptionAddedAsBreadcrumb()
-    {
-        var sut = _fixture.GetSut();
-        var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
-        var exception = new Exception(message);
-
-        sut.CaptureException(exception, null);
-
-        Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count); // Sanity check
-
-        var scope = new Scope(_fixture.SentryOptions);
-        _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
-        var breadcrumb = scope.Breadcrumbs.Single();
-
-        Assert.AreEqual(exception.GetType() + ": " + message, breadcrumb.Message);
-        Assert.AreEqual("unity.logger", breadcrumb.Category);
-        Assert.AreEqual(BreadcrumbLevel.Error, breadcrumb.Level);
     }
 
     [Test]
