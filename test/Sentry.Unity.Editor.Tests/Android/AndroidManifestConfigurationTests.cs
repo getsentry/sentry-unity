@@ -41,7 +41,8 @@ public class AndroidManifestTests
         }
 
         public AndroidManifestConfiguration GetSut() =>
-            new(() => (SentryUnityOptions, SentryCliOptions),
+            new(getOptions: _ => SentryUnityOptions,
+                getCliOptions: () => SentryCliOptions,
                 IsDevelopmentBuild,
                 ScriptingImplementation,
                 UnityTestLogger);
