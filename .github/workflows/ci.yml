@@ -40,8 +40,7 @@ jobs:
             host: ubuntu-latest
           - target: Linux
             # Build using older Linux version to preserve sdk compatibility with old GLIBC
-            # See discussion in https://github.com/getsentry/sentry-unity/issues/1730 for more details
-            container: ubuntu:20.04
+            container: ubuntu:22.04
             host: ubuntu-latest
           - target: Windows
             host: windows-latest
