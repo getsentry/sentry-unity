@@ -1,23 +1,20 @@
-* [Setup](#setup)
-* [Development](#development)
-	* [Package](#package)
-	* [Tests](#tests)
-* [Release](#release)
-
 # Basics
 
 ## Quick Start
 
 ### Install Unity
 
-1. Install [Unity Hub](https://unity3d.com/get-unity/download).
-2. [Optional] Download the Unity version specified [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1).
-3. Required modules:
+1. Install [Unity Hub](https://unity3d.com/get-unity/download)
+2. Install Unity
+   * [Optional] Pick the Unity version specified [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1) so you don't have to update the sample project
+   * If you do install a different version or you want to build against a specific version, add it as `UNITY_VERSION` to the path (i.e. `export UNITY_VERSION=2022.3.44f1`)
+3. Required modules to install:
    * Android Build Support
    * iOS Build Support
    * IL2CPP Build Support for your platform
-   * (optional) WebGL Build Support
-4. If you installed a different version than #3: Add that version as `UNITY_VERSION` to the path (i.e. `export UNITY_VERSION=2022.3.44f1`)
+4. Optional modules to install: (they are not required to build the SDK)
+   * Windows Build Support
+   * WebGL Build Support4.
 
 ### Install PowerShell Global tool
 
