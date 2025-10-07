@@ -1,6 +1,6 @@
 # Basics
 
-## Quick Start
+## Requirements
 
 ### Install Unity
 
@@ -8,15 +8,13 @@
 2. Install Unity
    * [Optional] Pick the Unity version specified [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1) so you don't have to update the sample project
    * If you do install a different version or you want to build against a specific version, add it as `UNITY_VERSION` to the path (i.e. `export UNITY_VERSION=2022.3.44f1`)
-3. Required modules to install:
-   * Android Build Support
-   * iOS Build Support
-   * IL2CPP Build Support for your platform
-4. Optional modules to install: (they are not required to build the SDK)
-   * Windows Build Support
-   * WebGL Build Support4.
+3. Install iOS Build Module - Required by `Sentry.Unity.Editor.iOS`
+4. Optional modules to install, depending on which platfor you're going to target
+   * Android
+   * Desktop Platforms
+   * WebGL
 
-### Install PowerShell Global tool
+### Install PowerShell Global Tool
 
 ```
 dotnet tool install --global PowerShell
@@ -26,26 +24,30 @@ dotnet tool install --global PowerShell
 
 You can either download the newest release of [here](https://github.com/cli/cli/releases), or if you're on macOS use `brew install gh`. You'll need to log in through the commandline.
 
-## Get the code
+### The Code
 
 Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it
 
-## Download the Native SDKs
+## Building the SDK
 
-You can save some time on the initial build by downloading the prebuild Native SDK artifacts from the last successful build of the `main` branch (requires [GH CLI](https://cli.github.com/) to be installed locally).
+### (Optional) Download the prebuilt SDKs for Android, Linux, and Windows
 
-`dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity`
+Instead of building these as well you can save some time (and headache setting up their requirements) on the initial build by downloading the prebuild artifacts from the last successful build of the `main` branch. This requires [GH CLI](https://cli.github.com/) to be installed.
 
-## Build the project
+Run `dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity -v:d` to download the native SDKs.
 
-[Optional] The build process tries to infer the Unity version by looking up the unity-of-bugs `ProjectVersion.txt`. If you've got a different version installed you can overwrite this behaviour by setting the `UNITY_VERSION` on the path, i.e. adding `export UNITY_VERSION=2022.3.44f1` to your `.zshenv`.
+### Build the Sentry SDK for Unity
 
-To build the whole project (including native SDKs if you've skipped the previous step), run:
+The build process attempts to look up the Unity version to use at `./samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt`. If you've got a different version installed you can overwrite this behaviour by setting the `UNITY_VERSION` on the path, i.e. adding `export UNITY_VERSION=2022.3.44f1` to your `.zshenv`.
 
-`dotnet build`
+To build the project run:
+
+`dotnet build -v:d`
 
 > Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
-> The submodule will be restored as a result of `dotnet build`.
+> The submodule will be automatically restored as a result.
+
+Building the SDK will also download and cache Sentry CLI, and the Sentry SDK for Cocoa.
 
 ## Advanced Setup
 
