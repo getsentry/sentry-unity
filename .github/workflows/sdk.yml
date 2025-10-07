@@ -102,6 +102,9 @@ jobs:
         uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
         with:
           global-json-file: global.json
+
+      - name: Restore .NET Workload
+        run: dotnet workload restore
       
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
