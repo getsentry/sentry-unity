@@ -17,4 +17,3 @@ RunUnityAndExpect $UnityPath "AddSentryPackage" "Sentry Package Installation: SU
 Write-Host "Copying Integration Test Files"
 New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Scripts" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$(GetNewProjectAssetsPath)/Scripts/"
-Copy-Item -Recurse "$IntegrationScriptsPath/Editor/BuildTimeOptions.cs" -Destination "$(GetNewProjectAssetsPath)/Editor/"

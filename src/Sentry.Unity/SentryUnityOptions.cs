@@ -194,6 +194,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public bool NdkScopeSyncEnabled { get; set; } = true;
 
+    public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
+
     /// <summary>
     /// Whether the SDK should add native support for Windows
     /// </summary>
@@ -386,7 +388,6 @@ public sealed class SentryUnityOptions : SentryOptions
             { LogType.Warning, true},
             { LogType.Assert, true},
             { LogType.Error, true},
-            { LogType.Exception, true},
         };
 
         // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
