@@ -98,15 +98,6 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
 
-      - name: Install curl for setup-dotnet
-        if: ${{ inputs.container != '' }}
-        shell: bash
-        run: |
-          apt-get update
-          apt-get install -y curl
-        env:
-          DEBIAN_FRONTEND: noninteractive
-
       - name: Install .NET SDK
         uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
         with:
