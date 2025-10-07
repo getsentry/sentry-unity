@@ -36,7 +36,7 @@ jobs:
         # fatal: detected dubious ownership in repository at '/__w/sentry-unity/sentry-unity'
         run: |
           apt-get update
-          apt-get install -y git
+          apt-get install -y git curl
           git config --global --add safe.directory $GITHUB_WORKSPACE
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -95,6 +95,15 @@ jobs:
           set -eo pipefail
           curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
           echo "/usr/share/dotnet" >> $GITHUB_PATH
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Install curl for setup-dotnet
+        if: ${{ inputs.container != '' }}
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install -y curl
         env:
           DEBIAN_FRONTEND: noninteractive
 
