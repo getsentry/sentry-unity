@@ -601,16 +601,6 @@ void PrintFailedTests(XElement element)
     <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />
     <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;%(SDK.Identity)-sdk&quot; -D &quot;$(SentryArtifactsDestination)%(SDK.Identity)&quot;" />
 
-    <!-- Download Cocoa SDK for iOS and macOS -->
-    <PropertyGroup>
-        <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-cocoa.properties"))</PropertiesContent>
-        <CocoaVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'version\s*=\s*([^\s]+)').Groups[1].Value)</CocoaVersion>
-    </PropertyGroup>
-
-    <Message Importance="High" Text="Setting up the Cocoa SDK version '$(CocoaVersion)'." />
-
-    <Exec Command="pwsh &quot;$(RepoRoot)scripts/setup-cocoa-sdk.ps1&quot; -RepoRoot &quot;$(RepoRoot)&quot; -CocoaVersion &quot;$(CocoaVersion)&quot; -CocoaCache &quot;$(SentryCocoaCache)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot;" />
-
     <!-- Download overwrites some files that then show up as changed in the IDE, even though there are no changes, e.g. only whitespace -->
     <Message Importance="High" Text="Restoring package-dev/Plugins to the latest git commit" />
     <Exec WorkingDirectory="$(RepoRoot)" Command="git restore package-dev/Plugins" />
