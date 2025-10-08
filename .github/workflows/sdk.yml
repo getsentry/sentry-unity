@@ -36,7 +36,7 @@ jobs:
         # fatal: detected dubious ownership in repository at '/__w/sentry-unity/sentry-unity'
         run: |
           apt-get update
-          apt-get install -y git
+          apt-get install -y git curl
           git config --global --add safe.directory $GITHUB_WORKSPACE
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -60,11 +60,15 @@ jobs:
           else
             echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
           fi
+      
       - name: Get submodule status
         run: git submodule status --cached $SUBMODULES | tee submodules-status
         shell: bash
         env:
           SUBMODULES: ${{ steps.env.outputs.submodules }}
+
+      - name: Update submobules
+        run: git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
 
       - run: |
           if [[ "${{ env.TARGET }}" == "Cocoa" ]]; then
@@ -98,11 +102,17 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
 
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
+        with:
+          global-json-file: global.json
+          
+      - name: Restore .NET Workload
+        run: dotnet workload restore
+      
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
-          dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload build logs on failure
         # No build logs for Cocoa SDK as we assemble the xcframework from a downloaded release artifact
