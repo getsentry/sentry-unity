@@ -39,11 +39,6 @@ You can either download the newest release of [here](https://github.com/cli/cli/
 Only required if you plan to build the Android SDK yourself (instead of using prebuilt artifacts).
 
 * Install Git and ensure is accessible from the `PATH`
-* Install JDK 17
-  * [Using sdkman](https://sdkman.io/) which manage versions for you. (i.e. `sdk install java 17.0.5-ms`)
-  * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
-* Add JAVA_HOME to your environment variables (if not using sdkman):
-  * Windows: `setx JAVA_HOME "C:\Program Files\Java\jdk-17.0.5"`
 * Install [Android Studio](https://developer.android.com/studio)
   * Open Android Studio and go to Customize -> All settings...
   * Search for "SDK" in the Seachbar
@@ -51,11 +46,17 @@ Only required if you plan to build the Android SDK yourself (instead of using pr
   * Install the Android SDK
   * Swap tab to SDK Tools
   * Check "Show Package Details"
-  * Under Android SDK Build-Tools check "30.0.3"
+  * Under Android SDK Build-Tools check "34"
   * Apply
-* Add ANDROID_HOME to your environment variables
-  * macOS zsh: `export ANDROID_HOME="$HOME/Library/Android/sdk"`
-  * Windows: `setx ANDROID_HOME "C:\Program Files (x86)\Android\android-sdk"` for a machine wide install, `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
+* Install JDK 17
+  * [Using sdkman](https://sdkman.io/) which manage versions for you. (i.e. `sdk install java 17.0.5-ms`)
+  * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
+* Additional setup:
+  * Add `ANDROID_HOME` to your environment variables
+    * macOS zsh: `export ANDROID_HOME="$HOME/Library/Android/sdk"`
+    * Windows: `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
+  * Make sure `java` is on the path. You can check by calling `java --version`
+    * Windows: Add the `bin` to the path i.e. `$env:PATH = "$env:PATH;$env:JAVA_HOME\bin`
 
 ## (Optional) Setup for Building sentry-native
 

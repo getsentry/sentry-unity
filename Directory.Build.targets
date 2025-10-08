@@ -235,7 +235,7 @@ Expected to exist:
 
     <Error Condition="@(AndroidJarArtifacts->Count()) == 0" Text="sentry.jar file not found. The build might have failed, consider a clean build." />
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp sentry/build/libs/sentry*.jar $(SentryAndroidArtifactsDestination)sentry.jar" />
+    <Copy SourceFiles="@(AndroidJarArtifacts)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry.jar" />
 
     <Message Importance="High" Text="Reading the sentry-native-ndk version from the 'libs.versions.toml' file." />
 
