@@ -257,11 +257,11 @@ Expected to exist:
     <!-- Download prebuilt sentry-native-ndk -->
     <Exec
       Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
-      Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip" />
+      Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o &quot;$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip&quot;" />
 
     <Exec
       Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)')"
-      Command="unzip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip -d $(SentryNativeNdkCache)" />
+      Command="pwsh -Command &quot;Expand-Archive -Path '$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip' -DestinationPath '$(SentryNativeNdkCache)' -Force&quot;" />
 
     <Copy SourceFiles="$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)/sentry-native-ndk-release.aar" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
 
