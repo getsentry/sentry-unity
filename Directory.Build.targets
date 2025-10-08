@@ -91,6 +91,11 @@
       <_UnityPathProp>%(_UnityPathsFoundReversed.Identity)</_UnityPathProp>
     </PropertyGroup>
 
+    <Message
+      Condition="'$(UnityVersion)' != '' AND '$(HubInstallDir)' != '' AND !Exists('$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll') AND '$(_UnityPathProp)' != ''"
+      Text="Unity version $(UnityVersion) is not installed. Falling back to default Unity installation."
+      Importance="High" />
+
     <ItemGroup>
       <!-- Turn the property back into an item so we can use DirectoryName() below. -->
       <_UnityPath Include="$(_UnityPathProp)" />
