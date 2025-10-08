@@ -305,7 +305,7 @@ Expected to exist:
 
     <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArtifactsDestination)libsentry.so" />
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cp build/libsentry.so $(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
+    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
     <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
   </Target>
 
