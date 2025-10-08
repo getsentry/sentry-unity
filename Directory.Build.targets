@@ -212,9 +212,13 @@ Expected to exist:
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
   <Target Name="BuildAndroidSDK"
           DependsOnTargets="DownloadCLI"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And !Exists('$(SentryAndroidArtifactsDestination)')"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And (!Exists('$(SentryAndroidArtifactsDestination)') Or (Exists('$(SentryAndroidArtifactsDestination)') And $([System.IO.Directory]::GetFiles('$(SentryAndroidArtifactsDestination)').Length) != 4))"
           BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)." />
+
+    <!-- Clean incomplete artifacts directory before building -->
+    <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" Condition="Exists('$(SentryAndroidArtifactsDestination)')" ContinueOnError="true" />
+
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
     <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" />
