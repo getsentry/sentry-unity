@@ -91,6 +91,11 @@
       <_UnityPathProp>%(_UnityPathsFoundReversed.Identity)</_UnityPathProp>
     </PropertyGroup>
 
+    <Message
+      Condition="'$(UnityVersion)' != '' AND '$(HubInstallDir)' != '' AND !Exists('$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll') AND '$(_UnityPathProp)' != ''"
+      Text="Unity version $(UnityVersion) is not installed. Falling back to default Unity installation."
+      Importance="High" />
+
     <ItemGroup>
       <!-- Turn the property back into an item so we can use DirectoryName() below. -->
       <_UnityPath Include="$(_UnityPathProp)" />
@@ -207,20 +212,34 @@ Expected to exist:
   <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
   <Target Name="BuildAndroidSDK"
           DependsOnTargets="DownloadCLI"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And !Exists('$(SentryAndroidArtifactsDestination)')"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And (!Exists('$(SentryAndroidArtifactsDestination)') Or (Exists('$(SentryAndroidArtifactsDestination)') And $([System.IO.Directory]::GetFiles('$(SentryAndroidArtifactsDestination)').Length) != 4))"
           BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)." />
+
+    <!-- Clean incomplete artifacts directory before building -->
+    <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" Condition="Exists('$(SentryAndroidArtifactsDestination)')" ContinueOnError="true" />
+
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" EnvironmentVariables="JAVA_HOME=$(JAVA_HOME_17_X64)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" />
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" />
 
     <ItemGroup>
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" />
     </ItemGroup>
 
+    <Error Condition="!Exists('$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar')" Text="sentry-android-ndk-release.aar not found. The build might have failed, consider a clean build." />
+    <Error Condition="!Exists('$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar')" Text="sentry-android-core-release.aar not found. The build might have failed, consider a clean build." />
+
     <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="cp sentry/build/libs/sentry*.jar $(SentryAndroidArtifactsDestination)sentry.jar" />
+
+    <ItemGroup>
+      <AndroidJarArtifacts Include="$(SentryAndroidRoot)sentry/build/libs/sentry*.jar" />
+    </ItemGroup>
+
+    <Error Condition="@(AndroidJarArtifacts->Count()) == 0" Text="sentry.jar file not found. The build might have failed, consider a clean build." />
+
+    <Copy SourceFiles="@(AndroidJarArtifacts)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry.jar" />
 
     <Message Importance="High" Text="Reading the sentry-native-ndk version from the 'libs.versions.toml' file." />
 
@@ -242,11 +261,11 @@ Expected to exist:
     <!-- Download prebuilt sentry-native-ndk -->
     <Exec
       Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
-      Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip" />
+      Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o &quot;$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip&quot;" />
 
     <Exec
       Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)')"
-      Command="unzip -o $(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip -d $(SentryNativeNdkCache)" />
+      Command="pwsh -Command &quot;Expand-Archive -Path '$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip' -DestinationPath '$(SentryNativeNdkCache)' -Force&quot;" />
 
     <Copy SourceFiles="$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)/sentry-native-ndk-release.aar" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
 
@@ -290,7 +309,7 @@ Expected to exist:
 
     <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArtifactsDestination)libsentry.so" />
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cp build/libsentry.so $(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
+    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
     <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
   </Target>
 
