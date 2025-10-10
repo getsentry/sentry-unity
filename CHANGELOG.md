@@ -6,7 +6,8 @@
 
 - The SDK will now always add a breadcrumb when capturing an exception. The option to opt-out of this has been removed. ([#2335](https://github.com/getsentry/sentry-unity/pull/2335))
 - The deprecated Runtime- and BuildTime-Configuration have been removed in favor of the single `OptionsConfiguration` script. When migrating you can make use of preprocessor directives to set specific options for specific platforms. Check out the ([Migration Guide](https://docs.sentry.io/platforms/unity/migration/#changes-to-the-programmatic-configuration)). ([#2337](https://github.com/getsentry/sentry-unity/pull/2337))
-- `sentry-native` is now built on Ubuntu 22.04 instead of Ubuntu 20.04, which reached EOL in May 2025. If you are running you game on a server on Ubuntu 20.04, you should update the OS before upgrading to this SDK version.
+- `sentry-native` is now built on Ubuntu 22.04 instead of Ubuntu 20.04, which reached EOL in May 2025. If you are running you game on a server on Ubuntu 20.04, you should update the OS before upgrading to this SDK version. ([#2355](https://github.com/getsentry/sentry-unity/pull/2355))
+
 ### Features
 
 - Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314), [#2329](https://github.com/getsentry/sentry-unity/pull/2329))
