@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased 
+
+### Breaking Changes
+
+- `sentry-native` is now built on Ubuntu 22.04 instead of Ubuntu 20.04, which reached EOL in May 2025. If you are running you game on a server on Ubuntu 20.04, you should update the OS before upgrading to this SDK version. ([#2355](https://github.com/getsentry/sentry-unity/pull/2355))
+
+### Dependencies
+
+- Bump CLI from v2.56.0 to v2.56.1 ([#2356](https://github.com/getsentry/sentry-unity/pull/2356))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2561)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.56.0...2.56.1)
+
 ## 4.0.0-beta.3
 
 ### Breaking Changes
