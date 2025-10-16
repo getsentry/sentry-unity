@@ -3,11 +3,11 @@ using Sentry.Integrations;
 
 namespace Sentry.Unity.Integrations;
 
-internal class SessionIntegration : ISdkIntegration
+internal class LifeCycleIntegration : ISdkIntegration
 {
     private readonly SentryMonoBehaviour _sentryMonoBehaviour;
 
-    public SessionIntegration(SentryMonoBehaviour sentryMonoBehaviour)
+    public LifeCycleIntegration(SentryMonoBehaviour sentryMonoBehaviour)
     {
         _sentryMonoBehaviour = sentryMonoBehaviour;
     }
