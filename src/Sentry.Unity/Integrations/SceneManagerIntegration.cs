@@ -58,6 +58,13 @@ internal class SceneManagerIntegration : ISdkIntegration
                     ? $"Changed active scene to '{toScene.Name}'"
                     : $"Changed active scene '{fromScene.Name}' to '{toScene.Name}'",
                 category: "scene.changed");
+
+            if (SentrySdk.IsSessionActive)
+            {
+                SentrySdk.EndSession();
+            }
+
+            SentrySdk.StartSession();
         }
     }
 }

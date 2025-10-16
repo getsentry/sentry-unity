@@ -54,7 +54,9 @@ namespace Sentry.Unity.Integrations
                 Mechanism = new Mechanism
                 {
                     Handled = true,
-                    Type = "unity.log"
+                    Type = "Debug.LogError",
+                    Synthetic = true,
+                    Terminal = false,
                 }
             };
         }
