@@ -181,6 +181,8 @@ internal sealed class TestHub : IHub
         // TODO: test sessions
     }
 
+    public bool IsSessionActive { get; }
+
     public SentryId CaptureEvent(SentryEvent evt, Action<Scope> configureScope)
     {
         throw new NotImplementedException();
