@@ -6,10 +6,12 @@ namespace Sentry.Unity.Integrations;
 internal class LifeCycleIntegration : ISdkIntegration
 {
     private readonly SentryMonoBehaviour _sentryMonoBehaviour;
+    private readonly IApplication _application;
 
-    public LifeCycleIntegration(SentryMonoBehaviour sentryMonoBehaviour)
+    public LifeCycleIntegration(SentryMonoBehaviour sentryMonoBehaviour, IApplication? application = null)
     {
         _sentryMonoBehaviour = sentryMonoBehaviour;
+        _application = application ?? ApplicationAdapter.Instance;
     }
 
     public void Register(IHub hub, SentryOptions options)
@@ -21,7 +23,7 @@ internal class LifeCycleIntegration : ISdkIntegration
 
         _sentryMonoBehaviour.ApplicationResuming += () =>
         {
-            if (Sentry.SentrySdk.IsSessionActive)
+            if (hub.IsSessionActive)
             {
                 options.DiagnosticLogger?.LogDebug("Resuming session.");
                 hub.ResumeSession();
@@ -34,16 +36,17 @@ internal class LifeCycleIntegration : ISdkIntegration
         };
         _sentryMonoBehaviour.ApplicationPausing += () =>
         {
-            if (Sentry.SentrySdk.IsSessionActive)
+            if (hub.IsSessionActive)
             {
                 options.DiagnosticLogger?.LogDebug("Pausing session.");
                 hub.PauseSession();
             }
-            else
-            {
-                // TODO: Do we want to log that there was no active session to pause?
-                // I.e. the SDK captured an unhandled exception and automatically ended the session
-            }
+            // else
+            // {
+            //     // The SDK captured an unhandled exception and automatically ended the session
+            // }
         };
+
+        _application.Quitting += () => hub.EndSession();
     }
 }

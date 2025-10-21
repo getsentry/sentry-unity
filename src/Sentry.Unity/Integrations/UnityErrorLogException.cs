@@ -56,7 +56,7 @@ namespace Sentry.Unity.Integrations
                     Handled = true,
                     Type = "Debug.LogError",
                     Synthetic = true,
-                    Terminal = false,
+                    Data = { {Mechanism.TerminalKey, false} }
                 }
             };
         }

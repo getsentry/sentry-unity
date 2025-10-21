@@ -36,12 +36,6 @@ internal sealed class TestHub : IHub
         throw new NotImplementedException();
     }
 
-    [Obsolete("Obsolete")]
-    public void CaptureUserFeedback(UserFeedback userFeedback)
-    {
-        throw new NotImplementedException();
-    }
-
     public void CaptureTransaction(SentryTransaction transaction) =>
         _capturedTransactions.Add(transaction);
 

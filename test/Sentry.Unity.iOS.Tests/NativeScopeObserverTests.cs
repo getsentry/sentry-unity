@@ -22,7 +22,7 @@ public class IosNativeScopeObserverTests
     [TestCase(BreadcrumbLevel.Info, 2)]
     [TestCase(BreadcrumbLevel.Warning, 3)]
     [TestCase(BreadcrumbLevel.Error, 4)]
-    [TestCase(BreadcrumbLevel.Critical, 5)]
+    [TestCase(BreadcrumbLevel.Fatal, 5)]
     public void GetBreadcrumbLevel_TestCases(BreadcrumbLevel level, int expectedNativeLevel)
     {
         var actualLevel = NativeScopeObserver.GetBreadcrumbLevel(level);
