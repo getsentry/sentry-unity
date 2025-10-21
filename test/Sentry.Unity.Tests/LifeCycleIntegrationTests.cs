@@ -6,7 +6,7 @@ using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests;
 
-public class SessionIntegrationTests
+public class LifeCycleIntegrationTests
 {
     [UnityTest]
     public IEnumerator SessionIntegration_Init_SentryMonoBehaviourCreated()
