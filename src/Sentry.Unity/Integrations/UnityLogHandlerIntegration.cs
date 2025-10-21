@@ -43,8 +43,6 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 
         _unityLogHandler = Debug.unityLogger.logHandler;
         Debug.unityLogger.logHandler = this;
-
-        _application.Quitting += OnQuitting;
     }
 
     public void LogException(Exception exception, UnityEngine.Object context)
@@ -72,8 +70,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         // NOTE: This might not be entirely true, as a user could as well call `Debug.LogException`
         // and expect a handled exception but it is not possible for us to differentiate
         // https://docs.sentry.io/platforms/unity/troubleshooting/#unhandled-exceptions---debuglogexception
-        exception.Data[Mechanism.HandledKey] = false;
-        exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
+        exception.SetSentryMechanism("Unity.LogException", handled: false, terminal: false);
         _ = _hub.CaptureException(exception);
     }
 
@@ -83,24 +80,5 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         // Capturing of `Debug`, `Warning`, and `Error` happens in the Application Logging Integration.
         // The LogHandler does not have access to the stacktrace information required
         _unityLogHandler.LogFormat(logType, context, format, args);
-    }
-
-    private void OnQuitting()
-    {
-        _sentryOptions?.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
-
-        // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
-        //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
-        // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
-        // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
-
-        // 'OnQuitting' is invoked even when an uncaught exception happens in the ART. To make sure the .NET
-        // SDK checks with the native layer on restart if the previous run crashed (through the CrashedLastRun callback)
-        // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.
-        if (_sentryOptions?.AutoSessionTracking is true)
-        {
-            _hub?.PauseSession();
-        }
-        _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
     }
 }
