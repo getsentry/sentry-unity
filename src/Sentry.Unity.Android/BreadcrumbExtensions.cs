@@ -17,7 +17,7 @@ public static class BreadcrumbExtensions
         using var javaSentryLevel = new AndroidJavaClass("io.sentry.SentryLevel");
         return level switch
         {
-            BreadcrumbLevel.Critical => javaSentryLevel.GetStatic<AndroidJavaObject>("FATAL"),
+            BreadcrumbLevel.Fatal => javaSentryLevel.GetStatic<AndroidJavaObject>("FATAL"),
             BreadcrumbLevel.Error => javaSentryLevel.GetStatic<AndroidJavaObject>("ERROR"),
             BreadcrumbLevel.Warning => javaSentryLevel.GetStatic<AndroidJavaObject>("WARNING"),
             BreadcrumbLevel.Debug => javaSentryLevel.GetStatic<AndroidJavaObject>("DEBUG"),
