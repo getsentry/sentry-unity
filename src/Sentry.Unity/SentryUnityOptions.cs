@@ -305,6 +305,9 @@ public sealed class SentryUnityOptions : SentryOptions
     internal ISentryUnityInfo UnityInfo { get; private set; }
     internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
 
+    // Hiding the .NET one
+    public new SentryUnityExperimentalOptions Experimental { get; set; }
+
     public SentryUnityOptions() : this(isBuilding: false) { }
 
     // For testing
@@ -313,6 +316,8 @@ public sealed class SentryUnityOptions : SentryOptions
         ISentryUnityInfo? unityInfo = null,
         bool isBuilding = false)
     {
+        // Initialize with Unity-specific experimental options
+        Experimental = new SentryUnityExperimentalOptions();
         // NOTE: 'SentryPlatformServices.UnityInfo' throws when the UnityInfo has not been set. This should not happen.
         // The PlatformServices are set through the RuntimeLoad attribute in 'SentryInitialization.cs' and are required
         // to be present.
@@ -489,4 +494,28 @@ public enum NativeInitializationType
     /// game. Options that you modify programmatically will not apply to the native SDK.
     /// </summary>
     BuildTime,
+}
+
+/// <summary>
+/// Unity-specific experimental options.
+/// </summary>
+/// <remarks>
+/// This extends the base <see cref="SentryOptions.SentryExperimentalOptions"/> with Unity-specific experimental features.
+/// These options are subject to change in future versions.
+/// </remarks>
+public sealed class SentryUnityExperimentalOptions : SentryOptions.SentryExperimentalOptions
+{
+    internal SentryUnityExperimentalOptions() { }
+
+    public bool OnDebugLog { get; set; } = false;
+    public bool OnDebugLogWarning { get; set; } = true;
+    public bool OnDebugLogAssertion { get; set; } = true;
+    public bool OnDebugLogError { get; set; } = true;
+    public bool OnDebugLogException { get; set; } = true;
+
+    /// <summary>
+    /// When set to true, breadcrumbs will be added to the top of the breadcrumb list instead of the bottom.
+    /// Defaults to false.
+    /// </summary>
+    public bool AttachBreadcrumbsToEvents { get; set; } = false;
 }

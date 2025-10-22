@@ -1,3 +1,4 @@
+using System;
 using Sentry.Integrations;
 using UnityEngine;
 
@@ -12,12 +13,13 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 {
     private readonly IApplication _application;
     private readonly bool _captureExceptions;
-    private ErrorTimeDebounce? _errorTimeDebounce;
-    private LogTimeDebounce? _logTimeDebounce;
-    private WarningTimeDebounce? _warningTimeDebounce;
+
+    private ErrorTimeDebounce _errorTimeDebounce = null!;       // Set in Register
+    private LogTimeDebounce _logTimeDebounce = null!;           // Set in Register
+    private WarningTimeDebounce _warningTimeDebounce = null!;   // Set in Register
 
     private IHub? _hub;
-    private SentryUnityOptions? _options;
+    private SentryUnityOptions _options = null!;                // Set in Register
 
     internal UnityApplicationLoggingIntegration(bool captureExceptions = false, IApplication? application = null)
     {
@@ -28,11 +30,8 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
         _hub = hub;
-        _options = sentryOptions as SentryUnityOptions;
-        if (_options is null)
-        {
-            return;
-        }
+        // This should never throw
+        _options = sentryOptions as SentryUnityOptions ?? throw new InvalidOperationException("Options passed is not of type SentryUnityOptions");
 
         _logTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
         _warningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
@@ -49,71 +48,121 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        // We're not capturing or creating breadcrumbs from SDK logs
-        if (message.StartsWith(UnityLogger.LogTag))
+        // We're not capturing the SDKs own logs
+        if (message.StartsWith(UnityLogger.LogTag) || IsGettingDebounced(logType))
         {
             return;
         }
 
-        // LogType.Exception are getting handled by the UnityLogHandlerIntegration
-        // Unless we're configured to handle them - i.e. WebGL
-        if (logType is LogType.Exception && !_captureExceptions)
+        ProcessStructuredLog(message, logType);
+        ProcessException(message, stacktrace, logType);
+        ProcessError(message, stacktrace, logType);
+        ProcessBreadcrumbs(message, logType);
+    }
+
+    private bool IsGettingDebounced(LogType logType)
+    {
+        if (_options?.EnableLogDebouncing is not true)
         {
-            return;
+            return false;
         }
 
-        if (_options?.EnableLogDebouncing is true)
+        var debounced = logType switch
         {
-            var debounced = logType switch
-            {
-                LogType.Exception => _errorTimeDebounce?.Debounced(),
-                LogType.Error or LogType.Assert => _errorTimeDebounce?.Debounced(),
-                LogType.Log => _logTimeDebounce?.Debounced(),
-                LogType.Warning => _warningTimeDebounce?.Debounced(),
-                _ => true
-            };
+            LogType.Exception => _errorTimeDebounce.Debounced(),
+            LogType.Error or LogType.Assert => _errorTimeDebounce.Debounced(),
+            LogType.Log => _logTimeDebounce.Debounced(),
+            LogType.Warning => _warningTimeDebounce.Debounced(),
+            _ => true
+        };
 
-            if (debounced is not true)
-            {
-                return;
-            }
+        return debounced;
+    }
+
+    private void ProcessStructuredLog(string message, LogType logType)
+    {
+        switch (logType)
+        {
+            case LogType.Log:
+                if (_options.Experimental.OnDebugLog)
+                {
+                    Sentry.SentrySdk.Logger.LogInfo(message);
+                }
+                break;
+            case LogType.Warning:
+                if (_options.Experimental.OnDebugLogWarning)
+                {
+                    Sentry.SentrySdk.Logger.LogWarning(message);
+                }
+                break;
+            case LogType.Assert:
+                if (_options.Experimental.OnDebugLogAssertion)
+                {
+                    Sentry.SentrySdk.Logger.LogError(message);
+                }
+                break;
+            case LogType.Error:
+                if (_options.Experimental.OnDebugLogError)
+                {
+                    Sentry.SentrySdk.Logger.LogError(message);
+                }
+                break;
+            case LogType.Exception:
+                if (_options.Experimental.OnDebugLogException)
+                {
+                    Sentry.SentrySdk.Logger.LogError(message);
+                }
+                break;
         }
+    }
 
-        if (logType is LogType.Exception)
+    private void ProcessException(string message, string stacktrace, LogType logType)
+    {
+        // LogType.Exception is getting handled by the `UnityLogHandlerIntegration`
+        // UNLESS we're configured to handle them - i.e. WebGL
+        if (logType is LogType.Exception && _captureExceptions)
         {
             var ule = new UnityErrorLogException(message, stacktrace, _options);
-            _hub.CaptureException(ule);
+            _hub?.CaptureException(ule);
+        }
+    }
 
-            // We don't capture breadcrumbs for exceptions - the .NET SDK handles this
+    private void ProcessError(string message, string stacktrace, LogType logType)
+    {
+        if (logType is not LogType.Error || !_options.CaptureLogErrorEvents)
+        {
             return;
         }
 
-        if (logType is LogType.Error && _options?.CaptureLogErrorEvents is true)
+        if (_options.AttachStacktrace && !string.IsNullOrEmpty(stacktrace))
         {
-            if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
-            {
-                var ule = new UnityErrorLogException(message, stacktrace, _options);
-                var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
+            var ule = new UnityErrorLogException(message, stacktrace, _options);
+            var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
 
-                _hub.CaptureEvent(sentryEvent);
-            }
-            else
-            {
-                _hub.CaptureMessage(message, level: SentryLevel.Error);
-            }
+            _hub?.CaptureEvent(sentryEvent);
         }
-
-        // Capture so the next event includes this error as breadcrumb
-        if (_options?.AddBreadcrumbsForLogType[logType] is true)
+        else
         {
-            _hub.AddBreadcrumb(message: message, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+            _hub?.CaptureMessage(message, level: SentryLevel.Error);
         }
     }
 
-    private void OnQuitting()
+    private void ProcessBreadcrumbs(string message, LogType logType)
     {
-        _application.LogMessageReceived -= OnLogMessageReceived;
+        if (logType is LogType.Exception)
+        {
+            // Capturing of breadcrumbs for exceptions happens inside the .NET SDK
+            return;
+        }
+
+        // Capture so the next event includes this as breadcrumb
+        if (_options.AddBreadcrumbsForLogType.TryGetValue(logType, out var value) && value)
+        {
+            _hub?.AddBreadcrumb(message: message, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+        }
     }
+
+    private void OnQuitting() => _application.LogMessageReceived -= OnLogMessageReceived;
 
     private static BreadcrumbLevel ToBreadcrumbLevel(LogType logType)
         => logType switch

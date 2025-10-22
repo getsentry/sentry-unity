@@ -58,6 +58,15 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
     [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
 
+    [field: SerializeField] public bool EnableStructuredLogging { get; set; } = false;
+    [field: SerializeField] public bool OnDebugLog { get; set; } = false;
+    [field: SerializeField] public bool OnDebugLogWarning { get; set; } = true;
+    [field: SerializeField] public bool OnDebugLogAssertion { get; set; } = true;
+    [field: SerializeField] public bool OnDebugLogError { get; set; } = true;
+    [field: SerializeField] public bool OnDebugLogException { get; set; } = true;
+
+    [field: SerializeField] public bool AttachBreadcrumbsToEvents { get; set; } = false;
+
     [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
@@ -184,6 +193,16 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             XboxNativeSupportEnabled = XboxNativeSupportEnabled,
             Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
+            Experimental = new SentryUnityExperimentalOptions
+            {
+                EnableLogs = EnableStructuredLogging,
+                OnDebugLog = OnDebugLog,
+                OnDebugLogWarning = OnDebugLogWarning,
+                OnDebugLogAssertion = OnDebugLogAssertion,
+                OnDebugLogError = OnDebugLogError,
+                OnDebugLogException = OnDebugLogException,
+                AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
+            }
         };
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.

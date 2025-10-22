@@ -27,7 +27,7 @@ MonoBehaviour:
   <AutoSessionTrackingInterval>k__BackingField: 30000
   <ReleaseOverride>k__BackingField: 
   <EnvironmentOverride>k__BackingField: 
-  <AttachStacktrace>k__BackingField: 1
+  <AttachStacktrace>k__BackingField: 0
   <AttachScreenshot>k__BackingField: 1
   <ScreenshotQuality>k__BackingField: 1
   <ScreenshotCompression>k__BackingField: 75
@@ -35,11 +35,17 @@ MonoBehaviour:
   <MaxViewHierarchyRootObjects>k__BackingField: 100
   <MaxViewHierarchyObjectChildCount>k__BackingField: 20
   <MaxViewHierarchyDepth>k__BackingField: 10
+  <EnableStructuredLogging>k__BackingField: 1
+  <OnDebugLog>k__BackingField: 0
+  <OnDebugLogWarning>k__BackingField: 1
+  <OnDebugLogAssertion>k__BackingField: 1
+  <OnDebugLogError>k__BackingField: 1
+  <OnDebugLogException>k__BackingField: 1
+  <AttachBreadcrumbsToEvents>k__BackingField: 1
   <BreadcrumbsForLogs>k__BackingField: 1
   <BreadcrumbsForWarnings>k__BackingField: 1
   <BreadcrumbsForAsserts>k__BackingField: 1
   <BreadcrumbsForErrors>k__BackingField: 1
-  <BreadcrumbsForExceptions>k__BackingField: 1
   <CaptureLogErrorEvents>k__BackingField: 1
   <MaxBreadcrumbs>k__BackingField: 100
   <ReportAssembliesMode>k__BackingField: 1
