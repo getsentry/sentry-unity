@@ -1,4 +1,5 @@
 using System;
+using Sentry.Extensibility;
 using Sentry.Integrations;
 using UnityEngine;
 
@@ -49,8 +50,14 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         }
 
         // We're not capturing the SDKs own logs
-        if (message.StartsWith(UnityLogger.LogTag) || IsGettingDebounced(logType))
+        if (message.StartsWith(UnityLogger.LogTag))
         {
+            return;
+        }
+
+        if (IsGettingDebounced(logType))
+        {
+            _options.LogDebug("Log message of type '{0}' is getting debounced.", logType);
             return;
         }
 
@@ -62,12 +69,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
     private bool IsGettingDebounced(LogType logType)
     {
-        if (_options?.EnableLogDebouncing is not true)
+        if (_options.EnableLogDebouncing is false)
         {
             return false;
         }
 
-        var debounced = logType switch
+        return logType switch
         {
             LogType.Exception => _errorTimeDebounce.Debounced(),
             LogType.Error or LogType.Assert => _errorTimeDebounce.Debounced(),
@@ -75,8 +82,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             LogType.Warning => _warningTimeDebounce.Debounced(),
             _ => true
         };
-
-        return debounced;
     }
 
     private void ProcessStructuredLog(string message, LogType logType)
@@ -86,30 +91,35 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             case LogType.Log:
                 if (_options.Experimental.OnDebugLog)
                 {
+                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
                     Sentry.SentrySdk.Logger.LogInfo(message);
                 }
                 break;
             case LogType.Warning:
                 if (_options.Experimental.OnDebugLogWarning)
                 {
+                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
                     Sentry.SentrySdk.Logger.LogWarning(message);
                 }
                 break;
             case LogType.Assert:
                 if (_options.Experimental.OnDebugLogAssertion)
                 {
+                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
                     Sentry.SentrySdk.Logger.LogError(message);
                 }
                 break;
             case LogType.Error:
                 if (_options.Experimental.OnDebugLogError)
                 {
+                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
                     Sentry.SentrySdk.Logger.LogError(message);
                 }
                 break;
             case LogType.Exception:
                 if (_options.Experimental.OnDebugLogException)
                 {
+                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
                     Sentry.SentrySdk.Logger.LogError(message);
                 }
                 break;
@@ -122,6 +132,8 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         // UNLESS we're configured to handle them - i.e. WebGL
         if (logType is LogType.Exception && _captureExceptions)
         {
+            _options.LogDebug("Exception capture has been enabled. Capturing exception through '{0}'.", nameof(UnityApplicationLoggingIntegration));
+
             var ule = new UnityErrorLogException(message, stacktrace, _options);
             _hub?.CaptureException(ule);
         }
@@ -134,8 +146,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
+        _options.LogDebug("Error capture for 'Debug.LogError' has been enabled. Capturing message.");
+
         if (_options.AttachStacktrace && !string.IsNullOrEmpty(stacktrace))
         {
+            _options.LogDebug("Attaching stacktrace to event.");
+
             var ule = new UnityErrorLogException(message, stacktrace, _options);
             var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
 
@@ -164,6 +180,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         // Capture so the next event includes this as breadcrumb
         if (_options.AddBreadcrumbsForLogType.TryGetValue(logType, out var value) && value)
         {
+            _options.LogDebug("Adding breadcrumb for log message of type: {0}", logType);
             _hub?.AddBreadcrumb(message: message, category: "unity.logger", level: ToBreadcrumbLevel(logType));
         }
     }
