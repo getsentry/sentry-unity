@@ -286,7 +286,7 @@ jobs:
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-13-Readme.md
-        ios-version: ["16.1", latest] # last updated October 2024
+        ios-version: ["17.0", latest] # last updated October 2024
         init-type: ["runtime", "buildtime"]
 
   smoke-test-run:
