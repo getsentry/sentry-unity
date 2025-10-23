@@ -27,7 +27,7 @@ MonoBehaviour:
   <AutoSessionTrackingInterval>k__BackingField: 30000
   <ReleaseOverride>k__BackingField: 
   <EnvironmentOverride>k__BackingField: 
-  <AttachStacktrace>k__BackingField: 0
+  <AttachStacktrace>k__BackingField: 1
   <AttachScreenshot>k__BackingField: 1
   <ScreenshotQuality>k__BackingField: 1
   <ScreenshotCompression>k__BackingField: 75
@@ -41,7 +41,7 @@ MonoBehaviour:
   <OnDebugLogAssertion>k__BackingField: 1
   <OnDebugLogError>k__BackingField: 1
   <OnDebugLogException>k__BackingField: 1
-  <AttachBreadcrumbsToEvents>k__BackingField: 1
+  <AttachBreadcrumbsToEvents>k__BackingField: 0
   <BreadcrumbsForLogs>k__BackingField: 1
   <BreadcrumbsForWarnings>k__BackingField: 1
   <BreadcrumbsForAsserts>k__BackingField: 1
