@@ -24,7 +24,7 @@ defaults:
 jobs:
   run:
     name: ${{ inputs.unity-version }} ${{ inputs.ios-version }} ${{ inputs.init-type }}
-    runs-on: macos-13 # Pinning to get the oldest, supported version of iOS simulator
+    runs-on: macos-14 # Pinning to get the oldest, supported version of iOS simulator
     # Map the job outputs to step outputs
     outputs:
       status: ${{ steps.smoke-test.outputs.status }}
@@ -51,7 +51,7 @@ jobs:
         if: ${{ env.IOS_VERSION != 'latest'}}
         uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # pin@v1.6
         with:
-          xcode-version: '14.1' # to run iOS 16.1 we need Xcode 14.1
+          xcode-version: '15.0' # to run iOS 17.0 we need Xcode 15.0
 
       - name: Run iOS Smoke Tests
         id: smoke-test

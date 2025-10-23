@@ -21,6 +21,14 @@ jobs:
           -o -name "*.m"
           | xargs clang-format -i -style=file
 
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore .NET Workload
+        run: dotnet workload restore
+
       - name: Format C# Code Whitespace
         run: dotnet format whitespace Sentry.Unity.sln --exclude src/sentry-dotnet --verbosity diag
 
