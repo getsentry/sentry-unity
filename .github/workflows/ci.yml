@@ -41,6 +41,8 @@ jobs:
             host: ubuntu-latest
           - target: Windows
             host: windows-latest
+          - target: Cocoa
+            host: macos-latest
     uses: ./.github/workflows/sdk.yml
     with:
       target: ${{ matrix.target }}
