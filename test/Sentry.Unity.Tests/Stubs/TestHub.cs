@@ -143,6 +143,11 @@ internal sealed class TestHub : IHub
         throw new NotImplementedException();
     }
 
+    public W3CTraceparentHeader? GetTraceparentHeader()
+    {
+        throw new NotImplementedException();
+    }
+
     public TransactionContext ContinueTrace(string? traceHeader, string? baggageHeader, string? name = null,
         string? operation = null)
     {
