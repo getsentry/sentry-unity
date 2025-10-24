@@ -83,6 +83,7 @@ public sealed class UnityLogHandlerIntegrationTests
     [Test]
     public void ProcessException_ExperimentalCaptureEnabled_CapturesStructuredLog()
     {
+        _fixture.SentryOptions.Experimental.EnableLogs = true;
         _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Exception] = true;
         _fixture.StructuredLogger = new TestStructuredLogger();
         var sut = _fixture.GetSut();
@@ -112,6 +113,7 @@ public sealed class UnityLogHandlerIntegrationTests
     [Test]
     public void LogFormat_WithSentryLogTag_DoesNotCaptureStructuredLog()
     {
+        _fixture.SentryOptions.Experimental.EnableLogs = true;
         _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Error] = true;
         _fixture.StructuredLogger = new TestStructuredLogger();
         var sut = _fixture.GetSut();
@@ -121,6 +123,22 @@ public sealed class UnityLogHandlerIntegrationTests
         LogAssert.Expect(LogType.Error, string.Format(format, UnityLogger.LogTag, message));
 
         sut.LogFormat(LogType.Error, null, format, UnityLogger.LogTag, message);
+
+        Assert.AreEqual(0, _fixture.StructuredLogger.LogCalls.Count);
+    }
+
+    [Test]
+    public void LogFormat_WithEnableLogsFalse_DoesNotCaptureStructuredLog()
+    {
+        _fixture.SentryOptions.Experimental.EnableLogs = false;
+        _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Error] = true;
+        _fixture.StructuredLogger = new TestStructuredLogger();
+        var sut = _fixture.GetSut();
+        var message = TestContext.CurrentContext.Test.Name;
+
+        LogAssert.Expect(LogType.Error, message);
+
+        sut.LogFormat(LogType.Error, null, message);
 
         Assert.AreEqual(0, _fixture.StructuredLogger.LogCalls.Count);
     }
@@ -136,6 +154,7 @@ public sealed class UnityLogHandlerIntegrationTests
     [TestCase(LogType.Assert, "Error", false)]
     public void LogFormat_WithExperimentalFlag_CapturesStructuredLogWhenEnabled(LogType logType, string expectedLevel, bool captureEnabled)
     {
+        _fixture.SentryOptions.Experimental.EnableLogs = true;
         _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[logType] = captureEnabled;
         _fixture.StructuredLogger = new TestStructuredLogger();
         var sut = _fixture.GetSut();

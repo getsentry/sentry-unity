@@ -110,8 +110,8 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
             return;
         }
 
-        // We're not capturing the SDK's own logs
-        if (args.Length > 1 && args[0] is UnityLogger.LogTag)
+        // We're not capturing the SDK's own logs.
+        if (args.Length > 1 && Equals(args[0], UnityLogger.LogTag))
         {
             return;
         }
