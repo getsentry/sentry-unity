@@ -87,16 +87,39 @@ jobs:
         run: |
           apt-get update
           apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
-          set -eo pipefail
-          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
-          echo "/usr/share/dotnet" >> $GITHUB_PATH
         env:
           DEBIAN_FRONTEND: noninteractive
+
+      - name: Install .NET SDK (Linux/Android)
+        if: ${{ runner.os == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          set -eo pipefail
+          DOTNET_VERSION=$(grep -A 1 '"sdk":' global.json | grep '"version":' | sed 's/.*"version": *"\(.*\)".*/\1/')
+          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $DOTNET_VERSION --install-dir /usr/share/dotnet
+          echo "/usr/share/dotnet" >> $GITHUB_PATH
+
+      - name: Install .NET SDK (macOS)
+        if: ${{ runner.os == 'macOS' && steps.cache.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          DOTNET_VERSION=$(grep -A 1 '"sdk":' global.json | grep '"version":' | sed 's/.*"version": *"\(.*\)".*/\1/')
+          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $DOTNET_VERSION --install-dir $HOME/.dotnet
+          echo "$HOME/.dotnet" >> $GITHUB_PATH
+
+      - name: Install .NET SDK (Windows)
+        if: ${{ runner.os == 'Windows' && steps.cache.outputs.cache-hit != 'true' }}
+        shell: pwsh
+        run: |
+          $dotnetVersion = (Get-Content global.json | ConvertFrom-Json).sdk.version
+          Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+          .\dotnet-install.ps1 -Version $dotnetVersion -InstallDir "$env:ProgramFiles\dotnet"
 
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
+          dotnet workload restore
           dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload build logs on failure
