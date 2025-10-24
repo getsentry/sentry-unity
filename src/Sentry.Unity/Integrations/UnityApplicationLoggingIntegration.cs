@@ -75,10 +75,10 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
         return logType switch
         {
-            LogType.Exception => _errorTimeDebounce.Debounced(),
-            LogType.Error or LogType.Assert => _errorTimeDebounce.Debounced(),
-            LogType.Log => _logTimeDebounce.Debounced(),
-            LogType.Warning => _warningTimeDebounce.Debounced(),
+            LogType.Exception => !_errorTimeDebounce.Debounced(),
+            LogType.Error or LogType.Assert => !_errorTimeDebounce.Debounced(),
+            LogType.Log => !_logTimeDebounce.Debounced(),
+            LogType.Warning => !_warningTimeDebounce.Debounced(),
             _ => true
         };
     }
