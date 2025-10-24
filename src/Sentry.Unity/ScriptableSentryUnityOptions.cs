@@ -59,11 +59,11 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
 
     [field: SerializeField] public bool EnableStructuredLogging { get; set; } = false;
-    [field: SerializeField] public bool OnDebugLog { get; set; } = false;
-    [field: SerializeField] public bool OnDebugLogWarning { get; set; } = true;
-    [field: SerializeField] public bool OnDebugLogAssertion { get; set; } = true;
-    [field: SerializeField] public bool OnDebugLogError { get; set; } = true;
-    [field: SerializeField] public bool OnDebugLogException { get; set; } = true;
+    [field: SerializeField] public bool StructuredLogOnDebugLog { get; set; } = false;
+    [field: SerializeField] public bool StructuredLogOnDebugLogWarning { get; set; } = true;
+    [field: SerializeField] public bool StructuredLogOnDebugLogAssertion { get; set; } = true;
+    [field: SerializeField] public bool StructuredLogOnDebugLogError { get; set; } = true;
+    [field: SerializeField] public bool StructuredLogOnDebugLogException { get; set; } = true;
 
     [field: SerializeField] public bool AttachBreadcrumbsToEvents { get; set; } = false;
 
@@ -198,11 +198,11 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 EnableLogs = EnableStructuredLogging,
                 CaptureStructuredLogsForLogType =
                 {
-                    [LogType.Log] = OnDebugLog,
-                    [LogType.Warning] = OnDebugLogWarning,
-                    [LogType.Assert] = OnDebugLogAssertion,
-                    [LogType.Error] = OnDebugLogError,
-                    [LogType.Exception] = OnDebugLogException
+                    [LogType.Log] = StructuredLogOnDebugLog,
+                    [LogType.Warning] = StructuredLogOnDebugLogWarning,
+                    [LogType.Assert] = StructuredLogOnDebugLogAssertion,
+                    [LogType.Error] = StructuredLogOnDebugLogError,
+                    [LogType.Exception] = StructuredLogOnDebugLogException
                 },
                 AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
             }

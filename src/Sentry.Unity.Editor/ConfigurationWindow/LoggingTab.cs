@@ -18,26 +18,26 @@ internal static class LoggingTab
 
             EditorGUI.indentLevel++;
 
-            options.OnDebugLog = EditorGUILayout.Toggle(
+            options.StructuredLogOnDebugLog = EditorGUILayout.Toggle(
                 new GUIContent("Debug.Log",
                     "Whether the SDK should forward Debug.Log messages to Sentry structured logging"),
-                options.OnDebugLog);
-            options.OnDebugLogWarning = EditorGUILayout.Toggle(
+                options.StructuredLogOnDebugLog);
+            options.StructuredLogOnDebugLogWarning = EditorGUILayout.Toggle(
                 new GUIContent("Debug.LogWarning",
                     "Whether the SDK should forward Debug.LogWarning messages to Sentry structured logging"),
-                options.OnDebugLogWarning);
-            options.OnDebugLogAssertion = EditorGUILayout.Toggle(
+                options.StructuredLogOnDebugLogWarning);
+            options.StructuredLogOnDebugLogAssertion = EditorGUILayout.Toggle(
                 new GUIContent("Debug.LogAssertion",
                     "Whether the SDK should forward Debug.LogAssertion messages to Sentry structured logging"),
-                options.OnDebugLogAssertion);
-            options.OnDebugLogError = EditorGUILayout.Toggle(
+                options.StructuredLogOnDebugLogAssertion);
+            options.StructuredLogOnDebugLogError = EditorGUILayout.Toggle(
                 new GUIContent("Debug.LogError",
                     "Whether the SDK should forward Debug.LogError messages to Sentry structured logging"),
-                options.OnDebugLogError);
-            options.OnDebugLogException = EditorGUILayout.Toggle(
+                options.StructuredLogOnDebugLogError);
+            options.StructuredLogOnDebugLogException = EditorGUILayout.Toggle(
                 new GUIContent("Debug.LogException",
                     "Whether the SDK should forward Debug.LogException messages to Sentry structured logging"),
-                options.OnDebugLogException);
+                options.StructuredLogOnDebugLogException);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
