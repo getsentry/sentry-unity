@@ -175,5 +175,78 @@ namespace Sentry.Unity.Tests
 
             Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
         }
+
+        [Test]
+        [TestCase(LogType.Log)]
+        [TestCase(LogType.Warning)]
+        [TestCase(LogType.Error)]
+        public void OnLogMessageReceived_ExperimentalLogsEnabledWithAttachBreadcrumbsFalse_BreadcrumbsNotAdded(LogType unityLogType)
+        {
+            _fixture.SentryOptions.Experimental.EnableLogs = true;
+            _fixture.SentryOptions.Experimental.AttachBreadcrumbsToEvents = false;
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+
+            sut.OnLogMessageReceived(message, string.Empty, unityLogType);
+
+            Assert.AreEqual(0, _fixture.Hub.ConfigureScopeCalls.Count);
+        }
+
+        [Test]
+        [TestCase(LogType.Log)]
+        [TestCase(LogType.Warning)]
+        [TestCase(LogType.Error)]
+        public void OnLogMessageReceived_ExperimentalLogsEnabledWithAttachBreadcrumbsTrue_BreadcrumbsAdded(LogType unityLogType)
+        {
+            _fixture.SentryOptions.Experimental.EnableLogs = true;
+            _fixture.SentryOptions.Experimental.AttachBreadcrumbsToEvents = true;
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+
+            sut.OnLogMessageReceived(message, string.Empty, unityLogType);
+
+            var scope = new Scope(_fixture.SentryOptions);
+            _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
+
+            Assert.AreEqual(message, breadcrumb.Message);
+            Assert.AreEqual("unity.logger", breadcrumb.Category);
+        }
+
+        [Test]
+        [TestCase(LogType.Log)]
+        [TestCase(LogType.Warning)]
+        [TestCase(LogType.Error)]
+        public void OnLogMessageReceived_ExperimentalLogsDisabled_BreadcrumbsAddedAsNormal(LogType unityLogType)
+        {
+            _fixture.SentryOptions.Experimental.EnableLogs = false;
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+
+            sut.OnLogMessageReceived(message, string.Empty, unityLogType);
+
+            var scope = new Scope(_fixture.SentryOptions);
+            _fixture.Hub.ConfigureScopeCalls.Single().Invoke(scope);
+            var breadcrumb = scope.Breadcrumbs.Single();
+
+            Assert.AreEqual(message, breadcrumb.Message);
+            Assert.AreEqual("unity.logger", breadcrumb.Category);
+        }
+
+        [Test]
+        public void OnLogMessageReceived_ExceptionType_NoBreadcrumbAdded()
+        {
+            _fixture.SentryOptions.AddBreadcrumbsForLogType[LogType.Exception] = true;
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+
+            sut.OnLogMessageReceived(message, "stacktrace", LogType.Exception);
+
+            // Exception breadcrumbs are handled by the .NET SDK, not by this integration
+            Assert.AreEqual(0, _fixture.Hub.ConfigureScopeCalls.Count);
+        }
     }
 }

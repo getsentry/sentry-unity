@@ -35,11 +35,17 @@ MonoBehaviour:
   <MaxViewHierarchyRootObjects>k__BackingField: 100
   <MaxViewHierarchyObjectChildCount>k__BackingField: 20
   <MaxViewHierarchyDepth>k__BackingField: 10
+  <EnableStructuredLogging>k__BackingField: 1
+  <StructuredLogOnDebugLog>k__BackingField: 0
+  <StructuredLogOnDebugLogWarning>k__BackingField: 1
+  <StructuredLogOnDebugLogAssertion>k__BackingField: 1
+  <StructuredLogOnDebugLogError>k__BackingField: 1
+  <StructuredLogOnDebugLogException>k__BackingField: 1
+  <AttachBreadcrumbsToEvents>k__BackingField: 0
   <BreadcrumbsForLogs>k__BackingField: 1
   <BreadcrumbsForWarnings>k__BackingField: 1
   <BreadcrumbsForAsserts>k__BackingField: 1
   <BreadcrumbsForErrors>k__BackingField: 1
-  <BreadcrumbsForExceptions>k__BackingField: 1
   <CaptureLogErrorEvents>k__BackingField: 1
   <MaxBreadcrumbs>k__BackingField: 100
   <ReportAssembliesMode>k__BackingField: 1
@@ -51,7 +57,7 @@ MonoBehaviour:
   <SampleRate>k__BackingField: 1
   <ShutdownTimeout>k__BackingField: 2000
   <MaxQueueItems>k__BackingField: 30
-  <AnrDetectionEnabled>k__BackingField: 1
+  <AnrDetectionEnabled>k__BackingField: 0
   <AnrTimeout>k__BackingField: 5000
   <CaptureFailedRequests>k__BackingField: 1
   <FailedRequestStatusCodes>k__BackingField: f401000057020000

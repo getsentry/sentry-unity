@@ -71,7 +71,7 @@ public class BugFarmButtons : MonoBehaviour
             // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
             // Note: That stack traces generated for message events are provided without line numbers. See known limitations
             // https://docs.sentry.io/platforms/unity/troubleshooting/known-limitations/#line-numbers-missing-in-events-captured-through-debuglogerror-or-sentrysdkcapturemessage
-            Debug.LogError("Debug.LogError() called");
+            Debug.LogError("This is a 'Debug.LogError()' message.");
         }
     }
 
