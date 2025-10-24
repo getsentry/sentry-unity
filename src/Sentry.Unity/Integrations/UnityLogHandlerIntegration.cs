@@ -13,14 +13,22 @@ namespace Sentry.Unity.Integrations;
 internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 {
     private readonly IApplication _application;
+    private readonly Func<SentryStructuredLogger>? _loggerFactory;
     private IHub? _hub;
     private SentryUnityOptions _options = null!; // Set during register
     private ILogHandler _unityLogHandler = null!; // Set during register
-    internal SentryStructuredLogger _structuredLogger = null!; // Set during register
+    private SentryStructuredLogger _structuredLogger = null!; // Set during register
 
     public UnityLogHandlerIntegration(IApplication? application = null)
     {
         _application = application ?? ApplicationAdapter.Instance;
+    }
+
+    // For testing: allows injecting a custom logger factory
+    internal UnityLogHandlerIntegration(IApplication? application, Func<SentryStructuredLogger> loggerFactory)
+        : this(application)
+    {
+        _loggerFactory = loggerFactory;
     }
 
     public void Register(IHub hub, SentryOptions sentryOptions)
@@ -28,7 +36,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         _hub = hub;
         // This should never happen, but if it does...
         _options = sentryOptions as SentryUnityOptions ?? throw new InvalidOperationException("Options is not of type 'SentryUnityOptions'.");
-        _structuredLogger = Sentry.SentrySdk.Logger;
+        _structuredLogger = _loggerFactory?.Invoke() ?? Sentry.SentrySdk.Logger;
 
         // If called twice (i.e. init with the same options object) the integration will reference itself as the
         // original handler loghandler and endlessly forward to itself
@@ -97,11 +105,12 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 
     private void ProcessLog(LogType logType, UnityEngine.Object? context, string format, params object[] args)
     {
-        if (_hub?.IsEnabled is not true)
+        if (_hub?.IsEnabled is not true || !_options.Experimental.EnableLogs)
         {
             return;
         }
 
+        // We're not capturing the SDK's own logs
         if (args.Length > 1 && args[0] is UnityLogger.LogTag)
         {
             return;

@@ -16,11 +16,14 @@ public sealed class UnityLogHandlerIntegrationTests
     {
         public TestHub Hub { get; set; } = null!;
         public SentryUnityOptions SentryOptions { get; set; } = null!;
+        public TestStructuredLogger? StructuredLogger { get; set; }
 
         public UnityLogHandlerIntegration GetSut()
         {
             var application = new TestApplication();
-            var integration = new UnityLogHandlerIntegration(application);
+            var integration = StructuredLogger != null
+                ? new UnityLogHandlerIntegration(application, () => StructuredLogger)
+                : new UnityLogHandlerIntegration(application);
             integration.Register(Hub, SentryOptions);
             return integration;
         }
@@ -81,15 +84,14 @@ public sealed class UnityLogHandlerIntegrationTests
     public void ProcessException_ExperimentalCaptureEnabled_CapturesStructuredLog()
     {
         _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Exception] = true;
+        _fixture.StructuredLogger = new TestStructuredLogger();
         var sut = _fixture.GetSut();
-        var testStructuredLogger = new TestStructuredLogger();
-        sut._structuredLogger = testStructuredLogger;
         var message = TestContext.CurrentContext.Test.Name;
 
         sut.ProcessException(new Exception(message), null);
 
-        Assert.AreEqual(1, testStructuredLogger.LogCalls.Count);
-        var logCall = testStructuredLogger.LogCalls.Single();
+        Assert.AreEqual(1, _fixture.StructuredLogger.LogCalls.Count);
+        var logCall = _fixture.StructuredLogger.LogCalls.Single();
         Assert.AreEqual("Error", logCall.level);
         Assert.AreEqual(message, logCall.message);
     }
@@ -98,23 +100,21 @@ public sealed class UnityLogHandlerIntegrationTests
     public void ProcessException_ExperimentalCaptureDisabled_DoesNotCaptureStructuredLog()
     {
         _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Exception] = false;
+        _fixture.StructuredLogger = new TestStructuredLogger();
         var sut = _fixture.GetSut();
-        var testStructuredLogger = new TestStructuredLogger();
-        sut._structuredLogger = testStructuredLogger;
         var message = TestContext.CurrentContext.Test.Name;
 
         sut.ProcessException(new Exception(message), null);
 
-        Assert.AreEqual(0, testStructuredLogger.LogCalls.Count);
+        Assert.AreEqual(0, _fixture.StructuredLogger.LogCalls.Count);
     }
 
     [Test]
     public void LogFormat_WithSentryLogTag_DoesNotCaptureStructuredLog()
     {
         _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Error] = true;
+        _fixture.StructuredLogger = new TestStructuredLogger();
         var sut = _fixture.GetSut();
-        var testStructuredLogger = new TestStructuredLogger();
-        sut._structuredLogger = testStructuredLogger;
 
         const string? format = "{0}: {1}";
         const string? message = "Test message";
@@ -122,7 +122,7 @@ public sealed class UnityLogHandlerIntegrationTests
 
         sut.LogFormat(LogType.Error, null, format, UnityLogger.LogTag, message);
 
-        Assert.AreEqual(0, testStructuredLogger.LogCalls.Count);
+        Assert.AreEqual(0, _fixture.StructuredLogger.LogCalls.Count);
     }
 
     [Test]
@@ -137,9 +137,8 @@ public sealed class UnityLogHandlerIntegrationTests
     public void LogFormat_WithExperimentalFlag_CapturesStructuredLogWhenEnabled(LogType logType, string expectedLevel, bool captureEnabled)
     {
         _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[logType] = captureEnabled;
+        _fixture.StructuredLogger = new TestStructuredLogger();
         var sut = _fixture.GetSut();
-        var testStructuredLogger = new TestStructuredLogger();
-        sut._structuredLogger = testStructuredLogger;
         var message = TestContext.CurrentContext.Test.Name;
 
         LogAssert.Expect(logType, message);
@@ -148,14 +147,14 @@ public sealed class UnityLogHandlerIntegrationTests
 
         if (captureEnabled)
         {
-            Assert.AreEqual(1, testStructuredLogger.LogCalls.Count);
-            var logCall = testStructuredLogger.LogCalls.Single();
+            Assert.AreEqual(1, _fixture.StructuredLogger.LogCalls.Count);
+            var logCall = _fixture.StructuredLogger.LogCalls.Single();
             Assert.AreEqual(expectedLevel, logCall.level);
             Assert.AreEqual(message, logCall.message);
         }
         else
         {
-            Assert.AreEqual(0, testStructuredLogger.LogCalls.Count);
+            Assert.AreEqual(0, _fixture.StructuredLogger.LogCalls.Count);
         }
     }
 }

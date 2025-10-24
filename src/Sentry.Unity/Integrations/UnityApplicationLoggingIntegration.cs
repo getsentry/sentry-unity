@@ -49,7 +49,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        // We're not capturing the SDKs own logs
+        // We're not capturing the SDK's own logs
         if (message.StartsWith(UnityLogger.LogTag))
         {
             return;
