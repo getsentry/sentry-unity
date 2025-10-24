@@ -510,17 +510,26 @@ public enum NativeInitializationType
 /// </remarks>
 public sealed class SentryUnityExperimentalOptions : SentryOptions.SentryExperimentalOptions
 {
-    internal SentryUnityExperimentalOptions() { }
-
-    public bool OnDebugLog { get; set; } = false;
-    public bool OnDebugLogWarning { get; set; } = true;
-    public bool OnDebugLogAssertion { get; set; } = true;
-    public bool OnDebugLogError { get; set; } = true;
-    public bool OnDebugLogException { get; set; } = true;
+    /// <summary>
+    /// Controls whether structured logs should be captured for each Unity log type.
+    /// </summary>
+    public Dictionary<LogType, bool> CaptureStructuredLogsForLogType { get; set; }
 
     /// <summary>
-    /// When set to true, breadcrumbs will be added to the top of the breadcrumb list instead of the bottom.
+    /// When set to true, breadcrumbs will be added on top of structured logging.
     /// Defaults to false.
     /// </summary>
     public bool AttachBreadcrumbsToEvents { get; set; } = false;
+
+    internal SentryUnityExperimentalOptions()
+    {
+        CaptureStructuredLogsForLogType = new Dictionary<LogType, bool>
+        {
+            { LogType.Log, false },
+            { LogType.Warning, true },
+            { LogType.Assert, true },
+            { LogType.Error, true },
+            { LogType.Exception, true }
+        };
+    }
 }

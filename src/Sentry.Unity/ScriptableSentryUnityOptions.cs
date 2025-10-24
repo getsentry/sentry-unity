@@ -196,11 +196,14 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             Experimental = new SentryUnityExperimentalOptions
             {
                 EnableLogs = EnableStructuredLogging,
-                OnDebugLog = OnDebugLog,
-                OnDebugLogWarning = OnDebugLogWarning,
-                OnDebugLogAssertion = OnDebugLogAssertion,
-                OnDebugLogError = OnDebugLogError,
-                OnDebugLogException = OnDebugLogException,
+                CaptureStructuredLogsForLogType =
+                {
+                    [LogType.Log] = OnDebugLog,
+                    [LogType.Warning] = OnDebugLogWarning,
+                    [LogType.Assert] = OnDebugLogAssertion,
+                    [LogType.Error] = OnDebugLogError,
+                    [LogType.Exception] = OnDebugLogException
+                },
                 AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
             }
         };

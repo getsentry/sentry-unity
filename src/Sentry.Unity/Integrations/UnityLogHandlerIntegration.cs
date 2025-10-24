@@ -16,6 +16,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     private IHub? _hub;
     private SentryUnityOptions _options = null!; // Set during register
     private ILogHandler _unityLogHandler = null!; // Set during register
+    internal SentryStructuredLogger _structuredLogger = null!; // Set during register
 
     public UnityLogHandlerIntegration(IApplication? application = null)
     {
@@ -27,6 +28,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         _hub = hub;
         // This should never happen, but if it does...
         _options = sentryOptions as SentryUnityOptions ?? throw new InvalidOperationException("Options is not of type 'SentryUnityOptions'.");
+        _structuredLogger = Sentry.SentrySdk.Logger;
 
         // If called twice (i.e. init with the same options object) the integration will reference itself as the
         // original handler loghandler and endlessly forward to itself
@@ -71,10 +73,10 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
         _ = _hub.CaptureException(exception);
 
-        if (_options.Experimental.OnDebugLogException)
+        if (_options.Experimental.CaptureStructuredLogsForLogType.TryGetValue(LogType.Exception, out var captureException) && captureException)
         {
             _options.LogDebug("Capturing structured log message of type '{0}'.", LogType.Exception);
-            Sentry.SentrySdk.Logger.LogError(exception.Message);
+            _structuredLogger.LogError(exception.Message);
         }
     }
 
@@ -83,7 +85,6 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         try
         {
             ProcessLog(logType, context, format, args);
-            var message = string.Format(format, args);
         }
         finally
         {
@@ -111,35 +112,24 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 
     private void ProcessStructuredLog(LogType logType, string format, params object[] args)
     {
+        if (!_options.Experimental.CaptureStructuredLogsForLogType.TryGetValue(logType, out var captureLog) || !captureLog)
+        {
+            return;
+        }
+
+        _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
+
         switch (logType)
         {
             case LogType.Log:
-                if (_options.Experimental.OnDebugLog)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
-                    Sentry.SentrySdk.Logger.LogInfo(format, args);
-                }
+                _structuredLogger.LogInfo(format, args);
                 break;
             case LogType.Warning:
-                if (_options.Experimental.OnDebugLogWarning)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
-                    Sentry.SentrySdk.Logger.LogWarning(format, args);
-                }
+                _structuredLogger.LogWarning(format, args);
                 break;
             case LogType.Assert:
-                if (_options.Experimental.OnDebugLogAssertion)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
-                    Sentry.SentrySdk.Logger.LogError(format, args);
-                }
-                break;
             case LogType.Error:
-                if (_options.Experimental.OnDebugLogError)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
-                    Sentry.SentrySdk.Logger.LogError(format, args);
-                }
+                _structuredLogger.LogError(format, args);
                 break;
         }
     }
