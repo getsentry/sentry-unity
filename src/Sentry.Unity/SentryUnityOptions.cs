@@ -521,6 +521,20 @@ public sealed class SentryUnityExperimentalOptions : SentryOptions.SentryExperim
     /// </summary>
     public bool AttachBreadcrumbsToEvents { get; set; } = false;
 
+    /// <summary>
+    /// Sets a callback function to be invoked before sending the log to Sentry.
+    /// When the delegate throws an <see cref="Exception"/> during invocation, the log will not be captured.
+    /// </summary>
+    /// <remarks>
+    /// It can be used to modify the log object before being sent to Sentry.
+    /// To prevent the log from being sent to Sentry, return <see langword="null"/>.
+    /// </remarks>
+    /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
+    public new void SetBeforeSendLog(Func<SentryLog, SentryLog?> beforeSendLog)
+    {
+        base.SetBeforeSendLog(beforeSendLog);
+    }
+
     internal SentryUnityExperimentalOptions()
     {
         CaptureStructuredLogsForLogType = new Dictionary<LogType, bool>
