@@ -70,20 +70,19 @@ jobs:
           fi
         shell: bash
 
-      # Temporarily disabled to verify .NET SDK installation works correctly
-      # - name: Restore from cache
-      #   uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
-      #   id: cache
-      #   with:
-      #     # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
-      #     # Output changes only depending on the git sha of the submodules
-      #     # hash of package/package.json for cache busting on release builds (version bump)
-      #     path: |
-      #       package-dev/Plugins
-      #     key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
+      - name: Restore from cache
+        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
+        id: cache
+        with:
+          # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
+          # Output changes only depending on the git sha of the submodules
+          # hash of package/package.json for cache busting on release builds (version bump)
+          path: |
+            package-dev/Plugins
+          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
 
       - name: Installing Linux Dependencies
-        if: ${{ env.TARGET == 'Linux' }}
+        if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
           apt-get update
@@ -92,7 +91,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
 
       - name: Install .NET SDK (Linux/Android)
-        if: ${{ runner.os == 'Linux' }}
+        if: ${{ runner.os == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
           set -eo pipefail
@@ -101,7 +100,7 @@ jobs:
           echo "/usr/share/dotnet" >> $GITHUB_PATH
 
       - name: Install .NET SDK (macOS)
-        if: ${{ runner.os == 'macOS' }}
+        if: ${{ runner.os == 'macOS' && steps.cache.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
           DOTNET_VERSION=$(grep -A 1 '"sdk":' global.json | grep '"version":' | sed 's/.*"version": *"\(.*\)".*/\1/')
@@ -109,7 +108,7 @@ jobs:
           echo "$HOME/.dotnet" >> $GITHUB_PATH
 
       - name: Install .NET SDK (Windows)
-        if: ${{ runner.os == 'Windows' }}
+        if: ${{ runner.os == 'Windows' && steps.cache.outputs.cache-hit != 'true' }}
         shell: pwsh
         run: |
           $dotnetVersion = (Get-Content global.json | ConvertFrom-Json).sdk.version
@@ -117,6 +116,7 @@ jobs:
           .\dotnet-install.ps1 -Version $dotnetVersion -InstallDir "$env:ProgramFiles\dotnet"
 
       - name: Build
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           dotnet workload restore
