@@ -83,17 +83,22 @@ jobs:
       #     key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
 
       - name: Installing Linux Dependencies
-        if: ${{ runner.os == 'Linux' }}
+        if: ${{ env.TARGET == 'Linux' }}
         shell: bash
         run: |
           apt-get update
           apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Install .NET SDK (Linux/Android)
+        if: ${{ runner.os == 'Linux' }}
+        shell: bash
+        run: |
           set -eo pipefail
           DOTNET_VERSION=$(grep -A 1 '"sdk":' global.json | grep '"version":' | sed 's/.*"version": *"\(.*\)".*/\1/')
           curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $DOTNET_VERSION --install-dir /usr/share/dotnet
           echo "/usr/share/dotnet" >> $GITHUB_PATH
-        env:
-          DEBIAN_FRONTEND: noninteractive
 
       - name: Install .NET SDK (macOS)
         if: ${{ runner.os == 'macOS' }}
