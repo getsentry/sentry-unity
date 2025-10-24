@@ -305,8 +305,12 @@ public sealed class SentryUnityOptions : SentryOptions
     internal ISentryUnityInfo UnityInfo { get; private set; }
     internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
 
-    // Hiding the .NET one
-    public new SentryUnityExperimentalOptions Experimental { get; set; }
+    // Delegate to base property to ensure both Unity and base SDK reference the same instance
+    public new SentryUnityExperimentalOptions Experimental
+    {
+        get => (SentryUnityExperimentalOptions)base.Experimental;
+        set => base.Experimental = value;
+    }
 
     public SentryUnityOptions() : this(isBuilding: false) { }
 
@@ -316,13 +320,14 @@ public sealed class SentryUnityOptions : SentryOptions
         ISentryUnityInfo? unityInfo = null,
         bool isBuilding = false)
     {
-        // Initialize with Unity-specific experimental options
-        Experimental = new SentryUnityExperimentalOptions();
         // NOTE: 'SentryPlatformServices.UnityInfo' throws when the UnityInfo has not been set. This should not happen.
         // The PlatformServices are set through the RuntimeLoad attribute in 'SentryInitialization.cs' and are required
         // to be present.
         UnityInfo = unityInfo ?? SentryPlatformServices.UnityInfo;
         PlatformConfiguration = SentryPlatformServices.PlatformConfiguration;
+
+        // Initialize base.Experimental with Unity-specific experimental options
+        base.Experimental = new SentryUnityExperimentalOptions();
 
         application ??= ApplicationAdapter.Instance;
         behaviour ??= SentryMonoBehaviour.Instance;
@@ -343,7 +348,7 @@ public sealed class SentryUnityOptions : SentryOptions
         // UnityLogHandlerIntegration is not compatible with WebGL, so it's added conditionally
         if (application.Platform != RuntimePlatform.WebGLPlayer)
         {
-            AddIntegration(new UnityLogHandlerIntegration(this));
+            AddIntegration(new UnityLogHandlerIntegration());
             AddIntegration(new UnityApplicationLoggingIntegration());
         }
 

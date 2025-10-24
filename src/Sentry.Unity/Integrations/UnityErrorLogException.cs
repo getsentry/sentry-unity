@@ -24,6 +24,7 @@ namespace Sentry.Unity.Integrations
         private readonly IDiagnosticLogger? _logger;
 
         public UnityErrorLogException(string logString, string logStackTrace, SentryOptions? options)
+            : base(logString)
         {
             _logString = logString;
             _logStackTrace = logStackTrace;

@@ -19,7 +19,7 @@ public sealed class UnityLogHandlerIntegrationTests
         public UnityLogHandlerIntegration GetSut()
         {
             var application = new TestApplication();
-            var integration = new UnityLogHandlerIntegration(SentryOptions, application);
+            var integration = new UnityLogHandlerIntegration(application);
             integration.Register(Hub, SentryOptions);
             return integration;
         }
@@ -43,7 +43,7 @@ public sealed class UnityLogHandlerIntegrationTests
         var sut = _fixture.GetSut();
         var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
 
-        sut.CaptureException(new Exception(message), null);
+        sut.ProcessException(new Exception(message), null);
 
         Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
 

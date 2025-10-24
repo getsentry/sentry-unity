@@ -61,7 +61,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        ProcessStructuredLog(message, logType);
         ProcessException(message, stacktrace, logType);
         ProcessError(message, stacktrace, logType);
         ProcessBreadcrumbs(message, logType);
@@ -84,52 +83,10 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         };
     }
 
-    private void ProcessStructuredLog(string message, LogType logType)
-    {
-        switch (logType)
-        {
-            case LogType.Log:
-                if (_options.Experimental.OnDebugLog)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
-                    Sentry.SentrySdk.Logger.LogInfo(message);
-                }
-                break;
-            case LogType.Warning:
-                if (_options.Experimental.OnDebugLogWarning)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
-                    Sentry.SentrySdk.Logger.LogWarning(message);
-                }
-                break;
-            case LogType.Assert:
-                if (_options.Experimental.OnDebugLogAssertion)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
-                    Sentry.SentrySdk.Logger.LogError(message);
-                }
-                break;
-            case LogType.Error:
-                if (_options.Experimental.OnDebugLogError)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
-                    Sentry.SentrySdk.Logger.LogError(message);
-                }
-                break;
-            case LogType.Exception:
-                if (_options.Experimental.OnDebugLogException)
-                {
-                    _options.LogDebug("Capturing structured log message of type '{0}'", logType);
-                    Sentry.SentrySdk.Logger.LogError(message);
-                }
-                break;
-        }
-    }
-
     private void ProcessException(string message, string stacktrace, LogType logType)
     {
         // LogType.Exception is getting handled by the `UnityLogHandlerIntegration`
-        // UNLESS we're configured to handle them - i.e. WebGL
+        // UNLESS we're configured to handle them - i.e. on WebGL
         if (logType is LogType.Exception && _captureExceptions)
         {
             _options.LogDebug("Exception capture has been enabled. Capturing exception through '{0}'.", nameof(UnityApplicationLoggingIntegration));
@@ -146,7 +103,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        _options.LogDebug("Error capture for 'Debug.LogError' has been enabled. Capturing message.");
+        _options.LogDebug("Error capture for 'Debug.LogError' is enabled. Capturing message.");
 
         if (_options.AttachStacktrace && !string.IsNullOrEmpty(stacktrace))
         {
@@ -177,7 +134,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        // Capture so the next event includes this as breadcrumb
         if (_options.AddBreadcrumbsForLogType.TryGetValue(logType, out var value) && value)
         {
             _options.LogDebug("Adding breadcrumb for log message of type: {0}", logType);
