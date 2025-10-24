@@ -70,31 +70,48 @@ jobs:
           fi
         shell: bash
 
-      - name: Restore from cache
-        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
-        id: cache
-        with:
-          # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
-          # Output changes only depending on the git sha of the submodules
-          # hash of package/package.json for cache busting on release builds (version bump)
-          path: |
-            package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
+      # Temporarily disabled to verify .NET SDK installation works correctly
+      # - name: Restore from cache
+      #   uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
+      #   id: cache
+      #   with:
+      #     # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
+      #     # Output changes only depending on the git sha of the submodules
+      #     # hash of package/package.json for cache busting on release builds (version bump)
+      #     path: |
+      #       package-dev/Plugins
+      #     key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
 
       - name: Installing Linux Dependencies
-        if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ env.TARGET == 'Linux' }}
         shell: bash
         run: |
           apt-get update
           apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
           set -eo pipefail
-          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+          DOTNET_VERSION=$(grep -A 1 '"sdk":' global.json | grep '"version":' | sed 's/.*"version": *"\(.*\)".*/\1/')
+          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $DOTNET_VERSION --install-dir /usr/share/dotnet
           echo "/usr/share/dotnet" >> $GITHUB_PATH
         env:
           DEBIAN_FRONTEND: noninteractive
 
+      - name: Install .NET SDK (macOS)
+        if: ${{ runner.os == 'macOS' }}
+        shell: bash
+        run: |
+          DOTNET_VERSION=$(grep -A 1 '"sdk":' global.json | grep '"version":' | sed 's/.*"version": *"\(.*\)".*/\1/')
+          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $DOTNET_VERSION --install-dir $HOME/.dotnet
+          echo "$HOME/.dotnet" >> $GITHUB_PATH
+
+      - name: Install .NET SDK (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: |
+          $dotnetVersion = (Get-Content global.json | ConvertFrom-Json).sdk.version
+          Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+          .\dotnet-install.ps1 -Version $dotnetVersion -InstallDir "$env:ProgramFiles\dotnet"
+
       - name: Build
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
           dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
