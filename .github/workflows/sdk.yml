@@ -116,6 +116,9 @@ jobs:
           Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
           .\dotnet-install.ps1 -Version $dotnetVersion -InstallDir "$env:ProgramFiles\dotnet"
 
+      - name: Restore .NET workloads
+        run: dotnet workload restore
+
       - name: Build
         run: |
           git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
