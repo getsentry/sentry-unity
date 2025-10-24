@@ -83,7 +83,7 @@ jobs:
       #     key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
 
       - name: Installing Linux Dependencies
-        if: ${{ env.TARGET == 'Linux' }}
+        if: ${{ runner.os == 'Linux' }}
         shell: bash
         run: |
           apt-get update
