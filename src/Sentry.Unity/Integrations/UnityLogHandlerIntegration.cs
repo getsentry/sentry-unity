@@ -35,8 +35,8 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     {
         _hub = hub;
         // This should never happen, but if it does...
-        _options = sentryOptions as SentryUnityOptions ?? throw new InvalidOperationException("Options is not of type 'SentryUnityOptions'.");
-        _structuredLogger = _loggerFactory?.Invoke() ?? Sentry.SentrySdk.Logger;
+        _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+        _structuredLogger = _loggerFactory?.Invoke() ?? _hub.Logger;
 
         // If called twice (i.e. init with the same options object) the integration will reference itself as the
         // original handler loghandler and endlessly forward to itself
