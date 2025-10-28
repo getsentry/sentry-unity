@@ -183,7 +183,7 @@ public class SmokeTester : MonoBehaviour
         currentMessage++; // The exception event
 
         t.ExpectMessage(currentMessage, "'type':'event'");
-        t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}");
+        t.ExpectMessage(currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'fatal'}");
         t.ExpectMessage(currentMessage, "'message':'scope-crumb'}");
         t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}");
         t.ExpectMessage(currentMessage, "'tag-key':'tag-value'");
@@ -260,7 +260,7 @@ public class SmokeTester : MonoBehaviour
 
     private static void AddContext()
     {
-        SentrySdk.AddBreadcrumb("crumb", "bread", "error", new Dictionary<string, string>() { { "foo", "bar" } }, BreadcrumbLevel.Critical);
+        SentrySdk.AddBreadcrumb("crumb", "bread", "error", new Dictionary<string, string>() { { "foo", "bar" } }, BreadcrumbLevel.Fatal);
         SentrySdk.ConfigureScope((Scope scope) =>
         {
             scope.SetExtra("extra-key", 42);
