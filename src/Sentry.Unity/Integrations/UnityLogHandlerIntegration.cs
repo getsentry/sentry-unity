@@ -12,21 +12,14 @@ namespace Sentry.Unity.Integrations;
 /// </summary>
 internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 {
-    private readonly IApplication _application;
     private readonly Func<SentryStructuredLogger>? _loggerFactory;
     private IHub? _hub;
     private SentryUnityOptions _options = null!; // Set during register
     private ILogHandler _unityLogHandler = null!; // Set during register
     private SentryStructuredLogger _structuredLogger = null!; // Set during register
 
-    public UnityLogHandlerIntegration(IApplication? application = null)
-    {
-        _application = application ?? ApplicationAdapter.Instance;
-    }
-
     // For testing: allows injecting a custom logger factory
-    internal UnityLogHandlerIntegration(IApplication? application, Func<SentryStructuredLogger> loggerFactory)
-        : this(application)
+    internal UnityLogHandlerIntegration(Func<SentryStructuredLogger>? loggerFactory = null)
     {
         _loggerFactory = loggerFactory;
     }
@@ -48,8 +41,6 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 
         _unityLogHandler = Debug.unityLogger.logHandler;
         Debug.unityLogger.logHandler = this;
-
-        _application.Quitting += OnQuitting;
     }
 
     public void LogException(Exception exception, UnityEngine.Object context)
@@ -142,7 +133,4 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
                 break;
         }
     }
-
-    private void OnQuitting()
-        => _options.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
 }
