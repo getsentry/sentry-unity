@@ -35,8 +35,8 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     {
         _hub = hub;
         // This should never happen, but if it does...
-        _options = sentryOptions as SentryUnityOptions ?? throw new InvalidOperationException("Options is not of type 'SentryUnityOptions'.");
-        _structuredLogger = _loggerFactory?.Invoke() ?? Sentry.SentrySdk.Logger;
+        _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+        _structuredLogger = _loggerFactory?.Invoke() ?? _hub.Logger;
 
         // If called twice (i.e. init with the same options object) the integration will reference itself as the
         // original handler loghandler and endlessly forward to itself
@@ -144,21 +144,5 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     }
 
     private void OnQuitting()
-    {
-        _options.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
-
-        // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
-        //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
-        // Note: On Windows Store Apps and Windows Phone 8.1 there is no application quit event. Consider using OnApplicationFocus event when focusStatus equals false.
-        // Note: On WebGL it is not possible to implement OnApplicationQuit due to nature of the browser tabs closing.
-
-        // 'OnQuitting' is invoked even when an uncaught exception happens in the ART. To make sure the .NET
-        // SDK checks with the native layer on restart if the previous run crashed (through the CrashedLastRun callback)
-        // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.
-        if (_options.AutoSessionTracking)
-        {
-            _hub?.PauseSession();
-        }
-        _hub?.FlushAsync(_options.ShutdownTimeout).GetAwaiter().GetResult();
-    }
+        => _options.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
 }

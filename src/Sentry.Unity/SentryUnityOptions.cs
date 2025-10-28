@@ -358,7 +358,7 @@ public sealed class SentryUnityOptions : SentryOptions
         AddIntegration(new UnityBeforeSceneLoadIntegration());
         AddIntegration(new SceneManagerIntegration());
         AddIntegration(new SceneManagerTracingIntegration());
-        AddIntegration(new SessionIntegration(behaviour));
+        AddIntegration(new LifeCycleIntegration(behaviour));
         AddIntegration(new TraceGenerationIntegration(behaviour));
 
         AddExceptionFilter(new UnityBadGatewayExceptionFilter());

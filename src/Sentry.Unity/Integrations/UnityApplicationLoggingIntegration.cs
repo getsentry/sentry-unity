@@ -32,7 +32,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     {
         _hub = hub;
         // This should never throw
-        _options = sentryOptions as SentryUnityOptions ?? throw new InvalidOperationException("Options passed is not of type SentryUnityOptions");
+        _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options passed is not of type SentryUnityOptions");
 
         _logTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
         _warningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
