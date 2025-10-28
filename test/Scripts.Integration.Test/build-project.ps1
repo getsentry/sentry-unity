@@ -16,7 +16,7 @@ $unityPath = FormatUnityPath $UnityPath
 $buildMethod = BuildMethodFor $Platform
 $outputPath = "$(GetNewProjectBuildPath)/$(GetTestAppName $buildMethod)"
 
-Write-Host "Executing ${buildMethod}:"
+Write-Log "Executing ${buildMethod}:"
 $unityArgs = @("-batchmode", "-projectPath ", "$(GetNewProjectPath)", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
 
 if ($CheckSymbols)
@@ -36,5 +36,5 @@ if ($Platform -eq "Android-Export")
     Copy-Item -Force -Recurse "$IntegrationScriptsPath/gradle/$gradleVersion/*" -Destination $outputPath
 }
 
-Write-Host "Project built successfully" -ForegroundColor Green
+Write-Log "Project built successfully" -ForegroundColor Green
 Get-ChildItem $(GetNewProjectBuildPath)

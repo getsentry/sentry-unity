@@ -4,6 +4,28 @@
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 
+function Write-Log
+{
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string]$Message,
+        [string]$ForegroundColor = "White",
+        [switch]$NoNewline
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    $output = "$timestamp | $Message"
+
+    if ($NoNewline)
+    {
+        Write-Host $output -ForegroundColor $ForegroundColor -NoNewline
+    }
+    else
+    {
+        Write-Host $output -ForegroundColor $ForegroundColor
+    }
+}
+
 function RunApiServer([string] $ServerScript, [string] $Uri)
 {
     if ([string]::IsNullOrEmpty($Uri))
@@ -12,7 +34,7 @@ function RunApiServer([string] $ServerScript, [string] $Uri)
     }
 
     $result = "" | Select-Object -Property process, outFile, errFile, stop, output, dispose
-    Write-Host "Starting the $ServerScript on $Uri"
+    Write-Log "Starting the $ServerScript on $Uri"
     $result.outFile = New-TemporaryFile
     $result.errFile = New-TemporaryFile
 
@@ -41,14 +63,14 @@ function RunApiServer([string] $ServerScript, [string] $Uri)
 
     $result.stop = {
         # Stop the HTTP server
-        Write-Host "Stopping the $ServerScript ... " -NoNewline
+        Write-Log "Stopping the $ServerScript ... " -NoNewline
         try
         {
             Write-Host (Invoke-WebRequest -Uri "$Uri/STOP").StatusDescription
         }
         catch
         {
-            Write-Host "/STOP request failed: $_ - killing the server process instead"
+            Write-Log "/STOP request failed: $_ - killing the server process instead"
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
@@ -59,10 +81,10 @@ function RunApiServer([string] $ServerScript, [string] $Uri)
     Start-Sleep -Second 1
     if ($result.process.HasExited)
     {
-        Write-Host "Couldn't start the $ServerScript" -ForegroundColor Red
-        Write-Host "Standard Output:" -ForegroundColor Yellow
+        Write-Log "Couldn't start the $ServerScript" -ForegroundColor Red
+        Write-Log "Standard Output:" -ForegroundColor Yellow
         Get-Content $result.outFile
-        Write-Host "Standard Error:" -ForegroundColor Yellow
+        Write-Log "Standard Error:" -ForegroundColor Yellow
         Get-Content $result.errFile
         Remove-Item $result.outFile
         Remove-Item $result.errFile
@@ -79,7 +101,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         throw "SuccessString cannot be empty"
     }
 
-    Write-Host "Running crash test with server" -ForegroundColor Yellow
+    Write-Log "Running crash test with server" -ForegroundColor Yellow
 
     # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
     if ($null -eq $env:CI)
@@ -97,7 +119,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
     {
         if ($run -ne 1)
         {
-            Write-Host "Sleeping for $run seconds before the next retry..."
+            Write-Log "Sleeping for $run seconds before the next retry..."
             Start-Sleep -Seconds $run
         }
 
@@ -127,7 +149,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         # evaluate the result
         for ($i = $timeout; $i -gt 0; $i--)
         {
-            Write-Host "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
+            Write-Log "Waiting for the expected message to appear in the server output logs; $i seconds remaining..."
             if ("$($httpServer.output.Invoke())".Contains($SuccessString))
             {
                 break
@@ -136,13 +158,13 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         }
 
         $output = $httpServer.dispose.Invoke()
-        Write-Host "Looking for the SuccessString ($SuccessString) in the server output..."
+        Write-Log "Looking for the SuccessString ($SuccessString) in the server output..."
         if ("$output".Contains($SuccessString))
         {
-            Write-Host "crash test $run/$runs : PASSED" -ForegroundColor Green
+            Write-Log "crash test $run/$runs : PASSED" -ForegroundColor Green
             break
         }
-        Write-Host "SuccessString ($SuccessString) not found..." -ForegroundColor Red
+        Write-Log "SuccessString ($SuccessString) not found..." -ForegroundColor Red
         if ($run -eq $runs)
         {
             throw "crash test $run/$runs : FAILED"
@@ -183,7 +205,7 @@ function RunWithSymbolServer([ScriptBlock] $Callback)
 
 function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOutput, [string] $unityVersion)
 {
-    Write-Host "Checking symbol server output" -ForegroundColor Yellow
+    Write-Log "Checking symbol server output" -ForegroundColor Yellow
 
     # Server stats contains:
     # filename
@@ -296,7 +318,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('WebGL'))
     {
-        Write-Host 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
+        Write-Log 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
         return
     }
     Else
@@ -304,7 +326,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         Throw "Cannot CheckSymbolServerOutput() for an unknown buildMethod: '$buildMethod'"
     }
 
-    Write-Host 'Verifying debug symbol upload...'
+    Write-Log 'Verifying debug symbol upload...'
     $successful = $true
     :nextExpectedFile foreach ($file in $expectedFiles)
     {
@@ -314,7 +336,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             # It's enough if a single symbol alternative is found
             if ($symbolServerOutput -match "  $([Regex]::Escape($file))\b")
             {
-                Write-Host "  $file - OK"
+                Write-Log "  $file - OK"
                 continue nextExpectedFile
             }
         }
@@ -328,11 +350,11 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
             $successful = $false
         }
 
-        Write-Host "  $alternatives - MISSING `n    Server received '$actualCount' instead." -ForegroundColor Red
+        Write-Log "  $alternatives - MISSING `n    Server received '$actualCount' instead." -ForegroundColor Red
     }
     if ($successful)
     {
-        Write-Host 'All expected debug symbols have been uploaded' -ForegroundColor Green
+        Write-Log 'All expected debug symbols have been uploaded' -ForegroundColor Green
     }
     else
     {
@@ -346,7 +368,7 @@ function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $succes
     $lineWithSuccess = $stdout | Select-String $successMessage
     If ($null -ne $lineWithSuccess)
     {
-        Write-Host "`n$name | SUCCESS because the following text was found: '$lineWithSuccess'" -ForegroundColor Green
+        Write-Log "`n$name | SUCCESS because the following text was found: '$lineWithSuccess'" -ForegroundColor Green
     }
     Else
     {
@@ -358,8 +380,8 @@ function MakeExecutable([string] $file)
 {
     If ((Test-Path -Path $file) -and (Get-Command 'chmod' -ErrorAction SilentlyContinue))
     {
-        Write-Host -NoNewline "Fixing permission for $file : "
+        Write-Log -NoNewline "Fixing permission for $file : "
         chmod +x $file
-        Write-Host "OK" -ForegroundColor Green
+        Write-Log "OK" -ForegroundColor Green
     }
 }

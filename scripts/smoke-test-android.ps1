@@ -99,17 +99,17 @@ function PidOf([string] $deviceId, [string] $processName)
             return $processId
         }
 
-        Write-Host "Process '$processName' not found, retrying in 2 seconds..."
+        Write-Log "Process '$processName' not found, retrying in 2 seconds..."
         Start-Sleep -Seconds 2
     }
 
-    Write-Host "Could not find PID for process '$processName' after 60 seconds" -ForegroundColor Red
+    Write-Log "Could not find PID for process '$processName' after 60 seconds" -ForegroundColor Red
     return $null
 }
 
 function OnError([string] $deviceId, [string] $deviceApi, [string] $appPID)
 {
-    Write-Host "Dumping logs for $device"
+    Write-Log "Dumping logs for $device"
     Write-Host "::group::logcat"
     LogCat $deviceId $appPID
     Write-Host "::endgroup::"
@@ -140,7 +140,7 @@ If ($DeviceCount -eq 0)
 }
 Else
 {
-    Write-Host "Found $DeviceCount devices: $DeviceList"
+    Write-Log "Found $DeviceCount devices: $DeviceList"
 }
 
 # Check if APK was built.
@@ -159,13 +159,13 @@ adb -s $device logcat -c
 
 $deviceApi = "$(adb -s $device shell getprop ro.build.version.sdk)".Trim()
 $deviceSdk = "$(adb -s $device shell getprop ro.build.version.release)".Trim()
-Write-Host "`nChecking device $device with SDK '$deviceSdk' and API '$deviceApi'"
+Write-Log "`nChecking device $device with SDK '$deviceSdk' and API '$deviceApi'"
 
 # Uninstall previous installation
 $stdout = adb -s $device shell "pm list packages -f"
 if ($null -ne ($stdout | Select-String $ProcessName))
 {
-    Write-Host "Uninstalling previous $ProcessName."
+    Write-Log "Uninstalling previous $ProcessName."
     $stdout = adb -s $device uninstall $ProcessName
 }
 
@@ -176,7 +176,7 @@ $stdout = adb -s $device shell input keyevent KEYCODE_HOME
 $adbInstallRetry = 5
 do
 {
-    Write-Host "Installing test app"
+    Write-Log "Installing test app"
     $stdout = (adb -s $device install -r $BuildDir/$ApkFileName 2>&1)
 
     if ($stdout.Contains("Broken pipe"))
@@ -190,7 +190,7 @@ do
 # Validate the installation
 If ($stdout -contains "Success")
 {
-    Write-Host "Successfully installed APK"
+    Write-Log "Successfully installed APK"
 }
 else 
 {
@@ -218,18 +218,18 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 {
     Write-Host "::group::Test: '$name'"
 
-    Write-Host "Clearing logcat from '$device'"
+    Write-Log "Clearing logcat from '$device'"
     adb -s $device logcat -c
 
     $activityName = $TestActivityName
 
-    Write-Host "Setting configuration"
+    Write-Log "Setting configuration"
 
     # Mark the full-screen notification as acknowledged
     adb -s $device shell "settings put secure immersive_mode_confirmations confirmed"
     adb -s $device shell "input keyevent KEYCODE_HOME"
 
-    Write-Host "Starting app '$activityName'"
+    Write-Log "Starting app '$activityName'"
 
     # Start the adb command as a background job so we can wait for it to finish with a timeout
     $job = Start-Job -ScriptBlock {
@@ -242,44 +242,44 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     if ($null -eq $completed) {
         Stop-Job $job
         Remove-Job $job -Force
-        Write-Host "Activity start timed out after 60 seconds"
+        Write-Log "Activity start timed out after 60 seconds"
         return $false
     }
 
     $output = Receive-Job $job
     Remove-Job $job
-    
-    Write-Host "Checking if activity started"
+
+    Write-Log "Checking if activity started"
 
     # Check if the activity failed to start
     if ($output -match "Error type 3" -or $output -match "Activity class \{$activityName\} does not exist.")
     {
         $activityName = $FallBackTestActivityName
-        Write-Host "Trying fallback activity $activityName"
+        Write-Log "Trying fallback activity $activityName"
 
         $output = & adb -s $device shell am start -n $activityName -e test $Name -W 2>&1
-        
+
         # Check if the fallback activity failed to start
         if ($output -match "Error type 3" -or $output -match "Activity class \{$activityName\} does not exist.")
         {
-            Write-Host "Activity does not exist"
+            Write-Log "Activity does not exist"
             return $false
         }
     }
-    
-    Write-Host "Activity started successfully"
+
+    Write-Log "Activity started successfully"
 
     $appPID = PidOf $device $ProcessName
     if ($null -eq $appPID)
     {
         Write-Host "::endgroup::"
-        Write-Host "Retrieving process ID failed. Skipping test." -ForegroundColor Red
+        Write-Log "Retrieving process ID failed. Skipping test." -ForegroundColor Red
         return $false
     }
 
-    Write-Host "Retrieved ID for '$ProcessName': $appPID"
+    Write-Log "Retrieved ID for '$ProcessName': $appPID"
 
-    Write-Host "Waiting for tests to run..."
+    Write-Log "Waiting for tests to run..."
     
     $processFinished = $false
     $logCache = @()
@@ -297,7 +297,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         # For crash tests, we're checking for `sentry-native` logging "crash has been captured" to reliably inform when tests finished running.
         if (($newLogs | Select-String "SmokeTester is quitting.") -or ($newLogs | Select-String "crash has been captured"))
         {
-            Write-Host "Process finished marker detected. Finish waiting for tests to run."
+            Write-Log "Process finished marker detected. Finish waiting for tests to run."
             $processFinished = $true
             break
         }
@@ -307,11 +307,11 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     if ($processFinished)
     {
-        Write-Host "'$Name' test finished running."
+        Write-Log "'$Name' test finished running."
     }
     else
-    {   
-        Write-Host "'$Name' tests timed out. See logcat for more details."
+    {
+        Write-Log "'$Name' tests timed out. See logcat for more details."
     }
 
     Write-Host "::endgroup::"
@@ -320,7 +320,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     $logCache = ProcessNewLogs -newLogs $newLogs -lastLogCount ([ref]$lastLogCount) -logCache $logCache
 
     Write-Host "::group::logcat"
-    $logCache | ForEach-Object { Write-Host $_ } 
+    $logCache | ForEach-Object { Write-Host $_ }
     Write-Host "::endgroup::"
 
     $lineWithSuccess = $logCache | Select-String $SuccessString
@@ -328,16 +328,16 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     if ($null -ne $lineWithSuccess)
     {
-        Write-Host "'$Name' test passed." -ForegroundColor Green
+        Write-Log "'$Name' test passed." -ForegroundColor Green
         return $true
     }
     elseif ($null -ne $lineWithFailure)
     {
-        Write-Host "'$Name' test failed. See logcat for more details." -ForegroundColor Red
+        Write-Log "'$Name' test failed. See logcat for more details." -ForegroundColor Red
         return $false
     }
-    
-    Write-Host "'$Name' test execution failed." -ForegroundColor Red
+
+    Write-Log "'$Name' test execution failed." -ForegroundColor Red
     return $false
 }
 
@@ -347,29 +347,29 @@ function RunTestWithRetry([string] $Name, [string] $SuccessString, [string] $Fai
     {
         if ($retryCount -gt 0)
         {
-            Write-Host "Retry attempt $retryCount for test '$Name'"
+            Write-Log "Retry attempt $retryCount for test '$Name'"
             Start-Sleep -Seconds 2  # Brief pause between retries
         }
 
-        Write-Host "Running test attempt $($retryCount + 1)/$MaxRetries"
+        Write-Log "Running test attempt $($retryCount + 1)/$MaxRetries"
         $result = RunTest -Name $Name -SuccessString $SuccessString -FailureString $FailureString
-        
+
         if ($result)
         {
-            Write-Host "'$Name' test passed on attempt $($retryCount + 1)." -ForegroundColor Green
+            Write-Log "'$Name' test passed on attempt $($retryCount + 1)." -ForegroundColor Green
             return $true
         }
-        
+
         if ($retryCount + 1 -lt $MaxRetries)
         {
-            Write-Host "'$Name' test failed. Retrying..." -ForegroundColor Yellow
+            Write-Log "'$Name' test failed. Retrying..." -ForegroundColor Yellow
             continue
         }
-        
-        Write-Host "'$Name' test failed after $MaxRetries attempts." -ForegroundColor Red
+
+        Write-Log "'$Name' test failed after $MaxRetries attempts." -ForegroundColor Red
         return $false
     }
-    
+
     return $false
 }
 
@@ -392,35 +392,35 @@ try
 }
 catch
 {
-    Write-Host "Caught exception: $_"
-    Write-Host $_.ScriptStackTrace
+    Write-Log "Caught exception: $_"
+    Write-Log $_.ScriptStackTrace
     OnError $device $deviceApi
     exit 1
 }
 
 $failed = $false
 
-if (-not $results.smoketestPassed) 
+if (-not $results.smoketestPassed)
 {
-    Write-Host "Smoke test failed"
+    Write-Log "Smoke test failed"
     $failed = $true
 }
 
 if (-not $results.hasntCrashedTestPassed)
 {
-    Write-Host "HasntCrashed test failed" 
+    Write-Log "HasntCrashed test failed"
     $failed = $true
 }
 
 if (-not $results.crashTestPassed)
 {
-    Write-Host "Crash test failed"
+    Write-Log "Crash test failed"
     $failed = $true
 }
 
 if (-not $results.hasCrashTestPassed)
 {
-    Write-Host "HasCrashed test failed"
+    Write-Log "HasCrashed test failed"
     $failed = $true
 }
 
@@ -429,5 +429,5 @@ if ($failed)
     exit 1
 }
 
-Write-Host "All tests passed" -ForegroundColor Green
+Write-Log "All tests passed" -ForegroundColor Green
 exit 0

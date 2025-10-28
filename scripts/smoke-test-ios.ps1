@@ -6,7 +6,6 @@ param (
     [string] $UnityVersion = "",
     [string] $iOSMinVersion = ""
 )
-Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIntegrationTest=$IsIntegrationTest"
 # $Action: 'Build' for build only
 #          'Test' for Smoke test only
 #          null for building and testing
@@ -17,6 +16,8 @@ Write-Host "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIn
 #          '0' or empty will run on 1 device, otherwise on the specified amount.
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
+
+Write-Log "Args received Action=$Action, SelectedRuntime=$SelectedRuntime, IsIntegrationTest=$IsIntegrationTest"
 
 $ProjectName = "Unity-iPhone"
 $XcodeArtifactPath = "samples/IntegrationTest/Build"
@@ -86,7 +87,7 @@ function Build()
 
 function Test
 {
-    Write-Host "Retrieving list of available simulators" -ForegroundColor Green
+    Write-Log "Retrieving list of available simulators" -ForegroundColor Green
     $deviceListRaw = xcrun simctl list devices
     Write-Host "::group::Available simulators:"
     $deviceListRaw | Write-Host
@@ -94,8 +95,8 @@ function Test
     
     [AppleDevice[]]$deviceList = @()
 
-    Write-Host "Picking simulator based on selected runtime" -ForegroundColor Green
-    
+    Write-Log "Picking simulator based on selected runtime" -ForegroundColor Green
+
     # Find the index of the selected runtime
     $runtimeIndex = ($deviceListRaw | Select-String "-- $SelectedRuntime --").LineNumber
     If ($null -eq $runtimeIndex)
@@ -130,25 +131,25 @@ function Test
     {
         If ($devicesRan -ge $DevicesToRun)
         {
-            # Write-Host "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+            # Write-Log "Skipping Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
             $device.TestSkipped = $true
             continue
         }
         $devicesRan++
-        Write-Host "Starting Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
+        Write-Log "Starting Simulator $($device.Name) UUID $($device.UUID)" -ForegroundColor Green
         xcrun simctl boot $($device.UUID)
-        Write-Host -NoNewline "Installing Smoke Test on $($device.Name): "
+        Write-Log -NoNewline "Installing Smoke Test on $($device.Name): "
         If (!(Test-Path $AppPath))
         {
             Write-Error "App doesn't exist at the expected path $AppPath. Did you forget to run Build first?"
         }
         xcrun simctl install $($device.UUID) "$AppPath"
-        Write-Host "OK" -ForegroundColor Green
+        Write-Log "OK" -ForegroundColor Green
 
         function RunTest([string] $Name, [string] $SuccessString)
         {
-            Write-Host "Test: '$name'"
-            Write-Host "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
+            Write-Log "Test: '$name'"
+            Write-Log "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
             $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
 
             if ("$SuccessString" -eq "")
@@ -156,16 +157,16 @@ function Test
                 $SuccessString = "$($Name.ToUpper()) TEST: PASS"
             }
 
-            Write-Host -NoNewline "'$Name' test STATUS: "
+            Write-Log -NoNewline "'$Name' test STATUS: "
             $stdout = $consoleOut  | Select-String $SuccessString
             If ($null -ne $stdout)
             {
-                Write-Host "PASSED" -ForegroundColor Green
+                Write-Log "PASSED" -ForegroundColor Green
             }
             Else
             {
                 $device.TestFailed = $True
-                Write-Host "FAILED" -ForegroundColor Red
+                Write-Log "FAILED" -ForegroundColor Red
             }
 
             Write-Host "::group::$($device.Name) Console Output"
@@ -198,36 +199,36 @@ function Test
             throw;
         }
 
-        Write-Host -NoNewline "Removing Smoke Test from $($device.Name): "
+        Write-Log -NoNewline "Removing Smoke Test from $($device.Name): "
         xcrun simctl uninstall $($device.UUID) $AppName
-        Write-Host "OK" -ForegroundColor Green
+        Write-Log "OK" -ForegroundColor Green
 
-        Write-Host -NoNewline "Requesting shutdown for $($device.Name): "
+        Write-Log -NoNewline "Requesting shutdown for $($device.Name): "
         # Do not wait for the Simulator to close and continue testing the other simulators.
         Start-Process xcrun -ArgumentList "simctl shutdown `"$($device.UUID)`""
-        Write-Host "OK" -ForegroundColor Green
+        Write-Log "OK" -ForegroundColor Green
     }
 
     $testFailed = $false
-    Write-Host "Test result"
+    Write-Log "Test result"
     foreach ($device in $deviceList)
     {
-        Write-Host -NoNewline "$($device.Name) UUID $($device.UUID): "
+        Write-Log -NoNewline "$($device.Name) UUID $($device.UUID): "
         If ($device.TestFailed)
         {
-            Write-Host "FAILED" -ForegroundColor Red
+            Write-Log "FAILED" -ForegroundColor Red
             $testFailed = $true
         }
         ElseIf ($device.TestSkipped)
         {
-            Write-Host "SKIPPED" -ForegroundColor Gray
+            Write-Log "SKIPPED" -ForegroundColor Gray
         }
         Else
         {
-            Write-Host "PASSED" -ForegroundColor Green
+            Write-Log "PASSED" -ForegroundColor Green
         }
     }
-    Write-Host "End of test."
+    Write-Log "End of test."
 
     If ($testFailed -eq $true)
     {
@@ -245,14 +246,14 @@ function LatestRuntime
         Throw "Last runtime was not found, result: $result"
     }
     $lastRuntimeParsed = $result.Groups["runtime"].Value
-    Write-Host "Using latest runtime = $lastRuntimeParsed"
+    Write-Log "Using latest runtime = $lastRuntimeParsed"
     return $lastRuntimeParsed
 }
 
 # MAIN
 If (-not $IsMacOS)
 {
-    Write-Host "This script should only be run on a MacOS." -ForegroundColor Yellow
+    Write-Log "This script should only be run on a MacOS." -ForegroundColor Yellow
 }
 If ($null -eq $action -Or $action -eq "Build")
 {
