@@ -6,6 +6,10 @@
 
 - `sentry-native` is now built on Ubuntu 22.04 instead of Ubuntu 20.04, which reached EOL in May 2025. If you are running you game on a server on Ubuntu 20.04, you should update the OS before upgrading to this SDK version. ([#2355](https://github.com/getsentry/sentry-unity/pull/2355))
 
+### Behavioural Changes
+
+- The SDK no longer refreshes the trace ID when the app loses and regains focus. This means that the trace ID persists from game start to game end. The SDK now also automatically adds breadcrumbs on those lifecycle events. ([#2374](https://github.com/getsentry/sentry-unity/pull/2374))
+
 ### Features
 
 - Added support for Structured Logging. The `SentrySdk.Logger` API is now exposed for Unity users, enabling structured log capture. The SDK can also automatically capture and send Debug logs based on the options configured. ([#2368](https://github.com/getsentry/sentry-unity/pull/2368))
