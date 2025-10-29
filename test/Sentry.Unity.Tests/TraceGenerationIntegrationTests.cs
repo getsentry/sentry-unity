@@ -67,7 +67,7 @@ public class TraceGenerationIntegrationTests
         // Assert
         Assert.IsEmpty(_fixture.TestHub.ConfigureScopeCalls);
     }
-    
+
     [TestCase(0.0f, false)]
     [TestCase(0.0f, true)]
     [TestCase(1.0f, false)]
