@@ -58,6 +58,9 @@ public sealed class UnityLogHandlerIntegrationTests
 
         Assert.IsTrue(capturedEvent.Exception!.Data.Contains(Mechanism.MechanismKey));
         Assert.AreEqual("Unity.LogException", (string)capturedEvent.Exception!.Data[Mechanism.MechanismKey]);
+
+        Assert.IsTrue(capturedEvent.Exception!.Data.Contains(Mechanism.TerminalKey));
+        Assert.IsFalse((bool)capturedEvent.Exception!.Data[Mechanism.TerminalKey]);
     }
 
     [Test]
