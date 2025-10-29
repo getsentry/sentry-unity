@@ -23,7 +23,7 @@ namespace Sentry.Unity.Integrations
         private readonly SentryOptions? _options;
         private readonly IDiagnosticLogger? _logger;
 
-        public UnityErrorLogException(string logString, string logStackTrace, SentryOptions? options)
+        public UnityErrorLogException(string logString, string logStackTrace, SentryOptions? options) : base(logString)
         {
             _logString = logString;
             _logStackTrace = logStackTrace;
@@ -54,7 +54,9 @@ namespace Sentry.Unity.Integrations
                 Mechanism = new Mechanism
                 {
                     Handled = true,
-                    Type = "unity.log"
+                    Type = "unity.log",
+                    Synthetic = true,
+                    Data = { {Mechanism.TerminalKey, false} }
                 }
             };
         }
