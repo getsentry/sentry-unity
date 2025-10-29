@@ -61,16 +61,18 @@ function RunApiServer([string] $ServerScript, [string] $Uri)
         return "$stdout`n$stderr"
     }.GetNewClosure()
 
+    # Capture Write-Log function so it can be used inside the closure (GetNewClosure captures variables but not functions)
+    $writeLog = ${function:Write-Log}
     $result.stop = {
         # Stop the HTTP server
-        Write-Log "Stopping the $ServerScript ... " -NoNewline
+        & $writeLog "Stopping the $ServerScript ... " -NoNewline
         try
         {
             Write-Host (Invoke-WebRequest -Uri "$Uri/STOP").StatusDescription
         }
         catch
         {
-            Write-Log "/STOP request failed: $_ - killing the server process instead"
+            & $writeLog "/STOP request failed: $_ - killing the server process instead"
             $result.process | Stop-Process -Force -ErrorAction SilentlyContinue
         }
         $result.process | Wait-Process -Timeout 10 -ErrorAction Continue
