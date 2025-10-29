@@ -41,7 +41,7 @@ namespace Sentry.Unity.Integrations
         {
             _logger?.LogDebug("Creating SentryException out of synthetic ErrorLogException");
 
-            var frames = ParseStackTrace(_logStackTrace);
+            var frames = ParseStackTrace(_logStackTrace, _options);
             frames.Reverse();
 
             var stacktrace = new SentryStackTrace { Frames = frames };
@@ -61,7 +61,14 @@ namespace Sentry.Unity.Integrations
 
         private const string AtFileMarker = " (at ";
 
-        private List<SentryStackFrame> ParseStackTrace(string stackTrace)
+        /// <summary>
+        /// Parses a Unity stacktrace string into a list of SentryStackFrames
+        /// </summary>
+        /// <param name="stackTrace">The Unity stacktrace string to parse</param>
+        /// <param name="options">Sentry options for configuring frame app detection</param>
+        /// <param name="logger">Optional diagnostic logger for error reporting</param>
+        /// <returns>A list of parsed SentryStackFrames</returns>
+        public static List<SentryStackFrame> ParseStackTrace(string stackTrace, SentryOptions? options)
         {
             // Example: Sentry.Unity.Integrations.UnityLogHandlerIntegration:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[]) (at UnityLogHandlerIntegration.cs:89)
             // This follows the following format:
@@ -79,10 +86,10 @@ namespace Sentry.Unity.Integrations
                     continue;
                 }
 
-                var frame = ParseStackFrame(item, _logger);
-                if (_options is not null)
+                var frame = ParseStackFrame(item, options?.DiagnosticLogger);
+                if (options is not null)
                 {
-                    frame.ConfigureAppFrame(_options);
+                    frame.ConfigureAppFrame(options);
                 }
                 frames.Add(frame);
             }

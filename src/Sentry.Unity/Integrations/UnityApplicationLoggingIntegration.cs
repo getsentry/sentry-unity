@@ -1,4 +1,5 @@
 using Sentry.Integrations;
+using Sentry.Protocol;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations;
@@ -92,8 +93,25 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         {
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {
-                var ule = new UnityErrorLogException(message, stacktrace, _options);
-                var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
+                var frames = UnityErrorLogException.ParseStackTrace(stacktrace, _options);
+                frames.Reverse();
+
+                var thread = new SentryThread
+                {
+                    Crashed = false,
+                    Current = true,
+                    Stacktrace = new SentryStackTrace
+                    {
+                        Frames = frames
+                    }
+                };
+
+                var sentryEvent = new SentryEvent
+                {
+                    Message = message,
+                    Level = SentryLevel.Error,
+                    SentryThreads = [thread]
+                };
 
                 _hub.CaptureEvent(sentryEvent);
             }
