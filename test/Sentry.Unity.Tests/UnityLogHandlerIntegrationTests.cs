@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using Sentry.Internal;
 using Sentry.Protocol;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
@@ -23,7 +24,7 @@ public sealed class UnityLogHandlerIntegrationTests
             var application = new TestApplication();
             var integration = StructuredLogger != null
                 ? new UnityLogHandlerIntegration(application, () => StructuredLogger)
-                : new UnityLogHandlerIntegration(application);
+                : new UnityLogHandlerIntegration(application, () => DisabledSentryStructuredLogger.Instance);
             integration.Register(Hub, SentryOptions);
             return integration;
         }
@@ -45,7 +46,7 @@ public sealed class UnityLogHandlerIntegrationTests
     public void CaptureException_ExceptionCapturedAndMechanismSet()
     {
         var sut = _fixture.GetSut();
-        var message = NUnit.Framework.TestContext.CurrentContext.Test.Name;
+        var message = "test message" + Guid.NewGuid();
 
         sut.ProcessException(new Exception(message), null);
 
