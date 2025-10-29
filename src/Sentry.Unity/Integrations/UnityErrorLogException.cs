@@ -56,7 +56,7 @@ namespace Sentry.Unity.Integrations
                     Handled = true,
                     Type = "unity.log",
                     Synthetic = true,
-                    Data = { {Mechanism.TerminalKey, false} }
+                    Data = { { Mechanism.TerminalKey, false } }
                 }
             };
         }
