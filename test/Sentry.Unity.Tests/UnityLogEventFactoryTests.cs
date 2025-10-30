@@ -63,7 +63,7 @@ public class UnityLogEventFactoryTests
     }
 
     [Test]
-    public void CreateExceptionEvent_ValidStackTrace_ExceptionHasCorrectProperties()
+    public void CreateExceptionEvent_ValidStackTrace_ExceptionHasExpectedProperties()
     {
         var evt = UnityLogEventFactory.CreateExceptionEvent(
             SampleMessage, SampleStackTrace, new SentryUnityOptions());
