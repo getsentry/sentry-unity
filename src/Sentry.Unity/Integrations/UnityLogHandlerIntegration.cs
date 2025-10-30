@@ -13,31 +13,36 @@ namespace Sentry.Unity.Integrations;
 internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
 {
     private readonly IApplication _application;
-
+    private readonly Func<SentryStructuredLogger>? _loggerFactory;
     private IHub? _hub;
-    private SentryUnityOptions? _sentryOptions;
-
+    private SentryUnityOptions _options = null!; // Set during register
     private ILogHandler _unityLogHandler = null!; // Set during register
+    private SentryStructuredLogger _structuredLogger = null!; // Set during register
 
-    public UnityLogHandlerIntegration(SentryUnityOptions options, IApplication? application = null)
+    public UnityLogHandlerIntegration(IApplication? application = null)
     {
         _application = application ?? ApplicationAdapter.Instance;
+    }
+
+    // For testing: allows injecting a custom logger factory
+    internal UnityLogHandlerIntegration(IApplication? application, Func<SentryStructuredLogger> loggerFactory)
+        : this(application)
+    {
+        _loggerFactory = loggerFactory;
     }
 
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
         _hub = hub;
-        _sentryOptions = sentryOptions as SentryUnityOptions;
-        if (_sentryOptions is null)
-        {
-            return;
-        }
+        // This should never happen, but if it does...
+        _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+        _structuredLogger = _loggerFactory?.Invoke() ?? _hub.Logger;
 
         // If called twice (i.e. init with the same options object) the integration will reference itself as the
         // original handler loghandler and endlessly forward to itself
         if (Debug.unityLogger.logHandler == this)
         {
-            _sentryOptions.DiagnosticLogger?.LogWarning("UnityLogHandlerIntegration has already been registered.");
+            _options.DiagnosticLogger?.LogWarning("UnityLogHandlerIntegration has already been registered.");
             return;
         }
 
@@ -51,7 +56,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     {
         try
         {
-            CaptureException(exception, context);
+            ProcessException(exception, context);
         }
         finally
         {
@@ -60,7 +65,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         }
     }
 
-    internal void CaptureException(Exception exception, UnityEngine.Object? context)
+    internal void ProcessException(Exception exception, UnityEngine.Object? context)
     {
         if (_hub?.IsEnabled is not true)
         {
@@ -75,19 +80,72 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         exception.Data[Mechanism.HandledKey] = false;
         exception.Data[Mechanism.MechanismKey] = "Unity.LogException";
         _ = _hub.CaptureException(exception);
+
+        if (_options.Experimental.CaptureStructuredLogsForLogType.TryGetValue(LogType.Exception, out var captureException) && captureException)
+        {
+            _options.LogDebug("Capturing structured log message of type '{0}'.", LogType.Exception);
+            _structuredLogger.LogError(exception.Message);
+        }
     }
 
     public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
     {
-        // Always pass the log back to Unity
-        // Capturing of `Debug`, `Warning`, and `Error` happens in the Application Logging Integration.
-        // The LogHandler does not have access to the stacktrace information required
-        _unityLogHandler.LogFormat(logType, context, format, args);
+        try
+        {
+            ProcessLog(logType, context, format, args);
+        }
+        finally
+        {
+            // Always pass the log back to Unity
+            // Capturing of `Debug`, `Warning`, and `Error` happens in the Application Logging Integration.
+            // The LogHandler does not have access to the stacktrace information required
+            _unityLogHandler.LogFormat(logType, context, format, args);
+        }
+    }
+
+    private void ProcessLog(LogType logType, UnityEngine.Object? context, string format, params object[] args)
+    {
+        if (_hub?.IsEnabled is not true || !_options.Experimental.EnableLogs)
+        {
+            return;
+        }
+
+        // We're not capturing the SDK's own logs.
+        if (args.Length > 1 && Equals(args[0], UnityLogger.LogTag))
+        {
+            return;
+        }
+
+        ProcessStructuredLog(logType, format, args);
+    }
+
+    private void ProcessStructuredLog(LogType logType, string format, params object[] args)
+    {
+        if (!_options.Experimental.CaptureStructuredLogsForLogType.TryGetValue(logType, out var captureLog) || !captureLog)
+        {
+            return;
+        }
+
+        _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
+
+        switch (logType)
+        {
+            case LogType.Log:
+                _structuredLogger.LogInfo(format, args);
+                break;
+            case LogType.Warning:
+                _structuredLogger.LogWarning(format, args);
+                break;
+            case LogType.Assert:
+            case LogType.Error:
+                _structuredLogger.LogError(format, args);
+                break;
+        }
     }
 
     private void OnQuitting()
     {
-        _sentryOptions?.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
+        _options.DiagnosticLogger?.LogInfo("OnQuitting was invoked. Unhooking log callback and pausing session.");
 
         // Note: iOS applications are usually suspended and do not quit. You should tick "Exit on Suspend" in Player settings for iOS builds to cause the game to quit and not suspend, otherwise you may not see this call.
         //   If "Exit on Suspend" is not ticked then you will see calls to OnApplicationPause instead.
@@ -97,10 +155,10 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         // 'OnQuitting' is invoked even when an uncaught exception happens in the ART. To make sure the .NET
         // SDK checks with the native layer on restart if the previous run crashed (through the CrashedLastRun callback)
         // we'll just pause sessions on shutdown. On restart they can be closed with the right timestamp and as 'exited'.
-        if (_sentryOptions?.AutoSessionTracking is true)
+        if (_options.AutoSessionTracking)
         {
             _hub?.PauseSession();
         }
-        _hub?.FlushAsync(_sentryOptions?.ShutdownTimeout ?? TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
+        _hub?.FlushAsync(_options.ShutdownTimeout).GetAwaiter().GetResult();
     }
 }
