@@ -248,5 +248,50 @@ namespace Sentry.Unity.Tests
             // Exception breadcrumbs are handled by the .NET SDK, not by this integration
             Assert.AreEqual(0, _fixture.Hub.ConfigureScopeCalls.Count);
         }
+
+        [Test]
+        public void OnLogMessageReceived_LogErrorWithStacktrace_CapturesAsMessageWithThreads()
+        {
+            _fixture.SentryOptions.AttachStacktrace = true;
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+            var stacktrace = "BugFarmButtons:LogError () (at Assets/Scripts/BugFarmButtons.cs:85)";
+
+            sut.OnLogMessageReceived(message, stacktrace, LogType.Error);
+
+            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
+            var capturedEvent = _fixture.Hub.CapturedEvents[0];
+
+            // Verify it's a message event, not an exception event
+            Assert.NotNull(capturedEvent.Message);
+            Assert.AreEqual(message, capturedEvent.Message!.Message);
+            Assert.IsEmpty(capturedEvent.SentryExceptions);
+
+            // Verify stacktrace is attached via threads
+            Assert.NotNull(capturedEvent.SentryThreads);
+            var thread = capturedEvent.SentryThreads.Single();
+            Assert.NotNull(thread.Stacktrace);
+            Assert.NotNull(thread.Stacktrace!.Frames);
+            Assert.Greater(thread.Stacktrace.Frames.Count, 0);
+        }
+
+        [Test]
+        public void OnLogMessageReceived_LogErrorWithoutStacktrace_CapturesAsSimpleMessage()
+        {
+            _fixture.SentryOptions.AttachStacktrace = false;
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+
+            sut.OnLogMessageReceived(message, "stacktrace", LogType.Error);
+
+            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
+            var capturedEvent = _fixture.Hub.CapturedEvents[0];
+
+            // Verify it's a simple message without threads
+            Assert.NotNull(capturedEvent.Message);
+            Assert.AreEqual(message, capturedEvent.Message!.Message);
+            Assert.IsEmpty(capturedEvent.SentryExceptions);
+            Assert.IsEmpty(capturedEvent.SentryThreads);
+        }
     }
 }

@@ -343,7 +343,6 @@ public sealed class SentryUnityOptions : SentryOptions
         var processor = new UnityEventProcessor(this);
         AddEventProcessor(processor);
         AddTransactionProcessor(processor);
-        AddExceptionProcessor(new UnityExceptionProcessor());
 
         // UnityLogHandlerIntegration is not compatible with WebGL, so it's added conditionally
         if (application.Platform != RuntimePlatform.WebGLPlayer)
