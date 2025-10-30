@@ -1,3 +1,5 @@
+using System.Threading;
+using Sentry.Extensibility;
 using Sentry.Integrations;
 using Sentry.Protocol;
 using UnityEngine;
@@ -91,15 +93,20 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
         if (logType is LogType.Error && _options?.CaptureLogErrorEvents is true)
         {
+            _options.DiagnosticLogger?.LogDebug("Stacktrace: {0}", stacktrace);
+
             if (_options?.AttachStacktrace is true && !string.IsNullOrEmpty(stacktrace))
             {
                 var frames = UnityErrorLogException.ParseStackTrace(stacktrace, _options);
                 frames.Reverse();
 
+                var currentThread = Thread.CurrentThread;
                 var thread = new SentryThread
                 {
                     Crashed = false,
                     Current = true,
+                    Name = currentThread.Name,
+                    Id = currentThread.ManagedThreadId,
                     Stacktrace = new SentryStackTrace
                     {
                         Frames = frames
