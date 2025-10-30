@@ -305,6 +305,13 @@ public sealed class SentryUnityOptions : SentryOptions
     internal ISentryUnityInfo UnityInfo { get; private set; }
     internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
 
+    // Delegate to base property to ensure both Unity and base SDK reference the same instance
+    public new SentryUnityExperimentalOptions Experimental
+    {
+        get => (SentryUnityExperimentalOptions)base.Experimental;
+        set => base.Experimental = value;
+    }
+
     public SentryUnityOptions() : this(isBuilding: false) { }
 
     // For testing
@@ -318,6 +325,9 @@ public sealed class SentryUnityOptions : SentryOptions
         // to be present.
         UnityInfo = unityInfo ?? SentryPlatformServices.UnityInfo;
         PlatformConfiguration = SentryPlatformServices.PlatformConfiguration;
+
+        // Initialize base.Experimental with Unity-specific experimental options
+        base.Experimental = new SentryUnityExperimentalOptions();
 
         application ??= ApplicationAdapter.Instance;
         behaviour ??= SentryMonoBehaviour.Instance;
@@ -338,7 +348,7 @@ public sealed class SentryUnityOptions : SentryOptions
         // UnityLogHandlerIntegration is not compatible with WebGL, so it's added conditionally
         if (application.Platform != RuntimePlatform.WebGLPlayer)
         {
-            AddIntegration(new UnityLogHandlerIntegration(this));
+            AddIntegration(new UnityLogHandlerIntegration());
             AddIntegration(new UnityApplicationLoggingIntegration());
         }
 
@@ -489,4 +499,51 @@ public enum NativeInitializationType
     /// game. Options that you modify programmatically will not apply to the native SDK.
     /// </summary>
     BuildTime,
+}
+
+/// <summary>
+/// Unity-specific experimental options.
+/// </summary>
+/// <remarks>
+/// This extends the base <see cref="SentryOptions.SentryExperimentalOptions"/> with Unity-specific experimental features.
+/// These options are subject to change in future versions.
+/// </remarks>
+public sealed class SentryUnityExperimentalOptions : SentryOptions.SentryExperimentalOptions
+{
+    /// <summary>
+    /// Controls whether structured logs should be captured for each Unity log type.
+    /// </summary>
+    public Dictionary<LogType, bool> CaptureStructuredLogsForLogType { get; set; }
+
+    /// <summary>
+    /// When set to true, breadcrumbs will be added on top of structured logging.
+    /// Defaults to false.
+    /// </summary>
+    public bool AttachBreadcrumbsToEvents { get; set; } = false;
+
+    /// <summary>
+    /// Sets a callback function to be invoked before sending the log to Sentry.
+    /// When the delegate throws an <see cref="Exception"/> during invocation, the log will not be captured.
+    /// </summary>
+    /// <remarks>
+    /// It can be used to modify the log object before being sent to Sentry.
+    /// To prevent the log from being sent to Sentry, return <see langword="null"/>.
+    /// </remarks>
+    /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
+    public new void SetBeforeSendLog(Func<SentryLog, SentryLog?> beforeSendLog)
+    {
+        base.SetBeforeSendLog(beforeSendLog);
+    }
+
+    internal SentryUnityExperimentalOptions()
+    {
+        CaptureStructuredLogsForLogType = new Dictionary<LogType, bool>
+        {
+            { LogType.Log, false },
+            { LogType.Warning, true },
+            { LogType.Assert, true },
+            { LogType.Error, true },
+            { LogType.Exception, true }
+        };
+    }
 }
