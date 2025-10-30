@@ -93,7 +93,9 @@ public class UnityErrorLogExceptionTests
                 Mechanism = new Mechanism
                 {
                     Handled = true,
-                    Type = "unity.log"
+                    Type = "unity.log",
+                    Synthetic = true,
+                    Data = { {Mechanism.TerminalKey, false} }
                 }
             }
         },
@@ -189,7 +191,9 @@ public class UnityErrorLogExceptionTests
                 Mechanism = new Mechanism
                 {
                     Handled = true,
-                    Type = "unity.log"
+                    Type = "unity.log",
+                    Synthetic = true,
+                    Data = { {Mechanism.TerminalKey, false} }
                 }
             }
         }

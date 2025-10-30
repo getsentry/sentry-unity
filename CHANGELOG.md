@@ -8,6 +8,7 @@
 
 ### Features
 
+- The SDK no longer ends sessions as crashed when capturing unhandled or logged exceptions. Instead, sessions get correctly marked as `SessionEndStatus.Unhandled` ([#2376](https://github.com/getsentry/sentry-unity/pull/2376))
 - Added support for Structured Logging. The `SentrySdk.Logger` API is now exposed for Unity users, enabling structured log capture. The SDK can also automatically capture and send Debug logs based on the options configured. ([#2368](https://github.com/getsentry/sentry-unity/pull/2368))
 
 ### Dependencies
