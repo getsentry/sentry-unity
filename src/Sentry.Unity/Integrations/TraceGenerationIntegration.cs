@@ -27,12 +27,6 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
             return;
         }
 
-        _sentryMonoBehaviour.ApplicationResuming += () =>
-        {
-            options.DiagnosticLogger?.LogDebug("Game resuming. Creating new Trace.");
-            hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
-        };
-
         var isTracingEnabled = unityOptions.TracesSampleRate > 0.0f;
 
         // Create initial trace context if tracing is disabled or startup tracing is disabled

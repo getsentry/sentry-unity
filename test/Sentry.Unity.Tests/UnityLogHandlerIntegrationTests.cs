@@ -21,10 +21,9 @@ public sealed class UnityLogHandlerIntegrationTests
 
         public UnityLogHandlerIntegration GetSut()
         {
-            var application = new TestApplication();
             var integration = StructuredLogger != null
-                ? new UnityLogHandlerIntegration(application, () => StructuredLogger)
-                : new UnityLogHandlerIntegration(application, () => DisabledSentryStructuredLogger.Instance);
+                ? new UnityLogHandlerIntegration(() => StructuredLogger)
+                : new UnityLogHandlerIntegration(() => DisabledSentryStructuredLogger.Instance);
             integration.Register(Hub, SentryOptions);
             return integration;
         }
