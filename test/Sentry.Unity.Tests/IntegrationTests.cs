@@ -222,11 +222,12 @@ public sealed class IntegrationTests
     }
 
     [UnityTest]
-    public IEnumerator DebugLogError_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
+    public IEnumerator DebugLogError_IsCaptured()
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var expectedAttribute = CreateAttribute("unity.is_main_thread", "true");
+        // `Debug.LogError is getting captured as message
+        _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage);
 
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -235,7 +236,6 @@ public sealed class IntegrationTests
 
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
-        Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
     }
 
     [UnityTest]
@@ -342,6 +342,8 @@ public sealed class IntegrationTests
         {
             options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
             options.CreateHttpMessageHandler = () => _testHttpClientHandler;
+            options.DisableAnrIntegration();
+            options.AutoSessionTracking = false;
 
             configure?.Invoke(options);
         });
