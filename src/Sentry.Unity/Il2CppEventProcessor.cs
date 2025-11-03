@@ -47,6 +47,12 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
         // In case they don't we update the offsets to match the GameAssembly library.
         foreach (var (sentryException, exception) in sentryExceptions.Zip(exceptions, (se, ex) => (se, ex)))
         {
+            if (sentryException.Mechanism?.Synthetic is true)
+            {
+                // Skip synthetic exceptions since they have no native counterpart
+                continue;
+            }
+
             var sentryStacktrace = sentryException.Stacktrace;
             if (sentryStacktrace == null)
             {

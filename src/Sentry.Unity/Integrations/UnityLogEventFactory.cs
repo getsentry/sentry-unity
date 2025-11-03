@@ -65,7 +65,8 @@ internal static class UnityLogEventFactory
                 {
                     Handled = handled,
                     Type = "unity.log",
-                    Terminal = false
+                    Terminal = false,
+                    Synthetic = true
                 }
             }],
             Level = SentryLevel.Error
