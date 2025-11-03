@@ -31,6 +31,12 @@ internal sealed class TestHub : IHub
         return evt.EventId;
     }
 
+    public SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result, Scope? scope = null,
+        SentryHint? hint = null)
+    {
+        throw new NotImplementedException();
+    }
+
     public void CaptureFeedback(SentryFeedback feedback, Scope? scope = null, SentryHint? hint = null)
     {
         throw new NotImplementedException();
@@ -188,6 +194,12 @@ internal sealed class TestHub : IHub
     }
 
     public SentryId CaptureEvent(SentryEvent evt, SentryHint? hint, Action<Scope> configureScope)
+    {
+        throw new NotImplementedException();
+    }
+
+    public SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result, Action<Scope> configureScope,
+        SentryHint? hint = null)
     {
         throw new NotImplementedException();
     }
