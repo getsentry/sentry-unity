@@ -144,12 +144,18 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-            case BuildTarget.GameCoreXboxSeries:
-            case BuildTarget.GameCoreXboxOne:
                 var windowsSentryPdb = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb");
                 if (File.Exists(windowsSentryPdb))
                 {
                     paths += $" \"{windowsSentryPdb}\"";
+                }
+                break;
+            case BuildTarget.GameCoreXboxSeries:
+            case BuildTarget.GameCoreXboxOne:
+                var xboxSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/");
+                if (Directory.Exists(xboxSentryPluginPath))
+                {
+                    paths += $" \"{xboxSentryPluginPath}\"";
                 }
                 break;
             case BuildTarget.StandaloneLinux64:

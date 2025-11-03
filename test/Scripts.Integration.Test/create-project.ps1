@@ -7,30 +7,32 @@ if (-not $Global:NewProjectPathCache)
     . ./test/Scripts.Integration.Test/globals.ps1
 }
 
+. ./test/Scripts.Integration.Test/common.ps1
+
 $UnityPath = FormatUnityPath $UnityPath
 
 # Delete previous integration test project folder if found
 If (Test-Path -Path "$(GetNewProjectPath)" )
 {
-    Write-Host -NoNewline "Removing previous integration test:"
+    Write-Log -NoNewline "Removing previous integration test:"
     Remove-Item -LiteralPath "$(GetNewProjectPath)" -Force -Recurse
-    Write-Host " OK"
+    Write-Log " OK"
 }
 
-Write-Host -NoNewline "Creating directory for integration test: '$(GetNewProjectName)'"
+Write-Log -NoNewline "Creating directory for integration test: '$(GetNewProjectName)'"
 New-Item -Path "$(ProjectRoot)/samples" -Name $(GetNewProjectName) -ItemType "directory"
-Write-Host " OK"
+Write-Log " OK"
 
-Write-Host "Creating integration project:"
+Write-Log "Creating integration project:"
 RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$(GetNewProjectPath)", "-quit")
 
-Write-Host "Copying Editor scripts to integration project:"
+Write-Log "Copying Editor scripts to integration project:"
 New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Editor" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Editor/*" -Destination "$(GetNewProjectAssetsPath)/Editor/" `
     -Exclude "BuildTimeOptions.cs"
 New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Scenes" -ItemType "directory"
 Copy-Item -Recurse "$IntegrationScriptsPath/Scenes/*" -Destination "$(GetNewProjectAssetsPath)/Scenes/"
-Write-Host " OK"
+Write-Log " OK"
 
 # Update ProjectSettings
 $projectSettingsPath = "$(GetNewProjectPath)/ProjectSettings/ProjectSettings.asset"
@@ -45,16 +47,16 @@ $projectSettings | Out-File $projectSettingsPath
 
 # Add Unity UI package to manifest.json if not already present
 # Creating a new project via command line doesn't include the Unity UI package by default while creating it via the Hub does.
-Write-Host -NoNewline "Checking Unity UI package in manifest.json:"
+Write-Log -NoNewline "Checking Unity UI package in manifest.json:"
 $manifestPath = "$(GetNewProjectPath)/Packages/manifest.json"
 $manifest = Get-Content $manifestPath | ConvertFrom-Json
 if (-not ($manifest.dependencies.PSObject.Properties.Name -contains "com.unity.ugui")) {
-    Write-Host " Adding Unity UI package"
+    Write-Log " Adding Unity UI package"
     $manifest.dependencies | Add-Member -MemberType NoteProperty -Name "com.unity.ugui" -Value "2.0.0"
     $manifest | ConvertTo-Json -Depth 10 | Out-File $manifestPath -Encoding utf8
 } else {
-    Write-Host " Unity UI package already exists"
+    Write-Log " Unity UI package already exists"
 }
 
 
-Write-Host "`nProject created!!"
+Write-Log "`nProject created!!"

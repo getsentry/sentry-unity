@@ -18,12 +18,27 @@
 ### Fixes
 
 - When configured, the SDK now no longer treats `Debug.LogError` events as exceptions but resports them as message events instead ([#2377](https://github.com/getsentry/sentry-unity/pull/2377))
+### Fixes
+
+- When targeting Xbox, the SDK now correctly picks up the debug symbols for sentry-native from the `Assets/Plugins/Sentry` directory ([#2363](https://github.com/getsentry/sentry-unity/pull/2363))
 
 ### Dependencies
 
-- Bump CLI from v2.56.0 to v2.56.1 ([#2356](https://github.com/getsentry/sentry-unity/pull/2356))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2561)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.56.0...2.56.1)
+- Bump CLI from v2.56.0 to v2.57.0 ([#2356](https://github.com/getsentry/sentry-unity/pull/2356), [#2369](https://github.com/getsentry/sentry-unity/pull/2369))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2570)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.56.0...2.57.0)
+- Bump .NET SDK from v5.16.0 to v5.16.1 ([#2359](https://github.com/getsentry/sentry-unity/pull/2359))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5161)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.16.0...5.16.1)
+- Bump Native SDK from v0.11.2 to v0.11.3 ([#2357](https://github.com/getsentry/sentry-unity/pull/2357))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0113)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.11.2...0.11.3)
+- Bump Cocoa SDK from v8.56.2 to v8.57.1 ([#2358](https://github.com/getsentry/sentry-unity/pull/2358), [#2382](https://github.com/getsentry/sentry-unity/pull/2382))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8571)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.56.2...8.57.1)
+- Bump Java SDK from v8.23.0 to v8.25.0 ([#2370](https://github.com/getsentry/sentry-unity/pull/2370), [#2379](https://github.com/getsentry/sentry-unity/pull/2379))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8250)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.23.0...8.25.0)
 
 ## 4.0.0-beta.3
 

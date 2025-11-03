@@ -19,11 +19,11 @@ if (-not $Global:NewProjectPathCache)
 
 . $PSScriptRoot/common.ps1
 
-Write-Host "Given parameters:"
-Write-Host "  TestAppPath: $TestAppPath"
-Write-Host "   AppDataDir: $AppDataDir"
-Write-Host "        Smoke: $Smoke"
-Write-Host "        Crash: $Crash"
+Write-Log "Given parameters:"
+Write-Log "  TestAppPath: $TestAppPath"
+Write-Log "   AppDataDir: $AppDataDir"
+Write-Log "        Smoke: $Smoke"
+Write-Log "        Crash: $Crash"
 
 If (!$Smoke -and !$Crash)
 {
@@ -63,9 +63,9 @@ if ("$TestAppPath" -eq "")
     }
 }
 
-Write-Host "Resolved parameters:"
-Write-Host "  TestAppPath: $TestAppPath"
-Write-Host "   AppDataDir: $AppDataDir"
+Write-Log "Resolved parameters:"
+Write-Log "  TestAppPath: $TestAppPath"
+Write-Log "   AppDataDir: $AppDataDir"
 
 if ("$AppDataDir" -ne "")
 {
@@ -89,12 +89,12 @@ function RunTest([string] $type)
     {
         if ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and (Get-Command "xvfb-run" -ErrorAction SilentlyContinue))
         {
-            Write-Host "Running xvfb-run -ae /dev/stdout $TestAppPath --test $type"
+            Write-Log "Running xvfb-run -ae /dev/stdout $TestAppPath --test $type"
             $process = Start-Process "xvfb-run" -ArgumentList "-ae", "/dev/stdout", "$TestAppPath", "--test", $type -PassThru
         }
         else
         {
-            Write-Host "Running $TestAppPath --test $type"
+            Write-Log "Running $TestAppPath --test $type"
             $process = Start-Process "$TestAppPath" -ArgumentList "--test", $type -PassThru
         }
 
@@ -110,18 +110,18 @@ function RunTest([string] $type)
         $appLog = ""
         if ("$AppDataDir" -ne "")
         {
-            Write-Host "$type test: Player.log contents:" -ForegroundColor Yellow
+            Write-Log "$type test: Player.log contents:" -ForegroundColor Yellow
             $appLog = Get-Content "$AppDataDir/Player.log"
             $appLog
-            Write-Host "================================================================================" -ForegroundColor Yellow
-            Write-Host "$type test: Player.log contents END" -ForegroundColor Yellow
+            Write-Log "================================================================================" -ForegroundColor Yellow
+            Write-Log "$type test: Player.log contents END" -ForegroundColor Yellow
         }
 
-        # Relying on ExitCode does not seem reliable. We're looking for the line "SmokeTester is quitting." instead to indicate 
+        # Relying on ExitCode does not seem reliable. We're looking for the line "SmokeTester is quitting." instead to indicate
         # a successful shut-down.
         If ($appLog | Select-String "SmokeTester is quitting.")
         {
-            Write-Host "$type test: PASSED" -ForegroundColor Green
+            Write-Log "$type test: PASSED" -ForegroundColor Green
         }
         ElseIf ($timedOut)
         {
@@ -136,7 +136,7 @@ function RunTest([string] $type)
             {
                 throw $info
             }
-            Write-Host $info
+            Write-Log $info
         }
     }
     finally
