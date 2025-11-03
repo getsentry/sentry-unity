@@ -6,6 +6,16 @@
 
 - `sentry-native` is now built on Ubuntu 22.04 instead of Ubuntu 20.04, which reached EOL in May 2025. If you are running you game on a server on Ubuntu 20.04, you should update the OS before upgrading to this SDK version. ([#2355](https://github.com/getsentry/sentry-unity/pull/2355))
 
+#### Bump to Sentry SDK for .NET v6.0.0-preview introduces the following changes
+
+- `BreadcrumbLevel.Critical` has been renamed to `BreadcrumbLevel.Fatal` for consistency with the other Sentry SDKs ([#4605](https://github.com/getsentry/sentry-dotnet/pull/4605))
+- Removed `SentrySdk.CaptureUserFeedback` and all associated members. Use the newer `SentrySdk.CaptureFeedback` instead. ([#4619](https://github.com/getsentry/sentry-dotnet/pull/4619))
+- ScopeExtensions.Populate is now internal ([#4611](https://github.com/getsentry/sentry-dotnet/pull/4611))
+- Backpressure handling is now enabled by default, meaning that the SDK will monitor system health and reduce the sampling rate of events and transactions when the system is under load. When the system is determined to be healthy again, the sampling rates are returned to their original levels. ([#4615](https://github.com/getsentry/sentry-dotnet/pull/4615))
+- Spans and Transactions now implement `IDisposable` so that they can be used with `using` statements/declarations that will automatically finish the span with a status of OK when it passes out of scope, if it has not already been finished, to be consistent with `Activity` classes when using OpenTelemetry ([#4627](https://github.com/getsentry/sentry-dotnet/pull/4627))
+- SpanTracer and TransactionTracer are still public but these are now `sealed` (see also [#4627](https://github.com/getsentry/sentry-dotnet/pull/4627))
+- CaptureFeedback now returns a `SentryId` and a `CaptureFeedbackResult` out parameter that indicate whether feedback was captured successfully and what the reason for failure was otherwise ([#4613](https://github.com/getsentry/sentry-dotnet/pull/4613))
+
 ### Behavioural Changes
 
 - The SDK no longer refreshes the trace ID when the app loses and regains focus. This means that the trace ID persists from game start to game end. The SDK now also automatically adds breadcrumbs on those lifecycle events. ([#2374](https://github.com/getsentry/sentry-unity/pull/2374))
@@ -27,9 +37,9 @@
 - Bump CLI from v2.56.0 to v2.57.0 ([#2356](https://github.com/getsentry/sentry-unity/pull/2356), [#2369](https://github.com/getsentry/sentry-unity/pull/2369))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2570)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.56.0...2.57.0)
-- Bump .NET SDK from v5.16.0 to v5.16.2 ([#2359](https://github.com/getsentry/sentry-unity/pull/2359), [#2384](https://github.com/getsentry/sentry-unity/pull/2384))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#5162)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.16.0...5.16.2)
+- Bump .NET SDK from v5.16.0 to v6.0.0-preview.2 ([#2359](https://github.com/getsentry/sentry-unity/pull/2359), [#2384](https://github.com/getsentry/sentry-unity/pull/2384), [#2364](https://github.com/getsentry/sentry-unity/pull/2364))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6000-preview.2)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.16.0...6.0.0-peview.2)
 - Bump Native SDK from v0.11.2 to v0.12.0 ([#2357](https://github.com/getsentry/sentry-unity/pull/2357), [#2378](https://github.com/getsentry/sentry-unity/pull/2378))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0120)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.11.2...0.12.0)
