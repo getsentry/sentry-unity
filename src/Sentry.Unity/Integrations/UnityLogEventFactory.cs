@@ -52,11 +52,20 @@ internal static class UnityLogEventFactory
         var frames = UnityStackTraceParser.Parse(stackTrace, options);
         frames.Reverse();
 
-        var sentryException = CreateUnityLogException(message, frames);
-
-        return new SentryEvent(new Exception(message))
+        return new SentryEvent
         {
-            SentryExceptions = [sentryException],
+            SentryExceptions = [new SentryException
+            {
+                Stacktrace = new SentryStackTrace { Frames = frames },
+                Value = message,
+                Type = "LogException",
+                Mechanism = new Mechanism
+                {
+                    Handled = false,
+                    Type = "unity.log",
+                    Terminal = false
+                }
+            }],
             Level = SentryLevel.Error
         };
     }
@@ -71,24 +80,6 @@ internal static class UnityLogEventFactory
             Name = currentThread.Name,
             Id = currentThread.ManagedThreadId,
             Stacktrace = new SentryStackTrace { Frames = frames }
-        };
-    }
-
-    private static SentryException CreateUnityLogException(
-        string message,
-        List<SentryStackFrame> frames,
-        string exceptionType = "LogError")
-    {
-        return new SentryException
-        {
-            Stacktrace = new SentryStackTrace { Frames = frames },
-            Value = message,
-            Type = exceptionType,
-            Mechanism = new Mechanism
-            {
-                Handled = true,
-                Type = "unity.log"
-            }
         };
     }
 }

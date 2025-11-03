@@ -70,7 +70,7 @@ public class UnityLogEventFactoryTests
 
         var exception = evt.SentryExceptions!.First();
         Assert.AreEqual(SampleMessage, exception.Value);
-        Assert.AreEqual("LogError", exception.Type);
+        Assert.AreEqual("LogException", exception.Type);
         Assert.NotNull(exception.Mechanism);
         Assert.True(exception.Mechanism!.Handled);
         Assert.AreEqual("unity.log", exception.Mechanism.Type);

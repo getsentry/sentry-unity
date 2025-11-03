@@ -222,11 +222,11 @@ public sealed class IntegrationTests
     }
 
     [UnityTest]
-    public IEnumerator DebugLogError_IsCaptured()
+    public IEnumerator DebugLogError_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        // `Debug.LogError is getting captured as message
+        // 'Debug.LogError' is getting captured as message
         _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage);
 
         using var _ = InitSentrySdk();
@@ -236,6 +236,7 @@ public sealed class IntegrationTests
 
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
+        Assert.That(triggeredEvent, Does.Contain("unity.is_main_thread\":\"true\""));
     }
 
     [UnityTest]
@@ -248,7 +249,8 @@ public sealed class IntegrationTests
 
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var expectedAttribute = CreateAttribute("unity.is_main_thread", "false");
+        // 'Debug.LogError' is getting captured as message
+        _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage);
 
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -257,7 +259,7 @@ public sealed class IntegrationTests
 
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
-        Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
+        Assert.That(triggeredEvent, Does.Contain("unity.is_main_thread\":\"false\""));
     }
 
     [UnityTest]
