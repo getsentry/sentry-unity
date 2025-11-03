@@ -125,29 +125,16 @@ internal static class LoggingTab
         {
             options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
-                                                        "same type if they are more frequent than once per second."),
+                                                        "same type when they happen within the same DebounceTimeWindow."),
                 options.EnableLogDebouncing);
 
             EditorGUI.indentLevel++;
 
-            options.DebounceTimeLog = EditorGUILayout.IntField(
-                new GUIContent("Log Debounce [ms]", "The time that has to pass between events of " +
-                                                    "LogType.Log before the SDK sends it again."),
-                options.DebounceTimeLog);
-            options.DebounceTimeLog = Math.Max(0, options.DebounceTimeLog);
-
-            options.DebounceTimeWarning = EditorGUILayout.IntField(
-                new GUIContent("Warning Debounce [ms]", "The time that has to pass between events of " +
-                                                        "LogType.Warning before the SDK sends it again."),
-                options.DebounceTimeWarning);
-            options.DebounceTimeWarning = Math.Max(0, options.DebounceTimeWarning);
-
-            options.DebounceTimeError = EditorGUILayout.IntField(
-                new GUIContent("Error Debounce [ms]", "The time that has to pass between events of " +
-                                                      "LogType.Assert, LogType.Exception and LogType.Error before " +
-                                                      "the SDK sends it again."),
-                options.DebounceTimeError);
-            options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
+            options.DebounceTimeWindow = EditorGUILayout.IntField(
+                new GUIContent("Debounce Time Window [ms]", "The time that has to pass between log events " +
+                                                    "before the SDK captures and sends them again."),
+                options.DebounceTimeWindow);
+            options.DebounceTimeWindow = Math.Max(0, options.DebounceTimeWindow);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();

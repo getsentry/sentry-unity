@@ -106,7 +106,24 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
             return;
         }
 
+        // if (IsGettingDebounced(message, stacktrace, logType))
+        // {
+        //     _options.LogDebug("Log message of type '{0}' is getting debounced.", logType);
+        //     return;
+        // }
+
         ProcessStructuredLog(logType, format, args);
+    }
+
+    private bool IsGettingDebounced(string message, string stacktrace, LogType logType)
+    {
+        if (_options.EnableLogDebouncing is false)
+        {
+            return false;
+        }
+
+        // Use the debouncer from options - returns true if allowed, false if blocked
+        return !_options.LogDebouncer.Debounced(message, stacktrace, logType);
     }
 
     private void ProcessStructuredLog(LogType logType, string format, params object[] args)

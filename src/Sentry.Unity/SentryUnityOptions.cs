@@ -48,24 +48,29 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool CaptureInEditor { get; set; } = true;
 
     /// <summary>
-    /// Whether Sentry events should be debounced it too frequent.
+    /// Whether Sentry events should be deduplicated if they occur too frequently.
+    /// When enabled, duplicate log messages with the same content will be suppressed within the debounce window.
     /// </summary>
     public bool EnableLogDebouncing { get; set; } = false;
 
     /// <summary>
-    /// Timespan between sending events of LogType.Log
+    /// Time window for deduplicating log messages with identical content.
+    /// If the same log message appears multiple times within this window, only the first occurrence is captured.
     /// </summary>
-    public TimeSpan DebounceTimeLog { get; set; } = TimeSpan.FromSeconds(1);
+    public TimeSpan DebounceTimeWindow { get; set; } = TimeSpan.FromSeconds(1);
+
+    private IUnityLogMessageDebounce? _logDebouncer;
 
     /// <summary>
-    /// Timespan between sending events of LogType.Warning
+    /// The debouncer used for deduplicating log messages.
+    /// Defaults to ContentDebounce which uses content-based hashing.
+    /// Can be set to a custom implementation for advanced deduplication logic.
     /// </summary>
-    public TimeSpan DebounceTimeWarning { get; set; } = TimeSpan.FromSeconds(1);
-
-    /// <summary>
-    /// Timespan between sending events of LogType.Assert, LogType.Exception and LogType.Error
-    /// </summary>
-    public TimeSpan DebounceTimeError { get; set; } = TimeSpan.FromSeconds(1);
+    public IUnityLogMessageDebounce LogDebouncer
+    {
+        get => _logDebouncer ??= new ContentDebounce(DebounceTimeWindow);
+        set => _logDebouncer = value;
+    }
 
 
     private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
