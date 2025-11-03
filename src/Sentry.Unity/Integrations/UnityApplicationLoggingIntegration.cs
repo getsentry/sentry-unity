@@ -86,13 +86,13 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     private void ProcessException(string message, string stacktrace, LogType logType)
     {
         // LogType.Exception is getting handled by the `UnityLogHandlerIntegration`
-        // UNLESS we're configured to handle them - i.e. on WebGL
+        // UNLESS we're configured to process them - i.e. on WebGL
         if (logType is LogType.Exception && _captureExceptions)
         {
             _options.LogDebug("Exception capture has been enabled. Capturing exception through '{0}'.", nameof(UnityApplicationLoggingIntegration));
 
-            var ule = new UnityErrorLogException(message, stacktrace, _options);
-            _hub?.CaptureException(ule);
+            var evt = UnityLogEventFactory.CreateExceptionEvent(message, stacktrace, false, _options);
+            _hub?.CaptureEvent(evt);
         }
     }
 
@@ -107,12 +107,8 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
         if (_options.AttachStacktrace && !string.IsNullOrEmpty(stacktrace))
         {
-            _options.LogDebug("Attaching stacktrace to event.");
-
-            var ule = new UnityErrorLogException(message, stacktrace, _options);
-            var sentryEvent = new SentryEvent(ule) { Level = SentryLevel.Error };
-
-            _hub?.CaptureEvent(sentryEvent);
+            var evt = UnityLogEventFactory.CreateMessageEvent(message, stacktrace, SentryLevel.Error, _options);
+            _hub?.CaptureEvent(evt);
         }
         else
         {
