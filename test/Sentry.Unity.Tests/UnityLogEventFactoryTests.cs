@@ -52,51 +52,63 @@ public class UnityLogEventFactoryTests
     }
 
     [Test]
-    public void CreateExceptionEvent_ValidStackTrace_CreatesExceptionEvent()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CreateExceptionEvent_ValidStackTrace_CreatesExceptionEvent(bool handled)
     {
         var evt = UnityLogEventFactory.CreateExceptionEvent(
-            SampleMessage, SampleStackTrace, new SentryUnityOptions());
+            SampleMessage, SampleStackTrace, handled, new SentryUnityOptions());
 
         Assert.AreEqual(SentryLevel.Error, evt.Level);
         Assert.NotNull(evt.SentryExceptions);
         Assert.AreEqual(1, evt.SentryExceptions.Count());
+        Assert.AreEqual(evt.SentryExceptions.First().Mechanism!.Handled, handled);
     }
 
     [Test]
-    public void CreateExceptionEvent_ValidStackTrace_ExceptionHasExpectedProperties()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CreateExceptionEvent_ValidStackTrace_ExceptionHasExpectedProperties(bool handled)
     {
         var evt = UnityLogEventFactory.CreateExceptionEvent(
-            SampleMessage, SampleStackTrace, new SentryUnityOptions());
+            SampleMessage, SampleStackTrace, handled, new SentryUnityOptions());
 
         var exception = evt.SentryExceptions!.First();
         Assert.AreEqual(SampleMessage, exception.Value);
         Assert.AreEqual("LogException", exception.Type);
         Assert.NotNull(exception.Mechanism);
-        Assert.True(exception.Mechanism!.Handled);
+        Assert.AreEqual(exception.Mechanism!.Handled, handled);
         Assert.AreEqual("unity.log", exception.Mechanism.Type);
     }
 
     [Test]
-    public void CreateExceptionEvent_ValidStackTrace_ExceptionHasStackTrace()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CreateExceptionEvent_ValidStackTrace_ExceptionHasStackTrace(bool handled)
     {
         var evt = UnityLogEventFactory.CreateExceptionEvent(
-            SampleMessage, SampleStackTrace, new SentryUnityOptions());
+            SampleMessage, SampleStackTrace, handled, new SentryUnityOptions());
 
         var exception = evt.SentryExceptions!.First();
         Assert.NotNull(exception.Stacktrace);
         Assert.NotNull(exception.Stacktrace!.Frames);
         Assert.AreEqual(2, exception.Stacktrace.Frames.Count);
+        Assert.AreEqual(exception.Mechanism!.Handled, handled);
     }
 
     [Test]
-    public void CreateExceptionEvent_ValidStackTrace_FramesAreReversed()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void CreateExceptionEvent_ValidStackTrace_FramesAreReversed(bool handled)
     {
         var evt = UnityLogEventFactory.CreateExceptionEvent(
-            SampleMessage, SampleStackTrace, new SentryUnityOptions());
+            SampleMessage, SampleStackTrace, handled, new SentryUnityOptions());
 
         var frames = evt.SentryExceptions!.First().Stacktrace!.Frames;
         // After reversing, the last frame in the Unity stacktrace should be first
         Assert.AreEqual("BugFarmButtons:LogError ()", frames[0].Function);
         Assert.AreEqual("UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])", frames[1].Function);
+        var exception = evt.SentryExceptions!.First();
+        Assert.AreEqual(exception.Mechanism!.Handled, handled);
     }
 }

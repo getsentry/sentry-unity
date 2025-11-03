@@ -91,7 +91,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         {
             _options.LogDebug("Exception capture has been enabled. Capturing exception through '{0}'.", nameof(UnityApplicationLoggingIntegration));
 
-            var evt = UnityLogEventFactory.CreateExceptionEvent(message, stacktrace, _options);
+            var evt = UnityLogEventFactory.CreateExceptionEvent(message, stacktrace, false, _options);
             _hub?.CaptureEvent(evt);
         }
     }

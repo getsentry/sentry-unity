@@ -42,11 +42,13 @@ internal static class UnityLogEventFactory
     /// </summary>
     /// <param name="message">The log message</param>
     /// <param name="stackTrace">The Unity stacktrace string</param>
-    /// <param name="options">Sentry Unity options</param>
+    /// <param name="handled">Whether the exception was handled or not</param>
+    /// /// <param name="options">Sentry Unity options</param>
     /// <returns>A SentryEvent with a synthetic exception</returns>
     public static SentryEvent CreateExceptionEvent(
         string message,
         string stackTrace,
+        bool handled,
         SentryUnityOptions options)
     {
         var frames = UnityStackTraceParser.Parse(stackTrace, options);
@@ -61,7 +63,7 @@ internal static class UnityLogEventFactory
                 Type = "LogException",
                 Mechanism = new Mechanism
                 {
-                    Handled = false,
+                    Handled = handled,
                     Type = "unity.log",
                     Terminal = false
                 }
