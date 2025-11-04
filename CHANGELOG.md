@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Added the missing `origin` and `sdk` to the structured logs ([#2390](https://github.com/getsentry/sentry-unity/pull/2390))
+
 ## 4.0.0-beta.4
 
 ### Breaking Changes
