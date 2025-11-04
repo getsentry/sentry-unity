@@ -12,14 +12,13 @@ namespace Sentry.Unity.Tests
         {
             public TestHub Hub { get; set; } = null!;
             public SentryUnityOptions SentryOptions { get; set; } = null!;
-            public TestStructuredLogger StructuredLogger { get; set; } = null!;
 
             public bool CaptureExceptions { get; set; } = false;
 
             public UnityApplicationLoggingIntegration GetSut()
             {
                 var application = new TestApplication();
-                var integration = new UnityApplicationLoggingIntegration(CaptureExceptions, application, clock: null, loggerFactory: () => StructuredLogger);
+                var integration = new UnityApplicationLoggingIntegration(CaptureExceptions, application, clock: null);
                 integration.Register(Hub, SentryOptions);
                 return integration;
             }
@@ -33,8 +32,7 @@ namespace Sentry.Unity.Tests
             _fixture = new Fixture
             {
                 Hub = new TestHub(),
-                SentryOptions = new SentryUnityOptions(),
-                StructuredLogger = new TestStructuredLogger()
+                SentryOptions = new SentryUnityOptions()
             };
         }
 
@@ -313,8 +311,9 @@ namespace Sentry.Unity.Tests
 
             sut.OnLogMessageReceived(message, string.Empty, LogType.Exception);
 
-            Assert.AreEqual(1, _fixture.StructuredLogger.CapturedLogs.Count);
-            var log = _fixture.StructuredLogger.CapturedLogs[0];
+            var logger = (TestStructuredLogger)_fixture.Hub.Logger;
+            Assert.AreEqual(1, logger.CapturedLogs.Count);
+            var log = logger.CapturedLogs[0];
             Assert.AreEqual(SentryLogLevel.Error, log.Level);
             Assert.AreEqual(message, log.Message);
         }
@@ -330,7 +329,8 @@ namespace Sentry.Unity.Tests
 
             sut.OnLogMessageReceived(message, string.Empty, LogType.Exception);
 
-            Assert.AreEqual(0, _fixture.StructuredLogger.CapturedLogs.Count);
+            var logger = (TestStructuredLogger)_fixture.Hub.Logger;
+            Assert.AreEqual(0, logger.CapturedLogs.Count);
         }
 
         [Test]
@@ -343,7 +343,8 @@ namespace Sentry.Unity.Tests
 
             sut.OnLogMessageReceived(message, string.Empty, LogType.Error);
 
-            Assert.AreEqual(0, _fixture.StructuredLogger.CapturedLogs.Count);
+            var logger = (TestStructuredLogger)_fixture.Hub.Logger;
+            Assert.AreEqual(0, logger.CapturedLogs.Count);
         }
 
         [Test]
@@ -356,7 +357,8 @@ namespace Sentry.Unity.Tests
 
             sut.OnLogMessageReceived(message, string.Empty, LogType.Error);
 
-            Assert.AreEqual(0, _fixture.StructuredLogger.CapturedLogs.Count);
+            var logger = (TestStructuredLogger)_fixture.Hub.Logger;
+            Assert.AreEqual(0, logger.CapturedLogs.Count);
         }
 
         [Test]
@@ -377,16 +379,17 @@ namespace Sentry.Unity.Tests
 
             sut.OnLogMessageReceived(message, string.Empty, logType);
 
+            var logger = (TestStructuredLogger)_fixture.Hub.Logger;
             if (captureEnabled)
             {
-                Assert.AreEqual(1, _fixture.StructuredLogger.CapturedLogs.Count);
-                var log = _fixture.StructuredLogger.CapturedLogs[0];
+                Assert.AreEqual(1, logger.CapturedLogs.Count);
+                var log = logger.CapturedLogs[0];
                 Assert.AreEqual(expectedLevel, log.Level);
                 Assert.AreEqual(message, log.Message);
             }
             else
             {
-                Assert.AreEqual(0, _fixture.StructuredLogger.CapturedLogs.Count);
+                Assert.AreEqual(0, logger.CapturedLogs.Count);
             }
         }
     }

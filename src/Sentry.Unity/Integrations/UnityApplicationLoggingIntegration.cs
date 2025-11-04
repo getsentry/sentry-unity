@@ -23,16 +23,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
     private IHub _hub = null!;                                  // Set in Register
     private SentryUnityOptions _options = null!;                // Set in Register
-    private readonly Func<SentryStructuredLogger>? _loggerFactory;
-    private SentryStructuredLogger _structuredLogger = null!;   // Set during register
 
-    internal UnityApplicationLoggingIntegration(bool captureExceptions = false, IApplication? application = null, ISystemClock? clock = null, Func<SentryStructuredLogger>? loggerFactory = null)
+    internal UnityApplicationLoggingIntegration(bool captureExceptions = false, IApplication? application = null, ISystemClock? clock = null)
     {
         _captureExceptions = captureExceptions;
         _application = application ?? ApplicationAdapter.Instance;
         _clock = clock ?? SystemClock.Clock;
-
-        _loggerFactory = loggerFactory;
     }
 
     public void Register(IHub hub, SentryOptions sentryOptions)
@@ -40,7 +36,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         // These should never throw but in case they do...
         _hub = hub ?? throw new ArgumentException("Hub is null.");
         _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
-        _structuredLogger = _loggerFactory?.Invoke() ?? _hub.Logger;
 
         _logTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
         _warningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
@@ -156,7 +151,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         log.SetDefaultAttributes(_options, UnitySdkInfo.Sdk);
         log.SetOrigin("auto.log.unity");
 
-        _structuredLogger.CaptureLog(log);
+        _hub.Logger.CaptureLog(log);
     }
 
     private void OnQuitting() => _application.LogMessageReceived -= OnLogMessageReceived;
