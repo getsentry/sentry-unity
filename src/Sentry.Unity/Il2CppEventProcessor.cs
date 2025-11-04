@@ -32,13 +32,6 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
     {
         Options.DiagnosticLogger?.LogDebug("Running Unity IL2CPP event exception processor on: Event {0}", sentryEvent.EventId);
 
-        // UnityLogException is a synthetic exception created by the LoggingIntegration by parsing the stacktrace provided
-        // to the SDK as a string. It therefore lacks the necessary data to fetch the native stacktrace and go from there
-        if (incomingException is UnityErrorLogException)
-        {
-            return;
-        }
-
         var sentryExceptions = sentryEvent.SentryExceptions;
         if (sentryExceptions == null)
         {
@@ -54,6 +47,12 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
         // In case they don't we update the offsets to match the GameAssembly library.
         foreach (var (sentryException, exception) in sentryExceptions.Zip(exceptions, (se, ex) => (se, ex)))
         {
+            if (sentryException.Mechanism?.Synthetic is true)
+            {
+                // Skip synthetic exceptions since they have no native counterpart
+                continue;
+            }
+
             var sentryStacktrace = sentryException.Stacktrace;
             if (sentryStacktrace == null)
             {

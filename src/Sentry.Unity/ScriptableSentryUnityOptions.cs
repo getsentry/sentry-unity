@@ -58,6 +58,15 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
     [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
 
+    [field: SerializeField] public bool EnableStructuredLogging { get; set; } = false;
+    [field: SerializeField] public bool StructuredLogOnDebugLog { get; set; } = false;
+    [field: SerializeField] public bool StructuredLogOnDebugLogWarning { get; set; } = true;
+    [field: SerializeField] public bool StructuredLogOnDebugLogAssertion { get; set; } = true;
+    [field: SerializeField] public bool StructuredLogOnDebugLogError { get; set; } = true;
+    [field: SerializeField] public bool StructuredLogOnDebugLogException { get; set; } = true;
+
+    [field: SerializeField] public bool AttachBreadcrumbsToEvents { get; set; } = false;
+
     [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForAsserts { get; set; } = true;
@@ -184,6 +193,19 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             XboxNativeSupportEnabled = XboxNativeSupportEnabled,
             Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
+            Experimental = new SentryUnityExperimentalOptions
+            {
+                EnableLogs = EnableStructuredLogging,
+                CaptureStructuredLogsForLogType =
+                {
+                    [LogType.Log] = StructuredLogOnDebugLog,
+                    [LogType.Warning] = StructuredLogOnDebugLogWarning,
+                    [LogType.Assert] = StructuredLogOnDebugLogAssertion,
+                    [LogType.Error] = StructuredLogOnDebugLogError,
+                    [LogType.Exception] = StructuredLogOnDebugLogException
+                },
+                AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
+            }
         };
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
