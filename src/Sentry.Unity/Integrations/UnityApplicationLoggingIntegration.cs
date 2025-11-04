@@ -1,5 +1,6 @@
 using System;
 using Sentry.Extensibility;
+using Sentry.Infrastructure;
 using Sentry.Integrations;
 using UnityEngine;
 
@@ -12,27 +13,34 @@ namespace Sentry.Unity.Integrations;
 /// </summary>
 internal class UnityApplicationLoggingIntegration : ISdkIntegration
 {
-    private readonly IApplication _application;
     private readonly bool _captureExceptions;
+    private readonly IApplication _application;
+    private readonly ISystemClock _clock;
 
     private ErrorTimeDebounce _errorTimeDebounce = null!;       // Set in Register
     private LogTimeDebounce _logTimeDebounce = null!;           // Set in Register
     private WarningTimeDebounce _warningTimeDebounce = null!;   // Set in Register
 
-    private IHub? _hub;
+    private IHub _hub = null!;                                  // Set in Register
     private SentryUnityOptions _options = null!;                // Set in Register
+    private readonly Func<SentryStructuredLogger>? _loggerFactory;
+    private SentryStructuredLogger _structuredLogger = null!;   // Set during register
 
-    internal UnityApplicationLoggingIntegration(bool captureExceptions = false, IApplication? application = null)
+    internal UnityApplicationLoggingIntegration(bool captureExceptions = false, IApplication? application = null, ISystemClock? clock = null, Func<SentryStructuredLogger>? loggerFactory = null)
     {
         _captureExceptions = captureExceptions;
         _application = application ?? ApplicationAdapter.Instance;
+        _clock = clock ?? SystemClock.Clock;
+
+        _loggerFactory = loggerFactory;
     }
 
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        _hub = hub;
-        // This should never throw
+        // These should never throw but in case they do...
+        _hub = hub ?? throw new ArgumentException("Hub is null.");
         _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+        _structuredLogger = _loggerFactory?.Invoke() ?? _hub.Logger;
 
         _logTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
         _warningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
@@ -44,11 +52,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
     internal void OnLogMessageReceived(string message, string stacktrace, LogType logType)
     {
-        if (_hub is null)
-        {
-            return;
-        }
-
         // We're not capturing the SDK's own logs
         if (message.StartsWith(UnityLogger.LogTag))
         {
@@ -64,6 +67,25 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         ProcessException(message, stacktrace, logType);
         ProcessError(message, stacktrace, logType);
         ProcessBreadcrumbs(message, logType);
+        ProcessStructuredLog(message, logType);
+    }
+
+    private void ProcessStructuredLog(string message, LogType logType)
+    {
+        if (!_options.Experimental.CaptureStructuredLogsForLogType.TryGetValue(logType, out var captureLog) || !captureLog)
+        {
+            return;
+        }
+
+        _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
+
+        SentryLog.GetTraceIdAndSpanId(_hub, out var traceId, out var spanId);
+        SentryLog log = new(_clock.GetUtcNow(), traceId, ToLogLevel(logType), message) { ParentSpanId = spanId };
+
+        log.SetDefaultAttributes(_options, UnitySdkInfo.Sdk);
+        log.SetOrigin("auto.log.unity");
+
+        _structuredLogger.CaptureLog(log);
     }
 
     private bool IsGettingDebounced(LogType logType)
@@ -92,7 +114,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             _options.LogDebug("Exception capture has been enabled. Capturing exception through '{0}'.", nameof(UnityApplicationLoggingIntegration));
 
             var evt = UnityLogEventFactory.CreateExceptionEvent(message, stacktrace, false, _options);
-            _hub?.CaptureEvent(evt);
+            _hub.CaptureEvent(evt);
         }
     }
 
@@ -108,11 +130,11 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         if (_options.AttachStacktrace && !string.IsNullOrEmpty(stacktrace))
         {
             var evt = UnityLogEventFactory.CreateMessageEvent(message, stacktrace, SentryLevel.Error, _options);
-            _hub?.CaptureEvent(evt);
+            _hub.CaptureEvent(evt);
         }
         else
         {
-            _hub?.CaptureMessage(message, level: SentryLevel.Error);
+            _hub.CaptureMessage(message, level: SentryLevel.Error);
         }
     }
 
@@ -133,7 +155,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         if (_options.AddBreadcrumbsForLogType.TryGetValue(logType, out var value) && value)
         {
             _options.LogDebug("Adding breadcrumb for log message of type: {0}", logType);
-            _hub?.AddBreadcrumb(message: message, category: "unity.logger", level: ToBreadcrumbLevel(logType));
+            _hub.AddBreadcrumb(message: message, category: "unity.logger", level: ToBreadcrumbLevel(logType));
         }
     }
 
@@ -148,5 +170,16 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             LogType.Log => BreadcrumbLevel.Info,
             LogType.Warning => BreadcrumbLevel.Warning,
             _ => BreadcrumbLevel.Info
+        };
+
+    private static SentryLogLevel ToLogLevel(LogType logType)
+        => logType switch
+        {
+            LogType.Assert => SentryLogLevel.Error,
+            LogType.Error => SentryLogLevel.Error,
+            LogType.Exception => SentryLogLevel.Error,
+            LogType.Log => SentryLogLevel.Info,
+            LogType.Warning => SentryLogLevel.Warning,
+            _ => SentryLogLevel.Info
         };
 }
