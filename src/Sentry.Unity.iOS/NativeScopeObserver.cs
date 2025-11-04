@@ -42,7 +42,7 @@ public class NativeScopeObserver : ScopeObserver
             BreadcrumbLevel.Info => 2,
             BreadcrumbLevel.Warning => 3,
             BreadcrumbLevel.Error => 4,
-            BreadcrumbLevel.Critical => 5,
+            BreadcrumbLevel.Fatal => 5,
             _ => 0
         };
 }

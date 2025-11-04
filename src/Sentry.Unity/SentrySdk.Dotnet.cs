@@ -52,6 +52,17 @@ public static partial class SentrySdk
     public static bool IsEnabled { [DebuggerStepThrough] get => Sentry.SentrySdk.IsEnabled; }
 
     /// <summary>
+    /// Gets the structured logger instance for creating and sending logs to Sentry.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to access structured logging functionality. Logs are only sent when
+    /// <see cref="SentryUnityOptions.Experimental"/>'s <see cref="SentryOptions.SentryExperimentalOptions.EnableLogs"/>
+    /// is set to true.
+    /// </remarks>
+    /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
+    public static SentryStructuredLogger Logger { [DebuggerStepThrough] get => Sentry.SentrySdk.Logger; }
+
+    /// <summary>
     /// Creates a new scope that will terminate when disposed.
     /// </summary>
     /// <remarks>
@@ -323,27 +334,6 @@ public static partial class SentrySdk
         SentryHint? hint = null)
         => Sentry.SentrySdk.CaptureFeedback(new SentryFeedback(message, contactEmail, name, replayId, url, associatedEventId),
             scope, hint);
-
-    /// <summary>
-    /// Captures a user feedback.
-    /// </summary>
-    /// <param name="userFeedback">The user feedback to send to Sentry.</param>
-    [DebuggerStepThrough]
-    [Obsolete("Use CaptureFeedback instead.")]
-    public static void CaptureUserFeedback(UserFeedback userFeedback)
-        => Sentry.SentrySdk.CaptureUserFeedback(userFeedback);
-
-    /// <summary>
-    /// Captures a user feedback.
-    /// </summary>
-    /// <param name="eventId">The event Id.</param>
-    /// <param name="email">The user email.</param>
-    /// <param name="comments">The user comments.</param>
-    /// <param name="name">The optional username.</param>
-    [DebuggerStepThrough]
-    [Obsolete("Use CaptureFeedback instead.")]
-    public static void CaptureUserFeedback(SentryId eventId, string email, string comments, string? name = null)
-        => Sentry.SentrySdk.CaptureUserFeedback(new UserFeedback(eventId, name, email, comments));
 
     /// <summary>
     /// Captures a transaction.

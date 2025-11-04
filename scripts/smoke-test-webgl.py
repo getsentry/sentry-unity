@@ -203,7 +203,7 @@ t.ExpectMessage(currentMessage, "CaptureMessage(GUID)")
 currentMessage += 1
 t.ExpectMessage(currentMessage, "'type':'event'")
 t.ExpectMessage(
-    currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'critical'}")
+    currentMessage, "'message':'crumb','type':'error','data':{'foo':'bar'},'category':'bread','level':'fatal'}")
 t.ExpectMessage(currentMessage, "'message':'scope-crumb'}")
 t.ExpectMessage(currentMessage, "'extra':{'extra-key':42}")
 t.ExpectMessage(currentMessage, "'tag-key':'tag-value'")

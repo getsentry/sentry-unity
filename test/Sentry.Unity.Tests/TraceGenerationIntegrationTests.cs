@@ -68,27 +68,6 @@ public class TraceGenerationIntegrationTests
         Assert.IsEmpty(_fixture.TestHub.ConfigureScopeCalls);
     }
 
-    [Test]
-    public void ApplicationResuming_WhenCalled_GeneratesNewTrace()
-    {
-        // Arrange
-        var sut = _fixture.GetSut();
-        sut.Register(_fixture.TestHub, _fixture.SentryOptions);
-        var initialCallsCount = _fixture.TestHub.ConfigureScopeCalls.Count;
-
-        // Act
-        _fixture.SentryMonoBehaviour.ResumeApplication();
-
-        // Assert
-        Assert.AreEqual(initialCallsCount + 1, _fixture.TestHub.ConfigureScopeCalls.Count);
-        var configureScope = _fixture.TestHub.ConfigureScopeCalls.Last();
-        var scope = new Scope(_fixture.SentryOptions);
-        var initialPropagationContext = scope.PropagationContext;
-        configureScope(scope);
-
-        Assert.AreNotEqual(initialPropagationContext, scope.PropagationContext);
-    }
-
     [TestCase(0.0f, false)]
     [TestCase(0.0f, true)]
     [TestCase(1.0f, false)]
