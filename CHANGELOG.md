@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Added the missing `origin` and `sdk` to the structured logs ([#2390](https://github.com/getsentry/sentry-unity/pull/2390))
+- Structured logs now have the `origin` and `sdk` attributes correctly set ([#2390](https://github.com/getsentry/sentry-unity/pull/2390))
 
 ## 4.0.0-beta.4
 
