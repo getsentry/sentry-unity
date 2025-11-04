@@ -134,10 +134,7 @@ internal sealed class TestHub : IHub
         throw new NotImplementedException();
     }
 
-    ISpan? IHub.GetSpan()
-    {
-        throw new NotImplementedException();
-    }
+    ISpan? IHub.GetSpan() => null;
 
     public SentryTraceHeader? GetTraceHeader()
     {

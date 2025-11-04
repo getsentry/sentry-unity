@@ -70,24 +70,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         ProcessStructuredLog(message, logType);
     }
 
-    private void ProcessStructuredLog(string message, LogType logType)
-    {
-        if (!_options.Experimental.CaptureStructuredLogsForLogType.TryGetValue(logType, out var captureLog) || !captureLog)
-        {
-            return;
-        }
-
-        _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
-
-        SentryLog.GetTraceIdAndSpanId(_hub, out var traceId, out var spanId);
-        SentryLog log = new(_clock.GetUtcNow(), traceId, ToLogLevel(logType), message) { ParentSpanId = spanId };
-
-        log.SetDefaultAttributes(_options, UnitySdkInfo.Sdk);
-        log.SetOrigin("auto.log.unity");
-
-        _structuredLogger.CaptureLog(log);
-    }
-
     private bool IsGettingDebounced(LogType logType)
     {
         if (_options.EnableLogDebouncing is false)
@@ -157,6 +139,24 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             _options.LogDebug("Adding breadcrumb for log message of type: {0}", logType);
             _hub.AddBreadcrumb(message: message, category: "unity.logger", level: ToBreadcrumbLevel(logType));
         }
+    }
+
+    private void ProcessStructuredLog(string message, LogType logType)
+    {
+        if (!_options.Experimental.EnableLogs || !_options.Experimental.CaptureStructuredLogsForLogType.TryGetValue(logType, out var captureLog) || !captureLog)
+        {
+            return;
+        }
+
+        _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
+
+        SentryLog.GetTraceIdAndSpanId(_hub, out var traceId, out var spanId);
+        SentryLog log = new(_clock.GetUtcNow(), traceId, ToLogLevel(logType), message) { ParentSpanId = spanId };
+
+        log.SetDefaultAttributes(_options, UnitySdkInfo.Sdk);
+        log.SetOrigin("auto.log.unity");
+
+        _structuredLogger.CaptureLog(log);
     }
 
     private void OnQuitting() => _application.LogMessageReceived -= OnLogMessageReceived;
