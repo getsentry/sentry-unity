@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using System.Threading;
+using System.Collections.Concurrent;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -53,7 +53,9 @@ public partial class SentryMonoBehaviour
 /// </summary>
 public partial class SentryMonoBehaviour
 {
-    private volatile IEnumerator? _queuedCoroutine;
+    // Magic number 5 - This is used exclusively by the ScreenshotEventProcessor, to capture one screenshot per frame
+    // Realistically, there should be no more than one element in the collection but QueueCoroutine is public...
+    private readonly BlockingCollection<IEnumerator> _coroutineQueue = new(5);
 
     public void QueueCoroutine(IEnumerator routine)
     {
@@ -63,22 +65,18 @@ public partial class SentryMonoBehaviour
         }
         else
         {
-            // Fallback for issues coming from a background thread (e.g., Burst job)
-            // Screenshot will be captured in the next frame
-            _queuedCoroutine = routine;
+            // On background thread (e.g., Burst job) - queue for next Update()
+            // This means screenshots will be captured in the next frame
+            _coroutineQueue.TryAdd(routine);
         }
     }
 
     private void Update()
     {
-        var coroutine = _queuedCoroutine;
-        if (coroutine == null)
+        while (_coroutineQueue.TryTake(out var coroutine))
         {
-            return;
+            StartCoroutine(coroutine);
         }
-
-        _queuedCoroutine = null;
-        StartCoroutine(coroutine);
     }
 
     /// <summary>
