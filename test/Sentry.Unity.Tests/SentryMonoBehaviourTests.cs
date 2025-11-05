@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
@@ -81,4 +83,49 @@ public class SentryMonoBehaviourTests
         Assert.AreEqual(1, counter);
     }
 
+    [Test]
+    public void QueueCoroutine_CalledOnMainThread_StartsCoroutineImmediately()
+    {
+        var sut = _fixture.GetSut();
+        var coroutineExecuted = false;
+
+        IEnumerator TestCoroutine()
+        {
+            coroutineExecuted = true;
+            yield return null;
+        }
+
+        sut.QueueCoroutine(TestCoroutine());
+
+        Assert.IsTrue(coroutineExecuted);
+    }
+
+    [UnityTest]
+    public IEnumerator QueueCoroutine_QueuedOnBackgroundThread_StartsInUpdate()
+    {
+        var sut = _fixture.GetSut();
+        var coroutineExecuted = false;
+
+        IEnumerator TestCoroutine()
+        {
+            coroutineExecuted = true;
+            yield return null;
+        }
+
+        var thread = new Thread(() =>
+        {
+            sut.QueueCoroutine(TestCoroutine());
+        });
+
+        thread.Start();
+        thread.Join();
+
+        // Coroutine should not have started yet
+        Assert.IsFalse(coroutineExecuted);
+
+        // Wait for the coroutine to execute - trigger `Update`
+        yield return null;
+
+        Assert.IsTrue(coroutineExecuted);
+    }
 }

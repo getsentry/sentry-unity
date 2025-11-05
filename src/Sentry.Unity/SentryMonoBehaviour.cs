@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ internal interface ISentryMonoBehaviour
 {
     event Action? ApplicationResuming;
     public Coroutine StartCoroutine(IEnumerator routine);
+    public void QueueCoroutine(IEnumerator routine);
 }
 
 /// <summary>
@@ -51,6 +53,34 @@ public partial class SentryMonoBehaviour
 /// </summary>
 public partial class SentryMonoBehaviour
 {
+    private volatile IEnumerator? _queuedCoroutine;
+
+    public void QueueCoroutine(IEnumerator routine)
+    {
+        if (MainThreadData.IsMainThread())
+        {
+            StartCoroutine(routine);
+        }
+        else
+        {
+            // Fallback for issues coming from a background thread (e.g., Burst job)
+            // Screenshot will be captured in the next frame
+            _queuedCoroutine = routine;
+        }
+    }
+
+    private void Update()
+    {
+        var coroutine = _queuedCoroutine;
+        if (coroutine == null)
+        {
+            return;
+        }
+
+        _queuedCoroutine = null;
+        StartCoroutine(coroutine);
+    }
+
     /// <summary>
     /// Hook to receive an event when the application gains focus.
     /// </summary>
