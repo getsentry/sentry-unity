@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fixed an issue where screenshot capture triggered on a burst job would crash the game. The SDK can now also capture screenshots on events that occur outside of the main thread ([#2392](https://github.com/getsentry/sentry-unity/pull/2392))
+
 ## 4.0.0-beta.4
 
 ### Breaking Changes
