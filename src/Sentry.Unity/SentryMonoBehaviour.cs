@@ -53,9 +53,8 @@ public partial class SentryMonoBehaviour
 /// </summary>
 public partial class SentryMonoBehaviour
 {
-    // Magic number 5 - This is used exclusively by the ScreenshotEventProcessor, to capture one screenshot per frame
-    // Realistically, there should be no more than one element in the collection but QueueCoroutine is public...
-    private readonly BlockingCollection<IEnumerator> _coroutineQueue = new(5);
+    // Unbounded queue - used by the ScreenshotEventProcessor where capture is already limited by Interlocked to 1/frame
+    private readonly ConcurrentQueue<IEnumerator> _coroutineQueue = new();
 
     public void QueueCoroutine(IEnumerator routine)
     {
@@ -66,14 +65,13 @@ public partial class SentryMonoBehaviour
         else
         {
             // On background thread (e.g., Burst job) - queue for next Update()
-            // This means screenshots will be captured in the next frame
-            _coroutineQueue.TryAdd(routine);
+            _coroutineQueue.Enqueue(routine);
         }
     }
 
     private void Update()
     {
-        while (_coroutineQueue.TryTake(out var coroutine))
+        while (_coroutineQueue.TryDequeue(out var coroutine))
         {
             StartCoroutine(coroutine);
         }
