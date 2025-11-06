@@ -215,6 +215,7 @@ public class SmokeTester : MonoBehaviour
         t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
         t.ExpectMessageNot(currentMessage, "'length':0");
 
+#if !UNITY_WEBGL
         // Test screenshot capture from background thread
         var backgroundThreadGuid = Guid.NewGuid().ToString();
         var backgroundThreadTask = Task.Run(() =>
@@ -239,7 +240,7 @@ public class SmokeTester : MonoBehaviour
 
         t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
         t.ExpectMessageNot(currentMessage, "'length':0");
-
+#endif
         Debug.Log("Finished checking messages.");
 
         t.Pass();
