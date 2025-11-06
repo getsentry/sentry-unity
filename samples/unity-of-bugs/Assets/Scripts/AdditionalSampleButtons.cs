@@ -60,7 +60,7 @@ public class AdditionalSampleButtons : MonoBehaviour
     {
         public void Execute()
         {
-            throw new NullReferenceException("Bursting with bugs!");
+            Debug.LogError("Bursting with bugs! 💥");
         }
     }
 
