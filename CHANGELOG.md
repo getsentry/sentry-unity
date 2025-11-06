@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fixed an issue where screenshot capture triggered on a burst job would crash the game. The SDK can now also capture screenshots on events that occur outside of the main thread ([#2392](https://github.com/getsentry/sentry-unity/pull/2392))
+
 ### Dependencies
 
 - Bump Native SDK from v0.11.2 to v0.12.1 ([#2357](https://github.com/getsentry/sentry-unity/pull/2357), [#2378](https://github.com/getsentry/sentry-unity/pull/2378), [#2388](https://github.com/getsentry/sentry-unity/pull/2388))
