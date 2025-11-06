@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes 
+
+- Resolved possible startup crashes on Android VR platforms like the Oculus Quest. The SDK no longer natively subscribles to interaction hooks for automatic tracing and breadcrumb creation. ([#2393](https://github.com/getsentry/sentry-unity/pull/2393))
+
 ### Dependencies
 
 - Bump Native SDK from v0.11.2 to v0.12.1 ([#2357](https://github.com/getsentry/sentry-unity/pull/2357), [#2378](https://github.com/getsentry/sentry-unity/pull/2378), [#2388](https://github.com/getsentry/sentry-unity/pull/2388))
