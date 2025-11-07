@@ -156,6 +156,8 @@ public sealed class UnityEventProcessorThreadingTests
         Assert.AreEqual(systemInfo.DeviceModel!.Value, @event.Contexts.Device.Model);
         Assert.AreEqual(systemInfo.DeviceUniqueIdentifier!.Value, @event.Contexts.Device.DeviceUniqueIdentifier);
         Assert.AreEqual(systemInfo.IsDebugBuild!.Value ? "debug" : "release", @event.Contexts.App.BuildType);
+        Assert.IsNotNull(@event.Contexts.App.Memory);
+        Assert.Greater(@event.Contexts.App.Memory, 0);
 
         @event.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var unityProtocolObject);
         var unityContext = unityProtocolObject as Unity.Protocol.Unity;

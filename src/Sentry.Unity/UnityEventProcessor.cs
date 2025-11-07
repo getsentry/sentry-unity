@@ -52,7 +52,11 @@ internal class UnityEventProcessor :
 
     private void PopulateApp(App app)
     {
-        app.Memory = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
+        var totalAllocatedMemory = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
+        if (totalAllocatedMemory > 0)
+        {
+            app.Memory = totalAllocatedMemory;
+        }
     }
 
     private void PopulateDevice(Device device)
