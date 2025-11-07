@@ -7,6 +7,9 @@
 - Bump Native SDK from v0.11.2 to v0.12.1 ([#2357](https://github.com/getsentry/sentry-unity/pull/2357), [#2378](https://github.com/getsentry/sentry-unity/pull/2378), [#2388](https://github.com/getsentry/sentry-unity/pull/2388))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0121)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.11.2...0.12.1)
+- Bump CLI from v2.57.0 to v2.58.0 ([#2396](https://github.com/getsentry/sentry-unity/pull/2396))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2580)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.57.0...2.58.0)
 
 ## 4.0.0-beta.4
 
