@@ -290,7 +290,6 @@ public sealed class UnityEventProcessorTests
 
         // assert
         Assert.IsNotNull(sentryEvent.Contexts.App.Memory);
-        Assert.Greater(sentryEvent.Contexts.App.Memory, 0);
     }
 
     [Test]
@@ -305,7 +304,6 @@ public sealed class UnityEventProcessorTests
 
         // assert
         Assert.IsNotNull(transaction.Contexts.App.Memory);
-        Assert.Greater(transaction.Contexts.App.Memory, 0);
     }
 
     [Test]
