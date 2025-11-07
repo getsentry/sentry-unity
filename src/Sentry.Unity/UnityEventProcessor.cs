@@ -36,6 +36,7 @@ internal class UnityEventProcessor :
     {
         try
         {
+            PopulateApp(sentryEvent.Contexts.App);
             PopulateDevice(sentryEvent.Contexts.Device);
             // Populating the SDK Integrations here (for now) instead of UnityScopeIntegration because it cannot be guaranteed
             // that it got added last or that there was not an integration added at a later point
@@ -47,6 +48,11 @@ internal class UnityEventProcessor :
         {
             _sentryOptions.DiagnosticLogger?.LogError(exception: exception, "{0} processing failed.", nameof(SentryEvent));
         }
+    }
+
+    private void PopulateApp(App app)
+    {
+        app.Memory = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
     }
 
     private void PopulateDevice(Device device)
