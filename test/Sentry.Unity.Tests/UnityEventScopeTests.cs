@@ -277,6 +277,36 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
+    public void AppMemory_SetByEventProcessor()
+    {
+        // arrange
+        var unityEventProcessor = new UnityEventProcessor(_sentryOptions);
+        var sentryEvent = new SentryEvent();
+
+        // act
+        unityEventProcessor.Process(sentryEvent);
+
+        // assert
+        Assert.IsNotNull(sentryEvent.Contexts.App.Memory);
+        Assert.Greater(sentryEvent.Contexts.App.Memory, 0);
+    }
+
+    [Test]
+    public void AppMemory_SetByEventProcessorForTransactions()
+    {
+        // arrange
+        var unityEventProcessor = new UnityEventProcessor(_sentryOptions);
+        var transaction = new SentryTransaction("test-transaction", "test-operation");
+
+        // act
+        unityEventProcessor.Process(transaction);
+
+        // assert
+        Assert.IsNotNull(transaction.Contexts.App.Memory);
+        Assert.Greater(transaction.Contexts.App.Memory, 0);
+    }
+
+    [Test]
     public void AppProtocol_AppNameIsApplicationName()
     {
         // arrange
