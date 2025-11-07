@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- The SDK now also reports the currently allocated memory when reporting an event or transaction. ([#2398](https://github.com/getsentry/sentry-unity/pull/2398))
+
 ### Dependencies
 
 - Bump Native SDK from v0.11.2 to v0.12.1 ([#2357](https://github.com/getsentry/sentry-unity/pull/2357), [#2378](https://github.com/getsentry/sentry-unity/pull/2378), [#2388](https://github.com/getsentry/sentry-unity/pull/2388))
