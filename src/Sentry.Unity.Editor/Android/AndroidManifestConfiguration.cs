@@ -214,6 +214,9 @@ public class AndroidManifestConfiguration
         androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
         androidManifest.SetAnr(false);
         androidManifest.SetPersistentScopeObserver(false);
+        // Disable user interaction tracking to prevent conflicts with VR platforms (e.g., Oculus InputHooks)
+        androidManifest.SetEnableUserInteractionBreadcrumbs(false);
+        androidManifest.SetEnableUserInteractionTracing(false);
 
         // TODO: All SentryOptions and create specific Android options
 
@@ -492,6 +495,12 @@ internal class AndroidManifest : AndroidXmlDocument
 
     internal void SetAutoTraceIdGeneration(bool enableAutoTraceIdGeneration)
         => SetMetaData($"{SentryPrefix}.traces.enable-auto-id-generation", enableAutoTraceIdGeneration.ToString());
+
+    internal void SetEnableUserInteractionBreadcrumbs(bool enableUserInteractionBreadcrumbs)
+        => SetMetaData($"{SentryPrefix}.breadcrumbs.user-interaction", enableUserInteractionBreadcrumbs.ToString());
+
+    internal void SetEnableUserInteractionTracing(bool enableUserInteractionTracing)
+        => SetMetaData($"{SentryPrefix}.traces.user-interaction.enable", enableUserInteractionTracing.ToString());
 
     internal void SetDebug(bool debug) => SetMetaData($"{SentryPrefix}.debug", debug ? "true" : "false");
 
