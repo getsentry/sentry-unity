@@ -182,8 +182,8 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Error)]
         public void OnLogMessageReceived_ExperimentalLogsEnabledWithAttachBreadcrumbsFalse_BreadcrumbsNotAdded(LogType unityLogType)
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = true;
-            _fixture.SentryOptions.Experimental.AttachBreadcrumbsToEvents = false;
+            _fixture.SentryOptions.EnableLogs = true;
+            _fixture.SentryOptions.AttachBreadcrumbsToEvents = false;
             _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
@@ -205,8 +205,8 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Error)]
         public void OnLogMessageReceived_ExperimentalLogsEnabledWithAttachBreadcrumbsTrue_BreadcrumbsAdded(LogType unityLogType)
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = true;
-            _fixture.SentryOptions.Experimental.AttachBreadcrumbsToEvents = true;
+            _fixture.SentryOptions.EnableLogs = true;
+            _fixture.SentryOptions.AttachBreadcrumbsToEvents = true;
             _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
@@ -230,7 +230,7 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Error)]
         public void OnLogMessageReceived_ExperimentalLogsDisabled_BreadcrumbsAddedAsNormal(LogType unityLogType)
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = false;
+            _fixture.SentryOptions.EnableLogs = false;
             _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
@@ -303,8 +303,8 @@ namespace Sentry.Unity.Tests
         [Test]
         public void OnLogMessageReceived_ExperimentalCaptureEnabled_CapturesStructuredLog()
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = true;
-            _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Exception] = true;
+            _fixture.SentryOptions.EnableLogs = true;
+            _fixture.SentryOptions.CaptureStructuredLogsForLogType[LogType.Exception] = true;
             _fixture.CaptureExceptions = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
@@ -321,8 +321,8 @@ namespace Sentry.Unity.Tests
         [Test]
         public void OnLogMessageReceived_ExperimentalCaptureDisabled_DoesNotCaptureStructuredLog()
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = true;
-            _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Exception] = false;
+            _fixture.SentryOptions.EnableLogs = true;
+            _fixture.SentryOptions.CaptureStructuredLogsForLogType[LogType.Exception] = false;
             _fixture.CaptureExceptions = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
@@ -336,8 +336,8 @@ namespace Sentry.Unity.Tests
         [Test]
         public void OnLogMessageReceived_WithSentryLogTag_DoesNotCaptureStructuredLog()
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = true;
-            _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Error] = true;
+            _fixture.SentryOptions.EnableLogs = true;
+            _fixture.SentryOptions.CaptureStructuredLogsForLogType[LogType.Error] = true;
             var sut = _fixture.GetSut();
             var message = $"{UnityLogger.LogTag}: Test message";
 
@@ -350,8 +350,8 @@ namespace Sentry.Unity.Tests
         [Test]
         public void OnLogMessageReceived_WithEnableLogsFalse_DoesNotCaptureStructuredLog()
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = false;
-            _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[LogType.Error] = true;
+            _fixture.SentryOptions.EnableLogs = false;
+            _fixture.SentryOptions.CaptureStructuredLogsForLogType[LogType.Error] = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 
@@ -372,8 +372,8 @@ namespace Sentry.Unity.Tests
         [TestCase(LogType.Assert, SentryLogLevel.Error, false)]
         public void OnLogMessageReceived_WithExperimentalFlag_CapturesStructuredLogWhenEnabled(LogType logType, SentryLogLevel expectedLevel, bool captureEnabled)
         {
-            _fixture.SentryOptions.Experimental.EnableLogs = true;
-            _fixture.SentryOptions.Experimental.CaptureStructuredLogsForLogType[logType] = captureEnabled;
+            _fixture.SentryOptions.EnableLogs = true;
+            _fixture.SentryOptions.CaptureStructuredLogsForLogType[logType] = captureEnabled;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 
