@@ -13,6 +13,8 @@ internal static class UnitySdkInfo
     public static string Version { get; } = typeof(UnitySdkInfo).Assembly.GetNameAndVersion().Version ?? "0.0.0";
     public const string Name = "sentry.dotnet.unity";
     public const string PackageName = "upm:sentry.unity";
+
+    public static readonly SdkVersion Sdk = new() { Name = Name, Version = Version };
 }
 
 internal class UnityScopeIntegration : ISdkIntegration
