@@ -163,7 +163,7 @@ public sealed class UnityEventProcessorThreadingTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityContext!.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityContext.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityContext.RenderingThreadingMode);
-        Assert.AreEqual(SceneManager.GetActiveScene().name, unityContext.ActiveSceneName);
+        Assert.AreEqual(captureOnUiThread ? SceneManager.GetActiveScene().name : null, unityContext.ActiveSceneName);
 
         Assert.IsNull(@event.ServerName);
     }
