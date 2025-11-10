@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK now correctly sets the currently active scene's name on the event ([#2400](https://github.com/getsentry/sentry-unity/pull/2400))
 - Fixed an issue where screenshot capture triggered on a burst job would crash the game. The SDK can now also capture screenshots on events that occur outside of the main thread ([#2392](https://github.com/getsentry/sentry-unity/pull/2392))
 - Structured logs now have the `origin` and `sdk` attributes correctly set ([#2390](https://github.com/getsentry/sentry-unity/pull/2390))
 - Resolved possible startup crashes on Android VR platforms like the Oculus Quest. The SDK no longer natively subscribes to interaction hooks for automatic tracing and breadcrumb creation. ([#2393](https://github.com/getsentry/sentry-unity/pull/2393))

@@ -148,6 +148,7 @@ public class SmokeTester : MonoBehaviour
         t.ExpectMessage(currentMessage, "'type':'os',");
         t.ExpectMessage(currentMessage, "'type':'runtime',");
         t.ExpectMessage(currentMessage, "'type':'unity',");
+        t.ExpectMessage(currentMessage, "'active_scene_name':'"); // active scene name
         // User
         t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
         t.ExpectMessageNot(currentMessage, "'length':0");

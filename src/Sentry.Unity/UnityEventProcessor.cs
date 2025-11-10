@@ -1,6 +1,7 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Protocol;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 using DeviceOrientation = Sentry.Protocol.DeviceOrientation;
 
@@ -11,13 +12,19 @@ internal class UnityEventProcessor :
     ISentryTransactionProcessor
 {
     private readonly SentryUnityOptions _sentryOptions;
+    private readonly ISentryUnityInfo _unityInfo;
+    private readonly ISceneManager _sceneManager;
+    private readonly IApplication _application;
 
-    public UnityEventProcessor(SentryUnityOptions sentryOptions)
+    public UnityEventProcessor(SentryUnityOptions sentryOptions, ISentryUnityInfo unityInfo, IApplication? application = null, ISceneManager? sceneManager = null)
     {
         _sentryOptions = sentryOptions;
+        _unityInfo = unityInfo;
+        _application = application ?? ApplicationAdapter.Instance;
+        _sceneManager = sceneManager ?? SceneManagerAdapter.Instance;
     }
 
-    public SentryTransaction? Process(SentryTransaction transaction)
+    public SentryTransaction Process(SentryTransaction transaction)
     {
         SetEventContext(transaction);
         return transaction;
@@ -37,6 +44,17 @@ internal class UnityEventProcessor :
         try
         {
             PopulateDevice(sentryEvent.Contexts.Device);
+
+            // The Unity context should get set in the UnityScopeIntegration automatically sets it when it gets registered
+            sentryEvent.Contexts.TryGetValue(Protocol.Unity.Type, out var contextObject);
+            if (contextObject is not Protocol.Unity unityContext)
+            {
+                unityContext = new Protocol.Unity();
+                sentryEvent.Contexts.Add(Protocol.Unity.Type, unityContext);
+            }
+
+            PopulateUnity(unityContext);
+
             // Populating the SDK Integrations here (for now) instead of UnityScopeIntegration because it cannot be guaranteed
             // that it got added last or that there was not an integration added at a later point
             PopulateSdkIntegrations(sentryEvent.Sdk);
@@ -78,6 +96,20 @@ internal class UnityEventProcessor :
             case UnityEngine.DeviceOrientation.FaceDown:
                 // TODO: Add to protocol?
                 break;
+        }
+    }
+
+    private void PopulateUnity(Protocol.Unity unity)
+    {
+        if (!MainThreadData.IsMainThread())
+        {
+            return;
+        }
+
+        if (_application.IsEditor || _unityInfo.IL2CPP)
+        {
+            // Currently an IL2CPP only feature: see https://github.com/getsentry/sentry-unity/issues/2181
+            unity.ActiveSceneName = _sceneManager.GetActiveScene().Name;
         }
     }
 
