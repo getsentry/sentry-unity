@@ -42,6 +42,13 @@ public static class SentryWebGL
                                                  "Currently, it produces blank screenshots mid-frame.");
         }
 
+        if (options.AutoSessionTracking)
+        {
+            options.DiagnosticLogger?.LogDebug("Auto session tracking is unsupported on WebGL - disabling. " +
+                                               "Currently, the SDK has no mechanism to determine whether a session crashed last run.");
+            options.AutoSessionTracking = false;
+        }
+
         // On WebGL, the IL2CPP backend does not provide the API required to make the IL2CPP Event Processor work
         if (options.Il2CppLineNumberSupportEnabled)
         {
