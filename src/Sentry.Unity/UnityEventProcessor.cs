@@ -52,8 +52,13 @@ internal class UnityEventProcessor :
 
     private void PopulateApp(App app)
     {
+        if (!MainThreadData.IsMainThread())
+        {
+            return;
+        }
+
+        // The Profiler returns '0' if it is not available
         var totalAllocatedMemory = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
-        // The Profiler returns '0' if not available. See https://docs.unity3d.com/ScriptReference/Profiling.Profiler.GetTotalAllocatedMemoryLong.html
         if (totalAllocatedMemory > 0)
         {
             app.Memory = totalAllocatedMemory;

@@ -157,7 +157,6 @@ public sealed class UnityEventProcessorThreadingTests
         Assert.AreEqual(systemInfo.DeviceUniqueIdentifier!.Value, @event.Contexts.Device.DeviceUniqueIdentifier);
         Assert.AreEqual(systemInfo.IsDebugBuild!.Value ? "debug" : "release", @event.Contexts.App.BuildType);
         Assert.IsNotNull(@event.Contexts.App.Memory);
-        Assert.Greater(@event.Contexts.App.Memory, 0);
 
         @event.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var unityProtocolObject);
         var unityContext = unityProtocolObject as Unity.Protocol.Unity;
@@ -276,34 +275,7 @@ public sealed class UnityEventProcessorTests
         Assert.IsNotNull(scope.Contexts.App.Name);
         Assert.IsNotNull(scope.Contexts.App.StartTime);
         Assert.IsNotNull(scope.Contexts.App.BuildType);
-    }
-
-    [Test]
-    public void AppMemory_SetByEventProcessor()
-    {
-        // arrange
-        var unityEventProcessor = new UnityEventProcessor(_sentryOptions);
-        var sentryEvent = new SentryEvent();
-
-        // act
-        unityEventProcessor.Process(sentryEvent);
-
-        // assert
-        Assert.IsNotNull(sentryEvent.Contexts.App.Memory);
-    }
-
-    [Test]
-    public void AppMemory_SetByEventProcessorForTransactions()
-    {
-        // arrange
-        var unityEventProcessor = new UnityEventProcessor(_sentryOptions);
-        var transaction = new SentryTransaction("test-transaction", "test-operation");
-
-        // act
-        unityEventProcessor.Process(transaction);
-
-        // assert
-        Assert.IsNotNull(transaction.Contexts.App.Memory);
+        Assert.IsNotNull(scope.Contexts.App.Memory);
     }
 
     [Test]
