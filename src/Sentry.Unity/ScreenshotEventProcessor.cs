@@ -26,7 +26,8 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
         // Only ever capture one screenshot per frame
         if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
         {
-            _sentryMonoBehaviour.StartCoroutine(CaptureScreenshotCoroutine(@event.EventId));
+            _options.LogDebug("Starting coroutine to capture a screenshot.");
+            _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(@event.EventId));
         }
 
         return @event;
