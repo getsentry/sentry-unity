@@ -43,6 +43,7 @@ internal class UnityEventProcessor :
     {
         try
         {
+            PopulateApp(sentryEvent.Contexts.App);
             PopulateDevice(sentryEvent.Contexts.Device);
 
             // The Unity context should get set in the UnityScopeIntegration automatically sets it when it gets registered
@@ -64,6 +65,21 @@ internal class UnityEventProcessor :
         catch (Exception exception)
         {
             _sentryOptions.DiagnosticLogger?.LogError(exception: exception, "{0} processing failed.", nameof(SentryEvent));
+        }
+    }
+
+    private void PopulateApp(App app)
+    {
+        if (!MainThreadData.IsMainThread())
+        {
+            return;
+        }
+
+        // The Profiler returns '0' if it is not available
+        var totalAllocatedMemory = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
+        if (totalAllocatedMemory > 0)
+        {
+            app.Memory = totalAllocatedMemory;
         }
     }
 
