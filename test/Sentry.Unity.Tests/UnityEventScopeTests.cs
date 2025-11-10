@@ -439,7 +439,6 @@ public sealed class UnityEventProcessorTests
     [TestCase(false)]
     public void UnityProtocol_Assigned(bool isIL2CPP)
     {
-        var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
         var systemInfo = new TestSentrySystemInfo
         {
             EditorVersion = "TestEditorVersion2022.3.2f1",
@@ -466,7 +465,6 @@ public sealed class UnityEventProcessorTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityProtocol.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityProtocol.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityProtocol.RenderingThreadingMode);
-        Assert.AreEqual(isIL2CPP ? sceneManager.GetActiveScene().Name : null, unityProtocol.ActiveSceneName);
     }
 
     [Test]
@@ -565,6 +563,28 @@ public sealed class UnityEventProcessorTests
 
         // assert
         Assert.IsNull(scope.Contexts.Gpu.GraphicsShaderLevel);
+    }
+
+    [Test]
+    [TestCase(true, true)]
+    [TestCase(false, true)]
+    [TestCase(true, false)]
+    [TestCase(false, false)]
+    public void Process_SetsActiveSceneName(bool isEditor, bool isIL2CPP)
+    {
+        var sentryOptions = new SentryUnityOptions();
+        var application = new TestApplication { IsEditor = isEditor};
+        var unityInfo = new TestUnityInfo { IL2CPP = isIL2CPP };
+        var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
+        var sut = new UnityEventProcessor(sentryOptions, unityInfo, application, sceneManager);
+        var sentryEvent = new SentryEvent();
+
+        sut.Process(sentryEvent);
+
+        sentryEvent.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var unityProtocolObject);
+        var unityProtocol = unityProtocolObject as Unity.Protocol.Unity;
+        Assert.NotNull(unityProtocol);
+        Assert.AreEqual(isEditor || isIL2CPP ? sceneManager.GetActiveScene().Name : null, unityProtocol!.ActiveSceneName);
     }
 }
 
