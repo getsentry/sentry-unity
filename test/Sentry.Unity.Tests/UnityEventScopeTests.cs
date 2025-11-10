@@ -573,7 +573,7 @@ public sealed class UnityEventProcessorTests
     public void Process_SetsActiveSceneName(bool isEditor, bool isIL2CPP)
     {
         var sentryOptions = new SentryUnityOptions();
-        var application = new TestApplication { IsEditor = isEditor};
+        var application = new TestApplication { IsEditor = isEditor };
         var unityInfo = new TestUnityInfo { IL2CPP = isIL2CPP };
         var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
         var sut = new UnityEventProcessor(sentryOptions, unityInfo, application, sceneManager);
