@@ -338,7 +338,8 @@ public sealed class UnityEventProcessorTests
 
         var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
         var scopeUpdater = new UnityScopeUpdater(sentryOptions, _testApplication);
-        var unityEventProcessor = new UnityEventProcessor(sentryOptions);
+        var unityInfo = new TestUnityInfo { IL2CPP = true };
+        var unityEventProcessor = new UnityEventProcessor(sentryOptions, unityInfo);
         var scope = new Scope(sentryOptions);
         var sentryEvent = new SentryEvent();
         var transaction = new SentryTransaction("name", "operation");
@@ -450,7 +451,7 @@ public sealed class UnityEventProcessorTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, new TestUnityInfo { IL2CPP = isIL2CPP }, sceneManager);
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
 
         // act

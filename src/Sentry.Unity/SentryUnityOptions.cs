@@ -340,7 +340,7 @@ public sealed class SentryUnityOptions : SentryOptions
         AddInAppExclude("Cysharp");
         AddInAppExclude("DG.Tweening");
 
-        var processor = new UnityEventProcessor(this);
+        var processor = new UnityEventProcessor(this, UnityInfo);
         AddEventProcessor(processor);
         AddTransactionProcessor(processor);
 
@@ -353,7 +353,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
         AddIntegration(new StartupTracingIntegration());
         AddIntegration(new AnrIntegration(behaviour));
-        AddIntegration(new UnityScopeIntegration(application, unityInfo));
+        AddIntegration(new UnityScopeIntegration(application));
         AddIntegration(new UnityBeforeSceneLoadIntegration());
         AddIntegration(new SceneManagerIntegration());
         AddIntegration(new SceneManagerTracingIntegration());
