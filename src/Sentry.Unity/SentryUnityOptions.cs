@@ -167,6 +167,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should add native support for iOS
+    /// </summary>
+    public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
+
+    /// <summary>
     /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
     /// the generated Xcode project. Modifying the options at runtime will not affect the options used to initialize
     /// the native SDK.

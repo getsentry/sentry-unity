@@ -38,7 +38,7 @@ static SentryOptions* getSentryOptions()
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}"",
         @""enableNetworkBreadcrumbs"" : @NO,
-        @""enableWatchdogTerminationTracking"" : @NO,
+        @""enableWatchdogTerminationTracking"" : @{ToObjCString(options.IosWatchdogTerminationIntegrationEnabled)},
     }};
 
     NSError *error = nil;
