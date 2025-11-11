@@ -23,7 +23,7 @@ public class LowMemoryIntegrationTests
     {
         _fixture = new Fixture();
     }
-    
+
     [Test]
     public void LowMemory_EnabledHub_BreadcrumbAdded()
     {
