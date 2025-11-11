@@ -87,5 +87,29 @@ public sealed class SentryUnityOptionsTests
     }
 
     [Test]
-    public void Ctor_IsEnvironmentUser_IsFalse() => Assert.AreEqual(false, _fixture.GetSut().IsEnvironmentUser);
+    [TestCase(RuntimePlatform.WindowsPlayer, true)]
+    [TestCase(RuntimePlatform.WindowsServer, true)]
+    [TestCase(RuntimePlatform.OSXPlayer, true)]
+    [TestCase(RuntimePlatform.OSXServer, true)]
+    [TestCase(RuntimePlatform.LinuxPlayer, true)]
+    [TestCase(RuntimePlatform.LinuxServer, true)]
+    [TestCase(RuntimePlatform.Android, false)]
+    [TestCase(RuntimePlatform.IPhonePlayer, false)]
+    [TestCase(RuntimePlatform.GameCoreXboxSeries, false)]
+    [TestCase(RuntimePlatform.GameCoreXboxOne, false)]
+    [TestCase(RuntimePlatform.PS4, false)]
+    [TestCase(RuntimePlatform.PS5, false)]
+    [TestCase(RuntimePlatform.Switch, false)]
+    [TestCase(RuntimePlatform.WindowsEditor, false)]
+    [TestCase(RuntimePlatform.OSXEditor, false)]
+    [TestCase(RuntimePlatform.LinuxEditor, false)]
+    [TestCase(RuntimePlatform.WebGLPlayer, false)]
+    public void Ctor_IsEnvironmentUser_DefaultsBasedOnPlatform(RuntimePlatform platform, bool expectedValue)
+    {
+        _fixture.Application.Platform = platform;
+
+        var sut = _fixture.GetSut();
+
+        Assert.AreEqual(expectedValue, sut.IsEnvironmentUser);
+    }
 }

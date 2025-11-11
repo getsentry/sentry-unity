@@ -379,7 +379,24 @@ public sealed class SentryUnityOptions : SentryOptions
         // Ben.Demystifer not compatible with IL2CPP. We could allow Enhanced in the future for Mono.
         // See https://github.com/getsentry/sentry-unity/issues/675
         base.StackTraceMode = StackTraceMode.Original;
-        IsEnvironmentUser = false;
+
+        IsEnvironmentUser = application.Platform switch
+        {
+            // Desktop: true (capture logged-in user)
+            RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer
+                or RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer
+                or RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer => true,
+
+            // Mobile: false
+            RuntimePlatform.Android or RuntimePlatform.IPhonePlayer => false,
+
+            // Consoles: false
+            RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne
+                or RuntimePlatform.PS4 or RuntimePlatform.PS5 or RuntimePlatform.Switch => false,
+
+            // Unknown platforms
+            _ => false
+        };
 
         if (application.ProductName is string productName
             && !string.IsNullOrWhiteSpace(productName)
