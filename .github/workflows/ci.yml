@@ -158,8 +158,15 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-      # - name: Build without Sentry SDK
-      #   run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+      - name: Build without Sentry SDK
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
+
+      - name: Backup build without Sentry
+        run: |
+          mkdir -p samples/IntegrationTest/Build-NoSentry
+          cp -r samples/IntegrationTest/Build/* samples/IntegrationTest/Build-NoSentry/
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -184,6 +191,9 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           CHECK_SYMBOLS: ${{ matrix.check_symbols }}
           UNITY_VERSION: ${{ matrix.unity-version }}
+
+      - name: Compare build sizes
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build"
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -389,6 +399,11 @@ jobs:
       - name: Build without Sentry SDK
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH"
 
+      - name: Backup build without Sentry
+        run: |
+          New-Item -Path "samples/IntegrationTest/Build-NoSentry" -ItemType Directory -Force
+          Copy-Item -Path "samples/IntegrationTest/Build/*" -Destination "samples/IntegrationTest/Build-NoSentry/" -Recurse
+
       - name: Download UPM package
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -407,6 +422,9 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -CheckSymbols -UnityVersion "$env:UNITY_VERSION"
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
+
+      - name: Compare build sizes
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build"
 
       - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
