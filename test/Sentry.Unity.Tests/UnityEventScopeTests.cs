@@ -284,7 +284,7 @@ public sealed class UnityEventProcessorTests
     public void AppMemory_SetByEventProcessor()
     {
         // arrange
-        var unityEventProcessor = new UnityEventProcessor(_sentryOptions);
+        var unityEventProcessor = new UnityEventProcessor(_sentryOptions, new TestUnityInfo());
         var sentryEvent = new SentryEvent();
 
         // act
@@ -298,7 +298,7 @@ public sealed class UnityEventProcessorTests
     public void AppMemory_SetByEventProcessorForTransactions()
     {
         // arrange
-        var unityEventProcessor = new UnityEventProcessor(_sentryOptions);
+        var unityEventProcessor = new UnityEventProcessor(_sentryOptions, new TestUnityInfo());
         var transaction = new SentryTransaction("test-transaction", "test-operation");
 
         // act
