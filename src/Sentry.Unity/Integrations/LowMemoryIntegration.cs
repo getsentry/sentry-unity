@@ -26,13 +26,12 @@ internal class LowMemoryIntegration : ISdkIntegration
                 return;
             }
 
-            var breadcrumb = new Breadcrumb(
+            hub.AddBreadcrumb(new Breadcrumb(
                 message: "Low memory",
                 type: "system",
                 data: lowMemoryData,
                 category: "device.event",
-                level: BreadcrumbLevel.Warning);
-            hub.AddBreadcrumb(breadcrumb);
+                level: BreadcrumbLevel.Warning));
         };
     }
 }
