@@ -54,8 +54,8 @@ jobs:
 
       - name: Backup build without Sentry
         run: |
-          mkdir -p samples/IntegrationTest/Build-NoSentry
-          cp -r samples/IntegrationTest/Build/* samples/IntegrationTest/Build-NoSentry/
+          New-Item -Path "samples/IntegrationTest/Build-NoSentry" -ItemType Directory -Force
+          Copy-Item -Path "samples/IntegrationTest/Build/*" -Destination "samples/IntegrationTest/Build-NoSentry/" -Recurse
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -76,7 +76,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$true -UnityVersion "$env:UNITY_VERSION"
 
       - name: Compare build sizes (Runtime)
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build"
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Android"
 
       - name: Upload .apk
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

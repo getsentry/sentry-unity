@@ -3,7 +3,9 @@ param(
     [string] $Path1,
 
     [Parameter(Mandatory=$true)]
-    [string] $Path2
+    [string] $Path2,
+
+    [string] $Platform = "Build"
 )
 
 Set-StrictMode -Version latest
@@ -52,9 +54,8 @@ Write-Host "Difference:     $diffFormatted ($percentFormatted)"
 
 # Add to GitHub Actions job summary if available
 if ($env:GITHUB_STEP_SUMMARY) {
-    $platform = Split-Path -Leaf $Path2
     @"
-### Build Size Impact - $platform
+### Build Size Impact - $Platform
 
 | Metric | Size |
 |--------|------|

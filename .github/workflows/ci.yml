@@ -165,8 +165,8 @@ jobs:
 
       - name: Backup build without Sentry
         run: |
-          mkdir -p samples/IntegrationTest/Build-NoSentry
-          cp -r samples/IntegrationTest/Build/* samples/IntegrationTest/Build-NoSentry/
+          New-Item -Path "samples/IntegrationTest/Build-NoSentry" -ItemType Directory -Force
+          Copy-Item -Path "samples/IntegrationTest/Build/*" -Destination "samples/IntegrationTest/Build-NoSentry/" -Recurse
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -193,7 +193,9 @@ jobs:
           UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Compare build sizes
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build"
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "$env:BUILD_PLATFORM"
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -424,7 +426,7 @@ jobs:
           UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Compare build sizes
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build"
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Windows"
 
       - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
