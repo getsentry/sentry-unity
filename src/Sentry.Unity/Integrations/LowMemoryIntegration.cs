@@ -5,6 +5,8 @@ namespace Sentry.Unity.Integrations;
 
 internal class LowMemoryIntegration : ISdkIntegration
 {
+    private static readonly Dictionary<string, string> lowMemoryData = new() { { "action", "LOW_MEMORY" } };
+
     private IHub _hub = null!;
     private IApplication _application;
 
@@ -27,7 +29,7 @@ internal class LowMemoryIntegration : ISdkIntegration
             var breadcrumb = new Breadcrumb(
                 message: "Low memory",
                 type: "system",
-                data: new Dictionary<string, string> { { "action", "LOW_MEMORY" } },
+                data: lowMemoryData,
                 category: "device.event",
                 level: BreadcrumbLevel.Warning);
             hub.AddBreadcrumb(breadcrumb);
