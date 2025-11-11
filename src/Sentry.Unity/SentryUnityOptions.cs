@@ -360,6 +360,7 @@ public sealed class SentryUnityOptions : SentryOptions
         AddIntegration(new SceneManagerTracingIntegration());
         AddIntegration(new LifeCycleIntegration(behaviour));
         AddIntegration(new TraceGenerationIntegration(behaviour));
+        AddIntegration(new LowMemoryIntegration());
 
         AddExceptionFilter(new UnityBadGatewayExceptionFilter());
         AddExceptionFilter(new UnityWebExceptionFilter());

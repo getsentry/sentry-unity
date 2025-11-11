@@ -25,6 +25,7 @@ public sealed class TestApplication : IApplication
     }
 
     public event Application.LogCallback? LogMessageReceived;
+    public event Action? LowMemory;
     public event Action? Quitting;
     public string ActiveSceneName => "TestSceneName";
     public bool IsEditor { get; set; }
@@ -34,8 +35,10 @@ public sealed class TestApplication : IApplication
     public string UnityVersion { get; set; }
     public string PersistentDataPath { get; set; }
     public RuntimePlatform Platform { get; set; }
-    private void OnQuitting() => Quitting?.Invoke();
 
     private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
         => LogMessageReceived?.Invoke(condition, stacktrace, type);
+
+    public void OnLowMemory() => LowMemory?.Invoke();
+    private void OnQuitting() => Quitting?.Invoke();
 }
