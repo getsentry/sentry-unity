@@ -23,7 +23,19 @@ public class LowMemoryIntegrationTests
     {
         _fixture = new Fixture();
     }
-    
+
+    [Test]
+    public void LowMemory_DisabledHub_NoBreadcrumbAdded()
+    {
+        _fixture.Hub = new TestHub(false);
+        var sut = _fixture.GetSut();
+
+        sut.Register(_fixture.Hub, _fixture.Options);
+        _fixture.Application.OnLowMemory();
+
+        Assert.Zero(_fixture.Hub.ConfigureScopeCalls.Count);
+    }
+
     [Test]
     public void LowMemory_EnabledHub_BreadcrumbAdded()
     {

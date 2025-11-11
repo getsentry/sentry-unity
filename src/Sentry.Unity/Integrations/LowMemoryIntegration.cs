@@ -5,6 +5,7 @@ namespace Sentry.Unity.Integrations;
 
 internal class LowMemoryIntegration : ISdkIntegration
 {
+    private IHub _hub = null!;
     private IApplication _application;
 
     public LowMemoryIntegration(IApplication? application = null)
@@ -14,8 +15,15 @@ internal class LowMemoryIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions options)
     {
+        _hub = hub;
+
         _application.LowMemory += () =>
         {
+            if (!_hub.IsEnabled)
+            {
+                return;
+            }
+
             var breadcrumb = new Breadcrumb(
                 message: "Low memory",
                 type: "system",
