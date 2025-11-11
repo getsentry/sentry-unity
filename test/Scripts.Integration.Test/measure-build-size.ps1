@@ -52,16 +52,14 @@ Write-Host "Without Sentry: $(Format-Size $size1)"
 Write-Host "With Sentry:    $(Format-Size $size2)"
 Write-Host "Difference:     $diffFormatted ($percentFormatted)"
 
-# Add to GitHub Actions job summary if available
-if ($env:GITHUB_STEP_SUMMARY) {
-    @"
-### Build Size Impact - $Platform
+# Save measurement to artifact for consolidated summary
+$measurement = @{
+    Platform = $Platform
+    WithoutSentry = $size1
+    WithSentry = $size2
+    Difference = $diff
+    PercentChange = $percentChange
+} | ConvertTo-Json
 
-| Metric | Size |
-|--------|------|
-| Without Sentry | $(Format-Size $size1) |
-| With Sentry | $(Format-Size $size2) |
-| **Difference** | **$diffFormatted** ($percentFormatted) |
-
-"@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-}
+New-Item -Path "build-size-measurements" -ItemType Directory -Force | Out-Null
+$measurement | Out-File -FilePath "build-size-measurements/$Platform.json"

@@ -197,6 +197,13 @@ jobs:
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
+      - name: Upload build size measurement
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-size-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: build-size-measurements/*.json
+          retention-days: 1
+
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
         shell: bash
@@ -427,6 +434,13 @@ jobs:
 
       - name: Compare build sizes
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Windows"
+
+      - name: Upload build size measurement
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-size-Windows-${{ matrix.unity-version }}
+          path: build-size-measurements/*.json
+          retention-days: 1
 
       - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke

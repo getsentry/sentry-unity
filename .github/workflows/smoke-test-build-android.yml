@@ -78,6 +78,13 @@ jobs:
       - name: Compare build sizes (Runtime)
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Android"
 
+      - name: Upload build size measurement
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-size-Android-${{ env.UNITY_VERSION }}
+          path: build-size-measurements/*.json
+          retention-days: 1
+
       - name: Upload .apk
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
