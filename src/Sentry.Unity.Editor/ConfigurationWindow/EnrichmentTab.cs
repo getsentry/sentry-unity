@@ -18,8 +18,8 @@ internal static class EnrichmentTab
 
             options.IsEnvironmentUser = EditorGUILayout.Toggle(
                 new GUIContent("Auto Set UserName", "Whether to report the 'Environment.UserName' as " +
-                                                    "the User affected in the event. Should be disabled for " +
-                                                    "Android and iOS."),
+                                                    "the User affected in the event. Defaults to enabled on desktop " +
+                                                    "platforms and disabled on mobile and console platforms."),
                 options.IsEnvironmentUser);
 
             EditorGUI.indentLevel--;
