@@ -447,3 +447,22 @@ jobs:
 
       - name: Run Crash Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
+
+  build-size-summary:
+    name: Build Size Summary
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [smoke-test-build, smoke-test-build-android, smoke-test-compile-ios, desktop-smoke-test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download all build size measurements
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: build-size-*
+          path: build-size-measurements
+
+      - name: Create consolidated summary
+        shell: pwsh
+        run: ./test/Scripts.Integration.Test/create-build-size-summary.ps1
