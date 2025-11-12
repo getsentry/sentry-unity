@@ -7,6 +7,7 @@ namespace Sentry.Unity.Integrations;
 internal interface IApplication
 {
     event Application.LogCallback LogMessageReceived;
+    event Action LowMemory;
     event Action Quitting;
     string ActiveSceneName { get; }
     bool IsEditor { get; }
@@ -28,10 +29,12 @@ public sealed class ApplicationAdapter : IApplication
     private ApplicationAdapter()
     {
         Application.logMessageReceivedThreaded += OnLogMessageReceived;
+        Application.lowMemory += OnLowMemory;
         Application.quitting += OnQuitting;
     }
 
     public event Application.LogCallback? LogMessageReceived;
+    public event Action? LowMemory;
 
     public event Action? Quitting;
 
@@ -53,6 +56,9 @@ public sealed class ApplicationAdapter : IApplication
 
     private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
         => LogMessageReceived?.Invoke(condition, stackTrace, type);
+
+    private void OnLowMemory()
+        => LowMemory?.Invoke();
 
     private void OnQuitting()
         => Quitting?.Invoke();

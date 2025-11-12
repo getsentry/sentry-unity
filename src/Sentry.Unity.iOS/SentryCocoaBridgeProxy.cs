@@ -60,6 +60,12 @@ internal static class SentryCocoaBridgeProxy
         options.DiagnosticLogger?.LogDebug("Setting MaxCacheItems: {0}", options.MaxCacheItems);
         OptionsSetInt(cOptions, "maxCacheItems", options.MaxCacheItems);
 
+        // See https://github.com/getsentry/sentry-unity/issues/1658
+        OptionsSetInt(cOptions, "enableNetworkBreadcrumbs", 0);
+
+        options.DiagnosticLogger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
+        OptionsSetInt(cOptions, "enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);
+
         var result = StartWithOptions(cOptions);
         return result is 1;
     }
