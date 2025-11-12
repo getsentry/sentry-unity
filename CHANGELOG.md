@@ -4,12 +4,14 @@
 
 ### Features
 
+- The SDK automatically subscribes to and leaves breadcrumbs for `Application.lowMemory` events ([#2406](https://github.com/getsentry/sentry-unity/pull/2406))
 - The SDK now also reports the currently allocated memory when reporting an event or transaction. ([#2398](https://github.com/getsentry/sentry-unity/pull/2398))
 - The SDK defaults `EnvironmentUser` to sensible values based on the current platform. This is still guarded by the `SendDefaultPII` flag. ([#2402](https://github.com/getsentry/sentry-unity/pull/2402))
 
 ### Fixes 
 
 - Fixed the breadcrumb format for lifecycle events ([#2407](https://github.com/getsentry/sentry-unity/pull/2407))
+- When targeting iOS, the `WatchdogTerminationIntegration` now defaults to `false` as to not report false positives. Users can control this through the option `IosWatchdogTerminationIntegrationEnabled` ([#2403](https://github.com/getsentry/sentry-unity/pull/2403))
 - The SDK now correctly sets the currently active scene's name on the event ([#2400](https://github.com/getsentry/sentry-unity/pull/2400))
 - Fixed an issue where screenshot capture triggered on a burst job would crash the game. The SDK can now also capture screenshots on events that occur outside of the main thread ([#2392](https://github.com/getsentry/sentry-unity/pull/2392))
 - Structured logs now have the `origin` and `sdk` attributes correctly set ([#2390](https://github.com/getsentry/sentry-unity/pull/2390))
@@ -27,9 +29,9 @@
 - Bump Cocoa SDK from v8.57.1 to v8.57.2 ([#2397](https://github.com/getsentry/sentry-unity/pull/2397))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8572)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.1...8.57.2)
-- Bump CLI from v2.57.0 to v2.58.0 ([#2396](https://github.com/getsentry/sentry-unity/pull/2396))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2580)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.57.0...2.58.0)
+- Bump CLI from v2.57.0 to v2.58.1 ([#2396](https://github.com/getsentry/sentry-unity/pull/2396), [#2412](https://github.com/getsentry/sentry-unity/pull/2412))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2581)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.57.0...2.58.1)
 
 ## 4.0.0-beta.4
 
