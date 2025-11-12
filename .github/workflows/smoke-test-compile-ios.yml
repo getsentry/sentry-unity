@@ -94,7 +94,8 @@ jobs:
           ./test/Scripts.Integration.Test/measure-build-size.ps1 `
             -Path1 "IntegrationTest-NoSentry.app" `
             -Path2 "samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/IntegrationTest.app" `
-            -Platform "iOS"
+            -Platform "iOS" `
+            -UnityVersion "$env:UNITY_VERSION"
 
       - name: Upload build size measurement
         if: ${{ inputs.init-type == 'runtime' }}

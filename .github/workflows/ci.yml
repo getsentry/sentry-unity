@@ -193,9 +193,10 @@ jobs:
           UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Compare build sizes
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "$env:BUILD_PLATFORM"
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
+          UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Upload build size measurement
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -433,7 +434,9 @@ jobs:
           UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Compare build sizes
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Windows"
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Windows" -UnityVersion "$env:UNITY_VERSION"
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Upload build size measurement
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

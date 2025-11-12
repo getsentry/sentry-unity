@@ -5,7 +5,9 @@ param(
     [Parameter(Mandatory=$true)]
     [string] $Path2,
 
-    [string] $Platform = "Build"
+    [string] $Platform = "Build",
+
+    [string] $UnityVersion = "unknown"
 )
 
 Set-StrictMode -Version latest
@@ -55,6 +57,7 @@ Write-Host "Difference:     $diffFormatted ($percentFormatted)"
 # Save measurement to artifact for consolidated summary
 $measurement = @{
     Platform = $Platform
+    UnityVersion = $UnityVersion
     WithoutSentry = $size1
     WithSentry = $size2
     Difference = $diff
@@ -62,4 +65,5 @@ $measurement = @{
 } | ConvertTo-Json
 
 New-Item -Path "build-size-measurements" -ItemType Directory -Force | Out-Null
-$measurement | Out-File -FilePath "build-size-measurements/$Platform.json"
+$fileName = "$Platform-$UnityVersion.json" -replace '\.', '_'
+$measurement | Out-File -FilePath "build-size-measurements/$fileName"

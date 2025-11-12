@@ -24,11 +24,11 @@ function Format-Size {
 $summary = @"
 ## 📊 Build Size Impact Summary
 
-| Platform | Without Sentry | With Sentry | Difference | Change % |
-|----------|----------------|-------------|------------|----------|
+| Platform | Unity Version | Without Sentry | With Sentry | Difference | Change % |
+|----------|---------------|----------------|-------------|------------|----------|
 "@
 
-$measurements | Sort-Object Platform | ForEach-Object {
+$measurements | Sort-Object Platform, UnityVersion | ForEach-Object {
     $withoutSize = Format-Size $_.WithoutSentry
     $withSize = Format-Size $_.WithSentry
     $diffSize = Format-Size ([Math]::Abs($_.Difference))
@@ -36,7 +36,7 @@ $measurements | Sort-Object Platform | ForEach-Object {
     $sign = if ($_.Difference -gt 0) { "+" } elseif ($_.Difference -lt 0) { "-" } else { "" }
     $percentSign = if ($_.PercentChange -gt 0) { "+" } elseif ($_.PercentChange -lt 0) { "-" } else { "" }
 
-    $summary += "`n| $($_.Platform) | $withoutSize | $withSize | $sign$diffSize | $percentSign$([Math]::Round([Math]::Abs($_.PercentChange), 2))% |"
+    $summary += "`n| $($_.Platform) | $($_.UnityVersion) | $withoutSize | $withSize | $sign$diffSize | $percentSign$([Math]::Round([Math]::Abs($_.PercentChange), 2))% |"
 }
 
 $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY
