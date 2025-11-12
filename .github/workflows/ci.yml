@@ -159,7 +159,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
@@ -406,7 +406,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -CheckSymbols:$false
 
       - name: Backup build without Sentry
         run: |

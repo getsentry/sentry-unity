@@ -56,7 +56,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "iOS"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "iOS" -CheckSymbols:$false
 
       - name: Backup build without Sentry
         run: |

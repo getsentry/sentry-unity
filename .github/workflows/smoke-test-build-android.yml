@@ -50,7 +50,7 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$false
 
       - name: Backup build without Sentry
         run: |
