@@ -25,6 +25,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
+      - name: Download build without Sentry (for size comparison)
+        if: ${{ inputs.init-type == 'runtime' }}
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: testapp-ios-no-sentry-${{ env.UNITY_VERSION }}
+
+      - name: Extract and compile build without Sentry
+        if: ${{ inputs.init-type == 'runtime' }}
+        run: |
+          tar -xvzf test-app-no-sentry.tar.gz
+          Move-Item -Path "samples/IntegrationTest/Build-NoSentry" -Destination "samples/IntegrationTest/Build"
+
+      - name: Compile Xcode project without Sentry
+        if: ${{ inputs.init-type == 'runtime' }}
+        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
+        timeout-minutes: 20
+
+      - name: Save compiled app without Sentry
+        if: ${{ inputs.init-type == 'runtime' }}
+        run: |
+          Copy-Item -Path "samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/IntegrationTest.app" `
+                    -Destination "IntegrationTest-NoSentry.app" -Recurse
+          Remove-Item -Path "samples/IntegrationTest/Build" -Recurse -Force
+
       - name: Download app project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -36,7 +60,7 @@ jobs:
       - name: iOS smoke test
         run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
         timeout-minutes: 20
-    
+
       - name: Upload integration-test project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -64,53 +88,8 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-  # Compare build sizes only for runtime initialization
-  build-size-comparison:
-    name: iOS Build Size Comparison
-    runs-on: macos-14
-    needs: compile
-    if: ${{ inputs.init-type == 'runtime' }}
-    env:
-      UNITY_VERSION: ${{ inputs.unity-version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
-
-      - name: Download build without Sentry
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: testapp-ios-no-sentry-${{ env.UNITY_VERSION }}
-
-      - name: Extract and compile build without Sentry
-        run: |
-          tar -xvzf test-app-no-sentry.tar.gz
-          # Move to expected location
-          Move-Item -Path "samples/IntegrationTest/Build-NoSentry" -Destination "samples/IntegrationTest/Build"
-        timeout-minutes: 5
-
-      - name: Compile Xcode project without Sentry
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
-        timeout-minutes: 20
-
-      - name: Save compiled app without Sentry
-        run: |
-          Copy-Item -Path "samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/IntegrationTest.app" `
-                    -Destination "IntegrationTest-NoSentry.app" -Recurse
-          Remove-Item -Path "samples/IntegrationTest/Build" -Recurse -Force
-
-      - name: Download build with Sentry (runtime)
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: testapp-ios-${{ env.UNITY_VERSION }}-runtime
-
-      - name: Extract build with Sentry
-        run: tar -xvzf test-app-runtime.tar.gz
-
-      - name: Compile Xcode project with Sentry
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
-        timeout-minutes: 20
-
       - name: Compare build sizes
+        if: ${{ inputs.init-type == 'runtime' }}
         run: |
           ./test/Scripts.Integration.Test/measure-build-size.ps1 `
             -Path1 "IntegrationTest-NoSentry.app" `
@@ -118,6 +97,7 @@ jobs:
             -Platform "iOS"
 
       - name: Upload build size measurement
+        if: ${{ inputs.init-type == 'runtime' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: build-size-iOS-${{ env.UNITY_VERSION }}
