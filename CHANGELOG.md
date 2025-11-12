@@ -10,6 +10,7 @@
 
 ### Fixes 
 
+- Fixed the extension methods on the options to disable unhandled exception capture and the logging integration ([#2413](https://github.com/getsentry/sentry-unity/pull/2413))
 - Fixed the breadcrumb format for lifecycle events ([#2407](https://github.com/getsentry/sentry-unity/pull/2407))
 - When targeting iOS, the `WatchdogTerminationIntegration` now defaults to `false` as to not report false positives. Users can control this through the option `IosWatchdogTerminationIntegrationEnabled` ([#2403](https://github.com/getsentry/sentry-unity/pull/2403))
 - The SDK now correctly sets the currently active scene's name on the event ([#2400](https://github.com/getsentry/sentry-unity/pull/2400))

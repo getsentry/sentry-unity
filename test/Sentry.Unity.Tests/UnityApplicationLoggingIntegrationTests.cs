@@ -13,12 +13,10 @@ namespace Sentry.Unity.Tests
             public TestHub Hub { get; set; } = null!;
             public SentryUnityOptions SentryOptions { get; set; } = null!;
 
-            public bool CaptureExceptions { get; set; } = false;
-
             public UnityApplicationLoggingIntegration GetSut()
             {
                 var application = new TestApplication();
-                var integration = new UnityApplicationLoggingIntegration(CaptureExceptions, application, clock: null);
+                var integration = new UnityApplicationLoggingIntegration(application, clock: null);
                 integration.Register(Hub, SentryOptions);
                 return integration;
             }
@@ -165,18 +163,6 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void OnLogMessageReceived_LogTypeException_CaptureExceptionsEnabled_EventCaptured()
-        {
-            _fixture.CaptureExceptions = true;
-            var sut = _fixture.GetSut();
-            var message = TestContext.CurrentContext.Test.Name;
-
-            sut.OnLogMessageReceived(message, "stacktrace", LogType.Exception);
-
-            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
-        }
-
-        [Test]
         [TestCase(LogType.Log)]
         [TestCase(LogType.Warning)]
         [TestCase(LogType.Error)]
@@ -305,7 +291,6 @@ namespace Sentry.Unity.Tests
         {
             _fixture.SentryOptions.EnableLogs = true;
             _fixture.SentryOptions.CaptureStructuredLogsForLogType[LogType.Exception] = true;
-            _fixture.CaptureExceptions = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 
@@ -323,7 +308,6 @@ namespace Sentry.Unity.Tests
         {
             _fixture.SentryOptions.EnableLogs = true;
             _fixture.SentryOptions.CaptureStructuredLogsForLogType[LogType.Exception] = false;
-            _fixture.CaptureExceptions = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 

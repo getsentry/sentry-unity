@@ -350,12 +350,20 @@ public sealed class SentryUnityOptions : SentryOptions
         AddEventProcessor(processor);
         AddTransactionProcessor(processor);
 
-        // UnityLogHandlerIntegration is not compatible with WebGL, so it's added conditionally
-        if (application.Platform != RuntimePlatform.WebGLPlayer)
+        // Exception handling differs by platform due to WebGL limitations
+        if (application.Platform == RuntimePlatform.WebGLPlayer)
         {
-            AddIntegration(new UnityLogHandlerIntegration());
-            AddIntegration(new UnityApplicationLoggingIntegration());
+            // WebGL: UnityLogHandler doesn't work, use LogMessageReceived for exceptions
+            AddIntegration(new UnityWebGLExceptionHandler());
         }
+        else
+        {
+            // Standard platforms: Use UnityLogHandler for exceptions
+            AddIntegration(new UnityLogHandlerIntegration());
+        }
+
+        // All platforms use ApplicationLogging for logs/warnings/errors/breadcrumbs
+        AddIntegration(new UnityApplicationLoggingIntegration());
 
         AddIntegration(new StartupTracingIntegration());
         AddIntegration(new AnrIntegration(behaviour));
