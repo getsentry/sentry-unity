@@ -4,6 +4,7 @@
 
 ### Features
 
+- The SDK automatically subscribes to and leaves breadcrumbs for `Application.lowMemory` events ([#2406](https://github.com/getsentry/sentry-unity/pull/2406))
 - The SDK now also reports the currently allocated memory when reporting an event or transaction. ([#2398](https://github.com/getsentry/sentry-unity/pull/2398))
 - The SDK defaults `EnvironmentUser` to sensible values based on the current platform. This is still guarded by the `SendDefaultPII` flag. ([#2402](https://github.com/getsentry/sentry-unity/pull/2402))
 
