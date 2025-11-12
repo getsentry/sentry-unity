@@ -39,7 +39,7 @@ jobs:
 
       - name: Compile Xcode project without Sentry
         if: ${{ inputs.init-type == 'runtime' }}
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
+        run: ./scripts/smoke-test-ios.ps1 Build -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
         timeout-minutes: 20
 
       - name: Save compiled app without Sentry
