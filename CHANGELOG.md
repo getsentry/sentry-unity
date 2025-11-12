@@ -9,6 +9,7 @@
 
 ### Fixes 
 
+- When targeting iOS, the `WatchdogTerminationIntegration` now defaults to `false` as to not report false positives. Users can control this through the option `IosWatchdogTerminationIntegrationEnabled` ([#2403](https://github.com/getsentry/sentry-unity/pull/2403))
 - The SDK now correctly sets the currently active scene's name on the event ([#2400](https://github.com/getsentry/sentry-unity/pull/2400))
 - Fixed an issue where screenshot capture triggered on a burst job would crash the game. The SDK can now also capture screenshots on events that occur outside of the main thread ([#2392](https://github.com/getsentry/sentry-unity/pull/2392))
 - Structured logs now have the `origin` and `sdk` attributes correctly set ([#2390](https://github.com/getsentry/sentry-unity/pull/2390))
