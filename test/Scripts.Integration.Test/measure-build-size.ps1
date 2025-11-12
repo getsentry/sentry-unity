@@ -65,5 +65,4 @@ $measurement = @{
 } | ConvertTo-Json
 
 New-Item -Path "build-size-measurements" -ItemType Directory -Force | Out-Null
-$fileName = "$Platform-$UnityVersion.json" -replace '\.', '_'
-$measurement | Out-File -FilePath "build-size-measurements/$fileName"
+$measurement | Out-File -FilePath "build-size-measurements/$Platform-$UnityVersion.json"
