@@ -65,6 +65,9 @@ jobs:
         with:
           global-json-file: global.json
         
+      - name: Restore .NET Workload
+        run: dotnet workload restore
+
       - name: Install Android dotnet workflow
         run: dotnet workload install android --temp-dir "$RUNNER_TEMP"
         env:
