@@ -80,11 +80,23 @@ public static class SentryUnityOptionsExtensions
     }
 
     /// <summary>
-    /// Disables the capture of errors through <see cref="UnityLogHandlerIntegration"/>.
+    /// Disables the capture of logs, warnings, errors, breadcrumbs, and structured logs through
+    /// <see cref="UnityApplicationLoggingIntegration"/>.
     /// </summary>
     /// <param name="options">The SentryUnityOptions to remove the integration from.</param>
-    public static void DisableUnityApplicationLoggingIntegration(this SentryUnityOptions options) =>
+    public static void DisableUnityLoggingIntegration(this SentryUnityOptions options) =>
+        options.RemoveIntegration<UnityApplicationLoggingIntegration>();
+
+    /// <summary>
+    /// Disables the capture of unhandled exceptions. This removes both <see cref="UnityLogHandlerIntegration"/>
+    /// (non-WebGL platforms) and <see cref="UnityWebGLExceptionHandler"/> (WebGL platform).
+    /// </summary>
+    /// <param name="options">The SentryUnityOptions to remove the integration from.</param>
+    public static void DisableUnhandledExceptionCapture(this SentryUnityOptions options)
+    {
         options.RemoveIntegration<UnityLogHandlerIntegration>();
+        options.RemoveIntegration<UnityWebGLExceptionHandler>();
+    }
 
     /// <summary>
     /// Disables the application-not-responding detection.

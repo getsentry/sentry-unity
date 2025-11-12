@@ -8,12 +8,11 @@ namespace Sentry.Unity.Integrations;
 
 /// <summary>
 /// Hooks into Unity's `Application.LogMessageReceived` to capture breadcrumbs for Debug log methods
-/// and optionally capture LogError events. Does not handle `Debug.LogException` since it lacks the
-/// actual exception object needed for IL2CPP processing, except on WebGL where it's treated as a log message.
+/// and optionally capture LogError events. Does not handle `Debug.LogException` - exception handling
+/// is done by UnityLogHandlerIntegration (non-WebGL) or UnityWebGLExceptionHandler (WebGL).
 /// </summary>
 internal class UnityApplicationLoggingIntegration : ISdkIntegration
 {
-    private readonly bool _captureExceptions;
     private readonly IApplication _application;
     private readonly ISystemClock _clock;
 
@@ -24,9 +23,8 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     private IHub _hub = null!;                                  // Set in Register
     private SentryUnityOptions _options = null!;                // Set in Register
 
-    internal UnityApplicationLoggingIntegration(bool captureExceptions = false, IApplication? application = null, ISystemClock? clock = null)
+    internal UnityApplicationLoggingIntegration(IApplication? application = null, ISystemClock? clock = null)
     {
-        _captureExceptions = captureExceptions;
         _application = application ?? ApplicationAdapter.Instance;
         _clock = clock ?? SystemClock.Clock;
     }
@@ -59,7 +57,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        ProcessException(message, stacktrace, logType);
         ProcessError(message, stacktrace, logType);
         ProcessBreadcrumbs(message, logType);
         ProcessStructuredLog(message, logType);
@@ -80,19 +77,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             LogType.Warning => !_warningTimeDebounce.Debounced(),
             _ => true
         };
-    }
-
-    private void ProcessException(string message, string stacktrace, LogType logType)
-    {
-        // LogType.Exception is getting handled by the `UnityLogHandlerIntegration`
-        // UNLESS we're configured to process them - i.e. on WebGL
-        if (logType is LogType.Exception && _captureExceptions)
-        {
-            _options.LogDebug("Exception capture has been enabled. Capturing exception through '{0}'.", nameof(UnityApplicationLoggingIntegration));
-
-            var evt = UnityLogEventFactory.CreateExceptionEvent(message, stacktrace, false, _options);
-            _hub.CaptureEvent(evt);
-        }
     }
 
     private void ProcessError(string message, string stacktrace, LogType logType)
