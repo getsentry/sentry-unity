@@ -4,6 +4,9 @@
 
 ### Dependencies
 
+- Bump Java SDK from v8.25.0 to v8.26.0 ([#2419](https://github.com/getsentry/sentry-unity/pull/2419))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8260)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.25.0...8.26.0)
 - Bump CLI from v2.58.1 to v2.58.2 ([#2418](https://github.com/getsentry/sentry-unity/pull/2418))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2582)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.1...2.58.2)
