@@ -22,21 +22,19 @@ function Format-Size {
 }
 
 $summary = @"
-## 📊 Build Size Impact Summary
+## 📊 Build Size
 
-| Platform | Unity Version | Without Sentry | With Sentry | Difference | Change % |
-|----------|---------------|----------------|-------------|------------|----------|
+| Platform + Version | Baseline | Sentry Impact |
+|--------------------|----------|---------------|
 "@
 
 $measurements | Sort-Object Platform, UnityVersion | ForEach-Object {
-    $withoutSize = Format-Size $_.WithoutSentry
-    $withSize = Format-Size $_.WithSentry
+    $baselineSize = Format-Size $_.WithoutSentry
     $diffSize = Format-Size ([Math]::Abs($_.Difference))
 
     $sign = if ($_.Difference -gt 0) { "+" } elseif ($_.Difference -lt 0) { "-" } else { "" }
-    $percentSign = if ($_.PercentChange -gt 0) { "+" } elseif ($_.PercentChange -lt 0) { "-" } else { "" }
 
-    $summary += "`n| $($_.Platform) | $($_.UnityVersion) | $withoutSize | $withSize | $sign$diffSize | $percentSign$([Math]::Round([Math]::Abs($_.PercentChange), 2))% |"
+    $summary += "`n| $($_.Platform) $($_.UnityVersion) | $baselineSize | $sign$diffSize |"
 }
 
 $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY

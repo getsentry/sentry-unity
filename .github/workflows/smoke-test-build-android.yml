@@ -49,13 +49,16 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-      - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$false
+      - name: Restore cached build without Sentry
+        id: cache-build-nosentry
+        uses: actions/cache@v4
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-Android-${{ inputs.unity-version }}
 
-      - name: Backup build without Sentry
-        run: |
-          New-Item -Path "samples/IntegrationTest/Build-NoSentry" -ItemType Directory -Force
-          Copy-Item -Path "samples/IntegrationTest/Build/*" -Destination "samples/IntegrationTest/Build-NoSentry/" -Recurse
+      - name: Build without Sentry SDK
+        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$false -BuildDirName "Build-NoSentry"
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout

@@ -25,25 +25,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
-      - name: Download build without Sentry (for size comparison)
+      - name: Restore cached compiled iOS build without Sentry
         if: ${{ inputs.init-type == 'runtime' }}
+        id: cache-compiled-nosentry
+        uses: actions/cache@v4
+        with:
+          path: IntegrationTest-NoSentry.app
+          key: build-nosentry-iOS-compiled-${{ inputs.unity-version }}
+
+      - name: Download build without Sentry (for size comparison)
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: testapp-ios-no-sentry-${{ env.UNITY_VERSION }}
 
       - name: Extract and compile build without Sentry
-        if: ${{ inputs.init-type == 'runtime' }}
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         run: |
           tar -xvzf test-app-no-sentry.tar.gz
           Move-Item -Path "samples/IntegrationTest/Build-NoSentry" -Destination "samples/IntegrationTest/Build"
 
       - name: Compile Xcode project without Sentry
-        if: ${{ inputs.init-type == 'runtime' }}
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         run: ./scripts/smoke-test-ios.ps1 Build -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
         timeout-minutes: 20
 
       - name: Save compiled app without Sentry
-        if: ${{ inputs.init-type == 'runtime' }}
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         run: |
           Copy-Item -Path "samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/IntegrationTest.app" `
                     -Destination "IntegrationTest-NoSentry.app" -Recurse
