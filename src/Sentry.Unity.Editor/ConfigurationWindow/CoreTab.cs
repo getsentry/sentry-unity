@@ -88,16 +88,10 @@ internal static class CoreTab
                                                      "during scene loading. Requires Unity 2020.3 or newer."),
                 options.AutoSceneLoadTraces);
 
-            EditorGUILayout.Space();
-
-            GUILayout.Label("Instrumentation through IL Weaving", EditorStyles.boldLabel);
-
-            EditorGUILayout.HelpBox("The SDK will modify the compiled assembly during a post build step " +
-                                    "to create transaction and spans automatically.", MessageType.Info);
-
             options.AutoAwakeTraces = EditorGUILayout.Toggle(
-                new GUIContent("Awake Calls", "Whether the SDK automatically captures all instances " +
-                                              "of Awake as Spans."),
+                new GUIContent("Spans for Awake Calls", "Whether the SDK should automatically modify the compiled " +
+                                                    "assembly during a post build step to automatically " +
+                                                    "create spans for Awake calls."),
                 options.AutoAwakeTraces);
 
             EditorGUI.indentLevel--;
