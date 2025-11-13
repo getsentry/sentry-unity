@@ -52,11 +52,11 @@ internal static class LoggingTab
 
             if (options.EnableStructuredLogging)
             {
+                EditorGUILayout.LabelField("Note: With sending structured logs enabled you have to opt-into adding breadcrumbs to events.", EditorStyles.boldLabel);
+
                 options.AttachBreadcrumbsToEvents = EditorGUILayout.BeginToggleGroup(
                     new GUIContent("Attach logs as breadcrumbs in addition to sending them as structured logs", "Whether the SDK should attach breadcrumbs to events in addition to structured logging."),
                     options.AttachBreadcrumbsToEvents);
-
-                GUILayout.Label("Note: With sending structured logs enabled you have to opt-into adding breadcrumbs to events.", EditorStyles.boldLabel);
             }
 
             EditorGUI.indentLevel++;
@@ -106,7 +106,7 @@ internal static class LoggingTab
                                                      "events. Refer to AttachStacktrace on sentry docs."),
                 options.AttachStacktrace);
 
-            GUILayout.Label("Note: The stack trace quality will depend on the IL2CPP line number setting and might not contain line numbers.", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Note: The stack trace quality will depend on the IL2CPP line number setting and might not contain line numbers.", EditorStyles.boldLabel);
 
             // Enhanced not supported on IL2CPP so not displaying this for the time being:
             // Options.StackTraceMode = (StackTraceMode) EditorGUILayout.EnumPopup(
