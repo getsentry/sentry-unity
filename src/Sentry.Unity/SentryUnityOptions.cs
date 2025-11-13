@@ -136,6 +136,17 @@ public sealed class SentryUnityOptions : SentryOptions
     public int ScreenshotCompression { get; set; } = 75;
 
     /// <summary>
+    /// Controls whether structured logs should be captured for each Unity log type.
+    /// </summary>
+    public Dictionary<LogType, bool> CaptureStructuredLogsForLogType { get; set; }
+
+    /// <summary>
+    /// When set to true, breadcrumbs will be added on top of structured logging.
+    /// Defaults to false.
+    /// </summary>
+    public bool AttachBreadcrumbsToEvents { get; set; } = false;
+
+    /// <summary>
     /// Whether the SDK automatically captures events for 'Debug.LogError'.
     /// </summary>
     public bool CaptureLogErrorEvents { get; set; } = true;
@@ -159,6 +170,11 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Whether the SDK should add native support for iOS
     /// </summary>
     public bool IosNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether the SDK should add native support for iOS
+    /// </summary>
+    public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
 
     /// <summary>
     /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
@@ -310,13 +326,6 @@ public sealed class SentryUnityOptions : SentryOptions
     internal ISentryUnityInfo UnityInfo { get; private set; }
     internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
 
-    // Delegate to base property to ensure both Unity and base SDK reference the same instance
-    public new SentryUnityExperimentalOptions Experimental
-    {
-        get => (SentryUnityExperimentalOptions)base.Experimental;
-        set => base.Experimental = value;
-    }
-
     public SentryUnityOptions() : this(isBuilding: false) { }
 
     // For testing
@@ -331,9 +340,6 @@ public sealed class SentryUnityOptions : SentryOptions
         UnityInfo = unityInfo ?? SentryPlatformServices.UnityInfo;
         PlatformConfiguration = SentryPlatformServices.PlatformConfiguration;
 
-        // Initialize base.Experimental with Unity-specific experimental options
-        base.Experimental = new SentryUnityExperimentalOptions();
-
         application ??= ApplicationAdapter.Instance;
         behaviour ??= SentryMonoBehaviour.Instance;
 
@@ -345,25 +351,34 @@ public sealed class SentryUnityOptions : SentryOptions
         AddInAppExclude("Cysharp");
         AddInAppExclude("DG.Tweening");
 
-        var processor = new UnityEventProcessor(this);
+        var processor = new UnityEventProcessor(this, UnityInfo);
         AddEventProcessor(processor);
         AddTransactionProcessor(processor);
 
-        // UnityLogHandlerIntegration is not compatible with WebGL, so it's added conditionally
-        if (application.Platform != RuntimePlatform.WebGLPlayer)
+        // Exception handling differs by platform due to WebGL limitations
+        if (application.Platform == RuntimePlatform.WebGLPlayer)
         {
-            AddIntegration(new UnityLogHandlerIntegration());
-            AddIntegration(new UnityApplicationLoggingIntegration());
+            // WebGL: UnityLogHandler doesn't work, use LogMessageReceived for exceptions
+            AddIntegration(new UnityWebGLExceptionHandler());
         }
+        else
+        {
+            // Standard platforms: Use UnityLogHandler for exceptions
+            AddIntegration(new UnityLogHandlerIntegration());
+        }
+
+        // All platforms use ApplicationLogging for logs/warnings/errors/breadcrumbs
+        AddIntegration(new UnityApplicationLoggingIntegration());
 
         AddIntegration(new StartupTracingIntegration());
         AddIntegration(new AnrIntegration(behaviour));
-        AddIntegration(new UnityScopeIntegration(application, unityInfo));
+        AddIntegration(new UnityScopeIntegration(application));
         AddIntegration(new UnityBeforeSceneLoadIntegration());
         AddIntegration(new SceneManagerIntegration());
         AddIntegration(new SceneManagerTracingIntegration());
         AddIntegration(new LifeCycleIntegration(behaviour));
         AddIntegration(new TraceGenerationIntegration(behaviour));
+        AddIntegration(new LowMemoryIntegration());
 
         AddExceptionFilter(new UnityBadGatewayExceptionFilter());
         AddExceptionFilter(new UnityWebExceptionFilter());
@@ -378,7 +393,24 @@ public sealed class SentryUnityOptions : SentryOptions
         // Ben.Demystifer not compatible with IL2CPP. We could allow Enhanced in the future for Mono.
         // See https://github.com/getsentry/sentry-unity/issues/675
         base.StackTraceMode = StackTraceMode.Original;
-        IsEnvironmentUser = false;
+
+        IsEnvironmentUser = application.Platform switch
+        {
+            // Desktop: true (capture logged-in user)
+            RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer
+                or RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer
+                or RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer => true,
+
+            // Mobile: false
+            RuntimePlatform.Android or RuntimePlatform.IPhonePlayer => false,
+
+            // Consoles: false
+            RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne
+                or RuntimePlatform.PS4 or RuntimePlatform.PS5 or RuntimePlatform.Switch => false,
+
+            // Unknown platforms
+            _ => false
+        };
 
         if (application.ProductName is string productName
             && !string.IsNullOrWhiteSpace(productName)
@@ -395,6 +427,15 @@ public sealed class SentryUnityOptions : SentryOptions
         Environment = application.IsEditor && !isBuilding
             ? "editor"
             : "production";
+
+        CaptureStructuredLogsForLogType = new Dictionary<LogType, bool>
+        {
+            { LogType.Log, false },
+            { LogType.Warning, true },
+            { LogType.Assert, true },
+            { LogType.Error, true },
+            { LogType.Exception, true }
+        };
 
         AddBreadcrumbsForLogType = new Dictionary<LogType, bool>
         {
@@ -503,51 +544,4 @@ public enum NativeInitializationType
     /// game. Options that you modify programmatically will not apply to the native SDK.
     /// </summary>
     BuildTime,
-}
-
-/// <summary>
-/// Unity-specific experimental options.
-/// </summary>
-/// <remarks>
-/// This extends the base <see cref="SentryOptions.SentryExperimentalOptions"/> with Unity-specific experimental features.
-/// These options are subject to change in future versions.
-/// </remarks>
-public sealed class SentryUnityExperimentalOptions : SentryOptions.SentryExperimentalOptions
-{
-    /// <summary>
-    /// Controls whether structured logs should be captured for each Unity log type.
-    /// </summary>
-    public Dictionary<LogType, bool> CaptureStructuredLogsForLogType { get; set; }
-
-    /// <summary>
-    /// When set to true, breadcrumbs will be added on top of structured logging.
-    /// Defaults to false.
-    /// </summary>
-    public bool AttachBreadcrumbsToEvents { get; set; } = false;
-
-    /// <summary>
-    /// Sets a callback function to be invoked before sending the log to Sentry.
-    /// When the delegate throws an <see cref="Exception"/> during invocation, the log will not be captured.
-    /// </summary>
-    /// <remarks>
-    /// It can be used to modify the log object before being sent to Sentry.
-    /// To prevent the log from being sent to Sentry, return <see langword="null"/>.
-    /// </remarks>
-    /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
-    public new void SetBeforeSendLog(Func<SentryLog, SentryLog?> beforeSendLog)
-    {
-        base.SetBeforeSendLog(beforeSendLog);
-    }
-
-    internal SentryUnityExperimentalOptions()
-    {
-        CaptureStructuredLogsForLogType = new Dictionary<LogType, bool>
-        {
-            { LogType.Log, false },
-            { LogType.Warning, true },
-            { LogType.Assert, true },
-            { LogType.Error, true },
-            { LogType.Exception, true }
-        };
-    }
 }

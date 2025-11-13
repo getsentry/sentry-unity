@@ -16,4 +16,10 @@ internal class TestSentryMonoBehaviour : MonoBehaviour, ISentryMonoBehaviour
         StartCoroutineCalled = true;
         return base.StartCoroutine(routine);
     }
+
+    public void QueueCoroutine(IEnumerator routine)
+    {
+        // For tests, assume we're on the main thread and start immediately
+        StartCoroutine(routine);
+    }
 }

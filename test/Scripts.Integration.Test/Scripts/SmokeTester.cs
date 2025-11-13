@@ -148,6 +148,7 @@ public class SmokeTester : MonoBehaviour
         t.ExpectMessage(currentMessage, "'type':'os',");
         t.ExpectMessage(currentMessage, "'type':'runtime',");
         t.ExpectMessage(currentMessage, "'type':'unity',");
+        t.ExpectMessage(currentMessage, "'active_scene_name':'"); // active scene name
         // User
         t.ExpectMessage(currentMessage, "'user':{'id':'"); // non-null automatic ID
         t.ExpectMessageNot(currentMessage, "'length':0");
@@ -214,7 +215,33 @@ public class SmokeTester : MonoBehaviour
 
         t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
         t.ExpectMessageNot(currentMessage, "'length':0");
-        
+
+#if !UNITY_WEBGL
+        // Test screenshot capture from background thread
+        var backgroundThreadGuid = Guid.NewGuid().ToString();
+        var backgroundThreadTask = Task.Run(() =>
+        {
+            Debug.Log($"Background thread: Capturing exception with GUID={backgroundThreadGuid}");
+            Debug.LogError($"BackgroundThreadException(GUID)={backgroundThreadGuid}");
+        });
+        backgroundThreadTask.Wait();
+
+        // Wait for screenshot capture to complete
+        yield return null;
+        // The capture coroutine gets queued up to be started in the next Update(), wait for that
+        yield return null;
+
+        currentMessage++; // The background thread exception event
+
+        t.ExpectMessage(currentMessage, "'type':'event'");
+        t.ExpectMessage(currentMessage, $"BackgroundThreadException(GUID)={backgroundThreadGuid}");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+
+        currentMessage++; // The screenshot envelope from background thread
+
+        t.ExpectMessage(currentMessage, "'filename':'screenshot.jpg','attachment_type':'event.attachment'");
+        t.ExpectMessageNot(currentMessage, "'length':0");
+#endif
         Debug.Log("Finished checking messages.");
 
         t.Pass();

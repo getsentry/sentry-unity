@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
 
@@ -128,5 +129,58 @@ public class SentryUnityOptionsExtensionsTests
         options.SetupUnityLogging();
 
         Assert.AreEqual(debug, options.DiagnosticLogger is not null);
+    }
+
+    [Test]
+    public void DisableUnityLoggingIntegration_RemovesUnityApplicationLoggingIntegration()
+    {
+        var options = _fixture.GetSut();
+
+        Assert.IsTrue(options.Integrations.Any(i => i is Integrations.UnityApplicationLoggingIntegration));
+
+        options.DisableUnityLoggingIntegration();
+
+        Assert.IsFalse(options.Integrations.Any(i => i is Integrations.UnityApplicationLoggingIntegration));
+    }
+
+    [Test]
+    public void DisableUnhandledExceptionCapture_RemovesUnityLogHandlerIntegration()
+    {
+        var options = _fixture.GetSut();
+
+        Assert.IsTrue(options.Integrations.Any(i => i is Integrations.UnityLogHandlerIntegration));
+
+        options.DisableUnhandledExceptionCapture();
+
+        Assert.IsFalse(options.Integrations.Any(i => i is Integrations.UnityLogHandlerIntegration));
+    }
+
+    [Test]
+    public void DisableUnhandledExceptionCapture_RemovesUnityWebGLExceptionHandler()
+    {
+        var application = new TestApplication(isEditor: false, platform: UnityEngine.RuntimePlatform.WebGLPlayer);
+        var options = new SentryUnityOptions(application: application)
+        {
+            Enabled = true,
+            Dsn = "http://test.com",
+            CaptureInEditor = true,
+            Debug = true,
+        };
+
+        Assert.IsTrue(options.Integrations.Any(i => i is Integrations.UnityWebGLExceptionHandler));
+
+        options.DisableUnhandledExceptionCapture();
+
+        Assert.IsFalse(options.Integrations.Any(i => i is Integrations.UnityWebGLExceptionHandler));
+    }
+
+    [Test]
+    public void DisableUnhandledExceptionCapture_DoesNotRemoveUnityApplicationLoggingIntegration()
+    {
+        var options = _fixture.GetSut();
+
+        options.DisableUnhandledExceptionCapture();
+
+        Assert.IsTrue(options.Integrations.Any(i => i is Integrations.UnityApplicationLoggingIntegration));
     }
 }

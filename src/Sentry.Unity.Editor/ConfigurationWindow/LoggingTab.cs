@@ -52,11 +52,11 @@ internal static class LoggingTab
 
             if (options.EnableStructuredLogging)
             {
+                EditorGUILayout.LabelField("Note: With sending structured logs enabled you have to opt-into adding breadcrumbs to events.", EditorStyles.boldLabel);
+
                 options.AttachBreadcrumbsToEvents = EditorGUILayout.BeginToggleGroup(
                     new GUIContent("Attach logs as breadcrumbs in addition to sending them as structured logs", "Whether the SDK should attach breadcrumbs to events in addition to structured logging."),
                     options.AttachBreadcrumbsToEvents);
-
-                GUILayout.Label("Note: With sending structured logs enabled you have to opt-into adding breadcrumbs to events.", EditorStyles.boldLabel);
             }
 
             EditorGUI.indentLevel++;
@@ -106,7 +106,7 @@ internal static class LoggingTab
                                                      "events. Refer to AttachStacktrace on sentry docs."),
                 options.AttachStacktrace);
 
-            GUILayout.Label("Note: The stack trace quality will depend on the IL2CPP line number setting and might not contain line numbers.", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Note: The stack trace quality will depend on the IL2CPP line number setting and might not contain line numbers.", EditorStyles.boldLabel);
 
             // Enhanced not supported on IL2CPP so not displaying this for the time being:
             // Options.StackTraceMode = (StackTraceMode) EditorGUILayout.EnumPopup(
@@ -125,16 +125,31 @@ internal static class LoggingTab
         {
             options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
-                                                        "same type when they happen within the same DebounceTimeWindow."),
+                                                        "same type if they are more frequent than once per second."),
                 options.EnableLogDebouncing);
 
             EditorGUI.indentLevel++;
 
-            options.DebounceTimeWindow = EditorGUILayout.IntField(
-                new GUIContent("Debounce Time Window [ms]", "The time that has to pass between log events " +
-                                                    "before the SDK captures and sends them again."),
-                options.DebounceTimeWindow);
-            options.DebounceTimeWindow = Math.Max(0, options.DebounceTimeWindow);
+            options.StructuredLogOnDebugLog = EditorGUILayout.Toggle(
+                new GUIContent("Debug.Log",
+                    "Whether the SDK should forward Debug.Log messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLog);
+            options.StructuredLogOnDebugLogWarning = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogWarning",
+                    "Whether the SDK should forward Debug.LogWarning messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogWarning);
+            options.StructuredLogOnDebugLogAssertion = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogAssertion",
+                    "Whether the SDK should forward Debug.LogAssertion messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogAssertion);
+            options.StructuredLogOnDebugLogError = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogError",
+                    "Whether the SDK should forward Debug.LogError messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogError);
+            options.StructuredLogOnDebugLogException = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogException",
+                    "Whether the SDK should forward Debug.LogException messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogException);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();

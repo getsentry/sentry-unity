@@ -16,12 +16,10 @@ internal sealed class TestHub : IHub
     public IReadOnlyList<SentryTransaction> CapturedTransactions => _capturedTransactions;
     public IReadOnlyList<Action<Scope>> ConfigureScopeCalls => _configureScopeCalls;
 
-    public TestHub(bool isEnabled = true)
+    public TestHub(bool isEnabled = true, SentryStructuredLogger? logger = null)
     {
-#pragma warning disable SENTRY0001
-        Logger = null!;
-#pragma warning restore SENTRY0001
         IsEnabled = isEnabled;
+        Logger = logger ?? new TestStructuredLogger();
     }
     public bool IsEnabled { get; }
 
@@ -134,10 +132,7 @@ internal sealed class TestHub : IHub
         throw new NotImplementedException();
     }
 
-    ISpan? IHub.GetSpan()
-    {
-        throw new NotImplementedException();
-    }
+    ISpan? IHub.GetSpan() => null;
 
     public SentryTraceHeader? GetTraceHeader()
     {

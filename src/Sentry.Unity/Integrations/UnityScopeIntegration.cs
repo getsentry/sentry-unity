@@ -13,22 +13,22 @@ internal static class UnitySdkInfo
     public static string Version { get; } = typeof(UnitySdkInfo).Assembly.GetNameAndVersion().Version ?? "0.0.0";
     public const string Name = "sentry.dotnet.unity";
     public const string PackageName = "upm:sentry.unity";
+
+    public static readonly SdkVersion Sdk = new() { Name = Name, Version = Version };
 }
 
 internal class UnityScopeIntegration : ISdkIntegration
 {
     private readonly IApplication _application;
-    private readonly ISentryUnityInfo? _unityInfo;
 
-    public UnityScopeIntegration(IApplication application, ISentryUnityInfo? unityInfo)
+    public UnityScopeIntegration(IApplication application)
     {
         _application = application;
-        _unityInfo = unityInfo;
     }
 
     public void Register(IHub hub, SentryOptions options)
     {
-        var scopeUpdater = new UnityScopeUpdater((SentryUnityOptions)options, _application, _unityInfo);
+        var scopeUpdater = new UnityScopeUpdater((SentryUnityOptions)options, _application);
         hub.ConfigureScope(scopeUpdater.ConfigureScope);
     }
 }
@@ -37,15 +37,11 @@ internal class UnityScopeUpdater
 {
     private readonly SentryUnityOptions _options;
     private readonly IApplication _application;
-    private readonly ISentryUnityInfo? _unityInfo;
-    private readonly ISceneManager _sceneManager;
 
-    public UnityScopeUpdater(SentryUnityOptions options, IApplication application, ISentryUnityInfo? unityInfo = null, ISceneManager? sceneManager = null)
+    public UnityScopeUpdater(SentryUnityOptions options, IApplication application)
     {
         _options = options;
         _application = application;
-        _unityInfo = unityInfo;
-        _sceneManager = sceneManager ?? SceneManagerAdapter.Instance;
     }
 
     public void ConfigureScope(Scope scope)
@@ -156,12 +152,6 @@ internal class UnityScopeUpdater
         unity.TargetFrameRate = MainThreadData.TargetFrameRate;
         unity.CopyTextureSupport = MainThreadData.CopyTextureSupport;
         unity.RenderingThreadingMode = MainThreadData.RenderingThreadingMode;
-
-        if (_unityInfo?.IL2CPP is true)
-        {
-            // Currently an IL2CPP only feature: see https://github.com/getsentry/sentry-unity/issues/2181
-            unity.ActiveSceneName = _sceneManager.GetActiveScene().Name;
-        }
     }
 
     private void PopulateTags(Action<string, string> setTag)

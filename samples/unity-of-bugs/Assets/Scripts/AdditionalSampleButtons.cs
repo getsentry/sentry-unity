@@ -1,6 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Sentry;
 using Sentry.Unity;
+using Unity.Burst;
+using Unity.Jobs;
 using UnityEngine;
 
 public class AdditionalSampleButtons : MonoBehaviour
@@ -50,4 +53,22 @@ public class AdditionalSampleButtons : MonoBehaviour
     }
 
     public void Assert() => UnityEngine.Assertions.Assert.IsTrue(false);
+
+
+    [BurstCompile]
+    private struct BuggyBurstJob : IJob
+    {
+        public void Execute()
+        {
+            Debug.LogError("Bursting with bugs! 💥");
+        }
+    }
+
+    public void StartBuggyBurstJob()
+    {
+        Debug.Log("Starting Burst job filled with bugs! 💥");
+        var job = new BuggyBurstJob();
+        var handle = job.Schedule();
+        handle.Complete();
+    }
 }

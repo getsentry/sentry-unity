@@ -189,19 +189,16 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             XboxNativeSupportEnabled = XboxNativeSupportEnabled,
             Il2CppLineNumberSupportEnabled = Il2CppLineNumberSupportEnabled,
             PerformanceAutoInstrumentationEnabled = AutoAwakeTraces,
-            Experimental = new SentryUnityExperimentalOptions
+            EnableLogs = EnableStructuredLogging,
+            CaptureStructuredLogsForLogType =
             {
-                EnableLogs = EnableStructuredLogging,
-                CaptureStructuredLogsForLogType =
-                {
-                    [LogType.Log] = StructuredLogOnDebugLog,
-                    [LogType.Warning] = StructuredLogOnDebugLogWarning,
-                    [LogType.Assert] = StructuredLogOnDebugLogAssertion,
-                    [LogType.Error] = StructuredLogOnDebugLogError,
-                    [LogType.Exception] = StructuredLogOnDebugLogException
-                },
-                AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
-            }
+                [LogType.Log] = StructuredLogOnDebugLog,
+                [LogType.Warning] = StructuredLogOnDebugLogWarning,
+                [LogType.Assert] = StructuredLogOnDebugLogAssertion,
+                [LogType.Error] = StructuredLogOnDebugLogError,
+                [LogType.Exception] = StructuredLogOnDebugLogException
+            },
+            AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
         };
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.

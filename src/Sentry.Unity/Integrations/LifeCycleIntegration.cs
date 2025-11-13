@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Integrations;
 
@@ -6,6 +7,9 @@ namespace Sentry.Unity.Integrations;
 
 internal class LifeCycleIntegration : ISdkIntegration
 {
+    private static readonly Dictionary<string, string> ForegroundData = new() { { "state", "foreground" } };
+    private static readonly Dictionary<string, string> BackgroundData = new() { { "state", "background" } };
+
     private IHub? _hub;
     private SentryUnityOptions _options = null!; // Set during register
 
@@ -36,7 +40,11 @@ internal class LifeCycleIntegration : ISdkIntegration
                 return;
             }
 
-            hub.AddBreadcrumb(message: "App regained focus.", category: "app.lifecycle");
+            hub.AddBreadcrumb(new Breadcrumb(
+                type: "navigation",
+                category: "app.lifecycle",
+                data: ForegroundData,
+                level: BreadcrumbLevel.Info));
 
             _options.DiagnosticLogger?.LogDebug("Resuming session.");
             hub.ResumeSession();
@@ -48,7 +56,11 @@ internal class LifeCycleIntegration : ISdkIntegration
                 return;
             }
 
-            hub.AddBreadcrumb(message: "App lost focus.", category: "app.lifecycle");
+            hub.AddBreadcrumb(new Breadcrumb(
+                type: "navigation",
+                category: "app.lifecycle",
+                data: BackgroundData,
+                level: BreadcrumbLevel.Info));
 
             _options.DiagnosticLogger?.LogDebug("Pausing session.");
             hub.PauseSession();

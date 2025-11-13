@@ -156,6 +156,10 @@ public sealed class UnityEventProcessorThreadingTests
         Assert.AreEqual(systemInfo.DeviceModel!.Value, @event.Contexts.Device.Model);
         Assert.AreEqual(systemInfo.DeviceUniqueIdentifier!.Value, @event.Contexts.Device.DeviceUniqueIdentifier);
         Assert.AreEqual(systemInfo.IsDebugBuild!.Value ? "debug" : "release", @event.Contexts.App.BuildType);
+        if (captureOnUiThread)
+        {
+            Assert.IsNotNull(@event.Contexts.App.Memory);
+        }
 
         @event.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var unityProtocolObject);
         var unityContext = unityProtocolObject as Unity.Protocol.Unity;
@@ -163,7 +167,7 @@ public sealed class UnityEventProcessorThreadingTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityContext!.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityContext.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityContext.RenderingThreadingMode);
-        Assert.AreEqual(SceneManager.GetActiveScene().name, unityContext.ActiveSceneName);
+        Assert.AreEqual(captureOnUiThread ? SceneManager.GetActiveScene().name : null, unityContext.ActiveSceneName);
 
         Assert.IsNull(@event.ServerName);
     }
@@ -277,6 +281,34 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
+    public void AppMemory_SetByEventProcessor()
+    {
+        // arrange
+        var unityEventProcessor = new UnityEventProcessor(_sentryOptions, new TestUnityInfo());
+        var sentryEvent = new SentryEvent();
+
+        // act
+        unityEventProcessor.Process(sentryEvent);
+
+        // assert
+        Assert.IsNotNull(sentryEvent.Contexts.App.Memory);
+    }
+
+    [Test]
+    public void AppMemory_SetByEventProcessorForTransactions()
+    {
+        // arrange
+        var unityEventProcessor = new UnityEventProcessor(_sentryOptions, new TestUnityInfo());
+        var transaction = new SentryTransaction("test-transaction", "test-operation");
+
+        // act
+        unityEventProcessor.Process(transaction);
+
+        // assert
+        Assert.IsNotNull(transaction.Contexts.App.Memory);
+    }
+
+    [Test]
     public void AppProtocol_AppNameIsApplicationName()
     {
         // arrange
@@ -338,7 +370,8 @@ public sealed class UnityEventProcessorTests
 
         var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
         var scopeUpdater = new UnityScopeUpdater(sentryOptions, _testApplication);
-        var unityEventProcessor = new UnityEventProcessor(sentryOptions);
+        var unityInfo = new TestUnityInfo { IL2CPP = true };
+        var unityEventProcessor = new UnityEventProcessor(sentryOptions, unityInfo);
         var scope = new Scope(sentryOptions);
         var sentryEvent = new SentryEvent();
         var transaction = new SentryTransaction("name", "operation");
@@ -438,7 +471,6 @@ public sealed class UnityEventProcessorTests
     [TestCase(false)]
     public void UnityProtocol_Assigned(bool isIL2CPP)
     {
-        var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
         var systemInfo = new TestSentrySystemInfo
         {
             EditorVersion = "TestEditorVersion2022.3.2f1",
@@ -450,7 +482,7 @@ public sealed class UnityEventProcessorTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
-        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication, new TestUnityInfo { IL2CPP = isIL2CPP }, sceneManager);
+        var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
 
         // act
@@ -465,7 +497,6 @@ public sealed class UnityEventProcessorTests
         Assert.AreEqual(systemInfo.TargetFrameRate!.Value, unityProtocol.TargetFrameRate);
         Assert.AreEqual(systemInfo.CopyTextureSupport!.Value, unityProtocol.CopyTextureSupport);
         Assert.AreEqual(systemInfo.RenderingThreadingMode!.Value, unityProtocol.RenderingThreadingMode);
-        Assert.AreEqual(isIL2CPP ? sceneManager.GetActiveScene().Name : null, unityProtocol.ActiveSceneName);
     }
 
     [Test]
@@ -564,6 +595,28 @@ public sealed class UnityEventProcessorTests
 
         // assert
         Assert.IsNull(scope.Contexts.Gpu.GraphicsShaderLevel);
+    }
+
+    [Test]
+    [TestCase(true, true)]
+    [TestCase(false, true)]
+    [TestCase(true, false)]
+    [TestCase(false, false)]
+    public void Process_SetsActiveSceneName(bool isEditor, bool isIL2CPP)
+    {
+        var sentryOptions = new SentryUnityOptions();
+        var application = new TestApplication { IsEditor = isEditor };
+        var unityInfo = new TestUnityInfo { IL2CPP = isIL2CPP };
+        var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
+        var sut = new UnityEventProcessor(sentryOptions, unityInfo, application, sceneManager);
+        var sentryEvent = new SentryEvent();
+
+        sut.Process(sentryEvent);
+
+        sentryEvent.Contexts.TryGetValue(Unity.Protocol.Unity.Type, out var unityProtocolObject);
+        var unityProtocol = unityProtocolObject as Unity.Protocol.Unity;
+        Assert.NotNull(unityProtocol);
+        Assert.AreEqual(isEditor || isIL2CPP ? sceneManager.GetActiveScene().Name : null, unityProtocol!.ActiveSceneName);
     }
 }
 
