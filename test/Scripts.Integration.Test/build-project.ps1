@@ -2,7 +2,8 @@
     [string] $UnityPath,
     [string] $Platform = "",
     [string] $UnityVersion = "",
-    [Switch] $CheckSymbols
+    [Switch] $CheckSymbols,
+    [string] $BuildDirName = "Build"
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -14,7 +15,8 @@ if (-not $Global:NewProjectPathCache)
 
 $unityPath = FormatUnityPath $UnityPath
 $buildMethod = BuildMethodFor $Platform
-$outputPath = "$(GetNewProjectBuildPath)/$(GetTestAppName $buildMethod)"
+$buildDirectory = "$(GetNewProjectPath)/$BuildDirName"
+$outputPath = "$buildDirectory/$(GetTestAppName $buildMethod)"
 
 Write-Log "Executing ${buildMethod}:"
 $unityArgs = @("-batchmode", "-projectPath ", "$(GetNewProjectPath)", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
@@ -37,4 +39,4 @@ if ($Platform -eq "Android-Export")
 }
 
 Write-Log "Project built successfully" -ForegroundColor Green
-Get-ChildItem $(GetNewProjectBuildPath)
+Get-ChildItem $buildDirectory
