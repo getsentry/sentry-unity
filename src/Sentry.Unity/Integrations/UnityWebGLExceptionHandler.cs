@@ -14,7 +14,6 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
     private readonly IApplication _application;
     private IHub _hub = null!;
     private SentryUnityOptions _options = null!;
-    private ErrorTimeDebounce _errorTimeDebounce = null!;
 
     internal UnityWebGLExceptionHandler(IApplication? application = null)
     {
@@ -27,7 +26,6 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
         _options = sentryOptions as SentryUnityOptions
             ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
 
-        _errorTimeDebounce = new ErrorTimeDebounce(_options.DebounceTimeError);
         _application.LogMessageReceived += OnLogMessageReceived;
         _application.Quitting += OnQuitting;
     }
@@ -50,11 +48,11 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
             return;
         }
 
-        if (_options.EnableLogDebouncing && !_errorTimeDebounce.Debounced())
-        {
-            _options.LogDebug("Exception is getting debounced.");
-            return;
-        }
+        // if (_options.EnableLogDebouncing && !_errorTimeDebounce.Debounced())
+        // {
+        //     _options.LogDebug("Exception is getting debounced.");
+        //     return;
+        // }
 
         _options.LogDebug("Capturing exception on WebGL through LogMessageReceived.");
         var evt = UnityLogEventFactory.CreateExceptionEvent(message, stacktrace, false, _options);

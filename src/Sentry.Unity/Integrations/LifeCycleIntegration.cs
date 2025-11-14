@@ -49,7 +49,6 @@ internal class LifeCycleIntegration : ISdkIntegration
             _options.DiagnosticLogger?.LogDebug("Resuming session.");
             hub.ResumeSession();
         };
-
         _sentryMonoBehaviour.ApplicationPausing += () =>
         {
             if (!hub.IsEnabled)

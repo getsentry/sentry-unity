@@ -130,24 +130,26 @@ internal static class LoggingTab
 
             EditorGUI.indentLevel++;
 
-            options.DebounceTimeLog = EditorGUILayout.IntField(
-                new GUIContent("Log Debounce [ms]", "The time that has to pass between events of " +
-                                                    "LogType.Log before the SDK sends it again."),
-                options.DebounceTimeLog);
-            options.DebounceTimeLog = Math.Max(0, options.DebounceTimeLog);
-
-            options.DebounceTimeWarning = EditorGUILayout.IntField(
-                new GUIContent("Warning Debounce [ms]", "The time that has to pass between events of " +
-                                                        "LogType.Warning before the SDK sends it again."),
-                options.DebounceTimeWarning);
-            options.DebounceTimeWarning = Math.Max(0, options.DebounceTimeWarning);
-
-            options.DebounceTimeError = EditorGUILayout.IntField(
-                new GUIContent("Error Debounce [ms]", "The time that has to pass between events of " +
-                                                      "LogType.Assert, LogType.Exception and LogType.Error before " +
-                                                      "the SDK sends it again."),
-                options.DebounceTimeError);
-            options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
+            options.StructuredLogOnDebugLog = EditorGUILayout.Toggle(
+                new GUIContent("Debug.Log",
+                    "Whether the SDK should forward Debug.Log messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLog);
+            options.StructuredLogOnDebugLogWarning = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogWarning",
+                    "Whether the SDK should forward Debug.LogWarning messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogWarning);
+            options.StructuredLogOnDebugLogAssertion = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogAssertion",
+                    "Whether the SDK should forward Debug.LogAssertion messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogAssertion);
+            options.StructuredLogOnDebugLogError = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogError",
+                    "Whether the SDK should forward Debug.LogError messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogError);
+            options.StructuredLogOnDebugLogException = EditorGUILayout.Toggle(
+                new GUIContent("Debug.LogException",
+                    "Whether the SDK should forward Debug.LogException messages to Sentry structured logging"),
+                options.StructuredLogOnDebugLogException);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
