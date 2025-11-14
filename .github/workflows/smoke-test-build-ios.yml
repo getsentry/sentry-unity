@@ -81,13 +81,13 @@ jobs:
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
-      - name: Build Project
+      - name: Build Project with runtime initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       # We create tar explicitly because upload-artifact is slow for many files.
-      - name: Create archive
+      - name: Create archive (runtime initialization)
         shell: bash
         run: |
           # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
@@ -95,7 +95,7 @@ jobs:
           tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
 
       # Upload runtime initialization build
-      - name: Upload test app
+      - name: Upload test app (runtime initialization)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: testapp-ios-${{ env.UNITY_VERSION }}-runtime
@@ -110,7 +110,7 @@ jobs:
           $content = $content -replace 'IosNativeInitializationType = NativeInitializationType.Runtime', 'IosNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
-      - name: Build Project for mobile platforms (build-time initialization)
+      - name: Build Project with build-time initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
@@ -141,7 +141,7 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-      - name: Cleanup Unity container and return license
+      - name: Stop the Unity docker container
         if: always()
         run: ./scripts/ci-docker-stop.sh
         shell: bash

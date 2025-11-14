@@ -67,7 +67,7 @@ jobs:
         # Lower retention period - we only need this to retry CI.
         retention-days: 14
 
-    - name: Cleanup Unity container and return license
+    - name: Stop the Unity docker container
       if: always()
       run: ./scripts/ci-docker-stop.sh
       shell: bash 

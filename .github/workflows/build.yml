@@ -149,7 +149,7 @@ jobs:
           name: Test results (editmode) - ${{ env.UNITY_VERSION }}
           path: artifacts/test/editmode
 
-      - name: Cleanup Unity container and return license
+      - name: Stop the Unity docker container
         if: always()
         run: ./scripts/ci-docker-stop.sh
         shell: bash
