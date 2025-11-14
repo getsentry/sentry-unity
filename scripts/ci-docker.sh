@@ -26,9 +26,16 @@ fi
 echo "Starting up '$image' as '$container'"
 suexec="docker exec --user root"
 
+# Generate unique MAC address to avoid Unity license conflicts
+# Unity uses MAC address for machine binding - GameCI containers all share the same MAC
+# Format: 02:42:ac:xx:xx:xx (Docker's default range, but with random last 3 octets)
+mac_address=$(printf '02:42:ac:%02x:%02x:%02x' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+echo "Using MAC address: $mac_address"
+
 # We use the host dotnet installation - it's much faster than installing inside the docker container.
 set -x
 docker run -td --name $container \
+    --mac-address $mac_address \
     --user $uid:$gid \
     -v "$cwd":/sentry-unity \
     -v $ANDROID_HOME:$ANDROID_HOME \
@@ -44,14 +51,6 @@ $suexec $container useradd -u $uid -g $gid --create-home $user
 
 $suexec $container ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 $suexec $container ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
-
-# Generate unique machine-id to avoid Unity license conflicts
-# GameCI images have hardcoded machine-id causing all containers to appear as same machine
-echo "Generating unique machine-id for this container..."
-unique_id=$(docker exec $container sh -c "echo \$(hostname)-\$RANDOM-\$RANDOM | md5sum | cut -c1-32")
-echo "New machine-id: $unique_id"
-$suexec $container sh -c "echo '$unique_id' > /etc/machine-id"
-$suexec $container sh -c "echo '$unique_id' > /var/lib/dbus/machine-id"
 
 $suexec $container mkdir -p /usr/share/unity3d/config/
 echo $licenseConfig | $suexec -i $container sh -c "cat > /usr/share/unity3d/config/services-config.json"
