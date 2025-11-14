@@ -21,6 +21,10 @@ jobs:
   build:
     name: Build - ${{ inputs.unity-version }}
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
+      statuses: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
@@ -134,14 +138,23 @@ jobs:
           docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn= /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
+      - name: Run Unity tests (editmode)
+        run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3 # v2.1.1
+        if: ${{ !cancelled() }}
+        with:
+          name: Unity Test Results - ${{ env.UNITY_VERSION }}
+          path: artifacts/test/**/*.xml
+          reporter: dotnet-nunit
+          fail-on-error: false
+
       - name: Upload test artifacts (playmode)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Test results (playmode) - ${{ env.UNITY_VERSION }}
           path: artifacts/test/playmode
-
-      - name: Run Unity tests (editmode)
-        run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
