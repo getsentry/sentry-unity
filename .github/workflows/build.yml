@@ -68,11 +68,6 @@ jobs:
       - name: Restore .NET Workload
         run: dotnet workload restore
 
-      - name: Install Android dotnet workflow
-        run: dotnet workload install android --temp-dir "$RUNNER_TEMP"
-        env:
-          RUNNER_TEMP: ${{ env.RUNNER_TEMP }}
-
       - name: Download CLI
         run: ./scripts/download-sentry-cli.ps1
 
