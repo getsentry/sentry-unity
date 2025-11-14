@@ -58,7 +58,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker-start.sh "$UNITY_VERSION" 'ios' "$UNITY_LICENSE_SERVER_CONFIG"
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'ios' "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
@@ -154,8 +154,3 @@ jobs:
         with:
           name: Test results (editmode) - ${{ env.UNITY_VERSION }}
           path: artifacts/test/editmode
-
-      - name: Stop the Unity docker container
-        if: always()
-        run: ./scripts/ci-docker-stop.sh
-        shell: bash

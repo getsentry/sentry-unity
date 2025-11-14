@@ -36,7 +36,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker-start.sh "$UNITY_VERSION" 'android' "$UNITY_LICENSE_SERVER_CONFIG"
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'android' "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
@@ -109,9 +109,4 @@ jobs:
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
           retention-days: 14 # Lower retention period - we only need this to retry CI.
-
-      - name: Stop the Unity docker container
-        if: always()
-        run: ./scripts/ci-docker-stop.sh
-        shell: bash
 
