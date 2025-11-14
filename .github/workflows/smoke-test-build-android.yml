@@ -49,6 +49,15 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: samples/IntegrationTest/Library
+          key: Library-IntegrationTest-Android-${{ env.UNITY_VERSION }}-v1
+          restore-keys: |
+            Library-IntegrationTest-Android-${{ env.UNITY_VERSION }}-
+            Library-IntegrationTest-Android-
+
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:

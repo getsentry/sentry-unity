@@ -55,6 +55,15 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: samples/IntegrationTest/Library
+          key: Library-IntegrationTest-iOS-${{ env.UNITY_VERSION }}-v1
+          restore-keys: |
+            Library-IntegrationTest-iOS-${{ env.UNITY_VERSION }}-
+            Library-IntegrationTest-iOS-
+
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
@@ -72,13 +81,13 @@ jobs:
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
-      - name: Build Project
+      - name: Build Project with runtime initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       # We create tar explicitly because upload-artifact is slow for many files.
-      - name: Create archive
+      - name: Create archive (runtime initialization)
         shell: bash
         run: |
           # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
@@ -86,7 +95,7 @@ jobs:
           tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
 
       # Upload runtime initialization build
-      - name: Upload test app
+      - name: Upload test app (runtime initialization)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: testapp-ios-${{ env.UNITY_VERSION }}-runtime
@@ -101,7 +110,7 @@ jobs:
           $content = $content -replace 'IosNativeInitializationType = NativeInitializationType.Runtime', 'IosNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
 
-      - name: Build Project for mobile platforms (build-time initialization)
+      - name: Build Project with build-time initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}

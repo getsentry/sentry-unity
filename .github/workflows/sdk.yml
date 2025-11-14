@@ -81,11 +81,13 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
 
       - name: Install .NET SDK
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
         with:
           global-json-file: global.json
           
       - name: Restore .NET Workload
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: dotnet workload restore
       
       - name: Build
