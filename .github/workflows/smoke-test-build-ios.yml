@@ -42,7 +42,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh "$UNITY_VERSION" "iOS" "$UNITY_LICENSE_SERVER_CONFIG"
+        run: ./scripts/ci-docker-start.sh "$UNITY_VERSION" "iOS" "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
@@ -54,6 +54,15 @@ jobs:
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
+
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: samples/IntegrationTest/Library
+          key: Library-IntegrationTest-iOS-${{ env.UNITY_VERSION }}-v1
+          restore-keys: |
+            Library-IntegrationTest-iOS-${{ env.UNITY_VERSION }}-
+            Library-IntegrationTest-iOS-
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -131,3 +140,8 @@ jobs:
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
+
+      - name: Cleanup Unity container and return license
+        if: always()
+        run: ./scripts/ci-docker-stop.sh
+        shell: bash

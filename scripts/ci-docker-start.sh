@@ -50,9 +50,7 @@ echo $licenseConfig | $suexec -i $container sh -c "cat > /usr/share/unity3d/conf
 $suexec $container chown -R $uid /usr/share/unity3d/config/
 
 # Unity 2021+ tries to write to this directory during asset import...
-if [[ $unityPrefix -ge 2021 ]]; then
-    $suexec $container chmod -R 755 /opt/unity/Editor/Data/UnityReferenceAssemblies/
-fi
+$suexec $container chmod -R 755 /opt/unity/Editor/Data/UnityReferenceAssemblies/
 
 echo "Container started successfully: "
 docker ps --filter "name=^/$container$"
