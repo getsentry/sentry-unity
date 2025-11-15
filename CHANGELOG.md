@@ -10,6 +10,9 @@
 - Bump CLI from v2.58.1 to v2.58.2 ([#2418](https://github.com/getsentry/sentry-unity/pull/2418))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2582)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.1...2.58.2)
+- Bump Cocoa SDK from v8.57.2 to v8.57.3 ([#2424](https://github.com/getsentry/sentry-unity/pull/2424))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8573)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.2...8.57.3)
 
 ## 4.0.0-beta.5
 
