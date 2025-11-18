@@ -46,6 +46,10 @@ docker run -td --name $container \
     -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
     --workdir /sentry-unity $image
 
+# Generate unique machine-id to avoid any hardcoded values and license-fetch congestion
+$suexec $container rm -f /etc/machine-id
+$suexec $container dbus-uuidgen --ensure=/etc/machine-id
+
 $suexec $container groupadd -g $gid $user
 $suexec $container useradd -u $uid -g $gid --create-home $user
 
