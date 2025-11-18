@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
 
@@ -54,6 +56,12 @@ internal class SentryJava : ISentryJava
     private readonly IAndroidJNI _androidJNI;
     private readonly IDiagnosticLogger? _logger;
 
+    private readonly CancellationTokenSource _scopeSyncShutdownSource;
+    private readonly AutoResetEvent _scopeSyncEvent;
+    private Thread? _scopeSyncThread;
+
+    private ConcurrentQueue<Action> _scopeSyncItems = new();
+
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     protected virtual AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
@@ -61,6 +69,11 @@ internal class SentryJava : ISentryJava
     {
         _logger = logger;
         _androidJNI ??= androidJNI ?? AndroidJNIAdapter.Instance;
+
+        _scopeSyncEvent = new AutoResetEvent(false);
+        _scopeSyncShutdownSource = new CancellationTokenSource();
+        _scopeSyncThread = new Thread(SyncScope) { IsBackground = true, Name = "SentryScopeSyncWorkerThread" };
+        _scopeSyncThread.Start();
     }
 
     public bool? IsEnabled()
@@ -199,6 +212,16 @@ internal class SentryJava : ISentryJava
 
     public void Close()
     {
+        _scopeSyncShutdownSource?.Cancel();
+        if (!_scopeSyncThread?.Join(TimeSpan.FromSeconds(2)) ?? false)
+        {
+            _logger?.LogWarning("Worker thread did not exit cleanly within timeout");
+        }
+
+        _scopeSyncEvent?.Dispose();
+        _scopeSyncShutdownSource?.Dispose();
+
+
         if (!MainThreadData.IsMainThread())
         {
             _logger?.LogError("Calling Close() on Android SDK requires running on MainThread");
@@ -379,25 +402,40 @@ internal class SentryJava : ISentryJava
         }
         else
         {
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                var (androidJNI, logger, name) = ((IAndroidJNI, IDiagnosticLogger?, string))state;
+            _scopeSyncItems.Enqueue(action);
+            _scopeSyncEvent.Set();
+        }
+    }
 
-                androidJNI.AttachCurrentThread();
+    private void SyncScope()
+    {
+        _androidJNI.AttachCurrentThread();
+
+        var waitHandles = new[] { _scopeSyncEvent, _scopeSyncShutdownSource.Token.WaitHandle };
+
+        while (true)
+        {
+            var index = WaitHandle.WaitAny(waitHandles);
+            if (index > 0)
+            {
+                // We only care about the _taskEvent
+                break;
+            }
+
+            while (_scopeSyncItems.TryDequeue(out var action))
+            {
                 try
                 {
                     action.Invoke();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    logger?.LogError("Calling '{0}' failed.", name);
+                    _logger?.LogError(e, "Failed to sync scope.");
                 }
-                finally
-                {
-                    androidJNI.DetachCurrentThread();
-                }
-            }, (_androidJNI, _logger, actionName));
+            }
         }
+
+        _androidJNI.DetachCurrentThread();
     }
 }
 
