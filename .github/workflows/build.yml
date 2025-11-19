@@ -48,10 +48,6 @@ jobs:
         env:
           UNITY_SCRIPT_ARG: unity${{ env.UNITY_VERSION }}
 
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
-        env:
-          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
-
       - name: Restore Unity Packages
         uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
         with:

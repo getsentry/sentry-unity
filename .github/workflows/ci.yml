@@ -93,7 +93,6 @@ jobs:
     secrets: inherit
     strategy:
       fail-fast: false
-      max-parallel: 1  # Run Unity versions sequentially to avoid license exhaustion
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
     uses: ./.github/workflows/smoke-test-create.yml
     with:
@@ -107,7 +106,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 2  # Run 2 jobs at a time (one per platform), versions run sequentially
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         platform: ["WebGL", "Linux"]
@@ -134,10 +132,6 @@ jobs:
           large-packages: false
           docker-images: false
           swap-storage: true
-
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
-        env:
-          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
       - name: Docker Login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
@@ -235,7 +229,6 @@ jobs:
     secrets: inherit
     strategy:
       fail-fast: false
-      max-parallel: 1  # Run Unity versions sequentially to avoid license exhaustion
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
     uses: ./.github/workflows/smoke-test-build-android.yml
     with:
@@ -264,7 +257,6 @@ jobs:
     secrets: inherit
     strategy:
       fail-fast: false
-      max-parallel: 1  # Run Unity versions sequentially to avoid license exhaustion
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
     uses: ./.github/workflows/smoke-test-build-ios.yml
     with:
@@ -355,7 +347,6 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
-      max-parallel: 1  # Run Unity versions sequentially to avoid license exhaustion
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         os: ["windows"]
@@ -383,10 +374,6 @@ jobs:
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: ${{ matrix.unity-modules }}
-
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
-        env:
-          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
 
       - name: Create Unity license config
         run: |
