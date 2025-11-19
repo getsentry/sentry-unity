@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
 
@@ -60,10 +59,10 @@ internal class SentryJava : ISentryJava
     private readonly AutoResetEvent _scopeSyncEvent;
     private Thread? _scopeSyncThread;
 
-    private ConcurrentQueue<Action> _scopeSyncItems = new();
+    private ConcurrentQueue<(Action action, string actionName)> _scopeSyncItems = new();
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
-    protected virtual AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+    protected static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
     public SentryJava(IDiagnosticLogger? logger, IAndroidJNI? androidJNI = null)
     {
@@ -402,7 +401,7 @@ internal class SentryJava : ISentryJava
         }
         else
         {
-            _scopeSyncItems.Enqueue(action);
+            _scopeSyncItems.Enqueue((action, actionName));
             _scopeSyncEvent.Set();
         }
     }
@@ -422,15 +421,16 @@ internal class SentryJava : ISentryJava
                 break;
             }
 
-            while (_scopeSyncItems.TryDequeue(out var action))
+            while (_scopeSyncItems.TryDequeue(out var workItem))
             {
+                var (action, actionName) = workItem;
                 try
                 {
                     action.Invoke();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    _logger?.LogError(e, "Failed to sync scope.");
+                    _logger?.LogError("Calling '{0}' failed.", actionName);
                 }
             }
         }
