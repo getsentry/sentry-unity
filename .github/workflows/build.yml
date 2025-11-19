@@ -48,13 +48,13 @@ jobs:
         env:
           UNITY_SCRIPT_ARG: unity${{ env.UNITY_VERSION }}
 
-      - name: Restore Unity Packages
-        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
-          path: |
-            samples/unity-of-bugs/Library/Packages
-            temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
-          key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          path: samples/unity-of-bugs/Library
+          key: Library-unity-of-bugs-${{ steps.env.outputs.unityVersion }}-v1
+          restore-keys: |
+            Library-unity-of-bugs-${{ steps.env.outputs.unityVersion }}-
 
       - name: Docker Login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
