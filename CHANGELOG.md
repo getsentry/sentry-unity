@@ -6,6 +6,18 @@
 
 - Fixed race conditions that could cause crashes when targeting Android, especially in concurrent scenarios. The ThreadPool used to sync scope to the native layer could prematurely detach threads from the JVM. This is solved by using a dedicated background worker thread that properly manages JNI lifecycle. ([#2426](https://github.com/getsentry/sentry-unity/pull/2426))
 
+### Bump to Sentry SDK for .NET v6.0.0-rc.1
+
+#### Features
+
+- The SDK now provides an `IsSessionActive` property to allow checking the session state ([#4662](https://github.com/getsentry/sentry-dotnet/pull/4662))
+- Implemented instance isolation so that multiple instances of the Sentry SDK can be instantiated inside the same process when using the Caching Transport ([#4498](https://github.com/getsentry/sentry-dotnet/pull/4498))
+
+#### Fixes
+
+- Fixed memory leak when finishing an unsampled Transaction that has started unsampled Spans ([#4717](https://github.com/getsentry/sentry-dotnet/pull/4717))
+- The SDK now avoids redundant scope sync after transaction finish ([#4623](https://github.com/getsentry/sentry-dotnet/pull/4623))
+
 ### Dependencies
 
 - Bump Java SDK from v8.25.0 to v8.26.0 ([#2419](https://github.com/getsentry/sentry-unity/pull/2419))
@@ -14,6 +26,9 @@
 - Bump CLI from v2.58.1 to v2.58.2 ([#2418](https://github.com/getsentry/sentry-unity/pull/2418))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2582)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.1...2.58.2)
+- Bump Cocoa SDK from v8.57.2 to v8.57.3 ([#4704](https://github.com/getsentry/sentry-dotnet/pull/4704), [#4738](https://github.com/getsentry/sentry-dotnet/pull/4738))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8573)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.2...8.57.3)
 
 ## 4.0.0-beta.5
 
