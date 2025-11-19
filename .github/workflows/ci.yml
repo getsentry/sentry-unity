@@ -133,10 +133,6 @@ jobs:
           docker-images: false
           swap-storage: true
 
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
-        env:
-          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
-
       - name: Docker Login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
@@ -161,6 +157,15 @@ jobs:
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
+
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: samples/IntegrationTest/Library
+          key: Library-IntegrationTest-${{ matrix.platform }}-${{ matrix.unity-version }}-v1
+          restore-keys: |
+            Library-IntegrationTest-${{ matrix.platform }}-${{ matrix.unity-version }}-
+            Library-IntegrationTest-${{ matrix.platform }}-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry
@@ -393,10 +398,6 @@ jobs:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-modules: ${{ matrix.unity-modules }}
 
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
-        env:
-          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
-
       - name: Create Unity license config
         run: |
           New-Item -Path "$env:UNITY_CONFIG_PATH" -ItemType Directory
@@ -412,6 +413,15 @@ jobs:
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
+
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: samples/IntegrationTest/Library
+          key: Library-IntegrationTest-${{ matrix.os }}-${{ matrix.unity-version }}-v1
+          restore-keys: |
+            Library-IntegrationTest-${{ matrix.os }}-${{ matrix.unity-version }}-
+            Library-IntegrationTest-${{ matrix.os }}-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry

@@ -24,10 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
-        env:
-          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
-
       - name: Docker Login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
@@ -48,6 +44,15 @@ jobs:
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
+
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: samples/IntegrationTest/Library
+          key: Library-IntegrationTest-Android-${{ env.UNITY_VERSION }}-v1
+          restore-keys: |
+            Library-IntegrationTest-Android-${{ env.UNITY_VERSION }}-
+            Library-IntegrationTest-Android-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry

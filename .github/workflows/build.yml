@@ -29,6 +29,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8 # v1.3.0
+        with:
+          android: true
+          dotnet: false
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: true
+
       - name: Checkout submodules
         run: git submodule update --init --recursive src/sentry-dotnet
 
@@ -38,17 +48,13 @@ jobs:
         env:
           UNITY_SCRIPT_ARG: unity${{ env.UNITY_VERSION }}
 
-      - run: echo "::add-mask::$LICENSE_SERVER_URL"
-        env:
-          LICENSE_SERVER_URL: ${{ secrets.LICENSE_SERVER_URL }}
-
-      - name: Restore Unity Packages
-        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f # v3
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
-          path: |
-            samples/unity-of-bugs/Library/Packages
-            temp/unity-packages/Library/ScriptAssemblies/*.TestRunner.*
-          key: samples/unity-of-bugs|${{ steps.env.outputs.unityVersion }}-${{ hashFiles('samples/unity-of-bugs/Packages/packages-lock.json') }}
+          path: samples/unity-of-bugs/Library
+          key: Library-unity-of-bugs-${{ steps.env.outputs.unityVersion }}-v1
+          restore-keys: |
+            Library-unity-of-bugs-${{ steps.env.outputs.unityVersion }}-
 
       - name: Docker Login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
@@ -71,11 +77,6 @@ jobs:
         
       - name: Restore .NET Workload
         run: dotnet workload restore
-
-      - name: Install Android dotnet workflow
-        run: dotnet workload install android --temp-dir "$RUNNER_TEMP"
-        env:
-          RUNNER_TEMP: ${{ env.RUNNER_TEMP }}
 
       - name: Download CLI
         run: ./scripts/download-sentry-cli.ps1
@@ -134,9 +135,7 @@ jobs:
             package-release.zip
 
       - name: Run Unity tests (playmode)
-        run: |
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:TestDsn= /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
+        run: docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Run Unity tests (editmode)
         run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests

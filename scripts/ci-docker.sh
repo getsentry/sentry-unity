@@ -26,9 +26,15 @@ fi
 echo "Starting up '$image' as '$container'"
 suexec="docker exec --user root"
 
+# Format: <job-name>-<image-variant>-<run-id>
+uniqueHostname="${GITHUB_JOB:-local}-${imageVariant}-${GITHUB_RUN_ID:-0}"
+# Sanitize hostname: replace underscores and spaces with hyphens, ensure lowercase
+uniqueHostname=$(echo "$uniqueHostname" | tr '[:upper:]_ ' '[:lower:]--' | tr -s '-')
+
 # We use the host dotnet installation - it's much faster than installing inside the docker container.
 set -x
 docker run -td --name $container \
+    --hostname $uniqueHostname \
     --user $uid:$gid \
     -v "$cwd":/sentry-unity \
     -v $ANDROID_HOME:$ANDROID_HOME \
@@ -38,6 +44,10 @@ docker run -td --name $container \
     -e UNITY_VERSION=$unityVersion \
     -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
     --workdir /sentry-unity $image
+
+# Generate unique machine-id to avoid any hardcoded values and license-fetch congestion
+$suexec $container rm -f /etc/machine-id
+$suexec $container dbus-uuidgen --ensure=/etc/machine-id
 
 $suexec $container groupadd -g $gid $user
 $suexec $container useradd -u $uid -g $gid --create-home $user
@@ -50,9 +60,7 @@ echo $licenseConfig | $suexec -i $container sh -c "cat > /usr/share/unity3d/conf
 $suexec $container chown -R $uid /usr/share/unity3d/config/
 
 # Unity 2021+ tries to write to this directory during asset import...
-if [[ $unityPrefix -ge 2021 ]]; then
-    $suexec $container chmod -R 755 /opt/unity/Editor/Data/UnityReferenceAssemblies/
-fi
+$suexec $container chmod -R 755 /opt/unity/Editor/Data/UnityReferenceAssemblies/
 
 echo "Container started successfully: "
 docker ps --filter "name=^/$container$"
