@@ -162,8 +162,18 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-      # - name: Build without Sentry SDK
-      #   run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "${{ env.UNITY_PATH }}" -Platform "${{ matrix.platform }}"
+      - name: Restore cached build without Sentry
+        id: cache-build-nosentry
+        uses: actions/cache@v4
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}
+
+      - name: Build without Sentry SDK
+        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -BuildDirName "Build-NoSentry"
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -188,6 +198,19 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           CHECK_SYMBOLS: ${{ matrix.check_symbols }}
           UNITY_VERSION: ${{ matrix.unity-version }}
+
+      - name: Compare build sizes
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
+        env:
+          BUILD_PLATFORM: ${{ matrix.build_platform }}
+          UNITY_VERSION: ${{ matrix.unity-version }}
+
+      - name: Upload build size measurement
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-size-${{ matrix.platform }}-${{ matrix.unity-version }}
+          path: build-size-measurements/*.json
+          retention-days: 1
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
@@ -390,8 +413,16 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
+      - name: Restore cached build without Sentry
+        id: cache-build-nosentry
+        uses: actions/cache@v4
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-Windows-${{ matrix.unity-version }}
+
       - name: Build without Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH"
+        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -CheckSymbols:$false -BuildDirName "Build-NoSentry"
 
       - name: Download UPM package
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -412,8 +443,39 @@ jobs:
         env:
           UNITY_VERSION: ${{ matrix.unity-version }}
 
+      - name: Compare build sizes
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Windows" -UnityVersion "$env:UNITY_VERSION"
+        env:
+          UNITY_VERSION: ${{ matrix.unity-version }}
+
+      - name: Upload build size measurement
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-size-Windows-${{ matrix.unity-version }}
+          path: build-size-measurements/*.json
+          retention-days: 1
+
       - name: Run Smoke Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke
 
       - name: Run Crash Test
         run: ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Crash
+
+  build-size-summary:
+    name: Build Size
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [smoke-test-build, smoke-test-build-android, smoke-test-compile-ios, desktop-smoke-test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download all build size measurements
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: build-size-*
+          path: build-size-measurements
+
+      - name: Create consolidated summary
+        shell: pwsh
+        run: ./scripts/create-build-size-summary.ps1
