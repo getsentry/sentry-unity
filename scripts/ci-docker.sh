@@ -26,8 +26,10 @@ fi
 echo "Starting up '$image' as '$container'"
 suexec="docker exec --user root"
 
-# Generate unique hostname to ensure each container gets a unique Unity license
-uniqueHostname="unity-$(uuidgen | tr '[:upper:]' '[:lower:]' | cut -d'-' -f1)"
+# Format: <job-name>-<image-variant>-<run-id>
+uniqueHostname="${GITHUB_JOB:-local}-${imageVariant}-${GITHUB_RUN_ID:-0}"
+# Sanitize hostname: replace underscores and spaces with hyphens, ensure lowercase
+uniqueHostname=$(echo "$uniqueHostname" | tr '[:upper:]_ ' '[:lower:]--' | tr -s '-')
 
 # We use the host dotnet installation - it's much faster than installing inside the docker container.
 set -x
