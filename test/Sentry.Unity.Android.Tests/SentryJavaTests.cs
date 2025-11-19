@@ -133,6 +133,25 @@ public class SentryJavaTests
         Assert.That(androidJni.DetachCalled, Is.True);
     }
 
+    [Test]
+    public void RunJniSafe_AfterClose_SkipsActionAndLogsWarning()
+    {
+        // Arrange
+        var actionExecuted = false;
+        _sut.Close();
+
+        // Act
+        _sut.RunJniSafe(() => actionExecuted = true, "TestAction", isMainThread: false);
+
+        // Assert
+        Assert.That(actionExecuted, Is.False, "Action should not execute after Close()");
+        Assert.That(_logger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Info &&
+            log.message.Contains("Scope sync is closed, skipping 'TestAction'")),
+            Is.True,
+            "Should log warning when trying to queue action after Close()");
+    }
+
     internal class TestAndroidJNI : IAndroidJNI
     {
         public bool AttachCalled { get; private set; }

@@ -58,8 +58,8 @@ internal class SentryJava : ISentryJava
     private readonly CancellationTokenSource _scopeSyncShutdownSource;
     private readonly AutoResetEvent _scopeSyncEvent;
     private readonly Thread _scopeSyncThread;
-
     private readonly ConcurrentQueue<(Action action, string actionName)> _scopeSyncItems = new();
+    private volatile bool _closed;
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
@@ -207,30 +207,6 @@ internal class SentryJava : ISentryJava
         }
 
         return null;
-    }
-
-    public void Close()
-    {
-        _scopeSyncShutdownSource.Cancel();
-        _scopeSyncThread.Join();
-        _scopeSyncEvent.Dispose();
-        _scopeSyncShutdownSource.Dispose();
-
-        if (!MainThreadData.IsMainThread())
-        {
-            _logger?.LogError("Calling Close() on Android SDK requires running on MainThread");
-            return;
-        }
-
-        try
-        {
-            using var sentry = GetSentryJava();
-            sentry.CallStatic("close");
-        }
-        catch (Exception e)
-        {
-            _logger?.LogError(e, "Calling 'SentryJava.Close' failed.");
-        }
     }
 
     public void WriteScope(
@@ -382,6 +358,12 @@ internal class SentryJava : ISentryJava
 
     internal void RunJniSafe(Action action, [CallerMemberName] string actionName = "", bool? isMainThread = null)
     {
+        if (_closed)
+        {
+            _logger?.LogInfo("Scope sync is closed, skipping '{0}'", actionName);
+            return;
+        }
+
         isMainThread ??= MainThreadData.IsMainThread();
         if (isMainThread is true)
         {
@@ -435,6 +417,35 @@ internal class SentryJava : ISentryJava
         finally
         {
             _androidJNI.DetachCurrentThread();
+        }
+    }
+
+    public void Close()
+    {
+        _closed = true;
+
+        _scopeSyncShutdownSource.Cancel();
+        _scopeSyncThread.Join();
+
+        // Note: We intentionally don't dispose _scopeSyncEvent to avoid race conditions
+        // where other threads might call RunJniSafe() after Close() but before disposal.
+        // The memory overhead of a single AutoResetEvent is negligible.
+        _scopeSyncShutdownSource.Dispose();
+
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling Close() on Android SDK requires running on MainThread");
+            return;
+        }
+
+        try
+        {
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("close");
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.Close' failed.");
         }
     }
 }
