@@ -154,6 +154,18 @@ public class Builder
     public static void BuildAndroidIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Android IL2CPP Player");
+
+#if UNITY_2021_2_OR_NEWER && !UNITY_6000_0_OR_NEWER
+        // Clean Android gradle cache to force regeneration of gradle files
+        // This prevents Unity from reusing gradle files that may contain Sentry symbol upload tasks from previous builds
+        var androidGradlePath = Path.Combine(Directory.GetCurrentDirectory(), "Library/Bee/Android");
+        if (Directory.Exists(androidGradlePath))
+        {
+            Debug.Log($"Builder: Cleaning Android gradle cache at '{androidGradlePath}'");
+            Directory.Delete(androidGradlePath, true);
+        }
+#endif
+
         BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode);
     }
     public static void BuildAndroidIl2CPPProject()
