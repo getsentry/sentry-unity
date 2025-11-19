@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Fixes
+
+- Fixed race conditions that could cause crashes when targeting Android, especially in concurrent scenarios. The ThreadPool used to sync scope to the native layer could prematurely detach threads from the JVM. This is solved by using a dedicated background worker thread that properly manages JNI lifecycle. ([#2426](https://github.com/getsentry/sentry-unity/pull/2426))
+
 ### Dependencies
 
 - Bump Java SDK from v8.25.0 to v8.26.0 ([#2419](https://github.com/getsentry/sentry-unity/pull/2419))
