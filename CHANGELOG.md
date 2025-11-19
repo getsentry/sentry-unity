@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 4.0.0-beta.6
+
+### Various fixes & improvements
+
+- chore: update modules/sentry-java to 8.26.0 (#2419) by @github-actions
+- chore: update modules/sentry-cli.properties to 2.58.2 (#2418) by @github-actions
 
 ## Fixes
 
