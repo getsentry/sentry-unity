@@ -26,9 +26,13 @@ fi
 echo "Starting up '$image' as '$container'"
 suexec="docker exec --user root"
 
+# Generate unique hostname to ensure each container gets a unique Unity license
+uniqueHostname="unity-$(uuidgen | tr '[:upper:]' '[:lower:]' | cut -d'-' -f1)"
+
 # We use the host dotnet installation - it's much faster than installing inside the docker container.
 set -x
 docker run -td --name $container \
+    --hostname $uniqueHostname \
     --user $uid:$gid \
     -v "$cwd":/sentry-unity \
     -v $ANDROID_HOME:$ANDROID_HOME \
