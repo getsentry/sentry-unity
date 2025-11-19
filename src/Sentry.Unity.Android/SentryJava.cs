@@ -57,12 +57,12 @@ internal class SentryJava : ISentryJava
 
     private readonly CancellationTokenSource _scopeSyncShutdownSource;
     private readonly AutoResetEvent _scopeSyncEvent;
-    private Thread? _scopeSyncThread;
+    private readonly Thread _scopeSyncThread;
 
-    private ConcurrentQueue<(Action action, string actionName)> _scopeSyncItems = new();
+    private readonly ConcurrentQueue<(Action action, string actionName)> _scopeSyncItems = new();
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
-    protected static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+    private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
     public SentryJava(IDiagnosticLogger? logger, IAndroidJNI? androidJNI = null)
     {
@@ -211,15 +211,10 @@ internal class SentryJava : ISentryJava
 
     public void Close()
     {
-        _scopeSyncShutdownSource?.Cancel();
-        if (!_scopeSyncThread?.Join(TimeSpan.FromSeconds(2)) ?? false)
-        {
-            _logger?.LogWarning("Worker thread did not exit cleanly within timeout");
-        }
-
-        _scopeSyncEvent?.Dispose();
-        _scopeSyncShutdownSource?.Dispose();
-
+        _scopeSyncShutdownSource.Cancel();
+        _scopeSyncThread.Join();
+        _scopeSyncEvent.Dispose();
+        _scopeSyncShutdownSource.Dispose();
 
         if (!MainThreadData.IsMainThread())
         {
@@ -410,32 +405,37 @@ internal class SentryJava : ISentryJava
     {
         _androidJNI.AttachCurrentThread();
 
-        var waitHandles = new[] { _scopeSyncEvent, _scopeSyncShutdownSource.Token.WaitHandle };
-
-        while (true)
+        try
         {
-            var index = WaitHandle.WaitAny(waitHandles);
-            if (index > 0)
-            {
-                // We only care about the _taskEvent
-                break;
-            }
+            var waitHandles = new[] { _scopeSyncEvent, _scopeSyncShutdownSource.Token.WaitHandle };
 
-            while (_scopeSyncItems.TryDequeue(out var workItem))
+            while (true)
             {
-                var (action, actionName) = workItem;
-                try
+                var index = WaitHandle.WaitAny(waitHandles);
+                if (index > 0)
                 {
-                    action.Invoke();
+                    // Shutdown requested
+                    break;
                 }
-                catch (Exception)
+
+                while (_scopeSyncItems.TryDequeue(out var workItem))
                 {
-                    _logger?.LogError("Calling '{0}' failed.", actionName);
+                    var (action, actionName) = workItem;
+                    try
+                    {
+                        action.Invoke();
+                    }
+                    catch (Exception)
+                    {
+                        _logger?.LogError("Calling '{0}' failed.", actionName);
+                    }
                 }
             }
         }
-
-        _androidJNI.DetachCurrentThread();
+        finally
+        {
+            _androidJNI.DetachCurrentThread();
+        }
     }
 }
 
