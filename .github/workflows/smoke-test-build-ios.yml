@@ -60,6 +60,30 @@ jobs:
             Library-IntegrationTest-iOS-${{ env.UNITY_VERSION }}-
             Library-IntegrationTest-iOS-
 
+      - name: Restore cached build without Sentry
+        id: cache-build-nosentry
+        uses: actions/cache@v4
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-iOS-${{ inputs.unity-version }}
+
+      - name: Build without Sentry SDK
+        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "iOS" -CheckSymbols:$false -BuildDirName "Build-NoSentry"
+
+      - name: Create archive for build without Sentry
+        shell: bash
+        run: |
+          rm -rf samples/IntegrationTest/Build-NoSentry/*_BackUpThisFolder_ButDontShipItWithYourGame
+          tar -cvzf test-app-no-sentry.tar.gz samples/IntegrationTest/Build-NoSentry
+
+      - name: Upload build without Sentry
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: testapp-ios-no-sentry-${{ env.UNITY_VERSION }}
+          path: test-app-no-sentry.tar.gz
+          retention-days: 1
+
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
