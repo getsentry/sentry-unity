@@ -281,9 +281,23 @@ public sealed class SentryUnityOptions : SentryOptions
         BeforeCaptureScreenshotInternal = beforeAttachScreenshot;
     }
 
-    private Func<bool>? _beforeCaptureViewHierarchy;
+    internal Func<SentryEvent, bool>? BeforeCaptureViewHierarchyInternal { get; private set; }
 
-    internal Func<bool>? BeforeCaptureViewHierarchyInternal => _beforeCaptureViewHierarchy;
+    internal Func<ViewHierarchy, SentryEvent, ViewHierarchy?>? BeforeSendViewHierarchyInternal { get; private set; }
+
+    /// <summary>
+    /// Configures a callback to modify or discard view hierarchy before it is sent.
+    /// </summary>
+    /// <remarks>
+    /// This callback receives the captured view hierarchy before JSON serialization.
+    /// You can modify the hierarchy structure (remove nodes, filter sensitive info, etc.)
+    /// and return it, or return null to discard.
+    /// </remarks>
+    /// <param name="beforeSendViewHierarchy">The callback function to invoke before sending view hierarchy.</param>
+    public void SetBeforeSendViewHierarchy(Func<ViewHierarchy, SentryEvent, ViewHierarchy?> beforeSendViewHierarchy)
+    {
+        BeforeSendViewHierarchyInternal = beforeSendViewHierarchy;
+    }
 
     /// <summary>
     /// Configures a callback function to be invoked before capturing and attaching the view hierarchy to an event.
@@ -292,9 +306,9 @@ public sealed class SentryUnityOptions : SentryOptions
     /// This callback will get invoked right before the view hierarchy gets taken. If the view hierarchy should not
     /// be taken return `false`.
     /// </remarks>
-    public void SetBeforeCaptureViewHierarchy(Func<bool> beforeAttachViewHierarchy)
+    public void SetBeforeCaptureViewHierarchy(Func<SentryEvent, bool> beforeAttachViewHierarchy)
     {
-        _beforeCaptureViewHierarchy = beforeAttachViewHierarchy;
+        BeforeCaptureViewHierarchyInternal = beforeAttachViewHierarchy;
     }
 
     // Initialized by native SDK binding code to set the User.ID in .NET (UnityEventProcessor).
