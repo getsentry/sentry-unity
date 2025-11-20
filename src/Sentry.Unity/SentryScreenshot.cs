@@ -66,7 +66,7 @@ internal static class SentryScreenshot
             screenshot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             screenshot.Apply();
 
-            options.LogDebug("Screenshot captured at {0}x{1}: {2} bytes", width, height);
+            options.LogDebug("Screenshot captured at {0}x{1}.", width, height);
 
             return screenshot;
         }
