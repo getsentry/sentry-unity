@@ -44,7 +44,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
         Texture2D? screenshot = null;
         try
         {
-            if (_options.BeforeCaptureScreenshotInternal?.Invoke() is false)
+            if (_options.BeforeCaptureScreenshotInternal?.Invoke(@event) is false)
             {
                 yield break;
             }

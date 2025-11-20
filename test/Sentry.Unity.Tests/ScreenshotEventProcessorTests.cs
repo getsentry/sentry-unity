@@ -297,7 +297,7 @@ public class ScreenshotEventProcessorTests
         var sentryMonoBehaviour = GetTestMonoBehaviour();
         var options = new SentryUnityOptions();
 
-        options.SetBeforeCaptureScreenshot(() => false);
+        options.SetBeforeCaptureScreenshot(_ => false);
 
         var screenshotProcessor = new TestScreenshotEventProcessor(options, sentryMonoBehaviour);
 
@@ -324,7 +324,7 @@ public class ScreenshotEventProcessorTests
         var options = new SentryUnityOptions();
 
         var callbackInvoked = false;
-        options.SetBeforeCaptureScreenshot(() =>
+        options.SetBeforeCaptureScreenshot(_ =>
         {
             callbackInvoked = true;
             return true;

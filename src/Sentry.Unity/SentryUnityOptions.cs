@@ -252,7 +252,19 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public new StackTraceMode StackTraceMode { get; private set; }
 
-    internal Func<bool>? BeforeCaptureScreenshotInternal { get; private set; }
+    internal Func<SentryEvent, bool>? BeforeCaptureScreenshotInternal { get; private set; }
+
+    /// <summary>
+    /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
+    /// </summary>
+    /// <remarks>
+    /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
+    /// be taken return `false`.
+    /// </remarks>
+    public void SetBeforeCaptureScreenshot(Func<SentryEvent, bool> beforeAttachScreenshot)
+    {
+        BeforeCaptureScreenshotInternal = beforeAttachScreenshot;
+    }
 
     internal Func<Texture2D, SentryEvent, Texture2D?>? BeforeSendScreenshotInternal { get; private set; }
 
@@ -267,18 +279,6 @@ public sealed class SentryUnityOptions : SentryOptions
     public void SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?> beforeSendScreenshot)
     {
         BeforeSendScreenshotInternal = beforeSendScreenshot;
-    }
-
-    /// <summary>
-    /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
-    /// </summary>
-    /// <remarks>
-    /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
-    /// be taken return `false`.
-    /// </remarks>
-    public void SetBeforeCaptureScreenshot(Func<bool> beforeAttachScreenshot)
-    {
-        BeforeCaptureScreenshotInternal = beforeAttachScreenshot;
     }
 
     internal Func<SentryEvent, bool>? BeforeCaptureViewHierarchyInternal { get; private set; }
