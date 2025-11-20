@@ -30,20 +30,17 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        // Old callback: decide before capture
         if (_options.BeforeCaptureViewHierarchyInternal?.Invoke(@event) is false)
         {
             _options.DiagnosticLogger?.LogInfo("Hierarchy capture skipped by BeforeCaptureViewHierarchy callback.");
             return @event;
         }
 
-        // Create view hierarchy
         var viewHierarchy = CreateViewHierarchy(
             _options.MaxViewHierarchyRootObjects,
             _options.MaxViewHierarchyObjectChildCount,
             _options.MaxViewHierarchyDepth);
 
-        // Apply new callback if configured
         if (_options.BeforeSendViewHierarchyInternal != null)
         {
             viewHierarchy = _options.BeforeSendViewHierarchyInternal(viewHierarchy, @event);
@@ -55,7 +52,6 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
             }
         }
 
-        // Serialize and attach
         var bytes = SerializeViewHierarchy(viewHierarchy);
         hint.AddAttachment(bytes, "view-hierarchy.json", AttachmentType.ViewHierarchy, "application/json");
 
