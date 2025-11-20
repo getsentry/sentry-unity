@@ -121,14 +121,20 @@ internal class SentryUnitySdk
             return;
         }
 
-        var hint = addScreenshot
-            ? SentryHint.WithAttachments(
+        SentryHint? hint = null;
+        if (addScreenshot)
+        {
+            var screenshot = SentryScreenshot.CreateNewScreenshotTexture2D(_options);
+            var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
+            UnityEngine.Object.Destroy(screenshot);
+
+            hint = SentryHint.WithAttachments(
                 new SentryAttachment(
                     AttachmentType.Default,
-                    new ByteAttachmentContent(SentryScreenshot.Capture(_options)),
+                    new ByteAttachmentContent(screenshotBytes),
                     "screenshot.jpg",
-                    "image/jpeg"))
-            : null;
+                    "image/jpeg"));
+        }
 
         Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
     }

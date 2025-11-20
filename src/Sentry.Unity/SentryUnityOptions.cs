@@ -252,9 +252,22 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public new StackTraceMode StackTraceMode { get; private set; }
 
-    private Func<bool>? _beforeCaptureScreenshot;
+    internal Func<bool>? BeforeCaptureScreenshotInternal { get; private set; }
 
-    internal Func<bool>? BeforeCaptureScreenshotInternal => _beforeCaptureScreenshot;
+    internal Func<Texture2D, SentryEvent, Texture2D?>? BeforeSendScreenshotInternal { get; private set; }
+
+    /// <summary>
+    /// Configures a callback to modify or discard screenshots before they are sent.
+    /// </summary>
+    /// <remarks>
+    /// This callback receives the captured screenshot as a Texture2D before JPEG compression.
+    /// You can modify the texture (blur areas, redact PII, etc.) and return it, or return null to discard.
+    /// </remarks>
+    /// <param name="beforeSendScreenshot">The callback function to invoke before sending screenshots.</param>
+    public void SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?> beforeSendScreenshot)
+    {
+        BeforeSendScreenshotInternal = beforeSendScreenshot;
+    }
 
     /// <summary>
     /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
@@ -265,7 +278,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </remarks>
     public void SetBeforeCaptureScreenshot(Func<bool> beforeAttachScreenshot)
     {
-        _beforeCaptureScreenshot = beforeAttachScreenshot;
+        BeforeCaptureScreenshotInternal = beforeAttachScreenshot;
     }
 
     private Func<bool>? _beforeCaptureViewHierarchy;
