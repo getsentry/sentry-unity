@@ -18,7 +18,7 @@
     - **Replacing** the screenshot with a different `Texture2D`
     - **Discarding** the screenshot by returning `null`
     - Access to the event context for conditional processing
-- Added `SetBeforeSendViewHierarchy(Func<ViewHierarchy, SentryEvent, Texture2D?>)` callback that provides the captured 
+- Added `SetBeforeSendViewHierarchy(Func<ViewHierarchy, SentryEvent, ViewHierarchy?>)` callback that provides the captured 
   `ViewHierarchy` to be modified before compression. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))
   
 ### Dependencies
