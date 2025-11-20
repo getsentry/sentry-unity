@@ -6,6 +6,8 @@
 
 - `SetBeforeCaptureScreenshot` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that
   triggered the screenshot capture. This allows context-aware decisions before capture begins. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428))
+- `SetBeforeCaptureViewHierarchy` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that
+  triggered the view hierarchy capture. This allows context-aware decisions before capture begins. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))  
 
 ### Features
 
@@ -16,6 +18,8 @@
     - **Replacing** the screenshot with a different `Texture2D`
     - **Discarding** the screenshot by returning `null`
     - Access to the event context for conditional processing
+- Added `SetBeforeSendViewHierarchy(Func<ViewHierarchy, SentryEvent, Texture2D?>)` callback that provides the captured 
+  `ViewHierarchy` to be modified before compression. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))
   
 ### Dependencies
 
