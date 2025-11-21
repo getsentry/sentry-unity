@@ -11,6 +11,8 @@
         "LinuxStandalone64",
         "Lumin",
         "macOSStandalone",
+        "PS4",
+        "PS5",
         "Stadia",
         "Switch",
         "WSA",

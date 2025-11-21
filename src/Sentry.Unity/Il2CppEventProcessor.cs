@@ -362,7 +362,9 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             or RuntimePlatform.WindowsPlayer
             or RuntimePlatform.WindowsServer
             or RuntimePlatform.GameCoreXboxSeries
-            or RuntimePlatform.GameCoreXboxOne;
+            or RuntimePlatform.GameCoreXboxOne
+            or RuntimePlatform.PS4
+            or RuntimePlatform.PS5;
     }
 
     private string GetPlatformDebugImageType(RuntimePlatform? platform = null)
@@ -373,6 +375,8 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             case RuntimePlatform.Android:
             case RuntimePlatform.LinuxPlayer:
             case RuntimePlatform.LinuxServer:
+            case RuntimePlatform.PS4:
+            case RuntimePlatform.PS5:
                 return "elf";
             case RuntimePlatform.IPhonePlayer:
             case RuntimePlatform.OSXPlayer:

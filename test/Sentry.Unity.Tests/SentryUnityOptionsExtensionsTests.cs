@@ -1,6 +1,7 @@
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
+using UnityEngine;
 
 namespace Sentry.Unity.Tests;
 
@@ -182,5 +183,30 @@ public class SentryUnityOptionsExtensionsTests
         options.DisableUnhandledExceptionCapture();
 
         Assert.IsTrue(options.Integrations.Any(i => i is Integrations.UnityApplicationLoggingIntegration));
+    }
+
+    [Test]
+    [TestCase(RuntimePlatform.PS4, true, true)]
+    [TestCase(RuntimePlatform.PS4, false, false)]
+    [TestCase(RuntimePlatform.PS5, true, true)]
+    [TestCase(RuntimePlatform.PS5, false, false)]
+    [TestCase(RuntimePlatform.GameCoreXboxSeries, true, true)]
+    [TestCase(RuntimePlatform.GameCoreXboxSeries, false, false)]
+    [TestCase(RuntimePlatform.GameCoreXboxOne, true, true)]
+    [TestCase(RuntimePlatform.GameCoreXboxOne, false, false)]
+    public void IsNativeSupportEnabled_ConsolePlatforms_ReturnsExpectedValue(
+        RuntimePlatform platform, bool optionEnabled, bool expectedResult)
+    {
+        var options = _fixture.GetSut();
+        options.PlayStationNativeSupportEnabled = platform is RuntimePlatform.PS4 or RuntimePlatform.PS5
+            ? optionEnabled
+            : options.PlayStationNativeSupportEnabled;
+        options.XboxNativeSupportEnabled = platform is RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne
+            ? optionEnabled
+            : options.XboxNativeSupportEnabled;
+
+        var result = options.IsNativeSupportEnabled(platform);
+
+        Assert.AreEqual(expectedResult, result);
     }
 }
