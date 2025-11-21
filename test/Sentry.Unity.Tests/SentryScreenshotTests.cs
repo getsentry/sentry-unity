@@ -24,11 +24,10 @@ public class SentryScreenshotTests
     {
         var options = new SentryUnityOptions { ScreenshotQuality = quality };
 
-        var bytes = SentryScreenshot.Capture(options, 2000, 2000);
-        var texture = new Texture2D(1, 1); // Size does not matter. Will be overwritten by loading
-        texture.LoadImage(bytes);
+        var texture = SentryScreenshot.CreateNewScreenshotTexture2D(options, 2000, 2000);
 
         Assert.IsTrue(texture.width <= maximumAllowedDimension && texture.height <= maximumAllowedDimension);
+        Object.Destroy(texture);
     }
 
     [Test]
@@ -37,10 +36,9 @@ public class SentryScreenshotTests
         var testScreenSize = 2000;
         var options = new SentryUnityOptions { ScreenshotQuality = ScreenshotQuality.Full };
 
-        var bytes = SentryScreenshot.Capture(options, testScreenSize, testScreenSize);
-        var texture = new Texture2D(1, 1); // Size does not matter. Will be overwritten by loading
-        texture.LoadImage(bytes);
+        var texture = SentryScreenshot.CreateNewScreenshotTexture2D(options, testScreenSize, testScreenSize);
 
         Assert.IsTrue(texture.width == testScreenSize && texture.height == testScreenSize);
+        Object.Destroy(texture);
     }
 }

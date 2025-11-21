@@ -1,3 +1,4 @@
+using Sentry.Extensibility;
 using UnityEngine;
 
 namespace Sentry.Unity;
@@ -15,11 +16,11 @@ internal static class SentryScreenshot
         };
     }
 
-    public static byte[] Capture(SentryUnityOptions options) =>
-        Capture(options, Screen.width, Screen.height);
+    public static Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options) =>
+        CreateNewScreenshotTexture2D(options, Screen.width, Screen.height);
 
     // For testing
-    internal static byte[] Capture(SentryUnityOptions options, int width, int height)
+    internal static Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options, int width, int height)
     {
         // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
         // original ratio based on which, width or height, is the smaller
@@ -36,7 +37,6 @@ internal static class SentryScreenshot
             }
         }
 
-        Texture2D? screenshot = null;
         RenderTexture? renderTextureFull = null;
         RenderTexture? renderTextureResized = null;
         var previousRenderTexture = RenderTexture.active;
@@ -44,7 +44,7 @@ internal static class SentryScreenshot
         try
         {
             // Captures the current screenshot synchronously.
-            screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
+            var screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
             renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
             ScreenCapture.CaptureScreenshotIntoRenderTexture(renderTextureFull);
             renderTextureResized = RenderTexture.GetTemporary(width, height);
@@ -66,12 +66,9 @@ internal static class SentryScreenshot
             screenshot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
             screenshot.Apply();
 
-            var bytes = screenshot.EncodeToJPG(options.ScreenshotCompression);
+            options.LogDebug("Screenshot captured at {0}x{1}.", width, height);
 
-            options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                "Screenshot captured at {0}x{1}: {2} bytes", null, width, height, bytes.Length);
-
-            return bytes;
+            return screenshot;
         }
         finally
         {
@@ -85,11 +82,6 @@ internal static class SentryScreenshot
             if (renderTextureResized)
             {
                 RenderTexture.ReleaseTemporary(renderTextureResized);
-            }
-
-            if (screenshot)
-            {
-                Object.Destroy(screenshot);
             }
         }
     }
