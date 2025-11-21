@@ -30,27 +30,39 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        if (_options.BeforeCaptureViewHierarchyInternal?.Invoke() is not false)
+        if (_options.BeforeCaptureViewHierarchyInternal?.Invoke(@event) is false)
         {
-            hint.AddAttachment(CaptureViewHierarchy(), "view-hierarchy.json", AttachmentType.ViewHierarchy, "application/json");
+            _options.DiagnosticLogger?.LogInfo("Hierarchy capture skipped by BeforeCaptureViewHierarchy callback.");
+            return @event;
         }
-        else
-        {
-            _options.DiagnosticLogger?.LogInfo("Hierarchy capture skipped by BeforeAttachViewHierarchy callback.");
-        }
-
-        return @event;
-    }
-
-    internal byte[] CaptureViewHierarchy()
-    {
-        using var stream = new MemoryStream();
-        using var writer = new Utf8JsonWriter(stream);
 
         var viewHierarchy = CreateViewHierarchy(
             _options.MaxViewHierarchyRootObjects,
             _options.MaxViewHierarchyObjectChildCount,
             _options.MaxViewHierarchyDepth);
+
+        if (_options.BeforeSendViewHierarchyInternal != null)
+        {
+            viewHierarchy = _options.BeforeSendViewHierarchyInternal(viewHierarchy, @event);
+
+            if (viewHierarchy == null)
+            {
+                _options.DiagnosticLogger?.LogInfo("View hierarchy discarded by BeforeSendViewHierarchy callback.");
+                return @event;
+            }
+        }
+
+        var bytes = SerializeViewHierarchy(viewHierarchy);
+        hint.AddAttachment(bytes, "view-hierarchy.json", AttachmentType.ViewHierarchy, "application/json");
+
+        return @event;
+    }
+
+    internal byte[] SerializeViewHierarchy(ViewHierarchy viewHierarchy)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
+
         viewHierarchy.WriteTo(writer, _options.DiagnosticLogger);
 
         writer.Flush();

@@ -4,7 +4,7 @@ using Sentry.Extensibility;
 
 namespace Sentry.Unity;
 
-internal class UnityViewHierarchyNode : ViewHierarchyNode
+public class UnityViewHierarchyNode : ViewHierarchyNode
 {
     public string? Tag { get; set; }
     public string? Position { get; set; }
