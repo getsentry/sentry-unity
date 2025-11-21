@@ -124,16 +124,30 @@ internal class SentryUnitySdk
         SentryHint? hint = null;
         if (addScreenshot)
         {
-            var screenshot = SentryScreenshot.CreateNewScreenshotTexture2D(_options);
-            var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
-            UnityEngine.Object.Destroy(screenshot);
+            Texture2D? screenshot = null;
 
-            hint = SentryHint.WithAttachments(
-                new SentryAttachment(
-                    AttachmentType.Default,
-                    new ByteAttachmentContent(screenshotBytes),
-                    "screenshot.jpg",
-                    "image/jpeg"));
+            try
+            {
+                screenshot = SentryScreenshot.CreateNewScreenshotTexture2D(_options);
+                var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
+
+                if (screenshotBytes.Length > 0)
+                {
+                    hint = SentryHint.WithAttachments(
+                        new SentryAttachment(
+                            AttachmentType.Default,
+                            new ByteAttachmentContent(screenshotBytes),
+                            "screenshot.jpg",
+                            "image/jpeg"));
+                }
+            }
+            finally
+            {
+                if (screenshot)
+                {
+                    UnityEngine.Object.Destroy(screenshot);
+                }
+            }
         }
 
         Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
