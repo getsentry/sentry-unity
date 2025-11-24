@@ -2,11 +2,29 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- `SetBeforeCaptureScreenshot` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that
+  triggered the screenshot capture. This allows context-aware decisions before capture begins. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428))
+
+### Features
+
+- Added `SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?>)` callback that provides the captured screenshot as a
+  `Texture2D` before JPEG compression. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428)) 
+  This enables:
+    - **Modifying** the screenshot in-place (e.g., blurring sensitive UI areas, redacting PII)
+    - **Replacing** the screenshot with a different `Texture2D`
+    - **Discarding** the screenshot by returning `null`
+    - Access to the event context for conditional processing
+  
 ### Dependencies
 
-- Bump Cocoa SDK from v8.57.3 to v9.0.0-rc.0 ([#2427](https://github.com/getsentry/sentry-unity/pull/2427))
+- Bump Cocoa SDK from v8.57.2 to v9.0.0-rc.0 ([#2424](https://github.com/getsentry/sentry-unity/pull/2424), [#2427](https://github.com/getsentry/sentry-unity/pull/2427))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#900-rc0)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.3...9.0.0-rc.0)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.2...9.0.0-rc.0)
+- Bump Java SDK from v8.26.0 to v8.27.0 ([#2430](https://github.com/getsentry/sentry-unity/pull/2430))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8270)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.26.0...8.27.0)
 
 ## 4.0.0-beta.6
 
