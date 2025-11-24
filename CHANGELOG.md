@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- `SetBeforeCaptureScreenshot` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that
+  triggered the screenshot capture. This allows context-aware decisions before capture begins. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428))
+
+### Features
+
+- Added `SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?>)` callback that provides the captured screenshot as a
+  `Texture2D` before JPEG compression. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428)) 
+  This enables:
+    - **Modifying** the screenshot in-place (e.g., blurring sensitive UI areas, redacting PII)
+    - **Replacing** the screenshot with a different `Texture2D`
+    - **Discarding** the screenshot by returning `null`
+    - Access to the event context for conditional processing
+  
 ### Dependencies
 
 - Bump Cocoa SDK from v8.57.2 to v8.57.3 ([#2424](https://github.com/getsentry/sentry-unity/pull/2424))
