@@ -48,6 +48,9 @@ internal static class SentryNativeBridge
         options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
         sentry_options_set_auto_session_tracking(cOptions, 0);
 
+        options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
+        sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
+
         var dir = GetCacheDirectory(options);
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
         if (ApplicationAdapter.Instance.Platform is RuntimePlatform.WindowsPlayer)
@@ -130,6 +133,9 @@ internal static class SentryNativeBridge
 
     [DllImport("sentry")]
     private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
+
+    [DllImport("sentry")]
+    private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
