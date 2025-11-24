@@ -17,6 +17,7 @@ internal static class SentryNativeBridge
     public static bool Init(SentryUnityOptions options)
     {
         _isLinux = Application.platform is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer;
+        _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
 
         var cOptions = sentry_options_new();
 
@@ -48,8 +49,11 @@ internal static class SentryNativeBridge
         options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
         sentry_options_set_auto_session_tracking(cOptions, 0);
 
-        options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
-        sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
+        if (_isWindows)
+        {
+            options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
+            sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
+        }
 
         var dir = GetCacheDirectory(options);
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
@@ -146,6 +150,7 @@ internal static class SentryNativeBridge
     // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
     private static IDiagnosticLogger? _logger;
     private static bool _isLinux = false;
+    private static bool _isWindows = false;
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
