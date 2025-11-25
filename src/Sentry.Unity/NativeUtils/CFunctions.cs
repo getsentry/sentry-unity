@@ -8,6 +8,13 @@ namespace Sentry.Unity.NativeUtils;
 
 internal static class C
 {
+    // PlayStation and Xbox use static linking, other platforms use dynamic library
+#if UNITY_PS4 || UNITY_PS5 || UNITY_GAMECORE
+    private const string LibraryName = "__Internal";
+#else
+    private const string LibraryName = "sentry";
+#endif
+
     internal static void SetValueIfNotNull(sentry_value_t obj, string key, string? value)
     {
         if (value is not null)
@@ -77,78 +84,78 @@ internal static class C
         return null;
     }
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_new_object();
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_new_null();
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_new_bool(int value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_new_double(double value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_new_int32(int value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_new_string(string value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_new_breadcrumb(string? type, string? message);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern int sentry_value_set_by_key(sentry_value_t value, string k, sentry_value_t v);
 
     internal static bool IsNull(sentry_value_t value) => sentry_value_is_null(value) != 0;
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern int sentry_value_is_null(sentry_value_t value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern int sentry_value_as_int32(sentry_value_t value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern double sentry_value_as_double(sentry_value_t value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern IntPtr sentry_value_as_string(sentry_value_t value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern UIntPtr sentry_value_get_length(sentry_value_t value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_get_by_index(sentry_value_t value, UIntPtr index);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern sentry_value_t sentry_value_get_by_key(sentry_value_t value, string key);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_set_context(string key, sentry_value_t value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_add_breadcrumb(sentry_value_t breadcrumb);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_set_tag(string key, string value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_remove_tag(string key);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_set_user(sentry_value_t user);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_remove_user();
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_set_extra(string key, sentry_value_t value);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_remove_extra(string key);
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_set_trace(string traceId, string parentSpanId);
 
     internal static readonly Lazy<IEnumerable<DebugImage>> DebugImages = new(LoadDebugImages);
@@ -202,10 +209,10 @@ internal static class C
 
     // Returns a new reference to an immutable, frozen list.
     // The reference must be released with `sentry_value_decref`.
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     private static extern sentry_value_t sentry_get_modules_list();
 
-    [DllImport("sentry")]
+    [DllImport(LibraryName)]
     internal static extern void sentry_value_decref(sentry_value_t value);
 
     // native union sentry_value_u/t

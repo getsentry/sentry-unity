@@ -58,7 +58,7 @@ internal static class SentryNativeBridge
         else
         {
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
-            sentry_options_set_database_path(cOptions, dir);
+            // sentry_options_set_database_path(cOptions, dir);
         }
 
         if (options.DiagnosticLogger is null)
@@ -70,7 +70,7 @@ internal static class SentryNativeBridge
         {
             options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
             _logger = options.DiagnosticLogger;
-            sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+            // sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
         }
 
         options.DiagnosticLogger?.LogDebug("Initializing sentry native");
