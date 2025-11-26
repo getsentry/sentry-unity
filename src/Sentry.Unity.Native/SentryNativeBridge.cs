@@ -197,7 +197,7 @@ internal static class SentryNativeBridge
                 WithMarshalledStruct(argsStruct, argsPtr =>
                 {
                     formattedLength = 1 + (isPlayStation
-                        ? vsnprintf_playstation(IntPtr.Zero, UIntPtr.Zero, format, argsPtr)
+                        ? vsnprintf_ps(IntPtr.Zero, UIntPtr.Zero, format, argsPtr)
                         : vsnprintf_linux(IntPtr.Zero, UIntPtr.Zero, format, argsPtr));
                 });
 
@@ -206,7 +206,7 @@ internal static class SentryNativeBridge
                     {
                         if (isPlayStation)
                         {
-                            vsnprintf_playstation(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                            vsnprintf_ps(buffer, (UIntPtr)formattedLength, format, argsPtr);
                         }
                         else
                         {
@@ -248,8 +248,8 @@ internal static class SentryNativeBridge
     [DllImport("libc", EntryPoint = "vsnprintf")]
     private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
-    [DllImport("sentry", EntryPoint = "vsnprintf_sentry")]
-    private static extern int vsnprintf_playstation(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+    [DllImport("sentry")]
+    private static extern int vsnprintf_ps(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
     // https://stackoverflow.com/a/4958507/2386130
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
