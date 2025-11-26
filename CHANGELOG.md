@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added PlayStation Native Support. The SDK now automatically syncs the scope - tags, breadcrumbs, context - to the native layer, so native crashes have the same rich context as managed events. ([#2433](https://github.com/getsentry/sentry-unity/pull/2433))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v8.57.2 to v8.57.3 ([#2424](https://github.com/getsentry/sentry-unity/pull/2424))
