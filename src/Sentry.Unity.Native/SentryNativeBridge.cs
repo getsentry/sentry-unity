@@ -16,7 +16,9 @@ internal static class SentryNativeBridge
 {
     public static bool Init(SentryUnityOptions options)
     {
-        _isLinux = Application.platform is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer;
+        _useLibC = Application.platform
+            is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
+            or RuntimePlatform.PS4 or RuntimePlatform.PS5;
 
         var cOptions = sentry_options_new();
 
@@ -58,7 +60,7 @@ internal static class SentryNativeBridge
         else
         {
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
-            // sentry_options_set_database_path(cOptions, dir);
+            sentry_options_set_database_path(cOptions, dir);
         }
 
         if (options.DiagnosticLogger is null)
@@ -70,7 +72,7 @@ internal static class SentryNativeBridge
         {
             options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
             _logger = options.DiagnosticLogger;
-            // sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+            sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
         }
 
         options.DiagnosticLogger?.LogDebug("Initializing sentry native");
@@ -139,7 +141,7 @@ internal static class SentryNativeBridge
 
     // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
     private static IDiagnosticLogger? _logger;
-    private static bool _isLinux = false;
+    private static bool _useLibC = false;
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
@@ -183,20 +185,33 @@ internal static class SentryNativeBridge
         try
         {
             // We cannot access C var-arg (va_list) in c# thus we pass it back to vsnprintf to do the formatting.
-            // For Linux, we must make a copy of the VaList to be able to pass it back...
-            if (_isLinux)
+            // For Linux and PlayStation, we must make a copy of the VaList to be able to pass it back...
+            if (_useLibC)
             {
                 var argsStruct = Marshal.PtrToStructure<VaListLinux64>(args);
                 var formattedLength = 0;
+
+                // PlayStation uses a wrapper function to avoid IL2CPP conflicts with the Prospero SDK's vsnprintf
+                var isPlayStation = Application.platform is RuntimePlatform.PS4 or RuntimePlatform.PS5;
+
                 WithMarshalledStruct(argsStruct, argsPtr =>
                 {
-                    formattedLength = 1 + vsnprintf_linux(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
+                    formattedLength = 1 + (isPlayStation
+                        ? vsnprintf_playstation(IntPtr.Zero, UIntPtr.Zero, format, argsPtr)
+                        : vsnprintf_linux(IntPtr.Zero, UIntPtr.Zero, format, argsPtr));
                 });
 
                 WithAllocatedPtr(formattedLength, buffer =>
                     WithMarshalledStruct(argsStruct, argsPtr =>
                     {
-                        vsnprintf_linux(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                        if (isPlayStation)
+                        {
+                            vsnprintf_playstation(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                        }
+                        else
+                        {
+                            vsnprintf_linux(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                        }
                         message = Marshal.PtrToStringAnsi(buffer);
                     }));
             }
@@ -232,6 +247,9 @@ internal static class SentryNativeBridge
 
     [DllImport("libc", EntryPoint = "vsnprintf")]
     private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+
+    [DllImport("sentry", EntryPoint = "vsnprintf_sentry")]
+    private static extern int vsnprintf_playstation(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
     // https://stackoverflow.com/a/4958507/2386130
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
