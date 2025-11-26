@@ -2,15 +2,34 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- `SetBeforeCaptureScreenshot` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that
+  triggered the screenshot capture. This allows context-aware decisions before capture begins. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428))
+- `SetBeforeCaptureViewHierarchy` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that
+  triggered the view hierarchy capture. This allows context-aware decisions before capture begins. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))  
+
 ### Features
 
 - Added PlayStation Native Support. The SDK now automatically syncs the scope - tags, breadcrumbs, context - to the native layer, so native crashes have the same rich context as managed events. ([#2433](https://github.com/getsentry/sentry-unity/pull/2433))
+- Added `SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?>)` callback that provides the captured screenshot as a
+  `Texture2D` before JPEG compression. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428)) 
+  This enables:
+    - **Modifying** the screenshot in-place (e.g., blurring sensitive UI areas, redacting PII)
+    - **Replacing** the screenshot with a different `Texture2D`
+    - **Discarding** the screenshot by returning `null`
+    - Access to the event context for conditional processing
+- Added `SetBeforeSendViewHierarchy(Func<ViewHierarchy, SentryEvent, ViewHierarchy?>)` callback that provides the captured 
+  `ViewHierarchy` to be modified before compression. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))
 
 ### Dependencies
 
-- Bump Cocoa SDK from v8.57.2 to v8.57.3 ([#2424](https://github.com/getsentry/sentry-unity/pull/2424))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8573)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.2...8.57.3)
+- Bump Cocoa SDK from v8.57.2 to v9.0.0-rc.0 ([#2424](https://github.com/getsentry/sentry-unity/pull/2424), [#2427](https://github.com/getsentry/sentry-unity/pull/2427))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#900-rc0)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.57.2...9.0.0-rc.0)
+- Bump Java SDK from v8.26.0 to v8.27.1 ([#2430](https://github.com/getsentry/sentry-unity/pull/2430), [#2436](https://github.com/getsentry/sentry-unity/pull/2436))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8271)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.26.0...8.27.1)
 
 ## 4.0.0-beta.6
 
