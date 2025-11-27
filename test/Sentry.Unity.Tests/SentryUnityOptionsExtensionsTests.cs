@@ -186,8 +186,6 @@ public class SentryUnityOptionsExtensionsTests
     }
 
     [Test]
-    [TestCase(RuntimePlatform.PS4, true, true)]
-    [TestCase(RuntimePlatform.PS4, false, false)]
     [TestCase(RuntimePlatform.PS5, true, true)]
     [TestCase(RuntimePlatform.PS5, false, false)]
     [TestCase(RuntimePlatform.GameCoreXboxSeries, true, true)]
@@ -198,7 +196,7 @@ public class SentryUnityOptionsExtensionsTests
         RuntimePlatform platform, bool optionEnabled, bool expectedResult)
     {
         var options = _fixture.GetSut();
-        options.PlayStationNativeSupportEnabled = platform is RuntimePlatform.PS4 or RuntimePlatform.PS5
+        options.PlayStationNativeSupportEnabled = platform is RuntimePlatform.PS5
             ? optionEnabled
             : options.PlayStationNativeSupportEnabled;
         options.XboxNativeSupportEnabled = platform is RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne

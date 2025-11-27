@@ -19,7 +19,6 @@ public static class BuildPostProcess
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         if (targetGroup is not BuildTargetGroup.Standalone
             and not BuildTargetGroup.GameCoreXboxSeries
-            and not BuildTargetGroup.PS4
             and not BuildTargetGroup.PS5)
         {
             return;
@@ -54,7 +53,7 @@ public static class BuildPostProcess
         {
             BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),
             BuildTargetGroup.GameCoreXboxSeries => executablePath,
-            BuildTargetGroup.PS4 or BuildTargetGroup.PS5 => executablePath,
+            BuildTargetGroup.PS5 => executablePath,
             _ => string.Empty
         };
 
@@ -91,7 +90,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
         BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
-        BuildTarget.PS4 or BuildTarget.PS5 => options.PlayStationNativeSupportEnabled,
+        BuildTarget.PS5 => options.PlayStationNativeSupportEnabled,
         _ => false,
     };
 
@@ -113,7 +112,6 @@ public static class BuildPostProcess
             case BuildTarget.GameCoreXboxOne:
                 // No standalone crash handler for Xbox - comes with Breakpad
                 return;
-            case BuildTarget.PS4:
             case BuildTarget.PS5:
                 // No standalone crash handler for PlayStation
                 return;
@@ -167,7 +165,6 @@ public static class BuildPostProcess
                     paths += $" \"{xboxSentryPluginPath}\"";
                 }
                 break;
-            case BuildTarget.PS4:
             case BuildTarget.PS5:
                 var playstationSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/");
                 if (Directory.Exists(playstationSentryPluginPath))

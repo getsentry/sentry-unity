@@ -363,7 +363,6 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             or RuntimePlatform.WindowsServer
             or RuntimePlatform.GameCoreXboxSeries
             or RuntimePlatform.GameCoreXboxOne
-            or RuntimePlatform.PS4
             or RuntimePlatform.PS5;
     }
 
@@ -375,7 +374,6 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             case RuntimePlatform.Android:
             case RuntimePlatform.LinuxPlayer:
             case RuntimePlatform.LinuxServer:
-            case RuntimePlatform.PS4:
             case RuntimePlatform.PS5:
                 return "elf";
             case RuntimePlatform.IPhonePlayer:

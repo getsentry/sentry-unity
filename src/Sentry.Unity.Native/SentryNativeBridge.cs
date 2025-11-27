@@ -18,7 +18,7 @@ internal static class SentryNativeBridge
     {
         _useLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
-            or RuntimePlatform.PS4 or RuntimePlatform.PS5;
+            or RuntimePlatform.PS5;
 
         var cOptions = sentry_options_new();
 
@@ -192,7 +192,7 @@ internal static class SentryNativeBridge
                 var formattedLength = 0;
 
                 // PlayStation uses a wrapper function to avoid IL2CPP conflicts with the Prospero SDK's vsnprintf
-                var isPlayStation = Application.platform is RuntimePlatform.PS4 or RuntimePlatform.PS5;
+                var isPlayStation = Application.platform is RuntimePlatform.PS5;
 
                 WithMarshalledStruct(argsStruct, argsPtr =>
                 {

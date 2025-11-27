@@ -370,7 +370,7 @@ public sealed class SentryUnityOptions : SentryOptions
         application ??= ApplicationAdapter.Instance;
         behaviour ??= SentryMonoBehaviour.Instance;
 
-        DetectStartupTime = application.Platform is RuntimePlatform.PS4 or RuntimePlatform.PS5
+        DetectStartupTime = application.Platform is RuntimePlatform.PS5
             // PlayStation doesn't support startup time
             ? StartupTimeDetectionMode.None
             // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
@@ -436,7 +436,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
             // Consoles: false
             RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne
-                or RuntimePlatform.PS4 or RuntimePlatform.PS5
+                or RuntimePlatform.PS5
                 or RuntimePlatform.Switch => false,
 
             // Unknown platforms
@@ -502,7 +502,6 @@ public sealed class SentryUnityOptions : SentryOptions
             or RuntimePlatform.WebGLPlayer
             or RuntimePlatform.GameCoreXboxSeries
             or RuntimePlatform.GameCoreXboxOne
-            or RuntimePlatform.PS4
             or RuntimePlatform.PS5;
     }
 

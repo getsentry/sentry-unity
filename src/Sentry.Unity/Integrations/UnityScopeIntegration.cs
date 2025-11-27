@@ -83,9 +83,7 @@ internal class UnityScopeUpdater
         {
             operatingSystemContext.Name = "Xbox";
         }
-        else if (ApplicationAdapter.Instance.Platform
-            is RuntimePlatform.PS4
-            or RuntimePlatform.PS5)
+        else if (ApplicationAdapter.Instance.Platform is RuntimePlatform.PS5)
         {
             operatingSystemContext.Name = "PlayStation";
         }
