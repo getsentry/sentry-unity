@@ -19,6 +19,7 @@ internal static class SentryNativeBridge
         _useLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5;
+        _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
 
         var cOptions = sentry_options_new();
 
@@ -50,9 +51,15 @@ internal static class SentryNativeBridge
         options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
         sentry_options_set_auto_session_tracking(cOptions, 0);
 
+        if (_isWindows)
+        {
+            options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
+            sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
+        }
+
         var dir = GetCacheDirectory(options);
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
-        if (ApplicationAdapter.Instance.Platform is RuntimePlatform.WindowsPlayer)
+        if (_isWindows)
         {
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
             sentry_options_set_database_pathw(cOptions, dir);
@@ -133,6 +140,9 @@ internal static class SentryNativeBridge
     [DllImport("sentry")]
     private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
+    [DllImport("sentry")]
+    private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
 
@@ -142,6 +152,7 @@ internal static class SentryNativeBridge
     // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
     private static IDiagnosticLogger? _logger;
     private static bool _useLibC = false;
+    private static bool _isWindows = false;
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]

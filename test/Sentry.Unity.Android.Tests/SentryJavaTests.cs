@@ -78,28 +78,18 @@ public class SentryJavaTests
     public void RunJniSafe_ActionThrowsOnNonMainThread_CatchesExceptionAndLogsError()
     {
         // Arrange
-        var exception = new InvalidOperationException("Test exception");
-        var resetEvent = new ManualResetEvent(false);
-        var action = new Action(() =>
-        {
-            try
-            {
-                throw exception;
-            }
-            finally
-            {
-                resetEvent.Set();
-            }
-        });
+        var action = new Action(() => throw new InvalidOperationException("Test exception"));
 
         // Act
         _sut.RunJniSafe(action, "TestAction", isMainThread: false);
 
-        // Assert
-        Assert.That(resetEvent.WaitOne(TimeSpan.FromSeconds(1)), Is.True);
-        Assert.IsTrue(_logger.Logs.Any(log =>
-            log.logLevel == SentryLevel.Error &&
-            log.message.Contains("Calling 'TestAction' failed.")));
+        // Assert - wait for the error to be logged on the worker thread
+        var logFound = SpinWait.SpinUntil(() =>
+            _logger.Logs.Any(log =>
+                log.logLevel == SentryLevel.Error &&
+                log.message.Contains("Calling 'TestAction' failed.")),
+            TimeSpan.FromSeconds(1));
+        Assert.IsTrue(logFound);
     }
 
     [Test]
