@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: bb324dd170e76fb4bbe06f959c323cbd
+guid: 8aaa83ee4eed24fd7924da6ccc005b3e
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -17,13 +17,13 @@ PluginImporter:
       enabled: 0
       settings:
         Exclude Android: 1
-        Exclude Editor: 0
-        Exclude Linux64: 0
+        Exclude Editor: 1
+        Exclude Linux64: 1
         Exclude OSXUniversal: 1
         Exclude PS5: 0
         Exclude WebGL: 1
-        Exclude Win: 0
-        Exclude Win64: 0
+        Exclude Win: 1
+        Exclude Win64: 1
         Exclude iOS: 1
         Exclude tvOS: 1
   - first:
@@ -40,7 +40,7 @@ PluginImporter:
   - first:
       Editor: Editor
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
@@ -48,7 +48,7 @@ PluginImporter:
   - first:
       Standalone: Linux64
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: x86_64
   - first:
@@ -60,13 +60,13 @@ PluginImporter:
   - first:
       Standalone: Win
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: x86
   - first:
       Standalone: Win64
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: x86_64
   - first:
@@ -95,13 +95,13 @@ PluginImporter:
   - first:
       GameCoreScarlett: GameCoreScarlett
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
   - first:
       GameCoreXboxOne: GameCoreXboxOne
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
   - first:
