@@ -57,7 +57,7 @@ internal static class SentryNativeBridge
 
         var dir = GetCacheDirectory(options);
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
-        if (ApplicationAdapter.Instance.Platform is RuntimePlatform.WindowsPlayer)
+        if (_isWindows)
         {
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
             sentry_options_set_database_pathw(cOptions, dir);
