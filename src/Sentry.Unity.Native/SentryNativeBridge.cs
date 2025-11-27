@@ -248,7 +248,7 @@ internal static class SentryNativeBridge
     [DllImport("libc", EntryPoint = "vsnprintf")]
     private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
-    [DllImport("sentry")]
+    [DllImport("__Internal")]
     private static extern int vsnprintf_ps(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
     // https://stackoverflow.com/a/4958507/2386130
