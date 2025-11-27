@@ -11,6 +11,7 @@
 
 ### Features
 
+- On Windows, and with screenshot capture enabled, the SDK will now also capture and attach a screenshot to native crashes ([#2434](https://github.com/getsentry/sentry-unity/pull/2434))
 - Added `SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?>)` callback that provides the captured screenshot as a
   `Texture2D` before JPEG compression. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428)) 
   This enables:
