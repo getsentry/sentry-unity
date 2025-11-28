@@ -7,6 +7,8 @@
 #define SENTRY_NATIVE
 #elif UNITY_GAMECORE
 #define SENTRY_NATIVE
+#elif UNITY_PS5
+#define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
@@ -131,7 +133,7 @@ namespace Sentry.Unity
                 return null;
             }
 
-#if UNITY_ANDROID || UNITY_STANDALONE_LINUX
+#if UNITY_ANDROID || UNITY_STANDALONE_LINUX || UNITY_PS5
             // For ELF platforms, the 20-byte `NT_GNU_BUILD_ID` needs to be
             // turned into a "little-endian GUID", which means the first three
             // components need to be byte-swapped appropriately.

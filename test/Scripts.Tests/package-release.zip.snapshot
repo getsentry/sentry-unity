@@ -31,6 +31,8 @@ Plugins/Android.meta
 Plugins/iOS.meta
 Plugins/Linux.meta
 Plugins/macOS.meta
+Plugins/sentry_utils.c
+Plugins/sentry_utils.c.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m

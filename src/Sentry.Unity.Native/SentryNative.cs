@@ -124,7 +124,6 @@ public static class SentryNative
         switch (application.Platform)
         {
             case RuntimePlatform.Switch:
-            case RuntimePlatform.PS4:
             case RuntimePlatform.PS5:
             case RuntimePlatform.XboxOne:
             case RuntimePlatform.GameCoreXboxSeries:

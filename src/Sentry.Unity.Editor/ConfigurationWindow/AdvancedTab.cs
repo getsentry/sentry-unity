@@ -141,8 +141,12 @@ internal static class AdvancedTab
             GUILayout.Label("Console", EditorStyles.boldLabel);
 
             options.XboxNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("Xbox", "Whether to enable native crashes support on Xbox."),
+                new GUIContent("Xbox", "Whether to enable native crash support on Xbox."),
                 options.XboxNativeSupportEnabled);
+
+            options.PlayStationNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("PlayStation", "Whether to enable native crash support on PlayStation."),
+                options.PlayStationNativeSupportEnabled);
         }
 
         EditorGUI.indentLevel--;

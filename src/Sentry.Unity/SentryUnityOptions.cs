@@ -233,6 +233,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool XboxNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should add native support for PlayStation
+    /// </summary>
+    public bool PlayStationNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should add IL2CPP line number support
     /// </summary>
     /// <remarks>
@@ -365,8 +370,11 @@ public sealed class SentryUnityOptions : SentryOptions
         application ??= ApplicationAdapter.Instance;
         behaviour ??= SentryMonoBehaviour.Instance;
 
-        // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
-        DetectStartupTime = StartupTimeDetectionMode.Fast;
+        DetectStartupTime = application.Platform is RuntimePlatform.PS5
+            // PlayStation doesn't support startup time
+            ? StartupTimeDetectionMode.None
+            // IL2CPP doesn't support Process.GetCurrentProcess().StartupTime
+            : StartupTimeDetectionMode.Fast;
 
         AddInAppExclude("UnityEngine");
         AddInAppExclude("UnityEditor");
@@ -428,7 +436,8 @@ public sealed class SentryUnityOptions : SentryOptions
 
             // Consoles: false
             RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne
-                or RuntimePlatform.PS4 or RuntimePlatform.PS5 or RuntimePlatform.Switch => false,
+                or RuntimePlatform.PS5
+                or RuntimePlatform.Switch => false,
 
             // Unknown platforms
             _ => false
@@ -492,7 +501,8 @@ public sealed class SentryUnityOptions : SentryOptions
             or RuntimePlatform.LinuxServer
             or RuntimePlatform.WebGLPlayer
             or RuntimePlatform.GameCoreXboxSeries
-            or RuntimePlatform.GameCoreXboxOne;
+            or RuntimePlatform.GameCoreXboxOne
+            or RuntimePlatform.PS5;
     }
 
     public override string ToString()

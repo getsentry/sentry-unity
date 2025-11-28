@@ -3,7 +3,6 @@ using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.FileSystemGlobbing;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
@@ -18,7 +17,9 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-        if (targetGroup is not BuildTargetGroup.Standalone and not BuildTargetGroup.GameCoreXboxSeries)
+        if (targetGroup is not BuildTargetGroup.Standalone
+            and not BuildTargetGroup.GameCoreXboxSeries
+            and not BuildTargetGroup.PS5)
         {
             return;
         }
@@ -47,10 +48,12 @@ public static class BuildPostProcess
         // The executable path resolves to the following when pointing Unity into a `build/platform/` directory:
         // - Desktop: `./samples/unity-of-bugs/builds/windows/unityofbugs.exe`
         // - Xbox: `./samples/unity-of-bugs/builds/xsx/`
+        // - PlayStation: `./samples/unity-of-bugs/builds/ps5/`
         var buildOutputDir = targetGroup switch
         {
             BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),
             BuildTargetGroup.GameCoreXboxSeries => executablePath,
+            BuildTargetGroup.PS5 => executablePath,
             _ => string.Empty
         };
 
@@ -87,6 +90,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
         BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
+        BuildTarget.PS5 => options.PlayStationNativeSupportEnabled,
         _ => false,
     };
 
@@ -107,6 +111,9 @@ public static class BuildPostProcess
             case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
                 // No standalone crash handler for Xbox - comes with Breakpad
+                return;
+            case BuildTarget.PS5:
+                // No standalone crash handler for PlayStation
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
@@ -156,6 +163,13 @@ public static class BuildPostProcess
                 if (Directory.Exists(xboxSentryPluginPath))
                 {
                     paths += $" \"{xboxSentryPluginPath}\"";
+                }
+                break;
+            case BuildTarget.PS5:
+                var playstationSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/");
+                if (Directory.Exists(playstationSentryPluginPath))
+                {
+                    paths += $" \"{playstationSentryPluginPath}\"";
                 }
                 break;
             case BuildTarget.StandaloneLinux64:

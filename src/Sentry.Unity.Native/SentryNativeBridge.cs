@@ -16,7 +16,9 @@ internal static class SentryNativeBridge
 {
     public static bool Init(SentryUnityOptions options)
     {
-        _isLinux = Application.platform is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer;
+        _useLibC = Application.platform
+            is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
+            or RuntimePlatform.PS5;
         _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
 
         var cOptions = sentry_options_new();
@@ -149,7 +151,7 @@ internal static class SentryNativeBridge
 
     // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
     private static IDiagnosticLogger? _logger;
-    private static bool _isLinux = false;
+    private static bool _useLibC = false;
     private static bool _isWindows = false;
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
@@ -194,29 +196,30 @@ internal static class SentryNativeBridge
         try
         {
             // We cannot access C var-arg (va_list) in c# thus we pass it back to vsnprintf to do the formatting.
-            // For Linux, we must make a copy of the VaList to be able to pass it back...
-            if (_isLinux)
+            // For Linux and PlayStation, we must make a copy of the VaList to be able to pass it back...
+            if (_useLibC)
             {
                 var argsStruct = Marshal.PtrToStructure<VaListLinux64>(args);
                 var formattedLength = 0;
+
                 WithMarshalledStruct(argsStruct, argsPtr =>
                 {
-                    formattedLength = 1 + vsnprintf_linux(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
+                    formattedLength = 1 + vsnprintf_sentry(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
                 });
 
                 WithAllocatedPtr(formattedLength, buffer =>
                     WithMarshalledStruct(argsStruct, argsPtr =>
                     {
-                        vsnprintf_linux(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                        vsnprintf_sentry(buffer, (UIntPtr)formattedLength, format, argsPtr);
                         message = Marshal.PtrToStringAnsi(buffer);
                     }));
             }
             else
             {
-                var formattedLength = 1 + vsnprintf_windows(IntPtr.Zero, UIntPtr.Zero, format, args);
+                var formattedLength = 1 + vsnprintf_sentry(IntPtr.Zero, UIntPtr.Zero, format, args);
                 WithAllocatedPtr(formattedLength, buffer =>
                 {
-                    vsnprintf_windows(buffer, (UIntPtr)formattedLength, format, args);
+                    vsnprintf_sentry(buffer, (UIntPtr)formattedLength, format, args);
                     message = Marshal.PtrToStringAnsi(buffer);
                 });
             }
@@ -238,11 +241,8 @@ internal static class SentryNativeBridge
         }
     }
 
-    [DllImport("msvcrt", EntryPoint = "vsnprintf")]
-    private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
-
-    [DllImport("libc", EntryPoint = "vsnprintf")]
-    private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+    [DllImport("__Internal")]
+    private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
     // https://stackoverflow.com/a/4958507/2386130
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
