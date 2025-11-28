@@ -95,13 +95,13 @@ PluginImporter:
   - first:
       GameCoreScarlett: GameCoreScarlett
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
   - first:
       GameCoreXboxOne: GameCoreXboxOne
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
   - first:
