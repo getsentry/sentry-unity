@@ -31,7 +31,8 @@ Plugins/Android.meta
 Plugins/iOS.meta
 Plugins/Linux.meta
 Plugins/macOS.meta
-Plugins/PS5.meta
+Plugins/sentry_utils.c
+Plugins/sentry_utils.c.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m
@@ -40,8 +41,6 @@ Plugins/macOS/Sentry/Sentry.dylib
 Plugins/macOS/Sentry/Sentry.dylib.dSYM
 Plugins/macOS/Sentry/Sentry.dylib.dSYM.meta
 Plugins/macOS/Sentry/Sentry.dylib.meta
-Plugins/PS5/sentry_utils.c
-Plugins/PS5/sentry_utils.c.meta
 Plugins/iOS/SentryCxaThrowHook.cpp
 Plugins/iOS/SentryCxaThrowHook.cpp.meta
 Plugins/iOS/SentryNativeBridge.m
