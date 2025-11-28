@@ -202,36 +202,24 @@ internal static class SentryNativeBridge
                 var argsStruct = Marshal.PtrToStructure<VaListLinux64>(args);
                 var formattedLength = 0;
 
-                // PlayStation uses a wrapper function to avoid IL2CPP conflicts with the Prospero SDK's vsnprintf
-                var isPlayStation = Application.platform is RuntimePlatform.PS5;
-
                 WithMarshalledStruct(argsStruct, argsPtr =>
                 {
-                    formattedLength = 1 + (isPlayStation
-                        ? vsnprintf_ps(IntPtr.Zero, UIntPtr.Zero, format, argsPtr)
-                        : vsnprintf_linux(IntPtr.Zero, UIntPtr.Zero, format, argsPtr));
+                    formattedLength = 1 + vsnprintf_sentry(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
                 });
 
                 WithAllocatedPtr(formattedLength, buffer =>
                     WithMarshalledStruct(argsStruct, argsPtr =>
                     {
-                        if (isPlayStation)
-                        {
-                            vsnprintf_ps(buffer, (UIntPtr)formattedLength, format, argsPtr);
-                        }
-                        else
-                        {
-                            vsnprintf_linux(buffer, (UIntPtr)formattedLength, format, argsPtr);
-                        }
+                        vsnprintf_sentry(buffer, (UIntPtr)formattedLength, format, argsPtr);
                         message = Marshal.PtrToStringAnsi(buffer);
                     }));
             }
             else
             {
-                var formattedLength = 1 + vsnprintf_windows(IntPtr.Zero, UIntPtr.Zero, format, args);
+                var formattedLength = 1 + vsnprintf_sentry(IntPtr.Zero, UIntPtr.Zero, format, args);
                 WithAllocatedPtr(formattedLength, buffer =>
                 {
-                    vsnprintf_windows(buffer, (UIntPtr)formattedLength, format, args);
+                    vsnprintf_sentry(buffer, (UIntPtr)formattedLength, format, args);
                     message = Marshal.PtrToStringAnsi(buffer);
                 });
             }
@@ -253,14 +241,8 @@ internal static class SentryNativeBridge
         }
     }
 
-    [DllImport("msvcrt", EntryPoint = "vsnprintf")]
-    private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
-
-    [DllImport("libc", EntryPoint = "vsnprintf")]
-    private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
-
     [DllImport("__Internal")]
-    private static extern int vsnprintf_ps(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+    private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
     // https://stackoverflow.com/a/4958507/2386130
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
