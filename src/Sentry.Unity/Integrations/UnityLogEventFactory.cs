@@ -80,6 +80,7 @@ internal static class UnityLogEventFactory
         {
             Crashed = false,
             Current = true,
+            Main = MainThreadData.IsMainThread(),
             Name = currentThread.Name,
             Id = currentThread.ManagedThreadId,
             Stacktrace = new SentryStackTrace { Frames = frames }

@@ -33,6 +33,7 @@ internal class UnityEventProcessor :
     public SentryEvent Process(SentryEvent @event)
     {
         SetEventContext(@event);
+        EnrichThreads(@event);
 
         @event.ServerName = null;
 
@@ -59,8 +60,6 @@ internal class UnityEventProcessor :
             // Populating the SDK Integrations here (for now) instead of UnityScopeIntegration because it cannot be guaranteed
             // that it got added last or that there was not an integration added at a later point
             PopulateSdkIntegrations(sentryEvent.Sdk);
-            // TODO revisit which tags we should be adding by default
-            sentryEvent.SetTag("unity.is_main_thread", MainThreadData.IsMainThread().ToTagValue());
         }
         catch (Exception exception)
         {
@@ -136,9 +135,32 @@ internal class UnityEventProcessor :
             sdkVersion.AddIntegration(integrationName);
         }
     }
-}
 
-internal static class TagValueNormalizer
-{
-    internal static string ToTagValue(this bool value) => value ? "true" : "false";
+    private void EnrichThreads(SentryEvent sentryEvent)
+    {
+        try
+        {
+            if (sentryEvent.SentryThreads is null)
+            {
+                return;
+            }
+
+            // Check if we're currently on the main thread
+            var isMainThread = MainThreadData.IsMainThread();
+
+            // Find the thread marked as current and set Main flag if we're on main thread
+            foreach (var thread in sentryEvent.SentryThreads)
+            {
+                // Only set Main if not already set and this is the current thread
+                if (thread.Main == null && thread.Current == true)
+                {
+                    thread.Main = isMainThread;
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            _sentryOptions.DiagnosticLogger?.LogError(exception: exception, "Failed to enrich threads with main thread information.");
+        }
+    }
 }
