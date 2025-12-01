@@ -16,6 +16,7 @@ internal static class SentryNativeBridge
 {
     public static bool Init(SentryUnityOptions options)
     {
+        _options = options;
         _useLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5;
@@ -153,6 +154,7 @@ internal static class SentryNativeBridge
     private static IDiagnosticLogger? _logger;
     private static bool _useLibC = false;
     private static bool _isWindows = false;
+    private static SentryUnityOptions? _options;
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
@@ -241,8 +243,29 @@ internal static class SentryNativeBridge
         }
     }
 
+    // For Mono (Windows/Linux): use platform's native C library directly
+    [DllImport("msvcrt", EntryPoint = "vsnprintf")]
+    private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+
+    [DllImport("libc", EntryPoint = "vsnprintf")]
+    private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+
+    // For IL2CPP: use __Internal which links to the compiled sentry_utils.c
     [DllImport("__Internal")]
-    private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+    private static extern int vsnprintf_il2cpp(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+
+    private static int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args)
+    {
+        if (_options?.UnityInfo.IL2CPP is true)
+        {
+            return vsnprintf_il2cpp(buffer, bufferSize, format, args);
+        }
+
+        // Mono backend - use native platform libraries
+        return _isWindows
+            ? vsnprintf_windows(buffer, bufferSize, format, args)
+            : vsnprintf_linux(buffer, bufferSize, format, args);
+    }
 
     // https://stackoverflow.com/a/4958507/2386130
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
