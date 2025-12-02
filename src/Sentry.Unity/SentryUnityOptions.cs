@@ -233,6 +233,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool XboxNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should add native support for Nintendo Switch
+    /// </summary>
+    public bool NintendoSwitchNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should add IL2CPP line number support
     /// </summary>
     /// <remarks>

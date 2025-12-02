@@ -18,7 +18,7 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-        if (targetGroup is not BuildTargetGroup.Standalone and not BuildTargetGroup.GameCoreXboxSeries)
+        if (targetGroup is not BuildTargetGroup.Standalone and not BuildTargetGroup.GameCoreXboxSeries and not BuildTargetGroup.Switch)
         {
             return;
         }
@@ -47,10 +47,12 @@ public static class BuildPostProcess
         // The executable path resolves to the following when pointing Unity into a `build/platform/` directory:
         // - Desktop: `./samples/unity-of-bugs/builds/windows/unityofbugs.exe`
         // - Xbox: `./samples/unity-of-bugs/builds/xsx/`
+        // - Switch: `./samples/unity-of-bugs/builds/switch/`
         var buildOutputDir = targetGroup switch
         {
             BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),
             BuildTargetGroup.GameCoreXboxSeries => executablePath,
+            BuildTargetGroup.Switch => executablePath,
             _ => string.Empty
         };
 
@@ -87,6 +89,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneOSX => options.MacosNativeSupportEnabled,
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
         BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
+        BuildTarget.Switch => options.NintendoSwitchNativeSupportEnabled,
         _ => false,
     };
 
@@ -107,6 +110,9 @@ public static class BuildPostProcess
             case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
                 // No standalone crash handler for Xbox - comes with Breakpad
+                return;
+            case BuildTarget.Switch:
+                // No standalone crash handler for Nintendo Switch - uses built-in handlers.
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
@@ -156,6 +162,13 @@ public static class BuildPostProcess
                 if (Directory.Exists(xboxSentryPluginPath))
                 {
                     paths += $" \"{xboxSentryPluginPath}\"";
+                }
+                break;
+            case BuildTarget.Switch:
+                var switchSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/");
+                if (Directory.Exists(switchSentryPluginPath))
+                {
+                    paths += $" \"{switchSentryPluginPath}\"";
                 }
                 break;
             case BuildTarget.StandaloneLinux64:

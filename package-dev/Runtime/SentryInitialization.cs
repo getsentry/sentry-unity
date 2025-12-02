@@ -7,6 +7,8 @@
 #define SENTRY_NATIVE
 #elif UNITY_GAMECORE
 #define SENTRY_NATIVE
+#elif UNITY_SWITCH
+#define SENTRY_NATIVE
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
