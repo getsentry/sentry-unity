@@ -8,4 +8,16 @@
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
   </ItemGroup>
 
+  <!-- Build Console version after the Desktop version -->
+  <Target Name="BuildConsoleAssembly" AfterTargets="AfterBuild">
+    <Csc
+      Sources="@(Compile)"
+      References="@(ReferencePath)"
+      OutputAssembly="$(OutDir)Sentry.Unity.Native.Console.dll"
+      DefineConstants="$(DefineConstants);SENTRY_NATIVE_CONSOLE"
+      TargetType="library"
+      EmitDebugInformation="true"
+    />
+  </Target>
+
 </Project>
