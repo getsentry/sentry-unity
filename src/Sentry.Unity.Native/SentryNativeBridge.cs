@@ -262,7 +262,7 @@ internal static class SentryNativeBridge
             }
             else
             {
-                var formattedLength = 1 + vsnprintf_sentry(IntPtr.Zero, UIntPtr.Zero, format, args);
+                var formattedLength = 1 + vsnprintf(IntPtr.Zero, UIntPtr.Zero, format, args);
                 WithAllocatedPtr(formattedLength, buffer =>
                 {
                     vsnprintf(buffer, (UIntPtr)formattedLength, format, args);
