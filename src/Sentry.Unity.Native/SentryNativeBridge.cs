@@ -250,13 +250,13 @@ internal static class SentryNativeBridge
 
                 WithMarshalledStruct(argsStruct, argsPtr =>
                 {
-                    formattedLength = 1 + vsnprintf_sentry(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
+                    formattedLength = 1 + vsnprintf(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
                 });
 
                 WithAllocatedPtr(formattedLength, buffer =>
                     WithMarshalledStruct(argsStruct, argsPtr =>
                     {
-                        vsnprintf_sentry(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                        vsnprintf(buffer, (UIntPtr)formattedLength, format, argsPtr);
                         message = Marshal.PtrToStringAnsi(buffer);
                     }));
             }
@@ -265,7 +265,7 @@ internal static class SentryNativeBridge
                 var formattedLength = 1 + vsnprintf_sentry(IntPtr.Zero, UIntPtr.Zero, format, args);
                 WithAllocatedPtr(formattedLength, buffer =>
                 {
-                    vsnprintf_sentry(buffer, (UIntPtr)formattedLength, format, args);
+                    vsnprintf(buffer, (UIntPtr)formattedLength, format, args);
                     message = Marshal.PtrToStringAnsi(buffer);
                 });
             }
@@ -289,8 +289,8 @@ internal static class SentryNativeBridge
 
     // For Mono (Windows/Linux): use platform's native C library directly
 #if SENTRY_NATIVE_STATIC
-    [DllImport("__Internal")]
-    private static extern int vsnprintf_il2cpp(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+    [DllImport("__Internal", EntryPoint = "vsnprintf_sentry")]
+    private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 #else
     [DllImport("msvcrt", EntryPoint = "vsnprintf")]
     private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
@@ -299,10 +299,10 @@ internal static class SentryNativeBridge
     private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 #endif
 
-    private static int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args)
+    private static int vsnprintf(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args)
     {
 #if SENTRY_NATIVE_STATIC
-        return vsnprintf_il2cpp(buffer, bufferSize, format, args);
+        return vsnprintf_sentry(buffer, bufferSize, format, args);
 #else
         return _isWindows
             ? vsnprintf_windows(buffer, bufferSize, format, args)
