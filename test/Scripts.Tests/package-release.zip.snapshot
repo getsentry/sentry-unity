@@ -281,6 +281,10 @@ Runtime/Sentry.Unity.iOS.dll
 Runtime/Sentry.Unity.iOS.dll.meta
 Runtime/Sentry.Unity.iOS.pdb
 Runtime/Sentry.Unity.iOS.pdb.meta
+Runtime/Sentry.Unity.Native.Console.dll
+Runtime/Sentry.Unity.Native.Console.dll.meta
+Runtime/Sentry.Unity.Native.Console.pdb
+Runtime/Sentry.Unity.Native.Console.pdb.meta
 Runtime/Sentry.Unity.Native.dll
 Runtime/Sentry.Unity.Native.dll.meta
 Runtime/Sentry.Unity.Native.pdb

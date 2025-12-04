@@ -114,40 +114,84 @@ internal static class SentryNativeBridge
     internal static void ReinstallBackend() => sentry_reinstall_backend();
 
     // libsentry.so
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern IntPtr sentry_options_new();
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_dsn(IntPtr options, string dsn);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_release(IntPtr options, string release);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_debug(IntPtr options, int debug);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_environment(IntPtr options, string environment);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_database_path(IntPtr options, string path);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
 
     // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
@@ -244,27 +288,26 @@ internal static class SentryNativeBridge
     }
 
     // For Mono (Windows/Linux): use platform's native C library directly
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+    private static extern int vsnprintf_il2cpp(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+#else
     [DllImport("msvcrt", EntryPoint = "vsnprintf")]
     private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
     [DllImport("libc", EntryPoint = "vsnprintf")]
     private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
-
-    // For IL2CPP: use __Internal which links to the compiled sentry_utils.c
-    [DllImport("__Internal")]
-    private static extern int vsnprintf_il2cpp(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
+#endif
 
     private static int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args)
     {
-        if (_options?.UnityInfo.IL2CPP is true)
-        {
-            return vsnprintf_il2cpp(buffer, bufferSize, format, args);
-        }
-
-        // Mono backend - use native platform libraries
+#if SENTRY_NATIVE_STATIC
+        return vsnprintf_il2cpp(buffer, bufferSize, format, args);
+#else
         return _isWindows
             ? vsnprintf_windows(buffer, bufferSize, format, args)
             : vsnprintf_linux(buffer, bufferSize, format, args);
+#endif
     }
 
     // https://stackoverflow.com/a/4958507/2386130
@@ -298,18 +341,38 @@ internal static class SentryNativeBridge
             action(ptr);
         });
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern int sentry_init(IntPtr options);
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern int sentry_close();
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern int sentry_get_crashed_last_run();
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern int sentry_clear_crashed_last_run();
 
+#if SENTRY_NATIVE_STATIC
+    [DllImport("__Internal")]
+#else
     [DllImport("sentry")]
+#endif
     private static extern void sentry_reinstall_backend();
 }
