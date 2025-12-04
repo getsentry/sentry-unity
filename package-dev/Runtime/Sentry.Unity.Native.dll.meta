@@ -17,10 +17,9 @@ PluginImporter:
       enabled: 0
       settings:
         Exclude Android: 1
-        Exclude Editor: 0
+        Exclude Editor: 1
         Exclude Linux64: 0
         Exclude OSXUniversal: 1
-        Exclude PS5: 0
         Exclude WebGL: 1
         Exclude Win: 0
         Exclude Win64: 0
@@ -43,7 +42,7 @@ PluginImporter:
   - first:
       Editor: Editor
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
@@ -51,19 +50,19 @@ PluginImporter:
   - first:
       GameCoreScarlett: GameCoreScarlett
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
   - first:
       GameCoreXboxOne: GameCoreXboxOne
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
   - first:
       PS5: PS5
     second:
-      enabled: 1
+      enabled: 0
       settings: {}
   - first:
       Standalone: Linux64
@@ -112,18 +111,6 @@ PluginImporter:
         CPU: AnyCPU
         CompileFlags:
         FrameworkDependencies:
-  - first:
-      GameCoreScarlett: GameCoreScarlett
-    second:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-  - first:
-      GameCoreXboxOne: GameCoreXboxOne
-    second:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
   userData:
   assetBundleName:
   assetBundleVariant:
