@@ -154,7 +154,6 @@ internal static class SentryNativeBridge
     private static IDiagnosticLogger? _logger;
     private static bool _useLibC = false;
     private static bool _isWindows = false;
-    private static SentryUnityOptions? _options;
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
@@ -297,38 +296,18 @@ internal static class SentryNativeBridge
             action(ptr);
         });
 
-#if SENTRY_NATIVE_STATIC
-    [DllImport("__Internal")]
-#else
     [DllImport("sentry")]
-#endif
     private static extern int sentry_init(IntPtr options);
 
-#if SENTRY_NATIVE_STATIC
-    [DllImport("__Internal")]
-#else
     [DllImport("sentry")]
-#endif
     private static extern int sentry_close();
 
-#if SENTRY_NATIVE_STATIC
-    [DllImport("__Internal")]
-#else
     [DllImport("sentry")]
-#endif
     private static extern int sentry_get_crashed_last_run();
 
-#if SENTRY_NATIVE_STATIC
-    [DllImport("__Internal")]
-#else
     [DllImport("sentry")]
-#endif
     private static extern int sentry_clear_crashed_last_run();
 
-#if SENTRY_NATIVE_STATIC
-    [DllImport("__Internal")]
-#else
     [DllImport("sentry")]
-#endif
     private static extern void sentry_reinstall_backend();
 }
