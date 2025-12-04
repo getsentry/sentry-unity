@@ -16,7 +16,6 @@ internal static class SentryNativeBridge
 {
     public static bool Init(SentryUnityOptions options)
     {
-        _options = options;
         _useLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5;
