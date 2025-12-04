@@ -31,8 +31,7 @@ Plugins/Android.meta
 Plugins/iOS.meta
 Plugins/Linux.meta
 Plugins/macOS.meta
-Plugins/sentry_utils.c
-Plugins/sentry_utils.c.meta
+Plugins/PS5.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m
@@ -41,6 +40,8 @@ Plugins/macOS/Sentry/Sentry.dylib
 Plugins/macOS/Sentry/Sentry.dylib.dSYM
 Plugins/macOS/Sentry/Sentry.dylib.dSYM.meta
 Plugins/macOS/Sentry/Sentry.dylib.meta
+Plugins/PS5/sentry_utils.c
+Plugins/PS5/sentry_utils.c.meta
 Plugins/iOS/SentryCxaThrowHook.cpp
 Plugins/iOS/SentryCxaThrowHook.cpp.meta
 Plugins/iOS/SentryNativeBridge.m
@@ -281,14 +282,14 @@ Runtime/Sentry.Unity.iOS.dll
 Runtime/Sentry.Unity.iOS.dll.meta
 Runtime/Sentry.Unity.iOS.pdb
 Runtime/Sentry.Unity.iOS.pdb.meta
-Runtime/Sentry.Unity.Native.Console.dll
-Runtime/Sentry.Unity.Native.Console.dll.meta
-Runtime/Sentry.Unity.Native.Console.pdb
-Runtime/Sentry.Unity.Native.Console.pdb.meta
 Runtime/Sentry.Unity.Native.dll
 Runtime/Sentry.Unity.Native.dll.meta
 Runtime/Sentry.Unity.Native.pdb
 Runtime/Sentry.Unity.Native.pdb.meta
+Runtime/Sentry.Unity.Native.PlayStation.dll
+Runtime/Sentry.Unity.Native.PlayStation.dll.meta
+Runtime/Sentry.Unity.Native.PlayStation.pdb
+Runtime/Sentry.Unity.Native.PlayStation.pdb.meta
 Runtime/Sentry.Unity.pdb
 Runtime/Sentry.Unity.pdb.meta
 Runtime/Sentry.xml
