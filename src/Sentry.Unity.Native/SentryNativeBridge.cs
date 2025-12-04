@@ -111,70 +111,70 @@ internal static class SentryNativeBridge
     internal static void ReinstallBackend() => sentry_reinstall_backend();
 
     // libsentry.so
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern IntPtr sentry_options_new();
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_dsn(IntPtr options, string dsn);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_release(IntPtr options, string release);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_debug(IntPtr options, int debug);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_environment(IntPtr options, string environment);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_database_path(IntPtr options, string path);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
@@ -184,7 +184,7 @@ internal static class SentryNativeBridge
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
@@ -282,14 +282,14 @@ internal static class SentryNativeBridge
         }
     }
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal", EntryPoint = "vsnprintf")]
 #else
     [DllImport("msvcrt", EntryPoint = "vsnprintf")]
 #endif
     private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal", EntryPoint = "vsnprintf")]
 #else
     [DllImport("libc", EntryPoint = "vsnprintf")]
@@ -327,35 +327,35 @@ internal static class SentryNativeBridge
             action(ptr);
         });
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern int sentry_init(IntPtr options);
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern int sentry_close();
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern int sentry_get_crashed_last_run();
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]
 #endif
     private static extern int sentry_clear_crashed_last_run();
 
-#if SENTRY_NATIVE_CONSOLE
+#if SENTRY_NATIVE_STATIC
     [DllImport("__Internal")]
 #else
     [DllImport("sentry")]

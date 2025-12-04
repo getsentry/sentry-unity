@@ -14,7 +14,7 @@
       Sources="@(Compile)"
       References="@(ReferencePath)"
       OutputAssembly="$(OutDir)Sentry.Unity.Native.Console.dll"
-      DefineConstants="$(DefineConstants);SENTRY_NATIVE_CONSOLE"
+      DefineConstants="$(DefineConstants);SENTRY_NATIVE_STATIC"
       TargetType="library"
       EmitDebugInformation="true"
     />
