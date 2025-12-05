@@ -3,21 +3,15 @@
     <OutDir>$(PackageRuntimePath)</OutDir>
   </PropertyGroup>
 
+  <!-- Configure PlayStation-specific build -->
+  <PropertyGroup Condition="'$(IsPlayStationBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);SENTRY_NATIVE_PLAYSTATION</DefineConstants>
+    <AssemblyName>Sentry.Unity.Native.PlayStation</AssemblyName>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
   </ItemGroup>
-
-  <!-- Build Console version after the Desktop version -->
-  <Target Name="BuildConsoleAssembly" AfterTargets="AfterBuild">
-    <Csc
-      Sources="@(Compile)"
-      References="@(ReferencePath)"
-      OutputAssembly="$(OutDir)Sentry.Unity.Native.PlayStation.dll"
-      DefineConstants="$(DefineConstants);SENTRY_NATIVE_PLAYSTATION"
-      TargetType="library"
-      EmitDebugInformation="true"
-    />
-  </Target>
 
 </Project>

@@ -313,6 +313,17 @@ Expected to exist:
     <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
   </Target>
 
+  <!-- Build PlayStation version of Sentry.Unity.Native: dotnet msbuild /t:BuildPlayStationAssembly src/Sentry.Unity.Native -->
+  <Target Name="BuildPlayStationAssembly"
+          AfterTargets="AfterBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity.Native' AND '$(IsPlayStationBuild)' != 'true'">
+    <Message Importance="High" Text="Building PlayStation-specific native assembly." />
+
+    <MSBuild Projects="$(MSBuildProjectFile)"
+             Targets="Build"
+             Properties="IsPlayStationBuild=true;Configuration=$(Configuration)" />
+  </Target>
+
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
 We need to run a unity build to restore the test packages and for that reason we'll ignore errors here and assume a later step will validate the build is actually working:
   The offending error:
