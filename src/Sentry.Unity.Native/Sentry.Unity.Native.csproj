@@ -8,8 +8,10 @@
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
   </ItemGroup>
 
-  <!-- Build Console version after the Desktop version -->
-  <Target Name="BuildConsoleAssembly" AfterTargets="AfterBuild">
+  <!-- Build PlayStation version after the main build -->
+  <Target Name="BuildPlayStationAssembly" AfterTargets="AfterBuild">
+    <Message Importance="High" Text="Building PlayStation-specific native assembly." />
+
     <Csc
       Sources="@(Compile)"
       References="@(ReferencePath)"
@@ -17,6 +19,10 @@
       DefineConstants="$(DefineConstants);SENTRY_NATIVE_PLAYSTATION"
       TargetType="library"
       EmitDebugInformation="true"
+      Nullable="$(Nullable)"
+      LangVersion="$(LangVersion)"
+      TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+      WarningLevel="$(WarningLevel)"
     />
   </Target>
 
