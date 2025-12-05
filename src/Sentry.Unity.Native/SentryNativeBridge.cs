@@ -77,9 +77,16 @@ internal static class SentryNativeBridge
         }
         else
         {
-            options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
-            _logger = options.DiagnosticLogger;
-            sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+            if (options.UnityInfo.IL2CPP)
+            {
+                options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
+                _logger = options.DiagnosticLogger;
+                sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+            }
+            else
+            {
+                options.DiagnosticLogger.LogInfo("Passing the native logs back to the C# layer is not supported on Mono - skipping native logger.");
+            }
         }
 
         options.DiagnosticLogger?.LogDebug("Initializing sentry native");
