@@ -31,6 +31,9 @@
 - Bump Java SDK from v8.26.0 to v8.27.1 ([#2430](https://github.com/getsentry/sentry-unity/pull/2430), [#2436](https://github.com/getsentry/sentry-unity/pull/2436))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8271)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.26.0...8.27.1)
+- Bump Native SDK from v0.12.1 to v0.12.2 ([#2440](https://github.com/getsentry/sentry-unity/pull/2440))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0122)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.1...0.12.2)
 
 ## 4.0.0-beta.6
 
