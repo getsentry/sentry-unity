@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 8f4c2e5a7b1d4f9e8c3a6d2b5e9f1a4c
+guid: 6ddd83aa3aac13bc6813ca5bbb004a2d
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -18,16 +18,14 @@ PluginImporter:
       settings:
         Exclude Android: 1
         Exclude Editor: 1
-        Exclude Linux64: 1
+        Exclude Linux64: 0
         Exclude OSXUniversal: 1
+        Exclude PS5: 0
         Exclude WebGL: 1
-        Exclude Win: 1
-        Exclude Win64: 1
+        Exclude Win: 0
+        Exclude Win64: 0
         Exclude iOS: 1
         Exclude tvOS: 1
-        Exclude PS4: 0
-        Exclude PS5: 0
-        Exclude Switch: 0
   - first:
       Android: Android
     second:
@@ -95,24 +93,6 @@ PluginImporter:
         CompileFlags:
         FrameworkDependencies:
   - first:
-      PS4: PS4
-    second:
-      enabled: 1
-      settings:
-        CPU: AnyCPU
-  - first:
-      PS5: PS5
-    second:
-      enabled: 1
-      settings:
-        CPU: AnyCPU
-  - first:
-      Switch: Switch
-    second:
-      enabled: 1
-      settings:
-        CPU: AnyCPU
-  - first:
       GameCoreScarlett: GameCoreScarlett
     second:
       enabled: 1
@@ -125,11 +105,10 @@ PluginImporter:
       settings:
         CPU: AnyCPU
   - first:
-      XboxOne: XboxOne
+      PS5: PS5
     second:
       enabled: 1
-      settings:
-        CPU: AnyCPU
+      settings: {}
   userData:
   assetBundleName:
   assetBundleVariant:
