@@ -17,7 +17,7 @@ PluginImporter:
       enabled: 0
       settings:
         Exclude Android: 1
-        Exclude Editor: 0
+        Exclude Editor: 1
         Exclude Linux64: 0
         Exclude OSXUniversal: 1
         Exclude WebGL: 1
@@ -35,24 +35,41 @@ PluginImporter:
       settings:
         CPU: ARMv7
   - first:
-      Any: 
+      Any:
     second:
       enabled: 0
       settings: {}
   - first:
       Editor: Editor
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
         OS: AnyOS
   - first:
+      GameCoreScarlett: GameCoreScarlett
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      GameCoreXboxOne: GameCoreXboxOne
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      PS5: PS5
+    second:
+      enabled: 0
+      settings: {}
+  - first:
       Standalone: Linux64
     second:
       enabled: 1
       settings:
-        CPU: x86_64
+        CPU: AnyCPU
   - first:
       Standalone: OSXUniversal
     second:
@@ -64,13 +81,13 @@ PluginImporter:
     second:
       enabled: 1
       settings:
-        CPU: x86
+        CPU: AnyCPU
   - first:
       Standalone: Win64
     second:
       enabled: 1
       settings:
-        CPU: x86_64
+        CPU: AnyCPU
   - first:
       Windows Store Apps: WindowsStoreApps
     second:
@@ -84,28 +101,16 @@ PluginImporter:
       settings:
         AddToEmbeddedBinaries: false
         CPU: AnyCPU
-        CompileFlags: 
-        FrameworkDependencies: 
+        CompileFlags:
+        FrameworkDependencies:
   - first:
       tvOS: tvOS
     second:
       enabled: 0
       settings:
         CPU: AnyCPU
-        CompileFlags: 
+        CompileFlags:
         FrameworkDependencies:
-  - first:
-      GameCoreScarlett: GameCoreScarlett
-    second:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-  - first:
-      GameCoreXboxOne: GameCoreXboxOne
-    second:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+  userData:
+  assetBundleName:
+  assetBundleVariant:

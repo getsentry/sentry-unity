@@ -97,7 +97,6 @@ public sealed class SentryUnityOptionsTests
     [TestCase(RuntimePlatform.IPhonePlayer, false)]
     [TestCase(RuntimePlatform.GameCoreXboxSeries, false)]
     [TestCase(RuntimePlatform.GameCoreXboxOne, false)]
-    [TestCase(RuntimePlatform.PS4, false)]
     [TestCase(RuntimePlatform.PS5, false)]
     [TestCase(RuntimePlatform.Switch, false)]
     [TestCase(RuntimePlatform.WindowsEditor, false)]
