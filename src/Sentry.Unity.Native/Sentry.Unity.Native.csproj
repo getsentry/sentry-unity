@@ -13,8 +13,8 @@
     <Csc
       Sources="@(Compile)"
       References="@(ReferencePath)"
-      OutputAssembly="$(OutDir)Sentry.Unity.Native.Console.dll"
-      DefineConstants="$(DefineConstants);SENTRY_NATIVE_STATIC"
+      OutputAssembly="$(OutDir)Sentry.Unity.Native.PlayStation.dll"
+      DefineConstants="$(DefineConstants);SENTRY_NATIVE_PLAYSTATION"
       TargetType="library"
       EmitDebugInformation="true"
     />
