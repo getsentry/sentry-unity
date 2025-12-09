@@ -160,7 +160,7 @@ public static class BuildPostProcess
 
         logger.LogInfo("Setting up Sentry CLI.");
 
-        if (options.Il2CppLineNumberSupportEnabled && cliOptions.IsValid(logger, EditorUserBuildSettings.development))
+        if (options.Il2CppLineNumberSupportEnabled && !cliOptions.IsValid(logger, EditorUserBuildSettings.development))
         {
             logger.LogWarning("The IL2CPP line number support requires the debug symbol upload to be enabled.");
         }
