@@ -127,8 +127,6 @@
 ### Fixes
 
 - When configured, the SDK now no longer treats `Debug.LogError` events as exceptions but resports them as message events instead ([#2377](https://github.com/getsentry/sentry-unity/pull/2377))
-### Fixes
-
 - When targeting Xbox, the SDK now correctly picks up the debug symbols for sentry-native from the `Assets/Plugins/Sentry` directory ([#2363](https://github.com/getsentry/sentry-unity/pull/2363))
 
 ### Dependencies
