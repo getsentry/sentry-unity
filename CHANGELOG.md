@@ -9,6 +9,10 @@
 - `SetBeforeCaptureViewHierarchy` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that
   triggered the view hierarchy capture. This allows context-aware decisions before capture begins. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))  
 
+### Fixes
+
+- When targeting Windows or Linux with Mono as the scripting backend, to prevent crashes, the native SDK's debug logger integration is disabled. ([#2445](https://github.com/getsentry/sentry-unity/pull/2445)) 
+
 ### Features
 
 - Added PlayStation Native Support. The SDK now automatically syncs the scope - tags, breadcrumbs, context - to the native layer, so native crashes have the same rich context as managed events. ([#2433](https://github.com/getsentry/sentry-unity/pull/2433))
