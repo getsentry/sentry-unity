@@ -23,7 +23,7 @@ Install the package via the Unity Package Manager using a Git URL to Sentry's SD
 https://github.com/getsentry/unity.git
 ```
 
-To use this specific version of the SDK, append `#4.0.0-beta.6` to the URL, but note that this will stop Unity from suggesting version updates automatically.
+To use this specific version of the SDK, append `#4.0.0-beta.7` to the URL, but note that this will stop Unity from suggesting version updates automatically.
 
 ## Documentation
 
