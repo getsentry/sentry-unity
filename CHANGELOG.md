@@ -37,11 +37,6 @@
 
 ## 4.0.0-beta.6
 
-### Various fixes & improvements
-
-- chore: update modules/sentry-java to 8.26.0 (#2419) by @github-actions
-- chore: update modules/sentry-cli.properties to 2.58.2 (#2418) by @github-actions
-
 ## Fixes
 
 - Fixed race conditions that could cause crashes when targeting Android, especially in concurrent scenarios. The ThreadPool used to sync scope to the native layer could prematurely detach threads from the JVM. This is solved by using a dedicated background worker thread that properly manages JNI lifecycle. ([#2426](https://github.com/getsentry/sentry-unity/pull/2426))
