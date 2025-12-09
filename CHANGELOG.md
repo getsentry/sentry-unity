@@ -285,6 +285,30 @@
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2471)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.46.0...2.47.1)
 
+## 3.2.4
+
+### Fixes
+
+This release contains the bump of the Cocoa SDK with the following note and resolves `Invalid architecture` errors when submitting to the app store.
+
+> [!Important]
+> Xcode 26 no longer allows individual frameworks to contain arm64e slices anymore if the main binary doesn't contain them.
+> We have decided to split the Dynamic variant and Sentry-WithoutUIKitOrAppKit of Sentry into two variants:
+>
+> - `Sentry-Dynamic`: Without ARM64e
+> - `Sentry-Dynamic-WithARM64e`: _With_ ARM64e slice
+> - `Sentry-WithoutUIKitOrAppKit`: Without ARM64e
+> - `Sentry-WithoutUIKitOrAppKit-WithARM64e`: _With_ ARM64e slice
+>
+> If your app does not need arm64e, you don't need to make any changes.
+> But if your app _needs arm64e_ please use `Sentry-Dynamic-WithARM64e` or `Sentry-WithoutUIKitOrAppKit-WithARM64e` from 8.55.0 so you don't have issues uploading to the App Store.
+
+### Dependencies
+
+- Bump Cocoa SDK from v8.51.0 to v8.57.0 ([#2371](https://github.com/getsentry/sentry-unity/pull/2371))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8570)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...8.57.0)
+
 ## 3.2.3
 
 ### Significant change in behavior
