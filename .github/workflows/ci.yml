@@ -366,7 +366,7 @@ jobs:
   desktop-smoke-test:
     name: Run ${{ matrix.os }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create, create-unity-matrix]
+    needs: [smoke-test-create, create-unity-matrix, build-unity-sdk]
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
