@@ -42,8 +42,6 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             return log;
         });
 
-        // SentrySdk.Logger.LogDebug(static log => log.); // debug
-
         // Native SDK initialization timing options:
         // Build-time initialization:
         //   + Can capture Unity engine errors
