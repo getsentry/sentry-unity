@@ -54,9 +54,9 @@ internal static class LoggingTab
             {
                 EditorGUILayout.LabelField("Note: With Structured Logging enabled you have to opt-into adding breadcrumbs to events.", EditorStyles.boldLabel);
 
-                options.AttachBreadcrumbsToEvents = EditorGUILayout.BeginToggleGroup(
+                options.AddBreadcrumbsWithStructuredLogs = EditorGUILayout.BeginToggleGroup(
                     new GUIContent("Attach logs as breadcrumbs in addition to sending them as structured logs", "Whether the SDK should attach breadcrumbs to events in addition to structured logging."),
-                    options.AttachBreadcrumbsToEvents);
+                    options.AddBreadcrumbsWithStructuredLogs);
             }
 
             EditorGUI.indentLevel++;
