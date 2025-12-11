@@ -204,7 +204,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 [LogType.Error] = StructuredLogOnDebugLogError,
                 [LogType.Exception] = StructuredLogOnDebugLogException
             },
-            AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
+            AddBreadcrumbsWithStructuredLogs = AttachBreadcrumbsToEvents
         };
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
