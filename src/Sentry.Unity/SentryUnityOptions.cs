@@ -139,7 +139,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// When set to true, breadcrumbs will be added on top of structured logging.
     /// Defaults to false.
     /// </summary>
-    public bool AttachBreadcrumbsToEvents { get; set; } = false;
+    public bool AddBreadcrumbsWithStructuredLogs { get; set; } = false;
 
     /// <summary>
     /// Whether the SDK automatically captures events for 'Debug.LogError'.

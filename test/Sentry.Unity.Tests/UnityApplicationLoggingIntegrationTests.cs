@@ -169,7 +169,7 @@ namespace Sentry.Unity.Tests
         public void OnLogMessageReceived_ExperimentalLogsEnabledWithAttachBreadcrumbsFalse_BreadcrumbsNotAdded(LogType unityLogType)
         {
             _fixture.SentryOptions.EnableLogs = true;
-            _fixture.SentryOptions.AttachBreadcrumbsToEvents = false;
+            _fixture.SentryOptions.AddBreadcrumbsWithStructuredLogs = false;
             _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
@@ -192,7 +192,7 @@ namespace Sentry.Unity.Tests
         public void OnLogMessageReceived_ExperimentalLogsEnabledWithAttachBreadcrumbsTrue_BreadcrumbsAdded(LogType unityLogType)
         {
             _fixture.SentryOptions.EnableLogs = true;
-            _fixture.SentryOptions.AttachBreadcrumbsToEvents = true;
+            _fixture.SentryOptions.AddBreadcrumbsWithStructuredLogs = true;
             _fixture.SentryOptions.AddBreadcrumbsForLogType[unityLogType] = true;
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;

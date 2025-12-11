@@ -41,7 +41,7 @@ MonoBehaviour:
   <StructuredLogOnDebugLogAssertion>k__BackingField: 1
   <StructuredLogOnDebugLogError>k__BackingField: 1
   <StructuredLogOnDebugLogException>k__BackingField: 1
-  <AttachBreadcrumbsToEvents>k__BackingField: 0
+  <AddBreadcrumbsWithStructuredLogs>k__BackingField: 0
   <BreadcrumbsForLogs>k__BackingField: 1
   <BreadcrumbsForWarnings>k__BackingField: 1
   <BreadcrumbsForAsserts>k__BackingField: 1
@@ -73,6 +73,7 @@ MonoBehaviour:
   <MacosNativeSupportEnabled>k__BackingField: 1
   <LinuxNativeSupportEnabled>k__BackingField: 1
   <XboxNativeSupportEnabled>k__BackingField: 1
+  <PlayStationNativeSupportEnabled>k__BackingField: 1
   <Il2CppLineNumberSupportEnabled>k__BackingField: 1
   <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: cea63afb7c75f429799422326f926abe, type: 2}
   <Debug>k__BackingField: 1

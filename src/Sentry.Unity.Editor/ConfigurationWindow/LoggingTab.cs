@@ -9,12 +9,12 @@ internal static class LoggingTab
     internal static void Display(ScriptableSentryUnityOptions options)
     {
         {
-            GUILayout.Label("Structured Logging - Experimental", EditorStyles.boldLabel);
-
             options.EnableStructuredLogging = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Send Logs for:", "Enables the SDK to forward log messages to Sentry " +
+                new GUIContent("Enable Structured Logging", "Enables the SDK to forward log messages to Sentry " +
                                                  "based on the log level."),
                 options.EnableStructuredLogging);
+
+            GUILayout.Label("Automatically forward logs to Sentry for:", EditorStyles.boldLabel);
 
             EditorGUI.indentLevel++;
 
@@ -52,11 +52,11 @@ internal static class LoggingTab
 
             if (options.EnableStructuredLogging)
             {
-                EditorGUILayout.LabelField("Note: With sending structured logs enabled you have to opt-into adding breadcrumbs to events.", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Note: With Structured Logging enabled you have to opt-into adding breadcrumbs to events.", EditorStyles.boldLabel);
 
-                options.AttachBreadcrumbsToEvents = EditorGUILayout.BeginToggleGroup(
+                options.AddBreadcrumbsWithStructuredLogs = EditorGUILayout.BeginToggleGroup(
                     new GUIContent("Attach logs as breadcrumbs in addition to sending them as structured logs", "Whether the SDK should attach breadcrumbs to events in addition to structured logging."),
-                    options.AttachBreadcrumbsToEvents);
+                    options.AddBreadcrumbsWithStructuredLogs);
             }
 
             EditorGUI.indentLevel++;

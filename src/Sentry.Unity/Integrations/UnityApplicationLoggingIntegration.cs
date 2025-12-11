@@ -108,7 +108,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         }
 
         // Breadcrumb collection on top of structure log capture must be opted in
-        if (_options is { EnableLogs: true, AttachBreadcrumbsToEvents: false })
+        if (_options is { EnableLogs: true, AddBreadcrumbsWithStructuredLogs: false })
         {
             return;
         }
