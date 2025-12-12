@@ -130,7 +130,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         _options.LogDebug("Capturing structured log message of type '{0}'.", logType);
 
         SentryLog.GetTraceIdAndSpanId(_hub, out var traceId, out var spanId);
-        SentryLog log = new(_clock.GetUtcNow(), traceId, ToLogLevel(logType), message) { ParentSpanId = spanId };
+        SentryLog log = new(_clock.GetUtcNow(), traceId, ToLogLevel(logType), message) { SpanId = spanId };
 
         log.SetDefaultAttributes(_options, UnitySdkInfo.Sdk);
         log.SetOrigin("auto.log.unity");
