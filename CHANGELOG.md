@@ -6,8 +6,15 @@
 
 - The SDK no longer sets tags automatically. The promotion of contexts to tags now happens exclusively in Sentry. The `Unity` context got extended by `IsMainThread` for this. The tags `unity.device.unique_identifier` and `unity.gpu.supports_instancing` no longer exist and have no replacement. ([#2459](https://github.com/getsentry/sentry-unity/pull/2459))
 
+### Breaking Changes
+
+- Renamed the option `AttachBreadcrumbsToEvents` to `AddBreadcrumbsWithStructuredLogs` to better reflect its purpose. The option controls if the SDK does BOTH: attach logs as breadcrumbs to events and send them as structured logs ([#2455](https://github.com/getsentry/sentry-unity/pull/2455))
+
 ### Dependencies
 
+- Bump .NET SDK from v6.0.0-rc.1-3-g7cabf7c5 to v6.0.0 ([#2456](https://github.com/getsentry/sentry-unity/pull/2456))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#600)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.0.0-rc.1-3-g7cabf7c5...6.0.0)
 - Bump Cocoa SDK from v9.0.0 to v9.1.0 ([#2454](https://github.com/getsentry/sentry-unity/pull/2454))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#910)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.0.0...9.1.0)
