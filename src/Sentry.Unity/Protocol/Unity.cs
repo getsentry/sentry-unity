@@ -14,7 +14,7 @@ public sealed class Unity : ISentryJsonSerializable
     public const string Type = "unity";
 
     /// <summary>
-    /// The Unity editor version
+    /// The Unity editor version.
     /// </summary>
     /// <example>
     /// 2019.4.40f1
@@ -28,6 +28,11 @@ public sealed class Unity : ISentryJsonSerializable
     /// Unknown, Store, DeveloperBuild, Adhoc, Enterprise, Editor
     /// </example>
     public string? InstallMode { get; set; }
+
+    /// <summary>
+    /// Whether this was happening on the main thread or not.
+    /// </summary>
+    public string? IsMainThread { get; set; }
 
     /// <summary>
     /// Support for various copy texture cases.
@@ -53,7 +58,7 @@ public sealed class Unity : ISentryJsonSerializable
     public string? TargetFrameRate { get; set; }
 
     /// <summary>
-    /// The active scene's name
+    /// The active scene's name.
     /// </summary>
     public string? ActiveSceneName { get; set; }
 
@@ -61,6 +66,7 @@ public sealed class Unity : ISentryJsonSerializable
         => new()
         {
             InstallMode = InstallMode,
+            IsMainThread = IsMainThread,
             CopyTextureSupport = CopyTextureSupport,
             RenderingThreadingMode = RenderingThreadingMode,
             TargetFrameRate = TargetFrameRate,
@@ -81,6 +87,11 @@ public sealed class Unity : ISentryJsonSerializable
         if (!string.IsNullOrWhiteSpace(InstallMode))
         {
             writer.WriteString("install_mode", InstallMode);
+        }
+
+        if (!string.IsNullOrWhiteSpace(IsMainThread))
+        {
+            writer.WriteString("is_main_thread", IsMainThread);
         }
 
         if (!string.IsNullOrWhiteSpace(CopyTextureSupport))
@@ -111,6 +122,7 @@ public sealed class Unity : ISentryJsonSerializable
         {
             EditorVersion = json.GetPropertyOrNull("editor_version")?.GetString(),
             InstallMode = json.GetPropertyOrNull("install_mode")?.GetString(),
+            IsMainThread = json.GetPropertyOrNull("is_main_thread")?.GetString(),
             CopyTextureSupport = json.GetPropertyOrNull("copy_texture_support")?.GetString(),
             RenderingThreadingMode = json.GetPropertyOrNull("rendering_threading_mode")?.GetString(),
             TargetFrameRate = json.GetPropertyOrNull("target_frame_rate")?.GetString(),

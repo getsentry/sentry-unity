@@ -56,7 +56,6 @@ internal class UnityScopeUpdater
         PopulateUnity(unity);
         scope.Contexts.Add(Protocol.Unity.Type, unity);
 
-        PopulateTags(scope.SetTag);
         PopulateUser(scope);
     }
 
@@ -156,30 +155,6 @@ internal class UnityScopeUpdater
         unity.TargetFrameRate = MainThreadData.TargetFrameRate;
         unity.CopyTextureSupport = MainThreadData.CopyTextureSupport;
         unity.RenderingThreadingMode = MainThreadData.RenderingThreadingMode;
-    }
-
-    private void PopulateTags(Action<string, string> setTag)
-    {
-        // TODO revisit which tags we should be adding by default
-        if (MainThreadData.InstallMode is { } installMode)
-        {
-            setTag("unity.install_mode", installMode);
-        }
-
-        if (MainThreadData.SupportsDrawCallInstancing.HasValue)
-        {
-            setTag("unity.gpu.supports_instancing", MainThreadData.SupportsDrawCallInstancing.Value.ToTagValue());
-        }
-
-        if (MainThreadData.DeviceType is { } deviceType)
-        {
-            setTag("unity.device.device_type", deviceType);
-        }
-
-        if (_options.SendDefaultPii && MainThreadData.DeviceUniqueIdentifier is { } deviceUniqueIdentifier)
-        {
-            setTag("unity.device.unique_identifier", deviceUniqueIdentifier);
-        }
     }
 
     private void PopulateUser(Scope scope)

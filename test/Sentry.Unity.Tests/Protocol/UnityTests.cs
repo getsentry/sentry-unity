@@ -20,6 +20,7 @@ public sealed class UnityTests
         var sut = new Unity.Protocol.Unity
         {
             InstallMode = "DeveloperBuild",
+            IsMainThread = "false",
             CopyTextureSupport = "Copy3D",
             RenderingThreadingMode = "MultiThreaded",
             TargetFrameRate = "30",
@@ -31,6 +32,7 @@ public sealed class UnityTests
         Assert.AreEqual(
             "{\"type\":\"unity\"," +
             "\"install_mode\":\"DeveloperBuild\"," +
+            "\"is_main_thread\":\"false\"," +
             "\"copy_texture_support\":\"Copy3D\"," +
             "\"rendering_threading_mode\":\"MultiThreaded\"," +
             "\"target_frame_rate\":\"30\"," +
@@ -44,6 +46,7 @@ public sealed class UnityTests
         var sut = new Unity.Protocol.Unity
         {
             InstallMode = "DeveloperBuild",
+            IsMainThread = "false",
             CopyTextureSupport = "Copy3D",
             RenderingThreadingMode = "MultiThreaded",
             TargetFrameRate = "30",
@@ -53,6 +56,7 @@ public sealed class UnityTests
         var clone = sut.Clone();
 
         Assert.AreEqual(sut.InstallMode, clone.InstallMode);
+        Assert.AreEqual(sut.IsMainThread, clone.IsMainThread);
         Assert.AreEqual(sut.CopyTextureSupport, clone.CopyTextureSupport);
         Assert.AreEqual(sut.RenderingThreadingMode, clone.RenderingThreadingMode);
         Assert.AreEqual(sut.TargetFrameRate, clone.TargetFrameRate);
@@ -71,6 +75,7 @@ public sealed class UnityTests
     {
         new object[] { (new Unity.Protocol.Unity(), "{\"type\":\"unity\"}") },
         new object[] { (new Unity.Protocol.Unity { InstallMode = "Adhoc" }, "{\"type\":\"unity\",\"install_mode\":\"Adhoc\"}") },
+        new object[] { (new Unity.Protocol.Unity { IsMainThread = "false" }, "{\"type\":\"unity\",\"is_main_thread\":\"false\"}") },
         new object[] { (new Unity.Protocol.Unity { CopyTextureSupport = "TextureToRT" }, "{\"type\":\"unity\",\"copy_texture_support\":\"TextureToRT\"}") },
         new object[] { (new Unity.Protocol.Unity { RenderingThreadingMode = "NativeGraphicsJobs" }, "{\"type\":\"unity\",\"rendering_threading_mode\":\"NativeGraphicsJobs\"}") },
         new object[] { (new Unity.Protocol.Unity { TargetFrameRate = "30" }, "{\"type\":\"unity\",\"target_frame_rate\":\"30\"}") },

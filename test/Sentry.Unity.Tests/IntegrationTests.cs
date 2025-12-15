@@ -236,7 +236,7 @@ public sealed class IntegrationTests
 
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
-        Assert.That(triggeredEvent, Does.Contain("unity.is_main_thread\":\"true\""));
+        Assert.That(triggeredEvent, Does.Contain("is_main_thread\":\"true\""));
     }
 
     [UnityTest]
@@ -259,7 +259,7 @@ public sealed class IntegrationTests
 
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute));
-        Assert.That(triggeredEvent, Does.Contain("unity.is_main_thread\":\"false\""));
+        Assert.That(triggeredEvent, Does.Contain("is_main_thread\":\"false\""));
     }
 
     [UnityTest]
@@ -267,7 +267,7 @@ public sealed class IntegrationTests
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var expectedAttribute = CreateAttribute("unity.is_main_thread", "true");
+        var expectedAttribute = CreateAttribute("is_main_thread", "true");
 
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -289,7 +289,7 @@ public sealed class IntegrationTests
 
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var expectedAttribute = CreateAttribute("unity.is_main_thread", "false");
+        var expectedAttribute = CreateAttribute("is_main_thread", "false");
 
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
