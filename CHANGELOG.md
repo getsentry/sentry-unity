@@ -6,6 +6,15 @@
 
 - Renamed the option `AttachBreadcrumbsToEvents` to `AddBreadcrumbsWithStructuredLogs` to better reflect its purpose. The option controls if the SDK does BOTH: attach logs as breadcrumbs to events and send them as structured logs ([#2455](https://github.com/getsentry/sentry-unity/pull/2455))
 
+### Dependencies
+
+- Bump Cocoa SDK from v9.0.0 to v9.1.0 ([#2454](https://github.com/getsentry/sentry-unity/pull/2454))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#910)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.0.0...9.1.0)
+- Bump CLI from v2.58.2 to v2.58.4 ([#2453](https://github.com/getsentry/sentry-unity/pull/2453), [#2458](https://github.com/getsentry/sentry-unity/pull/2458))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2584)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.2...2.58.4)
+
 ## 4.0.0-beta.7
 
 ### Breaking Changes
