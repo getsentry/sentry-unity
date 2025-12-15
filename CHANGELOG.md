@@ -2,33 +2,15 @@
 
 ## Unreleased
 
-### Behavioural Changes
-
-- The SDK no longer sets tags automatically. The promotion of contexts to tags now happens exclusively in Sentry. The `Unity` context got extended by `IsMainThread` for this. The tags `unity.device.unique_identifier` and `unity.gpu.supports_instancing` no longer exist and have no replacement. ([#2459](https://github.com/getsentry/sentry-unity/pull/2459))
-
 ### Breaking Changes
 
+- Removed Unity 2020 support, which reached End of Life in 2023. Minimum supported version now is 2021. ([#2313](https://github.com/getsentry/sentry-unity/pull/2313))
+- `sentry-native` is now built on Ubuntu 22.04 instead of Ubuntu 20.04, which reached EOL in May 2025. If you are running you game on a server on Ubuntu 20.04, you should update the OS before upgrading to this SDK version. ([#2355](https://github.com/getsentry/sentry-unity/pull/2355))
+- The Unity SDK's static API has been moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk` to `Sentry.Unity.SentrySdk`. This change enables [manual/programatic SDK initialization](https://docs.sentry.io/platforms/unity/configuration/options/programmatic-configuration/) with full functionality, previously only available through auto-initialization. The underlying .NET SDK's `SentrySdk` class is now internal, and several previously public classes like `SentryInitialization` and `SentryIntegrations` are now internal. **Migration**: Update your `using` directives from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227), [#2239](https://github.com/getsentry/sentry-unity/pull/2239))
+- The deprecated Runtime- and BuildTime-Configuration have been removed in favor of the single `OptionsConfiguration` script. When migrating you can make use of preprocessor directives to set specific options for specific platforms. Check out the [Migration Guide](https://docs.sentry.io/platforms/unity/migration/#changes-to-the-programmatic-configuration). ([#2337](https://github.com/getsentry/sentry-unity/pull/2337))
 - Renamed the option `AttachBreadcrumbsToEvents` to `AddBreadcrumbsWithStructuredLogs` to better reflect its purpose. The option controls if the SDK does BOTH: attach logs as breadcrumbs to events and send them as structured logs ([#2455](https://github.com/getsentry/sentry-unity/pull/2455))
-
-### Dependencies
-
-- Bump .NET SDK from v6.0.0-rc.1-3-g7cabf7c5 to v6.0.0 ([#2456](https://github.com/getsentry/sentry-unity/pull/2456))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#600)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.0.0-rc.1-3-g7cabf7c5...6.0.0)
-- Bump Cocoa SDK from v9.0.0 to v9.1.0 ([#2454](https://github.com/getsentry/sentry-unity/pull/2454))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#910)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.0.0...9.1.0)
-- Bump CLI from v2.58.2 to v2.58.4 ([#2453](https://github.com/getsentry/sentry-unity/pull/2453), [#2458](https://github.com/getsentry/sentry-unity/pull/2458))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2584)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.2...2.58.4)
-
-## 4.0.0-beta.7
-
-### Breaking Changes
-
 - `SetBeforeCaptureScreenshot` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that triggered the screenshot capture. This allows context-aware decisions before capture begins. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428))
 - `SetBeforeCaptureViewHierarchy` signature changed from `Func<bool>` to `Func<SentryEvent, bool>`, now receiving the event that triggered the view hierarchy capture. This allows context-aware decisions before capture begins. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))
-- `sentry-native` is now built on Ubuntu 22.04 instead of Ubuntu 20.04, which reached EOL in May 2025. If you are running you game on a server on Ubuntu 20.04, you should update the OS before upgrading to this SDK version. ([#2355](https://github.com/getsentry/sentry-unity/pull/2355))
 - `BreadcrumbLevel.Critical` has been renamed to `BreadcrumbLevel.Fatal` for consistency with the other Sentry SDKs ([#4605](https://github.com/getsentry/sentry-dotnet/pull/4605))
 - Removed `SentrySdk.CaptureUserFeedback` and all associated members. Use the newer `SentrySdk.CaptureFeedback` instead. ([#4619](https://github.com/getsentry/sentry-dotnet/pull/4619))
 - `ScopeExtensions.Populate` is now internal ([#4611](https://github.com/getsentry/sentry-dotnet/pull/4611))
@@ -37,13 +19,11 @@
 - `SpanTracer` and `TransactionTracer` are still public but these are now `sealed` ([#4627](https://github.com/getsentry/sentry-dotnet/pull/4627))
 - `CaptureFeedback` now returns a `SentryId` and a `CaptureFeedbackResult` out parameter that indicate whether feedback was captured successfully and what the reason for failure was otherwise ([#4613](https://github.com/getsentry/sentry-dotnet/pull/4613))
 - The SDK will now always add a breadcrumb when capturing an exception. The option to opt-out of this has been removed. ([#2335](https://github.com/getsentry/sentry-unity/pull/2335))
-- The deprecated Runtime- and BuildTime-Configuration have been removed in favor of the single `OptionsConfiguration` script. When migrating you can make use of preprocessor directives to set specific options for specific platforms. Check out the [Migration Guide](https://docs.sentry.io/platforms/unity/migration/#changes-to-the-programmatic-configuration). ([#2337](https://github.com/getsentry/sentry-unity/pull/2337))
-- Removed Unity 2020 support, which reached End of Life in 2023. Minimum supported version now is 2021. ([#2313](https://github.com/getsentry/sentry-unity/pull/2313))
-- The Unity SDK's static API has been moved from `Sentry.Unity.SentryUnity` and `Sentry.SentrySdk` to `Sentry.Unity.SentrySdk`. This change enables [manual/programatic SDK initialization](https://docs.sentry.io/platforms/unity/configuration/options/programmatic-configuration/) with full functionality, previously only available through auto-initialization. The underlying .NET SDK's `SentrySdk` class is now internal, and several previously public classes like `SentryInitialization` and `SentryIntegrations` are now internal. **Migration**: Update your `using` directives from `using Sentry;` to `using Sentry.Unity;`. IDEs like Rider can automatically import the missing references. In some cases, you may need both `using Sentry.Unity;` (for the static API) and `using Sentry;` (for types like `SentryId`). No changes are required to your actual SDK method calls (e.g., `SentrySdk.CaptureException()` remains the same). ([#2227](https://github.com/getsentry/sentry-unity/pull/2227), [#2239](https://github.com/getsentry/sentry-unity/pull/2239))
 
 ### Behavioural Changes
 
-- The SDK no longer refreshes the trace ID when the app loses and regains focus. This means that the trace ID persists from game start to game end. The SDK now also automatically adds breadcrumbs on those lifecycle events. ([#2374](https://github.com/getsentry/sentry-unity/pull/2374))
+- The SDK no longer refreshes the trace ID when the game loses and regains focus. This means that the trace ID persists from game start to game end. The SDK now also automatically adds breadcrumbs on those lifecycle events. ([#2374](https://github.com/getsentry/sentry-unity/pull/2374))
+- The SDK no longer sets tags automatically. The promotion of contexts to tags now happens exclusively in Sentry. The `Unity` context got extended by `IsMainThread` for this. The tags `unity.device.unique_identifier` and `unity.gpu.supports_instancing` no longer exist and have no replacement. ([#2459](https://github.com/getsentry/sentry-unity/pull/2459))
 
 ### Fixes
 
@@ -74,13 +54,14 @@
 
 ### Features
 
+- Added Xbox Native Support. The SDK now automatically syncs the scope - tags, breadcrumbs, context - to the native layer, so native crashes have the same rich context as managed events. ([#2314](https://github.com/getsentry/sentry-unity/pull/2314), [#2329](https://github.com/getsentry/sentry-unity/pull/2329))
 - Added PlayStation Native Support. The SDK now automatically syncs the scope - tags, breadcrumbs, context - to the native layer, so native crashes have the same rich context as managed events. ([#2433](https://github.com/getsentry/sentry-unity/pull/2433))
 - On Windows, and with screenshot capture enabled, the SDK will now also capture and attach a screenshot to native crashes ([#2434](https://github.com/getsentry/sentry-unity/pull/2434))
 - Added `SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?>)` callback that provides the captured screenshot as a `Texture2D` before JPEG compression. ([#2428](https://github.com/getsentry/sentry-unity/pull/2428)) This enables:
-    - **Modifying** the screenshot in-place (e.g., blurring sensitive UI areas, redacting PII)
-    - **Replacing** the screenshot with a different `Texture2D`
-    - **Discarding** the screenshot by returning `null`
-    - Access to the event context for conditional processing
+  - **Modifying** the screenshot in-place (e.g., blurring sensitive UI areas, redacting PII)
+  - **Replacing** the screenshot with a different `Texture2D`
+  - **Discarding** the screenshot by returning `null`
+  - Access to the event context for conditional processing
 - Added `SetBeforeSendViewHierarchy(Func<ViewHierarchy, SentryEvent, ViewHierarchy?>)` callback that provides the captured `ViewHierarchy` to be modified before compression. ([#2429](https://github.com/getsentry/sentry-unity/pull/2429))
 - The SDK now provides an `IsSessionActive` property to allow checking the session state ([#4662](https://github.com/getsentry/sentry-dotnet/pull/4662))
 - Implemented instance isolation so that multiple instances of the Sentry SDK can be instantiated inside the same process when using the Caching Transport ([#4498](https://github.com/getsentry/sentry-dotnet/pull/4498))
@@ -90,7 +71,6 @@
 - Structured Logs are no longer `experimental` ([#2401](https://github.com/getsentry/sentry-unity/pull/2401))
 - The SDK no longer ends sessions as crashed when capturing unhandled or logged exceptions. Instead, sessions get correctly marked as `SessionEndStatus.Unhandled` ([#2376](https://github.com/getsentry/sentry-unity/pull/2376))
 - Added support for Structured Logging. The `SentrySdk.Logger` API is now exposed for Unity users, enabling structured log capture. The SDK can also automatically capture and send Debug logs based on the options configured. ([#2368](https://github.com/getsentry/sentry-unity/pull/2368))
-- Added Xbox Native Support ([#2314](https://github.com/getsentry/sentry-unity/pull/2314), [#2329](https://github.com/getsentry/sentry-unity/pull/2329))
 - The SDK now has a dedicated sample scene for third party plugins like Cysharp, or DOTween. ([#2289](https://github.com/getsentry/sentry-unity/pull/2289))
 - The SDK now automatically marks stack frames from `Cysharp` and `DG.Tweening` as non in-app. This highly improves the resulting stack trace quality in the issues details. ([#2285](https://github.com/getsentry/sentry-unity/pull/2285))
 - The SDK now comes with a `SentryUserFeedback` prefab ready to be used. You can drag and drop it into your scene or customize it by creating your own variant. The user feedback feature allows your users to provide feedback in form of a written message that can optionally have a screenshot attached. Read more about it [here](https://docs.sentry.io/product/user-feedback/). ([#2220](https://github.com/getsentry/sentry-unity/pull/2220))
@@ -100,18 +80,18 @@
 - Bump .NET SDK from v5.11.2 to v6.0.0 ([#2242](https://github.com/getsentry/sentry-unity/pull/2242), [#2259](https://github.com/getsentry/sentry-unity/pull/2259), [#2274](https://github.com/getsentry/sentry-unity/pull/2274), [#2291](https://github.com/getsentry/sentry-unity/pull/2291), [#2315](https://github.com/getsentry/sentry-unity/pull/2315), [#2326](https://github.com/getsentry/sentry-unity/pull/2326), [#2345](https://github.com/getsentry/sentry-unity/pull/2345), [#2359](https://github.com/getsentry/sentry-unity/pull/2359), [#2384](https://github.com/getsentry/sentry-unity/pull/2384), [#2364](https://github.com/getsentry/sentry-unity/pull/2364), [#2456](https://github.com/getsentry/sentry-unity/pull/2456))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#600)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/5.11.2...6.0.0)
-- Bump Cocoa SDK from v8.51.0 to v9.0.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265), [#2305](https://github.com/getsentry/sentry-unity/pull/2305), [#2318](https://github.com/getsentry/sentry-unity/pull/2318), [#2331](https://github.com/getsentry/sentry-unity/pull/2331), [#2340](https://github.com/getsentry/sentry-unity/pull/2340), [#2358](https://github.com/getsentry/sentry-unity/pull/2358), [#2382](https://github.com/getsentry/sentry-unity/pull/2382), [#2397](https://github.com/getsentry/sentry-unity/pull/2397), [#2424](https://github.com/getsentry/sentry-unity/pull/2424), [#2427](https://github.com/getsentry/sentry-unity/pull/2427), [#2439](https://github.com/getsentry/sentry-unity/pull/2439))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#900)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...9.0.0)
+- Bump Cocoa SDK from v8.51.0 to v9.1.0 ([#2265](https://github.com/getsentry/sentry-unity/pull/2265), [#2305](https://github.com/getsentry/sentry-unity/pull/2305), [#2318](https://github.com/getsentry/sentry-unity/pull/2318), [#2331](https://github.com/getsentry/sentry-unity/pull/2331), [#2340](https://github.com/getsentry/sentry-unity/pull/2340), [#2358](https://github.com/getsentry/sentry-unity/pull/2358), [#2382](https://github.com/getsentry/sentry-unity/pull/2382), [#2397](https://github.com/getsentry/sentry-unity/pull/2397), [#2424](https://github.com/getsentry/sentry-unity/pull/2424), [#2427](https://github.com/getsentry/sentry-unity/pull/2427), [#2439](https://github.com/getsentry/sentry-unity/pull/2439), [#2454](https://github.com/getsentry/sentry-unity/pull/2454))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#910)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.51.0...9.1.0)
 - Bump Java SDK from v8.14.0 to v8.28.0 ([#2218](https://github.com/getsentry/sentry-unity/pull/2218), [#2223](https://github.com/getsentry/sentry-unity/pull/2223), [#2238](https://github.com/getsentry/sentry-unity/pull/2238), [#2261](https://github.com/getsentry/sentry-unity/pull/2261), [#2280](https://github.com/getsentry/sentry-unity/pull/2280), [#2283](https://github.com/getsentry/sentry-unity/pull/2283), [#2299](https://github.com/getsentry/sentry-unity/pull/2299), [#2308](https://github.com/getsentry/sentry-unity/pull/2308), [#2311](https://github.com/getsentry/sentry-unity/pull/2311), [#2328](https://github.com/getsentry/sentry-unity/pull/2328), [#2346](https://github.com/getsentry/sentry-unity/pull/2346), [#2370](https://github.com/getsentry/sentry-unity/pull/2370), [#2379](https://github.com/getsentry/sentry-unity/pull/2379), [#2419](https://github.com/getsentry/sentry-unity/pull/2419), [#2430](https://github.com/getsentry/sentry-unity/pull/2430), [#2436](https://github.com/getsentry/sentry-unity/pull/2436), [#2443](https://github.com/getsentry/sentry-unity/pull/2443))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8280)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.14.0...8.28.0)
 - Bump Native SDK from v0.9.0 to v0.12.2 ([#2217](https://github.com/getsentry/sentry-unity/pull/2217), [#2275](https://github.com/getsentry/sentry-unity/pull/2275), [#2303](https://github.com/getsentry/sentry-unity/pull/2303), [#2323](https://github.com/getsentry/sentry-unity/pull/2323), [#2332](https://github.com/getsentry/sentry-unity/pull/2332), [#2347](https://github.com/getsentry/sentry-unity/pull/2347), [#2357](https://github.com/getsentry/sentry-unity/pull/2357), [#2378](https://github.com/getsentry/sentry-unity/pull/2378), [#2388](https://github.com/getsentry/sentry-unity/pull/2388), [#2440](https://github.com/getsentry/sentry-unity/pull/2440))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0122)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.9.0...0.12.2)
-- Bump CLI from v2.46.0 to v2.58.3 ([#2232](https://github.com/getsentry/sentry-unity/pull/2232), [#2241](https://github.com/getsentry/sentry-unity/pull/2241), [#2245](https://github.com/getsentry/sentry-unity/pull/2245), [#2250](https://github.com/getsentry/sentry-unity/pull/2250), [#2276](https://github.com/getsentry/sentry-unity/pull/2276), [#2288](https://github.com/getsentry/sentry-unity/pull/2288), [#2302](https://github.com/getsentry/sentry-unity/pull/2302), [#2324](https://github.com/getsentry/sentry-unity/pull/2324), [#2330](https://github.com/getsentry/sentry-unity/pull/2330), [#2343](https://github.com/getsentry/sentry-unity/pull/2343), [#2356](https://github.com/getsentry/sentry-unity/pull/2356), [#2369](https://github.com/getsentry/sentry-unity/pull/2369), [#2396](https://github.com/getsentry/sentry-unity/pull/2396), [#2412](https://github.com/getsentry/sentry-unity/pull/2412), [#2418](https://github.com/getsentry/sentry-unity/pull/2418), [#2453](https://github.com/getsentry/sentry-unity/pull/2453))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2583)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/2.46.0...2.58.3)
+- Bump CLI from v2.46.0 to v2.58.4 ([#2232](https://github.com/getsentry/sentry-unity/pull/2232), [#2241](https://github.com/getsentry/sentry-unity/pull/2241), [#2245](https://github.com/getsentry/sentry-unity/pull/2245), [#2250](https://github.com/getsentry/sentry-unity/pull/2250), [#2276](https://github.com/getsentry/sentry-unity/pull/2276), [#2288](https://github.com/getsentry/sentry-unity/pull/2288), [#2302](https://github.com/getsentry/sentry-unity/pull/2302), [#2324](https://github.com/getsentry/sentry-unity/pull/2324), [#2330](https://github.com/getsentry/sentry-unity/pull/2330), [#2343](https://github.com/getsentry/sentry-unity/pull/2343), [#2356](https://github.com/getsentry/sentry-unity/pull/2356), [#2369](https://github.com/getsentry/sentry-unity/pull/2369), [#2396](https://github.com/getsentry/sentry-unity/pull/2396), [#2412](https://github.com/getsentry/sentry-unity/pull/2412), [#2418](https://github.com/getsentry/sentry-unity/pull/2418), [#2453](https://github.com/getsentry/sentry-unity/pull/2453), [#2458](https://github.com/getsentry/sentry-unity/pull/2458))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2584)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.46.0...2.58.4)
 
 ## 3.2.4
 
@@ -172,9 +152,9 @@ This release contains the bump of the Cocoa SDK with the following note and reso
 
 - When targeting WebGL with an unsupported configuration (i.e. when the exception support is set to `none`), the SDK now shows an error at build time instead of a runtime failure ([#2141](https://github.com/getsentry/sentry-unity/pull/2141))
 - When targeting Desktop Platforms, Sentry CLI now respects the SDK's debug logging verbosity ([#2138](https://github.com/getsentry/sentry-unity/pull/2138))
-- When targeting iOS and setting `IgnoreCliErrors = true`, the Xcode build will now succeed even if the symbol upload itself failed. This is aimed to allow users to unblock themselves ([#2136](https://github.com/getsentry/sentry-unity/pull/2136)) 
+- When targeting iOS and setting `IgnoreCliErrors = true`, the Xcode build will now succeed even if the symbol upload itself failed. This is aimed to allow users to unblock themselves ([#2136](https://github.com/getsentry/sentry-unity/pull/2136))
 - When targeting iOS, the SDK now correctly updates the Sentry CLI options used for debug symbol upload when appending builds ([#2146](https://github.com/getsentry/sentry-unity/pull/2146))
-- Sentry CLI no longer requires the 'Organisation' option, and they have been removed from the configuration window. If you're providing an Organisation right now, nothing changes. Fresh setups will have the option omitted  ([#2137](https://github.com/getsentry/sentry-unity/pull/2137))
+- Sentry CLI no longer requires the 'Organisation' option, and they have been removed from the configuration window. If you're providing an Organisation right now, nothing changes. Fresh setups will have the option omitted ([#2137](https://github.com/getsentry/sentry-unity/pull/2137))
 
 ### Dependencies
 
@@ -306,34 +286,34 @@ This release contains the bump of the Cocoa SDK with the following note and reso
 - When targeting iOS and disabling native support, the SDK no longer causes builds to fail with an `Undefined symbol: _SentryNativeBridgeIsEnabled` error. ([#1983](https://github.com/getsentry/sentry-unity/pull/1983))
 - The SDK now sets the supported platforms in the `.asmdef` explicitely, preventing runtime issues on currently non-supported platforms ([#1974](https://github.com/getsentry/sentry-unity/pull/1974))
 - Fixed iOS native SDK initialization that could cause memory management issues ([#1964](https://github.com/getsentry/sentry-unity/pull/1964))
-- The SDK now  properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959](https://github.com/getsentry/sentry-unity/pull/1959))
+- The SDK now properly sets up logging by respecting the debug settings set during the configure callback. Logs created during the configuration of the native SDKs no longer get lost ([#1959](https://github.com/getsentry/sentry-unity/pull/1959))
 - ANR events now include the relevant mechanism they have been captured from ([#1955](https://github.com/getsentry/sentry-unity/pull/1955))
 - On Android, the SDK no longer freezes the game when failing to sync with the native SDK ([#1927](https://github.com/getsentry/sentry-unity/pull/1927))
 
 ### Dependencies
 
 - Bump Native SDK from v0.7.15 to v0.7.20 ([#1928](https://github.com/getsentry/sentry-unity/pull/1928), [#1939](https://github.com/getsentry/sentry-unity/pull/1939), [#1967](https://github.com/getsentry/sentry-unity/pull/1967), [#1981](https://github.com/getsentry/sentry-unity/pull/1981), [#2003](https://github.com/getsentry/sentry-unity/pull/2003))
-    - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
-    - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.20)
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0720)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.7.15...0.7.20)
 - Bump CLI from v2.39.0 to v2.41.1 ([#1922](https://github.com/getsentry/sentry-unity/pull/1922), [#1948](https://github.com/getsentry/sentry-unity/pull/1948), [#1984](https://github.com/getsentry/sentry-unity/pull/1984))
-    - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
-    - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.0...2.41.1)
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2411)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.39.0...2.41.1)
 - Bump Cocoa SDK from v8.41.0 to v8.45.0 ([#1937](https://github.com/getsentry/sentry-unity/pull/1937), [#1945](https://github.com/getsentry/sentry-unity/pull/1945), [#1949](https://github.com/getsentry/sentry-unity/pull/1949), [#2001](https://github.com/getsentry/sentry-unity/pull/2001), [#2017](https://github.com/getsentry/sentry-unity/pull/2017))
-    - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
-    - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.41.0...8.45.0)
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8450)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.41.0...8.45.0)
 - Bump .NET SDK from v4.13.0 to v5.1.1 ([#1940](https://github.com/getsentry/sentry-unity/pull/1940), [#1953](https://github.com/getsentry/sentry-unity/pull/1953), [#2005](https://github.com/getsentry/sentry-unity/pull/2005), [#2018](https://github.com/getsentry/sentry-unity/pull/2018))
-    - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#511)
-    - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.1.1)
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#511)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/4.13.0...5.1.1)
 - Bump Java SDK from v7.18.0 to v8.2.0 ([#1926](https://github.com/getsentry/sentry-unity/pull/1926), [#1934](https://github.com/getsentry/sentry-unity/pull/1934), [#1946](https://github.com/getsentry/sentry-unity/pull/1946), [#1947](https://github.com/getsentry/sentry-unity/pull/1947), [#2014](https://github.com/getsentry/sentry-unity/pull/2014))
-    - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
-    - [diff](https://github.com/getsentry/sentry-java/compare/7.18.0...8.2.0)
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#820)
+  - [diff](https://github.com/getsentry/sentry-java/compare/7.18.0...8.2.0)
 
 ## 2.4.0
 
 ### API Changes
 
 - The Runtime- and BuildTime-Configuration have been merged into a single `OptionsConfiguration` script. This allows for programmatic configuration of the SDK in one place using precompile directives. Note, that the current limitation of options for Android and iOS being baked into the project at build time still remains. ([#1888](https://github.com/getsentry/sentry-unity/pull/1888))
-This is part of a larger effort to simplify the configuration of the native SDKs and enable users to modify their options at runtime. For more information see https://github.com/getsentry/sentry-unity/issues/1907
+  This is part of a larger effort to simplify the configuration of the native SDKs and enable users to modify their options at runtime. For more information see https://github.com/getsentry/sentry-unity/issues/1907
 
 ### Features
 
@@ -341,7 +321,7 @@ This is part of a larger effort to simplify the configuration of the native SDKs
 
 ### Fixes
 
-- Fix potential NullReferenceException when trying to attach a view hierarchy to an event  ([#1919](https://github.com/getsentry/sentry-unity/pull/1919))
+- Fix potential NullReferenceException when trying to attach a view hierarchy to an event ([#1919](https://github.com/getsentry/sentry-unity/pull/1919))
 - The SDK no longer sends events when it fails to initialize the native SDK on Windows and Linux and logs those instead. It also suppresses `EntryPointNotFoundException` if sentry-native is not available at runtime. Native crashes won't get capture but it'll continue to capture C# errors. ([#1898](https://github.com/getsentry/sentry-unity/pull/1898))
 - The SDK no longer closes the underlying native SDK during the games shutdown if native support has not been enabled. This allows the SDK to support and capture errors in case of building the game as a library on a mobile (Android or iOS) game. ([#1897](https://github.com/getsentry/sentry-unity/pull/1897))
 
@@ -419,7 +399,7 @@ This is part of a larger effort to simplify the configuration of the native SDKs
 
 - The `SentrySdk.Metrics` module is deprecated and will be removed in the next major release.
   Sentry will reject all metrics sent after October 7, 2024.
-  Learn more: https://sentry.zendesk.com/hc/en-us/articles/26369339769883-Upcoming-API-Changes-to-Metrics  ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
+  Learn more: https://sentry.zendesk.com/hc/en-us/articles/26369339769883-Upcoming-API-Changes-to-Metrics ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
 
 ### Fixes
 
