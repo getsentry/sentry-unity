@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Behavioural Changes
+
+- The SDK no longer sets tags automatically. The promotion of contexts to tags now happens exclusively in Sentry. The `Unity` context got extended by `IsMainThread` for this. The tags `unity.device.unique_identifier` and `unity.gpu.supports_instancing` no longer exist and have no replacement. ([#2459](https://github.com/getsentry/sentry-unity/pull/2459))
+
 ### Breaking Changes
 
 - Renamed the option `AttachBreadcrumbsToEvents` to `AddBreadcrumbsWithStructuredLogs` to better reflect its purpose. The option controls if the SDK does BOTH: attach logs as breadcrumbs to events and send them as structured logs ([#2455](https://github.com/getsentry/sentry-unity/pull/2455))
