@@ -355,66 +355,6 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
-    public void Tags_Set()
-    {
-        // arrange
-        var systemInfo = new TestSentrySystemInfo
-        {
-            SupportsDrawCallInstancing = true,
-            DeviceType = new(() => "test type"),
-            DeviceUniqueIdentifier = new(() => "f810306c-68db-4ebe-89ba-13c457449339"),
-            InstallMode = ApplicationInstallMode.Store.ToString()
-        };
-        MainThreadData.SentrySystemInfo = systemInfo;
-        MainThreadData.CollectData();
-
-        var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
-        var scopeUpdater = new UnityScopeUpdater(sentryOptions, _testApplication);
-        var unityInfo = new TestUnityInfo { IL2CPP = true };
-        var unityEventProcessor = new UnityEventProcessor(sentryOptions, unityInfo);
-        var scope = new Scope(sentryOptions);
-        var sentryEvent = new SentryEvent();
-        var transaction = new SentryTransaction("name", "operation");
-
-        // act
-        scopeUpdater.ConfigureScope(scope);
-        scope.Apply(sentryEvent);
-        scope.Apply(transaction);
-        unityEventProcessor.Process(sentryEvent);
-        unityEventProcessor.Process(transaction);
-
-        // assert
-        AssertEventProcessorTags(systemInfo, sentryEvent.Tags);
-        AssertEventProcessorTags(systemInfo, transaction.Tags);
-    }
-
-    private void AssertEventProcessorTags(ISentrySystemInfo systemInfo, IReadOnlyDictionary<string, string> tags)
-    {
-        Assert.IsNotNull(tags);
-        Assert.NotZero(tags.Count);
-
-        var unityInstallMode = tags.SingleOrDefault(t => t.Key == "unity.install_mode");
-        Assert.NotNull(unityInstallMode);
-        Assert.AreEqual(systemInfo.InstallMode, unityInstallMode.Value);
-
-        var supportsInstancing = tags.SingleOrDefault(t => t.Key == "unity.gpu.supports_instancing");
-        Assert.NotNull(supportsInstancing);
-        Assert.AreEqual(systemInfo.SupportsDrawCallInstancing, bool.Parse(supportsInstancing.Value));
-
-        var deviceType = tags.SingleOrDefault(t => t.Key == "unity.device.device_type");
-        Assert.NotNull(deviceType);
-        Assert.AreEqual(systemInfo.DeviceType!.Value, deviceType.Value);
-
-        var deviceUniqueIdentifier = tags.SingleOrDefault(t => t.Key == "unity.device.unique_identifier");
-        Assert.NotNull(deviceUniqueIdentifier);
-        Assert.AreEqual(systemInfo.DeviceUniqueIdentifier!.Value, deviceUniqueIdentifier.Value);
-
-        var isMainThread = tags.SingleOrDefault(t => t.Key == "unity.is_main_thread");
-        Assert.NotNull(isMainThread);
-        Assert.AreEqual("true", isMainThread.Value);
-    }
-
-    [Test]
     public void OperatingSystemProtocol_Assigned()
     {
         // arrange

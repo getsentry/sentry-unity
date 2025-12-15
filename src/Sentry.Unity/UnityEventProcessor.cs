@@ -59,8 +59,6 @@ internal class UnityEventProcessor :
             // Populating the SDK Integrations here (for now) instead of UnityScopeIntegration because it cannot be guaranteed
             // that it got added last or that there was not an integration added at a later point
             PopulateSdkIntegrations(sentryEvent.Sdk);
-            // TODO revisit which tags we should be adding by default
-            sentryEvent.SetTag("unity.is_main_thread", MainThreadData.IsMainThread().ToTagValue());
         }
         catch (Exception exception)
         {
@@ -117,6 +115,8 @@ internal class UnityEventProcessor :
 
     private void PopulateUnity(Protocol.Unity unity)
     {
+        unity.IsMainThread = MainThreadData.IsMainThread();
+
         if (!MainThreadData.IsMainThread())
         {
             return;
@@ -136,9 +136,4 @@ internal class UnityEventProcessor :
             sdkVersion.AddIntegration(integrationName);
         }
     }
-}
-
-internal static class TagValueNormalizer
-{
-    internal static string ToTagValue(this bool value) => value ? "true" : "false";
 }

@@ -18,7 +18,7 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             options.Enabled = false;
         }
 
-        // BeforeSend is currently limited to C# code. Native errors - such as crashes in C/C++ code - are getting 
+        // BeforeSend is currently limited to C# code. Native errors - such as crashes in C/C++ code - are getting
         // captured by the native SDKs, but the native SDKs won't invoke this callback.
         options.SetBeforeSend((sentryEvent, _) =>
         {
@@ -31,13 +31,24 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             return sentryEvent;
         });
 
+        options.SetBeforeSendLog(log =>
+        {
+            // You can filter logs based on tags
+            if (log.Message.StartsWith("Sensitive:"))
+            {
+                return null;
+            }
+
+            return log;
+        });
+
         // Native SDK initialization timing options:
         // Build-time initialization:
         //   + Can capture Unity engine errors
         //   - Options are fixed at build time
         // Runtime initialization:
         //   + Allows dynamic configuration
-        //   - May miss some early errors
+        //   - Miss some early errors that happen before the SDK initialized
 #if UNITY_ANDROID
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
 #elif UNITY_IOS
