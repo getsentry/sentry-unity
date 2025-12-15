@@ -32,7 +32,7 @@ public sealed class Unity : ISentryJsonSerializable
     /// <summary>
     /// Whether this was happening on the main thread or not.
     /// </summary>
-    public string? IsMainThread { get; set; }
+    public bool? IsMainThread { get; set; }
 
     /// <summary>
     /// Support for various copy texture cases.
@@ -89,9 +89,9 @@ public sealed class Unity : ISentryJsonSerializable
             writer.WriteString("install_mode", InstallMode);
         }
 
-        if (!string.IsNullOrWhiteSpace(IsMainThread))
+        if (IsMainThread is not null)
         {
-            writer.WriteString("is_main_thread", IsMainThread);
+            writer.WriteBoolean("is_main_thread", IsMainThread.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(CopyTextureSupport))
@@ -122,7 +122,7 @@ public sealed class Unity : ISentryJsonSerializable
         {
             EditorVersion = json.GetPropertyOrNull("editor_version")?.GetString(),
             InstallMode = json.GetPropertyOrNull("install_mode")?.GetString(),
-            IsMainThread = json.GetPropertyOrNull("is_main_thread")?.GetString(),
+            IsMainThread = json.GetPropertyOrNull("is_main_thread")?.GetBoolean(),
             CopyTextureSupport = json.GetPropertyOrNull("copy_texture_support")?.GetString(),
             RenderingThreadingMode = json.GetPropertyOrNull("rendering_threading_mode")?.GetString(),
             TargetFrameRate = json.GetPropertyOrNull("target_frame_rate")?.GetString(),

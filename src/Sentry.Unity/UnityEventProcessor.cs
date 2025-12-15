@@ -115,7 +115,7 @@ internal class UnityEventProcessor :
 
     private void PopulateUnity(Protocol.Unity unity)
     {
-        unity.IsMainThread = MainThreadData.IsMainThread().ToTagValue();
+        unity.IsMainThread = MainThreadData.IsMainThread();
 
         if (!MainThreadData.IsMainThread())
         {
@@ -136,9 +136,4 @@ internal class UnityEventProcessor :
             sdkVersion.AddIntegration(integrationName);
         }
     }
-}
-
-internal static class TagValueNormalizer
-{
-    internal static string ToTagValue(this bool value) => value ? "true" : "false";
 }
