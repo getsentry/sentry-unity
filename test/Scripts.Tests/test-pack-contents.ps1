@@ -41,9 +41,9 @@ try {
         Write-Host "Differences found:" -ForegroundColor Yellow
         foreach ($difference in $result) {
             if ($difference.SideIndicator -eq "<=") {
-                Write-Host "In snapshot but not in package: $($difference.InputObject)" -ForegroundColor Cyan
-            } elseif ($difference.SideIndicator -eq "=>") {
                 Write-Host "In package but not in snapshot: $($difference.InputObject)" -ForegroundColor Red
+            } elseif ($difference.SideIndicator -eq "=>") {
+                Write-Host "In snapshot but not in package: $($difference.InputObject)" -ForegroundColor Cyan
             }
         }
 
