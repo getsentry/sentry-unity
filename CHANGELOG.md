@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+- Renamed the option `AttachBreadcrumbsToEvents` to `AddBreadcrumbsWithStructuredLogs` to better reflect its purpose. The option controls if the SDK does BOTH: attach logs as breadcrumbs to events and send them as structured logs ([#2455](https://github.com/getsentry/sentry-unity/pull/2455))
+
 ### Dependencies
 
 - Bump .NET SDK from v6.0.0-rc.1-3-g7cabf7c5 to v6.0.0 ([#2456](https://github.com/getsentry/sentry-unity/pull/2456))

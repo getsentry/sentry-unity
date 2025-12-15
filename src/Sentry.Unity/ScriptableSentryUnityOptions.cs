@@ -65,7 +65,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool StructuredLogOnDebugLogError { get; set; } = true;
     [field: SerializeField] public bool StructuredLogOnDebugLogException { get; set; } = true;
 
-    [field: SerializeField] public bool AttachBreadcrumbsToEvents { get; set; } = false;
+    [field: SerializeField] public bool AddBreadcrumbsWithStructuredLogs { get; set; } = false;
 
     [field: SerializeField] public bool BreadcrumbsForLogs { get; set; } = true;
     [field: SerializeField] public bool BreadcrumbsForWarnings { get; set; } = true;
@@ -204,7 +204,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 [LogType.Error] = StructuredLogOnDebugLogError,
                 [LogType.Exception] = StructuredLogOnDebugLogException
             },
-            AttachBreadcrumbsToEvents = AttachBreadcrumbsToEvents
+            AddBreadcrumbsWithStructuredLogs = AddBreadcrumbsWithStructuredLogs
         };
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
