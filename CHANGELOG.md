@@ -4,6 +4,9 @@
 
 ### Dependencies
 
+- Bump .NET SDK from v6.0.0-rc.1-3-g7cabf7c5 to v6.0.0 ([#2456](https://github.com/getsentry/sentry-unity/pull/2456))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#600)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.0.0-rc.1-3-g7cabf7c5...6.0.0)
 - Bump Cocoa SDK from v9.0.0 to v9.1.0 ([#2454](https://github.com/getsentry/sentry-unity/pull/2454))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#910)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.0.0...9.1.0)
