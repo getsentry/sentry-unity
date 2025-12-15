@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Behavioural Changes
+
+- The SDK no longer sets tags automatically. The promotion of contexts to tags now happens exclusively in Sentry. The `Unity` context got extended by `IsMainThread` for this. The tags `unity.device.unique_identifier` and `unity.gpu.supports_instancing` no longer exist and have no replacement. ([#2459](https://github.com/getsentry/sentry-unity/pull/2459))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.0.0 to v9.1.0 ([#2454](https://github.com/getsentry/sentry-unity/pull/2454))
