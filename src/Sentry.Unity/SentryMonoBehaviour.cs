@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using Sentry.Internal;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -42,8 +43,13 @@ public partial class SentryMonoBehaviour : MonoBehaviour, ISentryMonoBehaviour
 /// </summary>
 public partial class SentryMonoBehaviour
 {
-    public void StartAwakeSpan(MonoBehaviour monoBehaviour) =>
-        SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
+    private const string AwakeSpanOrigin = "auto.ui.unity";
+
+    public void StartAwakeSpan(MonoBehaviour monoBehaviour)
+    {
+        var span = SentrySdk.GetSpan()?.StartChild("awake", $"{monoBehaviour.gameObject.name}.{monoBehaviour.GetType().Name}");
+        span?.SetOrigin(AwakeSpanOrigin);
+    }
 
     public void FinishAwakeSpan() => SentrySdk.GetSpan()?.Finish(SpanStatus.Ok);
 }
