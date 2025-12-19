@@ -15,6 +15,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
     private IHub? _hub;
     private SentryUnityOptions _options = null!; // Set during register
     private ILogHandler _unityLogHandler = null!; // Set during register
+    private SentryStructuredLogger _structuredLogger = null!; // Set during register
 
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
@@ -61,6 +62,12 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         // https://docs.sentry.io/platforms/unity/troubleshooting/#unhandled-exceptions---debuglogexception
         exception.SetSentryMechanism("Unity.LogException", handled: false, terminal: false);
         _ = _hub.CaptureException(exception);
+
+        if (_options.CaptureStructuredLogsForLogType.TryGetValue(LogType.Exception, out var captureException) && captureException)
+        {
+            _options.LogDebug("Capturing structured log message of type '{0}'.", LogType.Exception);
+            _structuredLogger.LogError(exception.Message);
+        }
     }
 
     public void LogFormat(LogType logType, UnityEngine.Object? context, string format, params object[] args)
