@@ -6,6 +6,12 @@
 
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
 
+### Dependencies
+
+- Bump Java SDK from v8.28.0 to v8.29.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8290)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.29.0)
+
 ## 4.0.0
 
 ### Breaking Changes
