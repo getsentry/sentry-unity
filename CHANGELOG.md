@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
+
 ## 4.0.0
 
 ### Breaking Changes
