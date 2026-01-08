@@ -22,6 +22,8 @@
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/</SentryLinuxArtifactsDestination>
+    <SentryLinuxX64ArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/x86_64/</SentryLinuxX64ArtifactsDestination>
+    <SentryLinuxArm64ArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/arm64/</SentryLinuxArm64ArtifactsDestination>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
@@ -174,8 +176,11 @@ Expected to exist:
 
   <Target Name="CleanLinuxSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxArtifactsDestination)libsentry.so" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeRoot)build-arm64/" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxX64ArtifactsDestination)libsentry.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxX64ArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArm64ArtifactsDestination)libsentry.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArm64ArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -297,20 +302,48 @@ Expected to exist:
   <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
   <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Linux'))
-          And !Exists('$(SentryLinuxArtifactsDestination)libsentry.so')" BeforeTargets="BeforeBuild">
+          And !Exists('$(SentryLinuxX64ArtifactsDestination)libsentry.so')" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Linux." />
+    <!-- ===== x86_64 Build ===== -->
+    <Message Importance="High" Text="Building Sentry Native SDK for Linux x86_64." />
 
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
 
-    <MakeDir Directories="$(SentryLinuxArtifactsDestination)"/>
+    <MakeDir Directories="$(SentryLinuxX64ArtifactsDestination)"/>
 
     <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArtifactsDestination)libsentry.so" />
-    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
-    <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxX64ArtifactsDestination)libsentry.so" />
+    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxX64ArtifactsDestination)libsentry.dbg.so" />
+    <Exec WorkingDirectory="$(SentryLinuxX64ArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
+
+    <!-- ===== ARM64 Build (cross-compilation) ===== -->
+    <!-- Check for cross-compiler availability -->
+    <Exec Command="which aarch64-linux-gnu-gcc" IgnoreExitCode="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ExitCode" PropertyName="Arm64ToolchainCheckExitCode"/>
+    </Exec>
+
+    <Message Condition="'$(Arm64ToolchainCheckExitCode)' != '0'" Importance="High"
+             Text="Skipping Linux ARM64 build: aarch64-linux-gnu-gcc not found." />
+
+    <Message Condition="'$(Arm64ToolchainCheckExitCode)' == '0'" Importance="High"
+             Text="Building Sentry Native SDK for Linux ARM64." />
+
+    <Exec Condition="'$(Arm64ToolchainCheckExitCode)' == '0'" WorkingDirectory="$(SentryNativeRoot)"
+          Command="cmake -B build-arm64 -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -D CMAKE_SYSTEM_NAME=Linux -D CMAKE_SYSTEM_PROCESSOR=aarch64 -D CMAKE_C_COMPILER=aarch64-linux-gnu-gcc -D CMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -S ." />
+    <Exec Condition="'$(Arm64ToolchainCheckExitCode)' == '0'" WorkingDirectory="$(SentryNativeRoot)"
+          Command="cmake --build build-arm64 --target sentry --parallel" />
+
+    <MakeDir Condition="'$(Arm64ToolchainCheckExitCode)' == '0'" Directories="$(SentryLinuxArm64ArtifactsDestination)"/>
+
+    <Exec Condition="'$(Arm64ToolchainCheckExitCode)' == '0'" WorkingDirectory="$(SentryNativeRoot)"
+          Command="aarch64-linux-gnu-strip -s build-arm64/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArm64ArtifactsDestination)libsentry.so" />
+    <Copy Condition="'$(Arm64ToolchainCheckExitCode)' == '0'"
+          SourceFiles="$(SentryNativeRoot)build-arm64/libsentry.so"
+          DestinationFiles="$(SentryLinuxArm64ArtifactsDestination)libsentry.dbg.so" />
+    <Exec Condition="'$(Arm64ToolchainCheckExitCode)' == '0'" WorkingDirectory="$(SentryLinuxArm64ArtifactsDestination)"
+          Command="aarch64-linux-gnu-objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
