@@ -74,8 +74,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
-          # ARM64 cross-compilation toolchain
+          # ARM64 cross-compilation toolchain and libraries
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+          sudo apt-get install -y libc6-dev-arm64-cross libc6-arm64-cross
           set -eo pipefail
           curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
           echo "/usr/share/dotnet" >> $GITHUB_PATH
