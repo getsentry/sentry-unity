@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
+
 ### Dependencies
 
 - Bump Java SDK from v8.28.0 to v8.29.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462))

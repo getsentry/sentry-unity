@@ -1,5 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Internal;
 using UnityEngine;
 
 namespace Sentry.Unity.Integrations;
@@ -7,6 +8,8 @@ namespace Sentry.Unity.Integrations;
 internal class StartupTracingIntegration : ISdkIntegration
 {
     private const string StartupTransactionOperation = "app.start";
+    private const string StartupTransactionOrigin = "auto.app.start";
+    private const string StartupSpanOrigin = "auto.app.start.unity";
     internal static ISpan? InitSpan;
     private const string InitSpanOperation = "runtime.init";
     internal static ISpan? SubSystemRegistrationSpan;
@@ -62,12 +65,15 @@ internal class StartupTracingIntegration : ISdkIntegration
 
         var runtimeStartTransaction =
             SentrySdk.StartTransaction("runtime.initialization", StartupTransactionOperation);
+        runtimeStartTransaction.SetOrigin(StartupTransactionOrigin);
         SentrySdk.ConfigureScope(scope => scope.Transaction = runtimeStartTransaction);
 
         Logger?.LogDebug("Creating '{0}' span.", InitSpanOperation);
         InitSpan = runtimeStartTransaction.StartChild(InitSpanOperation, "runtime initialization");
+        InitSpan.SetOrigin(StartupSpanOrigin);
         Logger?.LogDebug("Creating '{0}' span.", SubSystemSpanOperation);
         SubSystemRegistrationSpan = InitSpan.StartChild(SubSystemSpanOperation, "subsystem registration");
+        SubSystemRegistrationSpan.SetOrigin(StartupSpanOrigin);
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
@@ -83,6 +89,7 @@ internal class StartupTracingIntegration : ISdkIntegration
 
         Logger?.LogDebug("Creating '{0}' span.", AfterAssembliesSpanOperation);
         AfterAssembliesSpan = InitSpan?.StartChild(AfterAssembliesSpanOperation, "after assemblies");
+        AfterAssembliesSpan?.SetOrigin(StartupSpanOrigin);
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
@@ -98,6 +105,7 @@ internal class StartupTracingIntegration : ISdkIntegration
 
         Logger?.LogDebug("Creating '{0}' span.", SplashScreenSpanOperation);
         SplashScreenSpan = InitSpan?.StartChild(SplashScreenSpanOperation, "splashscreen");
+        SplashScreenSpan?.SetOrigin(StartupSpanOrigin);
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -113,6 +121,7 @@ internal class StartupTracingIntegration : ISdkIntegration
 
         Logger?.LogDebug("Creating '{0}' span.", FirstSceneLoadSpanOperation);
         FirstSceneLoadSpan = InitSpan?.StartChild(FirstSceneLoadSpanOperation, "first scene load");
+        FirstSceneLoadSpan?.SetOrigin(StartupSpanOrigin);
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
