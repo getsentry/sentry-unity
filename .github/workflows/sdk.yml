@@ -107,26 +107,22 @@ jobs:
       
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        shell: bash
+        shell: pwsh
         run: |
-          if [[ "$TARGET" == "Linux" || "$TARGET" == "LinuxArm64" ]]; then
+          if ($env:TARGET -eq "Linux" -or $env:TARGET -eq "LinuxArm64") {
             dotnet msbuild /t:BuildLinuxSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          else
-            dotnet msbuild /t:Build${TARGET}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
-          fi
+          } else {
+            dotnet msbuild /t:Build$($env:TARGET)SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          }
 
       - name: Move Linux artifacts to arch folder
         if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxArm64') && steps.cache.outputs.cache-hit != 'true' }}
-        shell: bash
+        shell: pwsh
         run: |
-          if [[ "$TARGET" == "Linux" ]]; then
-            ARCH_FOLDER="x86_64"
-          else
-            ARCH_FOLDER="arm64"
-          fi
-          mkdir -p package-dev/Plugins/Linux/${ARCH_FOLDER}
-          mv package-dev/Plugins/Linux/libsentry.so package-dev/Plugins/Linux/${ARCH_FOLDER}/
-          mv package-dev/Plugins/Linux/libsentry.dbg.so package-dev/Plugins/Linux/${ARCH_FOLDER}/
+          $archFolder = if ($env:TARGET -eq "Linux") { "x86_64" } else { "arm64" }
+          New-Item -ItemType Directory -Force -Path "package-dev/Plugins/Linux/$archFolder"
+          Move-Item "package-dev/Plugins/Linux/libsentry.so" "package-dev/Plugins/Linux/$archFolder/"
+          Move-Item "package-dev/Plugins/Linux/libsentry.dbg.so" "package-dev/Plugins/Linux/$archFolder/"
 
       - name: Upload build logs on failure
         # No build logs for Cocoa SDK as we assemble the xcframework from a downloaded release artifact
