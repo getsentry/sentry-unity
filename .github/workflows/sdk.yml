@@ -121,8 +121,8 @@ jobs:
         run: |
           $archFolder = if ($env:TARGET -eq "Linux") { "x86_64" } else { "arm64" }
           New-Item -ItemType Directory -Force -Path "package-dev/Plugins/Linux/$archFolder"
-          Move-Item "package-dev/Plugins/Linux/libsentry.so" "package-dev/Plugins/Linux/$archFolder/"
-          Move-Item "package-dev/Plugins/Linux/libsentry.dbg.so" "package-dev/Plugins/Linux/$archFolder/"
+          Move-Item "package-dev/Plugins/Linux/Sentry/libsentry.so" "package-dev/Plugins/Linux/Sentry/$archFolder/"
+          Move-Item "package-dev/Plugins/Linux/Sentry/libsentry.dbg.so" "package-dev/Plugins/Linux/Sentry/$archFolder/"
 
       - name: Upload build logs on failure
         # No build logs for Cocoa SDK as we assemble the xcframework from a downloaded release artifact

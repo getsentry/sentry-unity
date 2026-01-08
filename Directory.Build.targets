@@ -21,9 +21,7 @@
     <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)Android/Sentry~/</SentryAndroidArtifactsDestination>
     <!-- Native -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
-    <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/</SentryLinuxArtifactsDestination>
-    <SentryLinuxX64ArtifactsDestination>$(SentryArtifactsDestination)Linux/x86_64/</SentryLinuxX64ArtifactsDestination>
-    <SentryLinuxArm64ArtifactsDestination>$(SentryArtifactsDestination)Linux/arm64/</SentryLinuxArm64ArtifactsDestination>
+    <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/</SentryLinuxArtifactsDestination>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
@@ -177,10 +175,7 @@ Expected to exist:
   <Target Name="CleanLinuxSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryNativeRoot)build-arm64/" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxX64ArtifactsDestination)libsentry.so" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxX64ArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxArm64ArtifactsDestination)libsentry.so" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxArm64ArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryLinuxArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
