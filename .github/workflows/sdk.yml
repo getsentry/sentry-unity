@@ -53,8 +53,8 @@ jobs:
             cp -r package-dev/Plugins/iOS sdk-static/ || echo "never mind, no iOS files checked in..."
             cp -r package-dev/Plugins/macOS sdk-static/ || echo "never mind, no macOS files checked in..."
           elif [[ "${{ env.TARGET }}" == "LinuxArm64" ]]; then
-            mkdir -p sdk-static/Linux
-            cp -r package-dev/Plugins/Linux/arm64 sdk-static/Linux/ || echo "never mind, no arm64 files checked in..."
+            mkdir -p sdk-static/Linux/Sentry
+            cp -r package-dev/Plugins/Linux/Sentry/arm64 sdk-static/Linux/Sentry/ || echo "never mind, no arm64 files checked in..."
           else
             cp -r package-dev/Plugins/${{ env.TARGET }} sdk-static || echo "never mind, no files checked in..."
           fi
@@ -147,7 +147,7 @@ jobs:
         if: ${{ env.TARGET == 'LinuxArm64' }}
         with:
           name: ${{ env.TARGET }}-sdk
-          path: package-dev/Plugins/Linux/arm64
+          path: package-dev/Plugins/Linux/Sentry/arm64
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
