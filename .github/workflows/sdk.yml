@@ -120,7 +120,7 @@ jobs:
         shell: pwsh
         run: |
           $archFolder = if ($env:TARGET -eq "Linux") { "x86_64" } else { "arm64" }
-          New-Item -ItemType Directory -Force -Path "package-dev/Plugins/Linux/$archFolder"
+          New-Item -ItemType Directory -Force -Path "package-dev/Plugins/Linux/Sentry/$archFolder"
           Move-Item "package-dev/Plugins/Linux/Sentry/libsentry.so" "package-dev/Plugins/Linux/Sentry/$archFolder/"
           Move-Item "package-dev/Plugins/Linux/Sentry/libsentry.dbg.so" "package-dev/Plugins/Linux/Sentry/$archFolder/"
 
