@@ -300,41 +300,22 @@ Expected to exist:
   </Target>
 
   <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
+  <!-- Outputs to Linux/ directory - CI moves to arch-specific folder -->
   <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-          And $([MSBuild]::IsOsPlatform('Linux'))
-          And !Exists('$(SentryLinuxX64ArtifactsDestination)libsentry.so')" BeforeTargets="BeforeBuild">
+          And $([MSBuild]::IsOsPlatform('Linux'))">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <!-- ===== x86_64 Build ===== -->
-    <Message Importance="High" Text="Building Sentry Native SDK for Linux x86_64." />
+    <Message Importance="High" Text="Building Sentry Native SDK for Linux." />
 
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
 
-    <MakeDir Directories="$(SentryLinuxX64ArtifactsDestination)"/>
+    <MakeDir Directories="$(SentryLinuxArtifactsDestination)"/>
 
     <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxX64ArtifactsDestination)libsentry.so" />
-    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxX64ArtifactsDestination)libsentry.dbg.so" />
-    <Exec WorkingDirectory="$(SentryLinuxX64ArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
-  </Target>
-
-  <!-- Build the Sentry Native SDK for Linux ARM64: dotnet msbuild /t:BuildLinuxArm64SDK src/Sentry.Unity -->
-  <Target Name="BuildLinuxArm64SDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-          And $([MSBuild]::IsOsPlatform('Linux'))
-          And !Exists('$(SentryLinuxArm64ArtifactsDestination)libsentry.so')">
-    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
-
-    <Message Importance="High" Text="Building Sentry Native SDK for Linux ARM64." />
-
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
-
-    <MakeDir Directories="$(SentryLinuxArm64ArtifactsDestination)"/>
-
-    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArm64ArtifactsDestination)libsentry.so" />
-    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxArm64ArtifactsDestination)libsentry.dbg.so" />
-    <Exec WorkingDirectory="$(SentryLinuxArm64ArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArtifactsDestination)libsentry.so" />
+    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
+    <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
   </Target>
 
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.

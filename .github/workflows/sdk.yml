@@ -107,7 +107,25 @@ jobs:
       
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        shell: bash
+        run: |
+          if [[ "$TARGET" == "Linux" || "$TARGET" == "LinuxArm64" ]]; then
+            dotnet msbuild /t:BuildLinuxSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          else
+            dotnet msbuild /t:Build${TARGET}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          fi
+
+      - name: Move Linux artifacts to arch folder
+        if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxArm64') && steps.cache.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          if [[ "$TARGET" == "Linux" ]]; then
+            ARCH_FOLDER="x86_64"
+          else
+            ARCH_FOLDER="arm64"
+          fi
+          mv package-dev/Plugins/Linux/libsentry.so package-dev/Plugins/Linux/${ARCH_FOLDER}/
+          mv package-dev/Plugins/Linux/libsentry.dbg.so package-dev/Plugins/Linux/${ARCH_FOLDER}/
 
       - name: Upload build logs on failure
         # No build logs for Cocoa SDK as we assemble the xcframework from a downloaded release artifact
