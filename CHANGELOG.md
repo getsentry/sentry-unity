@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added support for Linux ARM64 ([#2470](https://github.com/getsentry/sentry-unity/pull/2470))
+
 ### Dependencies
 
 - Bump Java SDK from v8.28.0 to v8.29.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462))
