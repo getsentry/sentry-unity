@@ -13,7 +13,7 @@ Sentry SDK for Unity
 ===========
 
 [![build](https://github.com/getsentry/sentry-unity/workflows/CI/badge.svg?branch=main)](https://github.com/getsentry/sentry-unity/actions?query=branch%3Amain)
-[![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/PXa5Apfe7K)
+[![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/sentry)
 
 ## Install
 
@@ -38,7 +38,7 @@ Blog posts:
 
 ## Setup Sentry SDK with Unity
 
-[![YouTube Video of Setup Sentry SDK with Unity](https://img.youtube.com/vi/YKCRSA7TOc/0.jpg)](https://www.youtube.com/watch?v=-YKCRSA7TOc)
+[![YouTube Video of Setup Sentry SDK with Unity](https://img.youtube.com/vi/-YKCRSA7TOc/0.jpg)](https://www.youtube.com/watch?v=-YKCRSA7TOc)
 
 ## Supported Unity Versions
 
@@ -52,6 +52,6 @@ If you're using Unity 5.6 or 2018, these are not supported by this SDK. Sentry o
 
 * [![Documentation](https://img.shields.io/badge/documentation-sentry.io-green.svg)](https://docs.sentry.io/platforms/unity/)
 * [![Discussions](https://img.shields.io/github/discussions/getsentry/sentry-unity.svg)](https://github.com/getsentry/sentry-unity/discussions)
-* [![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/PXa5Apfe7K)  
+* [![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/sentry)  
 * [![Stack Overflow](https://img.shields.io/badge/stack%20overflow-sentry-green.svg)](http://stackoverflow.com/questions/tagged/sentry)
 * [![X Follow](https://img.shields.io/twitter/follow/sentry?label=sentry&style=social)](https://x.com/intent/follow?screen_name=sentry)
