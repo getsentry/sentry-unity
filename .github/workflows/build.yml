@@ -102,6 +102,13 @@ jobs:
           path: package-dev/Plugins/Linux
           wait-timeout: 3600
 
+      - name: Download Linux ARM64 SDK
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
+        with:
+          name: LinuxArm64-sdk
+          path: package-dev/Plugins/Linux/Sentry/arm64
+          wait-timeout: 3600
+
       - name: Download Windows SDK
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:

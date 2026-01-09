@@ -52,6 +52,9 @@ jobs:
           if [[ "${{ env.TARGET }}" == "Cocoa" ]]; then
             cp -r package-dev/Plugins/iOS sdk-static/ || echo "never mind, no iOS files checked in..."
             cp -r package-dev/Plugins/macOS sdk-static/ || echo "never mind, no macOS files checked in..."
+          elif [[ "${{ env.TARGET }}" == "LinuxArm64" ]]; then
+            mkdir -p sdk-static/Linux/Sentry
+            cp -r package-dev/Plugins/Linux/Sentry/arm64 sdk-static/Linux/Sentry/ || echo "never mind, no arm64 files checked in..."
           else
             cp -r package-dev/Plugins/${{ env.TARGET }} sdk-static || echo "never mind, no files checked in..."
           fi
@@ -80,6 +83,18 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
 
+      - name: Installing Linux ARM64 Dependencies
+        if: ${{ env.TARGET == 'LinuxArm64' && steps.cache.outputs.cache-hit != 'true' }}
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zlib1g-dev libcurl4-openssl-dev libssl-dev build-essential cmake curl
+          set -eo pipefail
+          curl -sSL --retry 5 https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0 --install-dir /usr/share/dotnet
+          echo "/usr/share/dotnet" >> $GITHUB_PATH
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
       - name: Install .NET SDK
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
@@ -92,7 +107,22 @@ jobs:
       
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        shell: pwsh
+        run: |
+          if ($env:TARGET -eq "Linux" -or $env:TARGET -eq "LinuxArm64") {
+            dotnet msbuild /t:BuildLinuxSDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          } else {
+            dotnet msbuild /t:Build$($env:TARGET)SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          }
+
+      - name: Move Linux artifacts to arch folder
+        if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxArm64') && steps.cache.outputs.cache-hit != 'true' }}
+        shell: pwsh
+        run: |
+          $archFolder = if ($env:TARGET -eq "Linux") { "x86_64" } else { "arm64" }
+          New-Item -ItemType Directory -Force -Path "package-dev/Plugins/Linux/Sentry/$archFolder"
+          Move-Item "package-dev/Plugins/Linux/Sentry/libsentry.so" "package-dev/Plugins/Linux/Sentry/$archFolder/"
+          Move-Item "package-dev/Plugins/Linux/Sentry/libsentry.dbg.so" "package-dev/Plugins/Linux/Sentry/$archFolder/"
 
       - name: Upload build logs on failure
         # No build logs for Cocoa SDK as we assemble the xcframework from a downloaded release artifact
@@ -114,7 +144,15 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: ${{ env.TARGET != 'Cocoa' }}
+        if: ${{ env.TARGET == 'LinuxArm64' }}
+        with:
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/Linux/Sentry/arm64
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ env.TARGET != 'Cocoa' && env.TARGET != 'LinuxArm64' }}
         with:
           name: ${{ env.TARGET }}-sdk
           path: package-dev/Plugins/${{ env.TARGET }}

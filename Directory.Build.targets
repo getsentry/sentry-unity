@@ -174,8 +174,8 @@ Expected to exist:
 
   <Target Name="CleanLinuxSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryNativeRoot)build/" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxArtifactsDestination)libsentry.so" ContinueOnError="true" />
-    <Delete Files="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryNativeRoot)build-arm64/" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryLinuxArtifactsDestination)" ContinueOnError="true" />
   </Target>
 
   <Target Name="CleanWindowsSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
@@ -295,12 +295,12 @@ Expected to exist:
   </Target>
 
   <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
+  <!-- Outputs to Linux/ directory - CI moves to arch-specific folder -->
   <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-          And $([MSBuild]::IsOsPlatform('Linux'))
-          And !Exists('$(SentryLinuxArtifactsDestination)libsentry.so')" BeforeTargets="BeforeBuild">
+          And $([MSBuild]::IsOsPlatform('Linux'))">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
-    <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Linux." />
+    <Message Importance="High" Text="Building Sentry Native SDK for Linux." />
 
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
@@ -600,6 +600,11 @@ void PrintFailedTests(XElement element)
     <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
     <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />
     <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;%(SDK.Identity)-sdk&quot; -D &quot;$(SentryArtifactsDestination)%(SDK.Identity)&quot;" />
+
+    <!-- LinuxArm64 artifact only contains the arm64 subfolder, so we download it directly into Linux/Sentry/arm64 -->
+    <Message Importance="High" Text="Downloading LinuxArm64 SDK into $(SentryArtifactsDestination)Linux/Sentry/arm64" />
+    <RemoveDir Directories="$(SentryArtifactsDestination)Linux/Sentry/arm64" />
+    <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;LinuxArm64-sdk&quot; -D &quot;$(SentryArtifactsDestination)Linux/Sentry/arm64&quot;" />
 
     <!-- Download overwrites some files that then show up as changed in the IDE, even though there are no changes, e.g. only whitespace -->
     <Message Importance="High" Text="Restoring package-dev/Plugins to the latest git commit" />
