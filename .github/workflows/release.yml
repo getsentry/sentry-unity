@@ -3,38 +3,19 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version to release
-        required: true
-      merge_target:
-        description: Target branch to merge into. Uses the default branch as a fallback (optional)
+        description: Version to release (or "auto")
         required: false
       force:
-        description: Force a release even when there are release-blockers (optional)
+        description: Force a release even when there are release-blockers
         required: false
-
+      merge_target:
+        description: Target branch to merge into
+        required: false
 jobs:
-  job_release:
-    runs-on: ubuntu-latest
-    name: 'Release a new version: ${{ github.event.inputs.version }}'
-    steps:
-      - name: Get auth token
-        id: token
-        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
-        with:
-          app-id: ${{ vars.SENTRY_RELEASE_BOT_CLIENT_ID }}
-          private-key: ${{ secrets.SENTRY_RELEASE_BOT_PRIVATE_KEY }}
-
-      - name: Check out current commit (${{ github.sha }})
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
-        with:
-          token: ${{ steps.token.outputs.token }}
-          fetch-depth: 0
-
-      - name: Prepare release ${{ github.event.inputs.version }}
-        uses: getsentry/action-prepare-release@3cea80dc3938c0baf5ec4ce752ecb311f8780cdc # v1
-        env:
-          GITHUB_TOKEN: ${{ steps.token.outputs.token }}
-        with:
-          version: ${{ github.event.inputs.version }}
-          force: ${{ github.event.inputs.force }}
-          merge_target: ${{ github.event.inputs.merge_target }}
+  release:
+    uses: getsentry/craft/.github/workflows/release.yml@v2
+    with:
+      version: ${{ inputs.version }}
+      force: ${{ inputs.force }}
+      merge_target: ${{ inputs.merge_target }}
+    secrets: inherit
