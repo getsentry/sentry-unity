@@ -17,10 +17,6 @@ defaults:
   run:
     shell: pwsh
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   build:
     name: Build - ${{ inputs.unity-version }}
@@ -31,7 +27,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8 # v1.3.0
