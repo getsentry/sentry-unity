@@ -238,6 +238,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool PlayStationNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether the SDK should add native support for Nintendo Switch
+    /// </summary>
+    public bool SwitchNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should add IL2CPP line number support
     /// </summary>
     /// <remarks>
@@ -502,7 +507,8 @@ public sealed class SentryUnityOptions : SentryOptions
             or RuntimePlatform.WebGLPlayer
             or RuntimePlatform.GameCoreXboxSeries
             or RuntimePlatform.GameCoreXboxOne
-            or RuntimePlatform.PS5;
+            or RuntimePlatform.PS5
+            or RuntimePlatform.Switch;
     }
 
     public override string ToString()
