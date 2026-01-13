@@ -250,7 +250,7 @@ internal static class SentryNativeBridge
     }
 
 #if SENTRY_NATIVE_PLAYSTATION
-    [DllImport("sentry", EntryPoint = "vsnprintf_sentry")]
+    [DllImport("__Internal", EntryPoint = "vsnprintf_sentry")]
     private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 #else
     // For Windows/Linux: use platform's native C library directly
