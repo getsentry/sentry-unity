@@ -6,6 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
+    <ProjectReference Include="../Sentry.Unity.Native/Sentry.Unity.Native.csproj" Private="false" />
   </ItemGroup>
 
 </Project>
