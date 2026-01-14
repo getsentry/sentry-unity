@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- When targeting Android, the capturing native SDK now has its name correctly set ([#2476](https://github.com/getsentry/sentry-unity/pull/2476))
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
 
 ### Dependencies
