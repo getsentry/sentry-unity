@@ -62,7 +62,7 @@ internal class ContentBasedThrottler : ILogThrottler
         if (!string.IsNullOrEmpty(stackTrace))
         {
             // Use first ~200 chars of stack trace for performance
-            var stackTracePrefix = stackTrace.Length > 200
+            var stackTracePrefix = stackTrace!.Length > 200
                 ? stackTrace.Substring(0, 200)
                 : stackTrace;
             hash ^= stackTracePrefix.GetHashCode();
