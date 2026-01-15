@@ -120,6 +120,37 @@ public class ContentBasedThrottlerTests
     }
 
     [Test]
+    public void ShouldCapture_UpdatingExpiredEntry_DoesNotEvict()
+    {
+        // Use a buffer of 3 to avoid cascading evictions affecting our test
+        var throttler = new ContentBasedThrottler(TimeSpan.FromMilliseconds(50), maxBufferSize: 3);
+
+        // Fill buffer with entries A, B, and C
+        throttler.ShouldCapture("message A", "stack", LogType.Error);
+        throttler.ShouldCapture("message B", "stack", LogType.Error);
+        throttler.ShouldCapture("message C", "stack", LogType.Error);
+
+        // Wait for entries to expire
+        System.Threading.Thread.Sleep(60);
+
+        // Update expired entry A - should NOT evict, just update timestamp
+        // If the bug existed, this would evict B, reducing buffer to 2
+        throttler.ShouldCapture("message A", "stack", LogType.Error);
+
+        // Add new entry D - this should evict B (the oldest after A was refreshed)
+        // Buffer should now contain: A, C, D
+        throttler.ShouldCapture("message D", "stack", LogType.Error);
+
+        // B was evicted so should be allowed again
+        var resultB = throttler.ShouldCapture("message B", "stack", LogType.Error);
+        // A was updated (not evicted), so should be throttled (timestamp was refreshed)
+        var resultA = throttler.ShouldCapture("message A", "stack", LogType.Error);
+
+        Assert.IsTrue(resultB, "Entry B should have been evicted and allowed again");
+        Assert.IsFalse(resultA, "Entry A should still be in buffer and throttled");
+    }
+
+    [Test]
     public void ShouldCapture_EmptyStackTrace_DoesNotThrow()
     {
         var throttler = new ContentBasedThrottler(TimeSpan.FromSeconds(10));

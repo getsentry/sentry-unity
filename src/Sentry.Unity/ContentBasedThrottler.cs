@@ -41,16 +41,15 @@ internal class ContentBasedThrottler : ILogThrottler
 
         lock (_lock)
         {
-            if (_hashTimestamps.TryGetValue(hash, out var lastSeen))
+            var existsInBuffer = _hashTimestamps.TryGetValue(hash, out var lastSeen);
+
+            if (existsInBuffer && now - lastSeen < _dedupeWindow)
             {
-                if (now - lastSeen < _dedupeWindow)
-                {
-                    return false; // Throttle - seen recently
-                }
+                return false; // Throttle - seen recently
             }
 
-            // LRU eviction if buffer full
-            if (_hashTimestamps.Count >= _maxBufferSize)
+            // LRU eviction only if adding a NEW entry and buffer is full
+            if (!existsInBuffer && _hashTimestamps.Count >= _maxBufferSize)
             {
                 EvictOldest();
             }
