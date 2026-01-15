@@ -141,5 +141,49 @@ internal static class LoggingTab
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
         }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        // Deprecated Log Debouncing section
+        {
+            EditorGUILayout.LabelField("Deprecated Settings", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "Log Debouncing is deprecated. Please use 'Enable Event Throttling' above instead. " +
+                "These settings will be removed in a future version.",
+                MessageType.Warning);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Enable Log Debouncing (Deprecated)", "The SDK debounces log messages of the " +
+                                                        "same type if they are more frequent than once per second."),
+                options.EnableLogDebouncing);
+
+            EditorGUI.indentLevel++;
+
+            options.DebounceTimeLog = EditorGUILayout.IntField(
+                new GUIContent("Log Debounce [ms]", "The time that has to pass between events of " +
+                                                    "LogType.Log before the SDK sends it again."),
+                options.DebounceTimeLog);
+            options.DebounceTimeLog = Math.Max(0, options.DebounceTimeLog);
+
+            options.DebounceTimeWarning = EditorGUILayout.IntField(
+                new GUIContent("Warning Debounce [ms]", "The time that has to pass between events of " +
+                                                        "LogType.Warning before the SDK sends it again."),
+                options.DebounceTimeWarning);
+            options.DebounceTimeWarning = Math.Max(0, options.DebounceTimeWarning);
+
+            options.DebounceTimeError = EditorGUILayout.IntField(
+                new GUIContent("Error Debounce [ms]", "The time that has to pass between events of " +
+                                                      "LogType.Assert, LogType.Exception and LogType.Error before " +
+                                                      "the SDK sends it again."),
+                options.DebounceTimeError);
+            options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
+
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
     }
 }

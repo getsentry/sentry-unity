@@ -32,6 +32,23 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool EnableLogThrottling { get; set; } = false;
     [field: SerializeField] public int LogThrottleDedupeWindow { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
+    // Deprecated debouncing properties - kept for backwards compatibility
+    [field: SerializeField]
+    [Obsolete("Use EnableLogThrottling instead. This property will be removed in a future version.")]
+    public bool EnableLogDebouncing { get; set; } = false;
+
+    [field: SerializeField]
+    [Obsolete("Use EnableLogThrottling and LogThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    public int DebounceTimeLog { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+
+    [field: SerializeField]
+    [Obsolete("Use EnableLogThrottling and LogThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    public int DebounceTimeWarning { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+
+    [field: SerializeField]
+    [Obsolete("Use EnableLogThrottling and LogThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    public int DebounceTimeError { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+
     [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
     [field: SerializeField] public bool AutoStartupTraces { get; set; } = true;
     [field: SerializeField] public bool AutoSceneLoadTraces { get; set; } = true;
