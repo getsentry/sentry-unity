@@ -14,7 +14,7 @@ namespace Sentry.Unity.Native;
 /// <see href="https://github.com/getsentry/sentry-native"/>
 internal static class SentryNativeBridge
 {
-#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
+#if SENTRY_NATIVE_SWITCH
     private const string SentryLib = "__Internal";
 #else
     private const string SentryLib = "sentry";
