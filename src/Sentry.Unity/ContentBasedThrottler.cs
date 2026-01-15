@@ -12,6 +12,7 @@ namespace Sentry.Unity;
 internal class ContentBasedThrottler : ILogThrottler
 {
     private readonly Dictionary<int, DateTimeOffset> _hashTimestamps = new();
+    private readonly object _lock = new();
     private readonly int _maxBufferSize;
     private readonly TimeSpan _dedupeWindow;
 
@@ -38,22 +39,25 @@ internal class ContentBasedThrottler : ILogThrottler
         var hash = ComputeHash(message, stackTrace);
         var now = DateTimeOffset.UtcNow;
 
-        if (_hashTimestamps.TryGetValue(hash, out var lastSeen))
+        lock (_lock)
         {
-            if (now - lastSeen < _dedupeWindow)
+            if (_hashTimestamps.TryGetValue(hash, out var lastSeen))
             {
-                return false; // Throttle - seen recently
+                if (now - lastSeen < _dedupeWindow)
+                {
+                    return false; // Throttle - seen recently
+                }
             }
-        }
 
-        // LRU eviction if buffer full
-        if (_hashTimestamps.Count >= _maxBufferSize)
-        {
-            EvictOldest();
-        }
+            // LRU eviction if buffer full
+            if (_hashTimestamps.Count >= _maxBufferSize)
+            {
+                EvictOldest();
+            }
 
-        _hashTimestamps[hash] = now;
-        return true; // Allow capture
+            _hashTimestamps[hash] = now;
+            return true; // Allow capture
+        }
     }
 
     private static int ComputeHash(string message, string? stackTrace)
