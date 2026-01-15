@@ -14,11 +14,17 @@ namespace Sentry.Unity.Native;
 /// <see href="https://github.com/getsentry/sentry-native"/>
 internal static class SentryNativeBridge
 {
+#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
+    private const string SentryLib = "__Internal";
+#else
+    private const string SentryLib = "sentry";
+#endif
+
     public static bool Init(SentryUnityOptions options)
     {
         _useLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
-            or RuntimePlatform.PS5;
+            or RuntimePlatform.PS5 or RuntimePlatform.Switch;
         _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
 
         var cOptions = sentry_options_new();
@@ -59,6 +65,10 @@ internal static class SentryNativeBridge
 
         var dir = GetCacheDirectory(options);
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
+#if SENTRY_NATIVE_SWITCH || SENTRY_NATIVE_PLAYSTATION
+        options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
+        sentry_options_set_database_path(cOptions, dir);
+#else
         if (_isWindows)
         {
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
@@ -69,6 +79,7 @@ internal static class SentryNativeBridge
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
             sentry_options_set_database_path(cOptions, dir);
         }
+#endif
 
         if (options.DiagnosticLogger is null)
         {
@@ -77,6 +88,10 @@ internal static class SentryNativeBridge
         }
         else
         {
+#if SENTRY_NATIVE_SWITCH
+            // Native logger not supported on Switch due to vsnprintf signature conflicts with Nintendo SDK
+            options.DiagnosticLogger.LogInfo("Native logger is not supported on Switch - skipping.");
+#else
             if (options.UnityInfo.IL2CPP)
             {
                 options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
@@ -87,6 +102,7 @@ internal static class SentryNativeBridge
             {
                 options.DiagnosticLogger.LogInfo("Passing the native logs back to the C# layer is not supported on Mono - skipping native logger.");
             }
+#endif
         }
 
         options.DiagnosticLogger?.LogDebug("Initializing sentry native");
@@ -106,54 +122,72 @@ internal static class SentryNativeBridge
 
     internal static string GetCacheDirectory(SentryUnityOptions options)
     {
+#if SENTRY_NATIVE_SWITCH
+        // On Switch, paths must use forward slashes and the format "mountname:/path"
+        // Application.persistentDataPath may return empty on Switch without save data configuration
+        const string defaultSwitchPath = "temp:/";
+
+        var basePath = options.CacheDirectoryPath;
+        if (string.IsNullOrEmpty(basePath))
+        {
+            options.DiagnosticLogger?.LogDebug(
+                "CacheDirectoryPath is empty on Switch. Using default: '{0}'. " +
+                "Ensure nn::fs::MountTemporaryStorage(\"temp\") is called before Sentry initializes.",
+                defaultSwitchPath);
+            basePath = defaultSwitchPath;
+        }
+
+        basePath = basePath.TrimEnd('/', '\\');
+        return basePath + "/.sentry-native";
+#else
         if (options.CacheDirectoryPath is null)
         {
             // same as the default of sentry-native
             return Path.Combine(Directory.GetCurrentDirectory(), ".sentry-native");
         }
-        else
-        {
-            return Path.Combine(options.CacheDirectoryPath, "SentryNative");
-        }
+        return Path.Combine(options.CacheDirectoryPath, "SentryNative");
+#endif
     }
 
     internal static void ReinstallBackend() => sentry_reinstall_backend();
 
     // libsentry.so
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern IntPtr sentry_options_new();
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_dsn(IntPtr options, string dsn);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_release(IntPtr options, string release);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_debug(IntPtr options, int debug);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_environment(IntPtr options, string environment);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_database_path(IntPtr options, string path);
 
-    [DllImport("sentry")]
+#if !SENTRY_NATIVE_SWITCH && !SENTRY_NATIVE_PLAYSTATION
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
+#endif
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
 
     // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
@@ -251,7 +285,7 @@ internal static class SentryNativeBridge
 #if SENTRY_NATIVE_PLAYSTATION
     [DllImport("__Internal", EntryPoint = "vsnprintf_sentry")]
     private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
-#else
+#elif !SENTRY_NATIVE_SWITCH
     // For Windows/Linux: use platform's native C library directly
     [DllImport("msvcrt", EntryPoint = "vsnprintf")]
     private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
@@ -264,6 +298,9 @@ internal static class SentryNativeBridge
     {
 #if SENTRY_NATIVE_PLAYSTATION
         return vsnprintf_sentry(buffer, bufferSize, format, args);
+#elif SENTRY_NATIVE_SWITCH
+        // Native logger not supported on Switch due to vsnprintf signature conflicts with Nintendo SDK
+        return 0;
 #else
         return _isWindows
             ? vsnprintf_windows(buffer, bufferSize, format, args)
@@ -302,18 +339,18 @@ internal static class SentryNativeBridge
             action(ptr);
         });
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern int sentry_init(IntPtr options);
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern int sentry_close();
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern int sentry_get_crashed_last_run();
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern int sentry_clear_crashed_last_run();
 
-    [DllImport("sentry")]
+    [DllImport(SentryLib)]
     private static extern void sentry_reinstall_backend();
 }
