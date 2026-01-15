@@ -29,10 +29,8 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public string? Dsn { get; set; }
     [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
 
-    [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
-    [field: SerializeField] public int DebounceTimeLog { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
-    [field: SerializeField] public int DebounceTimeWarning { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
-    [field: SerializeField] public int DebounceTimeError { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+    [field: SerializeField] public bool EnableLogThrottling { get; set; } = false;
+    [field: SerializeField] public int LogThrottleDedupeWindow { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
     [field: SerializeField] public bool AutoStartupTraces { get; set; } = true;
@@ -149,10 +147,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             Enabled = Enabled,
             Dsn = Dsn,
             CaptureInEditor = CaptureInEditor,
-            EnableLogDebouncing = EnableLogDebouncing,
-            DebounceTimeLog = TimeSpan.FromMilliseconds(DebounceTimeLog),
-            DebounceTimeWarning = TimeSpan.FromMilliseconds(DebounceTimeWarning),
-            DebounceTimeError = TimeSpan.FromMilliseconds(DebounceTimeError),
             TracesSampleRate = TracesSampleRate,
             AutoStartupTraces = AutoStartupTraces,
             AutoSceneLoadTraces = AutoSceneLoadTraces,
@@ -239,6 +233,12 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         {
             options.DiagnosticLogger?.LogDebug("OptionsConfiguration found. Calling configure.");
             OptionsConfiguration.Configure(options);
+        }
+
+        // Add throttler if enabled and not already set by OptionsConfiguration
+        if (EnableLogThrottling && options.LogThrottler is null)
+        {
+            options.LogThrottler = new ContentBasedThrottler(TimeSpan.FromMilliseconds(LogThrottleDedupeWindow));
         }
 
         // We need to set up logging here because the configure callback might have changed the debug options.

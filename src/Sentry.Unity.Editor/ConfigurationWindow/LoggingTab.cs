@@ -123,31 +123,20 @@ internal static class LoggingTab
         EditorGUILayout.Space();
 
         {
-            options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
-                                                        "same type if they are more frequent than once per second."),
-                options.EnableLogDebouncing);
+            options.EnableLogThrottling = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Enable Event Throttling",
+                    "Throttles error/exception events based on content to prevent repeated " +
+                    "errors from consuming quota. Does not affect breadcrumbs or structured logs."),
+                options.EnableLogThrottling);
 
             EditorGUI.indentLevel++;
 
-            options.DebounceTimeLog = EditorGUILayout.IntField(
-                new GUIContent("Log Debounce [ms]", "The time that has to pass between events of " +
-                                                    "LogType.Log before the SDK sends it again."),
-                options.DebounceTimeLog);
-            options.DebounceTimeLog = Math.Max(0, options.DebounceTimeLog);
-
-            options.DebounceTimeWarning = EditorGUILayout.IntField(
-                new GUIContent("Warning Debounce [ms]", "The time that has to pass between events of " +
-                                                        "LogType.Warning before the SDK sends it again."),
-                options.DebounceTimeWarning);
-            options.DebounceTimeWarning = Math.Max(0, options.DebounceTimeWarning);
-
-            options.DebounceTimeError = EditorGUILayout.IntField(
-                new GUIContent("Error Debounce [ms]", "The time that has to pass between events of " +
-                                                      "LogType.Assert, LogType.Exception and LogType.Error before " +
-                                                      "the SDK sends it again."),
-                options.DebounceTimeError);
-            options.DebounceTimeError = Math.Max(0, options.DebounceTimeError);
+            options.LogThrottleDedupeWindow = EditorGUILayout.IntField(
+                new GUIContent("Dedupe Window [ms]",
+                    "Time window for deduplicating repeated errors with the same fingerprint." +
+                    "\nDefault: 1000"),
+                options.LogThrottleDedupeWindow);
+            options.LogThrottleDedupeWindow = Math.Max(0, options.LogThrottleDedupeWindow);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
