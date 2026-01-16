@@ -48,25 +48,23 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool CaptureInEditor { get; set; } = true;
 
     /// <summary>
-    /// Whether Sentry events should be debounced it too frequent.
+    /// Throttler for error/exception events to prevent quota exhaustion from high-frequency errors.
+    /// Only affects event capture - breadcrumbs and structured logs are not affected.
     /// </summary>
-    public bool EnableLogDebouncing { get; set; } = false;
+    /// <remarks>
+    /// Set via <see cref="SetLogThrottler"/> or enable in the Sentry configuration window.
+    /// When enabled via the configuration window, a <see cref="ContentBasedThrottler"/> is used by default.
+    /// </remarks>
+    public ILogThrottler? LogThrottler { get; set; }
 
     /// <summary>
-    /// Timespan between sending events of LogType.Log
+    /// Configures a throttler for error/exception events.
     /// </summary>
-    public TimeSpan DebounceTimeLog { get; set; } = TimeSpan.FromSeconds(1);
-
-    /// <summary>
-    /// Timespan between sending events of LogType.Warning
-    /// </summary>
-    public TimeSpan DebounceTimeWarning { get; set; } = TimeSpan.FromSeconds(1);
-
-    /// <summary>
-    /// Timespan between sending events of LogType.Assert, LogType.Exception and LogType.Error
-    /// </summary>
-    public TimeSpan DebounceTimeError { get; set; } = TimeSpan.FromSeconds(1);
-
+    /// <param name="throttler">The throttler implementation to use, or null to disable throttling.</param>
+    public void SetLogThrottler(ILogThrottler? throttler)
+    {
+        LogThrottler = throttler;
+    }
 
     private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
 

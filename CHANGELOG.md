@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Features
+
+- Added content-based event throttling to prevent repeated errors from consuming quota. The new `ILogThrottler` interface and `ContentBasedThrottler` implementation deduplicate `LogError` and `LogException` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+
+### Deprecations
+
+- The time-based log debouncing system (`TimeDebounceBase`, `LogTimeDebounce`, `ErrorTimeDebounce`, `WarningTimeDebounce`) and related options (`EnableLogDebouncing`, `DebounceTimeLog`, `DebounceTimeWarning`, `DebounceTimeError`) are now marked as `[Obsolete]`. Use the new content-based event throttling instead. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+
 ### Fixes
 
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))

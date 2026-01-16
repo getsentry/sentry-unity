@@ -16,10 +16,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     private readonly IApplication _application;
     private readonly ISystemClock _clock;
 
-    private ErrorTimeDebounce _errorTimeDebounce = null!;       // Set in Register
-    private LogTimeDebounce _logTimeDebounce = null!;           // Set in Register
-    private WarningTimeDebounce _warningTimeDebounce = null!;   // Set in Register
-
     private IHub _hub = null!;                                  // Set in Register
     private SentryUnityOptions _options = null!;                // Set in Register
 
@@ -35,10 +31,6 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         _hub = hub ?? throw new ArgumentException("Hub is null.");
         _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
 
-        _logTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
-        _warningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
-        _errorTimeDebounce = new ErrorTimeDebounce(_options.DebounceTimeError);
-
         _application.LogMessageReceived += OnLogMessageReceived;
         _application.Quitting += OnQuitting;
     }
@@ -51,38 +43,22 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        if (IsGettingDebounced(logType))
-        {
-            _options.LogDebug("Log message of type '{0}' is getting debounced.", logType);
-            return;
-        }
-
         ProcessError(message, stacktrace, logType);
         ProcessBreadcrumbs(message, logType);
         ProcessStructuredLog(message, logType);
-    }
-
-    private bool IsGettingDebounced(LogType logType)
-    {
-        if (_options.EnableLogDebouncing is false)
-        {
-            return false;
-        }
-
-        return logType switch
-        {
-            LogType.Exception => !_errorTimeDebounce.Debounced(),
-            LogType.Error or LogType.Assert => !_errorTimeDebounce.Debounced(),
-            LogType.Log => !_logTimeDebounce.Debounced(),
-            LogType.Warning => !_warningTimeDebounce.Debounced(),
-            _ => true
-        };
     }
 
     private void ProcessError(string message, string stacktrace, LogType logType)
     {
         if (logType is not LogType.Error || !_options.CaptureLogErrorEvents)
         {
+            return;
+        }
+
+        // Check throttling - only affects event capture, not breadcrumbs or structured logs
+        if (_options.LogThrottler is { } throttler && !throttler.ShouldCapture(message, stacktrace, logType))
+        {
+            _options.LogDebug("Error event throttled: {0}", message);
             return;
         }
 

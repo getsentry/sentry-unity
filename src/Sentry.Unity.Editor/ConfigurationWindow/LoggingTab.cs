@@ -123,8 +123,40 @@ internal static class LoggingTab
         EditorGUILayout.Space();
 
         {
+            options.EnableLogThrottling = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Enable Event Throttling",
+                    "Throttles error/exception events based on content to prevent repeated " +
+                    "errors from consuming quota. Does not affect breadcrumbs or structured logs."),
+                options.EnableLogThrottling);
+
+            EditorGUI.indentLevel++;
+
+            options.LogThrottleDedupeWindow = EditorGUILayout.IntField(
+                new GUIContent("Dedupe Window [ms]",
+                    "Time window for deduplicating repeated errors with the same fingerprint." +
+                    "\nDefault: 1000"),
+                options.LogThrottleDedupeWindow);
+            options.LogThrottleDedupeWindow = Math.Max(0, options.LogThrottleDedupeWindow);
+
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
+        }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        // Deprecated Log Debouncing section
+        {
+            EditorGUILayout.LabelField("Deprecated Settings", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "Log Debouncing is deprecated. Please use 'Enable Event Throttling' above instead. " +
+                "These settings will be removed in a future version.",
+                MessageType.Warning);
+
+#pragma warning disable CS0618 // Type or member is obsolete
             options.EnableLogDebouncing = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Log Debouncing", "The SDK debounces log messages of the " +
+                new GUIContent("Enable Log Debouncing (Deprecated)", "The SDK debounces log messages of the " +
                                                         "same type if they are more frequent than once per second."),
                 options.EnableLogDebouncing);
 
@@ -151,6 +183,7 @@ internal static class LoggingTab
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }
