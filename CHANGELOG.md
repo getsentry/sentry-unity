@@ -6,6 +6,10 @@
 
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
 
+### Features
+
+- Added support for Linux ARM64 ([#2470](https://github.com/getsentry/sentry-unity/pull/2470))
+
 ### Dependencies
 
 - Bump Java SDK from v8.28.0 to v8.30.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481))

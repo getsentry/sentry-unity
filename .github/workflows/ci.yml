@@ -40,6 +40,8 @@ jobs:
             host: ubuntu-latest
           - target: Linux
             host: ubuntu-latest
+          - target: LinuxArm64
+            host: ubuntu-22.04-arm
           - target: Windows
             host: windows-latest
           - target: Cocoa

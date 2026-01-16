@@ -173,10 +173,16 @@ public static class BuildPostProcess
                 }
                 break;
             case BuildTarget.StandaloneLinux64:
-                var linuxSentryDbg = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so");
-                if (File.Exists(linuxSentryDbg))
+                // Add debug symbols for both x86_64 and ARM64 - sentry-cli will match by debug ID
+                var linuxSentryDbgX64 = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/x86_64/libsentry.dbg.so");
+                if (File.Exists(linuxSentryDbgX64))
                 {
-                    paths += $" \"{linuxSentryDbg}\"";
+                    paths += $" \"{linuxSentryDbgX64}\"";
+                }
+                var linuxSentryDbgArm64 = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/arm64/libsentry.dbg.so");
+                if (File.Exists(linuxSentryDbgArm64))
+                {
+                    paths += $" \"{linuxSentryDbgArm64}\"";
                 }
                 break;
             case BuildTarget.StandaloneOSX:
