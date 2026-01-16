@@ -1,172 +1,160 @@
-# Prerequisites
+# Contributing to Sentry Unity SDK
 
-Before you start, you need to install the following tools and dependencies.
+## Requirements
 
-## Install Unity
+The following tools are **required** before you can build and develop the SDK:
 
-1. Install [Unity Hub](https://unity3d.com/get-unity/download)
-2. Install Unity
-   * [Optional] Pick the Unity version specified [here](https://github.com/getsentry/sentry-unity/blob/main/samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt#L1) so you don't have to update the sample project
-   * If you do install a different version or you want to build against a specific version, add it as `UNITY_VERSION` to the path (i.e. `export UNITY_VERSION=2022.3.44f1`)
-3. Install iOS Build Module - Required by `Sentry.Unity.Editor.iOS`
-4. Optional modules to install, depending on which platfor you're going to target
-   * Android
-   * Desktop Platforms
-   * WebGL
+| Tool | Notes |
+|------|-------|
+| [Unity Hub](https://unity3d.com/get-unity/download) | Required for managing Unity installations |
+| Unity with iOS Build Support | The iOS module is required by `Sentry.Unity.Editor.iOS`. Install via Unity Hub. |
+| [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) | Version pinned in [`global.json`](global.json) |
+| PowerShell | Install via `dotnet tool install --global PowerShell` |
+| [GitHub CLI](https://github.com/cli/cli/releases) | Required for downloading prebuilt native SDKs. On macOS: `brew install gh` |
 
-## Install .NET
+After installing the .NET SDK and PowerShell, restore the required workloads:
 
-You can find the pinned version in the `global.json` and download it from [here](https://dotnet.microsoft.com/en-us/download/dotnet/9.0).
-
-After you've downloaded and installed the correct version of the .NET SDK install the PowerShell tool
-
-```
-dotnet tool install --global PowerShell
-```
-
-and follow this up by restoring the workload
-
-```
+```sh
 dotnet workload restore
 ```
 
-## Install GitHub CLI
+### Optional Unity Modules
 
-You can either download the newest release of [here](https://github.com/cli/cli/releases), or if you're on macOS use `brew install gh`. You'll need to log in through the commandline.
+Depending on which platforms you're targeting, you may also need:
+- Android Build Support
+- Desktop Platforms (Windows, macOS, Linux)
+- WebGL
 
-## (Optional) Setup for Building Android SDK
+## Getting Started
 
-Only required if you plan to build the Android SDK yourself (instead of using prebuilt artifacts).
-
-* Install Git and ensure is accessible from the `PATH`
-* Install [Android Studio](https://developer.android.com/studio)
-  * Open Android Studio and go to Customize -> All settings...
-  * Search for "SDK" in the Seachbar
-  * Select System Settings -> Android SDK
-  * Install the Android SDK
-  * Swap tab to SDK Tools
-  * Check "Show Package Details"
-  * Under Android SDK Build-Tools check "34"
-  * Apply
-* Install JDK 17
-  * [Using sdkman](https://sdkman.io/) which manage versions for you. (i.e. `sdk install java 17.0.5-ms`)
-  * Or [download the OpenJDK](https://openjdk.java.net/install/) directly.
-* Additional setup:
-  * Add `ANDROID_HOME` to your environment variables
-    * macOS zsh: `export ANDROID_HOME="$HOME/Library/Android/sdk"`
-    * Windows: `setx ANDROID_HOME "%localappdata%\Android\Sdk"` for a user level install.
-  * Make sure `java` is on the path. You can check by calling `java --version`
-    * Windows: Add the `bin` to the path i.e. `$env:PATH = "$env:PATH;$env:JAVA_HOME\bin`
-
-## (Optional) Setup for Building sentry-native
-
-Only required if you plan to build sentry-native yourself (instead of using prebuilt artifacts).
-
-Sentry Native is a submodule from Sentry SDK for Unity and to building it following tools are required:
-
-* Install [CMake](https://cmake.org/download/).
-* A supported C/C++ compiler.
-
-# Getting Started
-
-## Clone the Repository
-
-Clone the repo `git clone https://github.com/getsentry/sentry-unity.git` and `cd` into it.
-
-## (Recommended) Download Prebuilt Native SDKs
-
-Instead of building the native SDKs for Android, Linux, and Windows yourself, you can save time by downloading prebuilt artifacts from the last successful build of the `main` branch. This requires [GH CLI](https://cli.github.com/) to be installed.
-
-Run `dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity -v:d` to download the native SDKs.
-
-# Building the SDK
-
-## Build the Sentry SDK for Unity
-
-The build process attempts to look up the Unity version to use at `./samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt`. If you've got a different version installed you can overwrite this behaviour by setting the `UNITY_VERSION` on the path, i.e. adding `export UNITY_VERSION=2022.3.44f1` to your `.zshenv`.
-
-To build the project either run `dotnet build -v:d` from the commandline or open `src/Sentry.Unity.sln` via the IDE of your choice and build the solution from there.
-
-> Several projects are used as submodules - [sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)
-> The submodule will be automatically restored as a result. If this fails, you can manually do so by calling `git submodule update --init --recursive`.
-
-> The Sentry SDK for Unity has a dependency on Unity's `TestRunner.dll`. The target `LocateTestRunner` in `Directory.Build.targets` attempts to locate this library inside one of the templates that come with a default installation of Unity via the Hub. If you do not have the templates installed you can unblock yourself from this dependency by unloading the test projects.
-
-Building the SDK will also download and cache Sentry CLI, and the Sentry SDK for Cocoa.
-
-# Testing
-
-## PlayMode and EditMode Tests
-
-You can run tests either from the TestRunner window inside the Editor or from commandline via
+### 1. Clone the Repository
 
 ```sh
-dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release test/Sentry.Unity.Tests -v:d
+git clone https://github.com/getsentry/sentry-unity.git
+cd sentry-unity
 ```
 
-## Integration and Smoke Tests
+### 2. Download Prebuilt Native SDKs
 
-CI makes use of a handful of scripts for creating, exporting, building and smoke-testing builds for desktop and mobile platforms. We've added a script to make use of that functionality to emulate (and debug) our integration tests locally.
+This step downloads prebuilt native libraries for Android, Linux, and Windows from the latest successful CI build. This is the fastest way to get started.
+
+```sh
+dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
+```
+
+### 3. Build
+
+```sh
+dotnet build
+```
+
+That's it! The SDK is now built and ready for development.
+
+> **Note:** Submodules ([sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)) are restored automatically. If this fails, run `git submodule update --init --recursive`.
+
+> **Note:** The build also downloads and caches Sentry CLI and the Sentry SDK for Cocoa automatically.
+
+## Building Native SDKs Locally (Optional)
+
+If you need to build the native SDKs yourself instead of using prebuilt artifacts, follow the setup instructions below.
+
+### Building sentry-native
+
+Required tools:
+- [CMake](https://cmake.org/download/)
+- A supported C/C++ compiler
+
+### Building the Android SDK (sentry-java)
+
+Required tools:
+- Git (accessible from `PATH`)
+- [Android Studio](https://developer.android.com/studio)
+- JDK 17 (via [sdkman](https://sdkman.io/) or [OpenJDK](https://openjdk.java.net/install/))
+
+**Android Studio Setup:**
+1. Open Android Studio → Customize → All settings...
+2. Search for "SDK" → System Settings → Android SDK
+3. Install the Android SDK
+4. Switch to SDK Tools tab
+5. Check "Show Package Details"
+6. Under Android SDK Build-Tools, check "34"
+7. Apply
+
+**Environment Variables:**
+- Set `ANDROID_HOME`:
+  - macOS: `export ANDROID_HOME="$HOME/Library/Android/sdk"`
+  - Windows: `setx ANDROID_HOME "%localappdata%\Android\Sdk"`
+- Ensure `java` is on your PATH (verify with `java --version`)
+  - Windows: Add the JDK `bin` folder to PATH
+
+## Testing
+
+### Unit Tests (PlayMode and EditMode)
+
+Run from the command line:
+
+```sh
+dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release test/Sentry.Unity.Tests
+```
+
+Or use the TestRunner window inside the Unity Editor.
+
+### Integration and Smoke Tests
+
+Run integration tests locally using the same scripts as CI:
 
 ```pwsh
- pwsh ./test/Scripts.Integration.Test/integration-test.ps1 -Platform "Android" -UnityVersion "6000"
+pwsh ./test/Scripts.Integration.Test/integration-test.ps1 -Platform "Android" -UnityVersion "6000"
 ```
 
-Please refer to the script to make use of any optional parameters.
+See the script for additional optional parameters. Supported platforms include Android, iOS, macOS, Windows, and Linux.
 
-# Development Workflow
+## Development Workflow
 
-## Project Structure
+### Project Structure
 
-The relevant structure is as follows:
-  * The `UPM` package
-    * `package-dev` is the dev `UPM` package
-    > The package details/info is in `package.json` [manifest file](https://docs.unity3d.com/Manual/upm-manifestPkg.html). Please, check [Unity package layout](https://docs.unity3d.com/Manual/cus-layout.html) docs for deeper understanding of the package structure.
-    * `package` contains some prepared meta files used for packaging
-  * The sample - `samples/unity-of-bugs` is a Unity project used to local testing. The SDK is installed as a local package pointing at `package-dev`
-  * The source
-    * `src` contains the source code
-    * `test` contains the tests and integration test relevants scripts
+- `package-dev/` - Development UPM package
+- `package/` - Release package template (used for publishing)
+- `samples/unity-of-bugs/` - Sample Unity project for local testing
+- `src/` - Source code
+- `test/` - Tests and integration test scripts
 
-## Making Changes and Testing
+### Making Changes
 
-Here's the typical workflow for `UPM` package development:
+1. Open `src/Sentry.Unity.sln` in your IDE (e.g., Rider, Visual Studio)
+2. Build the solution — artifacts are placed in `package-dev/`
+3. Open `samples/unity-of-bugs` via Unity Hub
+4. Configure via Tools → Sentry and enter your DSN
+5. Click Play and test your changes
 
-1. Open `src/Sentry.Unity.sln` in your editor of choice, i.e. Rider
-   > Make sure the projects are restored properly and you have zero errors, otherwise you probably misconfigured `src/Directory.Build.props` or restoring the submodules failed
+### Unity Version
 
-2. Build the solution: Artifacts (`.dll`s) will be placed inside `src/package-dev` folder
+The build uses the Unity version from `samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt`. To use a different version:
 
-3. Check `src/package-dev` folder, it should be populated with the outlined content
-   * `Editor` - `Sentry.Unity.Editor.dll`
-   * `Runtime` - `Sentry.Unity.dll` and all its dependencies like `Sentry.dll`, `System.Text.Json` and so on
-   * `Tests`
-     * `Editor` - `Sentry.Unity.Editor.Tests.dll`
-     * `Runtime` - `Sentry.Unity.Tests.dll`
+```sh
+export UNITY_VERSION=2022.3.44f1
+```
 
-4. Open `samples/unity-of-bugs` via the Hub
+## Advanced Topics
 
-5. Configure `Sentry Unity (dev)` package
-   * Open `Tools` -> `Sentry` and insert your `DSN`
+### Package Validation
 
-6. Run the project in the `Unity` Editor by clicking `Play`
-
-7. Click `ThrowNull` or any other button and check errors in `Sentry` web UI
-
-# Advanced Topics
-
-## Package Validation
-
-In CI, a workflow validates that the content of the package doesn't change accidentally.
-If you intentially want to add or remove files in the final UPM package. You need to accept the diff:
+CI validates that package contents don't change accidentally. To accept intentional changes:
 
 ```pwsh
- pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
+pwsh ./test/Scripts.Tests/test-pack-contents.ps1 accept
 ```
 
-> There is some automation in place that allows you to build, alias, package, and update the snapshot by running `pwsh ./scripts/repack.ps1`. Make sure the repository is in a clean state before doing so as to not add pending changes.
+To build, alias, package, and update the snapshot in one step:
 
-## Release
+```pwsh
+pwsh ./scripts/repack.ps1
+```
 
-The release is done by pushing the artifact built in CI [to a new repo](https://github.com/getsentry/unity). The artifact is built by using the template files in the `package` directory. The release process automatically moves specific contents of `package-dev` into `package`.
-> **Don't** copy `package-dev` specific files like `package.json`, `Runtime/*.asmdef`, `Editor/*.asmdef` into `package`. Those files contain package specific information.
+> Ensure the repository is clean before running `repack.ps1`.
+
+### Release
+
+Releases are published by pushing CI-built artifacts to the [unity package repo](https://github.com/getsentry/unity). The `package` directory contains template files used during this process.
+
+> Do not copy `package-dev` specific files (`package.json`, `*.asmdef`) into `package`.
