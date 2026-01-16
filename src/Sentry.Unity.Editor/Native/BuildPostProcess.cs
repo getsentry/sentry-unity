@@ -19,7 +19,8 @@ public static class BuildPostProcess
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         if (targetGroup is not BuildTargetGroup.Standalone
             and not BuildTargetGroup.GameCoreXboxSeries
-            and not BuildTargetGroup.PS5)
+            and not BuildTargetGroup.PS5
+            and not BuildTargetGroup.Switch)
         {
             return;
         }
@@ -54,6 +55,7 @@ public static class BuildPostProcess
             BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),
             BuildTargetGroup.GameCoreXboxSeries => executablePath,
             BuildTargetGroup.PS5 => executablePath,
+            BuildTargetGroup.Switch => executablePath,
             _ => string.Empty
         };
 
@@ -91,6 +93,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
         BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
         BuildTarget.PS5 => options.PlayStationNativeSupportEnabled,
+        BuildTarget.Switch => options.SwitchNativeSupportEnabled,
         _ => false,
     };
 
@@ -114,6 +117,9 @@ public static class BuildPostProcess
                 return;
             case BuildTarget.PS5:
                 // No standalone crash handler for PlayStation
+                return;
+            case BuildTarget.Switch:
+                // No standalone crash handler for Nintendo Switch
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
@@ -184,6 +190,13 @@ public static class BuildPostProcess
                 if (Directory.Exists(macOSSentryDsym))
                 {
                     paths += $" \"{macOSSentryDsym}\"";
+                }
+                break;
+            case BuildTarget.Switch:
+                var switchSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/");
+                if (Directory.Exists(switchSentryPluginPath))
+                {
+                    paths += $" \"{switchSentryPluginPath}\"";
                 }
                 break;
             default:

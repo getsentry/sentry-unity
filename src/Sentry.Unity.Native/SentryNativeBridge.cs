@@ -18,7 +18,8 @@ internal static class SentryNativeBridge
     {
         _useLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
-            or RuntimePlatform.PS5;
+            or RuntimePlatform.PS5
+            or RuntimePlatform.Switch;
         _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
 
         var cOptions = sentry_options_new();
@@ -62,7 +63,7 @@ internal static class SentryNativeBridge
         if (_isWindows)
         {
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
-            sentry_options_set_database_pathw(cOptions, dir);
+            // sentry_options_set_database_pathw(cOptions, dir);
         }
         else
         {

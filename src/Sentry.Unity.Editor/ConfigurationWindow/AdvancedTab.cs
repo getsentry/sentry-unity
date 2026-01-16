@@ -147,6 +147,10 @@ internal static class AdvancedTab
             options.PlayStationNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("PlayStation", "Whether to enable native crash support on PlayStation."),
                 options.PlayStationNativeSupportEnabled);
+
+            options.SwitchNativeSupportEnabled = EditorGUILayout.Toggle(
+                new GUIContent("Nintendo Switch", "Whether to enable native crash support on Nintendo Switch."),
+                options.SwitchNativeSupportEnabled);
         }
 
         EditorGUI.indentLevel--;
