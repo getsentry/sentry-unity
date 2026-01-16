@@ -132,6 +132,7 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setSendDefaultPii", options.SendDefaultPii);
                 androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled);
                 androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
+                androidOptions.Call("setNativeSdkName", "sentry.native.android.unity");
 
                 // Options that are not to be set by the user
                 // We're disabling some integrations as to not duplicate event or because the SDK relies on the .NET SDK
