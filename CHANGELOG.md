@@ -4,7 +4,6 @@
 
 ### Fixes
 
-- Fixed scope sync for PlayStation ([#2477](https://github.com/getsentry/sentry-unity/pull/2477))
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
 
 ### Dependencies
