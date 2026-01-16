@@ -1,5 +1,4 @@
 using System;
-using C = Sentry.Unity.NativeUtils.C;
 
 namespace Sentry.Unity.Native;
 

@@ -1,6 +1,6 @@
-namespace Sentry.Unity.NativeUtils;
+namespace Sentry.Unity.Native;
 
-internal static class ContextWriter
+internal static class ContextWriterUtils
 {
     internal static void WriteApp(string? AppStartTime, string? AppBuildType)
     {

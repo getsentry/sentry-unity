@@ -2,7 +2,6 @@ using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -60,6 +59,7 @@ public static class SentryNative
         options.ScopeObserver = new NativeScopeObserver(options);
         options.EnableScopeSync = true;
         options.NativeContextWriter = new NativeContextWriter();
+        options.NativeDebugImageProvider = new NativeDebugImageProvider();
 
         options.DefaultUserId = GetInstallationId();
         if (options.DefaultUserId is not null)
