@@ -534,10 +534,20 @@ Supported platforms: `macOS`, `Windows`, `Linux`, `Android`, `iOS`, `WebGL`
 
 ### Development Workflow
 
+**Prerequisites (first-time setup or after clean):**
+```bash
+# Download native SDKs - REQUIRED before building
+dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
+```
+
+**Development cycle:**
 1. Make changes to source code in `src/`
 2. Run `dotnet build` to build and update `package-dev/`
-3. Test changes using the sample project or integration tests
-4. Run `pwsh scripts/repack.ps1` before creating releases
+3. Run `pwsh scripts/run-tests.ps1` to build and run all tests
+4. Test changes using the sample project or integration tests
+5. Run `pwsh scripts/repack.ps1` before creating releases
+
+> **Note:** The native SDKs in `package-dev/Plugins/` are not committed to the repository. You must run `DownloadNativeSDKs` before the first build or after cleaning the repository.
 
 ### Error Handling Patterns
 

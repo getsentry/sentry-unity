@@ -484,27 +484,11 @@ File.WriteAllLines(PackageManifestFile, lines);
   </Target>
 
   <!--  Downloads native SDKs from the latest successful GitHub Actions workflow run.
+        Only downloads SDKs that are not already present.
         This is meant for developers - so that they don't have to compile the native SDK after each clean checkout (or git clean).
-        Depends on your a GH CLI installation - https://cli.github.com/
+        Depends on a GH CLI installation - https://cli.github.com/
         dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity -->
   <Target Name="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Message Importance="High" Text="Downloading pre-compiled native SDKs from GitHub Actions artifacts." />
-    <Exec ConsoleToMSBuild="true" Command="gh run list --branch main --workflow CI --json &quot;conclusion,databaseId&quot; --jq &quot;first(.[] | select(.conclusion == \&quot;success\&quot;) | .databaseId)&quot;">
-      <Output TaskParameter="ConsoleOutput" PropertyName="LastSuccessfulRunId" />
-    </Exec>
-    <Error Condition="!('$(LastSuccessfulRunId)' > 0)" Text="Failed to find a successful run" />
-
-    <ItemGroup>
-      <SDK Include="Windows"/>
-      <SDK Include="Android"/>
-      <SDK Include="Linux"/>
-    </ItemGroup>
-    <Message Importance="High" Text="Replacing $(SentryArtifactsDestination)%(SDK.Identity)" />
-    <RemoveDir Directories="$(SentryArtifactsDestination)%(SDK.Identity)" />
-    <Exec Command="gh run download $(LastSuccessfulRunId) -n &quot;%(SDK.Identity)-sdk&quot; -D &quot;$(SentryArtifactsDestination)%(SDK.Identity)&quot;" />
-
-    <!-- Download overwrites some files that then show up as changed in the IDE, even though there are no changes, e.g. only whitespace -->
-    <Message Importance="High" Text="Restoring package-dev/Plugins to the latest git commit" />
-    <Exec WorkingDirectory="$(RepoRoot)" Command="git restore package-dev/Plugins" />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-native-sdks.ps1&quot; -RepoRoot &quot;$(RepoRoot)&quot;" />
   </Target>
 </Project>
