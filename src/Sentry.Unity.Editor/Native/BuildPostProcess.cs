@@ -142,7 +142,7 @@ public static class BuildPostProcess
     /// <summary>
     /// Helper method to add a path to the upload list if it exists.
     /// </summary>
-    private static void AddPath(List<string> paths, string path, IDiagnosticLogger logger, bool required = false)
+    internal static void AddPath(List<string> paths, string path, IDiagnosticLogger logger, bool required = false)
     {
         if (Directory.Exists(path) || File.Exists(path))
         {
