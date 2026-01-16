@@ -82,7 +82,10 @@ if ($results.Failed -gt 0) {
     
     $testWord = if ($results.Failed -gt 1) { "tests" } else { "test" }
     Write-Host "Test run completed with $($results.Failed) failing $testWord." -ForegroundColor Red
-    exit 1
 }
 
+# Exit based on overall success (handles edge cases where result != "Passed" but failed count is 0)
+if (-not $results.Success) {
+    exit 1
+}
 exit 0

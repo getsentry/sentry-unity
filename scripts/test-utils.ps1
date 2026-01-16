@@ -24,7 +24,14 @@ function Parse-TestResults([string] $Path) {
         return $null
     }
 
-    [xml]$xml = Get-Content $Path
+    try {
+        [xml]$xml = Get-Content $Path
+    }
+    catch {
+        Write-Host "  Failed to parse XML: $_" -ForegroundColor Red
+        return $null
+    }
+
     $testRun = $xml.'test-run'
 
     if ($null -eq $testRun) {
