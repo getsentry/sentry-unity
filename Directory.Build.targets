@@ -398,7 +398,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <!-- Unity exits with a non-zero exit code when running tests. We ignore it and manually check the test results instead. -->
     <Delete Files="$(UnityTestPlayModeResultFilePath)" />
     <Exec EnvironmentVariables="IgnoreExitCode=true" Command="pwsh &quot;$(RepoRoot)scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform PlayMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestPlayModeResultFilePath)" />
-    <UnityTestResults Path="$(UnityTestPlayModeResultFilePath)" />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/report-test-results.ps1&quot; &quot;$(UnityTestPlayModeResultFilePath)&quot;" />
   </Target>
 
   <!-- Run EditMode tests with dotnet msbuild /t:UnityEditModeTest test/Sentry.Unity.Editor.Tests -->
@@ -411,7 +411,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <!-- IgnoreStandardErrorWarningFormat="true" because of the intentional compilation error printed in GenerateOptions_NewSentryOptionsGarbageAppended_FailsToCompile(). -->
     <Delete Files="$(UnityTestEditModeResultFilePath)" />
     <Exec EnvironmentVariables="IgnoreExitCode=true" IgnoreStandardErrorWarningFormat="true" Command="pwsh &quot;$(RepoRoot)scripts/unity.ps1&quot; $(UnityExec) -batchmode -nographics -runTests -testPlatform EditMode -projectPath $(UnitySampleProjectPath) -testResults $(UnityTestEditModeResultFilePath)"/>
-    <UnityTestResults Path="$(UnityTestEditModeResultFilePath)" />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/report-test-results.ps1&quot; &quot;$(UnityTestEditModeResultFilePath)&quot;" />
   </Target>
 
   <!-- Locate the TestRunner.dlls by filling the wildcard with the template version number. 3d is the default template -->
@@ -460,104 +460,6 @@ if (!File.Exists(PackageManifestFile))
 }
 var lines = File.ReadLines(PackageManifestFile).Where(l => !l.Contains($"\"{PackageToRemove}\"")).ToArray();
 File.WriteAllLines(PackageManifestFile, lines);
-]]>
-      </Code>
-    </Task>
-  </UsingTask>
-
-  <!-- Parse test results -->
-  <UsingTask TaskName="UnityTestResults" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <Path ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-
-    <Task>
-      <Using Namespace="System" />
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Linq" />
-      <Using Namespace="System.Xml.Linq" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-
-if (!File.Exists(Path))
-{
-    Log.LogError("Test results file not found at " + Path);
-    return false;
-}
-
-var document = XDocument.Load(Path);
-var testRun = document.Descendants("test-run").First();
-
-var total = testRun.Attribute("total").Value;
-if (total == "0")
-{
-    Log.LogError("Unity test results is empty.");
-    return false;
-}
-
-var result = testRun.Attribute("result").Value;
-
-Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "{0} in {1}s", result.Replace("(Child)", ""), testRun.Attribute("duration").Value);
-Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "        Passed: {0,3}", testRun.Attribute("passed").Value);
-Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "        Failed: {0,3}", testRun.Attribute("failed").Value);
-Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "       Skipped: {0,3}", testRun.Attribute("skipped").Value);
-Log.LogCriticalMessage("UnityTestResults", null, null, null, 0, 0, 0, 0, "  Inconclusive: {0,3}", testRun.Attribute("inconclusive").Value);
-
-if (result == "Passed")
-{
-    return true;
-}
-
-PrintFailedTests(testRun);
-
-var failed = testRun.Attribute("failed").Value;
-var errorMessage = $"Test run completed with {failed} failing test{(int.Parse(failed) > 1 ? "s" : "")}.";
-Log.LogError(errorMessage);
-
-Success = false;
-
-void PrintFailedTests(XElement element)
-{
-    foreach (var descendant in element.Descendants())
-    {
-        if (descendant.Name != "test-case"
-            || descendant.Attribute("result")?.Value != "Failed")
-        {
-            continue;
-        }
-
-        if (descendant.Descendants().Any(d => d.Name == "test-case"))
-        {
-            PrintFailedTests(descendant);
-        }
-        else
-        {
-            var sb = new StringBuilder()
-              .Append("Test ")
-              .Append(descendant.Attribute("id")?.Value)
-              .Append(": ")
-              .AppendLine(descendant.Attribute("name")?.Value);
-
-            var failure = descendant.Descendants("failure")
-                .Descendants("message")
-                .FirstOrDefault()
-                ?.Value;
-
-            var stack = descendant.Descendants("failure")
-                .Descendants("stack-trace")
-                .FirstOrDefault()
-                ?.Value;
-
-            sb.AppendLine(failure)
-              .Append("Test StackTrace: ")
-              .AppendLine(stack);
-
-//  MSBuild is breaking each line as if it was an error per line and not a single error.
-//  So Log.LogError got replaced by Console.WriteLine for now.
-            Console.WriteLine(sb.ToString());
-        }
-    }
-}
 ]]>
       </Code>
     </Task>

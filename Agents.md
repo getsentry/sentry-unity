@@ -18,12 +18,19 @@ dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 # Build the Unity SDK
 dotnet build
 
-# Run all tests
-./test.sh
+# Run all tests (builds SDK first)
+pwsh scripts/run-tests.ps1
 
-# Run specific test targets
-dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release test/Sentry.Unity.Editor.Tests
-dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+# Run specific test types
+pwsh scripts/run-tests.ps1 -PlayMode
+pwsh scripts/run-tests.ps1 -EditMode
+
+# Run filtered tests
+pwsh scripts/run-tests.ps1 -Filter "TestClassName"
+pwsh scripts/run-tests.ps1 -PlayMode -Filter "Throttler"
+
+# Skip build for faster iteration
+pwsh scripts/run-tests.ps1 -SkipBuild -Filter "MyTest"
 
 # Integration testing (local)
 ./test/Scripts.Integration.Test/integration-test.ps1 -Platform "macOS" -UnityVersion "2021.3.45f2"
@@ -482,7 +489,14 @@ Key options:
 ### Running All Tests
 
 ```bash
-./test.sh
+# Run all tests (builds SDK first)
+pwsh scripts/run-tests.ps1
+
+# Run with filtering
+pwsh scripts/run-tests.ps1 -Filter "TestClassName"
+
+# Skip build for faster iteration
+pwsh scripts/run-tests.ps1 -SkipBuild
 ```
 
 ### Integration Test Scripts
