@@ -20,12 +20,19 @@ dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 # Build the Unity SDK (always from root, never target specific .csproj files)
 dotnet build
 
-# Run all tests
-./test.sh
+# Run all tests (builds SDK first)
+pwsh scripts/run-tests.ps1
 
-# Run specific test targets
-dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release test/Sentry.Unity.Editor.Tests
-dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release
+# Run specific test types
+pwsh scripts/run-tests.ps1 -PlayMode
+pwsh scripts/run-tests.ps1 -EditMode
+
+# Run filtered tests
+pwsh scripts/run-tests.ps1 -Filter "TestClassName"
+pwsh scripts/run-tests.ps1 -PlayMode -Filter "Throttler"
+
+# Skip build for faster iteration
+pwsh scripts/run-tests.ps1 -SkipBuild -Filter "MyTest"
 
 # Integration testing (local)
 ./test/Scripts.Integration.Test/integration-test.ps1 -Platform "macOS" -UnityVersion "2021.3.45f2"
@@ -484,7 +491,14 @@ Key options:
 ### Running All Tests
 
 ```bash
-./test.sh
+# Run all tests (builds SDK first)
+pwsh scripts/run-tests.ps1
+
+# Run with filtering
+pwsh scripts/run-tests.ps1 -Filter "TestClassName"
+
+# Skip build for faster iteration
+pwsh scripts/run-tests.ps1 -SkipBuild
 ```
 
 ### Integration Test Scripts
@@ -522,10 +536,20 @@ Supported platforms: `macOS`, `Windows`, `Linux`, `Android`, `iOS`, `WebGL`
 
 ### Development Workflow
 
+**Prerequisites (first-time setup or after clean):**
+```bash
+# Download native SDKs - REQUIRED before building
+dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
+```
+
+**Development cycle:**
 1. Make changes to source code in `src/`
 2. Run `dotnet build` to build and update `package-dev/`
-3. Test changes using the sample project or integration tests
-4. Run `pwsh scripts/repack.ps1` before creating releases
+3. Run `pwsh scripts/run-tests.ps1` to build and run all tests
+4. Test changes using the sample project or integration tests
+5. Run `pwsh scripts/repack.ps1` before creating releases
+
+> **Note:** The native SDKs in `package-dev/Plugins/` are not committed to the repository. You must run `DownloadNativeSDKs` before the first build or after cleaning the repository.
 
 ### Error Handling Patterns
 
