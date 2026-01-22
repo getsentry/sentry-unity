@@ -174,23 +174,28 @@ public class ContentBasedThrottlerTests
     [Test]
     public void ShouldCapture_LruEviction_EvictsLeastRecentlyUsed()
     {
-        // Buffer size of 2
-        var throttler = new ContentBasedThrottler(TimeSpan.FromMilliseconds(50), maxBufferSize: 2);
+        // Buffer size of 3 to avoid cascading evictions affecting assertions
+        var throttler = new ContentBasedThrottler(TimeSpan.FromMilliseconds(50), maxBufferSize: 3);
 
-        // Add A and B
+        // Add A, B, and C - fills buffer
+        // Access order: A, B, C
         throttler.ShouldCapture("message A", "stack", LogType.Error);
         throttler.ShouldCapture("message B", "stack", LogType.Error);
+        throttler.ShouldCapture("message C", "stack", LogType.Error);
 
         // Wait for expiry
         System.Threading.Thread.Sleep(60);
 
-        // Access A again (makes A most recently used, B is now least recently used)
+        // Access A again (makes A most recently used)
+        // Access order after: B, C, A
         throttler.ShouldCapture("message A", "stack", LogType.Error);
 
-        // Add C - should evict B (least recently used), not A
-        throttler.ShouldCapture("message C", "stack", LogType.Error);
+        // Add D - should evict B (least recently used)
+        // Access order after: C, A, D
+        throttler.ShouldCapture("message D", "stack", LogType.Error);
 
-        // B was evicted, should be allowed
+        // B was evicted, should be allowed (re-adds B, evicts C)
+        // Access order after: A, D, B
         var resultB = throttler.ShouldCapture("message B", "stack", LogType.Error);
         // A was refreshed and not evicted, should be throttled
         var resultA = throttler.ShouldCapture("message A", "stack", LogType.Error);
