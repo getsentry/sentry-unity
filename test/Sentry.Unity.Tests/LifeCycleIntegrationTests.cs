@@ -26,18 +26,5 @@ public class LifeCycleIntegrationTests
     }
 
     internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
-    {
-        SentrySdk.Init(options =>
-        {
-            options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-            configure?.Invoke(options);
-        });
-
-        return new SentryDisposable();
-    }
-
-    private sealed class SentryDisposable : IDisposable
-    {
-        public void Dispose() => SentrySdk.Close();
-    }
+        => SentryTests.InitSentrySdk(configure);
 }

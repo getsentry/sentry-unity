@@ -302,10 +302,11 @@ public sealed class IntegrationTests
     {
         yield return null;
 
-        var expectedOptions = new SentryUnityOptions
+        // Use CreateOptions to get expected defaults with test cache path
+        var expectedOptions = SentryTests.CreateOptions(o =>
         {
-            Dsn = string.Empty // The SentrySDK tries to resolve the DSN from the environment when it's null
-        };
+            o.Dsn = string.Empty; // The SentrySDK tries to resolve the DSN from the environment when it's null
+        });
 
         SentryUnityOptions? actualOptions = null;
         using var _ = InitSentrySdk(o =>
@@ -335,20 +336,5 @@ public sealed class IntegrationTests
     }
 
     internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
-    {
-        SentrySdk.Init(options =>
-        {
-            options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-            options.CreateHttpMessageHandler = () => _testHttpClientHandler;
-
-            configure?.Invoke(options);
-        });
-
-        return new SentryDisposable();
-    }
-
-    private sealed class SentryDisposable : IDisposable
-    {
-        public void Dispose() => SentrySdk.Close();
-    }
+        => SentryTests.InitSentrySdk(configure, _testHttpClientHandler);
 }

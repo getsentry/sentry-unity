@@ -25,6 +25,10 @@ public sealed class ContextWriterTests
     public void TearDown()
     {
         UnityEngine.Object.Destroy(_gameObject);
+        if (SentrySdk.IsEnabled)
+        {
+            SentrySdk.Close();
+        }
     }
 
     [Test]

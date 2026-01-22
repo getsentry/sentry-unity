@@ -13,8 +13,6 @@ namespace Sentry.Unity.Tests;
 
 public class SentryUnitySelfInitializationTests
 {
-    private const string TestDsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-
     [TearDown]
     public void TearDown()
     {
@@ -69,10 +67,7 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void SentryUnity_OptionsValid_Initializes()
     {
-        var options = new SentryUnityOptions
-        {
-            Dsn = TestDsn
-        };
+        var options = SentryTests.CreateOptions(o => o.Dsn = SentryTests.TestDsn);
 
         SentrySdk.Init(options);
 
@@ -94,12 +89,12 @@ public class SentryUnitySelfInitializationTests
     public void Init_MultipleTimes_LogsWarning()
     {
         var testLogger = new TestLogger();
-        var options = new SentryUnityOptions
+        var options = SentryTests.CreateOptions(o =>
         {
-            Debug = true,
-            Dsn = TestDsn,
-            DiagnosticLogger = testLogger,
-        };
+            o.Debug = true;
+            o.Dsn = SentryTests.TestDsn;
+            o.DiagnosticLogger = testLogger;
+        });
 
         SentrySdk.Init(options);
         SentrySdk.Init(options);
@@ -126,11 +121,11 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenCrashed_ReturnsCrashed()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = SentryTests.CreateOptions(o =>
         {
-            Dsn = TestDsn,
-            CrashedLastRun = () => true // Mock crashed state
-        };
+            o.Dsn = SentryTests.TestDsn;
+            o.CrashedLastRun = () => true; // Mock crashed state
+        });
 
         // Act
         SentrySdk.Init(options);
@@ -144,11 +139,11 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenNotCrashed_ReturnsDidNotCrash()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = SentryTests.CreateOptions(o =>
         {
-            Dsn = TestDsn,
-            CrashedLastRun = () => false // Mock non-crashed state
-        };
+            o.Dsn = SentryTests.TestDsn;
+            o.CrashedLastRun = () => false; // Mock non-crashed state
+        });
 
         // Act
         SentrySdk.Init(options);
@@ -162,11 +157,11 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WithNullDelegate_ReturnsUnknown()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = SentryTests.CreateOptions(o =>
         {
-            Dsn = TestDsn,
-            CrashedLastRun = null // Explicitly set to null
-        };
+            o.Dsn = SentryTests.TestDsn;
+            o.CrashedLastRun = null; // Explicitly set to null
+        });
 
         // Act
         SentrySdk.Init(options);

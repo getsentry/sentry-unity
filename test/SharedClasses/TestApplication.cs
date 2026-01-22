@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -6,13 +7,18 @@ namespace Sentry.Unity.Tests.Stubs;
 
 public sealed class TestApplication : IApplication
 {
+    /// <summary>
+    /// Default cache directory for tests, avoiding pollution of the project directory.
+    /// </summary>
+    public static readonly string DefaultPersistentDataPath = Path.Combine(Path.GetTempPath(), "sentry-unity-tests");
+
     public TestApplication(
         bool isEditor = true,
         string productName = "",
         string version = "",
         string buildGUID = "",
         string unityVersion = "",
-        string persistentDataPath = "",
+        string? persistentDataPath = null,
         RuntimePlatform platform = RuntimePlatform.WindowsEditor)
     {
         IsEditor = isEditor;
@@ -20,7 +26,7 @@ public sealed class TestApplication : IApplication
         Version = version;
         BuildGUID = buildGUID;
         UnityVersion = unityVersion;
-        PersistentDataPath = persistentDataPath;
+        PersistentDataPath = persistentDataPath ?? DefaultPersistentDataPath;
         Platform = platform;
     }
 
