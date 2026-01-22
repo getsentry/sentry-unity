@@ -9,9 +9,13 @@ internal class SceneManagerTracingIntegration : ISdkIntegration
 {
     public void Register(IHub hub, SentryOptions options)
     {
-        if (options is not SentryUnityOptions unityOptions
-            || unityOptions.TracesSampleRate > 0.0f
-            || !unityOptions.AutoSceneLoadTraces)
+        // This should never happen but in case it does...
+        if (options is not SentryUnityOptions unityOptions)
+        {
+            return;
+        }
+
+        if (unityOptions is { TracesSampleRate: > 0.0f, AutoSceneLoadTraces: true })
         {
             if (SceneManagerAPI.overrideAPI != null)
             {
