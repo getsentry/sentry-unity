@@ -1,4 +1,4 @@
-using CWUtil = Sentry.Unity.NativeUtils.ContextWriter;
+using CWUtil = Sentry.Unity.Native.ContextWriterUtils;
 
 namespace Sentry.Unity.Android;
 
