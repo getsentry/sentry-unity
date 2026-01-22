@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The 'SceneManagerTracingIntegration' properly respects the `AutoSceneTracing` flag again ([#2496](https://github.com/getsentry/sentry-unity/pull/2496))
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
 
 ### Dependencies
