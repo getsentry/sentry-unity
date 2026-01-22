@@ -58,14 +58,15 @@ public sealed class UnityEventProcessorThreadingTests
     public void SentrySdkCaptureEvent_OnNotUIThread_Succeeds()
     {
         // arrange
-        using var _ = SentryTests.InitSentrySdk(o =>
+        var options = new SentryUnityOptions(application: _testApplication)
         {
-            o.Dsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250";
-            o.Enabled = true;
-            o.AttachStacktrace = true;
-            o.Debug = true;
-            o.DiagnosticLogger = _testLogger;
-        });
+            Dsn = SentryTests.TestDsn,
+            Enabled = true,
+            AttachStacktrace = true,
+            Debug = true,
+            DiagnosticLogger = _testLogger
+        };
+        SentrySdk.Init(options);
 
         var sentryEvent = new SentryEvent
         {
@@ -184,12 +185,12 @@ public sealed class UnityEventProcessorTests
     {
         _gameObject = new GameObject("ProcessorTest");
         _sentryMonoBehaviour = _gameObject.AddComponent<SentryMonoBehaviour>();
-        _sentryOptions = new SentryUnityOptions
+        _testApplication = new TestApplication();
+        _sentryOptions = new SentryUnityOptions(application: _testApplication)
         {
             Debug = true,
             DiagnosticLogger = new TestLogger()
         };
-        _testApplication = new();
     }
 
     [TearDown]
@@ -249,7 +250,7 @@ public sealed class UnityEventProcessorTests
         };
         MainThreadData.CollectData();
 
-        var sentryOptions = new SentryUnityOptions { SendDefaultPii = true };
+        var sentryOptions = new SentryUnityOptions(application: _testApplication) { SendDefaultPii = true };
         var sut = new UnityScopeUpdater(sentryOptions, _testApplication);
         var scope = new Scope(sentryOptions);
 
@@ -326,7 +327,7 @@ public sealed class UnityEventProcessorTests
     public void UserId_SetIfEmpty()
     {
         // arrange
-        var options = new SentryUnityOptions { DefaultUserId = "foo" };
+        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "foo" };
         var sut = new UnityScopeUpdater(options, _testApplication);
         var scope = new Scope(options);
 
@@ -341,7 +342,7 @@ public sealed class UnityEventProcessorTests
     public void UserId_UnchangedIfNonEmpty()
     {
         // arrange
-        var options = new SentryUnityOptions { DefaultUserId = "foo" };
+        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "foo" };
         var sut = new UnityScopeUpdater(options, _testApplication);
         var scope = new Scope(options);
         scope.User.Id = "bar";
@@ -543,8 +544,8 @@ public sealed class UnityEventProcessorTests
     [TestCase(false, false)]
     public void Process_SetsActiveSceneName(bool isEditor, bool isIL2CPP)
     {
-        var sentryOptions = new SentryUnityOptions();
         var application = new TestApplication { IsEditor = isEditor };
+        var sentryOptions = new SentryUnityOptions(application: application);
         var unityInfo = new TestUnityInfo { IL2CPP = isIL2CPP };
         var sceneManager = new SceneManagerIntegrationTests.FakeSceneManager { ActiveSceneName = "TestScene" };
         var sut = new UnityEventProcessor(sentryOptions, unityInfo, application, sceneManager);

@@ -1,6 +1,3 @@
-using System;
-using Sentry.Unity.Tests.Stubs;
-
 namespace Sentry.Unity.Tests;
 
 /// <summary>
@@ -12,26 +9,4 @@ public static class SentryTests
     /// Default test DSN used across tests.
     /// </summary>
     public const string TestDsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-
-    /// <summary>
-    /// Initializes the Sentry SDK for testing with proper configuration.
-    /// Returns a disposable that closes the SDK when disposed.
-    /// </summary>
-    public static IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
-    {
-        SentrySdk.Init(options =>
-        {
-            options.Dsn = TestDsn;
-            // Use temp directory to avoid creating Sentry cache in the project directory
-            options.CacheDirectoryPath = TestApplication.DefaultPersistentDataPath;
-            configure?.Invoke(options);
-        });
-
-        return new SentryDisposable();
-    }
-
-    private sealed class SentryDisposable : IDisposable
-    {
-        public void Dispose() => SentrySdk.Close();
-    }
 }

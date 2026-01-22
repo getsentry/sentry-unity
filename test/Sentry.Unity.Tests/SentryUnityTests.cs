@@ -25,8 +25,10 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void AsyncStackTrace()
     {
-        var options = new SentryUnityOptions();
-        options.AttachStacktrace = true;
+        var options = new SentryUnityOptions(application: new TestApplication())
+        {
+            AttachStacktrace = true
+        };
         var sut = new SentryStackTraceFactory(options);
 
         IList<SentryStackFrame> framesSentry = null!;
@@ -67,7 +69,11 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void SentryUnity_OptionsValid_Initializes()
     {
-        using var _ = SentryTests.InitSentrySdk();
+        var options = new SentryUnityOptions(application: new TestApplication())
+        {
+            Dsn = SentryTests.TestDsn
+        };
+        SentrySdk.Init(options);
 
         Assert.IsTrue(SentrySdk.IsEnabled);
     }
@@ -75,7 +81,7 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void SentryUnity_OptionsInvalid_DoesNotInitialize()
     {
-        var options = new SentryUnityOptions();
+        var options = new SentryUnityOptions(application: new TestApplication());
 
         // Even tho the defaults are set the DSN is missing making the options invalid for initialization
         SentrySdk.Init(options);
@@ -87,12 +93,11 @@ public class SentryUnitySelfInitializationTests
     public void Init_MultipleTimes_LogsWarning()
     {
         var testLogger = new TestLogger();
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
-            Debug = true,
             Dsn = SentryTests.TestDsn,
-            DiagnosticLogger = testLogger,
-            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+            Debug = true,
+            DiagnosticLogger = testLogger
         };
 
         SentrySdk.Init(options);
@@ -120,11 +125,10 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenCrashed_ReturnsCrashed()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
             Dsn = SentryTests.TestDsn,
-            CrashedLastRun = () => true, // Mock crashed state
-            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+            CrashedLastRun = () => true // Mock crashed state
         };
 
         // Act
@@ -139,11 +143,10 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenNotCrashed_ReturnsDidNotCrash()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
             Dsn = SentryTests.TestDsn,
-            CrashedLastRun = () => false, // Mock non-crashed state
-            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+            CrashedLastRun = () => false // Mock non-crashed state
         };
 
         // Act
@@ -158,11 +161,10 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WithNullDelegate_ReturnsUnknown()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
             Dsn = SentryTests.TestDsn,
-            CrashedLastRun = null, // Explicitly set to null
-            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+            CrashedLastRun = null // Explicitly set to null
         };
 
         // Act
@@ -176,7 +178,7 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void ConfigureUnsupportedPlatformFallbacks()
     {
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
             DisableFileWrite = false,
             AutoSessionTracking = true

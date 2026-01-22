@@ -14,8 +14,8 @@ public sealed class TestApplication : IApplication
 
     public TestApplication(
         bool isEditor = true,
-        string productName = "",
-        string version = "",
+        string productName = "TestApplication",
+        string version = "0.0.1-test",
         string buildGUID = "",
         string unityVersion = "",
         string? persistentDataPath = null,
