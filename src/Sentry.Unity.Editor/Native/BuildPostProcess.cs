@@ -187,7 +187,11 @@ public static class BuildPostProcess
         logger.LogInfo("Uploading debugging information using sentry-cli in {0}", buildOutputDir);
 
         var paths = new List<string>();
-        var baseName = Path.GetFileNameWithoutExtension(executableName);
+        // Linux executables have no extension, so Path.GetFileNameWithoutExtension would
+        // incorrectly truncate names containing dots (e.g., "My.Game" -> "My")
+        var baseName = target == BuildTarget.StandaloneLinux64
+            ? executableName
+            : Path.GetFileNameWithoutExtension(executableName);
 
         switch (target)
         {
@@ -221,9 +225,9 @@ public static class BuildPostProcess
                     AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_Data", "Plugins", windowsPluginArch, "sentry.dll"), logger);
                     // IL2CPP line mapping
                     AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BackUpThisFolder_ButDontShipItWithYourGame"), logger);
-                    // Burst debug information
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
                 }
+                // Burst debug information (works with both Mono and IL2CPP)
+                AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
                 break;
 
             case BuildTarget.StandaloneLinux64:
@@ -254,9 +258,9 @@ public static class BuildPostProcess
                     AddPath(paths, Path.Combine(buildOutputDir, "GameAssembly.so"), logger, required: true);
                     // IL2CPP line mapping
                     AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BackUpThisFolder_ButDontShipItWithYourGame"), logger);
-                    // Burst debug information
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
                 }
+                // Burst debug information (works with both Mono and IL2CPP)
+                AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
                 break;
 
             case BuildTarget.StandaloneOSX:
@@ -281,9 +285,9 @@ public static class BuildPostProcess
                 {
                     // IL2CPP line mapping
                     AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BackUpThisFolder_ButDontShipItWithYourGame"), logger);
-                    // Burst debug information
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
                 }
+                // Burst debug information (works with both Mono and IL2CPP)
+                AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
                 break;
 
             case BuildTarget.GameCoreXboxSeries:
