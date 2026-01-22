@@ -69,6 +69,7 @@ public static class SentryNativeAndroid
         options.NativeContextWriter = new NativeContextWriter(SentryJava);
         options.ScopeObserver = new AndroidJavaScopeObserver(options, SentryJava);
         options.EnableScopeSync = true;
+        options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
         options.CrashedLastRun = () =>
         {
             options.DiagnosticLogger?.LogDebug("Checking for 'CrashedLastRun'");

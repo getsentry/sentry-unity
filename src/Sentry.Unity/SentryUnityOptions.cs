@@ -342,6 +342,11 @@ public sealed class SentryUnityOptions : SentryOptions
     internal ContextWriter? NativeContextWriter { get; set; } = null;
 
     /// <summary>
+    /// Provides debug images from the native SDK for IL2CPP line number support.
+    /// </summary>
+    internal INativeDebugImageProvider? NativeDebugImageProvider { get; set; } = null;
+
+    /// <summary>
     /// Used to close down the native SDK
     /// </summary>
     internal Action? NativeSupportCloseCallback { get; set; } = null;

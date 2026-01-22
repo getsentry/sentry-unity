@@ -1,5 +1,3 @@
-using CWUtil = Sentry.Unity.NativeUtils.ContextWriter;
-
 namespace Sentry.Unity.Native;
 
 internal class NativeContextWriter : ContextWriter
@@ -40,11 +38,11 @@ internal class NativeContextWriter : ContextWriter
         string? UnityRenderingThreadingMode
     )
     {
-        CWUtil.WriteApp(AppStartTime, AppBuildType);
+        ContextWriterUtils.WriteApp(AppStartTime, AppBuildType);
 
-        CWUtil.WriteOS(OperatingSystemRawDescription);
+        ContextWriterUtils.WriteOS(OperatingSystemRawDescription);
 
-        CWUtil.WriteDevice(
+        ContextWriterUtils.WriteDevice(
             DeviceProcessorCount,
             DeviceCpuDescription,
             DeviceTimezone,
@@ -57,7 +55,7 @@ internal class NativeContextWriter : ContextWriter
             DeviceMemorySize
         );
 
-        CWUtil.WriteGpu(
+        ContextWriterUtils.WriteGpu(
             GpuId,
             GpuName,
             GpuVendorName,
@@ -74,7 +72,7 @@ internal class NativeContextWriter : ContextWriter
             GpuMultiThreadedRendering,
             GpuGraphicsShaderLevel);
 
-        CWUtil.WriteUnity(
+        ContextWriterUtils.WriteUnity(
             EditorVersion,
             UnityInstallMode,
             UnityTargetFrameRate,
