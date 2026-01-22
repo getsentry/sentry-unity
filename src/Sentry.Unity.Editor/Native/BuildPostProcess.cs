@@ -216,8 +216,9 @@ public static class BuildPostProcess
                 else // IL2CPP
                 {
                     AddPath(paths, Path.Combine(buildOutputDir, "GameAssembly.dll"), logger, required: true);
-                    // Sentry native in build output
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_Data", "Plugins", "x86_64", "sentry.dll"), logger);
+                    // Sentry native in build output - use correct architecture folder
+                    var windowsPluginArch = target == BuildTarget.StandaloneWindows ? "x86" : "x86_64";
+                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_Data", "Plugins", windowsPluginArch, "sentry.dll"), logger);
                     // IL2CPP line mapping
                     AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BackUpThisFolder_ButDontShipItWithYourGame"), logger);
                     // Burst debug information
