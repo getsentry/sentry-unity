@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added content-based event throttling to prevent repeated errors from consuming quota. The new `ILogThrottler` interface and `ContentBasedThrottler` implementation deduplicate `LogError` and `LogException` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+- Added content-based error event throttling to prevent repeated errors from consuming quota. The new `IErrorEventThrottler` interface and `ContentBasedThrottler` implementation deduplicate `LogError`, `LogException`, and `LogAssertion` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Error Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
 
 ### Deprecations
 

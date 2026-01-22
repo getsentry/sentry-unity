@@ -157,4 +157,86 @@ public class ContentBasedThrottlerTests
 
         Assert.DoesNotThrow(() => throttler.ShouldCapture("message", string.Empty, LogType.Error));
     }
+
+    [Test]
+    public void ShouldCapture_LogTypeAssert_ThrottlesRepeated()
+    {
+        var throttler = new ContentBasedThrottler(TimeSpan.FromSeconds(10));
+        var message = "assertion failed";
+
+        var result1 = throttler.ShouldCapture(message, "stacktrace", LogType.Assert);
+        var result2 = throttler.ShouldCapture(message, "stacktrace", LogType.Assert);
+
+        Assert.IsTrue(result1);
+        Assert.IsFalse(result2);
+    }
+
+    [Test]
+    public void ShouldCapture_LruEviction_EvictsLeastRecentlyUsed()
+    {
+        // Buffer size of 2
+        var throttler = new ContentBasedThrottler(TimeSpan.FromMilliseconds(50), maxBufferSize: 2);
+
+        // Add A and B
+        throttler.ShouldCapture("message A", "stack", LogType.Error);
+        throttler.ShouldCapture("message B", "stack", LogType.Error);
+
+        // Wait for expiry
+        System.Threading.Thread.Sleep(60);
+
+        // Access A again (makes A most recently used, B is now least recently used)
+        throttler.ShouldCapture("message A", "stack", LogType.Error);
+
+        // Add C - should evict B (least recently used), not A
+        throttler.ShouldCapture("message C", "stack", LogType.Error);
+
+        // B was evicted, should be allowed
+        var resultB = throttler.ShouldCapture("message B", "stack", LogType.Error);
+        // A was refreshed and not evicted, should be throttled
+        var resultA = throttler.ShouldCapture("message A", "stack", LogType.Error);
+
+        Assert.IsTrue(resultB, "Entry B should have been evicted (LRU) and allowed again");
+        Assert.IsFalse(resultA, "Entry A should still be in buffer and throttled");
+    }
+
+    [Test]
+    public void ShouldCaptureException_ThrottlesRepeatedExceptions()
+    {
+        var throttler = new ContentBasedThrottler(TimeSpan.FromSeconds(10));
+        var exception = new InvalidOperationException("test error");
+
+        var result1 = throttler.ShouldCaptureException(exception);
+        var result2 = throttler.ShouldCaptureException(exception);
+
+        Assert.IsTrue(result1);
+        Assert.IsFalse(result2);
+    }
+
+    [Test]
+    public void ShouldCaptureException_DifferentExceptionTypes_BothAllowed()
+    {
+        var throttler = new ContentBasedThrottler(TimeSpan.FromSeconds(10));
+        var exception1 = new InvalidOperationException("test error");
+        var exception2 = new ArgumentException("test error");
+
+        var result1 = throttler.ShouldCaptureException(exception1);
+        var result2 = throttler.ShouldCaptureException(exception2);
+
+        Assert.IsTrue(result1);
+        Assert.IsTrue(result2);
+    }
+
+    [Test]
+    public void ShouldCaptureException_SameTypeDifferentMessage_BothAllowed()
+    {
+        var throttler = new ContentBasedThrottler(TimeSpan.FromSeconds(10));
+        var exception1 = new InvalidOperationException("error 1");
+        var exception2 = new InvalidOperationException("error 2");
+
+        var result1 = throttler.ShouldCaptureException(exception1);
+        var result2 = throttler.ShouldCaptureException(exception2);
+
+        Assert.IsTrue(result1);
+        Assert.IsTrue(result2);
+    }
 }

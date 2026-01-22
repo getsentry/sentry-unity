@@ -56,7 +56,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         }
 
         // Check throttling - only affects event capture, not breadcrumbs or structured logs
-        if (_options.LogThrottler is { } throttler && !throttler.ShouldCapture(message, stacktrace, logType))
+        if (_options.ErrorEventThrottler is { } throttler && !throttler.ShouldCapture(message, stacktrace, logType))
         {
             _options.LogDebug("Error event throttled: {0}", message);
             return;

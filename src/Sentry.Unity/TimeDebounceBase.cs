@@ -5,7 +5,7 @@ namespace Sentry.Unity;
 /// <summary>
 /// Interface for debouncing Unity log messages.
 /// </summary>
-[Obsolete("Use ILogThrottler and ContentBasedThrottler instead. This interface will be removed in a future version.")]
+[Obsolete("Use IErrorEventThrottler and ContentBasedThrottler instead. This interface will be removed in a future version.")]
 public interface IUnityLogMessageDebounce
 {
     bool Debounced();

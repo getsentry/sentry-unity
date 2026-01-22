@@ -69,9 +69,9 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void OnLogMessageReceived_LogThrottlerEnabled_ThrottlesRepeatedError()
+        public void OnLogMessageReceived_ErrorEventThrottlerEnabled_ThrottlesRepeatedError()
         {
-            _fixture.SentryOptions.LogThrottler = new ContentBasedThrottler(System.TimeSpan.FromSeconds(10));
+            _fixture.SentryOptions.ErrorEventThrottler = new ContentBasedThrottler(System.TimeSpan.FromSeconds(10));
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 
@@ -85,9 +85,9 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        public void OnLogMessageReceived_LogThrottlerEnabled_DoesNotThrottleNonErrors()
+        public void OnLogMessageReceived_ErrorEventThrottlerEnabled_DoesNotThrottleNonErrors()
         {
-            _fixture.SentryOptions.LogThrottler = new ContentBasedThrottler(System.TimeSpan.FromSeconds(10));
+            _fixture.SentryOptions.ErrorEventThrottler = new ContentBasedThrottler(System.TimeSpan.FromSeconds(10));
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 

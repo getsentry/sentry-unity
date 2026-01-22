@@ -55,14 +55,10 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         }
 
         // Check throttling - only affects event capture
-        if (_options.LogThrottler is { } throttler)
+        if (_options.ErrorEventThrottler is { } throttler && !throttler.ShouldCaptureException(exception))
         {
-            var fingerprint = $"{exception.GetType().Name}:{exception.Message}";
-            if (!throttler.ShouldCapture(fingerprint, exception.StackTrace ?? string.Empty, LogType.Exception))
-            {
-                _options.LogDebug("Exception event throttled: {0}", exception.GetType().Name);
-                return;
-            }
+            _options.LogDebug("Exception event throttled: {0}", exception.GetType().Name);
+            return;
         }
 
         // TODO: Capture the context (i.e. grab the name if != null and set it as context)

@@ -52,18 +52,18 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Only affects event capture - breadcrumbs and structured logs are not affected.
     /// </summary>
     /// <remarks>
-    /// Set via <see cref="SetLogThrottler"/> or enable in the Sentry configuration window.
+    /// Set via <see cref="SetErrorEventThrottler"/> or enable in the Sentry configuration window.
     /// When enabled via the configuration window, a <see cref="ContentBasedThrottler"/> is used by default.
     /// </remarks>
-    public ILogThrottler? LogThrottler { get; set; }
+    public IErrorEventThrottler? ErrorEventThrottler { get; set; }
 
     /// <summary>
     /// Configures a throttler for error/exception events.
     /// </summary>
     /// <param name="throttler">The throttler implementation to use, or null to disable throttling.</param>
-    public void SetLogThrottler(ILogThrottler? throttler)
+    public void SetErrorEventThrottler(IErrorEventThrottler? throttler)
     {
-        LogThrottler = throttler;
+        ErrorEventThrottler = throttler;
     }
 
     private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;

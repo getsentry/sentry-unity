@@ -49,7 +49,7 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
         }
 
         // Check throttling - only affects event capture
-        if (_options.LogThrottler is { } throttler && !throttler.ShouldCapture(message, stacktrace, logType))
+        if (_options.ErrorEventThrottler is { } throttler && !throttler.ShouldCapture(message, stacktrace, logType))
         {
             _options.LogDebug("Exception event throttled.");
             return;

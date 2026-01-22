@@ -123,20 +123,20 @@ internal static class LoggingTab
         EditorGUILayout.Space();
 
         {
-            options.EnableLogThrottling = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Event Throttling",
+            options.EnableErrorEventThrottling = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Enable Error Event Throttling",
                     "Throttles error/exception events based on content to prevent repeated " +
                     "errors from consuming quota. Does not affect breadcrumbs or structured logs."),
-                options.EnableLogThrottling);
+                options.EnableErrorEventThrottling);
 
             EditorGUI.indentLevel++;
 
-            options.LogThrottleDedupeWindow = EditorGUILayout.IntField(
+            options.ErrorEventThrottleDedupeWindow = EditorGUILayout.IntField(
                 new GUIContent("Dedupe Window [ms]",
                     "Time window for deduplicating repeated errors with the same fingerprint." +
                     "\nDefault: 1000"),
-                options.LogThrottleDedupeWindow);
-            options.LogThrottleDedupeWindow = Math.Max(0, options.LogThrottleDedupeWindow);
+                options.ErrorEventThrottleDedupeWindow);
+            options.ErrorEventThrottleDedupeWindow = Math.Max(0, options.ErrorEventThrottleDedupeWindow);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
@@ -150,7 +150,7 @@ internal static class LoggingTab
         {
             EditorGUILayout.LabelField("Deprecated Settings", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Log Debouncing is deprecated. Please use 'Enable Event Throttling' above instead. " +
+                "Log Debouncing is deprecated. Please use 'Enable Error Event Throttling' above instead. " +
                 "These settings will be removed in a future version.",
                 MessageType.Warning);
 
