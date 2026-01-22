@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
+using Sentry.Unity.Tests.Stubs;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
 using UnityEngine;
@@ -43,7 +44,7 @@ public sealed class IntegrationTests
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         // We don't want to call testBehaviour.TestException(); because it won't go via Sentry infra.
@@ -60,7 +61,7 @@ public sealed class IntegrationTests
         yield return SetupSceneCoroutine("1_BugFarm");
 
         var expectedAttribute = CreateAttribute("release", Application.productName + "@" + Application.version);
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -77,9 +78,10 @@ public sealed class IntegrationTests
 
         var customRelease = "CustomRelease";
         var expectedAttribute = CreateAttribute("release", customRelease);
-        using var _ = InitSentrySdk(o =>
+        using var _ = SentryTests.InitSentrySdk(o =>
         {
             o.Release = customRelease;
+            o.CreateHttpMessageHandler = () => _testHttpClientHandler;
         });
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
@@ -98,7 +100,7 @@ public sealed class IntegrationTests
         var originalProductName = PlayerSettings.productName;
         PlayerSettings.productName = " ";
         var expectedAttribute = CreateAttribute("release", Application.version);
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -118,7 +120,7 @@ public sealed class IntegrationTests
         var originalProductName = PlayerSettings.productName;
         PlayerSettings.productName = null;
         var expectedAttribute = CreateAttribute("release", Application.version);
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -136,7 +138,7 @@ public sealed class IntegrationTests
         yield return SetupSceneCoroutine("1_BugFarm");
 
         var expectedAttribute = CreateAttribute("environment", "editor");
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -152,10 +154,11 @@ public sealed class IntegrationTests
         yield return SetupSceneCoroutine("1_BugFarm");
 
         var expectedAttribute = CreateAttribute("username", Environment.UserName);
-        using var _ = InitSentrySdk(o =>
+        using var _ = SentryTests.InitSentrySdk(o =>
         {
             o.SendDefaultPii = true;
             o.IsEnvironmentUser = true;
+            o.CreateHttpMessageHandler = () => _testHttpClientHandler;
         });
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
@@ -172,7 +175,7 @@ public sealed class IntegrationTests
         yield return SetupSceneCoroutine("1_BugFarm");
 
         var expectedAttribute = CreateAttribute("username", Environment.UserName);
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -188,13 +191,14 @@ public sealed class IntegrationTests
         yield return SetupSceneCoroutine("1_BugFarm");
 
         var firstHttpClientHandler = new TestHttpClientHandler("NotSupposedToBeCalled_TestHttpClientHandler");
-        using var firstDisposable = InitSentrySdk(o =>
+        using var firstDisposable = SentryTests.InitSentrySdk(o =>
         {
             o.Dsn = "http://publickey@localhost:8000/12345";
             o.CreateHttpMessageHandler = () => firstHttpClientHandler;
         });
 
-        using var secondDisposable = InitSentrySdk(); // uses the default test DSN
+        // Uses the default test DSN
+        using var secondDisposable = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
 
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -211,7 +215,7 @@ public sealed class IntegrationTests
         yield return SetupSceneCoroutine("1_BugFarm");
 
         var expectedMechanism = "\"mechanism\":{\"type\":\"Unity.LogException\",\"handled\":false";
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
@@ -229,7 +233,7 @@ public sealed class IntegrationTests
         // 'Debug.LogError' is getting captured as message
         _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage);
 
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogError), _eventMessage);
@@ -252,7 +256,7 @@ public sealed class IntegrationTests
         // 'Debug.LogError' is getting captured as message
         _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage);
 
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogErrorInTask), _eventMessage);
@@ -267,7 +271,7 @@ public sealed class IntegrationTests
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogException), _eventMessage);
@@ -287,7 +291,7 @@ public sealed class IntegrationTests
 
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        using var _ = InitSentrySdk();
+        using var _ = SentryTests.InitSentrySdk(o => o.CreateHttpMessageHandler = () => _testHttpClientHandler);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.DebugLogExceptionInTask), _eventMessage);
@@ -302,17 +306,18 @@ public sealed class IntegrationTests
     {
         yield return null;
 
-        // Use CreateOptions to get expected defaults with test cache path
-        var expectedOptions = SentryTests.CreateOptions(o =>
+        var expectedOptions = new SentryUnityOptions
         {
-            o.Dsn = string.Empty; // The SentrySDK tries to resolve the DSN from the environment when it's null
-        });
+            Dsn = string.Empty, // The SentrySDK tries to resolve the DSN from the environment when it's null
+            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath // Gets set through `SentryTests.InitSentrySdk`
+        };
 
         SentryUnityOptions? actualOptions = null;
-        using var _ = InitSentrySdk(o =>
+        using var _ = SentryTests.InitSentrySdk(o =>
         {
             o.Dsn = string.Empty; // InitSentrySDK already sets a test dsn
             actualOptions = o;
+            o.CreateHttpMessageHandler = () => _testHttpClientHandler;
         });
 
         Assert.NotNull(actualOptions);
@@ -334,7 +339,4 @@ public sealed class IntegrationTests
         // skip a frame for a Unity to properly load a scene
         yield return null;
     }
-
-    internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
-        => SentryTests.InitSentrySdk(configure, _testHttpClientHandler);
 }

@@ -67,9 +67,7 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void SentryUnity_OptionsValid_Initializes()
     {
-        var options = SentryTests.CreateOptions(o => o.Dsn = SentryTests.TestDsn);
-
-        SentrySdk.Init(options);
+        using var _ = SentryTests.InitSentrySdk();
 
         Assert.IsTrue(SentrySdk.IsEnabled);
     }
@@ -89,12 +87,13 @@ public class SentryUnitySelfInitializationTests
     public void Init_MultipleTimes_LogsWarning()
     {
         var testLogger = new TestLogger();
-        var options = SentryTests.CreateOptions(o =>
+        var options = new SentryUnityOptions
         {
-            o.Debug = true;
-            o.Dsn = SentryTests.TestDsn;
-            o.DiagnosticLogger = testLogger;
-        });
+            Debug = true,
+            Dsn = SentryTests.TestDsn,
+            DiagnosticLogger = testLogger,
+            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+        };
 
         SentrySdk.Init(options);
         SentrySdk.Init(options);
@@ -121,11 +120,12 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenCrashed_ReturnsCrashed()
     {
         // Arrange
-        var options = SentryTests.CreateOptions(o =>
+        var options = new SentryUnityOptions
         {
-            o.Dsn = SentryTests.TestDsn;
-            o.CrashedLastRun = () => true; // Mock crashed state
-        });
+            Dsn = SentryTests.TestDsn,
+            CrashedLastRun = () => true, // Mock crashed state
+            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+        };
 
         // Act
         SentrySdk.Init(options);
@@ -139,11 +139,12 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenNotCrashed_ReturnsDidNotCrash()
     {
         // Arrange
-        var options = SentryTests.CreateOptions(o =>
+        var options = new SentryUnityOptions
         {
-            o.Dsn = SentryTests.TestDsn;
-            o.CrashedLastRun = () => false; // Mock non-crashed state
-        });
+            Dsn = SentryTests.TestDsn,
+            CrashedLastRun = () => false, // Mock non-crashed state
+            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+        };
 
         // Act
         SentrySdk.Init(options);
@@ -157,11 +158,12 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WithNullDelegate_ReturnsUnknown()
     {
         // Arrange
-        var options = SentryTests.CreateOptions(o =>
+        var options = new SentryUnityOptions
         {
-            o.Dsn = SentryTests.TestDsn;
-            o.CrashedLastRun = null; // Explicitly set to null
-        });
+            Dsn = SentryTests.TestDsn,
+            CrashedLastRun = null, // Explicitly set to null
+            CacheDirectoryPath = TestApplication.DefaultPersistentDataPath
+        };
 
         // Act
         SentrySdk.Init(options);

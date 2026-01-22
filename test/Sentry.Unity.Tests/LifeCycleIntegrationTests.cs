@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
@@ -13,7 +12,7 @@ public class LifeCycleIntegrationTests
     {
         yield return null;
 
-        using var _ = InitSentrySdk(o =>
+        using var _ = SentryTests.InitSentrySdk(_ =>
         {
             // o.AutoSessionTracking = true; We expect this to be true by default
         });
@@ -24,7 +23,4 @@ public class LifeCycleIntegrationTests
         Assert.IsNotNull(sentryGameObject);
         Assert.IsNotNull(sentryMonoBehaviour);
     }
-
-    internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
-        => SentryTests.InitSentrySdk(configure);
 }

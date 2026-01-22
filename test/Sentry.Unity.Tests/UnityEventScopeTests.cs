@@ -58,7 +58,7 @@ public sealed class UnityEventProcessorThreadingTests
     public void SentrySdkCaptureEvent_OnNotUIThread_Succeeds()
     {
         // arrange
-        var options = SentryTests.CreateOptions(o =>
+        using var _ = SentryTests.InitSentrySdk(o =>
         {
             o.Dsn = "https://a520c186ed684a8aa7d5d334bd7dab52@o447951.ingest.sentry.io/5801250";
             o.Enabled = true;
@@ -66,7 +66,6 @@ public sealed class UnityEventProcessorThreadingTests
             o.Debug = true;
             o.DiagnosticLogger = _testLogger;
         });
-        SentrySdk.Init(options);
 
         var sentryEvent = new SentryEvent
         {
