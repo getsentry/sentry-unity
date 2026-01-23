@@ -196,6 +196,12 @@ public static class BuildPostProcess
                 // Sentry native SDK symbols from package
                 AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"), logger);
 
+                // Data - native plugins
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
                 if (isMono)
                 {
                     // Mono runtime
@@ -209,12 +215,6 @@ public static class BuildPostProcess
                 else // IL2CPP
                 {
                     AddPath(paths, Path.Combine(buildOutputDir, "GameAssembly.dll"), logger, required: true);
-                    // Data - native plugins
-                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))
-                    {
-                        AddPath(paths, dir, logger);
-                    }
-
                     // IL2CPP output and Managed
                     foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
                     {
