@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
@@ -8,6 +9,7 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Sentry.Unity.Editor.Native;
 
@@ -64,7 +66,16 @@ public static class BuildPostProcess
             return;
         }
 
-        UploadDebugSymbols(logger, target, buildOutputDir, options, cliOptions, isMono);
+        var executableName = targetGroup switch
+        {
+            BuildTargetGroup.Standalone => Path.GetFileName(executablePath),
+            // For Xbox/PS5, executablePath is the directory itself
+            BuildTargetGroup.GameCoreXboxSeries => Path.GetFileName(executablePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)),
+            BuildTargetGroup.PS5 => Path.GetFileName(executablePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)),
+            _ => string.Empty
+        };
+
+        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
 
         if (!IsEnabledForPlatform(target, options))
         {
@@ -128,9 +139,27 @@ public static class BuildPostProcess
         File.Copy(fullHandlerPath, targetHandlerPath, true);
     }
 
-    private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+    internal static void AddPath(List<string> paths, string path, IDiagnosticLogger logger, bool required = false)
     {
-        var projectDir = Directory.GetParent(Application.dataPath).FullName;
+        if (Directory.Exists(path) || File.Exists(path))
+        {
+            paths.Add(path);
+            logger.LogDebug("Adding '{0}' to debug symbol upload", path);
+        }
+        else if (required)
+        {
+            logger.LogWarning("Required path not found for debug symbol upload: {0}", path);
+        }
+        else
+        {
+            logger.LogDebug("Optional path not found, skipping: {0}", path);
+        }
+    }
+
+    private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir,
+        string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+    {
+        var projectDir = Directory.GetParent(Application.dataPath)?.FullName ?? "";
         if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
         {
             if (options.Il2CppLineNumberSupportEnabled)
@@ -141,63 +170,154 @@ public static class BuildPostProcess
             return;
         }
 
+        // Warn if build output appears to be inside the Unity project directory
+        if (Directory.Exists(Path.Combine(buildOutputDir, "Assets")) ||
+            Directory.Exists(Path.Combine(buildOutputDir, "ProjectSettings")) ||
+            Directory.Exists(Path.Combine(buildOutputDir, "Library")))
+        {
+            logger.LogWarning(
+                "Build output directory '{0}' appears to be the Unity project directory or contain project folders. " +
+                "This may cause issues with debug symbol upload. Consider using a dedicated build output folder outside the project.",
+                buildOutputDir);
+        }
+
         logger.LogInfo("Uploading debugging information using sentry-cli in {0}", buildOutputDir);
 
-        // Setting the `buildOutputDir` as the root for debug symbol upload. This will make sure we pick up
-        // `BurstDebugInformation` and`_DoNotShip` as well
-        var paths = $" \"{buildOutputDir}\"";
+        var paths = new List<string>();
 
         switch (target)
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                var windowsSentryPdb = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb");
-                if (File.Exists(windowsSentryPdb))
+                // Core executables and libraries
+                AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
+                AddPath(paths, Path.Combine(buildOutputDir, "UnityPlayer.dll"), logger, required: true);
+
+                // Sentry native SDK symbols from package
+                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"), logger);
+
+                // Data - native plugins
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))
                 {
-                    paths += $" \"{windowsSentryPdb}\"";
+                    AddPath(paths, dir, logger);
                 }
+
+                if (isMono)
+                {
+                    // Mono runtime
+                    AddPath(paths, Path.Combine(buildOutputDir, "MonoBleedingEdge", "EmbedRuntime"), logger);
+                    // Add all PDB files in build output root
+                    foreach (var pdb in Directory.GetFiles(buildOutputDir, "*.pdb"))
+                    {
+                        AddPath(paths, pdb, logger);
+                    }
+                }
+                else // IL2CPP
+                {
+                    AddPath(paths, Path.Combine(buildOutputDir, "GameAssembly.dll"), logger, required: true);
+                    // IL2CPP output and Managed
+                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+                    {
+                        AddPath(paths, dir, logger);
+                    }
+                }
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
                 break;
+
+            case BuildTarget.StandaloneLinux64:
+                // Core executables and libraries
+                AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
+                AddPath(paths, Path.Combine(buildOutputDir, "UnityPlayer.so"), logger, required: true);
+
+                // Sentry native SDK symbols from package
+                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"), logger);
+
+                // Data - native plugins
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
+                if (!isMono) // IL2CPP
+                {
+                    AddPath(paths, Path.Combine(buildOutputDir, "GameAssembly.so"), logger, required: true);
+                    // IL2CPP output and Managed
+                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+                    {
+                        AddPath(paths, dir, logger);
+                    }
+                }
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
+                break;
+
+            case BuildTarget.StandaloneOSX:
+                // App bundle
+                AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
+
+                // Sentry dSYM from package
+                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"), logger);
+
+                if (!isMono) // IL2CPP
+                {
+                    // IL2CPP output and Managed
+                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+                    {
+                        AddPath(paths, dir, logger);
+                    }
+
+                }
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
+                break;
+
             case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
-                var xboxSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/");
-                if (Directory.Exists(xboxSentryPluginPath))
-                {
-                    paths += $" \"{xboxSentryPluginPath}\"";
-                }
+                // Xbox builds go to a dedicated directory, safe to scan entirely
+                AddPath(paths, buildOutputDir, logger, required: true);
+                // User-provided Sentry plugin
+                AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
                 break;
+
             case BuildTarget.PS5:
-                var playstationSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/");
-                if (Directory.Exists(playstationSentryPluginPath))
-                {
-                    paths += $" \"{playstationSentryPluginPath}\"";
-                }
+                // PlayStation builds go to a dedicated directory, safe to scan entirely
+                AddPath(paths, buildOutputDir, logger, required: true);
+                // User-provided Sentry plugin
+                AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
                 break;
-            case BuildTarget.StandaloneLinux64:
-                var linuxSentryDbg = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so");
-                if (File.Exists(linuxSentryDbg))
-                {
-                    paths += $" \"{linuxSentryDbg}\"";
-                }
-                break;
-            case BuildTarget.StandaloneOSX:
-                var macOSSentryDsym = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM");
-                if (Directory.Exists(macOSSentryDsym))
-                {
-                    paths += $" \"{macOSSentryDsym}\"";
-                }
-                break;
+
             default:
-                logger.LogError($"Symbol upload for '{target}' is currently not supported.");
+                logger.LogError("Symbol upload for '{0}' is currently not supported.", target);
                 return;
         }
 
-        // Unity stores the .pdb files for script assemblies in `./Temp/ManagedSymbols/`
-        var managedSymbolsDirectory = $"{projectDir}/Temp/ManagedSymbols";
-        if (Directory.Exists(managedSymbolsDirectory))
+        // Possible duplicate but check for the .pdb files that Unity stores for script assemblies in `./Temp/ManagedSymbols/`.
+        var managedSymbolsDirectory = Path.Combine(projectDir, "Temp", "ManagedSymbols");
+        AddPath(paths, managedSymbolsDirectory, logger);
+
+        if (paths.Count == 0)
         {
-            paths += $" \"{managedSymbolsDirectory}\"";
+            logger.LogWarning("No debug symbol paths found to upload.");
+            return;
         }
 
+        // Build CLI arguments
         var cliArgs = "debug-files upload ";
         if (!isMono)
         {
@@ -209,11 +329,11 @@ public static class BuildPostProcess
         }
         if (cliOptions.IgnoreCliErrors)
         {
-            cliArgs += "--allow-failure";
+            cliArgs += "--allow-failure ";
         }
-        cliArgs += paths;
 
-        // Configure the process using the StartInfo properties.
+        cliArgs = paths.Aggregate(cliArgs, (current, path) => current + $"\"{path}\" ");
+
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
