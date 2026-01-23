@@ -11,11 +11,13 @@ The Sentry Unity SDK provides error monitoring, performance tracing, and crash r
 
 ### Quick Commands
 
+**IMPORTANT**: Always run `dotnet build` from the repository root. Never build specific `.csproj` files directly.
+
 ```bash
 # Download prebuilt native SDKs
 dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 
-# Build the Unity SDK
+# Build the Unity SDK (always from root, never target specific .csproj files)
 dotnet build
 
 # Run all tests (builds SDK first)
@@ -256,7 +258,7 @@ Scripts involved:
 | macOS | Objective-C | `__Internal` | `SentryCocoaBridgeProxy.cs`, `SentryNativeCocoa.cs` |
 | Windows | P/Invoke | `sentry` | `SentryNativeBridge.cs`, `CFunctions.cs` |
 | Linux | P/Invoke | `sentry` | `SentryNativeBridge.cs`, `CFunctions.cs` |
-| PlayStation | Static | `__Internal` | `CFunctions.cs` |
+| PlayStation | P/Invoke | `sentry` | `SentryNativeBridge.cs`, `CFunctions.cs` |
 
 ### Native SDK Submodules
 

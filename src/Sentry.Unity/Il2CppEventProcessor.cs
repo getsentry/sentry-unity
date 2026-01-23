@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Protocol;
 using Sentry.Unity.Integrations;
-using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using Application = UnityEngine.Application;
 
@@ -231,7 +230,8 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
         // Only on platforms where we actually use sentry-native.
         if (IsPlatformSupportedBySentryNative() && Options.IsNativeSupportEnabled())
         {
-            var nativeDebugImages = C.DebugImages.Value;
+            var nativeDebugImages = Options.NativeDebugImageProvider?.GetDebugImages()
+                ?? Enumerable.Empty<DebugImage>();
             foreach (var image in nativeDebugImages)
             {
                 if (image.ImageSize is null)

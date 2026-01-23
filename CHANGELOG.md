@@ -5,6 +5,7 @@
 ### Fixes
 
 - The 'SceneManagerTracingIntegration' properly respects the `AutoSceneTracing` flag again ([#2496](https://github.com/getsentry/sentry-unity/pull/2496))
+- When targeting Android, the capturing native SDK now has its name correctly set ([#2476](https://github.com/getsentry/sentry-unity/pull/2476))
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
 
 ### Dependencies
@@ -15,6 +16,9 @@
 - Bump Native SDK from v0.12.2 to v0.12.3 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0123)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.3)
+- Bump Cocoa SDK from v9.1.0 to v9.2.0 ([#2492](https://github.com/getsentry/sentry-unity/pull/2492))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#920)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.1.0...9.2.0)
 
 ## 4.0.0
 
