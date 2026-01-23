@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Callbacks;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Sentry.Unity.Editor.Native;
 
@@ -65,7 +66,6 @@ public static class BuildPostProcess
             return;
         }
 
-        // Get executable name for constructing related paths
         var executableName = targetGroup switch
         {
             BuildTargetGroup.Standalone => Path.GetFileName(executablePath),
@@ -139,9 +139,6 @@ public static class BuildPostProcess
         File.Copy(fullHandlerPath, targetHandlerPath, true);
     }
 
-    /// <summary>
-    /// Helper method to add a path to the upload list if it exists.
-    /// </summary>
     internal static void AddPath(List<string> paths, string path, IDiagnosticLogger logger, bool required = false)
     {
         if (Directory.Exists(path) || File.Exists(path))
@@ -187,11 +184,6 @@ public static class BuildPostProcess
         logger.LogInfo("Uploading debugging information using sentry-cli in {0}", buildOutputDir);
 
         var paths = new List<string>();
-        // Linux executables have no extension, so Path.GetFileNameWithoutExtension would
-        // incorrectly truncate names containing dots (e.g., "My.Game" -> "My")
-        var baseName = target == BuildTarget.StandaloneLinux64
-            ? executableName
-            : Path.GetFileNameWithoutExtension(executableName);
 
         switch (target)
         {
@@ -209,85 +201,90 @@ public static class BuildPostProcess
                     // Mono runtime
                     AddPath(paths, Path.Combine(buildOutputDir, "MonoBleedingEdge", "EmbedRuntime"), logger);
                     // Add all PDB files in build output root
-                    if (Directory.Exists(buildOutputDir))
+                    foreach (var pdb in Directory.GetFiles(buildOutputDir, "*.pdb"))
                     {
-                        foreach (var pdb in Directory.GetFiles(buildOutputDir, "*.pdb"))
-                        {
-                            AddPath(paths, pdb, logger);
-                        }
+                        AddPath(paths, pdb, logger);
                     }
                 }
                 else // IL2CPP
                 {
                     AddPath(paths, Path.Combine(buildOutputDir, "GameAssembly.dll"), logger, required: true);
-                    // Sentry native in build output - use correct architecture folder
-                    var windowsPluginArch = target == BuildTarget.StandaloneWindows ? "x86" : "x86_64";
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_Data", "Plugins", windowsPluginArch, "sentry.dll"), logger);
-                    // IL2CPP line mapping
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BackUpThisFolder_ButDontShipItWithYourGame"), logger);
+                    // Data - native plugins
+                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))
+                    {
+                        AddPath(paths, dir, logger);
+                    }
+
+                    // IL2CPP output and Managed
+                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+                    {
+                        AddPath(paths, dir, logger);
+                    }
                 }
-                // Burst debug information (works with both Mono and IL2CPP)
-                AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
                 break;
 
             case BuildTarget.StandaloneLinux64:
                 // Core executables and libraries
                 AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
-                AddPath(paths, Path.Combine(buildOutputDir, $"{executableName}_s.debug"), logger);
                 AddPath(paths, Path.Combine(buildOutputDir, "UnityPlayer.so"), logger, required: true);
-                AddPath(paths, Path.Combine(buildOutputDir, "UnityPlayer_s.debug"), logger);
 
                 // Sentry native SDK symbols from package
                 AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"), logger);
 
-                if (isMono)
+                // Data - native plugins
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))
                 {
-                    // Mono runtime
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_Data", "MonoBleedingEdge", "x86_64"), logger);
-                    // Add all debug files in build output root
-                    if (Directory.Exists(buildOutputDir))
-                    {
-                        foreach (var debug in Directory.GetFiles(buildOutputDir, "*.debug"))
-                        {
-                            AddPath(paths, debug, logger);
-                        }
-                    }
+                    AddPath(paths, dir, logger);
                 }
-                else // IL2CPP
+
+                if (!isMono) // IL2CPP
                 {
                     AddPath(paths, Path.Combine(buildOutputDir, "GameAssembly.so"), logger, required: true);
-                    // IL2CPP line mapping
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BackUpThisFolder_ButDontShipItWithYourGame"), logger);
+                    // IL2CPP output and Managed
+                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+                    {
+                        AddPath(paths, dir, logger);
+                    }
                 }
-                // Burst debug information (works with both Mono and IL2CPP)
-                AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
                 break;
 
             case BuildTarget.StandaloneOSX:
-                // App bundle - sentry-cli will scan recursively for binaries inside
+                // App bundle
                 AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
 
                 // Sentry dSYM from package
                 AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"), logger);
 
-                if (isMono)
+                if (!isMono) // IL2CPP
                 {
-                    // Add all PDB files in build output root
-                    if (Directory.Exists(buildOutputDir))
+                    // IL2CPP output and Managed
+                    foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
                     {
-                        foreach (var pdb in Directory.GetFiles(buildOutputDir, "*.pdb"))
-                        {
-                            AddPath(paths, pdb, logger);
-                        }
+                        AddPath(paths, dir, logger);
                     }
+
                 }
-                else // IL2CPP
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
                 {
-                    // IL2CPP line mapping
-                    AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BackUpThisFolder_ButDontShipItWithYourGame"), logger);
+                    AddPath(paths, dir, logger);
                 }
-                // Burst debug information (works with both Mono and IL2CPP)
-                AddPath(paths, Path.Combine(buildOutputDir, $"{baseName}_BurstDebugInformation_DoNotShip"), logger);
+
                 break;
 
             case BuildTarget.GameCoreXboxSeries:
@@ -310,7 +307,7 @@ public static class BuildPostProcess
                 return;
         }
 
-        // Unity stores the .pdb files for script assemblies in `./Temp/ManagedSymbols/`
+        // Possible duplicate but check for the .pdb files that Unity stores for script assemblies in `./Temp/ManagedSymbols/`.
         var managedSymbolsDirectory = Path.Combine(projectDir, "Temp", "ManagedSymbols");
         AddPath(paths, managedSymbolsDirectory, logger);
 
@@ -335,13 +332,8 @@ public static class BuildPostProcess
             cliArgs += "--allow-failure ";
         }
 
-        // Add all collected paths
-        foreach (var path in paths)
-        {
-            cliArgs += $"\"{path}\" ";
-        }
+        cliArgs = paths.Aggregate(cliArgs, (current, path) => current + $"\"{path}\" ");
 
-        // Configure the process using the StartInfo properties.
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
