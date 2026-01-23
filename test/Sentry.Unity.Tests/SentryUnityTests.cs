@@ -13,8 +13,6 @@ namespace Sentry.Unity.Tests;
 
 public class SentryUnitySelfInitializationTests
 {
-    private const string TestDsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-
     [TearDown]
     public void TearDown()
     {
@@ -27,8 +25,10 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void AsyncStackTrace()
     {
-        var options = new SentryUnityOptions();
-        options.AttachStacktrace = true;
+        var options = new SentryUnityOptions(application: new TestApplication())
+        {
+            AttachStacktrace = true
+        };
         var sut = new SentryStackTraceFactory(options);
 
         IList<SentryStackFrame> framesSentry = null!;
@@ -69,11 +69,10 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void SentryUnity_OptionsValid_Initializes()
     {
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
-            Dsn = TestDsn
+            Dsn = SentryTests.TestDsn
         };
-
         SentrySdk.Init(options);
 
         Assert.IsTrue(SentrySdk.IsEnabled);
@@ -82,7 +81,7 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void SentryUnity_OptionsInvalid_DoesNotInitialize()
     {
-        var options = new SentryUnityOptions();
+        var options = new SentryUnityOptions(application: new TestApplication());
 
         // Even tho the defaults are set the DSN is missing making the options invalid for initialization
         SentrySdk.Init(options);
@@ -94,11 +93,11 @@ public class SentryUnitySelfInitializationTests
     public void Init_MultipleTimes_LogsWarning()
     {
         var testLogger = new TestLogger();
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
+            Dsn = SentryTests.TestDsn,
             Debug = true,
-            Dsn = TestDsn,
-            DiagnosticLogger = testLogger,
+            DiagnosticLogger = testLogger
         };
 
         SentrySdk.Init(options);
@@ -126,9 +125,9 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenCrashed_ReturnsCrashed()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
-            Dsn = TestDsn,
+            Dsn = SentryTests.TestDsn,
             CrashedLastRun = () => true // Mock crashed state
         };
 
@@ -144,9 +143,9 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WhenNotCrashed_ReturnsDidNotCrash()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
-            Dsn = TestDsn,
+            Dsn = SentryTests.TestDsn,
             CrashedLastRun = () => false // Mock non-crashed state
         };
 
@@ -162,9 +161,9 @@ public class SentryUnitySelfInitializationTests
     public void GetLastRunState_WithNullDelegate_ReturnsUnknown()
     {
         // Arrange
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
-            Dsn = TestDsn,
+            Dsn = SentryTests.TestDsn,
             CrashedLastRun = null // Explicitly set to null
         };
 
@@ -179,7 +178,7 @@ public class SentryUnitySelfInitializationTests
     [Test]
     public void ConfigureUnsupportedPlatformFallbacks()
     {
-        var options = new SentryUnityOptions
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
             DisableFileWrite = false,
             AutoSessionTracking = true
