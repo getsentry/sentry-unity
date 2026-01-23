@@ -33,9 +33,16 @@ internal class StartupTracingIntegration : ISdkIntegration
     {
         Logger = options.DiagnosticLogger;
 
-        if (options is SentryUnityOptions { TracesSampleRate: > 0, AutoStartupTraces: true })
+        // This should never happen, but if it does...
+        var options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+
+        if (options is { TracesSampleRate: > 0, AutoStartupTraces: true })
         {
             IsIntegrationRegistered = true;
+        }
+        else if (options is SentryUnityOptions unityOptions)
+        {
+            options.LogDebug("Skipping registering '{0}'.  Either 'TracesSampleRate' set to '0' or 'AutoStartupTraces' is set to 'false'", nameof(StartupTracingIntegration));
         }
     }
 

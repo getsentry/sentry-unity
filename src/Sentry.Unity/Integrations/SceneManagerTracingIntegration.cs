@@ -7,15 +7,12 @@ namespace Sentry.Unity;
 
 internal class SceneManagerTracingIntegration : ISdkIntegration
 {
-    public void Register(IHub hub, SentryOptions options)
+    public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        // This should never happen but in case it does...
-        if (options is not SentryUnityOptions unityOptions)
-        {
-            return;
-        }
+        // This should never happen, but if it does...
+        var options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
 
-        if (unityOptions is { TracesSampleRate: > 0.0f, AutoSceneLoadTraces: true })
+        if (options is { TracesSampleRate: > 0.0f, AutoSceneLoadTraces: true })
         {
             if (SceneManagerAPI.overrideAPI != null)
             {
