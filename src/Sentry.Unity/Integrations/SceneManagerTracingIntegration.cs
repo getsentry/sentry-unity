@@ -9,19 +9,25 @@ internal class SceneManagerTracingIntegration : ISdkIntegration
 {
     public void Register(IHub hub, SentryOptions options)
     {
-        if (options.TracesSampleRate > 0.0f)
+        // This should never happen but in case it does...
+        if (options is not SentryUnityOptions unityOptions)
+        {
+            return;
+        }
+
+        if (unityOptions is { TracesSampleRate: > 0.0f, AutoSceneLoadTraces: true })
         {
             if (SceneManagerAPI.overrideAPI != null)
             {
                 // TODO: Add a place to put a custom 'SceneManagerAPI' on the editor window so we can "decorate" it.
-                options.LogWarning("Registering {0} integration - overwriting the previous SceneManagerAPI.overrideAPI.", nameof(SceneManagerTracingIntegration));
+                options.LogWarning("Registering '{0}' integration - overwriting the previous SceneManagerAPI.overrideAPI.", nameof(SceneManagerTracingIntegration));
             }
 
             SceneManagerAPI.overrideAPI = new SceneManagerTracingAPI(options.DiagnosticLogger);
         }
         else
         {
-            options.LogDebug("Sample Rate set to {0}. Skipping registering {1}.", options.TracesSampleRate, nameof(SceneManagerTracingIntegration));
+            options.LogDebug("Skipping registering '{0}'.  Either 'TracesSampleRate' set to '0' or 'AutoSceneLoadTraces' is set to 'false'", nameof(SceneManagerTracingIntegration));
         }
     }
 }
