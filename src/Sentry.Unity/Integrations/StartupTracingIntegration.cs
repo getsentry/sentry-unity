@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
 using Sentry.Internal;
@@ -29,12 +30,12 @@ internal class StartupTracingIntegration : ISdkIntegration
     // For testing. Methods with the RuntimeLoad attribute cannot have arguments
     internal static IApplication? Application = null;
 
-    public void Register(IHub hub, SentryOptions options)
+    public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        Logger = options.DiagnosticLogger;
-
         // This should never happen, but if it does...
         var options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+
+        Logger = options.DiagnosticLogger;
 
         if (options is { TracesSampleRate: > 0, AutoStartupTraces: true })
         {

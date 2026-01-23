@@ -68,46 +68,35 @@ public class TraceGenerationIntegrationTests
         Assert.IsEmpty(_fixture.TestHub.ConfigureScopeCalls);
     }
 
-    [TestCase(0.0f, false)]
-    [TestCase(0.0f, true)]
-    [TestCase(1.0f, false)]
-    public void ActiveSceneChanged_TracingDisabledOrAutoSceneLoadTracesDisabled_GeneratesTrace(float tracesSampleRate, bool autoSceneLoadTraces)
-    {
-        // Arrange
-        _fixture.SentryOptions.TracesSampleRate = tracesSampleRate;
-        _fixture.SentryOptions.AutoSceneLoadTraces = autoSceneLoadTraces;
-
-        var sut = _fixture.GetSut();
-        sut.Register(_fixture.TestHub, _fixture.SentryOptions);
-        var initialCallsCount = _fixture.TestHub.ConfigureScopeCalls.Count;
-
-        // Act
-        _fixture.SceneManager.OnActiveSceneChanged(new SceneAdapter("from scene name"), new SceneAdapter("to scene name"));
-
-        // Assert
-        Assert.AreEqual(initialCallsCount + 1, _fixture.TestHub.ConfigureScopeCalls.Count);
-        var configureScope = _fixture.TestHub.ConfigureScopeCalls.Last();
-        var scope = new Scope(_fixture.SentryOptions);
-        var initialPropagationContext = scope.PropagationContext;
-        configureScope(scope);
-        Assert.AreNotEqual(initialPropagationContext, scope.PropagationContext);
-    }
-
     [Test]
-    public void ActiveSceneChanged_TracingEnabledAndAutoSceneLoadTracesEnabled_DoesNotGenerateTrace()
+    public void ActiveSceneChanged_DoesNotRegeneratePropagationContext()
     {
         // Arrange
-        _fixture.SentryOptions.TracesSampleRate = 1.0f;
-        _fixture.SentryOptions.AutoSceneLoadTraces = true;
-
         var sut = _fixture.GetSut();
         sut.Register(_fixture.TestHub, _fixture.SentryOptions);
-        var initialCallsCount = _fixture.TestHub.ConfigureScopeCalls.Count;
+
+        // Capture the propagation context state after registration
+        var scope = new Scope(_fixture.SentryOptions);
+        foreach (var configureScope in _fixture.TestHub.ConfigureScopeCalls)
+        {
+            configureScope(scope);
+        }
+        var traceIdAfterRegistration = scope.PropagationContext.TraceId;
+        var callCountAfterRegistration = _fixture.TestHub.ConfigureScopeCalls.Count;
 
         // Act
-        _fixture.SceneManager.OnActiveSceneChanged(new SceneAdapter("from scene name"), new SceneAdapter("to scene name"));
+        _fixture.SceneManager.OnActiveSceneChanged(
+            new SceneAdapter("from scene name"),
+            new SceneAdapter("to scene name"));
+
+        // Apply only the NEW calls that happened after scene change
+        for (var i = callCountAfterRegistration; i < _fixture.TestHub.ConfigureScopeCalls.Count; i++)
+        {
+            _fixture.TestHub.ConfigureScopeCalls[i](scope);
+        }
 
         // Assert
-        Assert.AreEqual(initialCallsCount, _fixture.TestHub.ConfigureScopeCalls.Count);
+        Assert.AreEqual(traceIdAfterRegistration, scope.PropagationContext.TraceId,
+            "TraceId should not change after scene change");
     }
 }

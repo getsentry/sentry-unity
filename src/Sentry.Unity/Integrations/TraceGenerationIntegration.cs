@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
 
