@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- The SDK no longer refreshes the trace ID when changing active scene. This follows the changes to not do so based on lifecycle events, meaning that the trace ID persists from game start to game end, as intended in `4.0.0`. ([#2502](https://github.com/getsentry/sentry-unity/pull/2502))
+
 ### Fixes
 
 - The SDK now specifies the files and directories targeted for debug symbol upload instead of pointing sentry-cli at the build output directory ([#2485](https://github.com/getsentry/sentry-unity/pull/2485))
