@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.ConfigurationWindow;
@@ -116,10 +117,8 @@ internal static class AdvancedTab
                 new GUIContent("Android", "Whether to enable Native Android support to " +
                                                          "capture errors written in languages such as Java, Kotlin, C and C++."),
                 options.AndroidNativeSupportEnabled);
-#pragma warning disable CS0618
-            if (options.AndroidNativeSupportEnabled
-                && PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) != ScriptingImplementation.IL2CPP)
-#pragma warning restore CS0618
+if (options.AndroidNativeSupportEnabled
+                && PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android) != ScriptingImplementation.IL2CPP)
             {
                 EditorGUILayout.HelpBox("Android native support requires IL2CPP scripting backend and is currently unsupported on Mono.", MessageType.Warning);
             }
