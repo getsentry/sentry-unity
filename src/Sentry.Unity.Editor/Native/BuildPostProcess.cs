@@ -41,7 +41,7 @@ public static class BuildPostProcess
             return;
         }
 
-var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(targetGroup);
         var isMono = PlayerSettings.GetScriptingBackend(namedBuildTarget) == ScriptingImplementation.Mono2x;
 
         // The executable path resolves to the following when pointing Unity into a `build/platform/` directory:

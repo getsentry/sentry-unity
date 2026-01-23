@@ -117,8 +117,8 @@ internal static class AdvancedTab
                 new GUIContent("Android", "Whether to enable Native Android support to " +
                                                          "capture errors written in languages such as Java, Kotlin, C and C++."),
                 options.AndroidNativeSupportEnabled);
-if (options.AndroidNativeSupportEnabled
-                && PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android) != ScriptingImplementation.IL2CPP)
+            if (options.AndroidNativeSupportEnabled
+                            && PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android) != ScriptingImplementation.IL2CPP)
             {
                 EditorGUILayout.HelpBox("Android native support requires IL2CPP scripting backend and is currently unsupported on Mono.", MessageType.Warning);
             }
