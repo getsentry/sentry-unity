@@ -1,3 +1,4 @@
+#if SENTRY_NATIVE_SWITCH
 using System;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
@@ -12,7 +13,6 @@ namespace Sentry.Unity.Native;
 /// </summary>
 public static class SentryNativeSwitch
 {
-#if SENTRY_NATIVE_SWITCH
     // P/Invoke to SentrySwitchStorage.cpp helper
     [DllImport("__Internal")]
     private static extern int SentrySwitchStorage_Mount();
@@ -25,7 +25,6 @@ public static class SentryNativeSwitch
 
     [DllImport("__Internal")]
     private static extern void SentrySwitchStorage_Unmount();
-#endif
 
     private static IDiagnosticLogger? Logger;
 
@@ -49,31 +48,27 @@ public static class SentryNativeSwitch
             return;
         }
 
-        // Switch has limited file write access - disable to avoid crashes
+        // Switch has limited file write access - disable for now
         options.DisableFileWrite = true;
 
-        // IL2CPP line number support is not available on Switch
         if (options.Il2CppLineNumberSupportEnabled)
         {
             options.Il2CppLineNumberSupportEnabled = false;
             options.DiagnosticLogger?.LogWarning("IL2CPP line number support is not available on Nintendo Switch - disabling.");
         }
 
-        // Auto session tracking requires reliable file access
         if (options.AutoSessionTracking)
         {
             options.DiagnosticLogger?.LogDebug("Disabling automatic session tracking on Switch due to limited file access.");
             options.AutoSessionTracking = false;
         }
 
-        // Use WebBackgroundWorker
         if (options.BackgroundWorker is null)
         {
             options.DiagnosticLogger?.LogDebug("Setting WebBackgroundWorker as background.");
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
         }
 
-#if SENTRY_NATIVE_SWITCH
         options.DiagnosticLogger?.LogDebug("Mounting temporary storage for sentry-xbox.");
 
         if (SentrySwitchStorage_Mount() != 1)
@@ -93,7 +88,6 @@ public static class SentryNativeSwitch
 
         options.DiagnosticLogger?.LogDebug("Setting native cache directory: {0}", cachePath);
         options.CacheDirectoryPath = cachePath;
-#endif
 
         try
         {
@@ -114,9 +108,7 @@ public static class SentryNativeSwitch
         {
             options.DiagnosticLogger?.LogDebug("Closing the sentry-switch SDK.");
             SentryNativeBridge.Close();
-#if SENTRY_NATIVE_SWITCH
             SentrySwitchStorage_Unmount();
-#endif
         };
 
         options.DiagnosticLogger?.LogDebug("Setting up native scope sync.");
@@ -130,3 +122,4 @@ public static class SentryNativeSwitch
         options.CrashedLastRun = () => crashedLastRun;
     }
 }
+#endif

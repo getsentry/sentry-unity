@@ -238,7 +238,7 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool PlayStationNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether the SDK should add native support for Nintendo Switch
+    /// Whether the SDK should add native scope sync support for Nintendo Switch
     /// </summary>
     public bool SwitchNativeSupportEnabled { get; set; } = true;
 

@@ -52,7 +52,7 @@ public static class BuildPostProcess
         // - Desktop: `./samples/unity-of-bugs/builds/windows/unityofbugs.exe`
         // - Xbox: `./samples/unity-of-bugs/builds/xsx/`
         // - PlayStation: `./samples/unity-of-bugs/builds/ps5/`
-        // - Switch: `./samples/unity-of-bugs/builds/switch/unity-of-bugs.nspd_root` (file, not directory)
+        // - Switch: `./samples/unity-of-bugs/builds/switch/unity-of-bugs.nspd_root`
         var buildOutputDir = targetGroup switch
         {
             BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),

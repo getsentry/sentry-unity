@@ -149,7 +149,7 @@ internal static class AdvancedTab
                 options.PlayStationNativeSupportEnabled);
 
             options.SwitchNativeSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("Nintendo Switch", "Whether to enable native crash support on Nintendo Switch."),
+                new GUIContent("Nintendo Switch", "Whether to enable native scope sync support on Nintendo Switch."),
                 options.SwitchNativeSupportEnabled);
         }
 
