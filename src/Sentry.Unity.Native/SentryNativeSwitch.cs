@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
-using UnityEngine.Analytics;
 
 namespace Sentry.Unity.Native;
 
@@ -44,7 +43,7 @@ public static class SentryNativeSwitch
 
         if (!options.IsNativeSupportEnabled(platform))
         {
-            Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
+            Logger?.LogDebug("Native support is disabled for '{0}'.", platform);
             return;
         }
 
@@ -79,6 +78,13 @@ public static class SentryNativeSwitch
             return;
         }
 
+        ApplicationAdapter.Instance.Quitting += () =>
+        {
+            options.DiagnosticLogger?.LogDebug("Closing the sentry-switch SDK.");
+            SentryNativeBridge.Close();
+            SentrySwitchStorage_Unmount();
+        };
+
         var cachePath = Marshal.PtrToStringAnsi(SentrySwitchStorage_GetCachePath());
         if (string.IsNullOrEmpty(cachePath))
         {
@@ -103,13 +109,6 @@ public static class SentryNativeSwitch
             options.DiagnosticLogger?.LogError(e, "Sentry native initialization failed - Native scope sync will be disabled.");
             return;
         }
-
-        ApplicationAdapter.Instance.Quitting += () =>
-        {
-            options.DiagnosticLogger?.LogDebug("Closing the sentry-switch SDK.");
-            SentryNativeBridge.Close();
-            SentrySwitchStorage_Unmount();
-        };
 
         options.DiagnosticLogger?.LogDebug("Setting up native scope sync.");
         options.ScopeObserver = new NativeScopeObserver(options);

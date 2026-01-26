@@ -486,9 +486,10 @@ public sealed class SentryUnityOptions : SentryOptions
             { LogType.Error, true},
         };
 
-        // Only assign the cache directory path if we're on a "known" platform. Accessing `Application.persistentDataPath`
-        // implicitly creates a directory and leads to crashes i.e. on the Switch.
-        if (IsKnownPlatform(application.Platform))
+        // Only assign the cache directory path if we're on a "known" platform.
+        // Special casing Switch here: Accessing `Application.persistentDataPath` implicitly creates a directory 
+        // and leads to a crash.
+        if (IsKnownPlatform(application.Platform) && application.Platform is not RuntimePlatform.Switch)
         {
             CacheDirectoryPath = application.PersistentDataPath;
         }
