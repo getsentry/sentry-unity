@@ -24,7 +24,7 @@ internal class WebBackgroundWorker : IBackgroundWorker
 
     public bool EnqueueEnvelope(Envelope envelope)
     {
-        _ = _behaviour.StartCoroutine(_transport.SendEnvelopeAsync(envelope));
+        _behaviour.QueueCoroutine(_transport.SendEnvelopeAsync(envelope));
         return true;
     }
 
