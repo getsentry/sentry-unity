@@ -19,7 +19,8 @@ public static class BuildPostProcess
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         if (targetGroup is not BuildTargetGroup.Standalone
             and not BuildTargetGroup.GameCoreXboxSeries
-            and not BuildTargetGroup.PS5)
+            and not BuildTargetGroup.PS5
+            and not BuildTargetGroup.Switch)
         {
             return;
         }
@@ -49,11 +50,13 @@ public static class BuildPostProcess
         // - Desktop: `./samples/unity-of-bugs/builds/windows/unityofbugs.exe`
         // - Xbox: `./samples/unity-of-bugs/builds/xsx/`
         // - PlayStation: `./samples/unity-of-bugs/builds/ps5/`
+        // - Switch: `./samples/unity-of-bugs/builds/switch/unity-of-bugs.nspd_root` (file, not directory)
         var buildOutputDir = targetGroup switch
         {
             BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),
             BuildTargetGroup.GameCoreXboxSeries => executablePath,
             BuildTargetGroup.PS5 => executablePath,
+            BuildTargetGroup.Switch => Path.GetDirectoryName(executablePath),
             _ => string.Empty
         };
 
@@ -91,6 +94,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
         BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
         BuildTarget.PS5 => options.PlayStationNativeSupportEnabled,
+        BuildTarget.Switch => options.SwitchNativeSupportEnabled,
         _ => false,
     };
 
@@ -114,6 +118,9 @@ public static class BuildPostProcess
                 return;
             case BuildTarget.PS5:
                 // No standalone crash handler for PlayStation
+                return;
+            case BuildTarget.Switch:
+                // No standalone crash handler for Switch - uses Nintendo's crash reporter
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
@@ -170,6 +177,15 @@ public static class BuildPostProcess
                 if (Directory.Exists(playstationSentryPluginPath))
                 {
                     paths += $" \"{playstationSentryPluginPath}\"";
+                }
+                break;
+            case BuildTarget.Switch:
+                // Switch uses static linking, so symbols are in the build output.
+                // Also upload from the Sentry plugin directory if it exists.
+                var switchSentryPluginPath = Path.GetFullPath("Assets/Plugins/Sentry/Switch/");
+                if (Directory.Exists(switchSentryPluginPath))
+                {
+                    paths += $" \"{switchSentryPluginPath}\"";
                 }
                 break;
             case BuildTarget.StandaloneLinux64:
