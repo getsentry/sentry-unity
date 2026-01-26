@@ -52,6 +52,13 @@ public static class SentryNativeSwitch
         // Switch has limited file write access - disable to avoid crashes
         options.DisableFileWrite = true;
 
+        // IL2CPP line number support is not available on Switch
+        if (options.Il2CppLineNumberSupportEnabled)
+        {
+            options.Il2CppLineNumberSupportEnabled = false;
+            options.DiagnosticLogger?.LogWarning("IL2CPP line number support is not available on Nintendo Switch - disabling.");
+        }
+
         // Auto session tracking requires reliable file access
         if (options.AutoSessionTracking)
         {
@@ -118,7 +125,6 @@ public static class SentryNativeSwitch
         options.NativeContextWriter = new NativeContextWriter();
         options.NativeDebugImageProvider = new NativeDebugImageProvider();
 
-        // Handle crashed last run detection
         var crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
         options.DiagnosticLogger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
         options.CrashedLastRun = () => crashedLastRun;

@@ -16,7 +16,7 @@
 #endif
 #endif
 
-#if ENABLE_IL2CPP && (SENTRY_NATIVE_COCOA || SENTRY_NATIVE_ANDROID || SENTRY_NATIVE || SENTRY_NATIVE_SWITCH)
+#if ENABLE_IL2CPP && (SENTRY_NATIVE_COCOA || SENTRY_NATIVE_ANDROID || SENTRY_NATIVE)
 #define IL2CPP_LINENUMBER_SUPPORT
 #endif
 
@@ -137,7 +137,7 @@ namespace Sentry.Unity
                 return null;
             }
 
-#if UNITY_ANDROID || UNITY_STANDALONE_LINUX || UNITY_PS5 || UNITY_SWITCH
+#if UNITY_ANDROID || UNITY_STANDALONE_LINUX || UNITY_PS5
             // For ELF platforms, the 20-byte `NT_GNU_BUILD_ID` needs to be
             // turned into a "little-endian GUID", which means the first three
             // components need to be byte-swapped appropriately.
