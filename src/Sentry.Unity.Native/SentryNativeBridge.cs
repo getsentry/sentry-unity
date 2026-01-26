@@ -57,13 +57,11 @@ internal static class SentryNativeBridge
         options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
         sentry_options_set_auto_session_tracking(cOptions, 0);
 
-#if !SENTRY_NATIVE_SWITCH
         if (_isWindows)
         {
             options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
             sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
         }
-#endif
 
         var dir = GetCacheDirectory(options);
 #if SENTRY_NATIVE_SWITCH
