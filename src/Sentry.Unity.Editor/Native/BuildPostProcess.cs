@@ -309,6 +309,23 @@ public static class BuildPostProcess
                 AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
                 break;
 
+            case BuildTarget.Switch:
+                // IL2CPP output, Managed DLLs/PDBs, and Symbols
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
+                // User-provided Sentry plugin
+                AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
+                break;
+
             default:
                 logger.LogError("Symbol upload for '{0}' is currently not supported.", target);
                 return;
