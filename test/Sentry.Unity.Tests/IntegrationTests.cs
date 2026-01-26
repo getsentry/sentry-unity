@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
+using Sentry.Unity.Tests.Stubs;
 using Sentry.Unity.Tests.TestBehaviours;
 using UnityEditor;
 using UnityEngine;
@@ -59,8 +60,9 @@ public sealed class IntegrationTests
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var expectedAttribute = CreateAttribute("release", Application.productName + "@" + Application.version);
-        using var _ = InitSentrySdk();
+        var testApp = new TestApplication();
+        var expectedAttribute = CreateAttribute("release", $"{testApp.ProductName}@{testApp.Version}");
+        using var _ = InitSentrySdk(testApp);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -77,10 +79,7 @@ public sealed class IntegrationTests
 
         var customRelease = "CustomRelease";
         var expectedAttribute = CreateAttribute("release", customRelease);
-        using var _ = InitSentrySdk(o =>
-        {
-            o.Release = customRelease;
-        });
+        using var _ = InitSentrySdk(o => o.Release = customRelease);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -95,10 +94,10 @@ public sealed class IntegrationTests
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var originalProductName = PlayerSettings.productName;
-        PlayerSettings.productName = " ";
-        var expectedAttribute = CreateAttribute("release", Application.version);
-        using var _ = InitSentrySdk();
+        // When productName is whitespace, release should be just the version
+        var testApp = new TestApplication(productName: " ");
+        var expectedAttribute = CreateAttribute("release", testApp.Version);
+        using var _ = InitSentrySdk(testApp);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -106,8 +105,6 @@ public sealed class IntegrationTests
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
         Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
-
-        PlayerSettings.productName = originalProductName;
     }
 
     [UnityTest]
@@ -115,10 +112,10 @@ public sealed class IntegrationTests
     {
         yield return SetupSceneCoroutine("1_BugFarm");
 
-        var originalProductName = PlayerSettings.productName;
-        PlayerSettings.productName = null;
-        var expectedAttribute = CreateAttribute("release", Application.version);
-        using var _ = InitSentrySdk();
+        // When productName is empty/null, release should be just the version
+        var testApp = new TestApplication(productName: "");
+        var expectedAttribute = CreateAttribute("release", testApp.Version);
+        using var _ = InitSentrySdk(testApp);
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
 
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -126,8 +123,6 @@ public sealed class IntegrationTests
         var triggeredEvent = _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout);
         Assert.That(triggeredEvent, Does.Contain(_identifyingEventValueAttribute)); // sanity check
         Assert.That(triggeredEvent, Does.Contain(expectedAttribute));
-
-        PlayerSettings.productName = originalProductName;
     }
 
     [UnityTest]
@@ -194,7 +189,8 @@ public sealed class IntegrationTests
             o.CreateHttpMessageHandler = () => firstHttpClientHandler;
         });
 
-        using var secondDisposable = InitSentrySdk(); // uses the default test DSN
+        // Uses the default test DSN and HTTP handler
+        using var secondDisposable = InitSentrySdk();
 
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
@@ -302,7 +298,7 @@ public sealed class IntegrationTests
     {
         yield return null;
 
-        var expectedOptions = new SentryUnityOptions
+        var expectedOptions = new SentryUnityOptions(application: new TestApplication())
         {
             Dsn = string.Empty // The SentrySDK tries to resolve the DSN from the environment when it's null
         };
@@ -334,16 +330,18 @@ public sealed class IntegrationTests
         yield return null;
     }
 
-    internal IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
+    private IDisposable InitSentrySdk(Action<SentryUnityOptions>? configure = null)
+        => InitSentrySdk(new TestApplication(), configure);
+
+    private IDisposable InitSentrySdk(TestApplication application, Action<SentryUnityOptions>? configure = null)
     {
-        SentrySdk.Init(options =>
+        var options = new SentryUnityOptions(application: application)
         {
-            options.Dsn = "https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.sentry.io/4504604988538880";
-            options.CreateHttpMessageHandler = () => _testHttpClientHandler;
-
-            configure?.Invoke(options);
-        });
-
+            Dsn = SentryTests.TestDsn,
+            CreateHttpMessageHandler = () => _testHttpClientHandler
+        };
+        configure?.Invoke(options);
+        SentrySdk.Init(options);
         return new SentryDisposable();
     }
 

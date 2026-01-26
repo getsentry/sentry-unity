@@ -57,6 +57,34 @@ namespace Sentry.Unity
             Assert.IsNull(SceneManagerAPI.overrideAPI);
         }
 
+        [TestCase(1.0f, true, true)]
+        [TestCase(1.0f, false, false)]
+        [TestCase(0.0f, true, false)]
+        [TestCase(0.0f, false, false)]
+        [Test]
+        public void SceneManagerTracingIntegration_RegistersBasedOnConfiguration(
+            float tracesSampleRate, bool autoSceneLoadTraces, bool shouldRegister)
+        {
+            // Arrange
+            var sceneManagerTracingIntegration = new SceneManagerTracingIntegration();
+            _options.TracesSampleRate = tracesSampleRate;
+            _options.AutoSceneLoadTraces = autoSceneLoadTraces;
+
+            // Act
+            sceneManagerTracingIntegration.Register(new TestHub(), _options);
+
+            // Assert
+            if (shouldRegister)
+            {
+                Assert.IsNotNull(SceneManagerAPI.overrideAPI);
+                Assert.IsInstanceOf<SceneManagerTracingAPI>(SceneManagerAPI.overrideAPI);
+            }
+            else
+            {
+                Assert.IsNull(SceneManagerAPI.overrideAPI);
+            }
+        }
+
         internal static IEnumerator SetupSceneCoroutine(string sceneName)
         {
             LogAssert.ignoreFailingMessages = true;
