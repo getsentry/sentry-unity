@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutDir>$(PackageRuntimePath)</OutDir>
   </PropertyGroup>
@@ -19,6 +19,7 @@
       DefineConstants="$(DefineConstants);SENTRY_NATIVE_PLAYSTATION"
       TargetType="library"
       EmitDebugInformation="true"
+      DebugType="portable"
       Nullable="$(Nullable)"
       LangVersion="$(LangVersion)"
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
@@ -37,6 +38,7 @@
       DefineConstants="$(DefineConstants);SENTRY_NATIVE_SWITCH"
       TargetType="library"
       EmitDebugInformation="true"
+      DebugType="portable"
       Nullable="$(Nullable)"
       LangVersion="$(LangVersion)"
       TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
