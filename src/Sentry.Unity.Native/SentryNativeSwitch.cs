@@ -69,7 +69,7 @@ public static class SentryNativeSwitch
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
         }
 
-        options.DiagnosticLogger?.LogDebug("Mounting temporary storage for sentry-xbox.");
+        options.DiagnosticLogger?.LogDebug("Mounting temporary storage for sentry-switch.");
 
         if (SentrySwitchStorage_Mount() != 1)
         {
@@ -94,7 +94,7 @@ public static class SentryNativeSwitch
             options.DiagnosticLogger?.LogDebug("Initializing the native SDK.");
             if (!SentryNativeBridge.Init(options))
             {
-                options.DiagnosticLogger?.LogError("Failed to initialize sentry-xbox - Native scope sync will be disabled.");
+                options.DiagnosticLogger?.LogError("Failed to initialize sentry-switch - Native scope sync will be disabled.");
                 return;
             }
         }
