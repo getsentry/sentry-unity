@@ -12,18 +12,21 @@ namespace Sentry.Unity.Native;
 /// </summary>
 public static class SentryNativeSwitch
 {
-    // P/Invoke to SentrySwitchStorage.cpp helper
+    // P/Invoke to SentrySwitchHelpers.cpp
     [DllImport("__Internal")]
-    private static extern int SentrySwitchStorage_Mount();
+    private static extern int SentrySwitchHelpers_Mount();
 
     [DllImport("__Internal")]
-    private static extern IntPtr SentrySwitchStorage_GetCachePath();
+    private static extern IntPtr SentrySwitchHelpers_GetCachePath();
 
     [DllImport("__Internal")]
-    private static extern int SentrySwitchStorage_IsMounted();
+    private static extern int SentrySwitchHelpers_IsMounted();
 
     [DllImport("__Internal")]
-    private static extern void SentrySwitchStorage_Unmount();
+    private static extern void SentrySwitchHelpers_Unmount();
+
+    [DllImport("__Internal")]
+    private static extern IntPtr SentrySwitchHelpers_GetDefaultUserId();
 
     private static IDiagnosticLogger? Logger;
 
@@ -40,12 +43,6 @@ public static class SentryNativeSwitch
         Logger = options.DiagnosticLogger;
 
         Logger?.LogInfo("Attempting to configure native support via the Native SDK");
-
-        if (!options.IsNativeSupportEnabled(platform))
-        {
-            Logger?.LogDebug("Native support is disabled for '{0}'.", platform);
-            return;
-        }
 
         // Switch has limited file write access - disable for now
         options.DisableFileWrite = true;
@@ -68,9 +65,16 @@ public static class SentryNativeSwitch
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
         }
 
+        // Bailing late so the options can respect the platform limitations
+        if (!options.IsNativeSupportEnabled(platform))
+        {
+            Logger?.LogDebug("Native support is disabled for '{0}'.", platform);
+            return;
+        }
+
         options.DiagnosticLogger?.LogDebug("Mounting temporary storage for sentry-switch.");
 
-        if (SentrySwitchStorage_Mount() != 1)
+        if (SentrySwitchHelpers_Mount() != 1)
         {
             options.DiagnosticLogger?.LogError(
                 "Failed to mount temporary storage - Native scope sync will be disabled. " +
@@ -78,14 +82,7 @@ public static class SentryNativeSwitch
             return;
         }
 
-        ApplicationAdapter.Instance.Quitting += () =>
-        {
-            options.DiagnosticLogger?.LogDebug("Closing the sentry-switch SDK.");
-            SentryNativeBridge.Close();
-            SentrySwitchStorage_Unmount();
-        };
-
-        var cachePath = Marshal.PtrToStringAnsi(SentrySwitchStorage_GetCachePath());
+        var cachePath = Marshal.PtrToStringAnsi(SentrySwitchHelpers_GetCachePath());
         if (string.IsNullOrEmpty(cachePath))
         {
             options.DiagnosticLogger?.LogError("Failed to get cache path from mounted storage - Native scope sync will be disabled.");
@@ -101,14 +98,23 @@ public static class SentryNativeSwitch
             if (!SentryNativeBridge.Init(options))
             {
                 options.DiagnosticLogger?.LogError("Failed to initialize sentry-switch - Native scope sync will be disabled.");
+                SentrySwitchHelpers_Unmount();
                 return;
             }
         }
         catch (Exception e)
         {
             options.DiagnosticLogger?.LogError(e, "Sentry native initialization failed - Native scope sync will be disabled.");
+            SentrySwitchHelpers_Unmount();
             return;
         }
+
+        ApplicationAdapter.Instance.Quitting += () =>
+        {
+            options.DiagnosticLogger?.LogDebug("Closing the sentry-switch SDK.");
+            SentryNativeBridge.Close();
+            SentrySwitchHelpers_Unmount();
+        };
 
         options.DiagnosticLogger?.LogDebug("Setting up native scope sync.");
         options.ScopeObserver = new NativeScopeObserver(options);
@@ -116,9 +122,13 @@ public static class SentryNativeSwitch
         options.NativeContextWriter = new NativeContextWriter();
         options.NativeDebugImageProvider = new NativeDebugImageProvider();
 
-        var crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
-        options.DiagnosticLogger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
-        options.CrashedLastRun = () => crashedLastRun;
+        var defaultUserIdPtr = SentrySwitchHelpers_GetDefaultUserId();
+        var defaultUserId = Marshal.PtrToStringAnsi(defaultUserIdPtr);
+        if (!string.IsNullOrEmpty(defaultUserId))
+        {
+            options.DiagnosticLogger?.LogDebug("Using Default User ID: {0}", defaultUserId);
+            options.DefaultUserId = defaultUserId;
+        }
     }
 }
 #endif
