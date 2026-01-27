@@ -30,6 +30,7 @@ internal class LifeCycleIntegration : ISdkIntegration
 
         if (!_options.AutoSessionTracking)
         {
+            sentryOptions.LogDebug("AutoSessionTracking is disabled. Skipping {0}.", nameof(LifeCycleIntegration));
             return;
         }
 
