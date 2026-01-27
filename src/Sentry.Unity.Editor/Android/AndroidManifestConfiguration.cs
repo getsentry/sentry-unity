@@ -8,6 +8,7 @@ using Sentry.Extensibility;
 using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEditor;
 using UnityEditor.Android;
+using UnityEditor.Build;
 using UnityEngine;
 
 namespace Sentry.Unity.Editor.Android;
@@ -52,9 +53,7 @@ public class AndroidManifestConfiguration
             SentryScriptableObject.LoadOptions,
             SentryScriptableObject.LoadCliOptions,
             isDevelopmentBuild: EditorUserBuildSettings.development,
-#pragma warning disable CS0618
-            scriptingImplementation: PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android))
-#pragma warning restore CS0618
+            scriptingImplementation: PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android))
     { }
 
     // Testing
