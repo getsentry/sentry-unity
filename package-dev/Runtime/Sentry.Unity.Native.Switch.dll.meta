@@ -5,8 +5,7 @@ PluginImporter:
   serializedVersion: 3
   iconMap: {}
   executionOrder: {}
-  defineConstraints:
-    - UNITY_SWITCH
+  defineConstraints: []
   isPreloaded: 0
   isOverridable: 1
   isExplicitlyReferenced: 0
@@ -27,6 +26,7 @@ PluginImporter:
         Exclude OSXUniversal: 1
         Exclude PS5: 1
         Exclude Switch: 0
+        Exclude WebGL: 1
         Exclude Win: 1
         Exclude Win64: 1
         Exclude iOS: 1
@@ -67,8 +67,8 @@ PluginImporter:
       settings:
         AddToEmbeddedBinaries: false
         CPU: AnyCPU
-        CompileFlags:
-        FrameworkDependencies:
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+        CompileFlags: 
+        FrameworkDependencies: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
