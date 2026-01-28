@@ -52,7 +52,6 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
             {
                 "Assets/Plugins/Sentry/Switch/libsentry.a",
                 "Assets/Plugins/Sentry/Switch/libzstd.a",
-                "Assets/Plugins/Sentry/Switch/sentry_switch_utils.cpp"
             },
             buildTarget: BuildTarget.Switch
         ),
