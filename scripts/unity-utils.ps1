@@ -1,6 +1,55 @@
 $RunUnityLicenseRetryTimeoutSeconds = 3600
 $RunUnityLicenseRetryIntervalSeconds = 60
 
+function FindNewestUnity()
+{
+    if ($IsWindows)
+    {
+        $hubPath = "C:\Program Files\Unity\Hub\Editor\"
+    }
+    elseif ($IsMacOS)
+    {
+        $hubPath = "/Applications/Unity/Hub/Editor/"
+    }
+    elseif ($IsLinux)
+    {
+        $hubPath = "$env:HOME/Unity/Hub/Editor/"
+    }
+    else
+    {
+        throw "Unsupported platform for Unity auto-detection"
+    }
+
+    if (-not (Test-Path $hubPath))
+    {
+        throw "Unity Hub Editor folder not found at: $hubPath"
+    }
+
+    $unityVersions = Get-ChildItem $hubPath -Directory | Select-Object -ExpandProperty Name
+    if ($unityVersions.Count -eq 0)
+    {
+        throw "No Unity versions found in: $hubPath"
+    }
+
+    $unityVersion = $unityVersions | Sort-Object -Descending | Select-Object -First 1
+
+    if ($IsWindows)
+    {
+        $unityPath = "${hubPath}${unityVersion}\Editor\Unity.exe"
+    }
+    elseif ($IsMacOS)
+    {
+        $unityPath = "${hubPath}${unityVersion}/Unity.app/Contents/MacOS/Unity"
+    }
+    else
+    {
+        $unityPath = "${hubPath}${unityVersion}/Editor/Unity"
+    }
+
+    Write-Host "Auto-detected Unity $unityVersion at: $unityPath"
+    return $unityPath
+}
+
 function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
     If ($unityPath.StartsWith("docker "))
