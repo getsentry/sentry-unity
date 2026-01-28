@@ -12,21 +12,21 @@ namespace Sentry.Unity.Native;
 /// </summary>
 public static class SentryNativeSwitch
 {
-    // P/Invoke to SentrySwitchHelpers.cpp
+    // P/Invoke to sentry_switch_utils.cpp
     [DllImport("__Internal")]
-    private static extern int SentrySwitchHelpers_Mount();
+    private static extern int sentry_switch_utils_mount();
 
     [DllImport("__Internal")]
-    private static extern IntPtr SentrySwitchHelpers_GetCachePath();
+    private static extern IntPtr sentry_switch_utils_get_cache_path();
 
     [DllImport("__Internal")]
-    private static extern int SentrySwitchHelpers_IsMounted();
+    private static extern int sentry_switch_utils_is_mounted();
 
     [DllImport("__Internal")]
-    private static extern void SentrySwitchHelpers_Unmount();
+    private static extern void sentry_switch_utils_unmount();
 
     [DllImport("__Internal")]
-    private static extern IntPtr SentrySwitchHelpers_GetDefaultUserId();
+    private static extern IntPtr sentry_switch_utils_get_default_user_id();
 
     private static IDiagnosticLogger? Logger;
 
@@ -74,7 +74,7 @@ public static class SentryNativeSwitch
 
         options.DiagnosticLogger?.LogDebug("Mounting temporary storage for sentry-switch.");
 
-        if (SentrySwitchHelpers_Mount() != 1)
+        if (sentry_switch_utils_mount() != 1)
         {
             options.DiagnosticLogger?.LogError(
                 "Failed to mount temporary storage - Native scope sync will be disabled. " +
@@ -82,7 +82,7 @@ public static class SentryNativeSwitch
             return;
         }
 
-        var cachePath = Marshal.PtrToStringAnsi(SentrySwitchHelpers_GetCachePath());
+        var cachePath = Marshal.PtrToStringAnsi(sentry_switch_utils_get_cache_path());
         if (string.IsNullOrEmpty(cachePath))
         {
             options.DiagnosticLogger?.LogError("Failed to get cache path from mounted storage - Native scope sync will be disabled.");
@@ -98,14 +98,14 @@ public static class SentryNativeSwitch
             if (!SentryNativeBridge.Init(options))
             {
                 options.DiagnosticLogger?.LogError("Failed to initialize sentry-switch - Native scope sync will be disabled.");
-                SentrySwitchHelpers_Unmount();
+                sentry_switch_utils_unmount();
                 return;
             }
         }
         catch (Exception e)
         {
             options.DiagnosticLogger?.LogError(e, "Sentry native initialization failed - Native scope sync will be disabled.");
-            SentrySwitchHelpers_Unmount();
+            sentry_switch_utils_unmount();
             return;
         }
 
@@ -113,7 +113,7 @@ public static class SentryNativeSwitch
         {
             options.DiagnosticLogger?.LogDebug("Closing the sentry-switch SDK.");
             SentryNativeBridge.Close();
-            SentrySwitchHelpers_Unmount();
+            sentry_switch_utils_unmount();
         };
 
         options.DiagnosticLogger?.LogDebug("Setting up native scope sync.");
@@ -122,7 +122,7 @@ public static class SentryNativeSwitch
         options.NativeContextWriter = new NativeContextWriter();
         options.NativeDebugImageProvider = new NativeDebugImageProvider();
 
-        var defaultUserIdPtr = SentrySwitchHelpers_GetDefaultUserId();
+        var defaultUserIdPtr = sentry_switch_utils_get_default_user_id();
         var defaultUserId = Marshal.PtrToStringAnsi(defaultUserIdPtr);
         if (!string.IsNullOrEmpty(defaultUserId))
         {
