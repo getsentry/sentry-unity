@@ -15,13 +15,7 @@ namespace Editor
         {
             var target = EditorUserBuildSettings.selectedBuildTargetGroup;
 
-            var currentDefines =
-#if UNITY_2021_3_OR_NEWER
-                PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(target));
-#else
-                PlayerSettings.GetScriptingDefineSymbolsForGroup(target);
-
-#endif
+            var currentDefines = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(target));
             var defines = currentDefines.Split(';').ToList();
 
             var currentAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
@@ -60,12 +54,7 @@ namespace Editor
             }
 
             var newDefines = string.Join(";", defines.Where(d => !string.IsNullOrEmpty(d)));
-#if UNITY_2021_3_OR_NEWER
             PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(target), newDefines);
-#else
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(target, newDefines);
-
-#endif
 
         }
     }

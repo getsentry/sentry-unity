@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "displayName": "Sentry Unity (dev)",
   "description": "Sentry SDK for Unity (dev)",
-  "unity": "2019.4",
+  "unity": "2021.3",
   "license": "MIT",
   "keywords": [
     "logging",

@@ -9,9 +9,15 @@
 ### Deprecations
 
 - The time-based log debouncing system (`TimeDebounceBase`, `LogTimeDebounce`, `ErrorTimeDebounce`, `WarningTimeDebounce`) and related options (`EnableLogDebouncing`, `DebounceTimeLog`, `DebounceTimeWarning`, `DebounceTimeError`) are now marked as `[Obsolete]`. Use the new content-based event throttling instead. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+### Behavioral Changes
+
+- The SDK no longer refreshes the trace ID when changing active scene. This follows the changes to not do so based on lifecycle events, meaning that the trace ID persists from game start to game end, as intended in `4.0.0`. ([#2502](https://github.com/getsentry/sentry-unity/pull/2502))
 
 ### Fixes
 
+- The SDK now specifies the files and directories targeted for debug symbol upload instead of pointing sentry-cli at the build output directory ([#2485](https://github.com/getsentry/sentry-unity/pull/2485))
+- The 'SceneManagerTracingIntegration' properly respects the `AutoSceneTracing` flag again ([#2496](https://github.com/getsentry/sentry-unity/pull/2496))
+- When targeting Android, the capturing native SDK now has its name correctly set ([#2476](https://github.com/getsentry/sentry-unity/pull/2476))
 - Automatically captured transactions and spans now have their `Origin` correctly set. ([#2464](https://github.com/getsentry/sentry-unity/pull/2464))
 
 ### Dependencies
@@ -19,9 +25,15 @@
 - Bump Java SDK from v8.28.0 to v8.31.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481), [#2493](https://github.com/getsentry/sentry-unity/pull/2493))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8310)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.31.0)
-- Bump Native SDK from v0.12.2 to v0.12.3 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0123)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.3)
+- Bump Native SDK from v0.12.2 to v0.12.4 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471), [#2505](https://github.com/getsentry/sentry-unity/pull/2505))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0124)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.4)
+- Bump Cocoa SDK from v9.1.0 to v9.2.0 ([#2492](https://github.com/getsentry/sentry-unity/pull/2492))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#920)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.1.0...9.2.0)
+- Bump CLI from v2.58.4 to v3.1.0 ([#2474](https://github.com/getsentry/sentry-unity/pull/2474))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#310)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.4...3.1.0)
 
 ## 4.0.0
 
