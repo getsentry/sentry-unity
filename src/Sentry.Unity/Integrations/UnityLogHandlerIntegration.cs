@@ -55,7 +55,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         }
 
         // Check throttling - only affects event capture
-        if (_options.ErrorEventThrottler is { } throttler && !throttler.ShouldCaptureException(exception))
+        if (_options.Throttler is { } throttler && !throttler.ShouldCaptureException(exception))
         {
             _options.LogDebug("Exception event throttled: {0}", exception.GetType().Name);
             return;

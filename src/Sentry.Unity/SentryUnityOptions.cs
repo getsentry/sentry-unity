@@ -48,23 +48,49 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool CaptureInEditor { get; set; } = true;
 
     /// <summary>
-    /// Throttler for error/exception events to prevent quota exhaustion from high-frequency errors.
-    /// Only affects event capture - breadcrumbs and structured logs are not affected.
+    /// Throttler for events, breadcrumbs, logs, and exceptions to prevent quota exhaustion.
     /// </summary>
     /// <remarks>
-    /// Set via <see cref="SetErrorEventThrottler"/> or enable in the Sentry configuration window.
-    /// When enabled via the configuration window, a <see cref="ContentBasedThrottler"/> is used by default.
+    /// Set via <see cref="SetThrottler"/> or enable in the Sentry configuration window.
+    /// When enabled via the configuration window, a <see cref="ErrorEventThrottler"/> is used by default.
+    /// The default implementation only throttles error/exception events - breadcrumbs and structured logs are not affected.
+    /// Implement a custom <see cref="IThrottler"/> to also throttle breadcrumbs and logs.
     /// </remarks>
-    public IErrorEventThrottler? ErrorEventThrottler { get; set; }
+    public IThrottler? Throttler { get; set; }
 
     /// <summary>
-    /// Configures a throttler for error/exception events.
+    /// Configures a throttler for events, breadcrumbs, logs, and exceptions.
     /// </summary>
     /// <param name="throttler">The throttler implementation to use, or null to disable throttling.</param>
-    public void SetErrorEventThrottler(IErrorEventThrottler? throttler)
+    public void SetThrottler(IThrottler? throttler)
     {
-        ErrorEventThrottler = throttler;
+        Throttler = throttler;
     }
+
+    /// <summary>
+    /// Whether the SDK debounces log messages of the same type.
+    /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
+    public bool EnableLogDebouncing { get; set; } = false;
+
+    /// <summary>
+    /// The time that has to pass between events of LogType.Log before the SDK sends it again.
+    /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
+    public TimeSpan DebounceTimeLog { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// The time that has to pass between events of LogType.Warning before the SDK sends it again.
+    /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
+    public TimeSpan DebounceTimeWarning { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// The time that has to pass between events of LogType.Error, LogType.Exception and LogType.Assert
+    /// before the SDK sends it again.
+    /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
+    public TimeSpan DebounceTimeError { get; set; } = TimeSpan.FromSeconds(1);
 
     private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
 

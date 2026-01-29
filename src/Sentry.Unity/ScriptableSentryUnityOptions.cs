@@ -29,24 +29,24 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public string? Dsn { get; set; }
     [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
 
-    [field: SerializeField] public bool EnableErrorEventThrottling { get; set; } = false;
-    [field: SerializeField] public int ErrorEventThrottleDedupeWindow { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+    [field: SerializeField] public bool EnableThrottling { get; set; } = false;
+    [field: SerializeField] public int ThrottleDedupeWindow { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     // Deprecated debouncing properties - kept for backwards compatibility
     [field: SerializeField]
-    [Obsolete("Use EnableErrorEventThrottling instead. This property will be removed in a future version.")]
+    [Obsolete("Use EnableThrottling instead. This property will be removed in a future version.")]
     public bool EnableLogDebouncing { get; set; } = false;
 
     [field: SerializeField]
-    [Obsolete("Use EnableErrorEventThrottling and ErrorEventThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    [Obsolete("Use EnableThrottling and ThrottleDedupeWindow instead. This property will be removed in a future version.")]
     public int DebounceTimeLog { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     [field: SerializeField]
-    [Obsolete("Use EnableErrorEventThrottling and ErrorEventThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    [Obsolete("Use EnableThrottling and ThrottleDedupeWindow instead. This property will be removed in a future version.")]
     public int DebounceTimeWarning { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     [field: SerializeField]
-    [Obsolete("Use EnableErrorEventThrottling and ErrorEventThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    [Obsolete("Use EnableThrottling and ThrottleDedupeWindow instead. This property will be removed in a future version.")]
     public int DebounceTimeError { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
@@ -253,10 +253,18 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         }
 
         // Add throttler if enabled and not already set by OptionsConfiguration
-        if (EnableErrorEventThrottling && options.ErrorEventThrottler is null)
+        if (EnableThrottling && options.Throttler is null)
         {
-            options.ErrorEventThrottler = new ContentBasedThrottler(TimeSpan.FromMilliseconds(ErrorEventThrottleDedupeWindow));
+            options.Throttler = new ErrorEventThrottler(TimeSpan.FromMilliseconds(ThrottleDedupeWindow));
         }
+
+        // Restore deprecated debounce settings for backwards compatibility
+#pragma warning disable CS0618 // Type or member is obsolete
+        options.EnableLogDebouncing = EnableLogDebouncing;
+        options.DebounceTimeLog = TimeSpan.FromMilliseconds(DebounceTimeLog);
+        options.DebounceTimeWarning = TimeSpan.FromMilliseconds(DebounceTimeWarning);
+        options.DebounceTimeError = TimeSpan.FromMilliseconds(DebounceTimeError);
+#pragma warning restore CS0618
 
         // We need to set up logging here because the configure callback might have changed the debug options.
         // Without setting up here we might miss out on logs between option-loading (now) and Init - i.e. native configuration

@@ -16,6 +16,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     private readonly IApplication _application;
     private readonly ISystemClock _clock;
 
+#pragma warning disable CS0618 // Type or member is obsolete - maintaining backwards compatibility
+    private ErrorTimeDebounce _errorTimeDebounce = null!;       // Set in Register
+    private LogTimeDebounce _logTimeDebounce = null!;           // Set in Register
+    private WarningTimeDebounce _warningTimeDebounce = null!;   // Set in Register
+#pragma warning restore CS0618
+
     private IHub _hub = null!;                                  // Set in Register
     private SentryUnityOptions _options = null!;                // Set in Register
 
@@ -31,6 +37,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         _hub = hub ?? throw new ArgumentException("Hub is null.");
         _options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
 
+#pragma warning disable CS0618 // Type or member is obsolete - maintaining backwards compatibility
+        _logTimeDebounce = new LogTimeDebounce(_options.DebounceTimeLog);
+        _warningTimeDebounce = new WarningTimeDebounce(_options.DebounceTimeWarning);
+        _errorTimeDebounce = new ErrorTimeDebounce(_options.DebounceTimeError);
+#pragma warning restore CS0618
+
         _application.LogMessageReceived += OnLogMessageReceived;
         _application.Quitting += OnQuitting;
     }
@@ -43,10 +55,36 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
+        // Check deprecated debouncing first (for backwards compatibility)
+        if (IsGettingDebounced(logType))
+        {
+            _options.LogDebug("Log message of type '{0}' is getting debounced.", logType);
+            return;
+        }
+
         ProcessError(message, stacktrace, logType);
         ProcessBreadcrumbs(message, logType);
         ProcessStructuredLog(message, logType);
     }
+
+#pragma warning disable CS0618 // Type or member is obsolete - maintaining backwards compatibility
+    private bool IsGettingDebounced(LogType logType)
+    {
+        if (_options.EnableLogDebouncing is false)
+        {
+            return false;
+        }
+
+        return logType switch
+        {
+            LogType.Exception => !_errorTimeDebounce.Debounced(),
+            LogType.Error or LogType.Assert => !_errorTimeDebounce.Debounced(),
+            LogType.Log => !_logTimeDebounce.Debounced(),
+            LogType.Warning => !_warningTimeDebounce.Debounced(),
+            _ => true
+        };
+    }
+#pragma warning restore CS0618
 
     private void ProcessError(string message, string stacktrace, LogType logType)
     {
@@ -55,8 +93,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
-        // Check throttling - only affects event capture, not breadcrumbs or structured logs
-        if (_options.ErrorEventThrottler is { } throttler && !throttler.ShouldCapture(message, stacktrace, logType))
+        if (_options.Throttler is { } throttler && !throttler.ShouldCaptureEvent(message, stacktrace, logType))
         {
             _options.LogDebug("Error event throttled: {0}", message);
             return;
@@ -89,6 +126,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
             return;
         }
 
+        if (_options.Throttler is { } throttler && !throttler.ShouldCaptureBreadcrumb(message, logType))
+        {
+            _options.LogDebug("Breadcrumb throttled: ({0}): {1}", logType, message);
+            return;
+        }
+
         if (_options.AddBreadcrumbsForLogType.TryGetValue(logType, out var value) && value)
         {
             _options.LogDebug("Adding breadcrumb for log message of type: {0}", logType);
@@ -100,6 +143,12 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
     {
         if (!_options.EnableLogs || !_options.CaptureStructuredLogsForLogType.TryGetValue(logType, out var captureLog) || !captureLog)
         {
+            return;
+        }
+
+        if (_options.Throttler is { } throttler && !throttler.ShouldCaptureStructuredLog(message, logType))
+        {
+            _options.LogDebug("Structured log throttled: ({0}): {1}", logType, message);
             return;
         }
 
