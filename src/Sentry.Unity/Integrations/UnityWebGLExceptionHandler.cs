@@ -14,6 +14,9 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
     private readonly IApplication _application;
     private IHub _hub = null!;
     private SentryUnityOptions _options = null!;
+#pragma warning disable CS0618 // Type or member is obsolete - maintaining backwards compatibility
+    private ErrorTimeDebounce _errorTimeDebounce = null!;
+#pragma warning restore CS0618
 
     internal UnityWebGLExceptionHandler(IApplication? application = null)
     {
@@ -26,6 +29,9 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
         _options = sentryOptions as SentryUnityOptions
             ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
 
+#pragma warning disable CS0618 // Type or member is obsolete - maintaining backwards compatibility
+        _errorTimeDebounce = new ErrorTimeDebounce(_options.DebounceTimeError);
+#pragma warning restore CS0618
         _application.LogMessageReceived += OnLogMessageReceived;
         _application.Quitting += OnQuitting;
     }
@@ -47,6 +53,14 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
         {
             return;
         }
+
+#pragma warning disable CS0618 // Type or member is obsolete - maintaining backwards compatibility
+        if (_options.EnableLogDebouncing && !_errorTimeDebounce.Debounced())
+        {
+            _options.LogDebug("Exception is getting debounced.");
+            return;
+        }
+#pragma warning restore CS0618
 
         // Check throttling - only affects event capture
         if (_options.Throttler is { } throttler && !throttler.ShouldCaptureEvent(message, stacktrace, logType))
