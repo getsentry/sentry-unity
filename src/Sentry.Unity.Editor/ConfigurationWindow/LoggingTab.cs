@@ -124,8 +124,8 @@ internal static class LoggingTab
 
         {
             options.EnableThrottling = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Throttling",
-                    "Throttles error/exception events based on content to prevent repeated " +
+                new GUIContent("Enable Error Throttling",
+                    "Throttles error/exception events based on message and stacktrace to prevent repeated " +
                     "errors from consuming quota. Does not affect breadcrumbs or structured logs by default."),
                 options.EnableThrottling);
 
