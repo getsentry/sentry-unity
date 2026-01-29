@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Sentry.Unity;
 
 /// <summary>
-/// Content-based throttler that deduplicates events based on message and stack trace fingerprint.
+/// Error event throttler that deduplicates events based on message and stack trace fingerprint.
 /// Only throttles LogType.Error, LogType.Exception, and LogType.Assert events.
 /// Breadcrumbs, structured logs, and other log types are not throttled by default.
 /// </summary>
@@ -30,7 +30,7 @@ internal class ErrorEventThrottler : IThrottler
     }
 
     /// <summary>
-    /// Creates a new content-based throttler for error events.
+    /// Creates a new error event throttler.
     /// </summary>
     /// <param name="dedupeWindow">Time window for deduplicating repeated errors with the same fingerprint.</param>
     /// <param name="maxBufferSize">Maximum number of fingerprints to track. Oldest entries are evicted when full.</param>

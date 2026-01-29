@@ -4,11 +4,11 @@ using UnityEngine;
 namespace Sentry.Unity;
 
 /// <summary>
-/// Interface for throttling events, breadcrumbs, logs, and exceptions to prevent quota exhaustion.
+/// Interface for throttling events, breadcrumbs, logs, and exceptions.
 /// </summary>
 /// <remarks>
-/// The default implementation (<see cref="ErrorEventThrottler"/>) only throttles error/exception events.
-/// Users can implement custom throttlers to also throttle breadcrumbs, logs, etc.
+/// The default implementation (<see cref="ErrorEventThrottler"/>) only throttles error/exception and assertion events.
+/// Users can implement custom throttlers to also throttle breadcrumbs and logs.
 /// </remarks>
 public interface IThrottler
 {

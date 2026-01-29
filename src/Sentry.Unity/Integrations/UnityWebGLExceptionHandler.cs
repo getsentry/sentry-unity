@@ -56,11 +56,11 @@ internal sealed class UnityWebGLExceptionHandler : ISdkIntegration
 
 #pragma warning disable CS0618 // Type or member is obsolete - maintaining backwards compatibility
         if (_options.EnableLogDebouncing && !_errorTimeDebounce.Debounced())
+#pragma warning restore CS0618
         {
             _options.LogDebug("Exception is getting debounced.");
             return;
         }
-#pragma warning restore CS0618
 
         // Check throttling - only affects event capture
         if (_options.Throttler is { } throttler && !throttler.ShouldCaptureEvent(message, stacktrace, logType))
