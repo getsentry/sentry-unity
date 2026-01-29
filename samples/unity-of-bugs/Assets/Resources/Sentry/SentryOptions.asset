@@ -15,7 +15,7 @@ MonoBehaviour:
   <Enabled>k__BackingField: 1
   <Dsn>k__BackingField: https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.us.sentry.io/4504604988538880
   <CaptureInEditor>k__BackingField: 1
-  <EnableThrottling>k__BackingField: 0
+  <EnableErrorEventThrottling>k__BackingField: 0
   <ThrottleDedupeWindow>k__BackingField: 1000
   <EnableLogDebouncing>k__BackingField: 0
   <DebounceTimeLog>k__BackingField: 1000

@@ -123,11 +123,11 @@ internal static class LoggingTab
         EditorGUILayout.Space();
 
         {
-            options.EnableThrottling = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Error Throttling",
+            options.EnableErrorEventThrottling = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Enable Error Event Throttling",
                     "Throttles error/exception events based on message and stacktrace to prevent repeated " +
                     "errors from consuming quota. Does not affect breadcrumbs or structured logs by default."),
-                options.EnableThrottling);
+                options.EnableErrorEventThrottling);
 
             EditorGUI.indentLevel++;
 

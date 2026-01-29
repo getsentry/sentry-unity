@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Sentry.Unity;
 
@@ -29,7 +30,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public string? Dsn { get; set; }
     [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
 
-    [field: SerializeField] public bool EnableThrottling { get; set; } = false;
+    [field: FormerlySerializedAs("<EnableThrottling>k__BackingField")] [field: SerializeField] public bool EnableErrorEventThrottling { get; set; } = false;
     [field: SerializeField] public int ThrottleDedupeWindow { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     // Deprecated debouncing properties - kept for backwards compatibility
@@ -258,7 +259,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             OptionsConfiguration.Configure(options);
         }
 
-        if (EnableThrottling && options.Throttler is null)
+        if (EnableErrorEventThrottling && options.Throttler is null)
         {
             options.Throttler = new ErrorEventThrottler(TimeSpan.FromMilliseconds(ThrottleDedupeWindow));
         }
