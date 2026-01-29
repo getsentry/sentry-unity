@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
 
@@ -20,30 +21,18 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
         _sentryMonoBehaviour = sentryMonoBehaviour;
     }
 
-    public void Register(IHub hub, SentryOptions options)
+    public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        if (options is not SentryUnityOptions unityOptions)
-        {
-            return;
-        }
+        // This should never happen, but if it does...
+        var options = sentryOptions as SentryUnityOptions ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
 
-        var isTracingEnabled = unityOptions.TracesSampleRate > 0.0f;
+        var isTracingEnabled = options.TracesSampleRate > 0.0f;
 
         // Create initial trace context if tracing is disabled or startup tracing is disabled
-        if (!isTracingEnabled || !unityOptions.AutoStartupTraces)
+        if (!isTracingEnabled || !options.AutoStartupTraces)
         {
             options.DiagnosticLogger?.LogDebug("Startup. Creating new Trace.");
             hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
-        }
-
-        // Set up scene change handling if tracing is disabled or auto scene load traces are disabled
-        if (!isTracingEnabled || !unityOptions.AutoSceneLoadTraces)
-        {
-            _sceneManager.ActiveSceneChanged += (_, _) =>
-            {
-                options.DiagnosticLogger?.LogDebug("Active Scene changed. Creating new Trace.");
-                hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
-            };
         }
     }
 }

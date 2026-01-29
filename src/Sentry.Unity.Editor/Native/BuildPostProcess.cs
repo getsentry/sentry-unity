@@ -44,9 +44,8 @@ public static class BuildPostProcess
             return;
         }
 
-#pragma warning disable CS0618
-        var isMono = PlayerSettings.GetScriptingBackend(targetGroup) == ScriptingImplementation.Mono2x;
-#pragma warning restore CS0618
+        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(targetGroup);
+        var isMono = PlayerSettings.GetScriptingBackend(namedBuildTarget) == ScriptingImplementation.Mono2x;
 
         // The executable path resolves to the following when pointing Unity into a `build/platform/` directory:
         // - Desktop: `./samples/unity-of-bugs/builds/windows/unityofbugs.exe`

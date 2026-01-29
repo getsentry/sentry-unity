@@ -21,7 +21,7 @@ public class Builder
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         EditorUserBuildSettings.allowDebugging = false;
-        PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP);
+        PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(group), ScriptingImplementation.IL2CPP);
         // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
         PlayerSettings.runInBackground = true;
 
@@ -39,8 +39,8 @@ public class Builder
         Debug.Log("Builder: Configuring code stripping level");
 #if UNITY_2022_1_OR_NEWER
         PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.High);
-#elif UNITY_2019_1_OR_NEWER
-        PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.Low);
+#else
+        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.Low);
 #endif
 
         Debug.Log("Builder: Updating BuildPlayerOptions");
@@ -53,24 +53,16 @@ public class Builder
         };
 
         Debug.Log("Builder: Disabling optimizations to reduce build time");
-#if UNITY_2021_2_OR_NEWER
         // TODO Linux fails with `free(): invalid pointer` in the smoke-test, after everthing seems to have shut down.
         if (target != BuildTarget.StandaloneLinux64)
         {
             PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
         }
-#else
-        // TODO Windows fails to build
-        if (target != BuildTarget.StandaloneWindows64)
-        {
-            PlayerSettings.SetIl2CppCompilerConfiguration(group, Il2CppCompilerConfiguration.Debug);
-        }
-#endif
 
         if (target == BuildTarget.Android)
         {
             Debug.Log("Builder: Setting application identifier");
-            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "io.sentry.unity.integrationtest");
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "io.sentry.unity.integrationtest");
 
             // Android does not support appending builds. We make sure the directory is clean
             var outputDir = Path.GetDirectoryName(args["buildPath"]);
@@ -83,19 +75,8 @@ public class Builder
             Debug.Log($"Builder: Creating output directory at '{outputDir}'");
             Directory.CreateDirectory(outputDir);
 
-#if UNITY_2020_3
-            // The default for 2020.3 is 19. There will be no further updates to 2020.3.
-            Debug.Log("Builder: Raising the minSdkVersion to 21");
-            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel21;
-#endif
-            
             Debug.Log("Builder: Enabling minify");
-#if UNITY_2020_1_OR_NEWER
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
-#else
-            EditorUserBuildSettings.androidDebugMinification =
-                EditorUserBuildSettings.androidReleaseMinification = AndroidMinification.Proguard;
-#endif
 
 #if UNITY_6000_0_OR_NEWER
             Debug.Log("Builder: Setting target architectures");
