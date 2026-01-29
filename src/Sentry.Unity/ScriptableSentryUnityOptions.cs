@@ -30,7 +30,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public string? Dsn { get; set; }
     [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
 
-    [field: FormerlySerializedAs("<EnableThrottling>k__BackingField")] [field: SerializeField] public bool EnableErrorEventThrottling { get; set; } = false;
+    [field: SerializeField] public bool EnableErrorEventThrottling { get; set; } = false;
     [field: SerializeField] public int ThrottleDedupeWindow { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     // Deprecated debouncing properties - kept for backwards compatibility
