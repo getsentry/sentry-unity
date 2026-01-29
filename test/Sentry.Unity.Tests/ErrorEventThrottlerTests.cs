@@ -249,11 +249,10 @@ public class ErrorEventThrottlerTests
     public void ShouldCaptureBreadcrumb_AlwaysReturnsTrue()
     {
         var throttler = new ErrorEventThrottler(TimeSpan.FromSeconds(10));
-        var breadcrumb = new Breadcrumb("test message", "test.category");
 
         // Default implementation should never throttle breadcrumbs
-        var result1 = throttler.ShouldCaptureBreadcrumb(breadcrumb);
-        var result2 = throttler.ShouldCaptureBreadcrumb(breadcrumb);
+        var result1 = throttler.ShouldCaptureBreadcrumb("test message", LogType.Log);
+        var result2 = throttler.ShouldCaptureBreadcrumb("test message", LogType.Log);
 
         Assert.IsTrue(result1);
         Assert.IsTrue(result2);
@@ -265,8 +264,8 @@ public class ErrorEventThrottlerTests
         var throttler = new ErrorEventThrottler(TimeSpan.FromSeconds(10));
 
         // Default implementation should never throttle structured logs
-        var result1 = throttler.ShouldCaptureStructuredLog(SentryLevel.Error, "test message");
-        var result2 = throttler.ShouldCaptureStructuredLog(SentryLevel.Error, "test message");
+        var result1 = throttler.ShouldCaptureStructuredLog("test message", LogType.Error);
+        var result2 = throttler.ShouldCaptureStructuredLog("test message", LogType.Error);
 
         Assert.IsTrue(result1);
         Assert.IsTrue(result2);
