@@ -36,6 +36,10 @@ function GetTestAppName
     {
         return ""
     }
+    ElseIf ($buildMethod.contains("Switch"))
+    {
+        return "test"
+    }
     Else
     {
         Throw "Cannot determine Test App name for the given buildMethod: '$buildMethod'"
@@ -133,6 +137,7 @@ function BuildMethodFor([string] $platform)
         "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }
+        "Switch" { return "Builder.BuildSwitchIL2CPPPlayer" }
         ""
         {
             If ($IsMacOS)
