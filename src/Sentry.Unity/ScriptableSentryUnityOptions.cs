@@ -164,6 +164,12 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             Enabled = Enabled,
             Dsn = Dsn,
             CaptureInEditor = CaptureInEditor,
+#pragma warning disable CS0618 // Type or member is obsolete
+            EnableLogDebouncing = EnableLogDebouncing,
+            DebounceTimeLog = TimeSpan.FromMilliseconds(DebounceTimeLog),
+            DebounceTimeWarning = TimeSpan.FromMilliseconds(DebounceTimeWarning),
+            DebounceTimeError = TimeSpan.FromMilliseconds(DebounceTimeError),
+#pragma warning restore CS0618
             TracesSampleRate = TracesSampleRate,
             AutoStartupTraces = AutoStartupTraces,
             AutoSceneLoadTraces = AutoSceneLoadTraces,
@@ -252,19 +258,10 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             OptionsConfiguration.Configure(options);
         }
 
-        // Add throttler if enabled and not already set by OptionsConfiguration
         if (EnableThrottling && options.Throttler is null)
         {
             options.Throttler = new ErrorEventThrottler(TimeSpan.FromMilliseconds(ThrottleDedupeWindow));
         }
-
-        // Restore deprecated debounce settings for backwards compatibility
-#pragma warning disable CS0618 // Type or member is obsolete
-        options.EnableLogDebouncing = EnableLogDebouncing;
-        options.DebounceTimeLog = TimeSpan.FromMilliseconds(DebounceTimeLog);
-        options.DebounceTimeWarning = TimeSpan.FromMilliseconds(DebounceTimeWarning);
-        options.DebounceTimeError = TimeSpan.FromMilliseconds(DebounceTimeError);
-#pragma warning restore CS0618
 
         // We need to set up logging here because the configure callback might have changed the debug options.
         // Without setting up here we might miss out on logs between option-loading (now) and Init - i.e. native configuration

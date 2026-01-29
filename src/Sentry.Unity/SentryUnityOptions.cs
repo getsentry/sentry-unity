@@ -51,21 +51,11 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Throttler for events, breadcrumbs, logs, and exceptions to prevent quota exhaustion.
     /// </summary>
     /// <remarks>
-    /// Set via <see cref="SetThrottler"/> or enable in the Sentry configuration window.
     /// When enabled via the configuration window, a <see cref="ErrorEventThrottler"/> is used by default.
     /// The default implementation only throttles error/exception events - breadcrumbs and structured logs are not affected.
     /// Implement a custom <see cref="IThrottler"/> to also throttle breadcrumbs and logs.
     /// </remarks>
     public IThrottler? Throttler { get; set; }
-
-    /// <summary>
-    /// Configures a throttler for events, breadcrumbs, logs, and exceptions.
-    /// </summary>
-    /// <param name="throttler">The throttler implementation to use, or null to disable throttling.</param>
-    public void SetThrottler(IThrottler? throttler)
-    {
-        Throttler = throttler;
-    }
 
     /// <summary>
     /// Whether the SDK debounces log messages of the same type.
