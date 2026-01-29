@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string] $UnityPath
 )
 
@@ -28,6 +28,9 @@ RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$(GetNewProjectPath
 
 Write-Log "Copying Editor scripts to integration project:"
 New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Editor" -ItemType "directory"
+# Copy Builder.cs from unity-of-bugs sample (single source of truth)
+Copy-Item "$UnityOfBugsPath/Assets/Editor/Builder.cs" -Destination "$(GetNewProjectAssetsPath)/Editor/"
+# Copy remaining Editor scripts from integration test folder
 Copy-Item -Recurse "$IntegrationScriptsPath/Editor/*" -Destination "$(GetNewProjectAssetsPath)/Editor/" `
     -Exclude "BuildTimeOptions.cs"
 New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Scenes" -ItemType "directory"
