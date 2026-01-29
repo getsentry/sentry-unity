@@ -32,6 +32,8 @@ Plugins/iOS.meta
 Plugins/Linux.meta
 Plugins/macOS.meta
 Plugins/PS5.meta
+Plugins/sentry_native_stubs.c
+Plugins/sentry_native_stubs.c.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m
