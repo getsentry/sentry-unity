@@ -21,8 +21,8 @@ public class ScriptableSentryUnityOptionsTests
         StringAssert.Contains("Enabled", optionsAsString);
         StringAssert.Contains("Dsn", optionsAsString);
         StringAssert.Contains("CaptureInEditor", optionsAsString);
-        StringAssert.Contains("EnableErrorEventThrottling", optionsAsString);
-        StringAssert.Contains("ErrorEventThrottleDedupeWindow", optionsAsString);
+        StringAssert.Contains("EnableThrottling", optionsAsString);
+        StringAssert.Contains("ThrottleDedupeWindow", optionsAsString);
         StringAssert.Contains("TracesSampleRate", optionsAsString);
         StringAssert.Contains("AutoSessionTracking", optionsAsString);
         StringAssert.Contains("AutoSessionTrackingInterval", optionsAsString);
