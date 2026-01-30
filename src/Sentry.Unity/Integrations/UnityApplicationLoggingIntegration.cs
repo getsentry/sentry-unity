@@ -88,7 +88,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
 
     private void ProcessError(string message, string stacktrace, LogType logType)
     {
-        if (logType is not LogType.Error || !_options.CaptureLogErrorEvents)
+        if (logType is not (LogType.Error or LogType.Assert) || !_options.CaptureLogErrorEvents)
         {
             return;
         }
