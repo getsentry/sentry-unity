@@ -5,19 +5,17 @@
     "includePlatforms": [
         "Android",
         "Editor",
-        "GameCoreScarlett",
-        "GameCoreXboxOne",
         "iOS",
         "LinuxStandalone64",
-        "Lumin",
         "macOSStandalone",
-        "PS5",
-        "Stadia",
         "Switch",
+        "PS5",
         "WSA",
         "WebGL",
         "WindowsStandalone32",
-        "WindowsStandalone64"
+        "WindowsStandalone64",
+        "GameCoreXboxOne",
+        "GameCoreScarlett"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

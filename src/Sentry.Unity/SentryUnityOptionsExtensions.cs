@@ -60,6 +60,7 @@ public static class SentryUnityOptionsExtensions
             RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer => options.LinuxNativeSupportEnabled,
             RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne => options.XboxNativeSupportEnabled,
             RuntimePlatform.PS5 => options.PlayStationNativeSupportEnabled,
+            RuntimePlatform.Switch => options.SwitchNativeSupportEnabled,
             _ => false
         };
     }
