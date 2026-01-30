@@ -78,8 +78,9 @@ public class SentrySetup
                 LogDebug("Project contains Sentry.");
             }
 
+            var args = CommandLineArguments.Parse();
             LogDebug($"Installing Sentry from {installOrigin}");
-            var installCommand = GetInstallCommand(installOrigin);
+            var installCommand = GetInstallCommand(installOrigin, args);
             var addRequest = Client.Add(installCommand);
             while (!addRequest.IsCompleted)
             {
@@ -99,20 +100,25 @@ public class SentrySetup
         }
     }
 
-    static string GetInstallCommand(SentryInstallOrigin origin)
+    static string GetInstallCommand(SentryInstallOrigin origin, Dictionary<string, string> args)
     {
         if (origin == SentryInstallOrigin.Disk)
         {
-            // Relative path allows reusing IntegrationTest project created inside a docker container.
-            var sentryPackageLocal = "file:../../../test-package-release";
+            if (!args.ContainsKey("sentryPackagePath"))
+            {
+                var errorMessage = "Disk install requires -sentryPackagePath argument";
+                LogError(errorMessage);
+                EditorApplication.Exit(-1);
+                throw new ArgumentException(errorMessage);
+            }
+            var sentryPackageLocal = $"file:{args["sentryPackagePath"]}";
             LogDebug("Sentry package Path is " + sentryPackageLocal);
             return sentryPackageLocal;
         }
-        var errorMessage = $"Install command {origin} not supported";
-        LogError(errorMessage);
+        var errorMessage2 = $"Install command {origin} not supported";
+        LogError(errorMessage2);
         EditorApplication.Exit(-1);
-        // Throw since we will not return any value here.
-        throw new NotImplementedException(errorMessage);
+        throw new NotImplementedException(errorMessage2);
     }
 
     static SentryInstallOrigin GetInstallOriginFromEnvironment(Dictionary<string, string> args)

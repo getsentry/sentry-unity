@@ -1,13 +1,14 @@
-# ┌───────────────────────────────────────────────────┐ #
-# │    This script is for local use only,             │ #
-# │    utilizing the scripts locally we use in CI.    │ #
-# └───────────────────────────────────────────────────┘ #
+# ┌───────────────────────────────────────────────────────────────┐ #
+# │    Core integration test script.                              │ #
+# │    Can be called by dev-integration-test.ps1 (local) or CI.   │ #
+# └───────────────────────────────────────────────────────────────┘ #
 
 param(
+    [Parameter(Mandatory = $true)][string] $UnityPath,
     [Parameter(Mandatory = $true)][string] $UnityVersion,
     [Parameter(Mandatory = $true)][string] $Platform,
-    [switch] $Clean,
-    [switch] $Repack,
+    [Parameter(Mandatory = $true)][string] $PackagePath,
+    [string] $NativeSDKPath,
     [switch] $Recreate,
     [switch] $Rebuild
 )
@@ -17,54 +18,15 @@ if (-not $Global:NewProjectPathCache)
     . ./test/Scripts.Integration.Test/globals.ps1
 }
 
+# Validate package path exists
+If (-not (Test-Path -Path $PackagePath))
+{
+    Throw "Package path does not exist: '$PackagePath'. If running locally, use dev-integration-test.ps1 with -Repack flag."
+}
+
 $Global:UnityVersionInUse = $UnityVersion
 
-$UnityPath = $null
-
-If ($IsMacOS)
-{
-    $UnityPath = "/Applications/Unity/Hub/Editor/$UnityVersion*/Unity.app/"
-}
-Elseif ($IsWindows)
-{
-    $UnityPath = "C:/Program Files/Unity/Hub/Editor/$UnityVersion/Editor/Unity.exe"
-}
-
-If (-not(Test-Path -Path $UnityPath))
-{
-    Throw "Failed to find Unity at '$UnityPath'"
-}
-
-If ($Clean)
-{
-    Write-Host "Cleanup"
-    If (Test-Path -Path "package-release.zip")
-    {
-        Remove-Item -Path "package-release.zip" -Recurse -Force -Confirm:$false
-    }
-    If (Test-Path -Path "package-release")
-    {
-        Remove-Item -Path "package-release" -Recurse -Force -Confirm:$false
-    }
-    If (Test-Path -Path $PackageReleaseOutput)
-    {
-        Remove-Item -Path $PackageReleaseOutput -Recurse -Force -Confirm:$false
-    }
-    If (Test-Path -Path $(GetNewProjectPath))
-    {
-        Remove-Item -Path $(GetNewProjectPath) -Recurse -Force -Confirm:$false
-    }
-}
-
-# Repackaging the SDK
-If ($Repack -Or -not(Test-Path -Path $PackageReleaseOutput))
-{
-    dotnet build
-    Write-Host "Creating Package"
-    ./scripts/pack.ps1
-    Write-Host "Extracting Package"
-    ./test/Scripts.Integration.Test/extract-package.ps1
-}
+$UnityPath = FormatUnityPath $UnityPath
 
 # Support recreating the integration test project without cleaning the SDK build (and repackaging).
 if ($Recreate -and (Test-Path -Path $(GetNewProjectPath)))
@@ -77,9 +39,23 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
     Write-Host "Creating Project at '$(GetNewProjectPath)'"
     ./test/Scripts.Integration.Test/create-project.ps1 "$UnityPath"
     Write-Host "Adding Sentry"
-    ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath"
+    ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath" -PackagePath $PackagePath
     Write-Host "Configuring Sentry"
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols
+
+    If ($Platform -eq "Switch")
+    {
+        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath))
+        {
+            Throw "Switch platform requires -NativeSDKPath parameter pointing to directory containing libsentry.a and libzstd.a"
+        }
+
+        Write-Host "Setting up Switch native plugins"
+        ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
+            -SourceDirectory $NativeSDKPath `
+            -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/Switch" `
+            -Platform "Switch"
+    }
 }
 
 # Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
@@ -118,6 +94,10 @@ Switch -Regex ($Platform)
     "^WebGL$"
     {
         python3 scripts/smoke-test-webgl.py $buildDir
+    }
+    "^Switch$"
+    {
+        Write-Host "Switch build completed successfully - no automated test execution available"
     }
     Default { Write-Warning "No test run for platform: '$platform'" }
 }
