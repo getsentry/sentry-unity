@@ -94,7 +94,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/extract-package.ps1
 
       - name: Add Sentry to the project
-        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "../../test-package-release"
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols
