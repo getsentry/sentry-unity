@@ -11,7 +11,8 @@ param(
     [switch] $Clean,
     [switch] $Repack,
     [switch] $Recreate,
-    [switch] $Rebuild
+    [switch] $Rebuild,
+    [switch] $SkipTests
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -78,6 +79,7 @@ $integrationTestArgs = @{
     PackagePath  = $PackageReleaseOutput
     Recreate     = $Recreate
     Rebuild      = $Rebuild
+    SkipTests    = $SkipTests
 }
 
 if ($NativeSDKPath)

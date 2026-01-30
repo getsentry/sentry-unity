@@ -10,7 +10,8 @@ param(
     [Parameter(Mandatory = $true)][string] $PackagePath,
     [string] $NativeSDKPath,
     [switch] $Recreate,
-    [switch] $Rebuild
+    [switch] $Rebuild,
+    [switch] $SkipTests
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -75,29 +76,36 @@ If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
     }
 }
 
-Write-Host "Running tests"
-
-Switch -Regex ($Platform)
+If ($SkipTests)
 {
-    "^(Windows|MacOS|Linux)$"
+    Write-Host "Skipping tests (-SkipTests flag set)"
+}
+Else
+{
+    Write-Host "Running tests"
+
+    Switch -Regex ($Platform)
     {
-        ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
+        "^(Windows|MacOS|Linux)$"
+        {
+            ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
+        }
+        "^(Android)$"
+        {
+            ./scripts/smoke-test-android.ps1
+        }
+        "^iOS$"
+        {
+            ./scripts/smoke-test-ios.ps1 Test "latest" -IsIntegrationTest
+        }
+        "^WebGL$"
+        {
+            python3 scripts/smoke-test-webgl.py $buildDir
+        }
+        "^Switch$"
+        {
+            Write-Host "Switch build completed successfully - no automated test execution available"
+        }
+        Default { Write-Warning "No test run for platform: '$platform'" }
     }
-    "^(Android)$"
-    {
-        ./scripts/smoke-test-android.ps1
-    }
-    "^iOS$"
-    {
-        ./scripts/smoke-test-ios.ps1 Test "latest" -IsIntegrationTest
-    }
-    "^WebGL$"
-    {
-        python3 scripts/smoke-test-webgl.py $buildDir
-    }
-    "^Switch$"
-    {
-        Write-Host "Switch build completed successfully - no automated test execution available"
-    }
-    Default { Write-Warning "No test run for platform: '$platform'" }
 }
