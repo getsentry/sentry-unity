@@ -323,6 +323,12 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
         Write-Log 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
         return
     }
+    ElseIf ($buildMethod.contains('Switch'))
+    {
+        $expectedFiles = @(
+            'GameAssembly.nss: count=1'
+        )
+    }
     Else
     {
         Throw "Cannot CheckSymbolServerOutput() for an unknown buildMethod: '$buildMethod'"

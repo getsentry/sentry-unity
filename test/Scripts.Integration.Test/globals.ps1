@@ -36,6 +36,10 @@ function GetTestAppName
     {
         return ""
     }
+    ElseIf ($buildMethod.contains("Switch"))
+    {
+        return "test"
+    }
     Else
     {
         Throw "Cannot determine Test App name for the given buildMethod: '$buildMethod'"
@@ -96,21 +100,21 @@ function FormatUnityPath
     {
         If (-not $unityPath.EndsWith("Contents/MacOS/Unity"))
         {
-            $unityPath = $unityPath + "/Unity"
+            $unityPath = Join-Path $unityPath "Unity"
         }
     }
     ElseIf ($IsWindows)
     {
         If (-not $unityPath.EndsWith("Unity.exe"))
         {
-            $unityPath = $unityPath + "/Unity.exe"
+            $unityPath = Join-Path $unityPath "Unity.exe"
         }
     }
     ElseIf ($IsLinux)
     {
         If (((Get-Item $unityPath) -is [System.IO.DirectoryInfo]) -and $unityPath.EndsWith("unity"))
         {
-            $unityPath = $unityPath + "/Editor/Unity"
+            $unityPath = Join-Path (Join-Path $unityPath "Editor") "Unity"
         }
     }
     Else
@@ -133,6 +137,7 @@ function BuildMethodFor([string] $platform)
         "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }
+        "Switch" { return "Builder.BuildSwitchIL2CPPPlayer" }
         ""
         {
             If ($IsMacOS)

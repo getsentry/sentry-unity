@@ -167,6 +167,12 @@ public class Builder
         BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode);
     }
 
+    public static void BuildSwitchIL2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Switch IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode);
+    }
+
     public static Dictionary<string, string> ParseCommandLineArguments()
     {
         Debug.Log("Builder: Parsing command line arguments");
