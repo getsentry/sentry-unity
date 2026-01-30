@@ -48,7 +48,7 @@ fileFormatVersion: 2
 guid: $guid
 PluginImporter:
   externalObjects: {}
-  serializedVersion: 2
+  serializedVersion: 3
   iconMap: {}
   executionOrder: {}
   defineConstraints: []
@@ -57,9 +57,7 @@ PluginImporter:
   isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
-  - first:
-      : Any
-    second:
+    Any:
       enabled: 0
       settings:
         Exclude Android: 1
@@ -70,14 +68,7 @@ PluginImporter:
         Exclude Win: 1
         Exclude Win64: 1
         Exclude iOS: 1
-  - first:
-      Any:
-    second:
-      enabled: 0
-      settings: {}
-  - first:
-      ${Platform}: ${Platform}
-    second:
+    ${Platform}:
       enabled: 1
       settings: {}
   userData:
