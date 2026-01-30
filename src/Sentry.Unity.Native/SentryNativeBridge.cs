@@ -24,7 +24,7 @@ internal static class SentryNativeBridge
     {
         _useLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
-            or RuntimePlatform.PS5;
+            or RuntimePlatform.PS5 or RuntimePlatform.Switch;
         _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
 
         var cOptions = sentry_options_new();
@@ -64,6 +64,10 @@ internal static class SentryNativeBridge
         }
 
         var dir = GetCacheDirectory(options);
+#if SENTRY_NATIVE_SWITCH
+        options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
+        sentry_options_set_database_path(cOptions, dir);
+#else
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
         if (_isWindows)
         {
@@ -75,6 +79,7 @@ internal static class SentryNativeBridge
             options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
             sentry_options_set_database_path(cOptions, dir);
         }
+#endif
 
         if (options.DiagnosticLogger is null)
         {
@@ -147,8 +152,10 @@ internal static class SentryNativeBridge
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_database_path(IntPtr options, string path);
 
+#if !SENTRY_NATIVE_SWITCH
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
+#endif
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
@@ -254,7 +261,7 @@ internal static class SentryNativeBridge
         }
     }
 
-#if SENTRY_NATIVE_PLAYSTATION
+#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
     [DllImport("__Internal", EntryPoint = "vsnprintf_sentry")]
     private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 #else
@@ -268,7 +275,7 @@ internal static class SentryNativeBridge
 
     private static int vsnprintf(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args)
     {
-#if SENTRY_NATIVE_PLAYSTATION
+#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
         return vsnprintf_sentry(buffer, bufferSize, format, args);
 #else
         return _isWindows

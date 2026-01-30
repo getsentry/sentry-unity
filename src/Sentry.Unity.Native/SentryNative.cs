@@ -33,7 +33,7 @@ public static class SentryNative
 
         if (!options.IsNativeSupportEnabled(platform))
         {
-            Logger?.LogDebug("Native support is disabled for '{0}'.", ApplicationAdapter.Instance.Platform);
+            Logger?.LogDebug("Native support is disabled for '{0}'.", platform);
             return;
         }
 

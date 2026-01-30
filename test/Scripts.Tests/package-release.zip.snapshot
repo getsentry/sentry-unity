@@ -32,6 +32,8 @@ Plugins/iOS.meta
 Plugins/Linux.meta
 Plugins/macOS.meta
 Plugins/PS5.meta
+Plugins/sentry_native_stubs.c
+Plugins/sentry_native_stubs.c.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m
@@ -264,6 +266,10 @@ Runtime/Sentry.Unity.Native.PlayStation.dll
 Runtime/Sentry.Unity.Native.PlayStation.dll.meta
 Runtime/Sentry.Unity.Native.PlayStation.pdb
 Runtime/Sentry.Unity.Native.PlayStation.pdb.meta
+Runtime/Sentry.Unity.Native.Switch.dll
+Runtime/Sentry.Unity.Native.Switch.dll.meta
+Runtime/Sentry.Unity.Native.Switch.pdb
+Runtime/Sentry.Unity.Native.Switch.pdb.meta
 Runtime/Sentry.Unity.pdb
 Runtime/Sentry.Unity.pdb.meta
 Runtime/Sentry.xml

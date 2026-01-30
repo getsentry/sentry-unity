@@ -9,6 +9,8 @@
 #define SENTRY_NATIVE
 #elif UNITY_PS5
 #define SENTRY_NATIVE
+#elif UNITY_SWITCH
+#define SENTRY_NATIVE_SWITCH
 #elif UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
@@ -31,7 +33,7 @@ using UnityEngine.Scripting;
 using Sentry.Unity.iOS;
 #elif SENTRY_NATIVE_ANDROID
 using Sentry.Unity.Android;
-#elif SENTRY_NATIVE
+#elif SENTRY_NATIVE || SENTRY_NATIVE_SWITCH
 using Sentry.Unity.Native;
 #elif SENTRY_WEBGL
 using Sentry.Unity.WebGL;
@@ -90,6 +92,8 @@ namespace Sentry.Unity
             SentryPlatformServices.PlatformConfiguration = SentryNativeCocoa.Configure;
 #elif SENTRY_NATIVE_ANDROID
             SentryPlatformServices.PlatformConfiguration = SentryNativeAndroid.Configure;
+#elif SENTRY_NATIVE_SWITCH
+            SentryPlatformServices.PlatformConfiguration = SentryNativeSwitch.Configure;
 #elif SENTRY_NATIVE
             SentryPlatformServices.PlatformConfiguration = SentryNative.Configure;
 #elif SENTRY_WEBGL

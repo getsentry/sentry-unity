@@ -21,7 +21,8 @@ public static class BuildPostProcess
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         if (targetGroup is not BuildTargetGroup.Standalone
             and not BuildTargetGroup.GameCoreXboxSeries
-            and not BuildTargetGroup.PS5)
+            and not BuildTargetGroup.PS5
+            and not BuildTargetGroup.Switch)
         {
             return;
         }
@@ -50,11 +51,13 @@ public static class BuildPostProcess
         // - Desktop: `./samples/unity-of-bugs/builds/windows/unityofbugs.exe`
         // - Xbox: `./samples/unity-of-bugs/builds/xsx/`
         // - PlayStation: `./samples/unity-of-bugs/builds/ps5/`
+        // - Switch: `./samples/unity-of-bugs/builds/switch/unity-of-bugs.nspd_root`
         var buildOutputDir = targetGroup switch
         {
             BuildTargetGroup.Standalone => Path.GetDirectoryName(executablePath),
             BuildTargetGroup.GameCoreXboxSeries => executablePath,
             BuildTargetGroup.PS5 => executablePath,
+            BuildTargetGroup.Switch => Path.GetDirectoryName(executablePath),
             _ => string.Empty
         };
 
@@ -101,6 +104,7 @@ public static class BuildPostProcess
         BuildTarget.StandaloneLinux64 => options.LinuxNativeSupportEnabled,
         BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
         BuildTarget.PS5 => options.PlayStationNativeSupportEnabled,
+        BuildTarget.Switch => options.SwitchNativeSupportEnabled,
         _ => false,
     };
 
@@ -124,6 +128,9 @@ public static class BuildPostProcess
                 return;
             case BuildTarget.PS5:
                 // No standalone crash handler for PlayStation
+                return;
+            case BuildTarget.Switch:
+                // No standalone crash handler for Switch - uses Nintendo's crash reporter
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
@@ -297,6 +304,23 @@ public static class BuildPostProcess
             case BuildTarget.PS5:
                 // PlayStation builds go to a dedicated directory, safe to scan entirely
                 AddPath(paths, buildOutputDir, logger, required: true);
+                // User-provided Sentry plugin
+                AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
+                break;
+
+            case BuildTarget.Switch:
+                // IL2CPP output, Managed DLLs/PDBs, and Symbols
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
+                // Burst
+                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+                {
+                    AddPath(paths, dir, logger);
+                }
+
                 // User-provided Sentry plugin
                 AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
                 break;
