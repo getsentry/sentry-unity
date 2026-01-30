@@ -11,7 +11,8 @@ param(
     [string] $NativeSDKPath,
     [switch] $Recreate,
     [switch] $Rebuild,
-    [switch] $SkipTests
+    [switch] $SkipTests,
+    [switch] $CheckSymbols
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -42,7 +43,7 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
     Write-Host "Adding Sentry"
     ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath" -PackagePath $PackagePath
     Write-Host "Configuring Sentry"
-    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols
+    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
 
     If ($Platform -eq "Switch")
     {
@@ -72,7 +73,7 @@ If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
     }
     Else
     {
-        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols:$CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
     }
 }
 
