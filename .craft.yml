@@ -1,5 +1,5 @@
 minVersion: 0.24.0
-changelogPolicy: auto
+changelogPolicy: none
 targets:
   - name: upm
     releaseRepoOwner: getsentry
