@@ -69,18 +69,34 @@ namespace Sentry.Unity.Tests
         }
 
         [Test]
-        [TestCase(LogType.Log)]
-        [TestCase(LogType.Warning)]
-        [TestCase(LogType.Error)]
-        public void OnLogMessageReceived_LogDebounceEnabled_DebouncesMessage(LogType unityLogType)
+        public void OnLogMessageReceived_ThrottlerEnabled_ThrottlesRepeatedError()
         {
-            _fixture.SentryOptions.EnableLogDebouncing = true;
+            _fixture.SentryOptions.Throttler = new ErrorEventThrottler(System.TimeSpan.FromSeconds(10));
             var sut = _fixture.GetSut();
             var message = TestContext.CurrentContext.Test.Name;
 
-            sut.OnLogMessageReceived(message, string.Empty, unityLogType);
+            // First call should capture the event
+            sut.OnLogMessageReceived(message, string.Empty, LogType.Error);
+            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count);
 
-            Assert.AreEqual(1, _fixture.Hub.ConfigureScopeCalls.Count);
+            // Second call with same message should be throttled
+            sut.OnLogMessageReceived(message, string.Empty, LogType.Error);
+            Assert.AreEqual(1, _fixture.Hub.CapturedEvents.Count); // Still 1, not 2
+        }
+
+        [Test]
+        public void OnLogMessageReceived_ThrottlerEnabled_DoesNotThrottleNonErrors()
+        {
+            _fixture.SentryOptions.Throttler = new ErrorEventThrottler(System.TimeSpan.FromSeconds(10));
+            var sut = _fixture.GetSut();
+            var message = TestContext.CurrentContext.Test.Name;
+
+            // Log and Warning types should not be throttled (throttling only applies to Error/Exception)
+            sut.OnLogMessageReceived(message, string.Empty, LogType.Log);
+            sut.OnLogMessageReceived(message, string.Empty, LogType.Log);
+
+            // Both calls should add breadcrumbs (throttling doesn't affect breadcrumbs)
+            Assert.AreEqual(2, _fixture.Hub.ConfigureScopeCalls.Count);
         }
 
         private static readonly object[] LogTypesCaptured = [new object[] { LogType.Error, SentryLevel.Error, BreadcrumbLevel.Error }];

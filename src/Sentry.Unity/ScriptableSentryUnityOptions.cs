@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Sentry.Unity;
 
@@ -29,10 +30,25 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public string? Dsn { get; set; }
     [field: SerializeField] public bool CaptureInEditor { get; set; } = true;
 
-    [field: SerializeField] public bool EnableLogDebouncing { get; set; } = false;
-    [field: SerializeField] public int DebounceTimeLog { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
-    [field: SerializeField] public int DebounceTimeWarning { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
-    [field: SerializeField] public int DebounceTimeError { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+    [field: SerializeField] public bool EnableErrorEventThrottling { get; set; } = false;
+    [field: SerializeField] public int ThrottleDedupeWindow { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+
+    // Deprecated debouncing properties - kept for backwards compatibility
+    [field: SerializeField]
+    [Obsolete("Use EnableThrottling instead. This property will be removed in a future version.")]
+    public bool EnableLogDebouncing { get; set; } = false;
+
+    [field: SerializeField]
+    [Obsolete("Use EnableThrottling and ThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    public int DebounceTimeLog { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+
+    [field: SerializeField]
+    [Obsolete("Use EnableThrottling and ThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    public int DebounceTimeWarning { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
+
+    [field: SerializeField]
+    [Obsolete("Use EnableThrottling and ThrottleDedupeWindow instead. This property will be removed in a future version.")]
+    public int DebounceTimeError { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
     [field: SerializeField] public double TracesSampleRate { get; set; } = 0;
     [field: SerializeField] public bool AutoStartupTraces { get; set; } = true;
@@ -150,10 +166,12 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             Enabled = Enabled,
             Dsn = Dsn,
             CaptureInEditor = CaptureInEditor,
+#pragma warning disable CS0618 // Type or member is obsolete
             EnableLogDebouncing = EnableLogDebouncing,
             DebounceTimeLog = TimeSpan.FromMilliseconds(DebounceTimeLog),
             DebounceTimeWarning = TimeSpan.FromMilliseconds(DebounceTimeWarning),
             DebounceTimeError = TimeSpan.FromMilliseconds(DebounceTimeError),
+#pragma warning restore CS0618
             TracesSampleRate = TracesSampleRate,
             AutoStartupTraces = AutoStartupTraces,
             AutoSceneLoadTraces = AutoSceneLoadTraces,
@@ -241,6 +259,11 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         {
             options.DiagnosticLogger?.LogDebug("OptionsConfiguration found. Calling configure.");
             OptionsConfiguration.Configure(options);
+        }
+
+        if (EnableErrorEventThrottling && options.Throttler is null)
+        {
+            options.Throttler = new ErrorEventThrottler(TimeSpan.FromMilliseconds(ThrottleDedupeWindow));
         }
 
         // We need to set up logging here because the configure callback might have changed the debug options.
