@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../../scripts/unity-utils.ps1
+. $PSScriptRoot/common.ps1
 
 function ProjectRoot
 {
@@ -122,7 +123,7 @@ function FormatUnityPath
         Throw "Cannot find Unity executable name for the current operating system"
     }
 
-    Write-Host "Unity path is $unityPath"
+    Write-Detail "Unity path: $unityPath"
     return $unityPath
 }
 
@@ -166,7 +167,7 @@ function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $Re
     If ($unityPath.StartsWith("docker "))
     {
         # Fix paths (they're supposed to be the current working directory in the docker container)
-        Write-Host "Replacing project root ($(ProjectRoot)) in docker arguments: $arguments"
+        Write-Detail "Replacing project root ($(ProjectRoot)) in docker arguments"
         $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)", "/sentry-unity") }
     }
 

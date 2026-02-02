@@ -20,6 +20,8 @@ if (-not $Global:NewProjectPathCache)
     . ./test/Scripts.Integration.Test/globals.ps1
 }
 
+. ./test/Scripts.Integration.Test/common.ps1
+
 $Global:UnityVersionInUse = $UnityVersion
 
 # Detect local Unity installation
@@ -42,7 +44,7 @@ If (-not(Test-Path -Path $UnityPath))
 # Handle cleanup
 If ($Clean)
 {
-    Write-Host "Cleanup"
+    Write-PhaseHeader "Cleanup"
     If (Test-Path -Path "package-release.zip")
     {
         Remove-Item -Path "package-release.zip" -Recurse -Force -Confirm:$false
@@ -65,9 +67,9 @@ If ($Clean)
 If ($Repack -Or -not(Test-Path -Path $PackageReleaseOutput))
 {
     dotnet build
-    Write-Host "Creating Package"
+    Write-PhaseHeader "Creating Package"
     ./scripts/pack.ps1
-    Write-Host "Extracting Package"
+    Write-Log "Extracting Package..."
     ./test/Scripts.Integration.Test/extract-package.ps1
 }
 
@@ -87,5 +89,5 @@ if ($NativeSDKPath)
     $integrationTestArgs.NativeSDKPath = $NativeSDKPath
 }
 
-Write-Host "Running integration test"
+Write-PhaseHeader "Running Integration Test"
 ./test/Scripts.Integration.Test/integration-test.ps1 @integrationTestArgs

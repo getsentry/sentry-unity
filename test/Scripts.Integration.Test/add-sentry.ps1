@@ -12,6 +12,13 @@ if (-not $Global:NewProjectPathCache)
 
 $UnityPath = FormatUnityPath $UnityPath
 
+# Convert relative paths to absolute (relative to ProjectRoot)
+# This ensures the path works both locally and in Docker (where RunUnityCustom handles path translation)
+if (-not [System.IO.Path]::IsPathRooted($PackagePath))
+{
+    $PackagePath = "$(ProjectRoot)/$PackagePath"
+}
+
 Write-Log "Installing Sentry package..."
 RunUnityAndExpect $UnityPath "AddSentryPackage" "Sentry Package Installation: SUCCESS" @( `
         "-batchmode", "-projectPath", "$(GetNewProjectPath)", `
